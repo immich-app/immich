@@ -41,7 +41,6 @@
   } from '@immich/sdk';
   import { CommandPaletteDefaultProvider } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
-  import type { SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -193,12 +192,11 @@
 
   let nextPreloader: AdaptiveImageLoader | undefined;
   let previousPreloader: AdaptiveImageLoader | undefined;
-
   const startPreloader = (asset: AssetResponseDto | undefined) => {
     if (!asset) {
       return;
     }
-    const loader = new AdaptiveImageLoader(asset, undefined, undefined, loadImage);
+    const loader = new AdaptiveImageLoader(asset, undefined, { currentZoomFn: () => 1 }, loadImage);
     loader.start();
     return loader;
   };
@@ -228,72 +226,77 @@
     const shouldDestroyPrevious = !movedBackward;
     const shouldDestroyNext = !movedForward;
 
-    if (shouldDestroyPrevious) {
-      destroyPreviousPreloader();
-    }
-
-    if (shouldDestroyNext) {
-      destroyNextPreloader();
-    }
-
     if (movedForward) {
+      destroyPreviousPreloader();
+      destroyNextPreloader();
       nextPreloader = startPreloader(newCursor.nextAsset);
     } else if (movedBackward) {
+      destroyNextPreloader();
+      destroyPreviousPreloader();
       previousPreloader = startPreloader(newCursor.previousAsset);
     } else {
-      // Non-adjacent navigation (e.g., slideshow random)
+      if (shouldDestroyPrevious) {
+        destroyPreviousPreloader();
+      }
+      if (shouldDestroyNext) {
+        destroyNextPreloader();
+      }
       previousPreloader = startPreloader(newCursor.previousAsset);
       nextPreloader = startPreloader(newCursor.nextAsset);
     }
   };
 
-  const tracker = new InvocationTracker();
-  const navigateAsset = (order?: 'previous' | 'next') => {
-    if (!order) {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
-      } else {
-        return;
+  const getNavigationTarget = () => {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      return $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+    } else {
+      return 'skip';
+    }
+  };
+
+  const completeNavigation = async (target: 'previous' | 'next') => {
+    cancelPreloadsBeforeNavigation(target);
+    let hasNext: boolean;
+
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      hasNext = target === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      if (!hasNext) {
+        const asset = await onRandom?.();
+        if (asset) {
+          slideshowHistory.queue(asset);
+          hasNext = true;
+        }
       }
+    } else {
+      hasNext =
+        target === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
     }
 
-    cancelPreloadsBeforeNavigation(order);
-
-    if (tracker.isActive()) {
+    if ($slideshowState !== SlideshowState.PlaySlideshow) {
       return;
     }
 
-    void tracker.invoke(async () => {
-      let hasNext: boolean;
+    if (hasNext) {
+      $restartSlideshowProgress = true;
+    } else if ($slideshowRepeat && slideshowStartAssetId) {
+      await setAssetId(slideshowStartAssetId);
+      $restartSlideshowProgress = true;
+    } else {
+      await handleStopSlideshow();
+    }
+  };
 
-      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
-          }
-        }
-      } else {
-        hasNext =
-          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
-      }
+  const tracker = new InvocationTracker();
+  const navigateAsset = (target: 'previous' | 'next' | 'skip') => {
+    if (target === 'skip' || tracker.isActive()) {
+      return;
+    }
 
-      if ($slideshowState !== SlideshowState.PlaySlideshow) {
-        return;
-      }
-
-      if (hasNext) {
-        $restartSlideshowProgress = true;
-      } else if ($slideshowRepeat && slideshowStartAssetId) {
-        // Loop back to starting asset
-        await setAssetId(slideshowStartAssetId);
-        $restartSlideshowProgress = true;
-      } else {
-        await handleStopSlideshow();
-      }
-    }, $t('error_while_navigating'));
+    void tracker.invoke(
+      () => completeNavigation(target),
+      (error: unknown) => handleError(error, $t('error_while_navigating')),
+      () => eventManager.emit('ViewerFinishNavigate'),
+    );
   };
 
   /**
@@ -512,24 +515,6 @@
       assetViewerManager.isShowDetailPanel &&
       !assetViewerManager.isShowEditor,
   );
-
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if (assetViewerManager.zoom > 1) {
-      return;
-    }
-
-    if (ocrManager.showOverlay) {
-      return;
-    }
-
-    if (event.detail.direction === 'left') {
-      navigateAsset('previous');
-    }
-
-    if (event.detail.direction === 'right') {
-      navigateAsset('next');
-    }
-  };
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
@@ -586,26 +571,26 @@
   <div data-viewer-content class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
-        asset={previewStackedAsset!}
+        cursor={{ ...cursor, current: previewStackedAsset! }}
+        assetId={previewStackedAsset!.id}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onClose={closeViewer}
-        onVideoEnded={() => navigateAsset()}
+        onVideoEnded={() => navigateAsset(getNavigationTarget())}
         onVideoStarted={handleVideoStarted}
         {playOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
-        {asset}
+        {cursor}
         assetId={asset.livePhotoVideoId!}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
         {playOriginalVideo}
       />
@@ -614,17 +599,21 @@
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
-      <PhotoViewer cursor={{ ...cursor, current: asset }} {sharedLink} {onSwipe} />
+      <PhotoViewer
+        cursor={{ ...cursor, current: asset }}
+        {sharedLink}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
+      />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
-        {asset}
+        {cursor}
+        {sharedLink}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-        onPreviousAsset={() => navigateAsset('previous')}
-        onNextAsset={() => navigateAsset('next')}
+        onSwipe={(direction) => navigateAsset(direction === 'left' ? 'next' : 'previous')}
         onClose={closeViewer}
-        onVideoEnded={() => navigateAsset()}
+        onVideoEnded={() => navigateAsset(getNavigationTarget())}
         onVideoStarted={handleVideoStarted}
         {playOriginalVideo}
       />

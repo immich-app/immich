@@ -4,6 +4,7 @@
   import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
+  import SwipeFeedback from '$lib/components/asset-viewer/swipe-feedback.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
@@ -20,7 +21,7 @@
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
-  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { fromAction } from 'svelte/attachments';
   import { t } from 'svelte-i18n';
   import type { AssetCursor } from './asset-viewer.svelte';
 
@@ -30,7 +31,7 @@
     sharedLink?: SharedLinkResponseDto;
     onReady?: () => void;
     onError?: () => void;
-    onSwipe?: (event: SwipeCustomEvent) => void;
+    onSwipe?: (direction: 'left' | 'right') => void;
   }
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
@@ -138,6 +139,12 @@
   };
 
   let adaptiveImage = $state<HTMLDivElement | undefined>();
+  let swipeFeedbackReset = $state<(() => void) | undefined>();
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset.id;
+    untrack(() => swipeFeedbackReset?.());
+  });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} />
@@ -151,13 +158,17 @@
   ]}
 />
 
-<div
-  bind:this={element}
+<SwipeFeedback
+  bind:element
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
-  use:zoomImageAction={{ disabled: isFaceEditMode.value, zoomTarget: adaptiveImage }}
-  {...useSwipe((event) => onSwipe?.(event))}
+  disabled={!onSwipe || ocrManager.showOverlay || assetViewerManager.zoom > 1}
+  disableSwipeLeft={!cursor.nextAsset}
+  disableSwipeRight={!cursor.previousAsset}
+  bind:reset={swipeFeedbackReset}
+  onSwipe={onSwipe ?? (() => {})}
+  {@attach fromAction(zoomImageAction, () => ({ disabled: isFaceEditMode.value, zoomTarget: adaptiveImage }))}
 >
   <AdaptiveImage
     {asset}
@@ -195,4 +206,30 @@
   {#if isFaceEditMode.value && assetViewerManager.imgRef}
     <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
-</div>
+
+  {#snippet leftPreview()}
+    {#if cursor.previousAsset}
+      <AdaptiveImage
+        asset={cursor.previousAsset}
+        {sharedLink}
+        {container}
+        imageClass="object-contain"
+        slideshowState={$slideshowState}
+        slideshowLook={$slideshowLook}
+      />
+    {/if}
+  {/snippet}
+
+  {#snippet rightPreview()}
+    {#if cursor.nextAsset}
+      <AdaptiveImage
+        asset={cursor.nextAsset}
+        {sharedLink}
+        {container}
+        imageClass="object-contain"
+        slideshowState={$slideshowState}
+        slideshowLook={$slideshowLook}
+      />
+    {/if}
+  {/snippet}
+</SwipeFeedback>
