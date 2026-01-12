@@ -14,93 +14,6 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class _DelayedAnimation extends StatefulWidget {
-  final Widget child;
-  final bool show;
-  final Duration showDelay;
-  final Duration hideDelay;
-  final Duration showDuration;
-  final Duration hideDuration;
-
-  const _DelayedAnimation({
-    required this.child,
-    required this.show,
-    this.showDelay = const Duration(milliseconds: 0),
-    this.hideDelay = const Duration(milliseconds: 0),
-    this.showDuration = const Duration(milliseconds: 0),
-    this.hideDuration = const Duration(milliseconds: 0),
-  });
-
-  @override
-  State<_DelayedAnimation> createState() => _DelayedAnimationState();
-}
-
-class _DelayedAnimationState extends State<_DelayedAnimation> {
-  bool _show = false;
-  Duration _currentDuration = const Duration(milliseconds: 200);
-  Timer? _delayTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    // If starting with show=true, show immediately (no delay on initial render)
-    if (widget.show) {
-      _show = true;
-      _currentDuration = widget.showDuration;
-    }
-  }
-
-  @override
-  void didUpdateWidget(_DelayedAnimation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // Cancel any pending timer
-    _delayTimer?.cancel();
-
-    if (widget.show && !oldWidget.show) {
-      // Showing
-      _currentDuration = widget.showDuration;
-      if (widget.showDelay == Duration.zero) {
-        setState(() => _show = true);
-      } else {
-        _delayTimer = Timer(widget.showDelay, () {
-          if (mounted) {
-            setState(() => _show = true);
-          }
-        });
-      }
-    } else if (!widget.show && oldWidget.show) {
-      // Hiding
-      if (widget.hideDelay == Duration.zero) {
-        setState(() {
-          _currentDuration = widget.hideDuration;
-          _show = false;
-        });
-      } else {
-        _delayTimer = Timer(widget.hideDelay, () {
-          if (mounted) {
-            setState(() {
-              _currentDuration = widget.hideDuration;
-              _show = false;
-            });
-          }
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _delayTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(duration: _currentDuration, opacity: _show ? 1.0 : 0.0, child: widget.child);
-  }
-}
-
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
@@ -139,11 +52,7 @@ class ThumbnailTile extends ConsumerWidget {
 
     return Stack(
       children: [
-        _DelayedAnimation(
-          show: isSelected || lockSelection,
-          hideDelay: Durations.short4,
-          child: Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
-        ),
+        Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
@@ -164,60 +73,42 @@ class ThumbnailTile extends ConsumerWidget {
                   ),
                 ),
                 if (asset != null)
-                  _DelayedAnimation(
-                    show: showIndicators,
-                    showDelay: const Duration(milliseconds: 300),
-                    showDuration: const Duration(milliseconds: 200),
-                    hideDuration: const Duration(milliseconds: 150),
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset),
-                    ),
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: _AssetTypeIcons(asset: asset),
                   ),
 
                 if (storageIndicator && asset != null)
-                  _DelayedAnimation(
-                    show: showIndicators,
-                    showDelay: const Duration(milliseconds: 300),
-                    showDuration: const Duration(milliseconds: 200),
-                    hideDuration: const Duration(milliseconds: 150),
-                    child: switch (asset.storage) {
-                      AssetState.local => const Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_off_outlined),
-                        ),
+                  switch (asset.storage) {
+                    AssetState.local => const Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.cloud_off_outlined),
                       ),
-                      AssetState.remote => const Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_outlined),
-                        ),
+                    ),
+                    AssetState.remote => const Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.cloud_outlined),
                       ),
-                      AssetState.merged => const Align(
-                        alignment: Alignment.bottomRight,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
-                        ),
+                    ),
+                    AssetState.merged => const Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
+                        child: _TileOverlayIcon(Icons.cloud_done_outlined),
                       ),
-                    },
-                  ),
+                    ),
+                  },
 
                 if (asset != null && asset.isFavorite)
-                  _DelayedAnimation(
-                    show: showIndicators,
-                    showDelay: const Duration(milliseconds: 300),
-                    showDuration: const Duration(milliseconds: 200),
-                    hideDuration: const Duration(milliseconds: 150),
-                    child: const Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
-                        child: _TileOverlayIcon(Icons.favorite_rounded),
-                      ),
+                  const Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10.0, bottom: 6.0),
+                      child: _TileOverlayIcon(Icons.favorite_rounded),
                     ),
                   ),
               ],
