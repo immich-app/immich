@@ -34,7 +34,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 }
 
 class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
-  bool heroInFlight = false;
+  bool _hideIndicators = false;
 
   @override
   void dispose() {
@@ -76,32 +76,44 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
-                    // Handle hiding assets
+                    // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
+                    placeholderBuilder: (context, heroSize, child) {
+                      if (!_hideIndicators) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          setState(() => _hideIndicators = true);
+                        });
+                      }
+                      return const SizedBox();
+                    },
                     flightShuttleBuilder: (context, animation, direction, from, to) {
-                      log.info("Flightshuttlebuilder triggered");
-                      animation.addStatusListener((status) {
-                        final tempInFlight =
-                            status == AnimationStatus.forward ||
-                            status == AnimationStatus.reverse ||
-                            status == AnimationStatus.completed;
-                        if (heroInFlight != tempInFlight) {
-                          setState(() => heroInFlight = tempInFlight);
-                          log.info("Hero in flight: $heroInFlight");
+                      void animationStatusListener(AnimationStatus status) {
+                        final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
+                        if (_hideIndicators != heroInFlight) {
+                          setState(() => _hideIndicators = heroInFlight);
                         }
-                      });
+                        if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+                          animation.removeStatusListener(animationStatusListener);
+                        }
+                      }
+
+                      animation.addStatusListener(animationStatusListener);
                       return to.widget;
                     },
                   ),
                 ),
                 if (asset != null)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: _AssetTypeIcons(asset: asset),
+                  AnimatedOpacity(
+                    opacity: _hideIndicators ? 0.0 : 1.0,
+                    duration: Durations.short4,
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: _AssetTypeIcons(asset: asset),
+                    ),
                   ),
 
                 if (storageIndicator && asset != null)
                   AnimatedOpacity(
-                    opacity: heroInFlight ? 0.0 : 1.0,
+                    opacity: _hideIndicators ? 0.0 : 1.0,
                     duration: Durations.short4,
                     child: switch (asset.storage) {
                       AssetState.local => const Align(
@@ -131,7 +143,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                 if (asset != null && asset.isFavorite)
                   AnimatedOpacity(
                     duration: Durations.short4,
-                    opacity: heroInFlight ? 0.0 : 1.0,
+                    opacity: _hideIndicators ? 0.0 : 1.0,
                     child: const Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
