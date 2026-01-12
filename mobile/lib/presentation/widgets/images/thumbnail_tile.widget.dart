@@ -10,11 +10,10 @@ import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class ThumbnailTile extends ConsumerWidget {
+class ThumbnailTile extends ConsumerStatefulWidget {
   const ThumbnailTile(
     this.asset, {
     this.size = kThumbnailResolution,
@@ -33,10 +32,22 @@ class ThumbnailTile extends ConsumerWidget {
   final int? heroOffset;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final asset = this.asset;
-    final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
-    bool _heroInFlight = false;
+  ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
+}
+
+class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
+  bool heroInFlight = false;
+  bool _heroListenerAttached = false;
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final asset = widget.asset;
+    final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -46,18 +57,17 @@ class ThumbnailTile extends ConsumerWidget {
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
 
-    final bool storageIndicator =
-        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
+    final bool storageIndicator = ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
     return Stack(
       children: [
-        Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
+        Container(color: widget.lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
-          padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
+          padding: EdgeInsets.all(isSelected || widget.lockSelection ? 6 : 0),
           child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
+            tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 15.0 : 0.0),
             duration: Durations.short4,
             curve: Curves.decelerate,
             builder: (context, value, child) {
@@ -68,13 +78,20 @@ class ThumbnailTile extends ConsumerWidget {
                 Positioned.fill(
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
-                    child: Thumbnail.fromAsset(asset: asset, size: size),
+                    child: Thumbnail.fromAsset(asset: asset, size: widget.size),
                     //
                     flightShuttleBuilder: (context, animation, direction, from, to) {
-                      animation.addStatusListener((status) {
-                        _heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
-                        log.info("Hero in flight: $_heroInFlight");
-                      });
+                      if (!_heroListenerAttached) {
+                        animation.addStatusListener((status) {
+                          final tempInFlight =
+                              status == AnimationStatus.forward ||
+                              status == AnimationStatus.reverse ||
+                              status == AnimationStatus.completed;
+                          setState(() => heroInFlight = tempInFlight);
+                          log.info("Hero in flight: $heroInFlight");
+                        });
+                        // _heroListenerAttached = true;
+                      }
 
                       return to.widget;
                     },
@@ -86,7 +103,7 @@ class ThumbnailTile extends ConsumerWidget {
                     child: _AssetTypeIcons(asset: asset),
                   ),
 
-                if (storageIndicator && asset != null)
+                if (storageIndicator && asset != null && !heroInFlight)
                   switch (asset.storage) {
                     AssetState.local => const Align(
                       alignment: Alignment.bottomRight,
@@ -124,19 +141,19 @@ class ThumbnailTile extends ConsumerWidget {
           ),
         ),
         TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 1.0 : 0.0),
+          tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 1.0 : 0.0),
           duration: Durations.short4,
           curve: Curves.decelerate,
           builder: (context, value, child) {
             return Padding(
-              padding: EdgeInsets.all((isSelected || lockSelection) ? value * 3.0 : 3.0),
+              padding: EdgeInsets.all((isSelected || widget.lockSelection) ? value * 3.0 : 3.0),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(
-                  opacity: (isSelected || lockSelection) ? 1 : value,
+                  opacity: (isSelected || widget.lockSelection) ? 1 : value,
                   child: _SelectionIndicator(
-                    isLocked: lockSelection,
-                    color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
+                    isLocked: widget.lockSelection,
+                    color: widget.lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
                   ),
                 ),
               ),
