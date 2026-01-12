@@ -40,6 +40,20 @@ The beta release channel allows users to test upcoming changes before they are o
 You can enable automatic backup on supported devices. For more information see [Automatic Backup](/features/automatic-backup.md).
 :::
 
+### iCloud Backup
+
+Local albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the upload to Immich is complete, the temporary storage folder will be emptied.
+
+To back up all assets stored in iCloud without exception, you must select the "Recent" album. This operation is expected to take a long time if there are many assets in iCloud.
+
+:::info Manual deletion
+Immich does not delete assets backed up from iCloud, this action will have to be performed manually by the user.
+:::
+
+Shared albums from iCloud will be displayed with a note below them.
+
+<img src={require('./img/icloud-shared -album.webp').default} width="30%" title="indication of iCloud shared album" />
+
 ## Sync only selected photos
 
 If you have a large number of photos on the device, and you would prefer not to backup all the photos, then it might be prudent to only backup selected photos from device to the Immich server.
