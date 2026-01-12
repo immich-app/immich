@@ -78,7 +78,7 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @Optional()
   @ValidateNested({ each: true })
   @IsArray()
-  metadata!: AssetMetadataUpsertItemDto[];
+  metadata?: AssetMetadataUpsertItemDto[];
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   [UploadFieldName.SIDECAR_DATA]?: any;

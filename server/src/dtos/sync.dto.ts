@@ -4,7 +4,6 @@ import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
-  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
@@ -167,16 +166,14 @@ export class SyncAssetExifV1 {
 @ExtraModel()
 export class SyncAssetMetadataV1 {
   assetId!: string;
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  key!: string;
   value!: object;
 }
 
 @ExtraModel()
 export class SyncAssetMetadataDeleteV1 {
   assetId!: string;
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  key!: string;
 }
 
 @ExtraModel()

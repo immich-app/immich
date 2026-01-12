@@ -105,7 +105,7 @@
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
 
-  let asset = $derived(cursor.current);
+  const asset = $derived(cursor.current);
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
@@ -312,7 +312,7 @@
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         stack = action.stack;
         if (stack) {
-          asset = stack.assets[0];
+          cursor.current = stack.assets[0];
         }
         break;
       }
@@ -323,11 +323,11 @@
       }
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
         const assetInfo = await getAssetInfo({ id: asset.id });
-        asset = { ...asset, people: assetInfo.people };
+        cursor.current = { ...asset, people: assetInfo.people };
         break;
       }
       case AssetAction.RATING: {
-        asset = {
+        cursor.current = {
           ...asset,
           exifInfo: {
             ...asset.exifInfo,
@@ -394,7 +394,7 @@
 
   const onAssetUpdate = (update: AssetResponseDto) => {
     if (asset.id === update.id) {
-      asset = update;
+      cursor.current = update;
     }
   };
 </script>
@@ -590,7 +590,7 @@
               dimmed={stackedAsset.id !== asset.id}
               asset={toTimelineAsset(stackedAsset)}
               onClick={() => {
-                asset = stackedAsset;
+                cursor.current = stackedAsset;
                 previewStackedAsset = undefined;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}

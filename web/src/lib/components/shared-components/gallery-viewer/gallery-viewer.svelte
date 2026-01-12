@@ -7,6 +7,7 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -23,9 +24,8 @@
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
-  interface Props {
+  type Props = {
     initialAssetId?: string;
     assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
@@ -34,7 +34,6 @@
     viewport: Viewport;
     onIntersected?: (() => void) | undefined;
     showAssetName?: boolean;
-    isShowDeleteConfirmation?: boolean;
     onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
     onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
     onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
@@ -42,7 +41,7 @@
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
     arrowNavigation?: boolean;
-  }
+  };
 
   let {
     initialAssetId = undefined,
@@ -53,7 +52,6 @@
     viewport,
     onIntersected = undefined,
     showAssetName = false,
-    isShowDeleteConfirmation = $bindable(false),
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
@@ -209,30 +207,27 @@
 
   const onDelete = () => {
     const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
-
-    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
     handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
-  const onForceDelete = () => {
-    if ($showDeleteModal) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(true));
-  };
-
   const trashOrDelete = async (force: boolean = false) => {
-    isShowDeleteConfirmation = false;
+    const forceOrNoTrash = force || !featureFlagsManager.value.trash;
+    const selectedAssets = assetInteraction.selectedAssets;
+
+    if ($showDeleteModal && forceOrNoTrash) {
+      const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
+      if (!confirmed) {
+        return;
+      }
+    }
+
     await deleteAssets(
-      !(isTrashEnabled && !force),
+      forceOrNoTrash,
       (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
-      assetInteraction.selectedAssets,
+      selectedAssets,
       onReload,
     );
+
     assetInteraction.clearMultiselect();
   };
 
@@ -285,7 +280,7 @@
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+          { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
           { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
         );
@@ -405,8 +400,6 @@
     }
   };
 
-  let isTrashEnabled = $derived(featureFlagsManager.value.trash);
-
   $effect(() => {
     if (!lastAssetMouseEvent) {
       assetInteraction.clearAssetSelectionCandidates();
@@ -439,14 +432,6 @@
   use:shortcuts={shortcutList}
   onscroll={() => updateSlidingWindow()}
 />
-
-{#if isShowDeleteConfirmation}
-  <DeleteAssetDialog
-    size={assetInteraction.selectedAssets.length}
-    onCancel={() => (isShowDeleteConfirmation = false)}
-    onConfirm={() => handlePromiseError(trashOrDelete(true))}
-  />
-{/if}
 
 {#if assets.length > 0}
   <div

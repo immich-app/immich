@@ -5,21 +5,21 @@
   import { mdiDeleteForeverOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     size: number;
-    onConfirm: () => void;
-    onCancel: () => void;
-  }
+    onClose: (confirmed?: boolean) => void;
+  };
 
-  let { size, onConfirm, onCancel }: Props = $props();
+  let { size, onClose: onCloseParent }: Props = $props();
 
   let checked = $state(false);
 
-  const handleConfirm = () => {
-    if (checked) {
+  const onClose = (confirmed: boolean) => {
+    if (confirmed && checked) {
       $showDeleteModal = false;
     }
-    onConfirm();
+
+    onCloseParent(confirmed);
   };
 </script>
 
@@ -27,7 +27,7 @@
   title={$t('permanently_delete_assets_count', { values: { count: size } })}
   confirmText={$t('delete')}
   icon={mdiDeleteForeverOutline}
-  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
+  {onClose}
 >
   {#snippet promptSnippet()}
     <p>

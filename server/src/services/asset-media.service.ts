@@ -433,7 +433,7 @@ export class AssetMediaService extends BaseService {
       originalFileName: dto.filename || file.originalName,
     });
 
-    if (dto.metadata) {
+    if (dto.metadata?.length) {
       await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
     }
 
