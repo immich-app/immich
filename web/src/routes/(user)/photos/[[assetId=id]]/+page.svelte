@@ -60,7 +60,7 @@
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
 
-  let isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
+  const isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
 
   const handleEscape = () => {
     if ($showAssetViewer) {

@@ -71,7 +71,9 @@
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
-  let isAllUserOwned = $derived($user && assetInteraction.selectedAssets.every((asset) => asset.ownerId === $user.id));
+  const isAllUserOwned = $derived(
+    $user && assetInteraction.selectedAssets.every((asset) => asset.ownerId === $user.id),
+  );
 
   $effect(() => {
     // we want this to *only* be reactive on `terms`
