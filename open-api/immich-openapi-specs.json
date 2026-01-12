@@ -2528,16 +2528,6 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetMediaResponseDto"
-                }
-              }
-            },
-            "description": "Asset is a duplicate"
-          },
           "201": {
             "content": {
               "application/json": {
@@ -2546,7 +2536,7 @@
                 }
               }
             },
-            "description": "Asset uploaded successfully"
+            "description": ""
           }
         },
         "security": [
@@ -2916,112 +2906,6 @@
         "x-immich-state": "Stable"
       }
     },
-    "/assets/metadata": {
-      "delete": {
-        "description": "Delete metadata key-value pairs for multiple assets.",
-        "operationId": "deleteBulkAssetMetadata",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetMetadataBulkDeleteDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Delete asset metadata",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.update",
-        "x-immich-state": "Beta"
-      },
-      "put": {
-        "description": "Upsert metadata key-value pairs for multiple assets.",
-        "operationId": "updateBulkAssetMetadata",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetMetadataBulkUpsertDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssetMetadataBulkResponseDto"
-                  },
-                  "type": "array"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Upsert asset metadata",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.update",
-        "x-immich-state": "Beta"
-      }
-    },
     "/assets/random": {
       "get": {
         "deprecated": true,
@@ -3301,173 +3185,6 @@
         ],
         "x-immich-permission": "asset.update",
         "x-immich-state": "Stable"
-      }
-    },
-    "/assets/{id}/edits": {
-      "delete": {
-        "description": "Removes all edit actions (crop, rotate, mirror) associated with the specified asset.",
-        "operationId": "removeAssetEdits",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Remove edits from an existing asset",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.edit.delete",
-        "x-immich-state": "Beta"
-      },
-      "get": {
-        "description": "Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.",
-        "operationId": "getAssetEdits",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Retrieve edits for an existing asset",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.edit.get",
-        "x-immich-state": "Beta"
-      },
-      "put": {
-        "description": "Apply a series of edit actions (crop, rotate, mirror) to the specified asset.",
-        "operationId": "editAsset",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssetEditActionListDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Apply edits to an existing asset",
-        "tags": [
-          "Assets"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.edit.create",
-        "x-immich-state": "Beta"
       }
     },
     "/assets/{id}/metadata": {
@@ -3800,15 +3517,6 @@
         "operationId": "downloadAsset",
         "parameters": [
           {
-            "name": "edited",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": false,
-              "type": "boolean"
-            }
-          },
-          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -3929,7 +3637,7 @@
                 }
               }
             },
-            "description": "Asset replaced successfully"
+            "description": ""
           }
         },
         "security": [
@@ -15471,128 +15179,6 @@
         ],
         "type": "object"
       },
-      "AssetEditAction": {
-        "enum": [
-          "crop",
-          "rotate",
-          "mirror"
-        ],
-        "type": "string"
-      },
-      "AssetEditActionCrop": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ]
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/CropParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionListDto": {
-        "properties": {
-          "edits": {
-            "description": "list of edits",
-            "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ]
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "required": [
-          "edits"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionMirror": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ]
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/MirrorParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionRotate": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ]
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/RotateParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditsDto": {
-        "properties": {
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "edits": {
-            "description": "list of edits",
-            "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ]
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "required": [
-          "assetId",
-          "edits"
-        ],
-        "type": "object"
-      },
       "AssetFaceCreateDto": {
         "properties": {
           "assetId": {
@@ -15996,94 +15582,6 @@
           "duplicate"
         ],
         "type": "string"
-      },
-      "AssetMetadataBulkDeleteDto": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/AssetMetadataBulkDeleteItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "AssetMetadataBulkDeleteItemDto": {
-        "properties": {
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetId",
-          "key"
-        ],
-        "type": "object"
-      },
-      "AssetMetadataBulkResponseDto": {
-        "properties": {
-          "assetId": {
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "value": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "assetId",
-          "key",
-          "updatedAt",
-          "value"
-        ],
-        "type": "object"
-      },
-      "AssetMetadataBulkUpsertDto": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/AssetMetadataBulkUpsertItemDto"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
-        ],
-        "type": "object"
-      },
-      "AssetMetadataBulkUpsertItemDto": {
-        "properties": {
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "key": {
-            "type": "string"
-          },
-          "value": {
-            "type": "object"
-          }
-        },
-        "required": [
-          "assetId",
-          "key",
-          "value"
-        ],
-        "type": "object"
       },
       "AssetMetadataResponseDto": {
         "properties": {
@@ -16783,37 +16281,6 @@
         ],
         "type": "object"
       },
-      "CropParameters": {
-        "properties": {
-          "height": {
-            "description": "Height of the crop",
-            "minimum": 1,
-            "type": "number"
-          },
-          "width": {
-            "description": "Width of the crop",
-            "minimum": 1,
-            "type": "number"
-          },
-          "x": {
-            "description": "Top-Left X coordinate of crop",
-            "minimum": 0,
-            "type": "number"
-          },
-          "y": {
-            "description": "Top-Left Y coordinate of crop",
-            "minimum": 0,
-            "type": "number"
-          }
-        },
-        "required": [
-          "height",
-          "width",
-          "x",
-          "y"
-        ],
-        "type": "object"
-      },
       "DatabaseBackupConfig": {
         "properties": {
           "cronExpression": {
@@ -17213,7 +16680,6 @@
           "AssetDetectFaces",
           "AssetDetectDuplicatesQueueAll",
           "AssetDetectDuplicates",
-          "AssetEditThumbnailGeneration",
           "AssetEncodeVideoQueueAll",
           "AssetEncodeVideo",
           "AssetEmptyTrash",
@@ -17969,30 +17435,6 @@
         },
         "type": "object"
       },
-      "MirrorAxis": {
-        "description": "Axis to mirror along",
-        "enum": [
-          "horizontal",
-          "vertical"
-        ],
-        "type": "string"
-      },
-      "MirrorParameters": {
-        "properties": {
-          "axis": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MirrorAxis"
-              }
-            ],
-            "description": "Axis to mirror along"
-          }
-        },
-        "required": [
-          "axis"
-        ],
-        "type": "object"
-      },
       "NotificationCreateDto": {
         "properties": {
           "data": {
@@ -18473,10 +17915,6 @@
           "asset.upload",
           "asset.replace",
           "asset.copy",
-          "asset.derive",
-          "asset.edit.get",
-          "asset.edit.create",
-          "asset.edit.delete",
           "album.create",
           "album.read",
           "album.update",
@@ -19190,8 +18628,7 @@
           "notifications",
           "backupDatabase",
           "ocr",
-          "workflow",
-          "editor"
+          "workflow"
         ],
         "type": "string"
       },
@@ -19298,9 +18735,6 @@
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
-          "editor": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
           "faceDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -19348,7 +18782,6 @@
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
-          "editor",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -19558,18 +18991,6 @@
         "required": [
           "lastImportFileName",
           "lastUpdate"
-        ],
-        "type": "object"
-      },
-      "RotateParameters": {
-        "properties": {
-          "angle": {
-            "description": "Rotation angle in degrees",
-            "type": "number"
-          }
-        },
-        "required": [
-          "angle"
         ],
         "type": "object"
       },
@@ -22213,9 +21634,6 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "editor": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -22255,7 +21673,6 @@
         },
         "required": [
           "backgroundTask",
-          "editor",
           "faceDetection",
           "library",
           "metadataExtraction",
