@@ -63,7 +63,6 @@ class RemoteAsset extends BaseAsset {
     stackId: ${stackId ?? "<NA>"},
     checksum: $checksum,
     livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
-    isTrashed: $isTrashed,
  }''';
   }
 
