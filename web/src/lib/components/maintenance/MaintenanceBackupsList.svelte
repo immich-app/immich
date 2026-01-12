@@ -1,29 +1,12 @@
 <script lang="ts">
+  import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
+  import MaintenanceBackupEntry from '$lib/components/maintenance/MaintenanceBackupEntry.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import {
-    getDatabaseBackupActions,
-    handleRestoreDatabaseBackup,
-    handleUploadDatabaseBackup,
-  } from '$lib/services/database-backups.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { handleUploadDatabaseBackup } from '$lib/services/database-backups.service';
   import { listDatabaseBackups } from '@immich/sdk';
-  import {
-    Button,
-    Card,
-    CardBody,
-    HStack,
-    IconButton,
-    menuManager,
-    ProgressBar,
-    Stack,
-    Text,
-    type ContextMenuBaseProps,
-  } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
-  import { DateTime } from 'luxon';
+  import { Card, CardBody, HStack, ProgressBar, Stack, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
 
   type Props = {
     backups?: string[];
@@ -31,23 +14,11 @@
 
   let props: Props = $props();
 
-  export const mapTimeToDatabaseBackups = (filenames: string[]) => {
-    return filenames.map((filename) => {
-      const date = /\d{4}\d{2}\d{2}T\d{2}\d{2}\d{2}/.exec(filename);
-
-      return {
-        filename,
-        timeText: date ? DateTime.fromFormat(date[0], "yyyyMMdd'T'HHmmss").toRelative({ locale: $locale }) : null,
-      };
-    });
-  };
-
-  let deleting = new SvelteSet();
-  let backups = $state(mapTimeToDatabaseBackups(props.backups ?? []));
+  let backups = $state(props.backups ?? []);
 
   async function reloadBackups() {
     const result = await listDatabaseBackups();
-    backups = mapTimeToDatabaseBackups(result.backups);
+    backups = result.backups;
   }
 
   onMount(() => {
@@ -56,27 +27,11 @@
     }
   });
 
-  const handleOpen = async (event: Event, props: Partial<ContextMenuBaseProps>, filename: string) => {
-    const { Download, Delete } = getDatabaseBackupActions($t, filename);
-
-    await menuManager.show({
-      ...props,
-      target: event.currentTarget as HTMLElement,
-      items: [Download, Delete],
-    });
-  };
-
   let uploadProgress = $state(-1);
 
-  function onBackupDelete(event: { filename: string; isDeleting: boolean; isDeleted: boolean }) {
+  function onBackupDelete(event: { filename: string; isDeleted: boolean }) {
     if (event.isDeleted) {
-      backups = backups.filter((backup) => backup.filename !== event.filename);
-    }
-
-    if (event.isDeleting) {
-      deleting.add(event.filename);
-    } else {
-      deleting.delete(event.filename);
+      backups = backups.filter((filename) => filename !== event.filename);
     }
   }
 
@@ -97,7 +52,13 @@
       {#if uploadProgress === -1}
         <HStack>
           <Text class="grow">{$t('admin.maintenance_upload_backup')}</Text>
-          <Button size="tiny" onclick={handleUploadDatabaseBackup}>{$t('select_from_computer')}</Button>
+          <HeaderActionButton
+            action={{
+              color: 'primary',
+              title: $t('select_from_computer'),
+              onAction: handleUploadDatabaseBackup,
+            }}
+          />
         </HStack>
       {:else}
         <HStack gap={8}>
@@ -108,35 +69,7 @@
     </CardBody>
   </Card>
 
-  {#each backups as backup (backup.filename)}
-    <Card>
-      <CardBody>
-        <HStack>
-          <Stack class="grow">
-            <Text>{backup.filename}</Text>
-            {#if typeof backup.timeText}
-              <Text color="info" size="small">{backup.timeText}</Text>
-            {/if}
-          </Stack>
-
-          <Button
-            size="small"
-            disabled={deleting.has(backup.filename)}
-            onclick={() => handleRestoreDatabaseBackup(backup.filename)}>{$t('restore')}</Button
-          >
-
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            icon={mdiDotsVertical}
-            class="shrink-0"
-            disabled={deleting.has(backup.filename)}
-            onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, backup.filename)}
-            aria-label={$t('open')}
-          />
-        </HStack>
-      </CardBody>
-    </Card>
+  {#each backups as filename (filename)}
+    <MaintenanceBackupEntry {filename} />
   {/each}
 </Stack>
