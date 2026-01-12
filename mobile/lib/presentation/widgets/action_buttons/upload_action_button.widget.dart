@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class UploadActionButton extends ConsumerWidget {
   final ActionSource source;
@@ -99,12 +100,12 @@ class _UploadProgressDialog extends ConsumerWidget {
         ],
       ),
       actions: [
-        TextButton(
+        ImmichTextButton(
           onPressed: () {
             ref.read(manualUploadCancelTokenProvider)?.cancel();
             Navigator.of(context).pop();
           },
-          child: Text('cancel'.t(context: context)),
+          labelText: 'cancel'.t(context: context),
         ),
       ],
     );
