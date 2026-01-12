@@ -827,8 +827,6 @@
   "editor": "ผู้แก้ไข",
   "editor_close_without_save_prompt": "การเปลี่ยนแปลงนี้จะไม่ได้รับการบันทึก",
   "editor_close_without_save_title": "ปิดโปรแกรมแก้ไข?",
-  "editor_crop_tool_h2_aspect_ratios": "อัตราส่วนภาพ",
-  "editor_crop_tool_h2_rotation": "การหมุน",
   "email": "อีเมล",
   "email_notifications": "แจ้งเตือนผ่านอีเมล",
   "empty_folder": "โฟลเดอร์นี้ว่างเปล่า",
