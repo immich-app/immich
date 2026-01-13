@@ -426,19 +426,21 @@ class ActionNotifier extends Notifier<void> {
     }
 
     try {
-      await _uploadService.manualBackup(
+      await _uploadService.uploadLocalAssets(
         assetsToUpload,
         cancelToken,
-        onProgress: (localAssetId, filename, bytes, totalBytes) {
-          final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
-          progressNotifier.setProgress(localAssetId, progress);
-        },
-        onSuccess: (localAssetId, remoteAssetId) {
-          progressNotifier.remove(localAssetId);
-        },
-        onError: (localAssetId, errorMessage) {
-          progressNotifier.setError(localAssetId);
-        },
+        callbacks: UploadCallbacks(
+          onProgress: (localAssetId, filename, bytes, totalBytes) {
+            final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+            progressNotifier.setProgress(localAssetId, progress);
+          },
+          onSuccess: (localAssetId, remoteAssetId) {
+            progressNotifier.remove(localAssetId);
+          },
+          onError: (localAssetId, errorMessage) {
+            progressNotifier.setError(localAssetId);
+          },
+        ),
       );
       return ActionResult(count: assetsToUpload.length, success: true);
     } catch (error, stack) {

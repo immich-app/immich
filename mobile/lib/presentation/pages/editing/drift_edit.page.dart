@@ -79,7 +79,7 @@ class DriftEditImagePage extends ConsumerWidget {
         return;
       }
 
-      await ref.read(uploadServiceProvider).manualBackup([localAsset], CancellationToken());
+      await ref.read(uploadServiceProvider).uploadLocalAssets([localAsset], CancellationToken());
     } catch (e) {
       ImmichToast.show(
         durationInSecond: 6,

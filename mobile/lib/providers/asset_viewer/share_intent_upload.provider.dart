@@ -64,7 +64,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
       _updateStatus(fileId, UploadStatus.running);
     }
 
-    await _uploadService.uploadFilesWithHttp(
+    await _uploadService.uploadExternalFiles(
       files,
       onProgress: (fileId, bytes, totalBytes) {
         final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;

@@ -403,14 +403,16 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     final hasWifi = networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
-    return _uploadService.startUploadWithHttp(
+    return _uploadService.uploadBackupCandidates(
       userId,
       hasWifi,
       cancelToken,
-      onProgress: _handleForegroundBackupProgress,
-      onSuccess: _handleForegroundBackupSuccess,
-      onError: _handleForegroundBackupError,
-      onICloudProgress: _handleICloudProgress,
+      callbacks: UploadCallbacks(
+        onProgress: _handleForegroundBackupProgress,
+        onSuccess: _handleForegroundBackupSuccess,
+        onError: _handleForegroundBackupError,
+        onICloudProgress: _handleICloudProgress,
+      ),
     );
   }
 
