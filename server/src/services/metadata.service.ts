@@ -461,6 +461,8 @@ export class MetadataService extends BaseService {
       await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
     }
 
+    await this.assetRepository.unlockProperties(asset.id, lockedProperties);
+
     return JobStatus.Success;
   }
 

@@ -9,6 +9,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertExif: vitest.fn(),
     updateAllExif: vitest.fn(),
     updateDateTimeOriginal: vitest.fn().mockResolvedValue([]),
+    unlockProperties: vitest.fn().mockResolvedValue([]),
     upsertJobStatus: vitest.fn(),
     getForCopy: vitest.fn(),
     getByDayOfYear: vitest.fn(),
