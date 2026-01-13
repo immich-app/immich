@@ -139,7 +139,7 @@ export class IntegrityService extends BaseService {
     return this.integrityRepository.getIntegrityReportSummary();
   }
 
-  async getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
+  getIntegrityReport(dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
     return this.integrityRepository.getIntegrityReports({ cursor: dto.cursor, limit: dto.limit || 100 }, dto.type);
   }
 
