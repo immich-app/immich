@@ -245,7 +245,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
         }
 
-        return _ref?.read(foregroundUploadServiceProvider).uploadCandidates(currentUser.id, _cancellationToken);
+        return _ref
+            ?.read(foregroundUploadServiceProvider)
+            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");

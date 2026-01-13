@@ -77,6 +77,7 @@ class ForegroundUploadService {
     String userId,
     CancellationToken cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
+    bool useSequentialUpload = false,
   }) async {
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
@@ -87,15 +88,49 @@ class ForegroundUploadService {
     final hasWifi = networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
-    await _executeWithWorkerPool<LocalAsset>(
-      items: candidates,
-      cancelToken: cancelToken,
-      shouldSkip: (asset) {
+    if (useSequentialUpload) {
+      await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
+    } else {
+      await _executeWithWorkerPool<LocalAsset>(
+        items: candidates,
+        cancelToken: cancelToken,
+        shouldSkip: (asset) {
+          final requireWifi = _shouldRequireWiFi(asset);
+          return requireWifi && !hasWifi;
+        },
+        processItem: (asset, httpClient) => _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks),
+      );
+    }
+  }
+
+  /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues
+  Future<void> _uploadSequentially({
+    required List<LocalAsset> items,
+    required CancellationToken cancelToken,
+    required bool hasWifi,
+    required UploadCallbacks callbacks,
+  }) async {
+    final httpClient = Client();
+    await _storageRepository.clearCache();
+    shouldAbortUpload = false;
+
+    try {
+      for (final asset in items) {
+        if (shouldAbortUpload || cancelToken.isCancelled) {
+          break;
+        }
+
         final requireWifi = _shouldRequireWiFi(asset);
-        return requireWifi && !hasWifi;
-      },
-      processItem: (asset, httpClient) => _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks),
-    );
+        if (requireWifi && !hasWifi) {
+          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+          continue;
+        }
+
+        await _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks);
+      }
+    } finally {
+      httpClient.close();
+    }
   }
 
   /// Manually upload picked local assets
