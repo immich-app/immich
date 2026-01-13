@@ -19,6 +19,7 @@ class MapThumbnail extends HookConsumerWidget {
   final Function(Point<double>, LatLng)? onTap;
   final LatLng centre;
   final String? assetMarkerRemoteId;
+  final String? assetThumbhash;
   final bool showMarkerPin;
   final double zoom;
   final double height;
@@ -35,6 +36,7 @@ class MapThumbnail extends HookConsumerWidget {
     this.onTap,
     this.zoom = 8,
     this.assetMarkerRemoteId,
+    this.assetThumbhash,
     this.showMarkerPin = false,
     this.themeMode,
     this.showAttribution = true,
@@ -109,8 +111,13 @@ class MapThumbnail extends HookConsumerWidget {
               ),
               ValueListenableBuilder(
                 valueListenable: position,
-                builder: (_, value, __) => value != null && assetMarkerRemoteId != null
-                    ? PositionedAssetMarkerIcon(size: height / 2, point: value, assetRemoteId: assetMarkerRemoteId!)
+                builder: (_, value, __) => value != null && assetMarkerRemoteId != null && assetThumbhash != null
+                    ? PositionedAssetMarkerIcon(
+                        size: height / 2,
+                        point: value,
+                        assetRemoteId: assetMarkerRemoteId!,
+                        assetThumbhash: assetThumbhash!,
+                      )
                     : const SizedBox.shrink(),
               ),
             ],

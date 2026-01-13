@@ -269,6 +269,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.IntegrityCheck]: { concurrency: 1 },
+    [QueueName.Editor]: { concurrency: 2 },
   },
   logging: {
     enabled: true,

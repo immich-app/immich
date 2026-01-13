@@ -78,6 +78,7 @@ describe(QueueService.name, () => {
         [QueueName.Ocr]: expected,
         [QueueName.Workflow]: expected,
         [QueueName.IntegrityCheck]: expected,
+        [QueueName.Editor]: expected,
       });
     });
   });

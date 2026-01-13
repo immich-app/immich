@@ -3,6 +3,7 @@ import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
   AssetOrder,
   AssetType,
@@ -26,13 +27,6 @@ export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
 export interface FullsizeImageOptions {
   format: ImageFormat;
   quality: number;
@@ -53,9 +47,9 @@ export interface RawImageInfo {
 
 interface DecodeImageOptions {
   colorspace: string;
-  crop?: CropOptions;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
+  edits?: AssetEditActionItem[];
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
@@ -73,7 +67,6 @@ export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { ra
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
-  crop?: CropOptions;
   preview?: ImageOptions;
   processInvalidImages: boolean;
   thumbhash?: boolean;
@@ -187,7 +180,7 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy';
+export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -437,7 +430,10 @@ export type JobItem =
   | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
   | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
   | { name: JobName.IntegrityDeleteReportType; data: IIntegrityDeleteReportTypeJob }
-  | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob };
+  | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
+
+  // Editor
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

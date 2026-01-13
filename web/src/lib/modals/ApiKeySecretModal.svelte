@@ -4,10 +4,10 @@
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     secret?: string;
     onClose: () => void;
-  }
+  };
 
   let { secret = '', onClose }: Props = $props();
 </script>
