@@ -26,7 +26,7 @@
 
 <div class="flex flex-col gap-5 my-4">
   <div>
-    <Text class="mb-2 font-semibold">{$t('total_usage')}</Text>
+    <Text class="mb-2 font-medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
@@ -39,30 +39,30 @@
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiCameraIris} size="25" />
-            <Text fontWeight="semi-bold">{$t('photos')}</Text>
+            <Text class="font-medium" size="medium">{$t('photos')}</Text>
           </div>
 
-          <div class="relative text-center font-immich-mono text-2xl font-semibold">
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiPlayCircle} size="25" />
-            <Text fontWeight="semi-bold">{$t('videos')}</Text>
+            <Text class="font-medium" size="medium">{$t('videos')}</Text>
           </div>
 
-          <div class="relative text-center font-immich-mono text-2xl font-semibold">
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-x-5">
           <div class="flex flex-1 flex-nowrap place-items-center gap-4 text-primary">
             <Icon icon={mdiChartPie} size="25" />
-            <Text fontWeight="semi-bold">{$t('storage')}</Text>
+            <Text class="font-medium" size="medium">{$t('storage')}</Text>
           </div>
 
-          <div class="relative flex text-center font-immich-mono text-2xl font-semibold">
+          <div class="relative flex text-center font-immich-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(statsUsage)}</span><span class="text-primary">{statsUsage}</span>
 
             <div class="absolute -right-1.5 -bottom-4">
@@ -75,7 +75,7 @@
   </div>
 
   <div>
-    <Text class="mt-6 mb-2 font-semibold">{$t('user_usage_detail')}</Text>
+    <Text class="mt-6 mb-2 font-medium">{$t('user_usage_detail')}</Text>
     <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
