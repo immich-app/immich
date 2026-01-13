@@ -117,8 +117,10 @@
     $derived(getAssetActions($t, asset));
 
   // TODO: Enable when edits are ready for release
+  const disabledForNow = true;
   let showEditorButton = $derived(
-    isOwner &&
+    !disabledForNow &&
+      isOwner &&
       asset.type === AssetTypeEnum.Image &&
       !(
         asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
