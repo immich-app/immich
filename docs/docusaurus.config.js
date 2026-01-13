@@ -12,7 +12,7 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
-  
+
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'immich-app', // Usually your GitHub org/user name.
@@ -25,10 +25,10 @@ const config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
-  
+
   // Mermaid diagrams
   markdown: {
-    mermaid: true
+    mermaid: true,
   },
   themes: ['@docusaurus/theme-mermaid'],
 
