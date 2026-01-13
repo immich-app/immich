@@ -588,7 +588,7 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-5 text-[13px] dark:text-immich-dark-fg font-immich-mono bottom-0">
+          <div class="absolute end-5 text-[13px] dark:text-immich-dark-fg font-mono bottom-0">
             {segment.year}
           </div>
         {/if}
