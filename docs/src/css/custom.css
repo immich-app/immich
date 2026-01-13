@@ -10,7 +10,7 @@
 @font-face {
   font-family: 'GoogleSans';
   src: url('/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
-  font-weight: 425 900;
+  font-weight: 410 900;
   font-style: normal;
   ascent-override: 106.25%;
   size-adjust: 106.25%;
@@ -38,6 +38,7 @@ img {
 /* You can override the default Infima variables here. */
 :root {
   font-family: 'GoogleSans', sans-serif;
+  letter-spacing: 0.1px;
   --ifm-color-primary: #4250af;
   --ifm-color-primary-dark: #4250af;
   --ifm-color-primary-darker: #4250af;
@@ -55,6 +56,7 @@ h4,
 h5,
 h6 {
   font-family: 'GoogleSans', sans-serif;
+  letter-spacing: 0.1px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -80,15 +82,22 @@ div[class^='announcementBar_'] {
   padding: 10px 10px 10px 16px;
   border-radius: 24px;
   margin-right: 16px;
+  font-weight: 500;
 }
 
 .menu__list-item-collapsible {
   margin-right: 16px;
   border-radius: 24px;
+  font-weight: 500;
 }
 
 .menu__link--active {
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.table-of-contents__link {
+  font-size: 14px;
+  font-weight: 450;
 }
 
 /* workaround for version switcher PR 15894 */
@@ -97,7 +106,8 @@ div[class*='navbar__items'] > li:has(a[class*='version-switcher-34ab39']) {
 }
 
 code {
-  font-weight: 600;
+  font-weight: 500;
+  font-family: 'GoogleSansCode';
 }
 
 .buy-button {
