@@ -86,7 +86,7 @@
   @font-face {
     font-family: 'GoogleSans';
     src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
-    font-weight: 425 900;
+    font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
     size-adjust: 106.25%;
