@@ -87,6 +87,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.AssetFacesV1,
   SyncRequestType.UserMetadataV1,
   SyncRequestType.AssetMetadataV1,
+  SyncRequestType.AssetEditsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -172,6 +173,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap),
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
       [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(options, response, checkpointMap),
+      [SyncRequestType.AssetEditsV1]: () => this.syncAssetEditsV1(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
       [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
@@ -192,8 +194,12 @@ export class SyncService extends BaseService {
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
     };
 
+    console.log('dtos types:', dto.types);
+
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
       const handler = handlers[type];
+      console.log('syncing type:', SyncRequestType[type]);
+      console.log('handling with:', handler);
       await handler();
     }
 
@@ -833,6 +839,23 @@ export class SyncService extends BaseService {
     );
 
     for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAssetEditsV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    console.log('syncing asset edits');
+    const deleteType = SyncEntityType.AssetEditDeleteV1;
+    const deletes = this.syncRepository.assetEdit.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+    const upsertType = SyncEntityType.AssetEditV1;
+    const upserts = this.syncRepository.assetEdit.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+
+    for await (const { updateId, ...data } of upserts) {
+      console.log('upsert asset edit', updateId);
       send(response, { type: upsertType, ids: [updateId], data });
     }
   }

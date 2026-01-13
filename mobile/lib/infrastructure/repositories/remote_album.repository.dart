@@ -233,9 +233,12 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   Future<List<RemoteAsset>> getAssets(String albumId) {
     final query = _db.remoteAlbumAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
     ])..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
-    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 
   Future<int> addAssets(String albumId, List<String> assetIds) async {

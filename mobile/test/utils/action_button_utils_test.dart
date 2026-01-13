@@ -13,6 +13,7 @@ LocalAsset createLocalAsset({
   DateTime? createdAt,
   DateTime? updatedAt,
   bool isFavorite = false,
+  bool isEdited = false,
 }) {
   return LocalAsset(
     id: 'local-id',
@@ -23,6 +24,7 @@ LocalAsset createLocalAsset({
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
     isFavorite: isFavorite,
+    isEdited: isEdited,
   );
 }
 
@@ -34,6 +36,7 @@ RemoteAsset createRemoteAsset({
   DateTime? createdAt,
   DateTime? updatedAt,
   bool isFavorite = false,
+  bool isEdited = false,
 }) {
   return RemoteAsset(
     id: 'remote-id',
@@ -45,6 +48,7 @@ RemoteAsset createRemoteAsset({
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
     isFavorite: isFavorite,
+    isEdited: isEdited,
   );
 }
 

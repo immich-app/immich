@@ -30,7 +30,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 }
 
 extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
-  LocalAsset toDto({String? remoteId}) => LocalAsset(
+  LocalAsset toDto(bool isEdited, {String? remoteId}) => LocalAsset(
     id: id,
     name: name,
     checksum: checksum,
@@ -47,5 +47,6 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     latitude: latitude,
     longitude: longitude,
     cloudId: iCloudId,
+    isEdited: isEdited,
   );
 }

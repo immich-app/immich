@@ -17,6 +17,7 @@ class MediumFactory {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? checksum,
+    bool? isEdited,
   }) {
     final random = Random();
 
@@ -27,6 +28,7 @@ class MediumFactory {
       type: type ?? AssetType.image,
       createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
       updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
+      isEdited: isEdited ?? false,
     );
   }
 

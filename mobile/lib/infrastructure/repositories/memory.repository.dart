@@ -22,6 +22,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
                   _db.remoteAssetEntity.deletedAt.isNull() &
                   _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
             ),
+            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
           ..where(_db.memoryEntity.deletedAt.isNull())
@@ -42,9 +43,9 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
       final existingMemory = memoriesMap[memory.id];
       if (existingMemory != null) {
-        existingMemory.assets.add(asset.toDto());
+        existingMemory.assets.add(asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null));
       } else {
-        final assets = [asset.toDto()];
+        final assets = [asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null)];
         memoriesMap[memory.id] = memory.toDto().copyWith(assets: assets);
       }
     }
@@ -62,6 +63,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
                   _db.remoteAssetEntity.deletedAt.isNull() &
                   _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
             ),
+            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
           ])
           ..where(_db.memoryEntity.id.equals(memoryId))
           ..where(_db.memoryEntity.deletedAt.isNull())
@@ -78,7 +80,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
     for (final row in rows) {
       final asset = row.readTable(_db.remoteAssetEntity);
-      assets.add(asset.toDto());
+      assets.add(asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null));
     }
 
     return memory.toDto().copyWith(assets: assets);

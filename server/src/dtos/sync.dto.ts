@@ -2,6 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetOrder,
@@ -125,6 +126,20 @@ export class SyncAssetV1 {
 
 @ExtraModel()
 export class SyncAssetDeleteV1 {
+  assetId!: string;
+}
+
+@ExtraModel()
+export class SyncAssetEditV1 {
+  id!: string;
+  assetId!: string;
+  @ValidateEnum({ enum: AssetEditAction, name: 'AssetEditAction' })
+  action!: AssetEditAction;
+  parameters!: AssetEditActionParameter[AssetEditAction];
+}
+
+@ExtraModel()
+export class SyncAssetEditDeleteV1 {
   assetId!: string;
 }
 
@@ -349,6 +364,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
   [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
+  [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
   [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;

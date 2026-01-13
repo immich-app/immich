@@ -52,6 +52,7 @@ export class SyncRepository {
   albumToAsset: AlbumToAssetSync;
   albumUser: AlbumUserSync;
   asset: AssetSync;
+  assetEdit: AssetEditSync;
   assetExif: AssetExifSync;
   assetFace: AssetFaceSync;
   assetMetadata: AssetMetadataSync;
@@ -74,6 +75,7 @@ export class SyncRepository {
     this.albumToAsset = new AlbumToAssetSync(this.db);
     this.albumUser = new AlbumUserSync(this.db);
     this.asset = new AssetSync(this.db);
+    this.assetEdit = new AssetEditSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
     this.assetMetadata = new AssetMetadataSync(this.db);
@@ -767,6 +769,30 @@ class AssetMetadataSync extends BaseSync {
       .select(['assetId', 'key', 'value', 'asset_metadata.updateId'])
       .innerJoin('asset', 'asset.id', 'asset_metadata.assetId')
       .where('asset.ownerId', '=', userId)
+      .stream();
+  }
+}
+
+class AssetEditSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_edit_audit', options)
+      .select(['asset_edit_audit.id', 'assetId'])
+      .leftJoin('asset', 'asset.id', 'asset_edit_audit.assetId')
+      .where('asset.ownerId', '=', options.userId)
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_edit_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_edit', options)
+      .select(['asset_edit.id', 'assetId', 'action', 'parameters', 'asset_edit.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
+      .where('asset.ownerId', '=', options.userId)
       .stream();
   }
 }

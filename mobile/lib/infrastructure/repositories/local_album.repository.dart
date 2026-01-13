@@ -188,10 +188,17 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     final query =
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+            ),
+            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
           ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
-    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 
   Future<List<String>> getAssetIds(String albumId) {
@@ -239,11 +246,18 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     final query =
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+            ),
+            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
           ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
 
-    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 
   Future<void> updateCloudMapping(Map<String, String> cloudMapping) {
@@ -417,12 +431,19 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     final query =
         _db.localAlbumAssetEntity.select().join([
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+            ),
+            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
           ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(1);
 
-    final results = await query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+    final results = await query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
 
     return results.isNotEmpty ? results.first : null;
   }

@@ -271,6 +271,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity,
                 _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
               ),
+              leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
             ])..where(
               _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
                   _db.remoteAssetEntity.deletedAt.isNotNull(),
@@ -279,7 +280,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
     for (final row in rows) {
       final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final asset = row.readTable(_db.localAssetEntity).toDto();
+      final hasEdits = row.readTableOrNull(_db.assetEditEntity) != null;
+      final asset = row.readTable(_db.localAssetEntity).toDto(hasEdits);
       (result[albumId] ??= <LocalAsset>[]).add(asset);
     }
 

@@ -255,3 +255,16 @@ export const asset_face_audit = registerFunction({
       RETURN NULL;
     END`,
 });
+
+export const asset_edit_audit = registerFunction({
+  name: 'asset_edit_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_edit_audit ("assetId")
+      SELECT "assetId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});

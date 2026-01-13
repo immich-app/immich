@@ -28,6 +28,7 @@ class RemoteAsset extends BaseAsset {
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
     this.stackId,
+    required super.isEdited,
   }) : localAssetId = localId;
 
   @override
@@ -61,6 +62,7 @@ class RemoteAsset extends BaseAsset {
     stackId: ${stackId ?? "<NA>"},
     checksum: $checksum,
     livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
+    isEdited: $isEdited,
  }''';
   }
 
@@ -104,6 +106,7 @@ class RemoteAsset extends BaseAsset {
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
+    bool? isEdited,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -122,6 +125,7 @@ class RemoteAsset extends BaseAsset {
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
+      isEdited: isEdited ?? this.isEdited,
     );
   }
 }

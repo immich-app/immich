@@ -255,12 +255,12 @@
     });
   };
 
-  // const showEditor = () => {
-  //   if (assetViewerManager.isShowActivityPanel) {
-  //     assetViewerManager.isShowActivityPanel = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
+  const showEditor = () => {
+    if (assetViewerManager.isShowActivityPanel) {
+      assetViewerManager.isShowActivityPanel = false;
+    }
+    isShowEditor = !isShowEditor;
+  };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -432,6 +432,7 @@
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
+        onEdit={showEditor}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}

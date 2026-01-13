@@ -22,6 +22,7 @@ sealed class BaseAsset {
   final int? durationInSeconds;
   final bool isFavorite;
   final String? livePhotoVideoId;
+  final bool isEdited;
 
   const BaseAsset({
     required this.name,
@@ -34,6 +35,7 @@ sealed class BaseAsset {
     this.durationInSeconds,
     this.isFavorite = false,
     this.livePhotoVideoId,
+    required this.isEdited,
   });
 
   bool get isImage => type == AssetType.image;

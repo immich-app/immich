@@ -112,6 +112,13 @@ class DriftBackupRepository extends DriftDatabaseRepository {
       query.where((lae) => lae.checksum.isNotNull());
     }
 
-    return query.map((localAsset) => localAsset.toDto()).get();
+    final assetsQuery = query.join([
+      leftOuterJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
+      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+    ]);
+
+    return assetsQuery
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 }

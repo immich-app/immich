@@ -716,6 +716,7 @@ export enum SyncRequestType {
   AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
+  AssetEditsV1 = 'AssetEditsV1',
   AssetExifsV1 = 'AssetExifsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
@@ -740,6 +741,8 @@ export enum SyncEntityType {
 
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
+  AssetEditV1 = 'AssetEditV1',
+  AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetExifV1 = 'AssetExifV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',

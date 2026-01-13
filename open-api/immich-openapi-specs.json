@@ -21031,6 +21031,44 @@
         ],
         "type": "object"
       },
+      "SyncAssetEditDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditV1": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "action",
+          "assetId",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
       "SyncAssetExifV1": {
         "properties": {
           "assetId": {
@@ -21445,6 +21483,8 @@
           "UserDeleteV1",
           "AssetV1",
           "AssetDeleteV1",
+          "AssetEditV1",
+          "AssetEditDeleteV1",
           "AssetExifV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
@@ -21707,6 +21747,7 @@
           "AlbumAssetsV1",
           "AlbumAssetExifsV1",
           "AssetsV1",
+          "AssetEditsV1",
           "AssetExifsV1",
           "AssetMetadataV1",
           "AuthUsersV1",

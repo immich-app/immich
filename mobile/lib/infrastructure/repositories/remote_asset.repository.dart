@@ -17,17 +17,21 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   /// For testing purposes
   Future<List<RemoteAsset>> getSome(String userId) {
-    final query = _db.remoteAssetEntity.select()
-      ..where(
-        (row) =>
+    final query =
+        _db.remoteAssetEntity.select().join([
+            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+          ])
+          ..where(
             _db.remoteAssetEntity.ownerId.equals(userId) &
-            _db.remoteAssetEntity.deletedAt.isNull() &
-            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
-      )
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
-      ..limit(10);
+                _db.remoteAssetEntity.deletedAt.isNull() &
+                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
+          )
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..limit(10);
 
-    return query.map((row) => row.toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 
   SingleOrNullSelectable<RemoteAsset?> _assetSelectable(String id) {
@@ -38,12 +42,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
               useColumns: false,
             ),
+            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
           ])
           ..where(_db.remoteAssetEntity.id.equals(id))
           ..limit(1);
 
     return query.map((row) {
-      final asset = row.readTable(_db.remoteAssetEntity).toDto();
+      final isEdited = row.readTableOrNull(_db.assetEditEntity) != null;
+      final asset = row.readTable(_db.remoteAssetEntity).toDto(isEdited);
       return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
     });
   }
@@ -57,9 +63,13 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<RemoteAsset?> getByChecksum(String checksum) {
-    final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
+    final query = _db.remoteAssetEntity.select().join([
+      leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+    ])..where(_db.remoteAssetEntity.checksum.equals(checksum));
 
-    return query.map((row) => row.toDto()).getSingleOrNull();
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .getSingleOrNull();
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
@@ -68,11 +78,16 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       return Future.value(const []);
     }
 
-    final query = _db.remoteAssetEntity.select()
-      ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
-      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
+    final query =
+        _db.remoteAssetEntity.select().join([
+            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+          ])
+          ..where(_db.remoteAssetEntity.stackId.equals(stackId) & _db.remoteAssetEntity.id.equals(asset.id).not())
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)]);
 
-    return query.map((row) => row.toDto()).get();
+    return query
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .get();
   }
 
   Future<ExifInfo?> getExif(String id) {

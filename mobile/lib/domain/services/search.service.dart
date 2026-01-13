@@ -43,7 +43,7 @@ class SearchService {
       }
 
       return SearchResult(
-        assets: response.assets.items.map((e) => e.toDto()).toList(),
+        assets: response.assets.items.map((e) => e.toDto(false)).toList(),
         nextPage: response.assets.nextPage?.toInt(),
       );
     } catch (error, stackTrace) {
@@ -54,7 +54,7 @@ class SearchService {
 }
 
 extension on AssetResponseDto {
-  RemoteAsset toDto() {
+  RemoteAsset toDto(bool isEdited) {
     return RemoteAsset(
       id: id,
       name: originalFileName,
@@ -77,6 +77,8 @@ extension on AssetResponseDto {
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
+      // its a remote asset so it will always show the edited version
+      isEdited: isEdited,
     );
   }
 }

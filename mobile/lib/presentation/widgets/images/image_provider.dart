@@ -136,4 +136,4 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
-    asset.hasLocal && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));
+    asset.hasLocal && !asset.isEdited && (!asset.hasRemote || !AppSetting.get(Setting.preferRemoteImage));

@@ -3,6 +3,7 @@ import 'stack.entity.dart';
 import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
+import 'asset_edit.entity.dart';
 
 mergedAsset: 
 SELECT
@@ -26,6 +27,7 @@ SELECT
 	NULL as latitude,
 	NULL as longitude,
 	NULL as adjustmentTime
+	CASE WHEN EXISTS (SELECT 1 FROM asset_edit_entity aee WHERE aee.asset_id = rae.id) THEN 1 ELSE 0 END as is_edited
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -62,6 +64,7 @@ SELECT
 	lae.latitude,
 	lae.longitude,
 	lae.adjustment_time
+	0 as is_edited
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (
