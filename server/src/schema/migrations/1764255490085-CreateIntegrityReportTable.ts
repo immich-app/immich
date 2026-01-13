@@ -15,8 +15,10 @@ export async function up(db: Kysely<any>): Promise<void> {
 );`.execute(db);
   await sql`CREATE INDEX "integrity_report_assetId_idx" ON "integrity_report" ("assetId");`.execute(db);
   await sql`CREATE INDEX "integrity_report_fileAssetId_idx" ON "integrity_report" ("fileAssetId");`.execute(db);
+  await sql`CREATE INDEX "asset_createdAt_idx" ON "asset" ("createdAt");`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
   await sql`DROP TABLE "integrity_report";`.execute(db);
+  await sql`DROP INDEX "asset_createdAt_idx";`.execute(db);
 }
