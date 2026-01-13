@@ -18,7 +18,7 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -42,7 +42,7 @@ class ActionResult {
 class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
-  late UploadService _uploadService;
+  late ForegroundUploadService _foregroundUploadService;
   late DownloadService _downloadService;
   late AssetService _assetService;
 
@@ -50,7 +50,7 @@ class ActionNotifier extends Notifier<void> {
 
   @override
   void build() {
-    _uploadService = ref.watch(uploadServiceProvider);
+    _foregroundUploadService = ref.watch(foregroundUploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
     _assetService = ref.watch(assetServiceProvider);
     _downloadService = ref.watch(downloadServiceProvider);
@@ -426,7 +426,7 @@ class ActionNotifier extends Notifier<void> {
     }
 
     try {
-      await _uploadService.uploadLocalAssets(
+      await _foregroundUploadService.uploadManual(
         assetsToUpload,
         cancelToken,
         callbacks: UploadCallbacks(

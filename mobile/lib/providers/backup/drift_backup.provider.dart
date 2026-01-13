@@ -9,15 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
-import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -209,11 +206,11 @@ class DriftBackupState {
 }
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
-  return DriftBackupNotifier(ref.watch(uploadServiceProvider), ref.watch(connectivityApiProvider));
+  return DriftBackupNotifier(ref.watch(foregroundUploadServiceProvider), ref.watch(backgroundUploadServiceProvider));
 });
 
 class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
-  DriftBackupNotifier(this._uploadService, this._connectivityApi)
+  DriftBackupNotifier(this._foregroundUploadService, this._backgroundUploadService)
     : super(
         const DriftBackupState(
           totalCount: 0,
@@ -229,13 +226,13 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         ),
       ) {
     {
-      _statusSubscription = _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
-      _progressSubscription = _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
+      _statusSubscription = _backgroundUploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
+      _progressSubscription = _backgroundUploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
     }
   }
 
-  final UploadService _uploadService;
-  final ConnectivityApi _connectivityApi;
+  final ForegroundUploadService _foregroundUploadService;
+  final BackgroundUploadService _backgroundUploadService;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
   final _logger = Logger("DriftBackupNotifier");
@@ -367,7 +364,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       _logger.warning("Skip getBackupStatus (pre-call): notifier disposed");
       return;
     }
-    final counts = await _uploadService.getBackupCounts(userId);
+    final counts = await _foregroundUploadService.getBackupCounts(userId);
     if (!mounted) {
       _logger.warning("Skip getBackupStatus (post-call): notifier disposed");
       return;
@@ -399,13 +396,8 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     final cancelToken = CancellationToken();
     state = state.copyWith(cancelToken: cancelToken);
 
-    final networkCapabilities = await _connectivityApi.getCapabilities();
-    final hasWifi = networkCapabilities.isUnmetered;
-    _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
-
-    return _uploadService.uploadBackupCandidates(
+    return _foregroundUploadService.uploadCandidates(
       userId,
-      hasWifi,
       cancelToken,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
@@ -517,7 +509,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
     _logger.info("Resuming backup tasks...");
     state = state.copyWith(error: BackupError.none);
-    final tasks = await _uploadService.getActiveTasks(kBackupGroup);
+    final tasks = await _backgroundUploadService.getActiveTasks(kBackupGroup);
     if (!mounted) {
       _logger.warning("Skip handleBackupResume (post-call): notifier disposed");
       return;
@@ -526,11 +518,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     if (tasks.isEmpty) {
       _logger.info("Start backup with URLSession");
-      return _uploadService.startUploadWithURLSession(userId);
+      return _backgroundUploadService.uploadBackupCandidates(userId);
     }
 
     _logger.info("Tasks to resume: ${tasks.length}");
-    return _uploadService.resumeBackup();
+    return _backgroundUploadService.resume();
   }
 
   @override
@@ -547,7 +539,7 @@ final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>
     return [];
   }
 
-  return ref.read(backupRepositoryProvider).getCandidates(user.id, onlyHashed: false);
+  return ref.read(foregroundUploadServiceProvider).getBackupCandidates(user.id, onlyHashed: false);
 });
 
 final driftCandidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<List<LocalAlbum>, String>((

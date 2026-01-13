@@ -10,7 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../domain/service.mock.dart';
@@ -20,11 +20,11 @@ import '../repository.mocks.dart';
 import '../mocks/asset_entity.mock.dart';
 
 void main() {
-  late UploadService sut;
+  late BackgroundUploadService sut;
   late MockUploadRepository mockUploadRepository;
-  late MockDriftBackupRepository mockBackupRepository;
   late MockStorageRepository mockStorageRepository;
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
+  late MockDriftBackupRepository mockBackupRepository;
   late MockAppSettingsService mockAppSettingsService;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
@@ -46,20 +46,20 @@ void main() {
 
   setUp(() {
     mockUploadRepository = MockUploadRepository();
-    mockBackupRepository = MockDriftBackupRepository();
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
+    mockBackupRepository = MockDriftBackupRepository();
     mockAppSettingsService = MockAppSettingsService();
     mockAssetMediaRepository = MockAssetMediaRepository();
 
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)).thenReturn(false);
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)).thenReturn(false);
 
-    sut = UploadService(
+    sut = BackgroundUploadService(
       mockUploadRepository,
-      mockBackupRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
+      mockBackupRepository,
       mockAppSettingsService,
       mockAssetMediaRepository,
     );

@@ -4,25 +4,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/share_intent_service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
     ref.watch(appRouterProvider),
-    ref.watch(uploadServiceProvider),
+    ref.watch(foregroundUploadServiceProvider),
     ref.watch(shareIntentServiceProvider),
   )),
 );
 
 class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttachment>> {
   final AppRouter router;
-  final UploadService _uploadService;
+  final ForegroundUploadService _foregroundUploadService;
   final ShareIntentService _shareIntentService;
   final Logger _logger = Logger('ShareIntentUploadStateNotifier');
 
-  ShareIntentUploadStateNotifier(this.router, this._uploadService, this._shareIntentService) : super([]);
+  ShareIntentUploadStateNotifier(this.router, this._foregroundUploadService, this._shareIntentService) : super([]);
 
   void init() {
     _shareIntentService.onSharedMedia = onSharedMedia;
@@ -64,7 +64,7 @@ class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttac
       _updateStatus(fileId, UploadStatus.running);
     }
 
-    await _uploadService.uploadExternalFiles(
+    await _foregroundUploadService.uploadShareIntent(
       files,
       onProgress: (fileId, bytes, totalBytes) {
         final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
