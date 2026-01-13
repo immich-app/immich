@@ -58,19 +58,7 @@
 
   const { Download, Delete } = $derived(getIntegrityReportActions($t, data.type));
 
-  function onIntegrityReportDelete({
-    id,
-    type,
-    isDeleted,
-  }: {
-    id?: string;
-    type?: IntegrityReportType;
-    isDeleted: boolean;
-  }) {
-    if (!isDeleted) {
-      return;
-    }
-
+  function onIntegrityReportDeleted({ id, type }: { id?: string; type?: IntegrityReportType }) {
     if (type === data.type) {
       integrityReport.items = [];
       integrityReport.nextCursor = undefined;
@@ -80,7 +68,7 @@
   }
 </script>
 
-<OnEvents {onIntegrityReportDelete} />
+<OnEvents {onIntegrityReportDeleted} />
 
 <AdminPageLayout
   breadcrumbs={[

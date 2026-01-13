@@ -89,27 +89,23 @@ export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityR
     }
 
     try {
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleteStatus', {
         type: reportType,
         isDeleting: true,
-        isDeleted: false,
       });
 
       await createJob({ jobCreateDto: { name } });
       toastManager.success($t('admin.job_created'));
 
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleted', {
         type: reportType,
-        isDeleting: false,
-        isDeleted: true,
       });
     } catch (error) {
       handleError(error, $t('failed_to_delete_file'));
 
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleteStatus', {
         type: reportType,
         isDeleting: false,
-        isDeleted: false,
       });
     }
   }
@@ -123,28 +119,24 @@ export const handleRemoveIntegrityReportItem = async (reportId: string) => {
 
   if (confirm) {
     try {
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleteStatus', {
         id: reportId,
         isDeleting: true,
-        isDeleted: false,
       });
 
       await deleteIntegrityReport({
         id: reportId,
       });
 
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleted', {
         id: reportId,
-        isDeleting: false,
-        isDeleted: true,
       });
     } catch (error) {
       handleError(error, $t('failed_to_delete_file'));
 
-      eventManager.emit('IntegrityReportDelete', {
+      eventManager.emit('IntegrityReportDeleteStatus', {
         id: reportId,
         isDeleting: false,
-        isDeleted: false,
       });
     }
   }

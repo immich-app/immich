@@ -65,7 +65,8 @@ export type Events = {
 
   SystemConfigUpdate: [SystemConfigDto];
 
-  IntegrityReportDelete: [{ type?: IntegrityReportType; id?: string; isDeleting: boolean; isDeleted: boolean }];
+  IntegrityReportDeleteStatus: [{ type?: IntegrityReportType; id?: string; isDeleting: boolean }];
+  IntegrityReportDeleted: [{ type?: IntegrityReportType; id?: string }];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];

@@ -16,7 +16,7 @@
 
   const { Download, Delete } = $derived(getIntegrityReportItemActions($t, id, reportType));
 
-  function onIntegrityReportDelete({
+  function onIntegrityReportDeleteStatus({
     id: reportId,
     type,
     isDeleting,
@@ -31,7 +31,7 @@
   }
 </script>
 
-<OnEvents {onIntegrityReportDelete} />
+<OnEvents {onIntegrityReportDeleteStatus} />
 
 <TableRow>
   <TableCell class="w-7/8 text-left px-4">{path}</TableCell>
