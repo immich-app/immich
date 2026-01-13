@@ -19573,11 +19573,8 @@
           "backupDatabase",
           "ocr",
           "workflow",
-<<<<<<< HEAD
-          "integrityCheck"
-=======
+          "integrityCheck",
           "editor"
->>>>>>> origin/main
         ],
         "type": "string"
       },

@@ -5678,11 +5678,8 @@ export enum QueueName {
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
     Workflow = "workflow",
-<<<<<<< HEAD
-    IntegrityCheck = "integrityCheck"
-=======
+    IntegrityCheck = "integrityCheck",
     Editor = "editor"
->>>>>>> origin/main
 }
 export enum QueueCommand {
     Start = "start",
