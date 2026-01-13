@@ -19,7 +19,6 @@ class DriftUploadDetailPage extends ConsumerStatefulWidget {
 }
 
 class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
-  final List<DriftUploadStatus> _completedItems = [];
   final Set<String> _seenTaskIds = {};
   final Set<String> _failedTaskIds = {};
 
@@ -34,16 +33,10 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
       }
     }
 
-    _completedItems.removeWhere((item) => _failedTaskIds.contains(item.taskId));
-
     for (final item in uploadItems.values) {
       if (item.progress >= 1.0 && item.isFailed != true && !_failedTaskIds.contains(item.taskId)) {
         if (!_seenTaskIds.contains(item.taskId)) {
           _seenTaskIds.add(item.taskId);
-          _completedItems.insert(0, item);
-          if (_completedItems.length > 50) {
-            _completedItems.removeLast();
-          }
         }
       }
     }
@@ -51,8 +44,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     final uploadingItems = uploadItems.values.where((item) => item.progress < 1.0 && item.isFailed != true).toList();
     final failedItems = uploadItems.values.where((item) => item.isFailed == true).toList();
 
-    final hasContent =
-        uploadingItems.isNotEmpty || failedItems.isNotEmpty || iCloudProgress.isNotEmpty || _completedItems.isNotEmpty;
+    final hasContent = uploadingItems.isNotEmpty || failedItems.isNotEmpty || iCloudProgress.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -60,24 +52,10 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         backgroundColor: context.colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 1,
-        actions: [
-          if (_completedItems.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear_all),
-              tooltip: "Clear completed",
-              onPressed: () {
-                setState(() {
-                  _completedItems.clear();
-                  _seenTaskIds.clear();
-                  _failedTaskIds.clear();
-                });
-              },
-            ),
-        ],
       ),
       body: !hasContent
           ? _buildEmptyState(context)
-          : _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress, _completedItems),
+          : _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress),
     );
   }
 
@@ -102,7 +80,6 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     List<DriftUploadStatus> uploadingItems,
     List<DriftUploadStatus> failedItems,
     Map<String, double> iCloudProgress,
-    List<DriftUploadStatus> completedItems,
   ) {
     return CustomScrollView(
       slivers: [
@@ -170,27 +147,6 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                 final item = failedItems[index];
                 return Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildErrorCard(context, item));
               }, childCount: failedItems.length),
-            ),
-          ),
-        ],
-
-        // Completed Section
-        if (completedItems.isNotEmpty) ...[
-          SliverToBoxAdapter(
-            child: _buildSectionHeader(
-              context,
-              title: "completed".t(context: context),
-              count: completedItems.length,
-              color: Colors.green,
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final item = completedItems[index];
-                return Padding(padding: const EdgeInsets.only(bottom: 4), child: _buildCompletedCard(context, item));
-              }, childCount: completedItems.length),
             ),
           ),
         ],
@@ -387,44 +343,6 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompletedCard(BuildContext context, DriftUploadStatus item) {
-    return Card(
-      elevation: 0,
-      color: context.colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
-        side: BorderSide(color: context.colorScheme.outline.withValues(alpha: 0.1), width: 1),
-      ),
-      child: InkWell(
-        onTap: () => _showFileDetailDialog(context, item),
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, size: 20, color: Colors.green.shade600),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  path.basename(item.filename),
-                  style: context.textTheme.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Text(
-                formatHumanReadableBytes(item.fileSize, 1),
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.5),
-                ),
-              ),
-            ],
           ),
         ),
       ),
