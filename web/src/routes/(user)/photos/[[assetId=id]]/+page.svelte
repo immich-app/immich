@@ -59,6 +59,9 @@
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
+
+  const isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
+
   const handleEscape = () => {
     if ($showAssetViewer) {
       return;
@@ -130,45 +133,51 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction
-      removeFavorite={assetInteraction.isAllFavorite}
-      onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
-    ></FavoriteAction>
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
-      {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
-        <StackAction
-          unstack={isAssetStackSelected}
-          onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
-          onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
-        />
-      {/if}
-      {#if isLinkActionAvailable}
-        <LinkLivePhotoAction
+
+    {#if isAllUserOwned}
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
+      />
+
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+        <DownloadAction menuItem />
+        {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
+          <StackAction
+            unstack={isAssetStackSelected}
+            onStack={(result) => updateStackedAssetInTimeline(timelineManager, result)}
+            onUnstack={(assets) => updateUnstackedAssetInTimeline(timelineManager, assets)}
+          />
+        {/if}
+        {#if isLinkActionAvailable}
+          <LinkLivePhotoAction
+            menuItem
+            unlink={assetInteraction.selectedAssets.length === 1}
+            onLink={handleLink}
+            onUnlink={handleUnlink}
+          />
+        {/if}
+        <ChangeDate menuItem />
+        <ChangeDescription menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction
           menuItem
-          unlink={assetInteraction.selectedAssets.length === 1}
-          onLink={handleLink}
-          onUnlink={handleUnlink}
+          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
         />
-      {/if}
-      <ChangeDate menuItem />
-      <ChangeDescription menuItem />
-      <ChangeLocation menuItem />
-      <ArchiveAction
-        menuItem
-        onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-      />
-      {#if $preferences.tags.enabled}
-        <TagAction menuItem />
-      {/if}
-      <DeleteAssets
-        menuItem
-        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
-      />
-      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-      <hr />
-      <AssetJobActions />
-    </ButtonContextMenu>
+        {#if $preferences.tags.enabled}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets
+          menuItem
+          onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
+          onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
+        />
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+        <hr />
+        <AssetJobActions />
+      </ButtonContextMenu>
+    {:else}
+      <DownloadAction />
+    {/if}
   </AssetSelectControlBar>
 {/if}

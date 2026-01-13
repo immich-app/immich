@@ -49,6 +49,23 @@ returning
   "dateTimeOriginal",
   "timeZone"
 
+-- AssetRepository.unlockProperties
+update "asset_exif"
+set
+  "lockedProperties" = nullif(
+    array(
+      select distinct
+        property
+      from
+        unnest("asset_exif"."lockedProperties") property
+      where
+        not property = any ($1)
+    ),
+    '{}'
+  )
+where
+  "assetId" = $2
+
 -- AssetRepository.getMetadata
 select
   "key",
