@@ -187,7 +187,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }) async {
     final hasEdits = _db.assetEditEntity.id.isNotNull();
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
-      ..addColumns([_db.localAlbumAssetEntity.assetId, hasEdits])
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -204,7 +204,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
         useColumns: false,
       ),
-    ]);
+    ])..addColumns([hasEdits]);
 
     Expression<bool> whereClause =
         _db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate) &
