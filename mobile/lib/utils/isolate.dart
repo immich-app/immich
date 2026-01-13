@@ -54,7 +54,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         Logger log = Logger("IsolateLogger");
 
         try {
-          HttpSSLOptions.apply(applyNative: false);
+          await HttpSSLOptions.apply(applyNative: false);
           result = await computation(ref);
         } on CanceledError {
           log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");

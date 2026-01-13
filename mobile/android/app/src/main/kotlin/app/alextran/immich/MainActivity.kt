@@ -41,7 +41,7 @@ class MainActivity : FlutterFragmentActivity() {
       ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
-      UserCertificatesApi.setUp(flutterEngine.dartExecutor.binaryMessenger, UserCertificatesApiImpl(this))
+      UserCertificatesApi.setUp(flutterEngine.dartExecutor.binaryMessenger, UserCertificatesApiImpl(ctx))
 
       flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(HttpSSLOptionsPlugin())
