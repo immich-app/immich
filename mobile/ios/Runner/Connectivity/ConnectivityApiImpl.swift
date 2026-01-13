@@ -12,7 +12,6 @@ class ConnectivityApiImpl: ConnectivityApi {
     monitor.start(queue: queue)
     // Get initial state synchronously
     currentPath = monitor.currentPath
-    print("[ConnectivityApi] Initialized with path: \(String(describing: currentPath))")
   }
   
   deinit {
@@ -56,7 +55,6 @@ class ConnectivityApiImpl: ConnectivityApi {
       capabilities.append(.unmetered)
     }
     
-    print("[ConnectivityApi] getCapabilities() returning: \\(capabilities)")
     return capabilities
   }
 }
