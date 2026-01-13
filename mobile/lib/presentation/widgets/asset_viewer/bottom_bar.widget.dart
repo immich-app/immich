@@ -52,7 +52,7 @@ class ViewerBottomBar extends ConsumerWidget {
         if (isOwner) ...[
           if (asset.isLocalOnly)
             const DeleteLocalActionButton(source: ActionSource.viewer)
-          else if (asset is RemoteAsset && asset.deletedAt != null)
+          else if (asset.deletedAt != null)
             const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
           else
             const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
