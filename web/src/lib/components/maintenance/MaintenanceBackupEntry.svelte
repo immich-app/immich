@@ -21,14 +21,14 @@
 
   let isDeleting = $state(false);
 
-  function onBackupDelete(event: { filename: string; isDeleting: boolean }) {
+  function onBackupDeleteStatus(event: { filename: string; isDeleting: boolean }) {
     if (event.filename === filename) {
       isDeleting = event.isDeleting;
     }
   }
 </script>
 
-<OnEvents {onBackupDelete} />
+<OnEvents {onBackupDeleteStatus} />
 
 <Card>
   <CardBody>

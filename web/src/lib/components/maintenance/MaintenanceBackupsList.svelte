@@ -29,10 +29,8 @@
 
   let uploadProgress = $state(-1);
 
-  function onBackupDelete(event: { filename: string; isDeleted: boolean }) {
-    if (event.isDeleted) {
-      backups = backups.filter((filename) => filename !== event.filename);
-    }
+  function onBackupDeleted(event: { filename: string }) {
+    backups = backups.filter((filename) => filename !== event.filename);
   }
 
   function onBackupUpload(event: { progress: number; isComplete: boolean }) {
@@ -44,7 +42,7 @@
   }
 </script>
 
-<OnEvents {onBackupDelete} {onBackupUpload} />
+<OnEvents {onBackupDeleted} {onBackupUpload} />
 
 <Stack gap={2} class="mt-4 text-left">
   <Card>

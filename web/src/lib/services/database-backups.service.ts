@@ -75,7 +75,7 @@ export const handleDeleteDatabaseBackup = async (...filenames: string[]) => {
 
   try {
     for (const filename of filenames) {
-      eventManager.emit('BackupDelete', { filename, isDeleting: true, isDeleted: false });
+      eventManager.emit('BackupDeleteStatus', { filename, isDeleting: true });
     }
 
     await deleteDatabaseBackup({
@@ -85,13 +85,13 @@ export const handleDeleteDatabaseBackup = async (...filenames: string[]) => {
     });
 
     for (const filename of filenames) {
-      eventManager.emit('BackupDelete', { filename, isDeleting: false, isDeleted: true });
+      eventManager.emit('BackupDeleted', { filename });
     }
   } catch (error) {
     handleError(error, $t('admin.maintenance_delete_error'));
 
     for (const filename of filenames) {
-      eventManager.emit('BackupDelete', { filename, isDeleting: false, isDeleted: false });
+      eventManager.emit('BackupDeleteStatus', { filename, isDeleting: false });
     }
   }
 };
