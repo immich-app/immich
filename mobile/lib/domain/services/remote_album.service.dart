@@ -41,8 +41,8 @@ class RemoteAlbumService {
       AlbumSortMode.title => albums.sortedBy((album) => album.name),
       AlbumSortMode.lastModified => albums.sortedBy((album) => album.updatedAt),
       AlbumSortMode.assetCount => albums.sortedBy((album) => album.assetCount),
-      AlbumSortMode.mostRecent => await _sortByNewestAsset(albums),
-      AlbumSortMode.mostOldest => await _sortByOldestAsset(albums),
+      AlbumSortMode.mostRecent => await _sortByAssetDate(albums, useMin: false),
+      AlbumSortMode.mostOldest => await _sortByAssetDate(albums, useMin: true),
     };
 
     return (isReverse ? sorted.reversed : sorted).toList();
@@ -169,31 +169,21 @@ class RemoteAlbumService {
     return _repository.getAlbumsContainingAsset(assetId);
   }
 
-  Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {
-    // map album IDs to their newest asset dates
-    final albumIds = albums.map((e) => e.id).toList();
-    final assetTimestamps = await _repository.getNewestAssetTimestampForAlbums(albumIds);
+  Future<List<RemoteAlbum>> _sortByAssetDate(List<RemoteAlbum> albums, {required bool useMin}) async {
+    if (albums.isEmpty) return [];
 
-    final sorted = albums.sorted((a, b) {
-      final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = assetTimestamps[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
+    final albumIds = albums.map((e) => e.id).toList();
+
+    final dateMap = await _repository.getAlbumAssetDateMap(albumIds, useMin: useMin);
+
+    final sortedAlbums = List<RemoteAlbum>.from(albums);
+
+    sortedAlbums.sort((a, b) {
+      final aDate = dateMap[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = dateMap[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
       return aDate.compareTo(bDate);
     });
 
-    return sorted;
-  }
-
-  Future<List<RemoteAlbum>> _sortByOldestAsset(List<RemoteAlbum> albums) async {
-    // map album IDs to their oldest asset dates
-    final albumIds = albums.map((e) => e.id).toList();
-    final assetTimestamps = await _repository.getOldestAssetTimestampForAlbums(albumIds);
-
-    final sorted = albums.sorted((a, b) {
-      final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = assetTimestamps[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return aDate.compareTo(bDate);
-    });
-
-    return sorted.reversed.toList();
+    return sortedAlbums;
   }
 }

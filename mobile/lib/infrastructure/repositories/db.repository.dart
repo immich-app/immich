@@ -95,7 +95,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -192,6 +192,9 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from14To15: (m, v15) async {
             await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
+          },
+          from15To16: (m, v16) async {
+            await m.createIndex(v16.idxRemoteAlbumAssetAlbumId);
           },
         ),
       );

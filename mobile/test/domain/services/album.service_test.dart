@@ -18,7 +18,7 @@ void main() {
     mockAlbumApiRepo = MockDriftAlbumApiRepository();
     sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
 
-    when(() => mockRemoteAlbumRepo.getNewestAssetTimestampForAlbums(any())).thenAnswer((invocation) async {
+    when(() => mockRemoteAlbumRepo.getAlbumAssetDateMap(any(), useMin: false)).thenAnswer((invocation) async {
       final albumIds = invocation.positionalArguments[0] as List<String>;
       final result = <String, DateTime?>{};
       for (final id in albumIds) {
@@ -33,7 +33,7 @@ void main() {
       return result;
     });
 
-    when(() => mockRemoteAlbumRepo.getOldestAssetTimestampForAlbums(any())).thenAnswer((invocation) async {
+    when(() => mockRemoteAlbumRepo.getAlbumAssetDateMap(any(), useMin: true)).thenAnswer((invocation) async {
       final albumIds = invocation.positionalArguments[0] as List<String>;
       final result = <String, DateTime?>{};
       for (final id in albumIds) {
@@ -117,7 +117,7 @@ void main() {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
-      expect(result, [albumB, albumA]);
+      expect(result, [albumA, albumB]);
     });
   });
 }
