@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class RatingBar extends StatefulWidget {
@@ -71,42 +72,52 @@ class _RatingBarState extends State<RatingBar> {
   @override
   Widget build(BuildContext context) {
     final isRTL = Directionality.of(context) == TextDirection.rtl;
+    final double visualAlignmentOffset = 5.0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (details) => _updateRating(details.localPosition, isRTL, isTap: true),
-          onPanUpdate: (details) => _updateRating(details.localPosition, isRTL, isTap: false),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
-            children: List.generate(widget.itemCount * 2 - 1, (i) {
-              if (i.isOdd) {
-                return SizedBox(width: widget.starPadding);
-              }
-              int index = i ~/ 2;
-              bool filled = _currentRating > index;
-              return widget.itemBuilder ??
-                  Icon(
-                    Icons.star_rounded,
-                    size: widget.itemSize,
-                    color: filled ? widget.filledColor : widget.unfilledColor,
-                  );
-            }),
+        Transform.translate(
+          offset: Offset(isRTL ? visualAlignmentOffset : -visualAlignmentOffset, 0),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: (details) => _updateRating(details.localPosition, isRTL, isTap: true),
+            onPanUpdate: (details) => _updateRating(details.localPosition, isRTL, isTap: false),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+              children: List.generate(widget.itemCount * 2 - 1, (i) {
+                if (i.isOdd) {
+                  return SizedBox(width: widget.starPadding);
+                }
+                int index = i ~/ 2;
+                bool filled = _currentRating > index;
+                return widget.itemBuilder ??
+                    Icon(
+                      Icons.star_rounded,
+                      size: widget.itemSize,
+                      color: filled ? widget.filledColor : widget.unfilledColor,
+                    );
+              }),
+            ),
           ),
         ),
         if (_currentRating > 0)
-          TextButton(
-            onPressed: () => {
-              setState(() {
-                _currentRating = 0;
-              }),
-              widget.onClearRating?.call(),
-            },
-            child: Text('rating_clear'.t(context: context)),
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _currentRating = 0;
+                });
+                widget.onClearRating?.call();
+              },
+              child: Text(
+                'rating_clear'.t(context: context),
+                style: TextStyle(color: context.themeData.colorScheme.primary),
+              ),
+            ),
           ),
       ],
     );
