@@ -238,7 +238,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
       } else {
-        // Cancel foreground upload when app goes to background
         await _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
       }
 

@@ -22,6 +22,38 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   final Set<String> _seenTaskIds = {};
   final Set<String> _failedTaskIds = {};
 
+  final Map<String, int> _taskSlotAssignments = {};
+  static const int _maxSlots = 3;
+
+  /// Assigns uploading items to fixed slots to prevent jumping when items complete
+  List<DriftUploadStatus?> _assignItemsToSlots(List<DriftUploadStatus> uploadingItems) {
+    final slots = List<DriftUploadStatus?>.filled(_maxSlots, null);
+    final currentTaskIds = uploadingItems.map((e) => e.taskId).toSet();
+
+    _taskSlotAssignments.removeWhere((taskId, _) => !currentTaskIds.contains(taskId));
+
+    for (final item in uploadingItems) {
+      final existingSlot = _taskSlotAssignments[item.taskId];
+      if (existingSlot != null && existingSlot < _maxSlots) {
+        slots[existingSlot] = item;
+      }
+    }
+
+    for (final item in uploadingItems) {
+      if (_taskSlotAssignments.containsKey(item.taskId)) continue;
+
+      for (int i = 0; i < _maxSlots; i++) {
+        if (slots[i] == null) {
+          slots[i] = item;
+          _taskSlotAssignments[item.taskId] = i;
+          break;
+        }
+      }
+    }
+
+    return slots;
+  }
+
   @override
   Widget build(BuildContext context) {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
@@ -44,8 +76,6 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     final uploadingItems = uploadItems.values.where((item) => item.progress < 1.0 && item.isFailed != true).toList();
     final failedItems = uploadItems.values.where((item) => item.isFailed == true).toList();
 
-    final hasContent = uploadingItems.isNotEmpty || failedItems.isNotEmpty || iCloudProgress.isNotEmpty;
-
     return Scaffold(
       appBar: AppBar(
         title: Text("upload_details".t(context: context)),
@@ -53,25 +83,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         elevation: 0,
         scrolledUnderElevation: 1,
       ),
-      body: !hasContent
-          ? _buildEmptyState(context)
-          : _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.cloud_off_rounded, size: 80, color: context.colorScheme.onSurface.withValues(alpha: 0.3)),
-          const SizedBox(height: 16),
-          Text(
-            "no_uploads_in_progress".t(context: context),
-            style: context.textTheme.titleMedium?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.6)),
-          ),
-        ],
-      ),
+      body: _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress),
     );
   }
 
@@ -120,8 +132,10 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
-              if (index < uploadingItems.length) {
-                final item = uploadingItems[index];
+              // Use slot-based assignment to prevent items from jumping
+              final slots = _assignItemsToSlots(uploadingItems);
+              final item = slots[index];
+              if (item != null) {
                 return _buildCurrentUploadCard(context, item);
               } else {
                 return _buildPlaceholderCard(context);
