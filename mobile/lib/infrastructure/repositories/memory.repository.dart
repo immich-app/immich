@@ -12,9 +12,9 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
   Future<List<DriftMemory>> getAll(String ownerId) async {
     final now = DateTime.now();
     final localUtc = DateTime.utc(now.year, now.month, now.day, 0, 0, 0);
-
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
     final query =
-        _db.select(_db.memoryEntity).join([
+        _db.select(_db.memoryEntity).addColumns([hasEdits]).join([
             innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
             innerJoin(
               _db.remoteAssetEntity,
@@ -22,7 +22,11 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
                   _db.remoteAssetEntity.deletedAt.isNull() &
                   _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
             ),
-            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
           ..where(_db.memoryEntity.deletedAt.isNull())
@@ -43,9 +47,9 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
       final existingMemory = memoriesMap[memory.id];
       if (existingMemory != null) {
-        existingMemory.assets.add(asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null));
+        existingMemory.assets.add(asset.toDto(isEdited: row.read(hasEdits)!));
       } else {
-        final assets = [asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null)];
+        final assets = [asset.toDto(isEdited: row.read(hasEdits)!)];
         memoriesMap[memory.id] = memory.toDto().copyWith(assets: assets);
       }
     }
@@ -54,8 +58,9 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
   }
 
   Future<DriftMemory?> get(String memoryId) async {
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
     final query =
-        _db.select(_db.memoryEntity).join([
+        _db.select(_db.memoryEntity).addColumns([hasEdits]).join([
             leftOuterJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
             leftOuterJoin(
               _db.remoteAssetEntity,
@@ -63,7 +68,11 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
                   _db.remoteAssetEntity.deletedAt.isNull() &
                   _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
             ),
-            leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
           ])
           ..where(_db.memoryEntity.id.equals(memoryId))
           ..where(_db.memoryEntity.deletedAt.isNull())
@@ -80,7 +89,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
     for (final row in rows) {
       final asset = row.readTable(_db.remoteAssetEntity);
-      assets.add(asset.toDto(row.readTableOrNull(_db.assetEditEntity) != null));
+      assets.add(asset.toDto(isEdited: row.read(hasEdits)!));
     }
 
     return memory.toDto().copyWith(assets: assets);

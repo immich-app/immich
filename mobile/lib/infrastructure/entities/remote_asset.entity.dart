@@ -49,7 +49,7 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  RemoteAsset toDto(bool isEdited, {String? localId}) => RemoteAsset(
+  RemoteAsset toDto({required bool isEdited, String? localId}) => RemoteAsset(
     id: id,
     name: name,
     ownerId: ownerId,

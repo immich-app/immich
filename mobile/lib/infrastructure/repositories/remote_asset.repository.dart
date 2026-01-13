@@ -17,9 +17,15 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   /// For testing purposes
   Future<List<RemoteAsset>> getSome(String userId) {
+    final isEdited = _db.assetEditEntity.id.isNotNull();
+
     final query =
-        _db.remoteAssetEntity.select().join([
-            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+        _db.remoteAssetEntity.select().addColumns([isEdited]).join([
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId),
+              useColumns: false,
+            ),
           ])
           ..where(
             _db.remoteAssetEntity.ownerId.equals(userId) &
@@ -29,27 +35,29 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
           ..limit(10);
 
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
-        .get();
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto(isEdited: row.read(isEdited)!)).get();
   }
 
   SingleOrNullSelectable<RemoteAsset?> _assetSelectable(String id) {
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
     final query =
-        _db.remoteAssetEntity.select().addColumns([_db.localAssetEntity.id]).join([
+        _db.remoteAssetEntity.select().addColumns([_db.localAssetEntity.id, hasEdits]).join([
             leftOuterJoin(
               _db.localAssetEntity,
               _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
               useColumns: false,
             ),
-            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId),
+              useColumns: false,
+            ),
           ])
           ..where(_db.remoteAssetEntity.id.equals(id))
           ..limit(1);
 
     return query.map((row) {
-      final isEdited = row.readTableOrNull(_db.assetEditEntity) != null;
-      final asset = row.readTable(_db.remoteAssetEntity).toDto(isEdited);
+      final asset = row.readTable(_db.remoteAssetEntity).toDto(isEdited: row.read(hasEdits)!);
       return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
     });
   }
@@ -63,12 +71,18 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<RemoteAsset?> getByChecksum(String checksum) {
-    final query = _db.remoteAssetEntity.select().join([
-      leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+    final isEdited = _db.assetEditEntity.id.isNotNull();
+
+    final query = _db.remoteAssetEntity.select().addColumns([isEdited]).join([
+      leftOuterJoin(
+        _db.assetEditEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId),
+        useColumns: false,
+      ),
     ])..where(_db.remoteAssetEntity.checksum.equals(checksum));
 
     return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(isEdited: row.read(isEdited)!))
         .getSingleOrNull();
   }
 
@@ -78,16 +92,20 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       return Future.value(const []);
     }
 
+    final isEdited = _db.assetEditEntity.id.isNotNull();
+
     final query =
-        _db.remoteAssetEntity.select().join([
-            leftOuterJoin(_db.assetEditEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId)),
+        _db.remoteAssetEntity.select().addColumns([isEdited]).join([
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.remoteAssetEntity.id.equalsExp(_db.assetEditEntity.assetId),
+              useColumns: false,
+            ),
           ])
           ..where(_db.remoteAssetEntity.stackId.equals(stackId) & _db.remoteAssetEntity.id.equals(asset.id).not())
           ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)]);
 
-    return query
-        .map((row) => row.readTable(_db.remoteAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
-        .get();
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto(isEdited: row.read(isEdited)!)).get();
   }
 
   Future<ExifInfo?> getExif(String id) {

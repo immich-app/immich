@@ -17,17 +17,22 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
-    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
+    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id, hasEdits]).join([
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
         useColumns: false,
       ),
-      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+      leftOuterJoin(
+        _db.assetEditEntity,
+        _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+        useColumns: false,
+      ),
     ])..where(_db.localAssetEntity.id.equals(id));
 
     return query.map((row) {
-      final asset = row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null);
+      final asset = row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(hasEdits)!);
       return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
     });
   }
@@ -35,14 +40,24 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Future<LocalAsset?> get(String id) => _assetSelectable(id).getSingleOrNull();
 
   Future<List<LocalAsset?>> getByChecksum(String checksum) {
-    final query = _db.localAssetEntity.select().join([
-      leftOuterJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
-      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
-    ])..where(_db.localAssetEntity.checksum.equals(checksum));
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
 
-    return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
-        .get();
+    final query =
+        _db.localAssetEntity.select().join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+            ),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.localAssetEntity.checksum.equals(checksum))
+          ..addColumns([hasEdits]);
+
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(hasEdits)!)).get();
   }
 
   Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
@@ -76,13 +91,24 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<LocalAsset?> getById(String id) {
-    final query = _db.localAssetEntity.select().join([
-      leftOuterJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
-      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
-    ])..where(_db.localAssetEntity.id.equals(id));
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
+    final query =
+        _db.localAssetEntity.select().join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+            ),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.localAssetEntity.id.equals(id))
+          ..addColumns([hasEdits]);
 
     return query
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(hasEdits)!))
         .getSingleOrNull();
   }
 
@@ -119,27 +145,34 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     final result = <String, List<LocalAsset>>{};
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
 
     for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
-                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
-                innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-                leftOuterJoin(
-                  _db.remoteAssetEntity,
-                  _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-                ),
-                leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
-              ])..where(
-                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                    _db.localAssetEntity.checksum.isIn(slice),
-              ))
+                  innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                  innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                  leftOuterJoin(
+                    _db.remoteAssetEntity,
+                    _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                  ),
+                  leftOuterJoin(
+                    _db.assetEditEntity,
+                    _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+                    useColumns: false,
+                  ),
+                ])
+                ..addColumns([hasEdits])
+                ..where(
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                      _db.localAssetEntity.checksum.isIn(slice),
+                ))
               .get();
 
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto(row.readTableOrNull(_db.assetEditEntity) != null);
+        final asset = assetData.toDto(isEdited: row.read(hasEdits)!);
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }
@@ -152,8 +185,9 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     AssetFilterType filterType = AssetFilterType.all,
     bool keepFavorites = true,
   }) async {
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..addColumns([_db.localAlbumAssetEntity.assetId, hasEdits])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -165,7 +199,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
     final query = _db.localAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
-      leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
+      leftOuterJoin(
+        _db.assetEditEntity,
+        _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+        useColumns: false,
+      ),
     ]);
 
     Expression<bool> whereClause =
@@ -189,9 +227,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     query.where(whereClause);
 
     final rows = await query.get();
-    return rows
-        .map((row) => row.readTable(_db.localAssetEntity).toDto(row.readTableOrNull(_db.assetEditEntity) != null))
-        .toList();
+    return rows.map((row) => row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(hasEdits)!)).toList();
   }
 
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {

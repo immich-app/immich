@@ -262,26 +262,31 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<Map<String, List<LocalAsset>>> getToTrash() async {
     final result = <String, List<LocalAsset>>{};
-
+    final hasEdits = _db.assetEditEntity.id.isNotNull();
     final rows =
         await (_db.select(_db.localAlbumAssetEntity).join([
-              innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
-              innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-              leftOuterJoin(
-                _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-              ),
-              leftOuterJoin(_db.assetEditEntity, _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id)),
-            ])..where(
-              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                  _db.remoteAssetEntity.deletedAt.isNotNull(),
-            ))
+                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                leftOuterJoin(
+                  _db.remoteAssetEntity,
+                  _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+                ),
+                leftOuterJoin(
+                  _db.assetEditEntity,
+                  _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+                  useColumns: false,
+                ),
+              ])
+              ..addColumns([hasEdits])
+              ..where(
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                    _db.remoteAssetEntity.deletedAt.isNotNull(),
+              ))
             .get();
 
     for (final row in rows) {
       final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final hasEdits = row.readTableOrNull(_db.assetEditEntity) != null;
-      final asset = row.readTable(_db.localAssetEntity).toDto(hasEdits);
+      final asset = row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(hasEdits)!);
       (result[albumId] ??= <LocalAsset>[]).add(asset);
     }
 
