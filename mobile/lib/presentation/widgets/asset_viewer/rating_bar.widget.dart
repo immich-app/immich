@@ -90,7 +90,11 @@ class _RatingBarState extends State<RatingBar> {
               int index = i ~/ 2;
               bool filled = _currentRating > index;
               return widget.itemBuilder ??
-                  Icon(Icons.star, size: widget.itemSize, color: filled ? widget.filledColor : widget.unfilledColor);
+                  Icon(
+                    Icons.star_rounded,
+                    size: widget.itemSize,
+                    color: filled ? widget.filledColor : widget.unfilledColor,
+                  );
             }),
           ),
         ),
