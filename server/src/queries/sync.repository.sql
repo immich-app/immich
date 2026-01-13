@@ -466,6 +466,37 @@ where
 order by
   "asset"."updateId" asc
 
+-- SyncRepository.assetEdit.getDeletes
+select
+  "asset_edit_audit"."id",
+  "assetId"
+from
+  "asset_edit_audit" as "asset_edit_audit"
+  left join "asset" on "asset"."id" = "asset_edit_audit"."assetId"
+where
+  "asset_edit_audit"."id" < $1
+  and "asset_edit_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit_audit"."id" asc
+
+-- SyncRepository.assetEdit.getUpserts
+select
+  "asset_edit"."id",
+  "assetId",
+  "action",
+  "parameters",
+  "asset_edit"."updateId"
+from
+  "asset_edit" as "asset_edit"
+  inner join "asset" on "asset"."id" = "asset_edit"."assetId"
+where
+  "asset_edit"."updateId" < $1
+  and "asset_edit"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_edit"."updateId" asc
+
 -- SyncRepository.assetExif.getUpserts
 select
   "asset_exif"."assetId",
