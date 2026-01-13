@@ -390,6 +390,8 @@ export type JobItem =
   // S3 Storage
   | { name: JobName.S3UploadAsset; data: IEntityJob }
   | { name: JobName.S3UploadQueueAll; data?: IBaseJob }
+  | { name: JobName.S3MigrateStorageClass; data: IEntityJob }
+  | { name: JobName.S3MigrateStorageClassAll; data?: IBaseJob }
 
   // Asset Encryption
   | { name: JobName.AssetEncrypt; data: IEntityJob }
@@ -567,4 +569,50 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.Preferences]: DeepPartial<UserPreferences>;
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
+}
+
+// ML Stream Types
+export enum MlStreamTask {
+  Clip = 'clip',
+  Face = 'face',
+  Ocr = 'ocr',
+}
+
+export interface MlClipConfig {
+  modelName: string;
+}
+
+export interface MlFaceConfig {
+  modelName: string;
+  minScore: number;
+}
+
+export interface MlOcrConfig {
+  modelName: string;
+  minDetectionScore: number;
+  minRecognitionScore: number;
+  maxResolution: number;
+}
+
+export type MlTaskConfig = MlClipConfig | MlFaceConfig | MlOcrConfig;
+
+export interface MlWorkRequest {
+  correlationId: string;
+  assetId: string;
+  taskType: MlStreamTask;
+  imagePath: string;
+  config: MlTaskConfig;
+  timestamp: number;
+  attempt: number;
+}
+
+export interface MlWorkResult {
+  correlationId: string;
+  assetId: string;
+  taskType: MlStreamTask;
+  status: 'success' | 'error';
+  result?: unknown;
+  error?: { message: string; code: string };
+  processingTimeMs: number;
+  timestamp: number;
 }

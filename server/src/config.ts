@@ -87,6 +87,12 @@ export interface SystemConfig {
       failureThreshold: number;
       resetTimeout: number;
     };
+    streamMode: {
+      enabled: boolean;
+      maxPending: number;
+      resultTtlHours: number;
+      maxRetries: number;
+    };
   };
   map: {
     enabled: boolean;
@@ -140,12 +146,21 @@ export interface SystemConfig {
       secretAccessKey: string;
       prefix: string;
       forcePathStyle: boolean;
+      storageClasses: {
+        thumbnails: string;
+        previews: string;
+        originalsPhotos: string;
+        originalsVideos: string;
+        encodedVideos: string;
+      };
     };
     locations: {
       originals: StorageBackend;
       thumbnails: StorageBackend;
       previews: StorageBackend;
       encodedVideos: StorageBackend;
+      profile: StorageBackend;
+      backups: StorageBackend;
     };
     upload: {
       strategy: 'local-first' | 's3-first';
@@ -233,7 +248,7 @@ export const defaults = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
-    acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedVideoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
     targetAudioCodec: AudioCodec.Aac,
     acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
@@ -307,6 +322,12 @@ export const defaults = Object.freeze<SystemConfig>({
       minRecognitionScore: 0.8,
       maxResolution: 736,
     },
+    streamMode: {
+      enabled: process.env.ML_STREAM_MODE_ENABLED === 'true',
+      maxPending: Number(process.env.ML_STREAM_MAX_PENDING) || 10000,
+      resultTtlHours: Number(process.env.ML_STREAM_RESULT_TTL_HOURS) || 24,
+      maxRetries: Number(process.env.ML_STREAM_RETRY_MAX) || 3,
+    },
   },
   map: {
     enabled: true,
@@ -360,12 +381,21 @@ export const defaults = Object.freeze<SystemConfig>({
       secretAccessKey: process.env.STORAGE_S3_SECRET_ACCESS_KEY || '',
       prefix: process.env.STORAGE_S3_PREFIX || 'users/',
       forcePathStyle: true,
+      storageClasses: {
+        thumbnails: 'STANDARD',
+        previews: 'STANDARD',
+        originalsPhotos: 'GLACIER_IR',
+        originalsVideos: 'GLACIER_IR',
+        encodedVideos: 'GLACIER_IR',
+      },
     },
     locations: {
       originals: StorageBackend.Local,
       thumbnails: StorageBackend.Local,
       previews: StorageBackend.Local,
       encodedVideos: StorageBackend.Local,
+      profile: StorageBackend.Local,
+      backups: StorageBackend.Local,
     },
     upload: {
       strategy: 'local-first',

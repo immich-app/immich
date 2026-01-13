@@ -95,6 +95,12 @@ export class StorageAdapterFactory {
       case StorageLocationType.EncodedVideos: {
         return config.locations.encodedVideos;
       }
+      case StorageLocationType.Profile: {
+        return config.locations.profile;
+      }
+      case StorageLocationType.Backups: {
+        return config.locations.backups;
+      }
       default: {
         return config.backend;
       }
@@ -110,7 +116,9 @@ export class StorageAdapterFactory {
       (config.locations.originals === StorageBackend.S3 ||
         config.locations.thumbnails === StorageBackend.S3 ||
         config.locations.previews === StorageBackend.S3 ||
-        config.locations.encodedVideos === StorageBackend.S3)
+        config.locations.encodedVideos === StorageBackend.S3 ||
+        config.locations.profile === StorageBackend.S3 ||
+        config.locations.backups === StorageBackend.S3)
     );
   }
 

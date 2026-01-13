@@ -23,6 +23,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
+import { MlStreamRepository } from 'src/repositories/ml-stream.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
@@ -80,6 +81,7 @@ export const repositories = [
   MapRepository,
   MediaRepository,
   MemoryRepository,
+  MlStreamRepository,
   MetadataRepository,
   MoveRepository,
   NotificationRepository,

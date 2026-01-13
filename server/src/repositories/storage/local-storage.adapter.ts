@@ -72,7 +72,7 @@ export class LocalStorageAdapter implements IStorageAdapter {
     await fs.writeFile(filePath, data);
   }
 
-  writeStream(key: string): Writable {
+  writeStream(key: string, _options?: StorageWriteOptions): Writable {
     const filePath = this.resolvePath(key);
     // Ensure directory exists synchronously for stream creation
     const dir = path.dirname(filePath);

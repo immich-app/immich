@@ -54,6 +54,7 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { MlStreamRepository } from 'src/repositories/ml-stream.repository';
 import { VaultRepository } from 'src/repositories/vault.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -88,6 +89,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   LibraryRepository,
   MachineLearningRepository,
   MapRepository,
+  MlStreamRepository,
   MediaRepository,
   MemoryRepository,
   MetadataRepository,
@@ -150,6 +152,7 @@ export class BaseService {
     protected machineLearningRepository: MachineLearningRepository,
     protected mapRepository: MapRepository,
     protected mediaRepository: MediaRepository,
+    protected mlStreamRepository: MlStreamRepository,
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
     protected moveRepository: MoveRepository,

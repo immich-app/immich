@@ -22,6 +22,7 @@ import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
+import { MlResultService } from 'src/services/ml-result.service';
 import { NotificationAdminService } from 'src/services/notification-admin.service';
 import { NotificationService } from 'src/services/notification.service';
 import { OcrService } from 'src/services/ocr.service';
@@ -77,6 +78,7 @@ export const services = [
   MediaService,
   MemoryService,
   MetadataService,
+  MlResultService,
   NotificationService,
   NotificationAdminService,
   OcrService,

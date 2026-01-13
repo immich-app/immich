@@ -22,7 +22,9 @@ from immich_ml.models import get_model_deps
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.transforms import decode_pil
 
+from .batch_processor import BatchProcessor
 from .config import PreloadModelData, log, settings
+from .stream_consumer import StreamConsumer
 from .models.cache import ModelCache
 from .schemas import (
     InferenceEntries,
@@ -40,6 +42,8 @@ MultiPartParser.spool_max_size = 2**26  # spools to disk if payload is 64 MiB or
 
 model_cache = ModelCache(revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None
+stream_consumer: StreamConsumer | None = None
+stream_consumer_task: asyncio.Task | None = None
 lock = threading.Lock()
 active_requests = 0
 last_called: float | None = None
@@ -47,7 +51,7 @@ last_called: float | None = None
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    global thread_pool
+    global thread_pool, stream_consumer, stream_consumer_task
     log.info(
         (
             "Created in-memory cache with unloading "
@@ -64,8 +68,29 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
             await preload_models(settings.preload)
+
+        # Start stream consumer if enabled
+        if settings.stream.enabled:
+            batch_processor = BatchProcessor(model_cache, thread_pool)
+            stream_consumer = StreamConsumer(
+                redis_url=settings.stream.redis_url,
+                processor=batch_processor.process,
+            )
+            stream_consumer_task = asyncio.create_task(stream_consumer.start())
+            log.info("Started Redis stream consumer for ML tasks")
+
         yield
     finally:
+        # Stop stream consumer
+        if stream_consumer is not None:
+            await stream_consumer.stop()
+        if stream_consumer_task is not None:
+            stream_consumer_task.cancel()
+            try:
+                await stream_consumer_task
+            except asyncio.CancelledError:
+                pass
+
         log.handlers.clear()
         for model in model_cache.cache._cache.values():
             del model

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { OnJob } from 'src/decorators';
-import { JobName, JobStatus, QueueName, StorageBackend } from 'src/enum';
+import { AssetType, JobName, JobStatus, QueueName, StorageBackend } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { StorageAdapterFactory } from 'src/repositories/storage';
 import { mimeTypes } from 'src/utils/mime-types';
+import { SystemConfig } from 'src/config';
 
 /**
  * Service for handling S3 storage operations.
@@ -78,10 +79,13 @@ export class S3StorageService extends BaseService {
       // Read from local storage
       const fileBuffer = await localAdapter.read(asset.originalPath);
 
-      // Upload to S3
+      // Upload to S3 with appropriate storage class based on asset type
+      const storageClass = this.getStorageClassForOriginal(asset.type, config);
       await s3Adapter.write(s3Key, fileBuffer, {
         contentType: mimeTypes.lookup(asset.originalPath),
+        storageClass,
       });
+      this.logger.debug(`Using storage class ${storageClass} for asset ${id}`);
 
       // Verify upload
       const s3Stat = await s3Adapter.stat(s3Key);
@@ -150,12 +154,86 @@ export class S3StorageService extends BaseService {
   }
 
   /**
+   * Migrate a single asset's storage class in S3.
+   * This copies the object in-place with the new storage class.
+   */
+  @OnJob({ name: JobName.S3MigrateStorageClass, queue: QueueName.S3Upload })
+  async handleS3MigrateStorageClass(job: JobOf<JobName.S3MigrateStorageClass>): Promise<JobStatus> {
+    const { id } = job;
+    const config = await this.getConfig({ withCache: true });
+
+    if (!config.storage.s3.enabled) {
+      return JobStatus.Success;
+    }
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset || asset.storageBackend !== StorageBackend.S3 || !asset.s3Key) {
+      this.logger.debug(`Skipping storage class migration for asset ${id}: not in S3`);
+      return JobStatus.Success;
+    }
+
+    try {
+      const targetClass = this.getStorageClassForOriginal(asset.type, config);
+      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+
+      this.logger.log(`Migrating asset ${id} to storage class ${targetClass}`);
+
+      // Copy object in-place with new storage class
+      await s3Adapter.copyWithStorageClass(asset.s3Key, targetClass);
+
+      this.logger.log(`Successfully migrated asset ${id} to storage class ${targetClass}`);
+      return JobStatus.Success;
+    } catch (error) {
+      this.logger.error(`Failed to migrate storage class for asset ${id}: ${error}`);
+      return JobStatus.Failed;
+    }
+  }
+
+  /**
+   * Queue all S3 assets for storage class migration.
+   */
+  @OnJob({ name: JobName.S3MigrateStorageClassAll, queue: QueueName.S3Upload })
+  async handleS3MigrateStorageClassAll(): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
+
+    if (!config.storage.s3.enabled) {
+      this.logger.log('S3 storage class migration skipped: S3 not enabled');
+      return JobStatus.Success;
+    }
+
+    this.logger.log('Queueing all S3 assets for storage class migration');
+
+    const assets = await this.assetRepository.getByStorageBackend(StorageBackend.S3);
+
+    let queued = 0;
+    for (const asset of assets) {
+      await this.jobRepository.queue({
+        name: JobName.S3MigrateStorageClass,
+        data: { id: asset.id },
+      });
+      queued++;
+    }
+
+    this.logger.log(`Queued ${queued} assets for storage class migration`);
+    return JobStatus.Success;
+  }
+
+  /**
    * Generate S3 key for an asset.
    * Format: users/{userId}/{assetId}/original.{ext}
    */
   private generateS3Key(userId: string, assetId: string, originalPath: string): string {
     const ext = originalPath.split('.').pop() || '';
     return `users/${userId}/${assetId}/original.${ext}`;
+  }
+
+  /**
+   * Get the appropriate S3 storage class for an original asset based on its type.
+   * Photos and videos have different access patterns and storage class recommendations.
+   */
+  private getStorageClassForOriginal(assetType: AssetType, config: SystemConfig): string {
+    const classes = config.storage.s3.storageClasses;
+    return assetType === AssetType.Video ? classes.originalsVideos : classes.originalsPhotos;
   }
 
   /**

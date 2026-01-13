@@ -17,6 +17,7 @@ export interface StorageWriteOptions {
   contentType?: string;
   cacheControl?: string;
   metadata?: Record<string, string>;
+  storageClass?: string;
 }
 
 export interface PresignedUrlOptions {
@@ -67,7 +68,7 @@ export interface IStorageAdapter {
   /**
    * Create a writable stream (for large files)
    */
-  writeStream(key: string): Writable;
+  writeStream(key: string, options?: StorageWriteOptions): Writable;
 
   /**
    * Copy a file from one location to another

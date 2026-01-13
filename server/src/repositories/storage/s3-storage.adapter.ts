@@ -5,6 +5,7 @@ import {
   CreateMultipartUploadCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -55,6 +56,14 @@ export class S3StorageAdapter implements IStorageAdapter {
       },
       forcePathStyle: config.forcePathStyle ?? true,
     });
+  }
+
+  /**
+   * Health check to verify S3 connectivity and bucket access.
+   * Uses HeadBucket API to verify credentials are valid and bucket exists.
+   */
+  async healthCheck(): Promise<void> {
+    await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
   }
 
   private getKey(key: string): string {
@@ -147,11 +156,12 @@ export class S3StorageAdapter implements IStorageAdapter {
         ContentType: options?.contentType,
         CacheControl: options?.cacheControl,
         Metadata: options?.metadata,
+        StorageClass: options?.storageClass as any,
       }),
     );
   }
 
-  writeStream(key: string): Writable {
+  writeStream(key: string, options?: StorageWriteOptions): Writable {
     // Use a passthrough stream with Upload from @aws-sdk/lib-storage
     const passThrough = new PassThrough();
 
@@ -161,6 +171,8 @@ export class S3StorageAdapter implements IStorageAdapter {
         Bucket: this.bucket,
         Key: this.getKey(key),
         Body: passThrough,
+        ContentType: options?.contentType,
+        StorageClass: options?.storageClass as any,
       },
     });
 
@@ -178,6 +190,22 @@ export class S3StorageAdapter implements IStorageAdapter {
         Bucket: this.bucket,
         CopySource: `${this.bucket}/${this.getKey(sourceKey)}`,
         Key: this.getKey(targetKey),
+      }),
+    );
+  }
+
+  /**
+   * Copy an object in-place with a new storage class (for migration)
+   */
+  async copyWithStorageClass(key: string, storageClass: string): Promise<void> {
+    const fullKey = this.getKey(key);
+    await this.client.send(
+      new CopyObjectCommand({
+        Bucket: this.bucket,
+        CopySource: `${this.bucket}/${fullKey}`,
+        Key: fullKey,
+        StorageClass: storageClass as any,
+        MetadataDirective: 'COPY',
       }),
     );
   }
@@ -231,6 +259,7 @@ export class S3StorageAdapter implements IStorageAdapter {
         ContentType: options?.contentType,
         CacheControl: options?.cacheControl,
         Metadata: options?.metadata,
+        StorageClass: options?.storageClass as any,
       }),
     );
 

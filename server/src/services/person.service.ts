@@ -40,7 +40,7 @@ import { UpdateFacesData } from 'src/repositories/person.repository';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf, MlStreamTask } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -322,6 +322,24 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+    if (machineLearning.streamMode?.enabled) {
+      await this.mlStreamRepository.publish({
+        correlationId: this.cryptoRepository.randomUUID(),
+        assetId: asset.id,
+        taskType: MlStreamTask.Face,
+        imagePath: previewFile.path,
+        config: {
+          modelName: machineLearning.facialRecognition.modelName,
+          minScore: machineLearning.facialRecognition.minScore,
+        },
+        timestamp: Date.now(),
+        attempt: 1,
+      });
+      return JobStatus.Success;
+    }
+
+    // Sync mode (existing behavior)
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
       previewFile.path,
       machineLearning.facialRecognition,

@@ -1542,7 +1542,7 @@ describe(MediaService.name, () => {
     });
 
     it('should copy video stream when video matches target', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mocks.media.probe.mockResolvedValue(probeStub.matroskaContainerHevc);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { targetVideoCodec: VideoCodec.Hevc, acceptedAudioCodecs: [AudioCodec.Aac] },
       });
@@ -1580,7 +1580,7 @@ describe(MediaService.name, () => {
     });
 
     it('should include hevc tag when target is hevc and copying hevc video stream', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mocks.media.probe.mockResolvedValue(probeStub.matroskaContainerHevc);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: {
           targetVideoCodec: VideoCodec.Hevc,
@@ -2158,7 +2158,7 @@ describe(MediaService.name, () => {
     });
 
     it('should set format to nv12 for nvenc if input is not yuv420p', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream444p);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: true },
       });
@@ -2377,7 +2377,7 @@ describe(MediaService.name, () => {
     });
 
     it('should set format to nv12 for qsv if input is not yuv420p', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream444p);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHardwareAcceleration.Qsv, accelDecode: true },
       });
@@ -2589,7 +2589,7 @@ describe(MediaService.name, () => {
     });
 
     it('should set format to nv12 for vaapi if input is not yuv420p', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream444p);
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true },
       });
@@ -2889,8 +2889,8 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode when policy is required and video is not yuv420p', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
+    it('should transcode when policy is required and video is yuv444p (incompatible pixel format)', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream444p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Required } });
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
@@ -2904,8 +2904,28 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should convert to yuv420p when scaling without tone-mapping', async () => {
-      mocks.media.probe.mockResolvedValue(probeStub.videoStream4K10Bit);
+    it('should not transcode when policy is required and video is 10-bit yuv420p10le', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream10Bit);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.Required, acceptedVideoCodecs: [VideoCodec.H264] },
+      });
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should convert to yuv420p when scaling with incompatible pixel format', async () => {
+      // Use a 4K video with incompatible yuv444p format to trigger transcoding
+      const videoStream4K444p = {
+        ...probeStub.videoStream444p,
+        videoStreams: [
+          {
+            ...probeStub.videoStream444p.videoStreams[0],
+            height: 2160,
+            width: 3840,
+          },
+        ],
+      };
+      mocks.media.probe.mockResolvedValue(videoStream4K444p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Required } });
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(

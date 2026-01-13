@@ -628,7 +628,9 @@ export class MediaService extends BaseService {
     const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
-    const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
+    // Accept both 8-bit (yuv420p) and 10-bit (yuv420p10le/yuv420p10be) 4:2:0 formats
+    const isAcceptedPixelFormat = stream.pixelFormat.startsWith('yuv420p');
+    const isRequired = !isTargetVideoCodec || !isAcceptedPixelFormat;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.Disabled: {
@@ -657,7 +659,15 @@ export class MediaService extends BaseService {
       return false;
     }
 
-    const name = formatLongName === 'QuickTime / MOV' ? VideoContainer.Mov : (formatName as VideoContainer);
+    let name: VideoContainer;
+    if (formatLongName === 'QuickTime / MOV') {
+      name = VideoContainer.Mov;
+    } else if (formatName === 'matroska,webm') {
+      name = VideoContainer.Matroska;
+    } else {
+      name = formatName as VideoContainer;
+    }
+
     return name !== VideoContainer.Mp4 && !ffmpegConfig.acceptedContainers.includes(name);
   }
 

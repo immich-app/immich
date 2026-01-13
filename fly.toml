@@ -9,14 +9,16 @@ primary_region = 'ord'
   IMMICH_ENV = 'production'
   IMMICH_LOG_LEVEL = 'log'
   IMMICH_MEDIA_LOCATION = '/usr/src/app/upload'
+  IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
   # Database
   DB_HOSTNAME = 'immich-postgres.internal'
   DB_PORT = '5432'
   DB_DATABASE_NAME = 'immich'
   DB_USERNAME = 'immich'
-  # Redis
-  REDIS_HOSTNAME = 'immich-redis.internal'
+  # Redis (Upstash managed)
+  REDIS_HOSTNAME = 'fly-immich-redis-managed.upstash.io'
   REDIS_PORT = '6379'
+  REDIS_USERNAME = 'default'
   # Machine Learning
   IMMICH_MACHINE_LEARNING_URL = 'http://immich-ml1.flycast:3003'
   # S3/Tigris Storage

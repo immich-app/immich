@@ -306,6 +306,8 @@ export enum StorageLocationType {
   Thumbnails = 'thumbnails',
   Previews = 'previews',
   EncodedVideos = 'encoded-videos',
+  Profile = 'profile',
+  Backups = 'backups',
 }
 
 export enum SystemMetadataKey {
@@ -425,6 +427,7 @@ export enum VideoContainer {
   Mp4 = 'mp4',
   Ogg = 'ogg',
   Webm = 'webm',
+  Matroska = 'matroska,webm',
 }
 
 export enum TranscodeHardwareAcceleration {
@@ -652,6 +655,8 @@ export enum JobName {
   // S3 Storage
   S3UploadAsset = 'S3UploadAsset',
   S3UploadQueueAll = 'S3UploadQueueAll',
+  S3MigrateStorageClass = 'S3MigrateStorageClass',
+  S3MigrateStorageClassAll = 'S3MigrateStorageClassAll',
 
   TagCleanup = 'TagCleanup',
 

@@ -52,6 +52,21 @@ class MaxBatchSize(BaseModel):
     text_recognition: int | None = None
 
 
+class StreamBatchSettings(BaseModel):
+    clip_size: int = 8
+    clip_wait_ms: int = 100
+    face_size: int = 4
+    face_wait_ms: int = 50
+    ocr_size: int = 8
+    ocr_wait_ms: int = 100
+
+
+class StreamSettings(BaseModel):
+    enabled: bool = False
+    redis_url: str = "redis://redis:6379"
+    batch: StreamBatchSettings = StreamBatchSettings()
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MACHINE_LEARNING_",
@@ -79,6 +94,7 @@ class Settings(BaseSettings):
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
+    stream: StreamSettings = StreamSettings()
 
     @property
     def device_id(self) -> str:

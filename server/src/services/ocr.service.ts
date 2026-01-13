@@ -4,7 +4,7 @@ import { OnJob } from 'src/decorators';
 import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf, MlStreamTask } from 'src/types';
 import { tokenizeForSearch } from 'src/utils/database';
 import { isOcrEnabled } from 'src/utils/misc';
 
@@ -53,6 +53,26 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+    if (machineLearning.streamMode?.enabled) {
+      await this.mlStreamRepository.publish({
+        correlationId: this.cryptoRepository.randomUUID(),
+        assetId: id,
+        taskType: MlStreamTask.Ocr,
+        imagePath: asset.previewFile,
+        config: {
+          modelName: machineLearning.ocr.modelName,
+          minDetectionScore: machineLearning.ocr.minDetectionScore,
+          minRecognitionScore: machineLearning.ocr.minRecognitionScore,
+          maxResolution: machineLearning.ocr.maxResolution,
+        },
+        timestamp: Date.now(),
+        attempt: 1,
+      });
+      return JobStatus.Success;
+    }
+
+    // Sync mode (existing behavior)
     const ocrResults = await this.machineLearningRepository.ocr(asset.previewFile, machineLearning.ocr);
     const { ocrDataList, searchText } = this.parseOcrResults(id, ocrResults);
     await this.ocrRepository.upsert(id, ocrDataList, searchText);

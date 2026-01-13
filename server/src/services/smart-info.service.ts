@@ -5,7 +5,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf, MlStreamTask } from 'src/types';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -114,6 +114,23 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Use stream mode if enabled (fire-and-forget, result handled by MlResultService)
+    if (machineLearning.streamMode?.enabled) {
+      await this.mlStreamRepository.publish({
+        correlationId: this.cryptoRepository.randomUUID(),
+        assetId: asset.id,
+        taskType: MlStreamTask.Clip,
+        imagePath: asset.files[0].path,
+        config: {
+          modelName: machineLearning.clip.modelName,
+        },
+        timestamp: Date.now(),
+        attempt: 1,
+      });
+      return JobStatus.Success;
+    }
+
+    // Sync mode (existing behavior)
     const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {

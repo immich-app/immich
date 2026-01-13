@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -302,6 +303,23 @@ class MachineLearningCircuitBreakerDto {
   resetTimeout!: number;
 }
 
+class MachineLearningStreamModeDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @IsInt()
+  @Min(1)
+  maxPending!: number;
+
+  @IsInt()
+  @Min(1)
+  resultTtlHours!: number;
+
+  @IsInt()
+  @Min(1)
+  maxRetries!: number;
+}
+
 class SystemConfigMachineLearningDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -345,6 +363,11 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   circuitBreaker!: MachineLearningCircuitBreakerDto;
+
+  @Type(() => MachineLearningStreamModeDto)
+  @ValidateNested()
+  @IsObject()
+  streamMode!: MachineLearningStreamModeDto;
 }
 
 enum MapTheme {
@@ -651,6 +674,28 @@ export class SystemConfigImageDto {
   extractEmbedded!: boolean;
 }
 
+class SystemConfigStorageClassesDto {
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  thumbnails!: string;
+
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  previews!: string;
+
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  originalsPhotos!: string;
+
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  originalsVideos!: string;
+
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  encodedVideos!: string;
+}
+
 const isS3Enabled = (config: SystemConfigStorageS3Dto) => config.enabled;
 
 class SystemConfigStorageS3Dto {
@@ -685,6 +730,11 @@ class SystemConfigStorageS3Dto {
 
   @ValidateBoolean()
   forcePathStyle!: boolean;
+
+  @Type(() => SystemConfigStorageClassesDto)
+  @ValidateNested()
+  @IsObject()
+  storageClasses!: SystemConfigStorageClassesDto;
 }
 
 class SystemConfigStorageLocationsDto {
@@ -699,6 +749,12 @@ class SystemConfigStorageLocationsDto {
 
   @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
   encodedVideos!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  profile!: StorageBackend;
+
+  @ValidateEnum({ enum: StorageBackend, name: 'StorageBackend' })
+  backups!: StorageBackend;
 }
 
 enum UploadStrategy {
