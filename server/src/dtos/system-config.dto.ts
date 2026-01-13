@@ -292,6 +292,16 @@ class MachineLearningAvailabilityChecksDto {
   interval!: number;
 }
 
+class MachineLearningCircuitBreakerDto {
+  @IsInt()
+  @Min(1)
+  failureThreshold!: number;
+
+  @IsInt()
+  @Min(1000)
+  resetTimeout!: number;
+}
+
 class SystemConfigMachineLearningDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -326,6 +336,15 @@ class SystemConfigMachineLearningDto {
   @ValidateNested()
   @IsObject()
   ocr!: OcrConfig;
+
+  @IsInt()
+  @Min(1000)
+  requestTimeout!: number;
+
+  @Type(() => MachineLearningCircuitBreakerDto)
+  @ValidateNested()
+  @IsObject()
+  circuitBreaker!: MachineLearningCircuitBreakerDto;
 }
 
 enum MapTheme {
@@ -732,32 +751,6 @@ class SystemConfigUserDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   deleteDelay!: number;
-}
-
-class SystemConfigS3Dto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsString()
-  endpoint!: string;
-
-  @IsString()
-  bucket!: string;
-
-  @IsString()
-  region!: string;
-
-  @IsString()
-  accessKeyId!: string;
-
-  @IsString()
-  secretAccessKey!: string;
-
-  @IsString()
-  prefix!: string;
-
-  @ValidateBoolean()
-  forcePathStyle!: boolean;
 }
 
 export class SystemConfigDto implements SystemConfig {

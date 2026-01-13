@@ -31,6 +31,12 @@ export class SmartInfoService extends BaseService {
     }
   }
 
+  @OnEvent({ name: 'MlCircuitRecovered', workers: [ImmichWorker.Microservices] })
+  async onMlCircuitRecovered() {
+    this.logger.log('Queueing missing smart search jobs after circuit recovery');
+    await this.handleQueueEncodeClip({ force: false });
+  }
+
   private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {
     if (!isSmartSearchEnabled(newConfig.machineLearning)) {
       return;

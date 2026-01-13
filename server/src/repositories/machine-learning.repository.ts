@@ -3,7 +3,15 @@ import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+
+export class CircuitOpenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CircuitOpenError';
+  }
+}
 
 export interface BoundingBox {
   x1: number;
@@ -83,6 +91,11 @@ export class MachineLearningRepository {
   private interval?: ReturnType<typeof setInterval>;
   private _config?: MachineLearningConfig;
 
+  // Circuit breaker state
+  private circuitState: 'closed' | 'open' | 'half-open' = 'closed';
+  private failureCount = 0;
+  private lastFailureTime = 0;
+
   private get config(): MachineLearningConfig {
     if (!this._config) {
       throw new Error('Machine learning repository not been setup');
@@ -91,7 +104,10 @@ export class MachineLearningRepository {
     return this._config;
   }
 
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    private logger: LoggingRepository,
+    private eventRepository: EventRepository,
+  ) {
     this.logger.setContext(MachineLearningRepository.name);
   }
 
@@ -161,7 +177,41 @@ export class MachineLearningRepository {
     return this.healthyMap[url];
   }
 
+  private checkCircuit(): void {
+    if (this.circuitState === 'open') {
+      const timeSinceFailure = Date.now() - this.lastFailureTime;
+      if (timeSinceFailure > this.config.circuitBreaker.resetTimeout) {
+        this.circuitState = 'half-open';
+        this.logger.log('ML circuit breaker entering half-open state');
+      } else {
+        throw new CircuitOpenError('ML circuit breaker is open');
+      }
+    }
+  }
+
+  private recordSuccess(): void {
+    const wasHalfOpen = this.circuitState === 'half-open';
+    this.failureCount = 0;
+    this.circuitState = 'closed';
+
+    if (wasHalfOpen) {
+      this.logger.log('ML circuit breaker closed - triggering recovery');
+      void this.eventRepository.emit('MlCircuitRecovered');
+    }
+  }
+
+  private recordFailure(): void {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+    if (this.failureCount >= this.config.circuitBreaker.failureThreshold) {
+      this.circuitState = 'open';
+      this.logger.warn(`ML circuit breaker opened after ${this.failureCount} failures`);
+    }
+  }
+
   private async predict<T>(payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
+    this.checkCircuit();
+
     const formData = await this.getFormData(payload, config);
 
     for (const url of [
@@ -170,8 +220,13 @@ export class MachineLearningRepository {
       ...this.config.urls.filter((url) => !this.isHealthy(url)),
     ]) {
       try {
-        const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
+        const response = await fetch(new URL('/predict', url), {
+          method: 'POST',
+          body: formData,
+          signal: AbortSignal.timeout(this.config.requestTimeout),
+        });
         if (response.ok) {
+          this.recordSuccess();
           this.setHealthy(url, true);
           return response.json();
         }
@@ -188,6 +243,7 @@ export class MachineLearningRepository {
       this.setHealthy(url, false);
     }
 
+    this.recordFailure();
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
   }
 

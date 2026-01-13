@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { StorageBackend, StorageLocationType } from 'src/enum';
 import { StorageCore } from 'src/cores/storage.core';
-import { IStorageAdapter } from './storage-adapter.interface';
-import { LocalStorageAdapter } from './local-storage.adapter';
-import { S3StorageAdapter, S3StorageConfig } from './s3-storage.adapter';
+import { IStorageAdapter } from 'src/repositories/storage/storage-adapter.interface';
+import { LocalStorageAdapter } from 'src/repositories/storage/local-storage.adapter';
+import { S3StorageAdapter, S3StorageConfig } from 'src/repositories/storage/s3-storage.adapter';
 
 /**
  * Factory for creating storage adapters based on configuration.
@@ -28,11 +28,12 @@ export class StorageAdapterFactory {
    */
   getAdapterByBackend(config: SystemConfig['storage'], backend: StorageBackend): IStorageAdapter {
     switch (backend) {
-      case StorageBackend.S3:
+      case StorageBackend.S3: {
         return this.getS3Adapter(config.s3);
-      case StorageBackend.Local:
-      default:
+      }
+      default: {
         return this.getLocalAdapter();
+      }
     }
   }
 
@@ -82,16 +83,21 @@ export class StorageAdapterFactory {
     locationType: StorageLocationType,
   ): StorageBackend {
     switch (locationType) {
-      case StorageLocationType.Originals:
+      case StorageLocationType.Originals: {
         return config.locations.originals;
-      case StorageLocationType.Thumbnails:
+      }
+      case StorageLocationType.Thumbnails: {
         return config.locations.thumbnails;
-      case StorageLocationType.Previews:
+      }
+      case StorageLocationType.Previews: {
         return config.locations.previews;
-      case StorageLocationType.EncodedVideos:
+      }
+      case StorageLocationType.EncodedVideos: {
         return config.locations.encodedVideos;
-      default:
+      }
+      default: {
         return config.backend;
+      }
     }
   }
 

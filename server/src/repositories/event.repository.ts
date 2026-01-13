@@ -71,6 +71,9 @@ type EventMap = {
   // queue events
   QueueStart: [QueueStartEvent];
 
+  // ML circuit breaker events
+  MlCircuitRecovered: [];
+
   // session events
   SessionDelete: [{ sessionId: string }];
 

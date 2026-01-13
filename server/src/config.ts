@@ -82,6 +82,11 @@ export interface SystemConfig {
       minRecognitionScore: number;
       maxResolution: number;
     };
+    requestTimeout: number;
+    circuitBreaker: {
+      failureThreshold: number;
+      resetTimeout: number;
+    };
   };
   map: {
     enabled: boolean;
@@ -274,6 +279,11 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
       interval: 30_000,
+    },
+    requestTimeout: Number(process.env.IMMICH_MACHINE_LEARNING_REQUEST_TIMEOUT) || 120_000,
+    circuitBreaker: {
+      failureThreshold: Number(process.env.IMMICH_ML_CIRCUIT_FAILURE_THRESHOLD) || 5,
+      resetTimeout: Number(process.env.IMMICH_ML_CIRCUIT_RESET_TIMEOUT) || 60_000,
     },
     clip: {
       enabled: true,

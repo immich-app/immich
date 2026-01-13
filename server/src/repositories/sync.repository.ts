@@ -3,6 +3,7 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { UserMetadataKey } from 'src/enum';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
 
@@ -730,6 +731,7 @@ class UserMetadataSync extends BaseSync {
     return this.auditQuery('user_metadata_audit', options)
       .select(['id', 'userId', 'key'])
       .where('userId', '=', options.userId)
+      .where('key', '!=', UserMetadataKey.GoogleDriveTokens)
       .stream();
   }
 
@@ -742,6 +744,7 @@ class UserMetadataSync extends BaseSync {
     return this.upsertQuery('user_metadata', options)
       .select(['userId', 'key', 'value', 'updateId'])
       .where('userId', '=', options.userId)
+      .where('key', '!=', UserMetadataKey.GoogleDriveTokens)
       .stream();
   }
 }

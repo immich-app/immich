@@ -11,8 +11,8 @@ import { OnJob } from 'src/decorators';
 function scryptAsync(password: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     scrypt(password, salt, keylen, options, (err, derivedKey) => {
-      if (err) reject(err);
-      else resolve(derivedKey);
+      if (err) {reject(err);}
+      else {resolve(derivedKey);}
     });
   });
 }
@@ -55,7 +55,6 @@ export class AssetEncryptionService extends BaseService {
     });
 
     // Get unencrypted assets for this user
-    const batchSize = 100;
     const unencryptedAssetIds = await this.assetEncryptionRepository.getUnencryptedAssetIds(userId, 1000);
 
     // Queue encryption jobs for each asset
@@ -74,7 +73,7 @@ export class AssetEncryptionService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetEncryptAll, queue: QueueName.Encryption })
-  async handleEncryptAll(job: JobOf<JobName.AssetEncryptAll>): Promise<JobStatus> {
+  handleEncryptAll(_job: JobOf<JobName.AssetEncryptAll>): JobStatus {
     // This job is for admin-triggered encryption of all users' assets
     // For now, it's a no-op - users should trigger their own migration
     this.logger.log('AssetEncryptAll job triggered - this requires per-user vault unlock');

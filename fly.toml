@@ -18,7 +18,7 @@ primary_region = 'ord'
   REDIS_HOSTNAME = 'immich-redis.internal'
   REDIS_PORT = '6379'
   # Machine Learning
-  IMMICH_MACHINE_LEARNING_URL = 'http://immich-ml1.internal:3003'
+  IMMICH_MACHINE_LEARNING_URL = 'http://immich-ml1.flycast:3003'
   # S3/Tigris Storage
   STORAGE_S3_ENDPOINT = 'https://fly.storage.tigris.dev'
   STORAGE_S3_BUCKET = 'immich-media'
@@ -48,5 +48,5 @@ primary_region = 'ord'
     soft_limit = 200
 
 [[vm]]
-  memory = '2gb'
+  memory = '4gb'
   cpus = 2

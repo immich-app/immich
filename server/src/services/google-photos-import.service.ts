@@ -1,10 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import * as path from 'node:path';
 import { pipeline } from 'node:stream/promises';
-import { createGunzip } from 'node:zlib';
 import { Readable } from 'node:stream';
 import {
   GooglePhotosImportProgressDto,
@@ -95,7 +94,7 @@ export class GooglePhotosImportService {
     return { id: jobId };
   }
 
-  async createImportJobFromDrive(userId: string, fileIds: string[]): Promise<{ id: string }> {
+  createImportJobFromDrive(userId: string, fileIds: string[]): { id: string } {
     const jobId = randomUUID();
 
     const job: ImportJob = {
@@ -175,7 +174,7 @@ export class GooglePhotosImportService {
         job.progress.current++;
         job.progress.currentFile = path.basename(asset.mediaPath);
 
-        await this.uploadAsset(job.userId, asset);
+        this.uploadAsset(job.userId, asset);
       }
 
       // Complete
@@ -203,7 +202,7 @@ export class GooglePhotosImportService {
         job.progress.current = i + 1;
         job.progress.currentFile = `Downloading file ${i + 1}/${job.files.length}`;
 
-        const filePath = await this.downloadFromDrive(fileId, jobDir);
+        const filePath = this.downloadFromDrive(fileId, jobDir);
         downloadedFiles.push(filePath);
       }
 
@@ -266,7 +265,7 @@ export class GooglePhotosImportService {
       let metadata: GooglePhotosMetadata | undefined;
       if (jsonPath) {
         try {
-          const content = await readFile(jsonPath, 'utf-8');
+          const content = await readFile(jsonPath, 'utf8');
           metadata = JSON.parse(content);
           job.progress.photosMatched++;
         } catch {
@@ -397,7 +396,7 @@ export class GooglePhotosImportService {
     return albumFolder;
   }
 
-  private async uploadAsset(userId: string, asset: TakeoutAsset): Promise<void> {
+  private uploadAsset(_userId: string, asset: TakeoutAsset): void {
     // This would integrate with the existing asset upload service
     // For now, this is a placeholder that demonstrates the structure
 
@@ -408,7 +407,7 @@ export class GooglePhotosImportService {
     this.logger.debug(`Would upload: ${asset.mediaPath} (album: ${asset.albumName})`);
   }
 
-  private async downloadFromDrive(fileId: string, targetDir: string): Promise<string> {
+  private downloadFromDrive(_fileId: string, _targetDir: string): string {
     // This would use Google Drive API to download the file
     // Requires OAuth token from the user's session
 

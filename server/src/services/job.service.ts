@@ -179,27 +179,24 @@ export class JobService extends BaseService {
       case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
+          // Only queue S3 upload once after SmartSearch (first ML job to complete for uploads)
+          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
         }
-        // Queue encryption check after smart search completes
-        await this.jobRepository.queue({ name: JobName.AssetEncrypt, data: item.data });
         break;
       }
 
-      // Queue encryption after face detection completes
+      // Face detection complete - no additional jobs needed
       case JobName.AssetDetectFaces: {
-        await this.jobRepository.queue({ name: JobName.AssetEncrypt, data: item.data });
         break;
       }
 
-      // Queue encryption after OCR completes
+      // OCR complete - no additional jobs needed
       case JobName.Ocr: {
-        await this.jobRepository.queue({ name: JobName.AssetEncrypt, data: item.data });
         break;
       }
 
-      // Queue encryption after video encoding completes
+      // Video encoding complete - no additional jobs needed
       case JobName.AssetEncodeVideo: {
-        await this.jobRepository.queue({ name: JobName.AssetEncrypt, data: item.data });
         break;
       }
     }

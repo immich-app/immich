@@ -4927,6 +4927,352 @@
         "x-immich-state": "Stable"
       }
     },
+    "/google-photos/google-drive/auth": {
+      "delete": {
+        "operationId": "disconnectGoogleDrive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Disconnect Google Drive",
+        "tags": [
+          "Google Photos Import"
+        ]
+      },
+      "post": {
+        "operationId": "initiateGoogleDriveAuth",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Initiate Google Drive OAuth flow",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/google-drive/callback": {
+      "get": {
+        "operationId": "handleGoogleDriveCallback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Google Drive OAuth callback",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/google-drive/files": {
+      "get": {
+        "operationId": "listDriveFiles",
+        "parameters": [
+          {
+            "name": "query",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleDriveFilesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List Takeout files in Google Drive",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/import": {
+      "post": {
+        "operationId": "importFromFiles",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "files": {
+                    "items": {
+                      "format": "binary",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "Google Takeout ZIP files",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GooglePhotosImportJobDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Import Google Photos Takeout ZIP files",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/import-from-drive": {
+      "post": {
+        "operationId": "importFromDrive",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GooglePhotosImportFromDriveDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GooglePhotosImportJobDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Import Google Photos Takeout from Google Drive",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/import/{id}": {
+      "delete": {
+        "operationId": "cancelImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Cancel import job",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/google-photos/import/{id}/progress": {
+      "get": {
+        "operationId": "getProgress",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GooglePhotosImportProgressDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get import job progress",
+        "tags": [
+          "Google Photos Import"
+        ]
+      }
+    },
+    "/importer/bootstrap/{token}/{platform}": {
+      "get": {
+        "description": "Downloads a personalized bootstrap binary for the specified platform. The binary has the server URL and setup token embedded.",
+        "operationId": "getBootstrap",
+        "parameters": [
+          {
+            "name": "platform",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Download bootstrap binary",
+        "tags": [
+          "Importer"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/importer/config/{token}": {
+      "get": {
+        "description": "Returns the server URL, API key, and OAuth credentials for the desktop importer app. This endpoint is called by the desktop app after receiving the setup token.",
+        "operationId": "getConfig",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImporterConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get importer configuration",
+        "tags": [
+          "Importer"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/importer/setup-token": {
+      "post": {
+        "description": "Creates a temporary API key and setup token that can be used to configure the desktop importer app. The token is valid for 30 days.",
+        "operationId": "createSetupToken",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupTokenResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a setup token for the Google Photos Importer app",
+        "tags": [
+          "Importer"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.upload"
+      }
+    },
     "/jobs": {
       "get": {
         "deprecated": true,
@@ -13945,6 +14291,557 @@
         "x-immich-state": "Stable"
       }
     },
+    "/vault": {
+      "delete": {
+        "description": "Delete your vault. WARNING: This will make all encrypted assets inaccessible.",
+        "operationId": "deleteVault",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete vault",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/admin/recover": {
+      "post": {
+        "description": "Recover a user vault using the admin private key. Sets a new vault password for the user.",
+        "operationId": "adminRecoverVault",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecoverVaultDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Recover user vault",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/admin/recovery-key": {
+      "post": {
+        "description": "Register a public key for admin vault recovery. Keep the private key safe offline.",
+        "operationId": "registerAdminRecoveryKey",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecoveryKeyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Register admin recovery key",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/admin/recovery-key/{id}": {
+      "delete": {
+        "description": "Delete an admin recovery key. This will prevent recovery for vaults that used this key.",
+        "operationId": "deleteAdminRecoveryKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete admin recovery key",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/admin/recovery-keys": {
+      "get": {
+        "description": "List all registered admin recovery keys.",
+        "operationId": "getAdminRecoveryKeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdminRecoveryKeyResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List admin recovery keys",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/admin/recovery-status": {
+      "get": {
+        "description": "Check if an admin recovery key has been registered.",
+        "operationId": "getAdminRecoveryStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRecoveryStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Check admin recovery status",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/change-password": {
+      "post": {
+        "description": "Change your vault password. This will re-encrypt the vault key.",
+        "operationId": "changePassword",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaultChangePasswordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Change vault password",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/lock": {
+      "post": {
+        "description": "Lock the vault, clearing the cached key from your session.",
+        "operationId": "lockVault",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Lock vault",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/migrate": {
+      "post": {
+        "description": "Queue encryption for all your existing unencrypted assets. Vault must be unlocked.",
+        "operationId": "migrateAssets",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaultMigrationResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Encrypt existing assets",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/setup": {
+      "post": {
+        "description": "Create a new vault with the specified password. This enables encryption for your assets.",
+        "operationId": "setupVault",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaultSetupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Set up vault",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/status": {
+      "get": {
+        "description": "Check if you have a vault set up and if it is currently unlocked.",
+        "operationId": "getVaultStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get vault status",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/vault/unlock": {
+      "post": {
+        "description": "Unlock the vault with your password to access encrypted assets.",
+        "operationId": "unlockVault",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VaultUnlockDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Unlock vault",
+        "tags": [
+          "Vault"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
     "/view/folder": {
       "get": {
         "description": "Retrieve assets that are children of a specific folder.",
@@ -14377,6 +15274,10 @@
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
     },
     {
+      "name": "Importer",
+      "description": "Desktop app importer endpoints for the Google Photos import tool. These endpoints handle setup tokens, configuration, and bootstrap binary downloads."
+    },
+    {
       "name": "Jobs",
       "description": "Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed."
     },
@@ -14471,6 +15372,10 @@
     {
       "name": "Users",
       "description": "Endpoints for viewing and updating the current users, including product key information, profile picture data, onboarding progress, and more."
+    },
+    {
+      "name": "Vault",
+      "description": "Endpoints for managing the user vault, which enables end-to-end encryption for assets. Includes vault setup, unlock, lock, and password management."
     },
     {
       "name": "Views",
@@ -14689,6 +15594,22 @@
         "required": [
           "isOnboarded"
         ],
+        "type": "object"
+      },
+      "AdminRecoverVaultDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "AdminRecoveryKeyDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "AdminRecoveryKeyResponseDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "AdminRecoveryStatusDto": {
+        "properties": {},
         "type": "object"
       },
       "AlbumResponseDto": {
@@ -16646,12 +17567,171 @@
         },
         "type": "object"
       },
+      "GoogleDriveFileDto": {
+        "properties": {
+          "createdTime": {
+            "description": "Creation timestamp",
+            "type": "string"
+          },
+          "id": {
+            "description": "Google Drive file ID",
+            "type": "string"
+          },
+          "mimeType": {
+            "description": "MIME type",
+            "type": "string"
+          },
+          "name": {
+            "description": "File name",
+            "type": "string"
+          },
+          "size": {
+            "description": "File size in bytes",
+            "type": "number"
+          }
+        },
+        "required": [
+          "createdTime",
+          "id",
+          "mimeType",
+          "name",
+          "size"
+        ],
+        "type": "object"
+      },
+      "GoogleDriveFilesResponseDto": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/GoogleDriveFileDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "type": "object"
+      },
+      "GooglePhotosImportFromDriveDto": {
+        "properties": {
+          "fileIds": {
+            "description": "Array of Google Drive file IDs to import",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "fileIds"
+        ],
+        "type": "object"
+      },
+      "GooglePhotosImportJobDto": {
+        "properties": {
+          "id": {
+            "description": "Import job ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "GooglePhotosImportProgressDto": {
+        "properties": {
+          "albumsFound": {
+            "description": "Number of albums found",
+            "type": "number"
+          },
+          "current": {
+            "description": "Current progress count",
+            "type": "number"
+          },
+          "currentFile": {
+            "description": "Current file being processed",
+            "type": "string"
+          },
+          "errors": {
+            "description": "List of errors encountered",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "phase": {
+            "enum": [
+              "extracting",
+              "parsing",
+              "uploading",
+              "complete"
+            ],
+            "type": "string"
+          },
+          "photosMatched": {
+            "description": "Number of photos with metadata",
+            "type": "number"
+          },
+          "photosMissingMetadata": {
+            "description": "Number of photos missing metadata",
+            "type": "number"
+          },
+          "total": {
+            "description": "Total items to process",
+            "type": "number"
+          }
+        },
+        "required": [
+          "albumsFound",
+          "current",
+          "errors",
+          "phase",
+          "photosMatched",
+          "photosMissingMetadata",
+          "total"
+        ],
+        "type": "object"
+      },
       "ImageFormat": {
         "enum": [
           "jpeg",
           "webp"
         ],
         "type": "string"
+      },
+      "ImporterConfigResponseDto": {
+        "properties": {
+          "apiKey": {
+            "type": "string"
+          },
+          "oauth": {
+            "properties": {
+              "clientId": {
+                "type": "string"
+              },
+              "clientSecret": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "clientId",
+              "clientSecret"
+            ],
+            "type": "object"
+          },
+          "serverUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "oauth",
+          "serverUrl"
+        ],
+        "type": "object"
       },
       "JobCreateDto": {
         "properties": {
@@ -16726,7 +17806,9 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
-          "WorkflowRun"
+          "WorkflowRun",
+          "AssetEncrypt",
+          "AssetEncryptAll"
         ],
         "type": "string"
       },
@@ -18627,7 +19709,8 @@
           "backupDatabase",
           "ocr",
           "workflow",
-          "s3Upload"
+          "s3Upload",
+          "encryption"
         ],
         "type": "string"
       },
@@ -18734,6 +19817,9 @@
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "encryption": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -18784,6 +19870,7 @@
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
+          "encryption",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -19698,6 +20785,22 @@
         },
         "required": [
           "action"
+        ],
+        "type": "object"
+      },
+      "SetupTokenResponseDto": {
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expiresAt",
+          "token"
         ],
         "type": "object"
       },
@@ -21646,6 +22749,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "encryption": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -21688,6 +22794,7 @@
         },
         "required": [
           "backgroundTask",
+          "encryption",
           "faceDetection",
           "library",
           "metadataExtraction",
@@ -23137,7 +24244,8 @@
         "enum": [
           "preferences",
           "license",
-          "onboarding"
+          "onboarding",
+          "google-drive-tokens"
         ],
         "type": "string"
       },
@@ -23360,6 +24468,22 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "VaultChangePasswordDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "VaultMigrationResponseDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "VaultSetupDto": {
+        "properties": {},
+        "type": "object"
+      },
+      "VaultUnlockDto": {
+        "properties": {},
         "type": "object"
       },
       "VersionCheckStateResponseDto": {

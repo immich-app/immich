@@ -11,7 +11,7 @@ import {
   UploadPartCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Readable, Writable } from 'node:stream';
+import { PassThrough, Readable, Writable } from 'node:stream';
 import { Upload } from '@aws-sdk/lib-storage';
 import {
   IStorageAdapter,
@@ -20,7 +20,7 @@ import {
   StorageObjectInfo,
   StorageReadStream,
   StorageWriteOptions,
-} from './storage-adapter.interface';
+} from 'src/repositories/storage/storage-adapter.interface';
 
 export interface S3StorageConfig {
   endpoint?: string;
@@ -153,7 +153,6 @@ export class S3StorageAdapter implements IStorageAdapter {
 
   writeStream(key: string): Writable {
     // Use a passthrough stream with Upload from @aws-sdk/lib-storage
-    const { PassThrough } = require('node:stream');
     const passThrough = new PassThrough();
 
     const upload = new Upload({

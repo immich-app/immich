@@ -49,6 +49,30 @@ export class S3StorageService extends BaseService {
       // Generate S3 key
       const s3Key = this.generateS3Key(asset.ownerId, asset.id, asset.originalPath);
 
+      // Check if local file exists before attempting upload
+      const localFileExists = await localAdapter.exists(asset.originalPath);
+      if (!localFileExists) {
+        // File may have been deleted by a previous successful upload
+        // Check if already in S3
+        try {
+          const s3Exists = await s3Adapter.exists(s3Key);
+          if (s3Exists) {
+            this.logger.debug(`Asset ${id} local file missing but already in S3, marking as uploaded`);
+            await this.assetRepository.update({
+              id: asset.id,
+              storageBackend: StorageBackend.S3,
+              s3Bucket: config.storage.s3.bucket,
+              s3Key,
+            });
+            return JobStatus.Success;
+          }
+        } catch {
+          // S3 check failed, log and fail the job
+        }
+        this.logger.warn(`Local file not found for asset ${id}: ${asset.originalPath}`);
+        return JobStatus.Failed;
+      }
+
       this.logger.log(`Uploading asset ${id} to S3: ${s3Key}`);
 
       // Read from local storage
@@ -72,7 +96,7 @@ export class S3StorageService extends BaseService {
         id: asset.id,
         storageBackend: StorageBackend.S3,
         s3Bucket: config.storage.s3.bucket,
-        s3Key: s3Key,
+        s3Key,
       });
 
       this.logger.log(`Successfully uploaded asset ${id} to S3`);

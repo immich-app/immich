@@ -255,9 +255,13 @@ const getEnv = (): EnvData => {
         prefix: 'immich_bull',
         connection: { ...redisConfig },
         defaultJobOptions: {
-          attempts: 1,
+          attempts: 3,
           removeOnComplete: true,
           removeOnFail: false,
+          backoff: {
+            type: 'exponential',
+            delay: 30_000,
+          },
         },
       },
       queues: Object.values(QueueName).map((name) => ({ name })),

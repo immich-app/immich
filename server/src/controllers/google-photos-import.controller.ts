@@ -14,7 +14,7 @@ import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { Auth } from 'src/middleware/auth.guard';
 import {
   GooglePhotosImportFromDriveDto,
   GooglePhotosImportJobDto,
@@ -55,10 +55,10 @@ export class GooglePhotosImportController {
   @Post('import-from-drive')
   @ApiOperation({ summary: 'Import Google Photos Takeout from Google Drive' })
   @ApiResponse({ status: 201, type: GooglePhotosImportJobDto })
-  async importFromDrive(
+  importFromDrive(
     @Auth() auth: AuthDto,
     @Body() dto: GooglePhotosImportFromDriveDto,
-  ): Promise<GooglePhotosImportJobDto> {
+  ): GooglePhotosImportJobDto {
     return this.importService.createImportJobFromDrive(auth.user.id, dto.fileIds);
   }
 
@@ -84,7 +84,7 @@ export class GooglePhotosImportController {
   // Google Drive OAuth endpoints
   @Post('google-drive/auth')
   @ApiOperation({ summary: 'Initiate Google Drive OAuth flow' })
-  async initiateGoogleDriveAuth(@Auth() auth: AuthDto): Promise<{ authUrl: string }> {
+  initiateGoogleDriveAuth(@Auth() auth: AuthDto): { authUrl: string } {
     // This would generate the OAuth URL for Google Drive
     // In production, you would use @googleapis/oauth2client
 
@@ -145,21 +145,21 @@ export class GooglePhotosImportController {
         throw new Error('Failed to exchange code for tokens');
       }
 
-      const tokens = await tokenResponse.json();
+      await tokenResponse.json();
 
       // TODO: Store tokens securely for this user
       // For now, we'll pass success back to the frontend
       // In production, store in database associated with userId
 
       res.redirect('/utilities/google-photos-import?connected=true');
-    } catch (err) {
+    } catch {
       res.redirect('/utilities/google-photos-import?error=' + encodeURIComponent('Failed to connect'));
     }
   }
 
   @Delete('google-drive/auth')
   @ApiOperation({ summary: 'Disconnect Google Drive' })
-  async disconnectGoogleDrive(@Auth() auth: AuthDto): Promise<void> {
+  disconnectGoogleDrive(@Auth() _auth: AuthDto): void {
     // Remove stored Google OAuth tokens for this user
     // This would be implemented with a user preferences store
   }
@@ -167,10 +167,10 @@ export class GooglePhotosImportController {
   @Get('google-drive/files')
   @ApiOperation({ summary: 'List Takeout files in Google Drive' })
   @ApiResponse({ status: 200, type: GoogleDriveFilesResponseDto })
-  async listDriveFiles(
-    @Auth() auth: AuthDto,
-    @Query('query') query?: string,
-  ): Promise<GoogleDriveFilesResponseDto> {
+  listDriveFiles(
+    @Auth() _auth: AuthDto,
+    @Query('query') _query?: string,
+  ): GoogleDriveFilesResponseDto {
     // This would fetch files using stored OAuth token
     // For now, return empty array
     return { files: [] };

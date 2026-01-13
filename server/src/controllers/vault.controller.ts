@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
+import { ApiTag, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetEncryptionService } from 'src/services/asset-encryption.service';
 import { VaultService, VaultStatusResponseDto } from 'src/services/vault.service';
@@ -144,7 +144,7 @@ export class VaultController {
     description: 'Check if an admin recovery key has been registered.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
-  async getAdminRecoveryStatus(@Auth() auth: AuthDto): Promise<AdminRecoveryStatusDto> {
+  async getAdminRecoveryStatus(@Auth() _auth: AuthDto): Promise<AdminRecoveryStatusDto> {
     const hasRecoveryKey = await this.vaultService.hasAdminRecoveryKey();
     return { hasRecoveryKey };
   }

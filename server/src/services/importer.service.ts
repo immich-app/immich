@@ -140,7 +140,7 @@ export class ImporterService extends BaseService {
     // Patch the binary with actual values
     const patched = this.patchBootstrapBinary(template, data.serverUrl, token);
 
-    this.logger.log(`Built bootstrap for platform ${platform}, token ${token.substring(0, 8)}...`);
+    this.logger.log(`Built bootstrap for platform ${platform}, token ${token.slice(0, 8)}...`);
 
     return patched;
   }
@@ -212,7 +212,7 @@ export class ImporterService extends BaseService {
       }
 
       this.setupTokens.delete(token);
-      this.logger.log(`Revoked setup token ${token.substring(0, 8)}...`);
+      this.logger.log(`Revoked setup token ${token.slice(0, 8)}...`);
     }
   }
 }

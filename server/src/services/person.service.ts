@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Insertable, Updateable } from 'kysely';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
-import { Chunked, OnJob } from 'src/decorators';
+import { Chunked, OnEvent, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -25,6 +25,7 @@ import {
 import {
   AssetVisibility,
   CacheControl,
+  ImmichWorker,
   JobName,
   JobStatus,
   Permission,
@@ -263,6 +264,12 @@ export class PersonService extends BaseService {
     const people = await this.personRepository.getAllWithoutFaces();
     await this.removeAllPeople(people);
     return JobStatus.Success;
+  }
+
+  @OnEvent({ name: 'MlCircuitRecovered', workers: [ImmichWorker.Microservices] })
+  async onMlCircuitRecovered() {
+    this.logger.log('Queueing missing face detection jobs after circuit recovery');
+    await this.handleQueueDetectFaces({ force: false });
   }
 
   @OnJob({ name: JobName.AssetDetectFacesQueueAll, queue: QueueName.FaceDetection })

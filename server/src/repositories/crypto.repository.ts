@@ -14,7 +14,7 @@ import {
   constants as cryptoConstants,
 } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { Transform, TransformCallback } from 'node:stream';
+import { Transform } from 'node:stream';
 
 export interface AesGcmEncryptResult {
   ciphertext: Buffer;

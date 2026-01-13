@@ -1,14 +1,13 @@
-import { createReadStream, createWriteStream, existsSync } from 'node:fs';
+import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Writable } from 'node:stream';
 import {
   IStorageAdapter,
-  PresignedUrlOptions,
   StorageObjectInfo,
   StorageReadStream,
   StorageWriteOptions,
-} from './storage-adapter.interface';
+} from 'src/repositories/storage/storage-adapter.interface';
 
 /**
  * Local filesystem storage adapter.
@@ -78,7 +77,7 @@ export class LocalStorageAdapter implements IStorageAdapter {
     // Ensure directory exists synchronously for stream creation
     const dir = path.dirname(filePath);
     if (!existsSync(dir)) {
-      require('node:fs').mkdirSync(dir, { recursive: true });
+      mkdirSync(dir, { recursive: true });
     }
     return createWriteStream(filePath);
   }

@@ -93,10 +93,10 @@ export const sendFile = async (
           if (!isConnectionAborted(error)) {
             logger.error(`Error streaming decrypted file: ${error}`, (error as Error).stack);
           }
-          if (!res.headersSent) {
-            reject(error);
-          } else {
+          if (res.headersSent) {
             resolve();
+          } else {
+            reject(error);
           }
         });
 
