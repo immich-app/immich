@@ -66,6 +66,8 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           stackId: null,
           livePhotoVideoId: null,
           libraryId: asset.libraryId,
+          width: null,
+          height: null,
         },
         type: SyncEntityType.PartnerAssetV1,
       },

@@ -104,6 +104,10 @@
     };
   });
 
+  const updateCurrentAsset = (asset: AssetResponseDto) => {
+    assets[currentIndex] = asset;
+  };
+
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
 
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
@@ -484,6 +488,7 @@
         onPrevious={handlePrevious}
         onNext={handleNext}
         onRandom={handleRandom}
+        onAssetChange={updateCurrentAsset}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

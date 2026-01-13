@@ -20,6 +20,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -225,5 +226,43 @@ export class AssetController {
   })
   deleteAssetMetadata(@Auth() auth: AuthDto, @Param() { id, key }: AssetMetadataRouteParams): Promise<void> {
     return this.service.deleteMetadataByKey(auth, id, key);
+  }
+
+  @Get(':id/edits')
+  @Authenticated({ permission: Permission.AssetEditGet })
+  @Endpoint({
+    summary: 'Retrieve edits for an existing asset',
+    description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
+  })
+  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
+    return this.service.getAssetEdits(auth, id);
+  }
+
+  @Put(':id/edits')
+  @Authenticated({ permission: Permission.AssetEditCreate })
+  @Endpoint({
+    summary: 'Apply edits to an existing asset',
+    description: 'Apply a series of edit actions (crop, rotate, mirror) to the specified asset.',
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
+  })
+  editAsset(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetEditActionListDto,
+  ): Promise<AssetEditsDto> {
+    return this.service.editAsset(auth, id, dto);
+  }
+
+  @Delete(':id/edits')
+  @Authenticated({ permission: Permission.AssetEditDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Remove edits from an existing asset',
+    description: 'Removes all edit actions (crop, rotate, mirror) associated with the specified asset.',
+    history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
+  })
+  removeAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+    return this.service.removeAssetEdits(auth, id);
   }
 }

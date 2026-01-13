@@ -24,6 +24,7 @@ import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
 import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
@@ -197,6 +198,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             livePhotoVideoId: Value(asset.livePhotoVideoId),
             stackId: Value(asset.stackId),
             libraryId: Value(asset.libraryId),
+            width: Value(asset.width),
+            height: Value(asset.height),
           );
 
           batch.insert(
@@ -248,10 +251,21 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
       await _db.batch((batch) {
         for (final exif in data) {
+          int? width;
+          int? height;
+
+          if (ExifDtoConverter.isOrientationFlipped(exif.orientation)) {
+            width = exif.exifImageHeight;
+            height = exif.exifImageWidth;
+          } else {
+            width = exif.exifImageWidth;
+            height = exif.exifImageHeight;
+          }
+
           batch.update(
             _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion(width: Value(exif.exifImageWidth), height: Value(exif.exifImageHeight)),
-            where: (row) => row.id.equals(exif.assetId),
+            RemoteAssetEntityCompanion(width: Value(width), height: Value(height)),
+            where: (row) => row.id.equals(exif.assetId) & row.width.isNull() & row.height.isNull(),
           );
         }
       });

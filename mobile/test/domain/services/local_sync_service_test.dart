@@ -157,7 +157,14 @@ void main() {
         'album-a': [platformAsset],
       });
 
-      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot.length, 1);
+      final trashedEntry = trashedSnapshot.single;
+      expect(trashedEntry.albumId, 'album-a');
+      expect(trashedEntry.asset.id, platformAsset.id);
+      expect(trashedEntry.asset.name, platformAsset.name);
       verify(() => mockTrashedLocalAssetRepository.getToTrash()).called(1);
 
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
@@ -178,6 +185,10 @@ void main() {
 
       await sut.processTrashedAssets({});
 
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot, isEmpty);
       verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any()));
     });

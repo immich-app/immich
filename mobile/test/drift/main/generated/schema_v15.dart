@@ -1486,13 +1486,6 @@ class LocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<String> iCloudId = GeneratedColumn<String>(
-    'i_cloud_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   late final GeneratedColumn<DateTime> adjustmentTime =
       GeneratedColumn<DateTime>(
         'adjustment_time',
@@ -1528,7 +1521,6 @@ class LocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
-    iCloudId,
     adjustmentTime,
     latitude,
     longitude,
@@ -1588,10 +1580,6 @@ class LocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
-      iCloudId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}i_cloud_id'],
-      ),
       adjustmentTime: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}adjustment_time'],
@@ -1631,7 +1619,6 @@ class LocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
-  final String? iCloudId;
   final DateTime? adjustmentTime;
   final double? latitude;
   final double? longitude;
@@ -1647,7 +1634,6 @@ class LocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
-    this.iCloudId,
     this.adjustmentTime,
     this.latitude,
     this.longitude,
@@ -1674,9 +1660,6 @@ class LocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
-    if (!nullToAbsent || iCloudId != null) {
-      map['i_cloud_id'] = Variable<String>(iCloudId);
-    }
     if (!nullToAbsent || adjustmentTime != null) {
       map['adjustment_time'] = Variable<DateTime>(adjustmentTime);
     }
@@ -1706,7 +1689,6 @@ class LocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
-      iCloudId: serializer.fromJson<String?>(json['iCloudId']),
       adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
@@ -1727,7 +1709,6 @@ class LocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
-      'iCloudId': serializer.toJson<String?>(iCloudId),
       'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
@@ -1746,7 +1727,6 @@ class LocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
-    Value<String?> iCloudId = const Value.absent(),
     Value<DateTime?> adjustmentTime = const Value.absent(),
     Value<double?> latitude = const Value.absent(),
     Value<double?> longitude = const Value.absent(),
@@ -1764,7 +1744,6 @@ class LocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
-    iCloudId: iCloudId.present ? iCloudId.value : this.iCloudId,
     adjustmentTime: adjustmentTime.present
         ? adjustmentTime.value
         : this.adjustmentTime,
@@ -1790,7 +1769,6 @@ class LocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
-      iCloudId: data.iCloudId.present ? data.iCloudId.value : this.iCloudId,
       adjustmentTime: data.adjustmentTime.present
           ? data.adjustmentTime.value
           : this.adjustmentTime,
@@ -1813,7 +1791,6 @@ class LocalAssetEntityData extends DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude')
@@ -1834,7 +1811,6 @@ class LocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
-    iCloudId,
     adjustmentTime,
     latitude,
     longitude,
@@ -1854,7 +1830,6 @@ class LocalAssetEntityData extends DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
-          other.iCloudId == this.iCloudId &&
           other.adjustmentTime == this.adjustmentTime &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude);
@@ -1872,7 +1847,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
-  final Value<String?> iCloudId;
   final Value<DateTime?> adjustmentTime;
   final Value<double?> latitude;
   final Value<double?> longitude;
@@ -1888,7 +1862,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.iCloudId = const Value.absent(),
     this.adjustmentTime = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
@@ -1905,7 +1878,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.iCloudId = const Value.absent(),
     this.adjustmentTime = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
@@ -1924,7 +1896,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
-    Expression<String>? iCloudId,
     Expression<DateTime>? adjustmentTime,
     Expression<double>? latitude,
     Expression<double>? longitude,
@@ -1941,7 +1912,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
-      if (iCloudId != null) 'i_cloud_id': iCloudId,
       if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
@@ -1960,7 +1930,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
-    Value<String?>? iCloudId,
     Value<DateTime?>? adjustmentTime,
     Value<double?>? latitude,
     Value<double?>? longitude,
@@ -1977,7 +1946,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
-      iCloudId: iCloudId ?? this.iCloudId,
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
@@ -2020,9 +1988,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
-    if (iCloudId.present) {
-      map['i_cloud_id'] = Variable<String>(iCloudId.value);
-    }
     if (adjustmentTime.present) {
       map['adjustment_time'] = Variable<DateTime>(adjustmentTime.value);
     }
@@ -2049,7 +2014,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude')
@@ -5369,349 +5333,6 @@ class RemoteAlbumUserEntityCompanion
   }
 }
 
-class RemoteAssetCloudIdEntity extends Table
-    with TableInfo<RemoteAssetCloudIdEntity, RemoteAssetCloudIdEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  RemoteAssetCloudIdEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
-    'asset_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES remote_asset_entity (id) ON DELETE CASCADE',
-    ),
-  );
-  late final GeneratedColumn<String> cloudId = GeneratedColumn<String>(
-    'cloud_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-  );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  late final GeneratedColumn<DateTime> adjustmentTime =
-      GeneratedColumn<DateTime>(
-        'adjustment_time',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
-  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
-    'latitude',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
-    'longitude',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    assetId,
-    cloudId,
-    createdAt,
-    adjustmentTime,
-    latitude,
-    longitude,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'remote_asset_cloud_id_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {assetId};
-  @override
-  RemoteAssetCloudIdEntityData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RemoteAssetCloudIdEntityData(
-      assetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}asset_id'],
-      )!,
-      cloudId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}cloud_id'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      ),
-      adjustmentTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}adjustment_time'],
-      ),
-      latitude: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}latitude'],
-      ),
-      longitude: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}longitude'],
-      ),
-    );
-  }
-
-  @override
-  RemoteAssetCloudIdEntity createAlias(String alias) {
-    return RemoteAssetCloudIdEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class RemoteAssetCloudIdEntityData extends DataClass
-    implements Insertable<RemoteAssetCloudIdEntityData> {
-  final String assetId;
-  final String? cloudId;
-  final DateTime? createdAt;
-  final DateTime? adjustmentTime;
-  final double? latitude;
-  final double? longitude;
-  const RemoteAssetCloudIdEntityData({
-    required this.assetId,
-    this.cloudId,
-    this.createdAt,
-    this.adjustmentTime,
-    this.latitude,
-    this.longitude,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['asset_id'] = Variable<String>(assetId);
-    if (!nullToAbsent || cloudId != null) {
-      map['cloud_id'] = Variable<String>(cloudId);
-    }
-    if (!nullToAbsent || createdAt != null) {
-      map['created_at'] = Variable<DateTime>(createdAt);
-    }
-    if (!nullToAbsent || adjustmentTime != null) {
-      map['adjustment_time'] = Variable<DateTime>(adjustmentTime);
-    }
-    if (!nullToAbsent || latitude != null) {
-      map['latitude'] = Variable<double>(latitude);
-    }
-    if (!nullToAbsent || longitude != null) {
-      map['longitude'] = Variable<double>(longitude);
-    }
-    return map;
-  }
-
-  factory RemoteAssetCloudIdEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return RemoteAssetCloudIdEntityData(
-      assetId: serializer.fromJson<String>(json['assetId']),
-      cloudId: serializer.fromJson<String?>(json['cloudId']),
-      createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
-      adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
-      latitude: serializer.fromJson<double?>(json['latitude']),
-      longitude: serializer.fromJson<double?>(json['longitude']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'assetId': serializer.toJson<String>(assetId),
-      'cloudId': serializer.toJson<String?>(cloudId),
-      'createdAt': serializer.toJson<DateTime?>(createdAt),
-      'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
-      'latitude': serializer.toJson<double?>(latitude),
-      'longitude': serializer.toJson<double?>(longitude),
-    };
-  }
-
-  RemoteAssetCloudIdEntityData copyWith({
-    String? assetId,
-    Value<String?> cloudId = const Value.absent(),
-    Value<DateTime?> createdAt = const Value.absent(),
-    Value<DateTime?> adjustmentTime = const Value.absent(),
-    Value<double?> latitude = const Value.absent(),
-    Value<double?> longitude = const Value.absent(),
-  }) => RemoteAssetCloudIdEntityData(
-    assetId: assetId ?? this.assetId,
-    cloudId: cloudId.present ? cloudId.value : this.cloudId,
-    createdAt: createdAt.present ? createdAt.value : this.createdAt,
-    adjustmentTime: adjustmentTime.present
-        ? adjustmentTime.value
-        : this.adjustmentTime,
-    latitude: latitude.present ? latitude.value : this.latitude,
-    longitude: longitude.present ? longitude.value : this.longitude,
-  );
-  RemoteAssetCloudIdEntityData copyWithCompanion(
-    RemoteAssetCloudIdEntityCompanion data,
-  ) {
-    return RemoteAssetCloudIdEntityData(
-      assetId: data.assetId.present ? data.assetId.value : this.assetId,
-      cloudId: data.cloudId.present ? data.cloudId.value : this.cloudId,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      adjustmentTime: data.adjustmentTime.present
-          ? data.adjustmentTime.value
-          : this.adjustmentTime,
-      latitude: data.latitude.present ? data.latitude.value : this.latitude,
-      longitude: data.longitude.present ? data.longitude.value : this.longitude,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RemoteAssetCloudIdEntityData(')
-          ..write('assetId: $assetId, ')
-          ..write('cloudId: $cloudId, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('adjustmentTime: $adjustmentTime, ')
-          ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    assetId,
-    cloudId,
-    createdAt,
-    adjustmentTime,
-    latitude,
-    longitude,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RemoteAssetCloudIdEntityData &&
-          other.assetId == this.assetId &&
-          other.cloudId == this.cloudId &&
-          other.createdAt == this.createdAt &&
-          other.adjustmentTime == this.adjustmentTime &&
-          other.latitude == this.latitude &&
-          other.longitude == this.longitude);
-}
-
-class RemoteAssetCloudIdEntityCompanion
-    extends UpdateCompanion<RemoteAssetCloudIdEntityData> {
-  final Value<String> assetId;
-  final Value<String?> cloudId;
-  final Value<DateTime?> createdAt;
-  final Value<DateTime?> adjustmentTime;
-  final Value<double?> latitude;
-  final Value<double?> longitude;
-  const RemoteAssetCloudIdEntityCompanion({
-    this.assetId = const Value.absent(),
-    this.cloudId = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.adjustmentTime = const Value.absent(),
-    this.latitude = const Value.absent(),
-    this.longitude = const Value.absent(),
-  });
-  RemoteAssetCloudIdEntityCompanion.insert({
-    required String assetId,
-    this.cloudId = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.adjustmentTime = const Value.absent(),
-    this.latitude = const Value.absent(),
-    this.longitude = const Value.absent(),
-  }) : assetId = Value(assetId);
-  static Insertable<RemoteAssetCloudIdEntityData> custom({
-    Expression<String>? assetId,
-    Expression<String>? cloudId,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? adjustmentTime,
-    Expression<double>? latitude,
-    Expression<double>? longitude,
-  }) {
-    return RawValuesInsertable({
-      if (assetId != null) 'asset_id': assetId,
-      if (cloudId != null) 'cloud_id': cloudId,
-      if (createdAt != null) 'created_at': createdAt,
-      if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
-      if (latitude != null) 'latitude': latitude,
-      if (longitude != null) 'longitude': longitude,
-    });
-  }
-
-  RemoteAssetCloudIdEntityCompanion copyWith({
-    Value<String>? assetId,
-    Value<String?>? cloudId,
-    Value<DateTime?>? createdAt,
-    Value<DateTime?>? adjustmentTime,
-    Value<double?>? latitude,
-    Value<double?>? longitude,
-  }) {
-    return RemoteAssetCloudIdEntityCompanion(
-      assetId: assetId ?? this.assetId,
-      cloudId: cloudId ?? this.cloudId,
-      createdAt: createdAt ?? this.createdAt,
-      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (assetId.present) {
-      map['asset_id'] = Variable<String>(assetId.value);
-    }
-    if (cloudId.present) {
-      map['cloud_id'] = Variable<String>(cloudId.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (adjustmentTime.present) {
-      map['adjustment_time'] = Variable<DateTime>(adjustmentTime.value);
-    }
-    if (latitude.present) {
-      map['latitude'] = Variable<double>(latitude.value);
-    }
-    if (longitude.present) {
-      map['longitude'] = Variable<double>(longitude.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RemoteAssetCloudIdEntityCompanion(')
-          ..write('assetId: $assetId, ')
-          ..write('cloudId: $cloudId, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('adjustmentTime: $adjustmentTime, ')
-          ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class MemoryEntity extends Table
     with TableInfo<MemoryEntity, MemoryEntityData> {
   @override
@@ -7702,6 +7323,13 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
+  late final GeneratedColumn<int> source = GeneratedColumn<int>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -7716,6 +7344,7 @@ class TrashedLocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
+    source,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7779,6 +7408,10 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}source'],
+      )!,
     );
   }
 
@@ -7807,6 +7440,7 @@ class TrashedLocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
+  final int source;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -7820,6 +7454,7 @@ class TrashedLocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
+    required this.source,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7844,6 +7479,7 @@ class TrashedLocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
+    map['source'] = Variable<int>(source);
     return map;
   }
 
@@ -7865,6 +7501,7 @@ class TrashedLocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
+      source: serializer.fromJson<int>(json['source']),
     );
   }
   @override
@@ -7883,6 +7520,7 @@ class TrashedLocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
+      'source': serializer.toJson<int>(source),
     };
   }
 
@@ -7899,6 +7537,7 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
+    int? source,
   }) => TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -7914,6 +7553,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
+    source: source ?? this.source,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
@@ -7937,6 +7577,7 @@ class TrashedLocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
+      source: data.source.present ? data.source.value : this.source,
     );
   }
 
@@ -7954,7 +7595,8 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -7973,6 +7615,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
+    source,
   );
   @override
   bool operator ==(Object other) =>
@@ -7989,7 +7632,8 @@ class TrashedLocalAssetEntityData extends DataClass
           other.albumId == this.albumId &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation);
+          other.orientation == this.orientation &&
+          other.source == this.source);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -8006,6 +7650,7 @@ class TrashedLocalAssetEntityCompanion
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
+  final Value<int> source;
   const TrashedLocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -8019,6 +7664,7 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    this.source = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -8033,10 +7679,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    required int source,
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
-       albumId = Value(albumId);
+       albumId = Value(albumId),
+       source = Value(source);
   static Insertable<TrashedLocalAssetEntityData> custom({
     Expression<String>? name,
     Expression<int>? type,
@@ -8050,6 +7698,7 @@ class TrashedLocalAssetEntityCompanion
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
+    Expression<int>? source,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -8064,6 +7713,7 @@ class TrashedLocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
+      if (source != null) 'source': source,
     });
   }
 
@@ -8080,6 +7730,7 @@ class TrashedLocalAssetEntityCompanion
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
+    Value<int>? source,
   }) {
     return TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -8094,6 +7745,7 @@ class TrashedLocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      source: source ?? this.source,
     );
   }
 
@@ -8136,6 +7788,9 @@ class TrashedLocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
+    if (source.present) {
+      map['source'] = Variable<int>(source.value);
+    }
     return map;
   }
 
@@ -8153,7 +7808,8 @@ class TrashedLocalAssetEntityCompanion
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -8172,10 +7828,6 @@ class DatabaseAtV15 extends GeneratedDatabase {
   late final Index idxLocalAssetChecksum = Index(
     'idx_local_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
-  );
-  late final Index idxLocalAssetCloudId = Index(
-    'idx_local_asset_cloud_id',
-    'CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)',
   );
   late final Index idxRemoteAssetOwnerChecksum = Index(
     'idx_remote_asset_owner_checksum',
@@ -8201,8 +7853,6 @@ class DatabaseAtV15 extends GeneratedDatabase {
       RemoteAlbumAssetEntity(this);
   late final RemoteAlbumUserEntity remoteAlbumUserEntity =
       RemoteAlbumUserEntity(this);
-  late final RemoteAssetCloudIdEntity remoteAssetCloudIdEntity =
-      RemoteAssetCloudIdEntity(this);
   late final MemoryEntity memoryEntity = MemoryEntity(this);
   late final MemoryAssetEntity memoryAssetEntity = MemoryAssetEntity(this);
   late final PersonEntity personEntity = PersonEntity(this);
@@ -8235,7 +7885,6 @@ class DatabaseAtV15 extends GeneratedDatabase {
     localAlbumEntity,
     localAlbumAssetEntity,
     idxLocalAssetChecksum,
-    idxLocalAssetCloudId,
     idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
@@ -8246,7 +7895,6 @@ class DatabaseAtV15 extends GeneratedDatabase {
     remoteExifEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
-    remoteAssetCloudIdEntity,
     memoryEntity,
     memoryAssetEntity,
     personEntity,

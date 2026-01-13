@@ -277,25 +277,18 @@ export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
 }
 
 export function getAssetResolution(asset: AssetResponseDto): string {
-  const { width, height } = getAssetRatio(asset);
-
-  if (width === 235 && height === 235) {
+  if (!asset.width || !asset.height) {
     return 'Invalid Data';
   }
 
-  return `${width} x ${height}`;
+  return `${asset.width} x ${asset.height}`;
 }
 
 /**
  * Returns aspect ratio for the asset
  */
 export function getAssetRatio(asset: AssetResponseDto) {
-  let height = asset.exifInfo?.exifImageHeight || 235;
-  let width = asset.exifInfo?.exifImageWidth || 235;
-  if (isFlipped(asset.exifInfo?.orientation)) {
-    [width, height] = [height, width];
-  }
-  return { width, height };
+  return asset.width && asset.height ? asset.width / asset.height : null;
 }
 
 // list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg

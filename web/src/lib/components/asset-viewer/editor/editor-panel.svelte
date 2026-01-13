@@ -1,11 +1,11 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { editTypes, showCancelConfirmDialog } from '$lib/stores/asset-editor.store';
+  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { type AssetResponseDto } from '@immich/sdk';
-  import { ConfirmModal, IconButton } from '@immich/ui';
+  import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
+  import { Button, HStack, IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   onMount(() => {
@@ -18,67 +18,69 @@
 
   interface Props {
     asset: AssetResponseDto;
-    onUpdateSelectedType: (type: string) => void;
     onClose: () => void;
   }
 
-  let { asset = $bindable(), onUpdateSelectedType, onClose }: Props = $props();
+  onMount(async () => {
+    const edits = await getAssetEdits({ id: asset.id });
+    await editManager.activateTool(EditToolType.Transform, asset, edits);
+  });
 
-  let selectedType: string = $state(editTypes[0].name);
-  let selectedTypeObj = $derived(editTypes.find((t) => t.name === selectedType) || editTypes[0]);
+  onDestroy(() => {
+    editManager.cleanup();
+  });
 
-  setTimeout(() => {
-    onUpdateSelectedType(selectedType);
-  }, 1);
+  async function applyEdits() {
+    const success = await editManager.applyEdits();
 
-  function selectType(name: string) {
-    selectedType = name;
-    onUpdateSelectedType(selectedType);
+    if (success) {
+      onClose();
+    }
   }
 
-  const onConfirm = () => (typeof $showCancelConfirmDialog === 'boolean' ? null : $showCancelConfirmDialog());
+  async function closeEditor() {
+    if (await editManager.closeConfirm()) {
+      onClose();
+    }
+  }
+
+  let { asset = $bindable(), onClose }: Props = $props();
 </script>
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
-  <div class="flex place-items-center gap-2">
-    <IconButton
-      shape="round"
-      variant="ghost"
-      color="secondary"
-      icon={mdiClose}
-      aria-label={$t('close')}
-      onclick={onClose}
-    />
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
-  </div>
-  <section class="px-4 py-4">
-    <ul class="flex w-full justify-around">
-      {#each editTypes as etype (etype.name)}
-        <li>
-          <IconButton
-            shape="round"
-            color={etype.name === selectedType ? 'primary' : 'secondary'}
-            icon={etype.icon}
-            aria-label={etype.name}
-            onclick={() => selectType(etype.name)}
-          />
-        </li>
-      {/each}
-    </ul>
-  </section>
+<section class="relative flex flex-col h-full p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg dark pt-3">
+  <HStack class="justify-between me-4">
+    <HStack>
+      <IconButton
+        shape="round"
+        variant="ghost"
+        color="secondary"
+        icon={mdiClose}
+        aria-label={$t('close')}
+        onclick={closeEditor}
+      />
+      <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
+    </HStack>
+    <Button shape="round" size="small" onclick={applyEdits}>{$t('save')}</Button>
+  </HStack>
+
   <section>
-    <selectedTypeObj.component />
+    {#if editManager.selectedTool}
+      <editManager.selectedTool.component />
+    {/if}
+  </section>
+  <div class="flex-1"></div>
+  <section class="p-4">
+    <Button
+      variant="outline"
+      onclick={() => editManager.resetAllChanges()}
+      disabled={!editManager.hasChanges}
+      class="self-start"
+      shape="round"
+      size="small"
+    >
+      {$t('editor_reset_all_changes')}
+    </Button>
   </section>
 </section>
-
-{#if $showCancelConfirmDialog}
-  <ConfirmModal
-    title={$t('editor_close_without_save_title')}
-    prompt={$t('editor_close_without_save_prompt')}
-    confirmColor="danger"
-    confirmText={$t('close')}
-    onClose={(confirmed) => (confirmed ? onConfirm() : ($showCancelConfirmDialog = false))}
-  />
-{/if}
