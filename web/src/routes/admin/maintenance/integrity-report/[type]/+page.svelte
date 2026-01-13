@@ -215,7 +215,7 @@
         {#if integrityReport.nextCursor}
           <tfoot>
             <HStack class="mt-4 items-center justify-center">
-              <Button color="primary" onclick={() => loadMore()}>Load More</Button>
+              <Button color="primary" onclick={() => loadMore()}>{$t('load_more')}</Button>
             </HStack>
           </tfoot>
         {/if}
