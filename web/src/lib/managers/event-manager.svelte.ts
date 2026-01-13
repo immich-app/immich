@@ -5,6 +5,7 @@ import type {
   AlbumResponseDto,
   ApiKeyResponseDto,
   AssetResponseDto,
+  IntegrityReportType,
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
@@ -63,6 +64,8 @@ export type Events = {
   UserAdminDeleted: [{ id: string }];
 
   SystemConfigUpdate: [SystemConfigDto];
+
+  IntegrityReportDelete: [{ type?: IntegrityReportType; id?: string; isDeleting: boolean; isDeleted: boolean }];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
