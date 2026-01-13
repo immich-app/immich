@@ -14,10 +14,15 @@
   } from '@immich/sdk';
   import {
     Button,
-    HStack,
     IconButton,
     menuManager,
     modalManager,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
     toastManager,
     type ContextMenuBaseProps,
     type MenuItems,
@@ -184,42 +189,36 @@
 >
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <table class="mt-5 w-full text-start">
-        <thead
-          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-        >
-          <tr class="flex w-full place-items-center">
-            <th class="w-7/8 text-left px-2 text-sm font-medium">{$t('filename')}</th>
-            <th class="w-1/8"></th>
-          </tr>
-        </thead>
-        <tbody class="block w-full rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg">
+      <Table striped spacing="tiny">
+        <TableHeader>
+          <TableHeading class="w-7/8 text-left">{$t('filename')}</TableHeading>
+          <TableHeading class="w-1/8" />
+        </TableHeader>
+
+        <TableBody>
           {#each integrityReport.items as { id, path } (id)}
-            <tr
-              class={`flex py-1 w-full place-items-center even:bg-subtle/20 odd:bg-subtle/80 ${deleting.has(id) || deleting.has('all') ? 'text-gray-500' : ''}`}
-            >
-              <td class="w-7/8 text-ellipsis text-left px-2 text-sm select-all">{path}</td>
-              <td class="w-1/8 text-ellipsis text-right flex justify-end px-2">
-                <IconButton
+            <TableRow>
+              <TableCell class="w-7/8 text-left px-4">{path}</TableCell>
+              <TableCell class="w-1/8 flex justify-end"
+                ><IconButton
                   color="secondary"
                   icon={mdiDotsVertical}
                   variant="ghost"
                   onclick={(event: Event) => handleOpen(event, { position: 'top-right' }, id)}
                   aria-label={$t('open')}
                   disabled={deleting.has(id) || deleting.has('all')}
-                /></td
+                /></TableCell
               >
-            </tr>
+            </TableRow>
           {/each}
-        </tbody>
+        </TableBody>
+
         {#if integrityReport.nextCursor}
-          <tfoot>
-            <HStack class="mt-4 items-center justify-center">
-              <Button color="primary" onclick={() => loadMore()}>{$t('load_more')}</Button>
-            </HStack>
+          <tfoot class="flex justify-center mt-4">
+            <Button size="medium" color="secondary" onclick={() => loadMore()}>{$t('load_more')}</Button>
           </tfoot>
         {/if}
-      </table>
+      </Table>
     </section>
   </section>
 </AdminPageLayout>
