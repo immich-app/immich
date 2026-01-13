@@ -11,7 +11,6 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -405,33 +404,41 @@
     }
   };
 
-  $effect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    asset.id;
-    if (viewerKind !== 'PhotoViewer' && viewerKind !== 'ImagePanaramaViewer') {
-      eventManager.emit('AssetViewerFree');
-    }
-  });
-
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
       return asset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
     }
-    if (asset.type === AssetTypeEnum.Image) {
-      if (assetViewerManager.isPlayingMotionPhoto && asset.livePhotoVideoId) {
-        return 'LiveVideoViewer';
-      } else if (
-        asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-        (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-      ) {
-        return 'ImagePanaramaViewer';
-      } else if (isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
-        return 'CropArea';
-      }
-      return 'PhotoViewer';
+    if (asset.type === AssetTypeEnum.Video) {
+      return 'VideoViewer';
     }
-    return 'VideoViewer';
+    if (assetViewerManager.isPlayingMotionPhoto && asset.livePhotoVideoId) {
+      return 'LiveVideoViewer';
+    }
+    if (
+      asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+      (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+    ) {
+      return 'ImagePanaramaViewer';
+    }
+    if (isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
+      return 'CropArea';
+    }
+    return 'PhotoViewer';
   });
+
+  const showActivityStatus = $derived(
+    $slideshowState === SlideshowState.None &&
+      isShared &&
+      ((album && album.isActivityEnabled) || activityManager.commentCount > 0) &&
+      !activityManager.isLoading,
+  );
+
+  const showOcrButton = $derived(
+    $slideshowState === SlideshowState.None &&
+      asset.type === AssetTypeEnum.Image &&
+      !isShowEditor &&
+      ocrManager.hasOcrData,
+  );
 </script>
 
 <OnEvents {onAssetReplace} {onAssetUpdate} />
@@ -535,7 +542,6 @@
         onNextAsset={() => navigateAsset('next')}
         {sharedLink}
         haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
-        onFree={() => eventManager.emit('AssetViewerFree')}
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
@@ -552,7 +558,7 @@
       />
     {/if}
 
-    {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
+    {#if showActivityStatus}
       <div class="absolute bottom-0 end-0 mb-20 me-8">
         <ActivityStatus
           disabled={!album?.isActivityEnabled}
@@ -564,7 +570,7 @@
       </div>
     {/if}
 
-    {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
+    {#if showOcrButton}
       <div class="absolute bottom-0 end-0 mb-6 me-6">
         <OcrButton />
       </div>

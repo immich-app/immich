@@ -281,11 +281,10 @@
   );
 
   const handleRandom = async (): Promise<{ id: string } | undefined> => {
+    if (assets.length === 0) {
+      return;
+    }
     try {
-      if (assets.length === 0) {
-        return;
-      }
-
       const randomIndex = Math.floor(Math.random() * assets.length);
       const asset = assets[randomIndex];
 
@@ -309,11 +308,10 @@
         if (assets.length === 0) {
           return await goto(AppRoute.PHOTOS);
         }
-        const index = assets.findIndex((asset) => asset.id === $viewingAsset?.id);
-        if (index === assets.length) {
-          await navigateToAsset(assetCursor.previousAsset);
-        } else if (index >= 0) {
+        if (assetCursor.nextAsset) {
           await navigateToAsset(assetCursor.nextAsset);
+        } else if (assetCursor.previousAsset) {
+          await navigateToAsset(assetCursor.previousAsset);
         }
         break;
       }

@@ -62,8 +62,6 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
-  AssetViewerFree: [];
-
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
