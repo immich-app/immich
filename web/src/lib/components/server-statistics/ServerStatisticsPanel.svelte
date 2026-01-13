@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
-  import { Code, Heading, Icon, Text } from '@immich/ui';
+  import { Code, Icon, Text } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -13,8 +13,7 @@
 
   const { stats }: Props = $props();
 
-  const zeros = (value: number) => {
-    const maxLength = 13;
+  const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
 
@@ -27,7 +26,7 @@
 
 <div class="flex flex-col gap-5 my-4">
   <div>
-    <Heading size="tiny" class="mb-2">{$t('total_usage')}</Heading>
+    <Text class="mb-2 font-medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
@@ -40,38 +39,35 @@
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiCameraIris} size="25" />
-            <Text fontWeight="bold" class="uppercase">{$t('photos')}</Text>
+            <Text class="font-medium" size="medium">{$t('photos')}</Text>
           </div>
 
-          <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-gray-400 dark:text-gray-600">{zeros(stats.photos)}</span><span class="text-primary"
-              >{stats.photos}</span
-            >
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiPlayCircle} size="25" />
-            <Text fontWeight="bold" class="uppercase">{$t('videos')}</Text>
+            <Text class="font-medium" size="medium">{$t('videos')}</Text>
           </div>
 
-          <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-gray-400 dark:text-gray-600">{zeros(stats.videos)}</span><span class="text-primary"
-              >{stats.videos}</span
-            >
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-x-5">
           <div class="flex flex-1 flex-nowrap place-items-center gap-4 text-primary">
             <Icon icon={mdiChartPie} size="25" />
-            <Text fontWeight="bold" class="uppercase">{$t('storage')}</Text>
+            <Text class="font-medium" size="medium">{$t('storage')}</Text>
           </div>
 
-          <div class="relative flex text-center font-mono text-2xl font-semibold">
-            <span class="text-gray-400 dark:text-gray-600">{zeros(statsUsage)}</span><span class="text-primary"
-              >{statsUsage}</span
-            >
-            <Code color="muted" class="font-light">{statsUsageUnit}</Code>
+          <div class="relative flex text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(statsUsage)}</span><span class="text-primary">{statsUsage}</span>
+
+            <div class="absolute -right-1.5 -bottom-4">
+              <Code color="muted" class="text-xs font-light font-immich-mono">{statsUsageUnit}</Code>
+            </div>
           </div>
         </div>
       </div>
@@ -79,7 +75,7 @@
   </div>
 
   <div>
-    <Heading size="tiny" class="mb-2">{$t('user_usage_detail')}</Heading>
+    <Text class="mt-6 mb-2 font-medium">{$t('user_usage_detail')}</Text>
     <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
