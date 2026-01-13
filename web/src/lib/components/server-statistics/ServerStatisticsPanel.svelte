@@ -3,7 +3,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
+  import { Code, Icon, Text } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -13,8 +13,7 @@
 
   const { stats }: Props = $props();
 
-  const zeros = (value: number) => {
-    const maxLength = 13;
+  const zeros = (value: number, maxLength = 13) => {
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
 
@@ -25,52 +24,50 @@
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0));
 </script>
 
-<div class="flex flex-col gap-5">
+<div class="flex flex-col gap-5 my-4">
   <div>
-    <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('total_usage')}</p>
+    <Text class="mb-2 font-medium">{$t('total_usage')}</Text>
 
-    <div class="mt-5 hidden justify-between lg:flex gap-4">
+    <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
       <StatsCard icon={mdiPlayCircle} title={$t('videos')} value={stats.videos} />
       <StatsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
     </div>
+
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
-          <div class="flex place-items-center gap-4 text-primary">
+          <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiCameraIris} size="25" />
-            <p class="uppercase">{$t('photos')}</p>
+            <Text class="font-medium" size="medium">{$t('photos')}</Text>
           </div>
 
-          <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.photos)}</span><span class="text-primary"
-              >{stats.photos}</span
-            >
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
-          <div class="flex place-items-center gap-4 text-primary">
+          <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiPlayCircle} size="25" />
-            <p class="uppercase">{$t('videos')}</p>
+            <Text class="font-medium" size="medium">{$t('videos')}</Text>
           </div>
 
-          <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.videos)}</span><span class="text-primary"
-              >{stats.videos}</span
-            >
+          <div class="relative text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
           </div>
         </div>
-        <div class="flex flex-wrap gap-x-7">
-          <div class="flex place-items-center gap-4 text-primary">
+        <div class="flex flex-wrap gap-x-5">
+          <div class="flex flex-1 flex-nowrap place-items-center gap-4 text-primary">
             <Icon icon={mdiChartPie} size="25" />
-            <p class="uppercase">{$t('storage')}</p>
+            <Text class="font-medium" size="medium">{$t('storage')}</Text>
           </div>
 
-          <div class="relative flex text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(statsUsage)}</span><span class="text-primary"
-              >{statsUsage}</span
-            >
-            <span class="my-auto ms-2 text-center text-base font-light text-gray-400">{statsUsageUnit}</span>
+          <div class="relative flex text-center font-immich-mono text-2xl font-medium">
+            <span class="text-light-300">{zeros(statsUsage)}</span><span class="text-primary">{statsUsage}</span>
+
+            <div class="absolute -right-1.5 -bottom-4">
+              <Code color="muted" class="text-xs font-light font-immich-mono">{statsUsageUnit}</Code>
+            </div>
           </div>
         </div>
       </div>
@@ -78,7 +75,7 @@
   </div>
 
   <div>
-    <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('user_usage_detail')}</p>
+    <Text class="mt-6 mb-2 font-medium">{$t('user_usage_detail')}</Text>
     <table class="mt-5 w-full text-start">
       <thead
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"

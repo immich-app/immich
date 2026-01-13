@@ -1,9 +1,9 @@
 experimental_monorepo_root = true
 
 [tools]
-node = "24.11.1"
+node = "24.13.0"
 flutter = "3.35.7"
-pnpm = "10.24.0"
+pnpm = "10.27.0"
 terragrunt = "0.93.10"
 opentofu = "1.10.7"
 java = "25.0.1"
@@ -34,4 +34,4 @@ run = { task = ":i18n:format-fix" }
 
 [tasks."i18n:format-fix"]
 dir = "i18n"
-run = "pnpm dlx sort-json *.json"
+run = "pnpm run format:fix"

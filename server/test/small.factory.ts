@@ -1,9 +1,11 @@
 import {
   Activity,
   ApiKey,
+  AssetFile,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
+  Exif,
   Library,
   Memory,
   Partner,
@@ -249,6 +251,8 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   thumbhash: null,
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
   ...asset,
 });
 
@@ -319,18 +323,28 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = () => ({
-  id: newUuid(),
-  originalPath: '/path/to/original-path.jpg.xmp',
-  tags: [],
-  files: [
-    {
-      id: newUuid(),
-      path: '/path/to/original-path.jpg.xmp',
-      type: AssetFileType.Sidecar,
-    },
-  ],
-});
+const assetSidecarWriteFactory = () => {
+  const id = newUuid();
+  return {
+    id,
+    originalPath: '/path/to/original-path.jpg.xmp',
+    tags: [],
+    files: [
+      {
+        id: newUuid(),
+        path: '/path/to/original-path.jpg.xmp',
+        type: AssetFileType.Sidecar,
+      },
+    ],
+    exifInfo: {
+      assetId: id,
+      description: 'this is a description',
+      latitude: 12,
+      longitude: 12,
+      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
+    } as unknown as Exif,
+  };
+};
 
 const assetOcrFactory = (
   ocr: {
@@ -347,6 +361,7 @@ const assetOcrFactory = (
     boxScore?: number;
     textScore?: number;
     text?: string;
+    isVisible?: boolean;
   } = {},
 ) => ({
   id: newUuid(),
@@ -362,13 +377,22 @@ const assetOcrFactory = (
   boxScore: 0.95,
   textScore: 0.92,
   text: 'Sample Text',
+  isVisible: true,
   ...ocr,
+});
+
+const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
+  id: newUuid(),
+  type: AssetFileType.Preview,
+  path: '/uploads/user-id/thumbs/path.jpg',
+  ...file,
 });
 
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
   asset: assetFactory,
+  assetFile: assetFileFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
   authApiKey: authApiKeyFactory,

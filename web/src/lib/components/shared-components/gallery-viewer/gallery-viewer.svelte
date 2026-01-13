@@ -7,13 +7,14 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect, getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
@@ -23,18 +24,16 @@
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
-  interface Props {
+  type Props = {
     initialAssetId?: string;
-    assets: TimelineAsset[] | AssetResponseDto[];
+    assets: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
     viewport: Viewport;
     onIntersected?: (() => void) | undefined;
     showAssetName?: boolean;
-    isShowDeleteConfirmation?: boolean;
     onPrevious?: (() => Promise<{ id: string } | undefined>) | undefined;
     onNext?: (() => Promise<{ id: string } | undefined>) | undefined;
     onRandom?: (() => Promise<{ id: string } | undefined>) | undefined;
@@ -42,7 +41,7 @@
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
     arrowNavigation?: boolean;
-  }
+  };
 
   let {
     initialAssetId = undefined,
@@ -53,7 +52,6 @@
     viewport,
     onIntersected = undefined,
     showAssetName = false,
-    isShowDeleteConfirmation = $bindable(false),
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
@@ -105,6 +103,10 @@
       bottom,
     };
   });
+
+  const updateCurrentAsset = (asset: AssetResponseDto) => {
+    assets[currentIndex] = asset;
+  };
 
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
 
@@ -209,30 +211,27 @@
 
   const onDelete = () => {
     const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
-
-    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
     handlePromiseError(trashOrDelete(hasTrashedAsset));
   };
 
-  const onForceDelete = () => {
-    if ($showDeleteModal) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(true));
-  };
-
   const trashOrDelete = async (force: boolean = false) => {
-    isShowDeleteConfirmation = false;
+    const forceOrNoTrash = force || !featureFlagsManager.value.trash;
+    const selectedAssets = assetInteraction.selectedAssets;
+
+    if ($showDeleteModal && forceOrNoTrash) {
+      const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
+      if (!confirmed) {
+        return;
+      }
+    }
+
     await deleteAssets(
-      !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
-      assetInteraction.selectedAssets,
+      forceOrNoTrash,
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
+      selectedAssets,
       onReload,
     );
+
     assetInteraction.clearMultiselect();
   };
 
@@ -242,7 +241,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -285,7 +284,7 @@
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+          { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
           { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
         );
@@ -405,8 +404,6 @@
     }
   };
 
-  let isTrashEnabled = $derived(featureFlagsManager.value.trash);
-
   $effect(() => {
     if (!lastAssetMouseEvent) {
       assetInteraction.clearAssetSelectionCandidates();
@@ -424,6 +421,12 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  const assetCursor = $derived({
+    current: $viewingAsset,
+    nextAsset: getNextAsset(assets, $viewingAsset),
+    previousAsset: getPreviousAsset(assets, $viewingAsset),
+  });
 </script>
 
 <svelte:document
@@ -433,14 +436,6 @@
   use:shortcuts={shortcutList}
   onscroll={() => updateSlidingWindow()}
 />
-
-{#if isShowDeleteConfirmation}
-  <DeleteAssetDialog
-    size={assetInteraction.selectedAssets.length}
-    onCancel={() => (isShowDeleteConfirmation = false)}
-    onConfirm={() => handlePromiseError(trashOrDelete(true))}
-  />
-{/if}
 
 {#if assets.length > 0}
   <div
@@ -472,7 +467,7 @@
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
-              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+              class="absolute text-center p-1 text-xs font-immich-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
               {asset.originalFileName}
             </div>
@@ -488,11 +483,12 @@
   <Portal target="body">
     {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}
         onRandom={handleRandom}
+        onAssetChange={updateCurrentAsset}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

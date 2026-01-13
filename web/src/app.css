@@ -49,7 +49,7 @@
 }
 
 @theme {
-  --font-immich-mono: Overpass Mono, monospace;
+  --font-immich-mono: GoogleSansCode, monospace;
 
   --spacing-18: 4.5rem;
 
@@ -84,25 +84,25 @@
 
 @layer utilities {
   @font-face {
-    font-family: 'Overpass';
-    src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
-    font-weight: 1 999;
+    font-family: 'GoogleSans';
+    src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+    font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
     size-adjust: 106.25%;
   }
 
   @font-face {
-    font-family: 'Overpass Mono';
-    src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
-    font-weight: 1 999;
+    font-family: 'GoogleSansCode';
+    src: url('$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+    font-weight: 1 900;
     font-style: monospace;
-    ascent-override: 106.25%;
-    size-adjust: 106.25%;
   }
 
   :root {
-    font-family: 'Overpass', sans-serif;
+    font-family: 'GoogleSans', sans-serif;
+    letter-spacing: 0.1px;
+
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: calc(4.5rem + 4px);
     --navbar-height-md: calc(4.5rem + 4px - 14px);

@@ -64,11 +64,10 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
     final hasCoordinates = exifInfo?.hasCoordinates ?? false;
 
     // Guard local assets
-    if (asset != null && asset is LocalAsset && asset.hasRemote) {
+    if (asset is! RemoteAsset) {
       return const SizedBox.shrink();
     }
 
-    final remoteId = asset is LocalAsset ? asset.remoteId : (asset as RemoteAsset).id;
     final locationName = _getLocationName(exifInfo);
     final coordinates = "${exifInfo?.latitude?.toStringAsFixed(4)}, ${exifInfo?.longitude?.toStringAsFixed(4)}";
 
@@ -92,7 +91,12 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ExifMap(exifInfo: exifInfo!, markerId: remoteId, onMapCreated: _onMapCreated),
+                  ExifMap(
+                    exifInfo: exifInfo!,
+                    markerId: asset.id,
+                    markerAssetThumbhash: asset.thumbHash,
+                    onMapCreated: _onMapCreated,
+                  ),
                   const SizedBox(height: 16),
                   if (locationName != null)
                     Padding(
