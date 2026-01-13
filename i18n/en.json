@@ -1122,6 +1122,7 @@
     "unable_to_update_workflow": "Unable to update workflow",
     "unable_to_upload_file": "Unable to upload file"
   },
+  "errors_text": "Errors",
   "exclusion_pattern": "Exclusion pattern",
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",

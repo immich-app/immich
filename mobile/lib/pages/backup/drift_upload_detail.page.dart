@@ -28,17 +28,14 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
     final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
 
-    // Track failed items to exclude them from completed list
     for (final item in uploadItems.values) {
       if (item.isFailed == true) {
         _failedTaskIds.add(item.taskId);
       }
     }
 
-    // Remove any items from completed list that have since failed
     _completedItems.removeWhere((item) => _failedTaskIds.contains(item.taskId));
 
-    // Watch for items with progress >= 1.0 (completed successfully) before they get removed
     for (final item in uploadItems.values) {
       if (item.progress >= 1.0 && item.isFailed != true && !_failedTaskIds.contains(item.taskId)) {
         if (!_seenTaskIds.contains(item.taskId)) {
@@ -51,10 +48,11 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
       }
     }
 
-    // Get current uploading items (progress < 1.0 or failed)
-    final currentUploads = uploadItems.values.where((item) => item.progress < 1.0 || item.isFailed == true).toList();
+    final uploadingItems = uploadItems.values.where((item) => item.progress < 1.0 && item.isFailed != true).toList();
+    final failedItems = uploadItems.values.where((item) => item.isFailed == true).toList();
 
-    final hasContent = currentUploads.isNotEmpty || iCloudProgress.isNotEmpty || _completedItems.isNotEmpty;
+    final hasContent =
+        uploadingItems.isNotEmpty || failedItems.isNotEmpty || iCloudProgress.isNotEmpty || _completedItems.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -79,7 +77,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
       ),
       body: !hasContent
           ? _buildEmptyState(context)
-          : _buildTwoSectionLayout(context, currentUploads, iCloudProgress, _completedItems),
+          : _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress, _completedItems),
     );
   }
 
@@ -101,7 +99,8 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
 
   Widget _buildTwoSectionLayout(
     BuildContext context,
-    List<DriftUploadStatus> currentUploads,
+    List<DriftUploadStatus> uploadingItems,
+    List<DriftUploadStatus> failedItems,
     Map<String, double> iCloudProgress,
     List<DriftUploadStatus> completedItems,
   ) {
@@ -131,10 +130,12 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
           ),
         ],
 
+        // Uploading Section
         SliverToBoxAdapter(
           child: _buildSectionHeader(
             context,
             title: "uploading".t(context: context),
+            count: uploadingItems.length,
             color: context.colorScheme.primary,
           ),
         ),
@@ -142,8 +143,8 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
-              if (index < currentUploads.length) {
-                final item = currentUploads[index];
+              if (index < uploadingItems.length) {
+                final item = uploadingItems[index];
                 return _buildCurrentUploadCard(context, item);
               } else {
                 return _buildPlaceholderCard(context);
@@ -151,6 +152,27 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
             }, childCount: 3),
           ),
         ),
+
+        // Errors Section
+        if (failedItems.isNotEmpty) ...[
+          SliverToBoxAdapter(
+            child: _buildSectionHeader(
+              context,
+              title: "errors_text".t(context: context),
+              count: failedItems.length,
+              color: context.colorScheme.error,
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final item = failedItems[index];
+                return Padding(padding: const EdgeInsets.only(bottom: 8), child: _buildErrorCard(context, item));
+              }, childCount: failedItems.length),
+            ),
+          ),
+        ],
 
         // Completed Section
         if (completedItems.isNotEmpty) ...[
@@ -402,6 +424,53 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                   color: context.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(BuildContext context, DriftUploadStatus item) {
+    return Card(
+      elevation: 0,
+      color: context.colorScheme.errorContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        side: BorderSide(color: context.colorScheme.error.withValues(alpha: 0.3), width: 1),
+      ),
+      child: InkWell(
+        onTap: () => _showFileDetailDialog(context, item),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              _CurrentUploadThumbnail(taskId: item.taskId),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      path.basename(item.filename),
+                      style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.error ?? "Upload failed",
+                      style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.error),
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Icon(Icons.error_rounded, color: context.colorScheme.error, size: 28),
             ],
           ),
         ),

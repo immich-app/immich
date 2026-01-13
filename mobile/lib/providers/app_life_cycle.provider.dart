@@ -237,6 +237,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
+      } else {
+        // Cancel foreground upload when app goes to background
+        await _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
       }
 
       _ref.read(websocketProvider.notifier).disconnect();
