@@ -27,7 +27,7 @@ export class IntegrityController {
   @Endpoint({
     summary: 'Get integrity report summary',
     description: 'Get a count of the items flagged in each integrity report',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   getIntegrityReportSummary(): Promise<IntegrityReportSummaryResponseDto> {
@@ -39,7 +39,7 @@ export class IntegrityController {
   @Endpoint({
     summary: 'Get integrity report by type',
     description: 'Get all flagged items by integrity report type',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   getIntegrityReport(@Body() dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
@@ -50,7 +50,7 @@ export class IntegrityController {
   @Endpoint({
     summary: 'Delete integrity report item',
     description: 'Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   async deleteIntegrityReport(@Auth() auth: AuthDto, @Param() { id }: UUIDv7ParamDto): Promise<void> {
@@ -61,7 +61,7 @@ export class IntegrityController {
   @Endpoint({
     summary: 'Export integrity report by type as CSV',
     description: 'Get all integrity report entries for a given type as a CSV',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @FileResponse()
   @Authenticated({ permission: Permission.Maintenance, admin: true })
@@ -77,7 +77,7 @@ export class IntegrityController {
   @Endpoint({
     summary: 'Download flagged file',
     description: 'Download the untracked/broken file if one exists',
-    history: new HistoryBuilder().added('v9.9.9').alpha('v9.9.9'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @FileResponse()
   @Authenticated({ permission: Permission.Maintenance, admin: true })

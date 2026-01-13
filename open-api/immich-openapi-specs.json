@@ -367,11 +367,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Alpha"
           }
         ],
@@ -417,11 +417,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Alpha"
           }
         ],
@@ -475,11 +475,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Alpha"
           }
         ],
@@ -532,11 +532,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Alpha"
           }
         ],
@@ -579,11 +579,11 @@
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v9.9.9",
+            "version": "v2.6.0",
             "state": "Alpha"
           }
         ],
