@@ -96,7 +96,7 @@
     "pg": "^8.11.3",
     "pg-connection-string": "^2.9.1",
     "picomatch": "^4.0.2",
-    "postgres": "3.4.7",
+    "postgres": "3.4.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-email": "^4.0.0",
