@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,7 +8,6 @@ import 'package:logging/logging.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -107,11 +105,7 @@ class DriftBackupState {
   final int remainderCount;
   final int processingCount;
 
-  final int enqueueCount;
-  final int enqueueTotalCount;
-
   final bool isSyncing;
-  final bool isCanceling;
   final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
@@ -124,10 +118,7 @@ class DriftBackupState {
     required this.backupCount,
     required this.remainderCount,
     required this.processingCount,
-    required this.enqueueCount,
-    required this.enqueueTotalCount,
     required this.isSyncing,
-    required this.isCanceling,
     this.error = BackupError.none,
     required this.uploadItems,
     this.cancelToken,
@@ -139,10 +130,7 @@ class DriftBackupState {
     int? backupCount,
     int? remainderCount,
     int? processingCount,
-    int? enqueueCount,
-    int? enqueueTotalCount,
     bool? isSyncing,
-    bool? isCanceling,
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
     CancellationToken? cancelToken,
@@ -153,10 +141,7 @@ class DriftBackupState {
       backupCount: backupCount ?? this.backupCount,
       remainderCount: remainderCount ?? this.remainderCount,
       processingCount: processingCount ?? this.processingCount,
-      enqueueCount: enqueueCount ?? this.enqueueCount,
-      enqueueTotalCount: enqueueTotalCount ?? this.enqueueTotalCount,
       isSyncing: isSyncing ?? this.isSyncing,
-      isCanceling: isCanceling ?? this.isCanceling,
       error: error ?? this.error,
       uploadItems: uploadItems ?? this.uploadItems,
       cancelToken: cancelToken ?? this.cancelToken,
@@ -166,7 +151,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isSyncing: $isSyncing, isCanceling: $isCanceling, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';
   }
 
   @override
@@ -178,10 +163,7 @@ class DriftBackupState {
         other.backupCount == backupCount &&
         other.remainderCount == remainderCount &&
         other.processingCount == processingCount &&
-        other.enqueueCount == enqueueCount &&
-        other.enqueueTotalCount == enqueueTotalCount &&
         other.isSyncing == isSyncing &&
-        other.isCanceling == isCanceling &&
         other.error == error &&
         mapEquals(other.iCloudDownloadProgress, iCloudDownloadProgress) &&
         mapEquals(other.uploadItems, uploadItems) &&
@@ -194,10 +176,7 @@ class DriftBackupState {
         backupCount.hashCode ^
         remainderCount.hashCode ^
         processingCount.hashCode ^
-        enqueueCount.hashCode ^
-        enqueueTotalCount.hashCode ^
         isSyncing.hashCode ^
-        isCanceling.hashCode ^
         error.hashCode ^
         uploadItems.hashCode ^
         cancelToken.hashCode ^
@@ -217,24 +196,15 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           backupCount: 0,
           remainderCount: 0,
           processingCount: 0,
-          enqueueCount: 0,
-          enqueueTotalCount: 0,
-          isCanceling: false,
           isSyncing: false,
           uploadItems: {},
           error: BackupError.none,
         ),
-      ) {
-    {
-      _statusSubscription = _backgroundUploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
-      _progressSubscription = _backgroundUploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
-    }
-  }
+      );
 
   final ForegroundUploadService _foregroundUploadService;
   final BackgroundUploadService _backgroundUploadService;
-  StreamSubscription<TaskStatusUpdate>? _statusSubscription;
-  StreamSubscription<TaskProgressUpdate>? _progressSubscription;
+
   final _logger = Logger("DriftBackupNotifier");
   final _uploadSpeedManager = UploadSpeedManager();
 
@@ -249,114 +219,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       updatedItems.remove(taskId);
       state = state.copyWith(uploadItems: updatedItems);
     }
-  }
-
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) {
-    if (!mounted) {
-      _logger.warning("Skip _handleTaskStatusUpdate: notifier disposed");
-      return;
-    }
-    final taskId = update.task.taskId;
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        if (update.task.group == kBackupGroup) {
-          if (update.responseStatusCode == 201) {
-            state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
-          }
-        }
-
-        // Remove the completed task from the upload items
-        if (state.uploadItems.containsKey(taskId)) {
-          Future.delayed(const Duration(milliseconds: 1000), () {
-            _removeUploadItem(taskId);
-          });
-        }
-
-      case TaskStatus.failed:
-        // Ignore retry errors to avoid confusing users
-        if (update.exception?.description == 'Delayed or retried enqueue failed') {
-          _removeUploadItem(taskId);
-          return;
-        }
-
-        final currentItem = state.uploadItems[taskId];
-        if (currentItem == null) {
-          return;
-        }
-
-        String? error;
-        final exception = update.exception;
-        if (exception != null && exception is TaskHttpException) {
-          final message = tryJsonDecode(exception.description)?['message'] as String?;
-          if (message != null) {
-            final responseCode = exception.httpResponseCode;
-            error = "${exception.exceptionType}, response code $responseCode: $message";
-          }
-        }
-        error ??= update.exception?.toString();
-
-        state = state.copyWith(
-          uploadItems: {
-            ...state.uploadItems,
-            taskId: currentItem.copyWith(isFailed: true, error: error),
-          },
-        );
-        _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
-        break;
-
-      case TaskStatus.canceled:
-        _removeUploadItem(update.task.taskId);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  void _handleTaskProgressUpdate(TaskProgressUpdate update) {
-    if (!mounted) {
-      _logger.warning("Skip _handleTaskProgressUpdate: notifier disposed");
-      return;
-    }
-    final taskId = update.task.taskId;
-    final filename = update.task.displayName;
-    final progress = update.progress;
-    final currentItem = state.uploadItems[taskId];
-    if (currentItem != null) {
-      if (progress == kUploadStatusCanceled) {
-        _removeUploadItem(update.task.taskId);
-        return;
-      }
-
-      state = state.copyWith(
-        uploadItems: {
-          ...state.uploadItems,
-          taskId: update.hasExpectedFileSize
-              ? currentItem.copyWith(
-                  progress: progress,
-                  fileSize: update.expectedFileSize,
-                  networkSpeedAsString: update.networkSpeedAsString,
-                )
-              : currentItem.copyWith(progress: progress),
-        },
-      );
-
-      return;
-    }
-
-    state = state.copyWith(
-      uploadItems: {
-        ...state.uploadItems,
-        taskId: DriftUploadStatus(
-          taskId: taskId,
-          filename: filename,
-          progress: progress,
-          fileSize: update.expectedFileSize,
-          networkSpeedAsString: update.networkSpeedAsString,
-        ),
-      },
-    );
   }
 
   Future<void> getBackupStatus(String userId) async {
@@ -523,13 +385,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     _logger.info("Tasks to resume: ${tasks.length}");
     return _backgroundUploadService.resume();
-  }
-
-  @override
-  void dispose() {
-    _statusSubscription?.cancel();
-    _progressSubscription?.cancel();
-    super.dispose();
   }
 }
 
