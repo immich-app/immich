@@ -49,6 +49,8 @@
 }
 
 @theme {
+  --font-mono: 'GoogleSansCode', monospace;
+
   --spacing-18: 4.5rem;
 
   --breakpoint-tall: 800px;
@@ -104,10 +106,6 @@
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: calc(4.5rem + 4px);
     --navbar-height-md: calc(4.5rem + 4px - 14px);
-  }
-
-  .font-mono {
-    font-family: 'GoogleSansCode', monospace;
   }
 
   :root.dark {
