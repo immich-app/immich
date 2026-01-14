@@ -5,6 +5,7 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { StorageFolder } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -210,6 +211,13 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  protected async checkDiskSpace(): Promise<boolean> {
+    const libraryBase = StorageCore.getBaseFolder(StorageFolder.Library);
+    const diskInfo = await this.storageRepository.checkDiskUsage(libraryBase);
+    const minimumSpace = this.configRepository.getEnv().storage.minimumDiskSpaceBytes;
+    return diskInfo.available >= minimumSpace;
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {

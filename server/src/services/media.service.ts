@@ -167,6 +167,14 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Check disk space - fail immediately if less than 50MB available
+    if (!(await this.checkDiskSpace())) {
+      this.logger.error(
+        `Thumbnail generation failed for asset ${id}: less than 50MB disk space available`,
+      );
+      return JobStatus.Failed;
+    }
+
     let generated: {
       previewPath: string;
       thumbnailPath: string;
@@ -338,6 +346,14 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Check disk space - fail immediately if less than 50MB available
+    if (!(await this.checkDiskSpace())) {
+      this.logger.error(
+        `Person thumbnail generation failed for ${id}: less than 50MB disk space available`,
+      );
+      return JobStatus.Failed;
+    }
+
     const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
     if (!data) {
       this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
@@ -480,6 +496,14 @@ export class MediaService extends BaseService {
   async handleVideoConversion({ id }: JobOf<JobName.AssetEncodeVideo>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForVideoConversion(id);
     if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    // Check disk space - fail immediately if less than 50MB available
+    if (!(await this.checkDiskSpace())) {
+      this.logger.error(
+        `Video encoding failed for asset ${id}: less than 50MB disk space available`,
+      );
       return JobStatus.Failed;
     }
 

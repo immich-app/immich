@@ -44,6 +44,11 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   IMMICH_IGNORE_MOUNT_CHECK_ERRORS?: boolean;
 
+  @IsInt()
+  @Optional()
+  @Type(() => Number)
+  IMMICH_MINIMUM_DISK_SPACE_BYTES?: number;
+
   @IsEnum(LogLevel)
   @Optional()
   IMMICH_LOG_LEVEL?: LogLevel;

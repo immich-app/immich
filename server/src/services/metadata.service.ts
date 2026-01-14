@@ -399,6 +399,14 @@ export class MetadataService extends BaseService {
       return JobStatus.Failed;
     }
 
+    // Check disk space - fail immediately if less than 50MB available
+    if (!(await this.checkDiskSpace())) {
+      this.logger.error(
+        `Sidecar write failed for asset ${id}: less than 50MB disk space available`,
+      );
+      return JobStatus.Failed;
+    }
+
     const lockedProperties = await this.assetJobRepository.getLockedPropertiesForMetadataExtraction(id);
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
