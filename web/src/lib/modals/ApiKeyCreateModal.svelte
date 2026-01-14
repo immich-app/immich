@@ -1,8 +1,9 @@
 <script lang="ts">
   import ApiKeyPermissionsPicker from '$lib/components/ApiKeyPermissionsPicker.svelte';
+  import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
   import { handleCreateApiKey } from '$lib/services/api-key.service';
   import { Permission } from '@immich/sdk';
-  import { Field, FormModal, Input } from '@immich/ui';
+  import { Field, FormModal, Input, modalManager } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -15,11 +16,11 @@
   const isAllPermissions = $derived(selectedPermissions.length === Object.keys(Permission).length - 1);
 
   const onSubmit = async () => {
-    const success = await handleCreateApiKey({
-      name,
-      permissions: isAllPermissions ? [Permission.All] : selectedPermissions,
-    });
-    if (success) {
+    const permissions = isAllPermissions ? [Permission.All] : selectedPermissions;
+    const response = await handleCreateApiKey({ name, permissions });
+    if (response) {
+      // no nested modal
+      void modalManager.show(ApiKeySecretModal, { secret: response.secret });
       onClose();
     }
   };

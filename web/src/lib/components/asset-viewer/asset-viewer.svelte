@@ -10,8 +10,8 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
-  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -44,8 +44,8 @@
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
+  import CropArea from './editor/transform-tool/crop-area.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import OcrButton from './ocr-button.svelte';
   import PhotoViewer from './photo-viewer.svelte';
@@ -67,6 +67,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto;
     person?: PersonResponseDto;
+    onAssetChange?: (asset: AssetResponseDto) => void;
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -84,6 +85,7 @@
     isShared = false,
     album,
     person,
+    onAssetChange,
     preAction,
     onAction,
     onUndoDelete,
@@ -112,7 +114,6 @@
   let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
-  let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
@@ -200,10 +201,15 @@
     onClose?.(asset);
   };
 
-  const closeEditor = () => {
-    closeEditorCofirm(() => {
-      isShowEditor = false;
-    });
+  const closeEditor = async () => {
+    if (editManager.hasAppliedEdits) {
+      console.log(asset);
+      const refreshedAsset = await getAssetInfo({ id: asset.id });
+      console.log(refreshedAsset);
+      onAssetChange?.(refreshedAsset);
+      assetViewingStore.setAsset(refreshedAsset);
+    }
+    isShowEditor = false;
   };
 
   const tracker = new InvocationTracker();
@@ -248,6 +254,13 @@
       }
     });
   };
+
+  // const showEditor = () => {
+  //   if (assetViewerManager.isShowActivityPanel) {
+  //     assetViewerManager.isShowActivityPanel = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -344,10 +357,6 @@
     }
 
     onAction?.(action);
-  };
-
-  const handleUpdateSelectedEditType = (type: string) => {
-    selectedEditType = type;
   };
 
   let isFullScreen = $derived(fullscreenElement !== null);
@@ -498,7 +507,7 @@
                 .toLowerCase()
                 .endsWith('.insp'))}
             <ImagePanoramaViewer bind:zoomToggle {asset} />
-          {:else if isShowEditor && selectedEditType === 'crop'}
+          {:else if isShowEditor && editManager.selectedTool?.type === EditToolType.Transform}
             <CropArea {asset} />
           {:else}
             <PhotoViewer
@@ -557,7 +566,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
+      class="row-start-1 row-span-4 w-90 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
@@ -568,20 +577,20 @@
     <div
       transition:fly={{ duration: 150 }}
       id="editor-panel"
-      class="row-start-1 row-span-4 w-[400px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+      class="row-start-1 row-span-4 w-100 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
-      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+      <EditorPanel {asset} onClose={closeEditor} />
     </div>
   {/if}
 
   {#if stack && withStacked}
     {@const stackedAssets = stack.assets}
-    <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1">
+    <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
       <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
-            class={['inline-block px-1 relative transition-all pb-2']}
+            class={['inline-block px-1 relative transition-all pb-2 pointer-events-auto']}
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
@@ -615,7 +624,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+      class="row-start-1 row-span-5 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
       <ActivityViewer

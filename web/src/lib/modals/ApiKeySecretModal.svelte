@@ -4,10 +4,10 @@
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     secret?: string;
     onClose: () => void;
-  }
+  };
 
   let { secret = '', onClose }: Props = $props();
 </script>
@@ -15,7 +15,7 @@
 <Modal title={$t('api_key')} icon={mdiKeyVariant} {onClose} size="small">
   <ModalBody>
     <Text size="small" class="mb-4">{$t('api_key_description')}</Text>
-    <Textarea bind:value={secret} readonly class="font-mono" />
+    <Textarea bind:value={secret} readonly class="font-immich-mono" />
   </ModalBody>
 
   <ModalFooter>

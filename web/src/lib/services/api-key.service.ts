@@ -1,6 +1,5 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
-import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
 import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -56,14 +55,10 @@ export const handleCreateApiKey = async (dto: ApiKeyCreateDto) => {
       return;
     }
 
-    const { apiKey, secret } = await createApiKey({ apiKeyCreateDto: dto });
+    const response = await createApiKey({ apiKeyCreateDto: dto });
+    eventManager.emit('ApiKeyCreate', response.apiKey);
 
-    eventManager.emit('ApiKeyCreate', apiKey);
-
-    // no nested modal
-    void modalManager.show(ApiKeySecretModal, { secret });
-
-    return true;
+    return response;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create_api_key'));
   }

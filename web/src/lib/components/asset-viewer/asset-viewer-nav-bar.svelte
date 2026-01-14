@@ -27,7 +27,7 @@
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, withoutIcons } from '$lib/utils';
+  import { getAssetJobName, getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -72,7 +72,7 @@
     onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    // export let showEditorHandler: () => void;
+    // onEdit: () => void;
     onClose?: () => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -92,6 +92,7 @@
     onRunJob,
     onPlaySlideshow,
     onClose,
+    // onEdit,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -113,16 +114,20 @@
 
   const { Share, Download, SharedLinkDownload, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } =
     $derived(getAssetActions($t, asset));
+  const sharedLink = getSharedLink();
 
-  // $: showEditorButton =
+  // TODO: Enable when edits are ready for release
+  // let showEditorButton = $derived(
   //   isOwner &&
-  //   asset.type === AssetTypeEnum.Image &&
-  //   !(
-  //     asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-  //     (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-  //   ) &&
-  //   !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
-  //   !asset.livePhotoVideoId;
+  //     asset.type === AssetTypeEnum.Image &&
+  //     !(
+  //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+  //       (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+  //     ) &&
+  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
+  //     !asset.livePhotoVideoId,
+  // );
 </script>
 
 <CommandPaletteDefaultProvider
@@ -175,9 +180,15 @@
       <RatingAction {asset} {onAction} />
     {/if}
 
+    <!-- {#if showEditorButton}
+      <EditAction onAction={onEdit} />
+    {/if} -->
+
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
+    {/if}
 
+    {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
@@ -206,17 +217,19 @@
               {/if}
             {/if}
           {/if}
-          {#if album}
-            <SetAlbumCoverAction {asset} {album} />
-          {/if}
-          {#if person}
-            <SetFeaturedPhotoAction {asset} {person} {onAction} />
-          {/if}
-          {#if asset.type === AssetTypeEnum.Image && !isLocked}
-            <SetProfilePictureAction {asset} />
-          {/if}
+        {/if}
+        {#if album}
+          <SetAlbumCoverAction {asset} {album} />
+        {/if}
+        {#if person}
+          <SetFeaturedPhotoAction {asset} {person} {onAction} />
+        {/if}
+        {#if asset.type === AssetTypeEnum.Image && !isLocked}
+          <SetProfilePictureAction {asset} />
+        {/if}
 
-          {#if !isLocked}
+        {#if !isLocked}
+          {#if isOwner}
             <ArchiveAction {asset} {onAction} {preAction} />
             <MenuOption
               icon={mdiUpload}
@@ -230,28 +243,29 @@
                 text={$t('view_in_timeline')}
               />
             {/if}
-            {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
-              <MenuOption
-                icon={mdiCompare}
-                onClick={() =>
-                  goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
-                text={$t('view_similar_photos')}
-              />
-            {/if}
           {/if}
-
-          {#if !asset.isTrashed}
-            <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
-          {/if}
-
-          {#if asset.type === AssetTypeEnum.Video}
+          {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
             <MenuOption
-              icon={mdiVideoOutline}
-              onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
-              text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+              icon={mdiCompare}
+              onClick={() =>
+                goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+              text={$t('view_similar_photos')}
             />
           {/if}
+        {/if}
 
+        {#if !asset.isTrashed && isOwner}
+          <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
+        {/if}
+
+        {#if asset.type === AssetTypeEnum.Video}
+          <MenuOption
+            icon={mdiVideoOutline}
+            onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+            text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+          />
+        {/if}
+        {#if isOwner}
           <hr />
           <MenuOption
             icon={mdiHeadSyncOutline}

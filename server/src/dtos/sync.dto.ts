@@ -117,6 +117,10 @@ export class SyncAssetV1 {
   livePhotoVideoId!: string | null;
   stackId!: string | null;
   libraryId!: string | null;
+  @ApiProperty({ type: 'integer' })
+  width!: number | null;
+  @ApiProperty({ type: 'integer' })
+  height!: number | null;
 }
 
 @ExtraModel()

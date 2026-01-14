@@ -2022,224 +2022,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
   }
 }
 
-class TrashSyncEntity extends Table
-    with TableInfo<TrashSyncEntity, TrashSyncEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  TrashSyncEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<bool> isSyncApproved = GeneratedColumn<bool>(
-    'is_sync_approved',
-    aliasedName,
-    true,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_sync_approved" IN (0, 1))',
-    ),
-  );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [checksum, isSyncApproved, updatedAt];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'trash_sync_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {checksum};
-  @override
-  TrashSyncEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TrashSyncEntityData(
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      )!,
-      isSyncApproved: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_sync_approved'],
-      ),
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-    );
-  }
-
-  @override
-  TrashSyncEntity createAlias(String alias) {
-    return TrashSyncEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class TrashSyncEntityData extends DataClass
-    implements Insertable<TrashSyncEntityData> {
-  final String checksum;
-  final bool? isSyncApproved;
-  final DateTime updatedAt;
-  const TrashSyncEntityData({
-    required this.checksum,
-    this.isSyncApproved,
-    required this.updatedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['checksum'] = Variable<String>(checksum);
-    if (!nullToAbsent || isSyncApproved != null) {
-      map['is_sync_approved'] = Variable<bool>(isSyncApproved);
-    }
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    return map;
-  }
-
-  factory TrashSyncEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TrashSyncEntityData(
-      checksum: serializer.fromJson<String>(json['checksum']),
-      isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'checksum': serializer.toJson<String>(checksum),
-      'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-    };
-  }
-
-  TrashSyncEntityData copyWith({
-    String? checksum,
-    Value<bool?> isSyncApproved = const Value.absent(),
-    DateTime? updatedAt,
-  }) => TrashSyncEntityData(
-    checksum: checksum ?? this.checksum,
-    isSyncApproved: isSyncApproved.present
-        ? isSyncApproved.value
-        : this.isSyncApproved,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
-  TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
-    return TrashSyncEntityData(
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isSyncApproved: data.isSyncApproved.present
-          ? data.isSyncApproved.value
-          : this.isSyncApproved,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityData(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, updatedAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TrashSyncEntityData &&
-          other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved &&
-          other.updatedAt == this.updatedAt);
-}
-
-class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
-  final Value<String> checksum;
-  final Value<bool?> isSyncApproved;
-  final Value<DateTime> updatedAt;
-  const TrashSyncEntityCompanion({
-    this.checksum = const Value.absent(),
-    this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-  });
-  TrashSyncEntityCompanion.insert({
-    required String checksum,
-    this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-  }) : checksum = Value(checksum);
-  static Insertable<TrashSyncEntityData> custom({
-    Expression<String>? checksum,
-    Expression<bool>? isSyncApproved,
-    Expression<DateTime>? updatedAt,
-  }) {
-    return RawValuesInsertable({
-      if (checksum != null) 'checksum': checksum,
-      if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (updatedAt != null) 'updated_at': updatedAt,
-    });
-  }
-
-  TrashSyncEntityCompanion copyWith({
-    Value<String>? checksum,
-    Value<bool?>? isSyncApproved,
-    Value<DateTime>? updatedAt,
-  }) {
-    return TrashSyncEntityCompanion(
-      checksum: checksum ?? this.checksum,
-      isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (isSyncApproved.present) {
-      map['is_sync_approved'] = Variable<bool>(isSyncApproved.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityCompanion(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class RemoteAlbumEntity extends Table
     with TableInfo<RemoteAlbumEntity, RemoteAlbumEntityData> {
   @override
@@ -7541,6 +7323,13 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('0'),
   );
+  late final GeneratedColumn<int> source = GeneratedColumn<int>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -7555,6 +7344,7 @@ class TrashedLocalAssetEntity extends Table
     checksum,
     isFavorite,
     orientation,
+    source,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7618,6 +7408,10 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}source'],
+      )!,
     );
   }
 
@@ -7646,6 +7440,7 @@ class TrashedLocalAssetEntityData extends DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
+  final int source;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -7659,6 +7454,7 @@ class TrashedLocalAssetEntityData extends DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
+    required this.source,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7683,6 +7479,7 @@ class TrashedLocalAssetEntityData extends DataClass
     }
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
+    map['source'] = Variable<int>(source);
     return map;
   }
 
@@ -7704,6 +7501,7 @@ class TrashedLocalAssetEntityData extends DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
+      source: serializer.fromJson<int>(json['source']),
     );
   }
   @override
@@ -7722,6 +7520,7 @@ class TrashedLocalAssetEntityData extends DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
+      'source': serializer.toJson<int>(source),
     };
   }
 
@@ -7738,6 +7537,7 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
+    int? source,
   }) => TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -7753,6 +7553,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
+    source: source ?? this.source,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
@@ -7776,6 +7577,7 @@ class TrashedLocalAssetEntityData extends DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
+      source: data.source.present ? data.source.value : this.source,
     );
   }
 
@@ -7793,7 +7595,8 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -7812,6 +7615,7 @@ class TrashedLocalAssetEntityData extends DataClass
     checksum,
     isFavorite,
     orientation,
+    source,
   );
   @override
   bool operator ==(Object other) =>
@@ -7828,7 +7632,8 @@ class TrashedLocalAssetEntityData extends DataClass
           other.albumId == this.albumId &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation);
+          other.orientation == this.orientation &&
+          other.source == this.source);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -7845,6 +7650,7 @@ class TrashedLocalAssetEntityCompanion
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
+  final Value<int> source;
   const TrashedLocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -7858,6 +7664,7 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    this.source = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -7872,10 +7679,12 @@ class TrashedLocalAssetEntityCompanion
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
+    required int source,
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
-       albumId = Value(albumId);
+       albumId = Value(albumId),
+       source = Value(source);
   static Insertable<TrashedLocalAssetEntityData> custom({
     Expression<String>? name,
     Expression<int>? type,
@@ -7889,6 +7698,7 @@ class TrashedLocalAssetEntityCompanion
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
+    Expression<int>? source,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -7903,6 +7713,7 @@ class TrashedLocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
+      if (source != null) 'source': source,
     });
   }
 
@@ -7919,6 +7730,7 @@ class TrashedLocalAssetEntityCompanion
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
+    Value<int>? source,
   }) {
     return TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -7933,6 +7745,7 @@ class TrashedLocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      source: source ?? this.source,
     );
   }
 
@@ -7975,6 +7788,9 @@ class TrashedLocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = Variable<int>(orientation.value);
     }
+    if (source.present) {
+      map['source'] = Variable<int>(source.value);
+    }
     return map;
   }
 
@@ -7992,7 +7808,8 @@ class TrashedLocalAssetEntityCompanion
           ..write('albumId: $albumId, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source')
           ..write(')'))
         .toString();
   }
@@ -8004,23 +7821,10 @@ class DatabaseAtV15 extends GeneratedDatabase {
   late final RemoteAssetEntity remoteAssetEntity = RemoteAssetEntity(this);
   late final StackEntity stackEntity = StackEntity(this);
   late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
-  late final TrashSyncEntity trashSyncEntity = TrashSyncEntity(this);
   late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
   late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
   late final LocalAlbumAssetEntity localAlbumAssetEntity =
       LocalAlbumAssetEntity(this);
-  late final Index idxTrashSyncChecksum = Index(
-    'idx_trash_sync_checksum',
-    'CREATE INDEX idx_trash_sync_checksum ON trash_sync_entity (checksum)',
-  );
-  late final Index idxTrashSyncStatus = Index(
-    'idx_trash_sync_status',
-    'CREATE INDEX idx_trash_sync_status ON trash_sync_entity (is_sync_approved)',
-  );
-  late final Index idxTrashSyncChecksumStatus = Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
-  );
   late final Index idxLocalAssetChecksum = Index(
     'idx_local_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
@@ -8077,13 +7881,9 @@ class DatabaseAtV15 extends GeneratedDatabase {
     remoteAssetEntity,
     stackEntity,
     localAssetEntity,
-    trashSyncEntity,
     remoteAlbumEntity,
     localAlbumEntity,
     localAlbumAssetEntity,
-    idxTrashSyncChecksum,
-    idxTrashSyncStatus,
-    idxTrashSyncChecksumStatus,
     idxLocalAssetChecksum,
     idxRemoteAssetOwnerChecksum,
     uQRemoteAssetsOwnerChecksum,

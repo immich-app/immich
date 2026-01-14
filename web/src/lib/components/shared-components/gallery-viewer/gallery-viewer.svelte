@@ -104,6 +104,10 @@
     };
   });
 
+  const updateCurrentAsset = (asset: AssetResponseDto) => {
+    assets[currentIndex] = asset;
+  };
+
   const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
 
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
@@ -463,7 +467,7 @@
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
-              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+              class="absolute text-center p-1 text-xs font-immich-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
               {asset.originalFileName}
             </div>
@@ -484,6 +488,7 @@
         onPrevious={handlePrevious}
         onNext={handleNext}
         onRandom={handleRandom}
+        onAssetChange={updateCurrentAsset}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

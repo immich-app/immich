@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AlbumUserRole) {
     return AlbumUserRoleTypeTransformer().encode(value).toString();
   }
+  if (value is AssetEditAction) {
+    return AssetEditActionTypeTransformer().encode(value).toString();
+  }
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
@@ -108,6 +111,9 @@ String parameterToString(dynamic value) {
   }
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is MirrorAxis) {
+    return MirrorAxisTypeTransformer().encode(value).toString();
   }
   if (value is NotificationLevel) {
     return NotificationLevelTypeTransformer().encode(value).toString();
