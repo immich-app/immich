@@ -45,7 +45,8 @@ class Workers {
 
   private async isMaintenanceMode(): Promise<boolean> {
     const { database } = new ConfigRepository().getEnv();
-    const kysely = new Kysely<DB>(getKyselyConfig(database.config));
+    const { log: _, ...kyselyConfig } = getKyselyConfig(database.config);
+    const kysely = new Kysely<DB>(kyselyConfig);
     const systemMetadataRepository = new SystemMetadataRepository(kysely);
 
     try {
