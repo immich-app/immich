@@ -4,15 +4,15 @@ import 'package:drift/drift.dart' as i0;
 import 'package:drift/internal/modular.dart' as i1;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-as i3;
+    as i3;
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart'
-as i4;
+    as i4;
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart'
-as i5;
+    as i5;
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart'
-as i6;
+    as i6;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart'
-as i7;
+    as i7;
 
 class MergedAssetDrift extends i1.ModularAccessor {
   MergedAssetDrift(i0.GeneratedDatabase db) : super(db);
@@ -43,7 +43,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
         ...generatedlimit.watchedTables,
       },
     ).map(
-          (i0.QueryRow row) => MergedAssetResult(
+      (i0.QueryRow row) => MergedAssetResult(
         remoteId: row.readNullable<String>('remote_id'),
         localId: row.readNullable<String>('local_id'),
         name: row.read<String>('name'),
@@ -87,7 +87,7 @@ class MergedAssetDrift extends i1.ModularAccessor {
         localAlbumEntity,
       },
     ).map(
-          (i0.QueryRow row) => MergedBucketResult(
+      (i0.QueryRow row) => MergedBucketResult(
         assetCount: row.read<int>('asset_count'),
         bucketDate: row.read<String>('bucket_date'),
       ),
