@@ -44,6 +44,10 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  Sidecar = 'sidecar',
+  FullSizeEdited = 'fullsize_edited',
+  PreviewEdited = 'preview_edited',
+  ThumbnailEdited = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -105,6 +109,11 @@ export enum Permission {
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
   AssetCopy = 'asset.copy',
+  AssetDerive = 'asset.derive',
+
+  AssetEditGet = 'asset.edit.get',
+  AssetEditCreate = 'asset.edit.create',
+  AssetEditDelete = 'asset.edit.delete',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -248,6 +257,14 @@ export enum Permission {
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
 
+  QueueRead = 'queue.read',
+  QueueUpdate = 'queue.update',
+
+  QueueJobCreate = 'queueJob.create',
+  QueueJobRead = 'queueJob.read',
+  QueueJobUpdate = 'queueJob.update',
+  QueueJobDelete = 'queueJob.delete',
+
   WorkflowCreate = 'workflow.create',
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
@@ -349,6 +366,9 @@ export enum AssetPathType {
   Original = 'original',
   FullSize = 'fullsize',
   Preview = 'preview',
+  EditedFullSize = 'edited_fullsize',
+  EditedPreview = 'edited_preview',
+  EditedThumbnail = 'edited_thumbnail',
   Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
   Sidecar = 'sidecar',
@@ -443,6 +463,11 @@ export enum LogLevel {
   Warn = 'warn',
   Error = 'error',
   Fatal = 'fatal',
+}
+
+export enum LogFormat {
+  Console = 'console',
+  Json = 'json',
 }
 
 export enum ApiCustomExtension {
@@ -541,6 +566,16 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   Workflow = 'workflow',
+  Editor = 'editor',
+}
+
+export enum QueueJobStatus {
+  Active = 'active',
+  Failed = 'failed',
+  Complete = 'completed',
+  Delayed = 'delayed',
+  Waiting = 'waiting',
+  Paused = 'paused',
 }
 
 export enum JobName {
@@ -550,6 +585,7 @@ export enum JobName {
   AssetDetectFaces = 'AssetDetectFaces',
   AssetDetectDuplicatesQueueAll = 'AssetDetectDuplicatesQueueAll',
   AssetDetectDuplicates = 'AssetDetectDuplicates',
+  AssetEditThumbnailGeneration = 'AssetEditThumbnailGeneration',
   AssetEncodeVideoQueueAll = 'AssetEncodeVideoQueueAll',
   AssetEncodeVideo = 'AssetEncodeVideo',
   AssetEmptyTrash = 'AssetEmptyTrash',
@@ -624,9 +660,13 @@ export enum JobName {
 
 export enum QueueCommand {
   Start = 'start',
+  /** @deprecated Use `updateQueue` instead */
   Pause = 'pause',
+  /** @deprecated Use `updateQueue` instead */
   Resume = 'resume',
+  /** @deprecated Use `emptyQueue` instead */
   Empty = 'empty',
+  /** @deprecated Use `emptyQueue` instead */
   ClearFailed = 'clear-failed',
 }
 
@@ -823,6 +863,7 @@ export enum ApiTag {
   Partners = 'Partners',
   People = 'People',
   Plugins = 'Plugins',
+  Queues = 'Queues',
   Search = 'Search',
   Server = 'Server',
   Sessions = 'Sessions',

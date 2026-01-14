@@ -10,8 +10,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class UploadActionButton extends ConsumerWidget {
   final ActionSource source;
+  final bool iconOnly;
+  final bool menuItem;
 
-  const UploadActionButton({super.key, required this.source});
+  const UploadActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -39,6 +41,8 @@ class UploadActionButton extends ConsumerWidget {
     return BaseActionButton(
       iconData: Icons.backup_outlined,
       label: "upload".t(context: context),
+      iconOnly: iconOnly,
+      menuItem: menuItem,
       onPressed: () => _onTap(context, ref),
     );
   }

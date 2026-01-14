@@ -12,7 +12,20 @@ describe(OcrService.name, () => {
     ({ sut, mocks } = newTestService(OcrService));
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
+    mocks.assetJob.getForOcr.mockResolvedValue({
+      visibility: AssetVisibility.Timeline,
+      previewFile: assetStub.image.files[1].path,
+    });
   });
+
+  const mockOcrResult = (...texts: string[]) => {
+    mocks.machineLearning.ocr.mockResolvedValue({
+      box: texts.flatMap((_, i) => Array.from({ length: 8 }, (_, j) => i * 10 + j)),
+      boxScore: texts.map(() => 0.9),
+      text: texts,
+      textScore: texts.map(() => 0.95),
+    });
+  };
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -72,10 +85,6 @@ describe(OcrService.name, () => {
         text: ['One Two Three', 'Four Five'],
         textScore: [0.95, 0.85],
       });
-      mocks.assetJob.getForOcr.mockResolvedValue({
-        visibility: AssetVisibility.Timeline,
-        previewFile: assetStub.image.files[1].path,
-      });
 
       expect(await sut.handleOcr({ id: assetStub.image.id })).toEqual(JobStatus.Success);
 
@@ -88,36 +97,40 @@ describe(OcrService.name, () => {
           maxResolution: 736,
         }),
       );
-      expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, [
-        {
-          assetId: assetStub.image.id,
-          boxScore: 0.9,
-          text: 'One Two Three',
-          textScore: 0.95,
-          x1: 10,
-          y1: 20,
-          x2: 30,
-          y2: 40,
-          x3: 50,
-          y3: 60,
-          x4: 70,
-          y4: 80,
-        },
-        {
-          assetId: assetStub.image.id,
-          boxScore: 0.8,
-          text: 'Four Five',
-          textScore: 0.85,
-          x1: 90,
-          y1: 100,
-          x2: 110,
-          y2: 120,
-          x3: 130,
-          y3: 140,
-          x4: 150,
-          y4: 160,
-        },
-      ]);
+      expect(mocks.ocr.upsert).toHaveBeenCalledWith(
+        assetStub.image.id,
+        [
+          {
+            assetId: assetStub.image.id,
+            boxScore: 0.9,
+            text: 'One Two Three',
+            textScore: 0.95,
+            x1: 10,
+            y1: 20,
+            x2: 30,
+            y2: 40,
+            x3: 50,
+            y3: 60,
+            x4: 70,
+            y4: 80,
+          },
+          {
+            assetId: assetStub.image.id,
+            boxScore: 0.8,
+            text: 'Four Five',
+            textScore: 0.85,
+            x1: 90,
+            y1: 100,
+            x2: 110,
+            y2: 120,
+            x3: 130,
+            y3: 140,
+            x4: 150,
+            y4: 160,
+          },
+        ],
+        'One Two Three Four Five',
+      );
     });
 
     it('should apply config settings', async () => {
@@ -133,11 +146,7 @@ describe(OcrService.name, () => {
           },
         },
       });
-      mocks.machineLearning.ocr.mockResolvedValue({ box: [], boxScore: [], text: [], textScore: [] });
-      mocks.assetJob.getForOcr.mockResolvedValue({
-        visibility: AssetVisibility.Timeline,
-        previewFile: assetStub.image.files[1].path,
-      });
+      mockOcrResult();
 
       expect(await sut.handleOcr({ id: assetStub.image.id })).toEqual(JobStatus.Success);
 
@@ -150,7 +159,7 @@ describe(OcrService.name, () => {
           maxResolution: 1500,
         }),
       );
-      expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, []);
+      expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, [], '');
     });
 
     it('should skip invisible assets', async () => {
@@ -172,6 +181,84 @@ describe(OcrService.name, () => {
 
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
+    });
+
+    describe('search tokenization', () => {
+      it('should generate bigrams for Chinese text', async () => {
+        mockOcrResult('機器學習');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 器學 學習');
+      });
+
+      it('should generate bigrams for Japanese text', async () => {
+        mockOcrResult('テスト');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'テス スト');
+      });
+
+      it('should generate bigrams for Korean text', async () => {
+        mockOcrResult('한국어');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '한국 국어');
+      });
+
+      it('should pass through Latin text unchanged', async () => {
+        mockOcrResult('Hello World');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'Hello World');
+      });
+
+      it('should handle mixed CJK and Latin text', async () => {
+        mockOcrResult('機器學習Model');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 器學 學習 Model');
+      });
+
+      it('should handle year followed by CJK', async () => {
+        mockOcrResult('2024年レポート');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(
+          assetStub.image.id,
+          expect.any(Array),
+          '2024 年レ レポ ポー ート',
+        );
+      });
+
+      it('should join multiple OCR boxes', async () => {
+        mockOcrResult('機器', 'Learning');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 Learning');
+      });
+
+      it('should normalize whitespace', async () => {
+        mockOcrResult('  Hello   World  ');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'Hello World');
+      });
+
+      it('should keep single CJK characters', async () => {
+        mockOcrResult('A', '中', 'B');
+
+        await sut.handleOcr({ id: assetStub.image.id });
+
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'A 中 B');
+      });
     });
   });
 });

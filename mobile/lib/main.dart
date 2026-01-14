@@ -42,6 +42,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
@@ -252,6 +253,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
+        builder: (context, child) => ImmichTranslationProvider(
+          translations: ImmichTranslations(
+            submit: "submit".t(context: context),
+            password: "password".t(context: context),
+          ),
+          child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
+        ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref)],

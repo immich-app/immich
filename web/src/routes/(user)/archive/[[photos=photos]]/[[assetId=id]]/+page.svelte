@@ -54,7 +54,7 @@
     onEscape={handleEscape}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
@@ -66,11 +66,7 @@
   >
     <ArchiveAction
       unarchive
-      onArchive={(ids, visibility) =>
-        timelineManager.updateAssetOperation(ids, (asset) => {
-          asset.visibility = visibility;
-          return { remove: false };
-        })}
+      onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
     />
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
@@ -80,11 +76,7 @@
     </ButtonContextMenu>
     <FavoriteAction
       removeFavorite={assetInteraction.isAllFavorite}
-      onFavorite={(ids, isFavorite) =>
-        timelineManager.updateAssetOperation(ids, (asset) => {
-          asset.isFavorite = isFavorite;
-          return { remove: false };
-        })}
+      onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
     />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />

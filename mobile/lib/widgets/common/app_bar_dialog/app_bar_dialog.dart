@@ -193,7 +193,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 context.pop();
-                launchUrl(Uri.parse('https://immich.app'), mode: LaunchMode.externalApplication);
+                launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
             ),

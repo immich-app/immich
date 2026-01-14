@@ -5,7 +5,7 @@ import { SemVer } from 'semver';
 import { ApiTag, DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
-export const VECTORCHORD_VERSION_RANGE = '>=0.3 <0.6';
+export const VECTORCHORD_VERSION_RANGE = '>=0.3 <2';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
@@ -163,6 +163,8 @@ export const endpointTags: Record<ApiTag, string> = {
     'A person is a collection of faces, which can be favorited and named. A person can also be merged into another person. People are automatically created via the face recognition job.',
   [ApiTag.Plugins]:
     'A plugin is an installed module that makes filters and actions available for the workflow feature.',
+  [ApiTag.Queues]:
+    'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Search]:
     'Endpoints related to searching assets via text, smart search, optical character recognition (OCR), and other filters like person, album, and other metadata. Search endpoints usually support pagination and sorting.',
   [ApiTag.Server]:

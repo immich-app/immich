@@ -1,23 +1,50 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, PlaywrightTestConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+import { cpus } from 'node:os';
+import { resolve } from 'node:path';
 
-export default defineConfig({
+dotenv.config({ path: resolve(import.meta.dirname, '.env') });
+
+export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
+export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? '127.0.0.1';
+export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${playwrightHost}:2285`;
+export const playwriteSlowMo = parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
+export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
+
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+
+const config: PlaywrightTestConfig = {
   testDir: './src/web/specs',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  retries: process.env.CI ? 4 : 0,
   reporter: 'html',
   use: {
-    baseURL: 'http://127.0.0.1:2285',
+    baseURL: playwriteBaseUrl,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    launchOptions: {
+      slowMo: playwriteSlowMo,
+    },
   },
 
   testMatch: /.*\.e2e-spec\.ts/,
+
+  workers: process.env.CI ? 4 : Math.round(cpus().length * 0.75),
 
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.e2e-spec\.ts/,
+      workers: 1,
+    },
+    {
+      name: 'parallel tests',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.parallel-e2e-spec\.ts/,
+      fullyParallel: true,
+      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
     },
 
     // {
@@ -59,4 +86,8 @@ export default defineConfig({
     stderr: 'pipe',
     reuseExistingServer: true,
   },
-});
+};
+if (playwrightDisableWebserver) {
+  delete config.webServer;
+}
+export default defineConfig(config);

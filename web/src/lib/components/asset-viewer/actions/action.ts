@@ -5,8 +5,6 @@ import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto, StackRespon
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
   [AssetAction.UNARCHIVE]: { asset: TimelineAsset };
-  [AssetAction.FAVORITE]: { asset: TimelineAsset };
-  [AssetAction.UNFAVORITE]: { asset: TimelineAsset };
   [AssetAction.TRASH]: { asset: TimelineAsset };
   [AssetAction.DELETE]: { asset: TimelineAsset };
   [AssetAction.RESTORE]: { asset: TimelineAsset };
@@ -20,6 +18,7 @@ type ActionMap = {
   [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
   [AssetAction.SET_PERSON_FEATURED_PHOTO]: { asset: AssetResponseDto; person: PersonResponseDto };
+  [AssetAction.RATING]: { asset: TimelineAsset; rating: number | null };
 };
 
 export type Action = {

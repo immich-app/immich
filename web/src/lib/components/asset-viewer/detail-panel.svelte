@@ -6,6 +6,7 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
@@ -23,6 +24,7 @@
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
+    mdiCamera,
     mdiCameraIris,
     mdiClose,
     mdiEye,
@@ -44,10 +46,9 @@
     asset: AssetResponseDto;
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
-    onClose: () => void;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -113,7 +114,11 @@
       return;
     }
 
-    await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
+    await modalManager.show(AssetChangeDateModal, {
+      asset: toTimelineAsset(asset),
+      initialDate: dateTime,
+      initialTimeZone: timeZone,
+    });
   };
 </script>
 
@@ -122,7 +127,7 @@
     <IconButton
       icon={mdiClose}
       aria-label={$t('close')}
-      onclick={onClose}
+      onclick={() => assetViewerManager.closeDetailPanel()}
       shape="round"
       color="secondary"
       variant="ghost"
@@ -372,9 +377,9 @@
       </div>
     </div>
 
-    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.exposureTime || asset.exifInfo?.iso}
       <div class="flex gap-4 py-4">
-        <div><Icon icon={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCamera} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
@@ -395,20 +400,34 @@
             </p>
           {/if}
 
+          <div class="flex gap-2 text-sm">
+            {#if asset.exifInfo.exposureTime}
+              <p>{`${asset.exifInfo.exposureTime} s`}</p>
+            {/if}
+
+            {#if asset.exifInfo.iso}
+              <p>{`ISO ${asset.exifInfo.iso}`}</p>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if asset.exifInfo?.lensModel || asset.exifInfo?.fNumber || asset.exifInfo?.focalLength}
+      <div class="flex gap-4 py-4">
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
+
+        <div>
           {#if asset.exifInfo?.lensModel}
-            <div class="flex gap-2 text-sm">
-              <p>
-                <a
-                  href={resolve(
-                    `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
-                  )}
-                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
-                >
-                  {asset.exifInfo.lensModel}
-                </a>
-              </p>
-            </div>
+            <p>
+              <a
+                href={resolve(`${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`)}
+                title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                class="hover:text-primary line-clamp-1"
+              >
+                {asset.exifInfo.lensModel}
+              </a>
+            </p>
           {/if}
 
           <div class="flex gap-2 text-sm">
@@ -416,18 +435,8 @@
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
-            {#if asset.exifInfo.exposureTime}
-              <p>{`${asset.exifInfo.exposureTime} s`}</p>
-            {/if}
-
             {#if asset.exifInfo.focalLength}
               <p>{`${asset.exifInfo.focalLength.toLocaleString($locale)} mm`}</p>
-            {/if}
-
-            {#if asset.exifInfo.iso}
-              <p>
-                {`ISO ${asset.exifInfo.iso}`}
-              </p>
             {/if}
           </div>
         </div>
@@ -503,7 +512,7 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+  <section class="px-6 py-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
       <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>

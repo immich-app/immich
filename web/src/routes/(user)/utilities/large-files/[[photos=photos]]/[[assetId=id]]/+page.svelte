@@ -5,10 +5,11 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
+  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import type { AssetResponseDto } from '@immich/sdk';
 
   interface Props {
     data: PageData;
@@ -65,6 +66,12 @@
   const onViewAsset = async (asset: AssetResponseDto) => {
     await navigate({ targetRoute: 'current', assetId: asset.id });
   };
+
+  const assetCursor = $derived({
+    current: $viewingAsset,
+    nextAsset: getNextAsset(assets, $viewingAsset),
+    previousAsset: getPreviousAsset(assets, $viewingAsset),
+  });
 </script>
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
@@ -85,7 +92,7 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
         {onNext}
         {onPrevious}

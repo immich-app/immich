@@ -1,10 +1,8 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { updateMyUser } from '@immich/sdk';
-  import { Button, toastManager } from '@immich/ui';
+  import { Button, Field, Input, toastManager } from '@immich/ui';
   import { cloneDeep } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
@@ -36,29 +34,21 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('user_id')}
-          bind:value={editedUser.id}
-          disabled={true}
-        />
+        <Field label={$t('user_id')} disabled>
+          <Input bind:value={editedUser.id} />
+        </Field>
 
-        <SettingInputField inputType={SettingInputFieldType.EMAIL} label={$t('email')} bind:value={editedUser.email} />
+        <Field label={$t('email')} required>
+          <Input type="email" bind:value={editedUser.email} />
+        </Field>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('name')}
-          bind:value={editedUser.name}
-          required={true}
-        />
+        <Field label={$t('name')} required>
+          <Input bind:value={editedUser.name} />
+        </Field>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('storage_label')}
-          disabled={true}
-          value={editedUser.storageLabel || ''}
-          required={false}
-        />
+        <Field label={$t('storage_label')} disabled>
+          <Input value={editedUser.storageLabel || ''} />
+        </Field>
 
         <div class="flex justify-end">
           <Button shape="round" type="submit" size="small" onclick={() => handleSaveProfile()}>{$t('save')}</Button>

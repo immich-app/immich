@@ -39,7 +39,7 @@
       checked={selectAllSubItems}
       onCheckedChange={handleSelectAllSubItems}
     />
-    <Label label={title} for={title} class="font-mono text-primary text-lg" />
+    <Label label={title} for="permission-{title}" class="font-mono text-primary text-lg" />
   </div>
   <div class="mx-6 mt-3 grid grid-cols-3 gap-2">
     {#each subItems as item (item)}
@@ -50,7 +50,7 @@
           checked={selectedItems.includes(item)}
           onCheckedChange={() => handleToggleItem(item)}
         />
-        <Label label={item} for={item} class="text-sm font-mono" />
+        <Label label={item} for="permission-{item}" class="text-sm font-mono" />
       </div>
     {/each}
   </div>

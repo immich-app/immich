@@ -1,11 +1,11 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createJob, ManualJobName } from '@immich/sdk';
-  import { ConfirmModal, toastManager } from '@immich/ui';
+  import { handleCreateJob } from '$lib/services/job.service';
+  import { ManualJobName } from '@immich/sdk';
+  import { FormModal } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  type Props = { onClose: (confirmed: boolean) => void };
+  type Props = { onClose: () => void };
 
   let { onClose }: Props = $props();
 
@@ -20,42 +20,18 @@
 
   let selectedJob: ComboBoxOption | undefined = $state(undefined);
 
-  const onsubmit = async (event: Event) => {
-    event.preventDefault();
-    await handleCreate();
-  };
-
-  const handleCreate = async () => {
+  const onSubmit = async () => {
     if (!selectedJob) {
       return;
     }
 
-    try {
-      await createJob({ jobCreateDto: { name: selectedJob.value as ManualJobName } });
-      toastManager.success($t('admin.job_created'));
-      onClose(true);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
+    const success = await handleCreateJob({ name: selectedJob.value as ManualJobName });
+    if (success) {
+      onClose();
     }
   };
 </script>
 
-<ConfirmModal
-  confirmColor="primary"
-  title={$t('admin.create_job')}
-  disabled={!selectedJob}
-  onClose={(confirmed) => (confirmed ? handleCreate() : onClose(false))}
->
-  {#snippet promptSnippet()}
-    <form {onsubmit} autocomplete="off" id="create-tag-form" class="w-full">
-      <div class="flex flex-col gap-1 text-start">
-        <Combobox
-          bind:selectedOption={selectedJob}
-          label={$t('jobs')}
-          {options}
-          placeholder={$t('admin.search_jobs')}
-        />
-      </div>
-    </form>
-  {/snippet}
-</ConfirmModal>
+<FormModal title={$t('admin.create_job')} submitText={$t('create')} disabled={!selectedJob} {onClose} {onSubmit}>
+  <Combobox bind:selectedOption={selectedJob} label={$t('jobs')} {options} placeholder={$t('admin.search_jobs')} />
+</FormModal>

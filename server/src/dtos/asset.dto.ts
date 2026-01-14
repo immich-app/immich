@@ -17,10 +17,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
+import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { AssetMetadata, AssetMetadataItem } from 'src/types';
-import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -143,8 +142,8 @@ export class AssetMetadataRouteParams {
   @ValidateUUID()
   id!: string;
 
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  @ValidateString()
+  key!: string;
 }
 
 export class AssetMetadataUpsertDto {
@@ -154,36 +153,56 @@ export class AssetMetadataUpsertDto {
   items!: AssetMetadataUpsertItemDto[];
 }
 
-export class AssetMetadataUpsertItemDto implements AssetMetadataItem {
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+export class AssetMetadataUpsertItemDto {
+  @ValidateString()
+  key!: string;
 
   @IsObject()
-  @ValidateNested()
-  @Type((options) => {
-    switch (options?.object.key) {
-      case AssetMetadataKey.MobileApp: {
-        return AssetMetadataMobileAppDto;
-      }
-      default: {
-        return Object;
-      }
-    }
-  })
-  value!: AssetMetadata[AssetMetadataKey];
+  value!: object;
 }
 
-export class AssetMetadataMobileAppDto {
-  @IsString()
-  @Optional()
-  iCloudId?: string;
+export class AssetMetadataBulkUpsertDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataBulkUpsertItemDto)
+  items!: AssetMetadataBulkUpsertItemDto[];
+}
+
+export class AssetMetadataBulkUpsertItemDto {
+  @ValidateUUID()
+  assetId!: string;
+
+  @ValidateString()
+  key!: string;
+
+  @IsObject()
+  value!: object;
+}
+
+export class AssetMetadataBulkDeleteDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataBulkDeleteItemDto)
+  items!: AssetMetadataBulkDeleteItemDto[];
+}
+
+export class AssetMetadataBulkDeleteItemDto {
+  @ValidateUUID()
+  assetId!: string;
+
+  @ValidateString()
+  key!: string;
 }
 
 export class AssetMetadataResponseDto {
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  @ValidateString()
+  key!: string;
   value!: object;
   updatedAt!: Date;
+}
+
+export class AssetMetadataBulkResponseDto extends AssetMetadataResponseDto {
+  assetId!: string;
 }
 
 export class AssetCopyDto {
@@ -207,6 +226,11 @@ export class AssetCopyDto {
 
   @ValidateBoolean({ optional: true, default: true })
   favorite?: boolean;
+}
+
+export class AssetDownloadOriginalDto {
+  @ValidateBoolean({ optional: true, default: false })
+  edited?: boolean;
 }
 
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {

@@ -2,7 +2,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { getTimeBucket } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
+import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineManagerOptions } from '../types';
 
 export async function loadFromTimeBuckets(
@@ -46,7 +46,7 @@ export async function loadFromTimeBuckets(
     }
   }
 
-  const unprocessedAssets = monthGroup.addAssets(bucketResponse);
+  const unprocessedAssets = monthGroup.addAssets(bucketResponse, true);
   if (unprocessedAssets.length > 0) {
     console.error(
       `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(

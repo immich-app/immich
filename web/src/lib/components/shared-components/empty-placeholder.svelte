@@ -7,9 +7,10 @@
     fullWidth?: boolean;
     src?: string;
     title?: string;
+    class?: string;
   }
 
-  let { onClick = undefined, text, fullWidth = false, src = empty1Url, title }: Props = $props();
+  let { onClick = undefined, text, fullWidth = false, src = empty1Url, title, class: className }: Props = $props();
 
   let width = $derived(fullWidth ? 'w-full' : 'w-1/2');
 
@@ -22,7 +23,7 @@
 <svelte:element
   this={onClick ? 'button' : 'div'}
   onclick={onClick}
-  class="{width} m-auto mt-10 flex flex-col place-content-center place-items-center rounded-3xl bg-gray-50 p-5 dark:bg-immich-dark-gray {hoverClasses}"
+  class="{width} {className} flex flex-col place-content-center place-items-center rounded-3xl bg-gray-50 p-5 dark:bg-immich-dark-gray {hoverClasses}"
 >
   <img {src} alt="" width="500" draggable="false" />
 

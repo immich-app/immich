@@ -22,14 +22,16 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 17;
+const int targetVersion = 20;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -63,13 +65,29 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await Store.populateCache();
   }
 
-  await handleBetaMigration(version, await _isNewInstallation(db, drift), SyncStreamRepository(drift));
+  final syncStreamRepository = SyncStreamRepository(drift);
+  await handleBetaMigration(version, await _isNewInstallation(db, drift), syncStreamRepository);
 
   if (version < 17 && Store.isBetaTimelineEnabled) {
     final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
     if (delay >= 1000) {
       await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
     }
+  }
+
+  if (version < 18 && Store.isBetaTimelineEnabled) {
+    await syncStreamRepository.reset();
+    await Store.put(StoreKey.shouldResetSync, true);
+  }
+
+  if (version < 19 && Store.isBetaTimelineEnabled) {
+    if (!await _populateLocalAssetTime(drift)) {
+      return;
+    }
+  }
+
+  if (version < 20 && Store.isBetaTimelineEnabled) {
+    await _syncLocalAlbumIsIosSharedAlbum(drift);
   }
 
   if (targetVersion >= 12) {
@@ -213,6 +231,54 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
   });
+}
+
+Future<bool> _populateLocalAssetTime(Drift db) async {
+  try {
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    for (final album in albums) {
+      final assets = await nativeApi.getAssetsForAlbum(album.id);
+      await db.batch((batch) async {
+        for (final asset in assets) {
+          batch.update(
+            db.localAssetEntity,
+            LocalAssetEntityCompanion(
+              longitude: Value(asset.longitude),
+              latitude: Value(asset.latitude),
+              adjustmentTime: Value(tryFromSecondsSinceEpoch(asset.adjustmentTime, isUtc: true)),
+              updatedAt: Value(tryFromSecondsSinceEpoch(asset.updatedAt, isUtc: true) ?? DateTime.timestamp()),
+            ),
+            where: (t) => t.id.equals(asset.id),
+          );
+        }
+      });
+    }
+
+    return true;
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while populating asset time: $error");
+    return false;
+  }
+}
+
+Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
+  try {
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    await db.batch((batch) {
+      for (final album in albums) {
+        batch.update(
+          db.localAlbumEntity,
+          LocalAlbumEntityCompanion(isIosSharedAlbum: Value(album.isCloud)),
+          where: (t) => t.id.equals(album.id),
+        );
+      }
+    });
+    dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
+  }
 }
 
 Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {

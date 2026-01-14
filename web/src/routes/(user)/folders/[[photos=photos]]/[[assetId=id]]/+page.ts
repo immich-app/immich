@@ -2,12 +2,11 @@ import { QueryParameter } from '$lib/constants';
 import { foldersStore } from '$lib/stores/folders.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAssetInfoFromParam } from '$lib/utils/navigation';
 import type { PageLoad } from './$types';
 
-export const load = (async ({ params, url }) => {
+export const load = (async ({ url }) => {
   await authenticate(url);
-  const [, asset, $t] = await Promise.all([foldersStore.fetchTree(), getAssetInfoFromParam(params), getFormatter()]);
+  const [, $t] = await Promise.all([foldersStore.fetchTree(), getFormatter()]);
 
   let tree = foldersStore.folders!;
   const path = url.searchParams.get(QueryParameter.PATH);
@@ -23,7 +22,6 @@ export const load = (async ({ params, url }) => {
   const pathAssets = tree.hasAssets ? await foldersStore.fetchAssetsByPath(tree.path) : null;
 
   return {
-    asset,
     tree,
     pathAssets,
     meta: {

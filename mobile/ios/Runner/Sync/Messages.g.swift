@@ -140,6 +140,9 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
+  var adjustmentTime: Int64? = nil
+  var latitude: Double? = nil
+  var longitude: Double? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -154,6 +157,9 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
+    let adjustmentTime: Int64? = nilOrValue(pigeonVar_list[10])
+    let latitude: Double? = nilOrValue(pigeonVar_list[11])
+    let longitude: Double? = nilOrValue(pigeonVar_list[12])
 
     return PlatformAsset(
       id: id,
@@ -165,7 +171,10 @@ struct PlatformAsset: Hashable {
       height: height,
       durationInSeconds: durationInSeconds,
       orientation: orientation,
-      isFavorite: isFavorite
+      isFavorite: isFavorite,
+      adjustmentTime: adjustmentTime,
+      latitude: latitude,
+      longitude: longitude
     )
   }
   func toList() -> [Any?] {
@@ -180,6 +189,9 @@ struct PlatformAsset: Hashable {
       durationInSeconds,
       orientation,
       isFavorite,
+      adjustmentTime,
+      latitude,
+      longitude,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -300,6 +312,39 @@ struct HashResult: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct CloudIdResult: Hashable {
+  var assetId: String
+  var error: String? = nil
+  var cloudId: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> CloudIdResult? {
+    let assetId = pigeonVar_list[0] as! String
+    let error: String? = nilOrValue(pigeonVar_list[1])
+    let cloudId: String? = nilOrValue(pigeonVar_list[2])
+
+    return CloudIdResult(
+      assetId: assetId,
+      error: error,
+      cloudId: cloudId
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      assetId,
+      error,
+      cloudId,
+    ]
+  }
+  static func == (lhs: CloudIdResult, rhs: CloudIdResult) -> Bool {
+    return deepEqualsMessages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashMessages(value: toList(), hasher: &hasher)
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -311,6 +356,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return SyncDelta.fromList(self.readValue() as! [Any?])
     case 132:
       return HashResult.fromList(self.readValue() as! [Any?])
+    case 133:
+      return CloudIdResult.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -330,6 +377,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? HashResult {
       super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? CloudIdResult {
+      super.writeByte(133)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -365,6 +415,7 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+  func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -547,6 +598,23 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
+    }
+    let getCloudIdForAssetIdsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getCloudIdForAssetIdsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdsArg = args[0] as! [String]
+        do {
+          let result = try api.getCloudIdForAssetIds(assetIds: assetIdsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getCloudIdForAssetIdsChannel.setMessageHandler(nil)
     }
   }
 }

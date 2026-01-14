@@ -6,10 +6,20 @@ import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
-import { AssetPathType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
+import {
+  AssetFileType,
+  AssetPathType,
+  AssetType,
+  DatabaseLock,
+  JobName,
+  JobStatus,
+  QueueName,
+  StorageFolder,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, StorageAsset } from 'src/types';
+import { getAssetFile } from 'src/utils/asset.util';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 
 const storageTokens = {
@@ -43,6 +53,7 @@ const storagePresets = [
   '{{y}}/{{y}}-{{MM}}/{{assetId}}',
   '{{y}}/{{y}}-{{WW}}/{{assetId}}',
   '{{album}}/{{filename}}',
+  '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
 ];
 
 export interface MoveAssetMetadata {
@@ -57,6 +68,9 @@ interface RenderMetadata {
   albumName: string | null;
   albumStartDate: Date | null;
   albumEndDate: Date | null;
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
 }
 
 @Injectable()
@@ -105,6 +119,9 @@ export class StorageTemplateService extends BaseService {
         albumName: 'album',
         albumStartDate: new Date(),
         albumEndDate: new Date(),
+        make: 'FUJIFILM',
+        model: 'X-T50',
+        lensModel: 'XF27mm F2.8 R WR',
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -171,6 +188,15 @@ export class StorageTemplateService extends BaseService {
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
       await this.moveAsset(asset, { storageLabel, filename });
+
+      // move motion part of live photo
+      if (asset.livePhotoVideoId) {
+        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+        if (livePhotoVideo) {
+          const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+        }
+      }
     }
 
     this.logger.debug('Cleaning up empty directories...');
@@ -196,7 +222,7 @@ export class StorageTemplateService extends BaseService {
     }
 
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
-      const { id, sidecarPath, originalPath, checksum, fileSizeInByte } = asset;
+      const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
@@ -213,6 +239,8 @@ export class StorageTemplateService extends BaseService {
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
+
+        const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar)?.path;
         if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,
@@ -289,6 +317,9 @@ export class StorageTemplateService extends BaseService {
         albumName,
         albumStartDate,
         albumEndDate,
+        make: asset.make,
+        model: asset.model,
+        lensModel: asset.lensModel,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
@@ -353,7 +384,7 @@ export class StorageTemplateService extends BaseService {
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName, albumStartDate, albumEndDate } = options;
+    const { filename, extension, asset, albumName, albumStartDate, albumEndDate, make, model, lensModel } = options;
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
@@ -363,6 +394,9 @@ export class StorageTemplateService extends BaseService {
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
+      make: make ?? '',
+      model: model ?? '',
+      lensModel: lensModel ?? '',
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

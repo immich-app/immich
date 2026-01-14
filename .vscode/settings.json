@@ -52,7 +52,7 @@
   },
   "cSpell.words": ["immich"],
   "editor.formatOnSave": true,
-  "eslint.validate": ["javascript", "svelte"],
+  "eslint.validate": ["javascript", "typescript", "svelte"],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",

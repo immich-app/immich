@@ -2,7 +2,21 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
-import { QueueCommandDto, QueueResponseDto, QueuesResponseDto } from 'src/dtos/queue.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
+import {
+  mapQueueLegacy,
+  mapQueuesLegacy,
+  QueueResponseLegacyDto,
+  QueuesResponseLegacyDto,
+} from 'src/dtos/queue-legacy.dto';
+import {
+  QueueCommandDto,
+  QueueDeleteDto,
+  QueueJobResponseDto,
+  QueueJobSearchDto,
+  QueueResponseDto,
+  QueueUpdateDto,
+} from 'src/dtos/queue.dto';
 import {
   BootstrapEventPriority,
   CronJob,
@@ -86,7 +100,7 @@ export class QueueService extends BaseService {
     this.services = services;
   }
 
-  async runCommand(name: QueueName, dto: QueueCommandDto): Promise<QueueResponseDto> {
+  async runCommandLegacy(name: QueueName, dto: QueueCommandDto): Promise<QueueResponseLegacyDto> {
     this.logger.debug(`Handling command: queue=${name},command=${dto.command},force=${dto.force}`);
 
     switch (dto.command) {
@@ -117,28 +131,60 @@ export class QueueService extends BaseService {
       }
     }
 
+    const response = await this.getByName(name);
+
+    return mapQueueLegacy(response);
+  }
+
+  async getAll(_auth: AuthDto): Promise<QueueResponseDto[]> {
+    return Promise.all(Object.values(QueueName).map((name) => this.getByName(name)));
+  }
+
+  async getAllLegacy(auth: AuthDto): Promise<QueuesResponseLegacyDto> {
+    const responses = await this.getAll(auth);
+    return mapQueuesLegacy(responses);
+  }
+
+  get(auth: AuthDto, name: QueueName): Promise<QueueResponseDto> {
     return this.getByName(name);
   }
 
-  async getAll(): Promise<QueuesResponseDto> {
-    const response = new QueuesResponseDto();
-    for (const name of Object.values(QueueName)) {
-      response[name] = await this.getByName(name);
+  async update(auth: AuthDto, name: QueueName, dto: QueueUpdateDto): Promise<QueueResponseDto> {
+    if (dto.isPaused === true) {
+      if (name === QueueName.BackgroundTask) {
+        throw new BadRequestException(`The BackgroundTask queue cannot be paused`);
+      }
+      await this.jobRepository.pause(name);
     }
-    return response;
+
+    if (dto.isPaused === false) {
+      await this.jobRepository.resume(name);
+    }
+
+    return this.getByName(name);
   }
 
-  async getByName(name: QueueName): Promise<QueueResponseDto> {
-    const [jobCounts, queueStatus] = await Promise.all([
-      this.jobRepository.getJobCounts(name),
-      this.jobRepository.getQueueStatus(name),
-    ]);
+  searchJobs(auth: AuthDto, name: QueueName, dto: QueueJobSearchDto): Promise<QueueJobResponseDto[]> {
+    return this.jobRepository.searchJobs(name, dto);
+  }
 
-    return { jobCounts, queueStatus };
+  async emptyQueue(auth: AuthDto, name: QueueName, dto: QueueDeleteDto) {
+    await this.jobRepository.empty(name);
+    if (dto.failed) {
+      await this.jobRepository.clear(name, QueueCleanType.Failed);
+    }
+  }
+
+  private async getByName(name: QueueName): Promise<QueueResponseDto> {
+    const [statistics, isPaused] = await Promise.all([
+      this.jobRepository.getJobCounts(name),
+      this.jobRepository.isPaused(name),
+    ]);
+    return { name, isPaused, statistics };
   }
 
   private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {
-    const { isActive } = await this.jobRepository.getQueueStatus(name);
+    const isActive = await this.jobRepository.isActive(name);
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
     }

@@ -143,11 +143,13 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  "enable_backup".t(context: context),
-                                  style: context.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: context.primaryColor,
+                                Flexible(
+                                  child: Text(
+                                    "enable_backup".t(context: context),
+                                    style: context.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.primaryColor,
+                                    ),
                                   ),
                                 ),
                               ],

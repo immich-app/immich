@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -41,6 +42,7 @@ class Timeline extends StatelessWidget {
     this.withScrubber = true,
     this.snapToMonth = true,
     this.initialScrollOffset,
+    this.readOnly = false,
   });
 
   final Widget? topSliverWidget;
@@ -53,6 +55,7 @@ class Timeline extends StatelessWidget {
   final bool withScrubber;
   final bool snapToMonth;
   final double? initialScrollOffset;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +75,7 @@ class Timeline extends StatelessWidget {
                 groupBy: groupBy,
               ),
             ),
+            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
           ],
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
@@ -86,6 +90,17 @@ class Timeline extends StatelessWidget {
       ),
     );
   }
+}
+
+class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
+  @override
+  bool build() => true;
+
+  @override
+  void setReadonlyMode(bool value) {}
+
+  @override
+  void toggleReadonlyMode() {}
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
@@ -323,7 +338,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
           const scrubberBottomPadding = 100.0;
-          final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
+          const bottomSheetOpenModifier = 120.0;
+          final bottomPadding =
+              context.padding.bottom +
+              (widget.appBar == null ? 0 : scrubberBottomPadding) +
+              (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
 
           final grid = CustomScrollView(
             primary: true,
@@ -346,7 +365,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   addRepaintBoundaries: false,
                 ),
               ),
-              const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+              SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
             ],
           );
 

@@ -358,7 +358,7 @@ export class DatabaseRepository {
   }
 
   async runMigrations(): Promise<void> {
-    this.logger.debug('Running migrations');
+    this.logger.log('Running migrations');
 
     const migrator = this.createMigrator();
 
@@ -379,7 +379,7 @@ export class DatabaseRepository {
       throw error;
     }
 
-    this.logger.debug('Finished running migrations');
+    this.logger.log('Finished running migrations');
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {
@@ -403,7 +403,6 @@ export class DatabaseRepository {
         .set((eb) => ({
           originalPath: eb.fn('REGEXP_REPLACE', ['originalPath', source, target]),
           encodedVideoPath: eb.fn('REGEXP_REPLACE', ['encodedVideoPath', source, target]),
-          sidecarPath: eb.fn('REGEXP_REPLACE', ['sidecarPath', source, target]),
         }))
         .execute();
 

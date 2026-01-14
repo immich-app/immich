@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { releaseManager } from '$lib/managers/release-manager.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
+  import type { ReleaseEvent } from '$lib/types';
   import { semverToName } from '$lib/utils';
   import { requestServerInfo } from '$lib/utils/auth';
   import {
@@ -16,7 +18,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  const { serverVersion, connected, release } = websocketStore;
+  const { serverVersion, connected } = websocketStore;
 
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
@@ -37,20 +39,22 @@
     $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
   );
 
-  const releaseInfo = $derived.by(() => {
-    if ($release == undefined || $release?.isAvailable || !$user.isAdmin) {
+  const getReleaseInfo = (release?: ReleaseEvent) => {
+    if (!release || !release?.isAvailable || !$user.isAdmin) {
       return;
     }
 
-    const availableVersion = semverToName($release.releaseVersion);
-    const serverVersion = semverToName($release.serverVersion);
+    const availableVersion = semverToName(release.releaseVersion);
+    const serverVersion = semverToName(release.serverVersion);
 
     if (serverVersion === availableVersion) {
       return;
     }
 
     return { availableVersion, releaseUrl: `https://github.com/immich-app/immich/releases/tag/${availableVersion}` };
-  });
+  };
+
+  const releaseInfo = $derived(getReleaseInfo(releaseManager.value));
 </script>
 
 <div
@@ -58,12 +62,12 @@
 >
   {#if $connected}
     <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-[7px] h-[7px] bg-green-500 rounded-full"></div>
+      <div class="w-1.75 h-1.75 bg-green-500 rounded-full"></div>
       <p class="dark:text-immich-gray">{$t('server_online')}</p>
     </div>
   {:else}
     <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-[7px] h-[7px] bg-red-500 rounded-full"></div>
+      <div class="w-1.75 h-1.75 bg-red-500 rounded-full"></div>
       <p class="text-red-500">{$t('server_offline')}</p>
     </div>
   {/if}
@@ -97,7 +101,7 @@
     <div class="flex items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <Icon icon={mdiNewBox} size="16" class="text-immich-primary dark:text-immich-dark-primary opacity-80" />
-        <Text size="tiny" class="font-medium text-gray-700 dark:text-gray-300">
+        <Text size="tiny" fontWeight="medium" class="text-gray-700 dark:text-gray-300">
           {releaseInfo.availableVersion}
         </Text>
       </div>

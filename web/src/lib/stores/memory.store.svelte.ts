@@ -20,12 +20,18 @@ export type MemoryAsset = MemoryIndex & {
 };
 
 class MemoryStoreSvelte {
+  #loading: Promise<void> | undefined;
+
   constructor() {
     eventManager.on('AuthLogout', () => this.clearCache());
+    eventManager.on('AuthUserLoaded', () => void this.initialize());
+  }
+
+  ready() {
+    return this.initialize();
   }
 
   memories = $state<MemoryResponseDto[]>([]);
-  private initialized = false;
   private memoryAssets = $derived.by(() => {
     const memoryAssets: MemoryAsset[] = [];
     let previous: MemoryAsset | undefined;
@@ -101,21 +107,20 @@ class MemoryStoreSvelte {
     }
   }
 
-  async initialize() {
-    if (this.initialized) {
-      return;
-    }
-    this.initialized = true;
-
-    await this.loadAllMemories();
-  }
-
-  clearCache() {
-    this.initialized = false;
+  private clearCache() {
+    this.#loading = undefined;
     this.memories = [];
   }
 
-  private async loadAllMemories() {
+  private initialize() {
+    if (!this.#loading) {
+      this.#loading = this.load();
+    }
+
+    return this.#loading;
+  }
+
+  private async load() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
   }

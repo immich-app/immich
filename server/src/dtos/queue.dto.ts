@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { QueueCommand, QueueName } from 'src/enum';
+import { HistoryBuilder, Property } from 'src/decorators';
+import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
 import { ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class QueueNameParamDto {
@@ -15,6 +16,46 @@ export class QueueCommandDto {
   force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
 }
 
+export class QueueUpdateDto {
+  @ValidateBoolean({ optional: true })
+  isPaused?: boolean;
+}
+
+export class QueueDeleteDto {
+  @ValidateBoolean({ optional: true })
+  @Property({
+    description: 'If true, will also remove failed jobs from the queue.',
+    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+  })
+  failed?: boolean;
+}
+
+export class QueueJobSearchDto {
+  @ValidateEnum({ enum: QueueJobStatus, name: 'QueueJobStatus', optional: true, each: true })
+  status?: QueueJobStatus[];
+}
+export class QueueJobResponseDto {
+  id?: string;
+
+  @ValidateEnum({ enum: JobName, name: 'JobName' })
+  name!: JobName;
+
+  data!: object;
+
+  @ApiProperty({ type: 'integer' })
+  timestamp!: number;
+}
+
+export class QueueResponseDto {
+  @ValidateEnum({ enum: QueueName, name: 'QueueName' })
+  name!: QueueName;
+
+  @ValidateBoolean()
+  isPaused!: boolean;
+
+  statistics!: QueueStatisticsDto;
+}
+
 export class QueueStatisticsDto {
   @ApiProperty({ type: 'integer' })
   active!: number;
@@ -28,70 +69,4 @@ export class QueueStatisticsDto {
   waiting!: number;
   @ApiProperty({ type: 'integer' })
   paused!: number;
-}
-
-export class QueueStatusDto {
-  isActive!: boolean;
-  isPaused!: boolean;
-}
-
-export class QueueResponseDto {
-  @ApiProperty({ type: QueueStatisticsDto })
-  jobCounts!: QueueStatisticsDto;
-
-  @ApiProperty({ type: QueueStatusDto })
-  queueStatus!: QueueStatusDto;
-}
-
-export class QueuesResponseDto implements Record<QueueName, QueueResponseDto> {
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.ThumbnailGeneration]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.MetadataExtraction]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.VideoConversion]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.SmartSearch]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.StorageTemplateMigration]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Migration]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.BackgroundTask]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Search]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.DuplicateDetection]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.FaceDetection]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.FacialRecognition]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Sidecar]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Library]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Notification]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.BackupDatabase]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Ocr]!: QueueResponseDto;
-
-  @ApiProperty({ type: QueueResponseDto })
-  [QueueName.Workflow]!: QueueResponseDto;
 }

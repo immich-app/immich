@@ -16,7 +16,6 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -55,11 +54,10 @@
     bind:timelineManager
     {options}
     {assetInteraction}
-    removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_favorites_message')} />
+      <EmptyPlaceholder text={$t('no_favorites_message')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>
@@ -85,7 +83,7 @@
       <ArchiveAction
         menuItem
         unarchive={assetInteraction.isAllArchived}
-        onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
+        onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
       />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
@@ -94,7 +92,7 @@
       <DeleteAssets
         menuItem
         onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
+        onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
       />
     </ButtonContextMenu>
   </AssetSelectControlBar>

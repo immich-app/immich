@@ -1,12 +1,21 @@
 name: immich-e2e
 
 services:
+  e2e-auth-server:
+    build:
+      context: ../e2e-auth-server
+    ports:
+      - 2286:2286
+
   immich-server:
     container_name: immich-e2e-server
     image: immich-server:latest
     build:
       context: ../
       dockerfile: server/Dockerfile
+      cache_from:
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-amd64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-arm64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
       args:
         - BUILD_ID=1234567890
         - BUILD_IMAGE=e2e
@@ -24,8 +33,6 @@ services:
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
     volumes:
       - ./test-assets:/test-assets
-    extra_hosts:
-      - 'auth-server:host-gateway'
     depends_on:
       redis:
         condition: service_started

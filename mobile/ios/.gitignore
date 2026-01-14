@@ -34,3 +34,4 @@ Runner/GeneratedPluginRegistrant.*
 
 fastlane/report.xml
 Gemfile.lock
+certs/

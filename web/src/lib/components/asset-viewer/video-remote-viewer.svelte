@@ -35,7 +35,6 @@
 
   $effect(() => {
     if (assetFileUrl) {
-      // this can't be in an async context with $effect
       void cast(assetFileUrl);
     }
   });

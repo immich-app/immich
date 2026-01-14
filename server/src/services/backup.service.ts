@@ -61,7 +61,7 @@ export class BackupService extends BaseService {
         const newBackupStyle = file.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
         return oldBackupStyle || newBackupStyle;
       })
-      .sort()
+      .toSorted()
       .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);
@@ -81,8 +81,16 @@ export class BackupService extends BaseService {
 
     const isUrlConnection = config.connectionType === 'url';
 
+    let connectionUrl: string = isUrlConnection ? config.url : '';
+    if (URL.canParse(connectionUrl)) {
+      // remove known bad url parameters for pg_dumpall
+      const url = new URL(connectionUrl);
+      url.searchParams.delete('uselibpqcompat');
+      connectionUrl = url.toString();
+    }
+
     const databaseParams = isUrlConnection
-      ? ['--dbname', config.url]
+      ? ['--dbname', connectionUrl]
       : [
           '--username',
           config.username,
@@ -118,7 +126,7 @@ export class BackupService extends BaseService {
           {
             env: {
               PATH: process.env.PATH,
-              PGPASSWORD: isUrlConnection ? new URL(config.url).password : config.password,
+              PGPASSWORD: isUrlConnection ? new URL(connectionUrl).password : config.password,
             },
           },
         );

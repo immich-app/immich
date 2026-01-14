@@ -1,10 +1,12 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { JobCreateDto } from 'src/dtos/job.dto';
-import { QueueCommandDto, QueueNameParamDto, QueueResponseDto, QueuesResponseDto } from 'src/dtos/queue.dto';
+import { QueueResponseLegacyDto, QueuesResponseLegacyDto } from 'src/dtos/queue-legacy.dto';
+import { QueueCommandDto, QueueNameParamDto } from 'src/dtos/queue.dto';
 import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { JobService } from 'src/services/job.service';
 import { QueueService } from 'src/services/queue.service';
 
@@ -21,10 +23,10 @@ export class JobController {
   @Endpoint({
     summary: 'Retrieve queue counts and status',
     description: 'Retrieve the counts of the current queue, as well as the current status.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').deprecated('v2.4.0'),
   })
-  getQueuesLegacy(): Promise<QueuesResponseDto> {
-    return this.queueService.getAll();
+  getQueuesLegacy(@Auth() auth: AuthDto): Promise<QueuesResponseLegacyDto> {
+    return this.queueService.getAllLegacy(auth);
   }
 
   @Post()
@@ -46,9 +48,12 @@ export class JobController {
     summary: 'Run jobs',
     description:
       'Queue all assets for a specific job type. Defaults to only queueing assets that have not yet been processed, but the force command can be used to re-process all assets.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').deprecated('v2.4.0'),
   })
-  runQueueCommandLegacy(@Param() { name }: QueueNameParamDto, @Body() dto: QueueCommandDto): Promise<QueueResponseDto> {
-    return this.queueService.runCommand(name, dto);
+  runQueueCommandLegacy(
+    @Param() { name }: QueueNameParamDto,
+    @Body() dto: QueueCommandDto,
+  ): Promise<QueueResponseLegacyDto> {
+    return this.queueService.runCommandLegacy(name, dto);
   }
 }

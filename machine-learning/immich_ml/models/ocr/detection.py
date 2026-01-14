@@ -82,6 +82,7 @@ class TextDetector(InferenceModel):
             ratio = float(self.max_resolution) / img.height
         else:
             ratio = float(self.max_resolution) / img.width
+        ratio = min(ratio, 1.0)
 
         resize_h = int(img.height * ratio)
         resize_w = int(img.width * ratio)

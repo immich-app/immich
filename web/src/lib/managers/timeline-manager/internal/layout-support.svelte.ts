@@ -1,5 +1,5 @@
 import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
+import { TimelineManager } from '../timeline-manager.svelte';
 import type { UpdateGeometryOptions } from '../types';
 
 export function updateGeometry(timelineManager: TimelineManager, month: MonthGroup, options: UpdateGeometryOptions) {

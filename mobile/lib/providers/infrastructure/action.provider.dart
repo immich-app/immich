@@ -301,6 +301,13 @@ class ActionNotifier extends Notifier<void> {
         return null;
       }
 
+      // This must be called since editing location
+      // does not update the currentAsset which means
+      // the exif provider will not be refreshed automatically
+      if (source == ActionSource.viewer) {
+        ref.invalidate(currentAssetExifProvider);
+      }
+
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to edit location for assets', error, stack);

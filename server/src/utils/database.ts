@@ -1,4 +1,5 @@
 import {
+  AliasedRawBuilder,
   DeduplicateJoinsPlugin,
   Expression,
   ExpressionBuilder,
@@ -15,7 +16,8 @@ import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice, PostgresError } from 'postgres';
-import { columns, Exif, Person } from 'src/database';
+import { columns, Exif, lockableProperties, LockableProperty, Person } from 'src/database';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
@@ -180,13 +182,14 @@ export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
     .select((eb) => toJson(eb, 'smart_search').as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {
+export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withHidden?: boolean, withDeletedFace?: boolean) {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_face')
       .selectAll('asset_face')
       .whereRef('asset_face.assetId', '=', 'asset.id')
-      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null)),
+      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
+      .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', '=', true)),
   ).as('faces');
 }
 
@@ -208,7 +211,11 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
     .where('asset_file.type', '=', type);
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDeletedFace?: boolean) {
+export function withFacesAndPeople(
+  eb: ExpressionBuilder<DB, 'asset'>,
+  withHidden?: boolean,
+  withDeletedFace?: boolean,
+) {
   return jsonArrayFrom(
     eb
       .selectFrom('asset_face')
@@ -220,7 +227,8 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDelet
       .selectAll('asset_face')
       .select((eb) => eb.table('person').$castTo<Person>().as('person'))
       .whereRef('asset_face.assetId', '=', 'asset.id')
-      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null)),
+      .$if(!withDeletedFace, (qb) => qb.where('asset_face.deletedAt', 'is', null))
+      .$if(!withHidden, (qb) => qb.where('asset_face.isVisible', 'is', true)),
   ).as('faces');
 }
 
@@ -232,6 +240,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
         .where('deletedAt', 'is', null)
+        .where('isVisible', 'is', true)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),
@@ -304,6 +313,57 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: stri
         .where('tag_closure.id_ancestor', '=', tagId),
     ),
   );
+}
+
+const isCJK = (c: number): boolean =>
+  (c >= 0x4e_00 && c <= 0x9f_ff) ||
+  (c >= 0xac_00 && c <= 0xd7_af) ||
+  (c >= 0x30_40 && c <= 0x30_9f) ||
+  (c >= 0x30_a0 && c <= 0x30_ff) ||
+  (c >= 0x34_00 && c <= 0x4d_bf);
+
+export const tokenizeForSearch = (text: string): string[] => {
+  /* eslint-disable unicorn/prefer-code-point */
+  const tokens: string[] = [];
+  let i = 0;
+  while (i < text.length) {
+    const c = text.charCodeAt(i);
+    if (c <= 32) {
+      i++;
+      continue;
+    }
+
+    const start = i;
+    if (isCJK(c)) {
+      while (i < text.length && isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      if (i - start === 1) {
+        tokens.push(text[start]);
+      } else {
+        for (let k = start; k < i - 1; k++) {
+          tokens.push(text[k] + text[k + 1]);
+        }
+      }
+    } else {
+      while (i < text.length && text.charCodeAt(i) > 32 && !isCJK(text.charCodeAt(i))) {
+        i++;
+      }
+      tokens.push(text.slice(start, i));
+    }
+  }
+  return tokens;
+};
+
+// needed to properly type the return with the EditActionItem discriminated union type
+type AliasedEditActions = AliasedRawBuilder<AssetEditActionItem[], 'edits'>;
+export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditActions {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_edit')
+      .select(['asset_edit.action', 'asset_edit.parameters'])
+      .whereRef('asset_edit.assetId', '=', 'asset.id'),
+  ).as('edits') as AliasedEditActions;
 }
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
@@ -391,7 +451,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.ocr, (qb) =>
       qb
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
-        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
@@ -406,7 +466,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
     )
     .$if(!!options.withExif, withExifInner)
-    .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
+    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
@@ -448,3 +508,10 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
     }
   }
 }
+
+export const updateLockedColumns = <T extends Record<string, unknown> & { lockedProperties?: LockableProperty[] }>(
+  exif: T,
+) => {
+  exif.lockedProperties = lockableProperties.filter((property) => property in exif);
+  return exif;
+};

@@ -1,73 +1,46 @@
 <script lang="ts">
   import DateInput from '$lib/elements/DateInput.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter, toastManager } from '@immich/ui';
+  import { handleUpdatePersonBirthDate } from '$lib/services/person.service';
+  import { type PersonResponseDto } from '@immich/sdk';
+  import { Button, FormModal, Text } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     person: PersonResponseDto;
-    onClose: (updatedPerson?: PersonResponseDto) => void;
-  }
+    onClose: () => void;
+  };
 
   let { person, onClose }: Props = $props();
-  let birthDate = $state(person.birthDate ?? '');
+  let birthDate = $derived(person.birthDate ?? '');
 
-  const todayFormatted = new Date().toISOString().split('T')[0];
-
-  const handleUpdateBirthDate = async () => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: person.id,
-        personUpdateDto: { birthDate },
-      });
-
-      toastManager.success($t('date_of_birth_saved'));
-      onClose(updatedPerson);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_date_of_birth'));
+  const onSubmit = async () => {
+    const success = await handleUpdatePersonBirthDate(person, birthDate);
+    if (success) {
+      onClose();
     }
   };
+
+  const todayFormatted = new Date().toISOString().split('T')[0];
 </script>
 
-<Modal title={$t('set_date_of_birth')} icon={mdiCake} {onClose} size="small">
-  <ModalBody>
-    <div class="text-primary">
-      <p class="text-sm dark:text-immich-dark-fg">
-        {$t('birthdate_set_description')}
-      </p>
-    </div>
-
-    <form onsubmit={() => handleUpdateBirthDate()} autocomplete="off" id="set-birth-date-form">
-      <div class="my-4 flex flex-col gap-2">
-        <DateInput
-          class="immich-form-input"
-          id="birthDate"
-          name="birthDate"
-          type="date"
-          bind:value={birthDate}
-          max={todayFormatted}
-        />
-        {#if person.birthDate}
-          <div class="flex justify-end">
-            <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = '')}>
-              {$t('clear')}
-            </Button>
-          </div>
-        {/if}
+<FormModal title={$t('set_date_of_birth')} size="small" icon={mdiCake} {onClose} {onSubmit}>
+  <Text size="small">{$t('birthdate_set_description')}</Text>
+  <div class="my-4 flex flex-col gap-2">
+    <DateInput
+      class="immich-form-input"
+      id="birthDate"
+      name="birthDate"
+      type="date"
+      bind:value={birthDate}
+      max={todayFormatted}
+    />
+    {#if person.birthDate}
+      <div class="flex justify-end">
+        <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = '')}>
+          {$t('clear')}
+        </Button>
       </div>
-    </form>
-  </ModalBody>
-
-  <ModalFooter>
-    <HStack fullWidth>
-      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>
-        {$t('cancel')}
-      </Button>
-      <Button type="submit" shape="round" color="primary" fullWidth form="set-birth-date-form">
-        {$t('save')}
-      </Button>
-    </HStack>
-  </ModalFooter>
-</Modal>
+    {/if}
+  </div>
+</FormModal>
