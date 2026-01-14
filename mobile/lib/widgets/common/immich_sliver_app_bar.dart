@@ -45,54 +45,47 @@ class ImmichSliverAppBar extends ConsumerWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
-    final isDarkTheme = context.isDarkTheme;
-    final baseBackgroundColor = context.themeData.appBarTheme.backgroundColor ?? context.colorScheme.surface;
-    final scrolledBackgroundColor = context.colorScheme.surfaceContainer;
 
-    return SliverLayoutBuilder(
-      builder: (context, constraints) {
-        final isScrolledUnder = constraints.scrollOffset > 90;
-        final backgroundColor = isDarkTheme && isScrolledUnder ? scrolledBackgroundColor : baseBackgroundColor;
-
-        return SliverAnimatedOpacity(
-          duration: Durations.medium1,
-          opacity: isMultiSelectEnabled ? 0 : 1,
-          sliver: SliverAppBar(
-            floating: floating,
-            pinned: pinned,
-            snap: snap,
-            expandedHeight: expandedHeight,
-            backgroundColor: backgroundColor,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
-            automaticallyImplyLeading: false,
-            centerTitle: false,
-            title: title ?? const _ImmichLogoWithText(),
-            actions: [
-              if (isCasting && !isReadonlyModeEnabled)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: IconButton(
-                    onPressed: () {
-                      showDialog(context: context, builder: (context) => const CastDialog());
-                    },
-                    icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
-                  ),
-                ),
-              const _SyncStatusIndicator(),
-              if (actions != null)
-                ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
-              if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
-                IconButton(
-                  icon: const Icon(Icons.palette_rounded),
-                  onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
-                ),
-              if (showUploadButton && !isReadonlyModeEnabled)
-                const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
-              const Padding(padding: EdgeInsets.only(right: 20), child: _ProfileIndicator()),
-            ],
-          ),
-        );
-      },
+    return SliverAnimatedOpacity(
+      duration: Durations.medium1,
+      opacity: isMultiSelectEnabled ? 0 : 1,
+      sliver: SliverAppBar(
+        backgroundColor: context.colorScheme.surface,
+        surfaceTintColor: context.colorScheme.surfaceTint,
+        elevation: 0,
+        scrolledUnderElevation: 1.0,
+        floating: floating,
+        pinned: pinned,
+        snap: snap,
+        expandedHeight: expandedHeight,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        title: title ?? const _ImmichLogoWithText(),
+        actions: [
+          if (isCasting && !isReadonlyModeEnabled)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: () {
+                  showDialog(context: context, builder: (context) => const CastDialog());
+                },
+                icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
+              ),
+            ),
+          const _SyncStatusIndicator(),
+          if (actions != null)
+            ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
+          if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
+            IconButton(
+              icon: const Icon(Icons.palette_rounded),
+              onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
+            ),
+          if (showUploadButton && !isReadonlyModeEnabled)
+            const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
+          const Padding(padding: EdgeInsets.only(right: 20), child: _ProfileIndicator()),
+        ],
+      ),
     );
   }
 }
