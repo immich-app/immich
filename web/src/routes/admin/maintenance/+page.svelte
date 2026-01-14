@@ -1,20 +1,21 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import { AppRoute } from '$lib/constants';
+  import { handleCreateJob } from '$lib/services/job.service';
   import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
   import { asyncTimeout } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
   import {
-    createJob,
     getIntegrityReportSummary,
     getQueuesLegacy,
     IntegrityReportType,
     ManualJobName,
     type IntegrityReportSummaryResponseDto,
+    type JobCreateDto,
     type QueuesResponseLegacyDto,
   } from '@immich/sdk';
-  import { Button, HStack, toastManager } from '@immich/ui';
+  import { Button, HStack } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -34,43 +35,20 @@
     IntegrityReportType.ChecksumMismatch,
   ];
 
+  const INTEGRITY_JOB_NAMES: Record<IntegrityReportType, ManualJobName> = {
+    [IntegrityReportType.UntrackedFile]: ManualJobName.IntegrityUntrackedFiles,
+    [IntegrityReportType.MissingFile]: ManualJobName.IntegrityMissingFiles,
+    [IntegrityReportType.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatch,
+  };
+
+  const INTEGRITY_REFRESH_JOB_NAMES: Record<IntegrityReportType, ManualJobName> = {
+    [IntegrityReportType.UntrackedFile]: ManualJobName.IntegrityUntrackedFilesRefresh,
+    [IntegrityReportType.MissingFile]: ManualJobName.IntegrityMissingFilesRefresh,
+    [IntegrityReportType.ChecksumMismatch]: ManualJobName.IntegrityChecksumMismatchRefresh,
+  };
+
   let jobs: QueuesResponseLegacyDto | undefined = $state();
   let expectingUpdate: boolean = $state(false);
-
-  async function runJob(reportType: IntegrityReportType, refreshOnly?: boolean) {
-    let name: ManualJobName;
-    switch (reportType) {
-      case IntegrityReportType.UntrackedFile: {
-        name = refreshOnly ? ManualJobName.IntegrityUntrackedFilesRefresh : ManualJobName.IntegrityUntrackedFiles;
-        break;
-      }
-      case IntegrityReportType.MissingFile: {
-        name = refreshOnly ? ManualJobName.IntegrityMissingFilesRefresh : ManualJobName.IntegrityMissingFiles;
-        break;
-      }
-      case IntegrityReportType.ChecksumMismatch: {
-        name = refreshOnly ? ManualJobName.IntegrityChecksumMismatchRefresh : ManualJobName.IntegrityChecksumMismatch;
-        break;
-      }
-    }
-
-    try {
-      await createJob({ jobCreateDto: { name } });
-      if (jobs) {
-        expectingUpdate = true;
-        jobs.integrityCheck.queueStatus.isActive = true;
-      }
-      toastManager.success($t('admin.job_created'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
-    }
-  }
-
-  async function runAllJobs(refreshOnly?: boolean) {
-    for (const reportType of Object.values(IntegrityReportType)) {
-      await runJob(reportType, refreshOnly);
-    }
-  }
 
   let running = true;
 
@@ -91,7 +69,21 @@
   onDestroy(() => {
     running = false;
   });
+
+  function onJobCreate({ dto }: { dto: JobCreateDto }) {
+    if (
+      Object.values(INTEGRITY_JOB_NAMES).some((name) => name === dto.name) ||
+      Object.values(INTEGRITY_REFRESH_JOB_NAMES).some((name) => name === dto.name)
+    ) {
+      if (jobs) {
+        expectingUpdate = true;
+        jobs.integrityCheck.queueStatus.isActive = true;
+      }
+    }
+  }
 </script>
+
+<OnEvents {onJobCreate} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
@@ -101,14 +93,14 @@
         <Button
           size="tiny"
           variant="ghost"
-          onclick={() => runAllJobs()}
+          onclick={() => Object.values(INTEGRITY_JOB_NAMES).forEach((name) => handleCreateJob({ name }))}
           class="self-end mt-1"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('admin.maintenance_integrity_check_all')}</Button
         >
         <Button
           size="tiny"
           variant="ghost"
-          onclick={() => runAllJobs(true)}
+          onclick={() => Object.values(INTEGRITY_REFRESH_JOB_NAMES).forEach((name) => handleCreateJob({ name }))}
           class="self-end mt-1"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
         ></HStack
@@ -123,7 +115,10 @@
             {#snippet footer()}
               <HStack gap={1} class="justify-end">
                 <Button
-                  onclick={() => runJob(reportType)}
+                  onclick={() =>
+                    handleCreateJob({
+                      name: INTEGRITY_JOB_NAMES[reportType],
+                    })}
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
@@ -131,7 +126,10 @@
                   >{$t('admin.maintenance_integrity_check_all')}</Button
                 >
                 <Button
-                  onclick={() => runJob(reportType, true)}
+                  onclick={() =>
+                    handleCreateJob({
+                      name: INTEGRITY_REFRESH_JOB_NAMES[reportType],
+                    })}
                   size="tiny"
                   variant="ghost"
                   class="self-end mt-1"
