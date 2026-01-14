@@ -231,8 +231,24 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
+    final isEdited = _db.assetEditEntity.id.isNotNull();
+    final query =
+        _db.localAssetEntity.select().join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.assetEditEntity,
+              _db.assetEditEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([isEdited])
+          ..where(_db.localAssetEntity.iCloudId.isNull());
+
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto(isEdited: row.read(isEdited)!)).get();
   }
 
   Future<Map<String, String>> getHashMappingFromCloudId() async {

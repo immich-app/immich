@@ -222,6 +222,7 @@ void main() {
         latitude: 37.7749,
         longitude: -122.4194,
         adjustmentTime: DateTime(2026, 1, 2),
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -274,6 +275,7 @@ void main() {
         cloudId: 'cloud-id-123',
         latitude: 37.7749,
         longitude: -122.4194,
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -314,6 +316,7 @@ void main() {
         cloudId: 'cloud-id-123',
         latitude: 37.7749,
         longitude: -122.4194,
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -352,6 +355,7 @@ void main() {
         createdAt: DateTime(2025, 1, 1),
         updatedAt: DateTime(2025, 1, 2),
         cloudId: null, // No cloudId
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -394,6 +398,7 @@ void main() {
         cloudId: 'cloud-id-livephoto',
         latitude: 37.7749,
         longitude: -122.4194,
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();

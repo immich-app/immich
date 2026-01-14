@@ -133,34 +133,43 @@ Future<void> _populateCloudIds(Drift drift) async {
 typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});
 
 Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) async {
+  final isEdited = drift.assetEditEntity.assetId.isNotNull();
   final query =
       drift.remoteAssetEntity.select().join([
-        leftOuterJoin(
-          drift.localAssetEntity,
-          drift.localAssetEntity.checksum.equalsExp(drift.remoteAssetEntity.checksum),
-        ),
-        leftOuterJoin(
-          drift.remoteAssetCloudIdEntity,
-          drift.remoteAssetEntity.id.equalsExp(drift.remoteAssetCloudIdEntity.assetId),
-          useColumns: false,
-        ),
-      ])..where(
-        // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
-        drift.localAssetEntity.id.isNotNull() &
-            drift.localAssetEntity.iCloudId.isNotNull() &
-            drift.remoteAssetEntity.ownerId.equals(userId) &
-            // Skip locked assets as we cannot update them without unlocking first
-            drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
-            (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
-                ((drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime)) &
-                    (drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude)) &
-                    (drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude)) &
-                    (drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)))),
-      );
+          leftOuterJoin(
+            drift.localAssetEntity,
+            drift.localAssetEntity.checksum.equalsExp(drift.remoteAssetEntity.checksum),
+          ),
+          leftOuterJoin(
+            drift.remoteAssetCloudIdEntity,
+            drift.remoteAssetEntity.id.equalsExp(drift.remoteAssetCloudIdEntity.assetId),
+            useColumns: false,
+          ),
+          leftOuterJoin(
+            drift.assetEditEntity,
+            drift.assetEditEntity.assetId.equalsExp(drift.remoteAssetEntity.id),
+            useColumns: false,
+          ),
+        ])
+        ..addColumns([isEdited])
+        ..where(
+          // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
+          drift.localAssetEntity.id.isNotNull() &
+              drift.localAssetEntity.iCloudId.isNotNull() &
+              drift.remoteAssetEntity.ownerId.equals(userId) &
+              // Skip locked assets as we cannot update them without unlocking first
+              drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
+              (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
+                  ((drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime)) &
+                      (drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude)) &
+                      (drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude)) &
+                      (drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)))),
+        );
+
   return query.map((row) {
     return (
       remoteAssetId: row.read(drift.remoteAssetEntity.id)!,
-      localAsset: row.readTable(drift.localAssetEntity).toDto(),
+      localAsset: row.readTable(drift.localAssetEntity).toDto(isEdited: row.read(isEdited)!),
     );
   }).get();
 }
