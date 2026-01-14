@@ -24,10 +24,10 @@
   <div class="flex flex-col place-items-center text-center gap-12">
     <Heading size="large" color="primary" tag="h1">{$t('welcome_to_immich')}</Heading>
     <Stack>
-      <Button href={AppRoute.AUTH_REGISTER} size="medium" shape="round">
+      <Button href={AppRoute.AUTH_REGISTER} size="large" shape="round">
         <span class="px-2 font-semibold">{$t('getting_started')}</span>
       </Button>
-      <Button size="medium" shape="round" variant="ghost" onclick={switchToMaintenance}>
+      <Button size="small" shape="round" variant="ghost" onclick={switchToMaintenance}>
         <span class="px-2 font-semibold">{$t('maintenance_restore_from_backup')}</span>
       </Button>
     </Stack>
