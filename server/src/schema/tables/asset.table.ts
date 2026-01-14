@@ -137,4 +137,10 @@ export class AssetTable {
 
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
+
+  @Column({ type: 'integer', nullable: true })
+  width!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  height!: number | null;
 }

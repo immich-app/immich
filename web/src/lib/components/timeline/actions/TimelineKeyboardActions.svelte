@@ -6,6 +6,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -46,7 +47,10 @@
 
     await deleteAssets(
       force,
-      (assetIds) => timelineManager.removeAssets(assetIds),
+      (assetIds) => {
+        timelineManager.removeAssets(assetIds);
+        eventManager.emit('AssetsDelete', assetIds);
+      },
       selectedAssets,
       force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
@@ -70,6 +74,7 @@
     const visibility = assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive;
     const ids = await archiveAssets(assetInteraction.selectedAssets, visibility);
     timelineManager.update(ids, (asset) => (asset.visibility = visibility));
+    eventManager.emit('AssetsArchive', ids);
     deselectAllAssets();
   };
 

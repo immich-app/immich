@@ -527,7 +527,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
     if (scaleState != PhotoViewScaleState.initial) {
-      ref.read(assetViewerProvider.notifier).setControls(false);
+      if (!dragInProgress) {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      }
       ref.read(videoPlayerControlsProvider.notifier).pause();
       return;
     }
@@ -611,6 +613,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       filterQuality: FilterQuality.high,
       maxScale: 1.0,
       basePosition: Alignment.center,
+      disableScaleGestures: true,
       child: SizedBox(
         width: ctx.width,
         height: ctx.height,

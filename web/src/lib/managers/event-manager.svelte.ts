@@ -32,6 +32,8 @@ export type Events = {
 
   AssetUpdate: [AssetResponseDto];
   AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  AssetsArchive: [string[]];
+  AssetsDelete: [string[]];
 
   AlbumAddAssets: [];
   AlbumUpdate: [AlbumResponseDto];
@@ -49,6 +51,8 @@ export type Events = {
   TagCreate: [TagResponseDto];
   TagUpdate: [TagResponseDto];
   TagDelete: [TreeNode];
+
+  UserPinCodeReset: [];
 
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];

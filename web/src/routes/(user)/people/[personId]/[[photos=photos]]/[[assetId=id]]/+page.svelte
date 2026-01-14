@@ -40,13 +40,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import {
-    AssetVisibility,
-    getPersonStatistics,
-    searchPerson,
-    updatePerson,
-    type PersonResponseDto,
-  } from '@immich/sdk';
+  import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
@@ -70,7 +64,7 @@
 
   let { data }: Props = $props();
 
-  let numberOfAssets = $state(data.statistics.assets);
+  let numberOfAssets = $derived(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -129,12 +123,7 @@
   };
 
   const updateAssetCount = async () => {
-    try {
-      const { assets } = await getPersonStatistics({ id: person.id });
-      numberOfAssets = assets;
-    } catch (error) {
-      handleError(error, "Can't update the asset count");
-    }
+    await invalidateAll();
   };
 
   afterNavigate(({ from }) => {
@@ -344,7 +333,7 @@
   const { SetDateOfBirth } = $derived(getPersonActions($t, person));
 </script>
 
-<OnEvents {onPersonUpdate} />
+<OnEvents {onPersonUpdate} onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
