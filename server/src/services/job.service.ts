@@ -179,8 +179,12 @@ export class JobService extends BaseService {
       case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
-          // Only queue S3 upload once after SmartSearch (first ML job to complete for uploads)
-          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+          // For non-video assets, queue S3 upload after SmartSearch
+          // For videos, S3 upload is queued after video encoding to prevent deleting local file before encoding
+          const asset = await this.assetRepository.getById(item.data.id);
+          if (asset && asset.type !== AssetType.Video) {
+            await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+          }
         }
         break;
       }
@@ -195,8 +199,11 @@ export class JobService extends BaseService {
         break;
       }
 
-      // Video encoding complete - no additional jobs needed
+      // Video encoding complete - queue S3 upload for videos
       case JobName.AssetEncodeVideo: {
+        if (item.data.source === 'upload') {
+          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+        }
         break;
       }
     }
