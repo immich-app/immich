@@ -38,10 +38,8 @@ class KeepOnDeviceActionButton extends ConsumerWidget {
       return;
     }
     ref.read(assetViewerProvider.notifier).setControls(false);
-    final actionNotifier = ref.read(actionProvider.notifier);
+    //todo STEP 2
     final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-    final result = await actionNotifier.resolveRemoteTrash(source, allow: false);
-    onResult.call(result);
     multiSelectNotifier.reset();
   }
 

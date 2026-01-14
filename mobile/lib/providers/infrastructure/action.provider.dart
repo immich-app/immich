@@ -421,22 +421,6 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
-
-  Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool allow}) async {
-    final remoteChecksums = _getAssets(source).map((a) => a.checksum).nonNulls;
-    _logger.info('resolveRemoteTrash, remoteChecksums: $remoteChecksums, allow: $allow');
-    try {
-      final result = await _service.resolveRemoteTrash(remoteChecksums, allow: allow);
-      return ActionResult(
-        count: remoteChecksums.length,
-        success: result,
-        error: result ? null : 'Failed to move assets to trash',
-      );
-    } catch (error, stack) {
-      _logger.severe('Failed to ${allow ? 'allow' : 'deny'} to move assets to trash', error, stack);
-      return ActionResult(count: remoteChecksums.length, success: false, error: error.toString());
-    }
-  }
 }
 
 extension on Iterable<RemoteAsset> {

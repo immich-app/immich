@@ -66,12 +66,8 @@ class MoveToTrashActionButton extends ConsumerWidget {
       assetViewerNotifier.setControls(true);
       return;
     }
-
-    final actionNotifier = ref.read(actionProvider.notifier);
+    //todo STEP 2
     final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-
-    final result = await actionNotifier.resolveRemoteTrash(source, allow: true);
-    onResult.call(result);
     multiSelectNotifier.reset();
   }
 

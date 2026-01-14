@@ -57,10 +57,10 @@ class LocalAsset extends BaseAsset {
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
    remoteId: ${remoteId ?? "<NA>"}
    isFavorite: $isFavorite,
-   orientation: $orientation,
-   adjustmentTime: $adjustmentTime,
-   latitude: ${latitude ?? "<NA>"},
-   longitude: ${longitude ?? "<NA>"},
+  orientation: $orientation,
+  adjustmentTime: $adjustmentTime,
+  latitude: ${latitude ?? "<NA>"},
+  longitude: ${longitude ?? "<NA>"},
  }''';
   }
 

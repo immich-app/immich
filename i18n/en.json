@@ -558,7 +558,6 @@
   "asset_list_settings_title": "Photo Grid",
   "asset_offline": "Asset Offline",
   "asset_offline_description": "This external asset is no longer found on disk. Please contact your Immich administrator for help.",
-  "asset_out_of_sync_actions_title": "Pending trash decision",
   "asset_out_of_sync_title": "Out-of-sync assets list",
   "asset_out_of_sync_trash_confirmation_text": "Move {count, plural, one {asset} other {# assets}} to your device trash?",
   "asset_out_of_sync_trash_confirmation_title": "Sync trash change",

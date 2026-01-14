@@ -42,19 +42,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> updateApproves(Iterable<String> checksums, bool isSyncApproved) {
-    if (checksums.isEmpty) {
-      return Future.value();
-    }
-    return _db.batch((batch) {
-      batch.update(
-        _db.trashSyncEntity,
-        TrashSyncEntityCompanion(isSyncApproved: Value(isSyncApproved)),
-        where: (tbl) => tbl.checksum.isIn(checksums),
-      );
-    });
-  }
-
   Future<int> deleteOutdated() async {
     final remoteAliveSelect = _db.selectOnly(_db.remoteAssetEntity)
       ..addColumns([_db.remoteAssetEntity.checksum])

@@ -172,10 +172,4 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     final rows = await query.get();
     return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
   }
-
-  Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
-    if (checksums.isEmpty) return Future.value([]);
-    final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
-    return query.map((row) => row.toDto()).get();
-  }
 }

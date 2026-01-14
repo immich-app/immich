@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -55,10 +54,6 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       if (isSyncTrashTimeline || isWaitingForSyncApproval) ...[
-        Text(
-          'asset_out_of_sync_actions_title',
-          style: context.textTheme.bodyMedium?.copyWith(color: Colors.white),
-        ).tr(),
         KeepOnDeviceActionButton(
           source: ActionSource.viewer,
           onResult: (result) {

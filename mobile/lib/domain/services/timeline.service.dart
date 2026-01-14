@@ -99,7 +99,6 @@ class TimelineService {
   StreamSubscription? _bucketSubscription;
 
   int _totalAssets = 0;
-
   int get totalAssets => _totalAssets;
 
   TimelineService(TimelineQuery query)

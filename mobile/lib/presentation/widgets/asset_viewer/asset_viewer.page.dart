@@ -459,11 +459,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetReloadEvent() async {
-    int index = pageController.page?.round() ?? 0;
-    if (index == totalAssets && index > 0) {
-      --index;
-      await pageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
-    }
+    final index = pageController.page?.round() ?? 0;
     final timelineService = ref.read(timelineServiceProvider);
     final newAsset = await timelineService.getAssetAsync(index);
 
