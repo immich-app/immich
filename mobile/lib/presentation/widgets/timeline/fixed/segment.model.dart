@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -191,6 +193,29 @@ class _AssetTileWidget extends ConsumerWidget {
     return lockSelectionAssets.contains(asset);
   }
 
+  String? _getOwnerName(WidgetRef ref) {
+    final album = ref.watch(currentRemoteAlbumProvider);
+    if (album == null || !album.isShared) {
+      return null;
+    }
+
+    if (asset case RemoteAsset remoteAsset) {
+      final ownerId = remoteAsset.ownerId;
+
+      if (album.ownerId == ownerId) {
+        return album.ownerName;
+      }
+
+      final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(album.id));
+      return sharedUsersAsync.maybeWhen(
+        data: (sharedUsers) => sharedUsers.firstWhereOrNull((user) => user.id == ownerId)?.name,
+        orElse: () => null,
+      );
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
@@ -198,6 +223,7 @@ class _AssetTileWidget extends ConsumerWidget {
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final ownerName = _getOwnerName(ref);
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -208,6 +234,7 @@ class _AssetTileWidget extends ConsumerWidget {
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
           heroOffset: heroOffset,
+          ownerName: ownerName,
         ),
       ),
     );
