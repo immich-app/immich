@@ -50,10 +50,10 @@
               &middot;
             {/if}
             {#if !version}
-              <Text color="danger" size="small">Couldn't determine backup version.</Text>
+              <Text color="danger" size="small">{$t('admin.maintenance_restore_backup_unknown_version')}</Text>
             {/if}
             {#if version && version !== expectedVersion}
-              <Text color="warning" size="small">This backup was created with a different version of Immich!</Text>
+              <Text color="warning" size="small">{$t('admin.maintenance_restore_backup_different_version')}</Text>
             {/if}
           </HStack>
         {/if}
