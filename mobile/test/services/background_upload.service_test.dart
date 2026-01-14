@@ -201,11 +201,11 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
         _serverInfo,
@@ -251,11 +251,11 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV23 = UploadService(
+      final sutWithV23 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
         _serverInfo.copyWith(
@@ -294,11 +294,11 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutAndroid = UploadService(
+      final sutAndroid = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
         _serverInfo,
@@ -334,11 +334,11 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
         _serverInfo,
@@ -374,11 +374,11 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
         _serverInfo,
