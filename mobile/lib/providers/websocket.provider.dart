@@ -140,6 +140,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           socket.on('on_asset_trash', _handleOnAssetTrash);
           socket.on('on_asset_restore', _handleServerUpdates);
           socket.on('on_asset_update', _handleServerUpdates);
+          socket.on('AssetEditReadyV1', _handleServerUpdates);
           socket.on('on_asset_stack_update', _handleServerUpdates);
           socket.on('on_asset_hidden', _handleOnAssetHidden);
         } else {
