@@ -13,7 +13,6 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart' hide AssetVisibility;
@@ -38,7 +37,12 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   final canBulkUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 5);
 
   // Wait for remote sync to complete, so we have up-to-date asset metadata entries
-  await ref.read(syncStreamServiceProvider).sync();
+  try {
+    await ref.read(syncStreamServiceProvider).sync();
+  } catch (e, s) {
+    Logger('migrateCloudIds').fine('Failed to complete remote sync before cloudId migration.', e, s);
+    return;
+  }
 
   // Fetch the mapping for backed up assets that have a cloud ID locally but do not have a cloud ID on the server
   final currentUser = ref.read(currentUserProvider);
@@ -48,7 +52,6 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   }
 
   final mappingsToUpdate = await _fetchCloudIdMappings(db, currentUser.id);
-  dPrint(() => 'Found ${mappingsToUpdate.length} assets to update cloud IDs for.');
   final assetApi = ref.read(apiServiceProvider).assetsApi;
 
   if (canBulkUpdateMetadata) {
@@ -119,9 +122,9 @@ Future<void> _populateCloudIds(Drift drift) async {
     if (cloudIdResult.cloudId != null) {
       cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
     } else {
-      Logger(
-        'migrateCloudIds',
-      ).warning("Failed to hash asset with id: ${cloudIdResult.assetId}. Error: ${cloudIdResult.error ?? "unknown"}");
+      Logger('migrateCloudIds').fine(
+        "Cannot fetch cloudId for asset with id: ${cloudIdResult.assetId}. Error: ${cloudIdResult.error ?? "unknown"}",
+      );
     }
   }
   await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);

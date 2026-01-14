@@ -320,8 +320,8 @@ class LocalSyncService {
         cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
       } else {
         final asset = assets.firstWhereOrNull((a) => a.id == cloudIdResult.assetId);
-        _log.warning(
-          "Failed to hash asset with id: ${cloudIdResult.assetId}, name: ${asset?.name}, createdAt: ${asset?.createdAt}. Error: ${cloudIdResult.error ?? "unknown"}",
+        _log.fine(
+          "Cannot fetch cloudId for asset with id: ${cloudIdResult.assetId}, name: ${asset?.name}, createdAt: ${asset?.createdAt}. Error: ${cloudIdResult.error ?? "unknown"}",
         );
       }
     }
