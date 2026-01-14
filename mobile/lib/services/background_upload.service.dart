@@ -6,6 +6,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -13,9 +14,11 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -32,6 +35,7 @@ final backgroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(serverInfoProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -104,6 +108,7 @@ class BackgroundUploadService {
     this._backupRepository,
     this._appSettingsService,
     this._assetMediaRepository,
+    this._serverInfo,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -115,6 +120,7 @@ class BackgroundUploadService {
   final DriftBackupRepository _backupRepository;
   final AppSettingsService _appSettingsService;
   final AssetMediaRepository _assetMediaRepository;
+  final ServerInfo _serverInfo;
   final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -306,6 +312,10 @@ class BackgroundUploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -337,6 +347,10 @@ class BackgroundUploadService {
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -364,6 +378,10 @@ class BackgroundUploadService {
     int? priority,
     bool? isFavorite,
     bool requiresWiFi = true,
+    String? cloudId,
+    String? adjustmentTime,
+    String? latitude,
+    String? longitude,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -379,6 +397,20 @@ class BackgroundUploadService {
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
+      // Include cloudId and eTag in metadata if available and server version supports it
+      if (CurrentPlatform.isIOS && cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+        'metadata': jsonEncode([
+          RemoteAssetMetadataItem(
+            key: RemoteAssetMetadataKey.mobileApp,
+            value: RemoteAssetMobileAppMetadata(
+              cloudId: cloudId,
+              createdAt: createdAt.toIso8601String(),
+              adjustmentTime: adjustmentTime,
+              latitude: latitude,
+              longitude: longitude,
+            ),
+          ),
+        ]),
     };
 
     return UploadTask(

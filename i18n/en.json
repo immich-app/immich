@@ -2125,6 +2125,7 @@
   "sync": "Sync",
   "sync_albums": "Sync albums",
   "sync_albums_manual_subtitle": "Sync all uploaded videos and photos to the selected backup albums",
+  "sync_cloud_ids": "Sync Cloud IDs",
   "sync_local": "Sync Local",
   "sync_remote": "Sync Remote",
   "sync_status": "Sync Status",

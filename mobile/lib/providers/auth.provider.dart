@@ -15,10 +15,10 @@ import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
@@ -29,6 +29,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(foregroundUploadServiceProvider),
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
+    ref,
   );
 });
 
@@ -40,6 +41,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final ForegroundUploadService _foregroundUploadService;
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
+  final Ref _ref;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -52,6 +54,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._foregroundUploadService,
     this._secureStorageService,
     this._widgetService,
+    this._ref,
   ) : super(
         const AuthState(
           deviceId: "",
