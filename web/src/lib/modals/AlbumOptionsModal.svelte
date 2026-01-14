@@ -19,7 +19,7 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Field, Heading, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
+  import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -77,8 +77,8 @@
   <ModalBody>
     <Stack gap={6}>
       <div>
-        <Heading size="tiny" class="mb-2">{$t('settings')}</Heading>
-        <div class="grid gap-y-2 ps-2">
+        <Text size="medium" fontWeight="semi-bold">{$t('settings')}</Text>
+        <div class="grid gap-y-3 ps-2 mt-2">
           {#if album.order}
             <Field label={$t('display_order')}>
               <Select
@@ -99,17 +99,18 @@
           </Field>
         </div>
       </div>
+
       <div>
         <HStack fullWidth class="justify-between mb-2">
-          <Heading size="tiny">{$t('people')}</Heading>
+          <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
           <HeaderActionButton action={AddUsers} />
         </HStack>
         <div class="ps-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 mb-2">
             <div>
               <UserAvatar user={$user} size="md" />
             </div>
-            <div class="w-full">{$user.name}</div>
+            <Text class="w-full" size="small">{$user.name}</Text>
             <Field disabled class="w-32 shrink-0">
               <Select options={[{ label: $t('owner'), value: 'owner' }]} value="owner" />
             </Field>
@@ -121,7 +122,7 @@
                 <div>
                   <UserAvatar {user} size="md" />
                 </div>
-                <Text>{user.name}</Text>
+                <Text size="small">{user.name}</Text>
               </div>
               <Field class="w-32">
                 <Select
@@ -138,17 +139,19 @@
           {/each}
         </div>
       </div>
-      <div>
+      <div class="mb-4">
         <HStack class="justify-between mb-2">
-          <Heading size="tiny">{$t('shared_links')}</Heading>
+          <Text size="medium" fontWeight="semi-bold">{$t('shared_links')}</Text>
           <HeaderActionButton action={CreateSharedLink} />
         </HStack>
 
-        <Stack gap={4}>
-          {#each sharedLinks as sharedLink (sharedLink.id)}
-            <AlbumSharedLink {album} {sharedLink} />
-          {/each}
-        </Stack>
+        <div class="ps-2">
+          <Stack gap={4}>
+            {#each sharedLinks as sharedLink (sharedLink.id)}
+              <AlbumSharedLink {album} {sharedLink} />
+            {/each}
+          </Stack>
+        </div>
       </div>
     </Stack>
   </ModalBody>

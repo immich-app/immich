@@ -414,11 +414,32 @@ export class AssetService extends BaseService {
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+
+    const uniqueKeys = new Set<string>();
+    for (const item of dto.items) {
+      const key = `(${item.assetId}, ${item.key})`;
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertBulkMetadata(dto.items);
   }
 
   async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+
+    const uniqueKeys = new Set<string>();
+    for (const { key } of dto.items) {
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertMetadata(id, dto.items);
   }
 

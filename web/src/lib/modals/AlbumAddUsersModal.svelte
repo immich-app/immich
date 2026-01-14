@@ -39,18 +39,25 @@
   });
 </script>
 
-<FormModal title={$t('users')} submitText={$t('add')} {onSubmit} disabled={selectedUsers.size === 0} {onClose}>
+<FormModal
+  title={$t('users')}
+  submitText={$t('add')}
+  cancelText={$t('back')}
+  {onSubmit}
+  disabled={selectedUsers.size === 0}
+  {onClose}
+>
   <Stack>
     {#each filteredUsers as user (user.id)}
       <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>
         <UserAvatar {user} size="md" />
         <div class="text-start grow">
-          <Text>{user.name}</Text>
-          <Text size="small">{user.email}</Text>
+          <Text fontWeight="medium">{user.name}</Text>
+          <Text size="tiny" color="muted">{user.email}</Text>
         </div>
       </ListButton>
     {:else}
-      <Text>{$t('album_share_no_users')}</Text>
+      <Text class="py-6">{$t('album_share_no_users')}</Text>
     {/each}
   </Stack>
 </FormModal>
