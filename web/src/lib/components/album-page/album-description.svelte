@@ -31,7 +31,7 @@
 {#if isOwned}
   <Textarea
     bind:value={description}
-    class="outline-none border-b border-gray-500 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
+    class="outline-none border-b max-h-32 border-transparent pl-0 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
     rows={1}
     grow
     shape="rectangle"
@@ -44,7 +44,7 @@
     }))}
   />
 {:else if description}
-  <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">
+  <p class="wrap-break-words whitespace-pre-line w-full text-black dark:text-white text-base">
     {description}
   </p>
 {/if}
