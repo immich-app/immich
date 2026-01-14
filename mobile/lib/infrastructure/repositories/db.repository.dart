@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
@@ -64,6 +65,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    TrashSyncEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -194,10 +196,10 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
           },
           from15To16: (m, v16) async {
-            await m.create(v15.trashSyncEntity);
-            await m.createIndex(v15.idxTrashSyncChecksum);
-            await m.createIndex(v15.idxTrashSyncStatus);
-            await m.createIndex(v15.idxTrashSyncChecksumStatus);
+            await m.create(v16.trashSyncEntity);
+            await m.createIndex(v16.idxTrashSyncChecksum);
+            await m.createIndex(v16.idxTrashSyncStatus);
+            await m.createIndex(v16.idxTrashSyncChecksumStatus);
           },
         ),
       );
