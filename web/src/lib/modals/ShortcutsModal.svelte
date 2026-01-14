@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { preferences } from '$lib/stores/user.store';
   import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -44,6 +45,9 @@
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+        ...($preferences?.ratings.enabled
+          ? [{ key: ['1-5'], action: $t('rate_asset'), info: $t('zero_to_clear_rating') }]
+          : []),
       ],
     },
   }: Props = $props();

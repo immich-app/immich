@@ -12,7 +12,7 @@ export const load = (async ({ params, url }) => {
 
   const name = fromQueueSlug(params.name);
   if (!name) {
-    redirect(302, AppRoute.ADMIN_QUEUES);
+    redirect(307, AppRoute.ADMIN_QUEUES);
   }
 
   const [queue, failedJobs] = await Promise.all([

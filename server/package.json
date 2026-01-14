@@ -47,7 +47,7 @@
     "@opentelemetry/context-async-hooks": "^2.0.0",
     "@opentelemetry/exporter-prometheus": "^0.208.0",
     "@opentelemetry/instrumentation-http": "^0.208.0",
-    "@opentelemetry/instrumentation-ioredis": "^0.56.0",
+    "@opentelemetry/instrumentation-ioredis": "^0.57.0",
     "@opentelemetry/instrumentation-nestjs-core": "^0.55.0",
     "@opentelemetry/instrumentation-pg": "^0.61.0",
     "@opentelemetry/resources": "^2.0.1",
@@ -70,7 +70,7 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cron": "4.3.5",
-    "exiftool-vendored": "^34.0.0",
+    "exiftool-vendored": "^34.3.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
@@ -96,7 +96,7 @@
     "pg": "^8.11.3",
     "pg-connection-string": "^2.9.1",
     "picomatch": "^4.0.2",
-    "postgres": "3.4.7",
+    "postgres": "3.4.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-email": "^4.0.0",
@@ -110,6 +110,7 @@
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
     "thumbhash": "^0.1.1",
+    "transformation-matrix": "^3.1.0",
     "ua-parser-js": "^2.0.0",
     "uuid": "^11.1.0",
     "validator": "^13.12.0"
@@ -128,13 +129,13 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/fluent-ffmpeg": "^2.1.21",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/js-yaml": "^4.0.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/lodash": "^4.14.197",
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.10.3",
+    "@types/node": "^24.10.4",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -162,11 +163,11 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
-    "vite-tsconfig-paths": "^5.0.0",
+    "vite-tsconfig-paths": "^6.0.0",
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.11.1"
+    "node": "24.13.0"
   },
   "overrides": {
     "sharp": "^0.34.5"

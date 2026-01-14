@@ -69,6 +69,8 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
@@ -99,6 +101,8 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -134,7 +138,9 @@ select
   "asset"."duration",
   "asset"."livePhotoVideoId",
   "asset"."stackId",
-  "asset"."libraryId"
+  "asset"."libraryId",
+  "asset"."width",
+  "asset"."height"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
@@ -448,6 +454,8 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -536,6 +544,7 @@ where
   "asset_face"."updateId" < $1
   and "asset_face"."updateId" > $2
   and "asset"."ownerId" = $3
+  and "asset_face"."isVisible" = $4
 order by
   "asset_face"."updateId" asc
 
@@ -740,6 +749,8 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -789,6 +800,8 @@ select
   "asset"."livePhotoVideoId",
   "asset"."stackId",
   "asset"."libraryId",
+  "asset"."width",
+  "asset"."height",
   "asset"."updateId"
 from
   "asset" as "asset"

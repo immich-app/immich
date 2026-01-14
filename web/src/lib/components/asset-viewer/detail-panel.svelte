@@ -6,6 +6,7 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
@@ -45,10 +46,9 @@
     asset: AssetResponseDto;
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
-    onClose: () => void;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -127,7 +127,7 @@
     <IconButton
       icon={mdiClose}
       aria-label={$t('close')}
-      onclick={onClose}
+      onclick={() => assetViewerManager.closeDetailPanel()}
       shape="round"
       color="secondary"
       variant="ghost"

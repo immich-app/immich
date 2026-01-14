@@ -5,7 +5,18 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, CommandPaletteContext, Container, Icon } from '@immich/ui';
+  import {
+    Button,
+    CommandPaletteDefaultProvider,
+    Container,
+    Icon,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
+  } from '@immich/ui';
   import { mdiInfinity } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -34,6 +45,13 @@
   };
 
   const { Create } = $derived(getUserAdminsActions($t));
+
+  const classes = {
+    column1: 'w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12',
+    column2: 'hidden sm:block w-3/12',
+    column3: 'hidden xl:block w-3/12 2xl:w-2/12',
+    column4: 'w-4/12 lg:w-3/12 xl:w-2/12',
+  };
 </script>
 
 <OnEvents
@@ -44,32 +62,23 @@
   {onUserAdminDeleted}
 />
 
-<CommandPaletteContext commands={[Create]} />
+<CommandPaletteDefaultProvider name={$t('users')} actions={[Create]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[Create]}>
   <Container center size="large">
-    <table class="my-5 w-full text-start">
-      <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-      >
-        <tr class="flex w-full place-items-center">
-          <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium">{$t('email')}</th>
-          <th class="hidden sm:block w-3/12 text-center text-sm font-medium">{$t('name')}</th>
-          <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">{$t('has_quota')}</th>
-        </tr>
-      </thead>
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+    <Table class="mt-4" striped spacing="large">
+      <TableHeader>
+        <TableHeading class={classes.column1}>{$t('email')}</TableHeading>
+        <TableHeading class={classes.column2}>{$t('name')}</TableHeading>
+        <TableHeading class={classes.column3}>{$t('has_quota')}</TableHeading>
+      </TableHeader>
+
+      <TableBody>
         {#each users as user (user.id)}
-          <tr
-            class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {user.deletedAt
-              ? 'bg-red-300 dark:bg-red-900'
-              : 'even:bg-subtle/20 odd:bg-subtle/80'}"
-          >
-            <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm">
-              {user.email}
-            </td>
-            <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{user.name}</td>
-            <td class="hidden xl:block w-3/12 2xl:w-2/12 text-ellipsis break-all px-2 text-sm">
+          <TableRow color={user.deletedAt ? 'danger' : undefined}>
+            <TableCell class={classes.column1}>{user.email}</TableCell>
+            <TableCell class={classes.column2}>{user.name}</TableCell>
+            <TableCell class={classes.column3}>
               <div class="container mx-auto flex flex-wrap justify-center">
                 {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
                   {getByteUnitString(user.quotaSizeInBytes, $locale)}
@@ -77,16 +86,14 @@
                   <Icon icon={mdiInfinity} size="16" />
                 {/if}
               </div>
-            </td>
-            <td
-              class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
-            >
+            </TableCell>
+            <TableCell class={classes.column4}>
               <Button onclick={() => handleNavigateUserAdmin(user)}>{$t('view')}</Button>
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         {/each}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
 
     {@render children?.()}
   </Container>

@@ -6,7 +6,6 @@ import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   mapSharedLink,
-  mapSharedLinkWithoutMetadata,
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkPasswordDto,
@@ -22,7 +21,7 @@ export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto, { id, albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository
       .getAll({ userId: auth.user.id, id, albumId })
-      .then((links) => links.map((link) => mapSharedLink(link)));
+      .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -31,7 +30,7 @@ export class SharedLinkService extends BaseService {
     }
 
     const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
-    const response = this.mapToSharedLink(sharedLink, { withExif: sharedLink.showExif });
+    const response = mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
     if (sharedLink.password) {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
@@ -41,7 +40,7 @@ export class SharedLinkService extends BaseService {
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    return this.mapToSharedLink(sharedLink, { withExif: true });
+    return mapSharedLink(sharedLink, { stripAssetMetadata: false });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
@@ -81,7 +80,7 @@ export class SharedLinkService extends BaseService {
         slug: dto.slug || null,
       });
 
-      return this.mapToSharedLink(sharedLink, { withExif: true });
+      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
     } catch (error) {
       this.handleError(error);
     }
@@ -108,7 +107,7 @@ export class SharedLinkService extends BaseService {
         showExif: dto.showMetadata,
         slug: dto.slug || null,
       });
-      return this.mapToSharedLink(sharedLink, { withExif: true });
+      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
     } catch (error) {
       this.handleError(error);
     }
@@ -212,10 +211,6 @@ export class SharedLinkService extends BaseService {
       description: sharedLink.description || `${assetCount} shared photos & videos`,
       imageUrl: new URL(imagePath, getExternalDomain(config.server, defaultDomain)).href,
     };
-  }
-
-  private mapToSharedLink(sharedLink: SharedLink, { withExif }: { withExif: boolean }) {
-    return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 
   private validateAndRefreshToken(sharedLink: SharedLink, dto: SharedLinkPasswordDto): string {

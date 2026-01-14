@@ -147,9 +147,9 @@ ImmichTheme decolorizeSurfaces({required ImmichTheme theme}) {
 }
 
 String? _getFontFamilyFromLocale(Locale locale) {
-  if (localesNotSupportedByOverpass.contains(locale)) {
+  if (localesNotSupportedByAppFont.contains(locale)) {
     // Let Flutter use the default font
     return null;
   }
-  return 'Overpass';
+  return 'GoogleSans';
 }
