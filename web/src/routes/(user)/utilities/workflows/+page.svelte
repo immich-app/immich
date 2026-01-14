@@ -194,7 +194,7 @@
                 <div class="flex items-center gap-4">
                   <div class="text-right hidden sm:block">
                     <Text size="tiny">{$t('created_at')}</Text>
-                    <Text size="small" class="font-medium">
+                    <Text size="small" fontWeight="medium">
                       {formatTimestamp(workflow.createdAt)}
                     </Text>
                   </div>
@@ -214,7 +214,9 @@
                   <!-- Trigger Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs font-semibold uppercase tracking-widest" color="muted">{$t('trigger')}</Text>
+                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                        >{$t('trigger')}</Text
+                      >
                     </div>
                     {@render chipItem(getTriggerLabel(workflow.triggerType))}
                   </div>
@@ -222,7 +224,9 @@
                   <!-- Filters Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs font-semibold uppercase tracking-widest" color="muted">{$t('filters')}</Text>
+                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                        >{$t('filters')}</Text
+                      >
                     </div>
                     <div class="flex flex-wrap gap-2">
                       {#if workflow.filters.length === 0}
@@ -240,7 +244,9 @@
                   <!-- Actions Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs font-semibold uppercase tracking-widest" color="muted">{$t('actions')}</Text>
+                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                        >{$t('actions')}</Text
+                      >
                     </div>
 
                     <div>
