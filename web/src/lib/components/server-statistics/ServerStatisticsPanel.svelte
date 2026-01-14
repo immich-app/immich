@@ -1,9 +1,21 @@
 <script lang="ts">
   import StatsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
+  import { getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
-  import { Code, Icon, Text } from '@immich/ui';
+  import {
+    Code,
+    FormatBytes,
+    Heading,
+    Icon,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
+    Text,
+  } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -75,34 +87,28 @@
   </div>
 
   <div>
-    <Text class="mt-6 mb-2 font-medium">{$t('user_usage_detail')}</Text>
-    <table class="mt-5 w-full text-start">
-      <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-      >
-        <tr class="flex w-full place-items-center">
-          <th class="w-1/4 text-center text-sm font-medium">{$t('user')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('photos')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('videos')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('usage')}</th>
-        </tr>
-      </thead>
-      <tbody
-        class="block max-h-80 w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg"
-      >
+    <Heading size="tiny" class="mb-2">{$t('user_usage_detail')}</Heading>
+    <Table class="mt-5" striped size="small">
+      <TableHeader>
+        <TableHeading class="w-1/4">{$t('user')}</TableHeading>
+        <TableHeading class="w-1/4">{$t('photos')}</TableHeading>
+        <TableHeading class="w-1/4">{$t('videos')}</TableHeading>
+        <TableHeading class="w-1/4">{$t('usage')}</TableHeading>
+      </TableHeader>
+      <TableBody class="block max-h-80 overflow-y-auto">
         {#each stats.usageByUser as user (user.userId)}
-          <tr class="flex h-12.5 w-full place-items-center text-center even:bg-subtle/20 odd:bg-subtle/80">
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
-            <td class="w-1/4 text-ellipsis px-2 text-sm"
-              >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td
+          <TableRow>
+            <TableCell class="w-1/4">{user.userName}</TableCell>
+            <TableCell class="w-1/4">
+              {user.photos.toLocaleString($locale)} (<FormatBytes bytes={user.usagePhotos} />)</TableCell
             >
-            <td class="w-1/4 text-ellipsis px-2 text-sm"
-              >{user.videos.toLocaleString($locale)} ({getByteUnitString(user.usageVideos, $locale, 0)})</td
+            <TableCell class="w-1/4">
+              {user.videos.toLocaleString($locale)} (<FormatBytes bytes={user.usageVideos} precision={0} />)</TableCell
             >
-            <td class="w-1/4 text-ellipsis px-2 text-sm">
-              {getByteUnitString(user.usage, $locale, 0)}
+            <TableCell class="w-1/4">
+              <FormatBytes bytes={user.usage} precision={0} />
               {#if user.quotaSizeInBytes !== null}
-                / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
+                / <FormatBytes bytes={user.quotaSizeInBytes} precision={0} />
               {/if}
               <span class="text-primary">
                 {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
@@ -114,10 +120,10 @@
                   ({$t('unlimited')})
                 {/if}
               </span>
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         {/each}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   </div>
 </div>
