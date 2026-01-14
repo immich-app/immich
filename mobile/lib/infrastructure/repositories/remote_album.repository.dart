@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -322,36 +323,32 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).watchSingleOrNull();
   }
 
-  Future<Map<String, DateTime?>> getAlbumAssetDateMap(List<String> albumIds, {required bool useMin}) async {
-    if (albumIds.isEmpty) return {};
+  Future<List<String>> getSortedAlbumIds(List<String> albumIds, {required AssetDateAggregation aggregation}) async {
+    if (albumIds.isEmpty) return [];
 
     final jsonIds = jsonEncode(albumIds);
-    final agg = useMin ? 'MIN' : 'MAX';
+    final sqlAgg = aggregation == AssetDateAggregation.start ? 'MIN' : 'MAX';
 
     final rows = await _db
         .customSelect(
           '''
           SELECT
             raae.album_id,
-            $agg(rae.local_date_time) AS asset_date
+            $sqlAgg(rae.local_date_time) AS asset_date
           FROM json_each(?) ids
           INNER JOIN remote_album_asset_entity raae
             ON raae.album_id = ids.value
           INNER JOIN remote_asset_entity rae
             ON rae.id = raae.asset_id
           GROUP BY raae.album_id
+          ORDER BY asset_date ASC
           ''',
           variables: [Variable<String>(jsonIds)],
           readsFrom: {_db.remoteAlbumAssetEntity, _db.remoteAssetEntity},
         )
         .get();
 
-    final results = <String, DateTime?>{};
-    for (final row in rows) {
-      results[row.read<String>('album_id')] = row.read<DateTime?>('asset_date');
-    }
-
-    return results;
+    return rows.map((row) => row.read<String>('album_id')).toList();
   }
 
   Future<int> getCount() {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -41,8 +42,8 @@ class RemoteAlbumService {
       AlbumSortMode.title => albums.sortedBy((album) => album.name),
       AlbumSortMode.lastModified => albums.sortedBy((album) => album.updatedAt),
       AlbumSortMode.assetCount => albums.sortedBy((album) => album.assetCount),
-      AlbumSortMode.mostRecent => await _sortByAssetDate(albums, useMin: false),
-      AlbumSortMode.mostOldest => await _sortByAssetDate(albums, useMin: true),
+      AlbumSortMode.mostRecent => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.end),
+      AlbumSortMode.mostOldest => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.start),
     };
 
     return (isReverse ? sorted.reversed : sorted).toList();
@@ -169,20 +170,24 @@ class RemoteAlbumService {
     return _repository.getAlbumsContainingAsset(assetId);
   }
 
-  Future<List<RemoteAlbum>> _sortByAssetDate(List<RemoteAlbum> albums, {required bool useMin}) async {
+  Future<List<RemoteAlbum>> _sortByAssetDate(
+    List<RemoteAlbum> albums, {
+    required AssetDateAggregation aggregation,
+  }) async {
     if (albums.isEmpty) return [];
 
     final albumIds = albums.map((e) => e.id).toList();
+    final sortedIds = await _repository.getSortedAlbumIds(albumIds, aggregation: aggregation);
 
-    final dateMap = await _repository.getAlbumAssetDateMap(albumIds, useMin: useMin);
+    final albumMap = Map<String, RemoteAlbum>.fromEntries(albums.map((a) => MapEntry(a.id, a)));
 
-    final sortedAlbums = List<RemoteAlbum>.from(albums);
+    final sortedAlbums = sortedIds.map((id) => albumMap[id]).whereType<RemoteAlbum>().toList();
 
-    sortedAlbums.sort((a, b) {
-      final aDate = dateMap[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bDate = dateMap[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return aDate.compareTo(bDate);
-    });
+    if (sortedAlbums.length < albums.length) {
+      final returnedIdSet = sortedIds.toSet();
+      final emptyAlbums = albums.where((a) => !returnedIdSet.contains(a.id));
+      sortedAlbums.addAll(emptyAlbums);
+    }
 
     return sortedAlbums;
   }
