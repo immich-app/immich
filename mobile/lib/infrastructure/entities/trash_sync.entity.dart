@@ -16,4 +16,3 @@ class TrashSyncEntity extends Table with DriftDefaultsMixin {
   @override
   Set<Column> get primaryKey => {checksum};
 }
-
