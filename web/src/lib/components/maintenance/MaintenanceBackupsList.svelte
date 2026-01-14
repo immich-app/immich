@@ -45,7 +45,7 @@
 <OnEvents {onBackupDeleted} {onBackupUpload} />
 
 <Stack gap={2} class="mt-4 text-left">
-  <Card>
+  <Card color="primary">
     <CardBody>
       {#if uploadProgress === -1}
         <HStack>

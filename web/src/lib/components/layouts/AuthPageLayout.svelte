@@ -25,7 +25,7 @@
     </div>
   {/if}
 
-  <Card color="secondary" class="w-full max-w-lg border m-2">
+  <Card color="secondary" class="w-full max-w-xl border m-2">
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>

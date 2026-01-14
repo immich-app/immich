@@ -34,12 +34,12 @@
   withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
   withBackdrop={$status?.action === MaintenanceAction.Start}
 >
-  <div class="flex flex-col place-items-center text-center gap-4">
+  <div class="flex flex-col place-items-center text-center gap-8">
     {#if $status?.action === MaintenanceAction.RestoreDatabase}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
       {#if $status.error}
         <Scrollable class="max-h-80">
-          <pre class="text-left"><code>{error}</code></pre>
+          <pre class="text-left text-sm"><code>{error}</code></pre>
         </Scrollable>
         <Button onclick={end}>{$t('maintenance_end')}</Button>
       {:else}

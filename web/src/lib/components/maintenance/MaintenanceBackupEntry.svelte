@@ -36,7 +36,7 @@
       <Stack class="grow">
         <Text>{filename}</Text>
         {#if timeText}
-          <Text color="info" size="small">{timeText}</Text>
+          <Text color="primary" size="small">{timeText}</Text>
         {/if}
       </Stack>
 
