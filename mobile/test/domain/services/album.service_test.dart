@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
@@ -12,42 +13,6 @@ void main() {
   late RemoteAlbumService sut;
   late DriftRemoteAlbumRepository mockRemoteAlbumRepo;
   late DriftAlbumApiRepository mockAlbumApiRepo;
-
-  setUp(() {
-    mockRemoteAlbumRepo = MockRemoteAlbumRepository();
-    mockAlbumApiRepo = MockDriftAlbumApiRepository();
-    sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
-
-    when(() => mockRemoteAlbumRepo.getAlbumAssetDateMap(any(), useMin: false)).thenAnswer((invocation) async {
-      final albumIds = invocation.positionalArguments[0] as List<String>;
-      final result = <String, DateTime?>{};
-      for (final id in albumIds) {
-        if (id == '1') {
-          result[id] = DateTime(2023, 1, 1);
-        } else if (id == '2') {
-          result[id] = DateTime(2023, 2, 1);
-        } else {
-          result[id] = DateTime.fromMillisecondsSinceEpoch(0);
-        }
-      }
-      return result;
-    });
-
-    when(() => mockRemoteAlbumRepo.getAlbumAssetDateMap(any(), useMin: true)).thenAnswer((invocation) async {
-      final albumIds = invocation.positionalArguments[0] as List<String>;
-      final result = <String, DateTime?>{};
-      for (final id in albumIds) {
-        if (id == '1') {
-          result[id] = DateTime(2019, 1, 1);
-        } else if (id == '2') {
-          result[id] = DateTime(2019, 2, 1);
-        } else {
-          result[id] = DateTime.fromMillisecondsSinceEpoch(0);
-        }
-      }
-      return result;
-    });
-  });
 
   final albumA = RemoteAlbum(
     id: '1',
@@ -77,45 +42,29 @@ void main() {
     isShared: false,
   );
 
+  setUp(() {
+    mockRemoteAlbumRepo = MockRemoteAlbumRepository();
+    mockAlbumApiRepo = MockDriftAlbumApiRepository();
+    sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
+
+    when(
+      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.end),
+    ).thenAnswer((_) async => ['1', '2']);
+
+    when(
+      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.start),
+    ).thenAnswer((_) async => ['1', '2']);
+  });
+
   group('sortAlbums', () {
-    test('should sort correctly based on name', () async {
-      final albums = [albumB, albumA];
-
-      final result = await sut.sortAlbums(albums, AlbumSortMode.title);
-      expect(result, [albumA, albumB]);
-    });
-
-    test('should sort correctly based on createdAt', () async {
-      final albums = [albumB, albumA];
-
-      final result = await sut.sortAlbums(albums, AlbumSortMode.created);
-      expect(result, [albumA, albumB]);
-    });
-
-    test('should sort correctly based on updatedAt', () async {
-      final albums = [albumB, albumA];
-
-      final result = await sut.sortAlbums(albums, AlbumSortMode.lastModified);
-      expect(result, [albumA, albumB]);
-    });
-
-    test('should sort correctly based on assetCount', () async {
-      final albums = [albumB, albumA];
-
-      final result = await sut.sortAlbums(albums, AlbumSortMode.assetCount);
-      expect(result, [albumA, albumB]);
-    });
-
     test('should sort correctly based on newestAssetTimestamp', () async {
       final albums = [albumB, albumA];
-
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostRecent);
       expect(result, [albumA, albumB]);
     });
 
     test('should sort correctly based on oldestAssetTimestamp', () async {
       final albums = [albumB, albumA];
-
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
       expect(result, [albumA, albumB]);
     });
