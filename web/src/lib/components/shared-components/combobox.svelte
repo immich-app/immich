@@ -23,7 +23,7 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
-  import { Icon, IconButton, Label } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -251,7 +251,7 @@
 </script>
 
 <svelte:window onresize={onPositionChange} />
-<Label class="block mb-1 {hideLabel ? 'sr-only' : ''} text-sm" color="muted" for={inputId}>{label}</Label>
+<p class="block mb-1 {hideLabel ? 'sr-only' : ''} text-xs text-neutral-500 font-light">{label}</p>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:focusOutside={{ onFocusOut: deactivate }}

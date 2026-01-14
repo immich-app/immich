@@ -12,74 +12,76 @@
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
 </script>
 
-<fieldset>
-  <Text class="font-semibold py-3">{$t('search_type')}</Text>
-  <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1 mb-2">
-    {#if featureFlagsManager.value.smartSearch}
-      <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
-    {/if}
-    <RadioButton
-      name="query-type"
-      id="file-name-radio"
-      label={$t('file_name_or_extension')}
-      bind:group={queryType}
-      value="metadata"
-    />
-    <RadioButton
-      name="query-type"
-      id="description-radio"
-      label={$t('description')}
-      bind:group={queryType}
-      value="description"
-    />
-    {#if featureFlagsManager.value.ocr}
-      <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
-    {/if}
-  </div>
-</fieldset>
+<section>
+  <fieldset>
+    <Text class="mb-2" fontWeight="medium">{$t('search_type')}</Text>
+    <div class="flex flex-wrap gap-x-5 gap-y-2 my-2">
+      {#if featureFlagsManager.value.smartSearch}
+        <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
+      {/if}
+      <RadioButton
+        name="query-type"
+        id="file-name-radio"
+        label={$t('file_name_or_extension')}
+        bind:group={queryType}
+        value="metadata"
+      />
+      <RadioButton
+        name="query-type"
+        id="description-radio"
+        label={$t('description')}
+        bind:group={queryType}
+        value="description"
+      />
+      {#if featureFlagsManager.value.ocr}
+        <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
+      {/if}
+    </div>
+  </fieldset>
 
-{#if queryType === 'smart'}
-  <Field label={$t('search_by_context')} class="text-sm" for="context-input">
-    <Input
-      type="text"
-      id="context-input"
-      name="context"
-      placeholder={$t('sunrise_on_the_beach')}
-      bind:value={query}
-      aria-labelledby="context-label"
-    />
-  </Field>
-{:else if queryType === 'metadata'}
-  <Field label={$t('search_by_filename')} class="text-sm" for="file-name-input">
-    <Input
-      type="text"
-      id="file-name-input"
-      name="context"
-      placeholder={$t('search_by_filename_example')}
-      bind:value={query}
-      aria-labelledby="file-name-label"
-    />
-  </Field>
-{:else if queryType === 'description'}
-  <Field label={$t('search_by_description')} class="text-sm" for="description">
-    <Input
-      type="text"
-      id="description-input"
-      name="description"
-      placeholder={$t('search_by_description_example')}
-      bind:value={query}
-      aria-labelledby="description-label"
-    />
-  </Field>
-{:else if queryType === 'ocr'}
-  <Field label={$t('search_by_ocr')} class="text-sm" for="ocr-input">
-    <Input
-      type="text"
-      id="ocr-input"
-      name="ocr"
-      placeholder={$t('search_by_ocr_example')}
-      bind:value={query}
-      aria-labelledby="ocr-label"
-    />
-  </Field>
-{/if}
+  {#if queryType === 'smart'}
+    <Field label={$t('search_by_context')} for="context-input">
+      <Input
+        type="text"
+        id="context-input"
+        name="context"
+        placeholder={$t('sunrise_on_the_beach')}
+        bind:value={query}
+        aria-labelledby="context-label"
+      />
+    </Field>
+  {:else if queryType === 'metadata'}
+    <Field label={$t('search_by_filename')} for="file-name-input">
+      <Input
+        type="text"
+        id="file-name-input"
+        name="context"
+        placeholder={$t('search_by_filename_example')}
+        bind:value={query}
+        aria-labelledby="file-name-label"
+      />
+    </Field>
+  {:else if queryType === 'description'}
+    <Field label={$t('search_by_description')} for="description">
+      <Input
+        type="text"
+        id="description-input"
+        name="description"
+        placeholder={$t('search_by_description_example')}
+        bind:value={query}
+        aria-labelledby="description-label"
+      />
+    </Field>
+  {:else if queryType === 'ocr'}
+    <Field label={$t('search_by_ocr')} for="ocr-input">
+      <Input
+        type="text"
+        id="ocr-input"
+        name="ocr"
+        placeholder={$t('search_by_ocr_example')}
+        bind:value={query}
+        aria-labelledby="ocr-label"
+      />
+    </Field>
+  {/if}
+</section>

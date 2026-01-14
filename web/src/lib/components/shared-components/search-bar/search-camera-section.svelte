@@ -82,7 +82,7 @@
 </script>
 
 <div id="camera-selection">
-  <Text class="font-semibold">{$t('camera')}</Text>
+  <Text fontWeight="medium">{$t('camera')}</Text>
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">
       <Combobox

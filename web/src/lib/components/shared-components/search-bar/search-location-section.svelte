@@ -75,7 +75,7 @@
 </script>
 
 <div id="location-selection">
-  <Text class="font-semibold">{$t('place')}</Text>
+  <Text fontWeight="medium">{$t('place')}</Text>
 
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">

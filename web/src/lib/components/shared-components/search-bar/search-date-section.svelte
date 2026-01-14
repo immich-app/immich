@@ -22,12 +22,12 @@
 <div class="flex flex-col gap-1">
   <div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">
     <div>
-      <Text class="font-semibold mb-2">{$t('start_date')}</Text>
+      <Text class="mb-2" fontWeight="medium">{$t('start_date')}</Text>
       <DatePicker bind:value={filters.takenAfter} />
     </div>
 
     <div>
-      <Text class="font-semibold mb-2">{$t('end_date')}</Text>
+      <Text class="mb-2" fontWeight="medium">{$t('end_date')}</Text>
       <DatePicker bind:value={filters.takenBefore} />
     </div>
   </div>

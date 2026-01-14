@@ -63,7 +63,7 @@
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <Text class="font-semibold py-3">{$t('people')}</Text>
+        <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 

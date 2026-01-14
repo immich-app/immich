@@ -13,7 +13,7 @@
 
 <div id="media-type-selection">
   <fieldset>
-    <Text class="font-semibold mb-2">{$t('media_type')}</Text>
+    <Text class="mb-2" fontWeight="medium">{$t('media_type')}</Text>
 
     <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
       <RadioButton name="media-type" id="type-all" bind:group={filteredMedia} label={$t('all')} value={MediaType.All} />

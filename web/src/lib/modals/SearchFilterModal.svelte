@@ -188,7 +188,7 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
+      <div class="flex flex-col gap-5 pb-10" tabindex="-1">
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 

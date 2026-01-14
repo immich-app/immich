@@ -6,7 +6,7 @@
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
   import { removeTag } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, modalManager } from '@immich/ui';
+  import { Icon, modalManager, Text } from '@immich/ui';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -39,7 +39,7 @@
 {#if isOwner && !authManager.isSharedLink}
   <section class="px-4 mt-4">
     <div class="flex h-10 w-full items-center justify-between text-sm">
-      <h2 class="uppercase">{$t('tags')}</h2>
+      <Text color="muted">{$t('tags')}</Text>
     </div>
     <section class="flex flex-wrap pt-2 gap-1" data-testid="detail-panel-tags">
       {#each tags as tag (tag.id)}
