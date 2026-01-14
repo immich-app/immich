@@ -218,7 +218,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   }
 
   Future<void> updateAssetEditsV1(Iterable<SyncAssetEditV1> data) async {
-    print('Updating asset edits V1: ${data.length} items');
     try {
       await _db.batch((batch) {
         for (final edit in data) {
