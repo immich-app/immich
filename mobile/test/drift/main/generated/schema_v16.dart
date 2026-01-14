@@ -7866,7 +7866,7 @@ class DatabaseAtV16 extends GeneratedDatabase {
   );
   late final Index idxRemoteAlbumAssetAlbumId = Index(
     'idx_remote_album_asset_album_id',
-    'CREATE INDEX idx_remote_album_asset_album_id ON remote_album_asset_entity (album_id)',
+    'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_id ON remote_album_asset_entity (album_id)',
   );
   late final Index idxTrashedLocalAssetChecksum = Index(
     'idx_trashed_local_asset_checksum',

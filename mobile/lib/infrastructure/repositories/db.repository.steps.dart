@@ -6807,7 +6807,7 @@ final class Schema16 extends i0.VersionedSchema {
   );
   final i1.Index idxRemoteAlbumAssetAlbumId = i1.Index(
     'idx_remote_album_asset_album_id',
-    'CREATE INDEX idx_remote_album_asset_album_id ON remote_album_asset_entity (album_id)',
+    'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_id ON remote_album_asset_entity (album_id)',
   );
   final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
     'idx_trashed_local_asset_checksum',

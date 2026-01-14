@@ -114,6 +114,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     storeEntity,
     trashedLocalAssetEntity,
     i11.idxLatLng,
+    i12.idxRemoteAlbumAssetAlbumId,
     i19.idxTrashedLocalAssetChecksum,
     i19.idxTrashedLocalAssetAlbum,
   ];
