@@ -27,7 +27,7 @@
           icon={mdiRefresh}
           key="backups"
         >
-          <MaintenanceBackupsList backups={data.backups} />
+          <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
         </SettingAccordion>
       </SettingAccordionState>
     </section>

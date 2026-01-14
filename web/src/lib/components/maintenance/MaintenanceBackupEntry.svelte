@@ -9,13 +9,19 @@
 
   type Props = {
     filename: string;
+    expectedVersion: string;
   };
 
-  const { filename }: Props = $props();
+  const { filename, expectedVersion }: Props = $props();
 
-  const timeText = $derived(
-    filename ? DateTime.fromFormat(filename, "yyyyMMdd'T'HHmmss").toRelative({ locale: $locale }) : null,
-  );
+  const timeText = $derived.by(() => {
+    const date = filename.match(/\d+T\d+/);
+    if (date) {
+      return DateTime.fromFormat(date[0], "yyyyMMdd'T'HHmmss").toRelative({ locale: $locale });
+    }
+  });
+
+  const version = $derived(filename.match(/-v(.*)-/)?.[1]);
 
   const { Download, Delete } = $derived(getDatabaseBackupActions($t, filename));
 
@@ -35,8 +41,21 @@
     <HStack>
       <Stack class="grow">
         <Text>{filename}</Text>
-        {#if timeText}
-          <Text color="primary" size="small">{timeText}</Text>
+        {#if timeText || version !== expectedVersion}
+          <HStack class="grow">
+            {#if timeText}
+              <Text color="primary" size="small">{timeText}</Text>
+            {/if}
+            {#if timeText && version !== expectedVersion}
+              &middot;
+            {/if}
+            {#if !version}
+              <Text color="danger" size="small">Couldn't determine backup version.</Text>
+            {/if}
+            {#if version && version !== expectedVersion}
+              <Text color="warning" size="small">This backup was created with a different version of Immich!</Text>
+            {/if}
+          </HStack>
         {/if}
       </Stack>
 

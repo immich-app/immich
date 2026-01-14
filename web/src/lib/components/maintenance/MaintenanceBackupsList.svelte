@@ -10,6 +10,7 @@
 
   type Props = {
     backups?: string[];
+    expectedVersion: string;
   };
 
   let props: Props = $props();
@@ -68,6 +69,6 @@
   </Card>
 
   {#each backups as filename (filename)}
-    <MaintenanceBackupEntry {filename} />
+    <MaintenanceBackupEntry {filename} expectedVersion={props.expectedVersion} />
   {/each}
 </Stack>
