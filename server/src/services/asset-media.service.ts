@@ -35,6 +35,7 @@ import {
   CacheControl,
   JobName,
   Permission,
+  StorageBackend,
   StorageFolder,
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
@@ -46,6 +47,7 @@ import { isAssetChecksumConstraint } from 'src/utils/database';
 import { EncryptionInfo, getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
+import { StorageAdapterFactory } from 'src/repositories/storage';
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -199,6 +201,8 @@ export class AssetMediaService extends BaseService {
     }
   }
 
+  private storageAdapterFactory = new StorageAdapterFactory();
+
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
@@ -206,6 +210,24 @@ export class AssetMediaService extends BaseService {
 
     // Check if asset is encrypted and get decryption key
     const encryption = await this.getEncryptionInfo(auth, id);
+
+    // Handle S3 storage - redirect to presigned URL
+    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
+      const config = await this.getConfig({ withCache: true });
+      if (config.storage.s3.enabled) {
+        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
+        if (presignedUrl) {
+          return new ImmichFileResponse({
+            path: asset.originalPath, // Not used for redirect, but required by type
+            fileName: asset.originalFileName,
+            contentType: mimeTypes.lookup(asset.originalPath),
+            cacheControl: CacheControl.PrivateWithCache,
+            redirectUrl: presignedUrl,
+          });
+        }
+      }
+    }
 
     return new ImmichFileResponse({
       path: asset.originalPath,
@@ -275,6 +297,25 @@ export class AssetMediaService extends BaseService {
 
     // Check if asset is encrypted and get decryption key
     const encryption = await this.getEncryptionInfo(auth, id);
+
+    // Handle S3 storage - redirect to presigned URL for original video
+    // (encoded videos are stored locally for now)
+    if (!asset.encodedVideoPath && asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
+      const config = await this.getConfig({ withCache: true });
+      if (config.storage.s3.enabled) {
+        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
+        if (presignedUrl) {
+          return new ImmichFileResponse({
+            path: filepath,
+            fileName: asset.originalFileName,
+            contentType: mimeTypes.lookup(filepath),
+            cacheControl: CacheControl.PrivateWithCache,
+            redirectUrl: presignedUrl,
+          });
+        }
+      }
+    }
 
     return new ImmichFileResponse({
       path: filepath,
