@@ -12,6 +12,7 @@ SELECT
 	rae."type",
 	rae.created_at as created_at,
 	rae.updated_at,
+	rae.deleted_at,
 	rae.width,
 	rae.height,
 	rae.duration_in_seconds,
@@ -27,7 +28,12 @@ FROM
 LEFT JOIN
 	stack_entity se ON rae.stack_id = se.id
 WHERE
-	rae.deleted_at IS NULL
+    (
+      rae.deleted_at IS NULL
+      OR EXISTS (
+        SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum
+      )
+    )
 	AND rae.visibility = 0 -- timeline visibility
 	AND rae.owner_id IN :user_ids
 	AND (
@@ -44,6 +50,7 @@ SELECT
 	lae."type",
 	lae.created_at as created_at,
 	lae.updated_at,
+	NULL as deleted_at,
 	lae.width,
 	lae.height,
 	lae.duration_in_seconds,
@@ -88,7 +95,12 @@ FROM
 	LEFT JOIN
         stack_entity se ON rae.stack_id = se.id
 	WHERE
-		rae.deleted_at IS NULL
+        (
+          rae.deleted_at IS NULL
+          OR EXISTS (
+            SELECT 1 FROM local_asset_entity lae WHERE lae.checksum = rae.checksum
+          )
+        )
 		AND rae.visibility = 0 -- timeline visibility
 		AND rae.owner_id in :user_ids
 		AND (
