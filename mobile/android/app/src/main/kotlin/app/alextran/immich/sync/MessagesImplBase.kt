@@ -316,4 +316,42 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     hashTask?.cancel()
     hashTask = null
   }
+
+  fun getAssetFilePath(assetId: String, callback: (Result<String?>) -> Unit) {
+    try {
+      val projection = arrayOf(MediaStore.MediaColumns.DATA)
+      getCursor(
+        MediaStore.VOLUME_EXTERNAL,
+        "${MediaStore.MediaColumns._ID} = ?",
+        arrayOf(assetId),
+        projection
+      )?.use { cursor ->
+        if (cursor.moveToFirst()) {
+          val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
+          val path = cursor.getString(dataColumn)
+          if (path != null && File(path).exists()) {
+            completeWhenActive(callback, Result.success(path))
+            return
+          }
+        }
+      }
+      completeWhenActive(callback, Result.success(null))
+    } catch (e: Exception) {
+      completeWhenActive(callback, Result.failure(e))
+    }
+  }
+
+  fun hasRawResource(assetId: String): Boolean {
+    // Android doesn't have the same JPEG+RAW pairing concept as iOS.
+    // On Android, RAW files are stored as separate files in MediaStore.
+    // This feature is primarily for iOS JPEG+RAW support.
+    return false
+  }
+
+  fun getRawFilePath(assetId: String, callback: (Result<String?>) -> Unit) {
+    // Android doesn't have the same JPEG+RAW pairing concept as iOS.
+    // On Android, RAW files are stored as separate files in MediaStore.
+    // This feature is primarily for iOS JPEG+RAW support.
+    completeWhenActive(callback, Result.success(null))
+  }
 }
