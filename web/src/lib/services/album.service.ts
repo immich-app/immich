@@ -60,6 +60,7 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
   const AddAssets: ActionItem = {
     title: $t('add_assets'),
     type: $t('command'),
+    color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
     onAction: () => addAssets(album, assets),
