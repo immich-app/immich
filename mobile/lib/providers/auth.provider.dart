@@ -25,10 +25,9 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
-    ref.watch(backgroundUploadServiceProvider),
-    ref.watch(foregroundUploadServiceProvider),
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
+    ref,
   );
 });
 
@@ -36,10 +35,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
-  final BackgroundUploadService _backgroundUploadService;
-  final ForegroundUploadService _foregroundUploadService;
+
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
+  final Ref _ref;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -48,10 +47,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._authService,
     this._apiService,
     this._userService,
-    this._backgroundUploadService,
-    this._foregroundUploadService,
+
     this._secureStorageService,
     this._widgetService,
+    this._ref,
   ) : super(
         const AuthState(
           deviceId: "",
@@ -91,8 +90,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
-      await _backgroundUploadService.cancel();
-      _foregroundUploadService.cancel();
+      await _ref.read(backgroundUploadServiceProvider).cancel();
+      _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
       await _cleanUp();
     }
