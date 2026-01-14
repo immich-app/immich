@@ -90,10 +90,10 @@
 
 <Modal title={$t('options')} {onClose} size="small">
   <ModalBody>
-    <Stack>
-      <div class="py-2">
-        <Heading size="tiny">{$t('settings')}</Heading>
-        <div class="grid p-2 gap-y-2">
+    <Stack gap={6}>
+      <div>
+        <Heading size="tiny" class="mb-2">{$t('settings')}</Heading>
+        <div class="grid gap-y-2 ps-2">
           {#if album.order}
             <Field label={$t('display_order')}>
               <Select
@@ -111,13 +111,13 @@
           </Field>
         </div>
       </div>
-      <div class="py-2">
-        <HStack fullWidth class="justify-between">
+      <div>
+        <HStack fullWidth class="justify-between mb-2">
           <Heading size="tiny">{$t('people')}</Heading>
           <HeaderActionButton action={AddUsers} />
         </HStack>
-        <div class="p-2">
-          <div class="flex items-center gap-2 py-2 mt-2">
+        <div class="ps-2">
+          <div class="flex items-center gap-2">
             <div>
               <UserAvatar user={$user} size="md" />
             </div>
@@ -146,8 +146,8 @@
           {/each}
         </div>
       </div>
-      <Stack gap={6}>
-        <HStack class="justify-between">
+      <div>
+        <HStack class="justify-between mb-2">
           <Heading size="tiny">{$t('shared_links')}</Heading>
           <HeaderActionButton action={CreateSharedLink} />
         </HStack>
@@ -157,7 +157,7 @@
             <AlbumSharedLink {album} {sharedLink} />
           {/each}
         </Stack>
-      </Stack>
+      </div>
     </Stack>
   </ModalBody>
 </Modal>
