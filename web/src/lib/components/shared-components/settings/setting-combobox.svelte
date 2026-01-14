@@ -31,7 +31,7 @@
 
 <div>
   <div class="flex h-6.5 place-items-center gap-1">
-    <Label>{title}</Label>
+    <Label size="small">{title}</Label>
     {#if isEdited}
       <div
         transition:fly={{ x: 10, duration: 200, easing: quintOut }}

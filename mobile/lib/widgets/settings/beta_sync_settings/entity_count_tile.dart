@@ -50,7 +50,7 @@ class EntityCountTile extends StatelessWidget {
           const Spacer(),
           RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 18, fontFamily: 'OverpassMono', fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 18, fontFamily: 'GoogleSansCode', fontWeight: FontWeight.w600),
               children: [
                 TextSpan(
                   text: zeroPadding(count, maxDigits),

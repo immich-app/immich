@@ -62,12 +62,12 @@
 >
   {#if $connected}
     <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-[7px] h-[7px] bg-green-500 rounded-full"></div>
+      <div class="w-1.75 h-1.75 bg-green-500 rounded-full"></div>
       <p class="dark:text-immich-gray">{$t('server_online')}</p>
     </div>
   {:else}
     <div class="flex gap-2 place-items-center place-content-center">
-      <div class="w-[7px] h-[7px] bg-red-500 rounded-full"></div>
+      <div class="w-1.75 h-1.75 bg-red-500 rounded-full"></div>
       <p class="text-red-500">{$t('server_offline')}</p>
     </div>
   {/if}

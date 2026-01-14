@@ -110,7 +110,7 @@ class NetworkingSettings extends HookConsumerWidget {
                 currentEndpoint ?? "--",
                 style: TextStyle(
                   fontSize: 16,
-                  fontFamily: 'Inconsolata',
+                  fontFamily: 'GoogleSansCode',
                   fontWeight: FontWeight.bold,
                   color: context.primaryColor,
                 ),
