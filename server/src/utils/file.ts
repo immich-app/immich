@@ -32,6 +32,8 @@ export class ImmichFileResponse {
   public readonly fileName?: string;
   /** If present, file is encrypted and needs decryption */
   public readonly encryption?: EncryptionInfo;
+  /** If present, redirect to this URL instead of serving local file (for S3) */
+  public readonly redirectUrl?: string;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);
@@ -68,6 +70,12 @@ export const sendFile = async (
     res.header('Content-Type', file.contentType);
     if (file.fileName) {
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+    }
+
+    // Handle S3 redirect
+    if (file.redirectUrl) {
+      res.redirect(file.redirectUrl);
+      return;
     }
 
     await access(file.path, constants.R_OK);
