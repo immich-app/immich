@@ -11,3 +11,5 @@ enum ActionSource { timeline, viewer }
 enum CleanupStep { selectDate, filterOptions, scan, delete }
 
 enum AssetFilterType { all, photosOnly, videosOnly }
+
+enum AssetDateAggregation { start, end }
