@@ -6,7 +6,6 @@
   import {
     Code,
     FormatBytes,
-    Heading,
     Icon,
     Table,
     TableBody,
@@ -38,7 +37,7 @@
 
 <div class="flex flex-col gap-5 my-4">
   <div>
-    <Text class="mb-2 font-medium">{$t('total_usage')}</Text>
+    <Text class="mb-2" fontWeight="medium">{$t('total_usage')}</Text>
 
     <div class="hidden justify-between lg:flex gap-4">
       <StatsCard icon={mdiCameraIris} title={$t('photos')} value={stats.photos} />
@@ -51,7 +50,7 @@
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiCameraIris} size="25" />
-            <Text class="font-medium" size="medium">{$t('photos')}</Text>
+            <Text size="medium" fontWeight="medium">{$t('photos')}</Text>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
@@ -61,7 +60,7 @@
         <div class="flex flex-wrap gap-x-12">
           <div class="flex flex-1 place-items-center gap-4 text-primary">
             <Icon icon={mdiPlayCircle} size="25" />
-            <Text class="font-medium" size="medium">{$t('videos')}</Text>
+            <Text size="medium" fontWeight="medium">{$t('videos')}</Text>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-medium">
@@ -71,7 +70,7 @@
         <div class="flex flex-wrap gap-x-5">
           <div class="flex flex-1 flex-nowrap place-items-center gap-4 text-primary">
             <Icon icon={mdiChartPie} size="25" />
-            <Text class="font-medium" size="medium">{$t('storage')}</Text>
+            <Text size="medium" fontWeight="medium">{$t('storage')}</Text>
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-medium">
@@ -87,8 +86,8 @@
   </div>
 
   <div>
-    <Heading size="tiny" class="mb-2">{$t('user_usage_detail')}</Heading>
-    <Table class="mt-5" striped size="small">
+    <Text class="mb-2 mt-4" fontWeight="medium">{$t('user_usage_detail')}</Text>
+    <Table striped size="small">
       <TableHeader>
         <TableHeading class="w-1/4">{$t('user')}</TableHeading>
         <TableHeading class="w-1/4">{$t('photos')}</TableHeading>
