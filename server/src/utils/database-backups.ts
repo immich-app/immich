@@ -29,6 +29,10 @@ export function isFailedDatabaseBackupName(filename: string) {
   return filename.match(/^immich-db-backup-.*\.sql\.gz\.tmp$/);
 }
 
+export function findVersion(filename: string) {
+  return /-v(.*)-/.exec(filename)?.[1];
+}
+
 type BackupRepos = {
   logger: LoggingRepository;
   storage: StorageRepository;
@@ -46,6 +50,10 @@ export class UnsupportedPostgresError extends Error {
 export async function buildPostgresLaunchArguments(
   { logger, config, database }: Pick<BackupRepos, 'logger' | 'config' | 'database'>,
   bin: 'pg_dump' | 'pg_dumpall' | 'psql',
+  options: {
+    singleTransaction?: boolean;
+    username?: string;
+  } = {},
 ): Promise<{
   bin: string;
   args: string[];
@@ -74,6 +82,11 @@ export async function buildPostgresLaunchArguments(
       const parsedUrl = new URL(databaseConfig.url);
       // remove known bad parameters
       parsedUrl.searchParams.delete('uselibpqcompat');
+
+      if (options.username) {
+        parsedUrl.username = options.username;
+      }
+
       url = parsedUrl.toString();
     }
 
@@ -81,7 +94,7 @@ export async function buildPostgresLaunchArguments(
   } else {
     args.push(
       '--username',
-      databaseConfig.username,
+      options.username ?? databaseConfig.username,
       '--host',
       databaseConfig.host,
       '--port',
@@ -109,12 +122,17 @@ export async function buildPostgresLaunchArguments(
       break;
     }
     case 'psql': {
+      if (options.singleTransaction) {
+        args.push(
+          // don't commit any transaction on failure
+          '--single-transaction',
+          // exit with non-zero code on error
+          '--set',
+          'ON_ERROR_STOP=on',
+        );
+      }
+
       args.push(
-        // don't commit any transaction on failure
-        '--single-transaction',
-        // exit with non-zero code on error
-        '--set',
-        'ON_ERROR_STOP=on',
         // used for progress monitoring
         '--echo-all',
         '--output=/dev/null',
@@ -195,9 +213,19 @@ export async function restoreDatabaseBackup(
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     await storage.stat(backupFilePath); // => check file exists
 
+    let isPgClusterDump = false;
+    const version = findVersion(filename);
+    if (version && semver.satisfies(version, '<= 2.4')) {
+      isPgClusterDump = true;
+    }
+
     const { bin, args, databasePassword, databaseMajorVersion } = await buildPostgresLaunchArguments(
       { logger, ...pgRepos },
       'psql',
+      {
+        singleTransaction: !isPgClusterDump,
+        username: isPgClusterDump ? 'postgres' : undefined,
+      },
     );
 
     progressCb?.('backup', 0.05);
@@ -223,15 +251,21 @@ export async function restoreDatabaseBackup(
         FROM pg_stat_activity
         WHERE datname = current_database()
           AND pid <> pg_backend_pid();
-
-        -- re-create the default schema
-        DROP SCHEMA public CASCADE;
-        CREATE SCHEMA public;
-
-        -- restore access to schema
-        GRANT ALL ON SCHEMA public TO postgres;
-        GRANT ALL ON SCHEMA public TO public;
       `;
+
+      yield isPgClusterDump
+        ? String.raw`
+          \c postgres
+        `
+        : `
+          -- re-create the default schema
+          DROP SCHEMA public CASCADE;
+          CREATE SCHEMA public;
+
+          -- restore access to schema
+          GRANT ALL ON SCHEMA public TO postgres;
+          GRANT ALL ON SCHEMA public TO public;
+        `;
 
       for await (const chunk of inputStream) {
         yield chunk;
