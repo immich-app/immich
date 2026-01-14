@@ -350,7 +350,7 @@
     class="w-full p-8 rounded-lg border-2 border-dashed hover:border-light-400 hover:bg-light-50 transition-all flex flex-col items-center justify-center gap-2"
   >
     <Icon icon={mdiPlus} size="32" />
-    <Text size="small" class="font-medium">{title}</Text>
+    <Text size="small" fontWeight="medium">{title}</Text>
     <Text size="tiny">{description}</Text>
   </button>
 {/snippet}

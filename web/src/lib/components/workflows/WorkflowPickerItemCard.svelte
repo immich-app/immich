@@ -32,7 +32,7 @@
       {/if}
     </div>
     <div class="min-w-0 flex-1">
-      <Text class="font-semibold truncate">
+      <Text class="truncate" fontWeight="semi-bold">
         {isAlbum && 'albumName' in item ? item.albumName : 'name' in item ? item.name : ''}
       </Text>
       {#if isAlbum && 'assetCount' in item}

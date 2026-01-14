@@ -68,7 +68,7 @@
 
     <div class="flex flex-col gap-4 justify-between">
       <div class="flex flex-col">
-        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} class="font-medium">
+        <Text size="tiny" color={isExpired ? 'danger' : 'muted'} fontWeight="medium">
           {#if isExpired}
             {$t('expired')}
           {:else if expiresAt}
@@ -78,7 +78,7 @@
           {/if}
         </Text>
 
-        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all font-medium">
+        <Text size="large" color="primary" class="flex place-items-center gap-2 break-all" fontWeight="medium">
           {#if sharedLink.type === SharedLinkType.Album}
             {sharedLink.album?.albumName}
           {:else if sharedLink.type === SharedLinkType.Individual}
@@ -93,7 +93,7 @@
 
       <div class="flex flex-wrap items-center gap-2">
         {#each capabilities as capability, index (index)}
-          <Text size="small" color="primary" class="font-medium">
+          <Text size="small" color="primary" fontWeight="medium">
             {capability}
           </Text>
           {#if index < capabilities.length - 1}

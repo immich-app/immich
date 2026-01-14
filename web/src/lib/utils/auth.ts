@@ -11,7 +11,7 @@ import { AppRoute } from '../constants';
 
 export interface AuthOptions {
   admin?: true;
-  public?: true;
+  public?: boolean;
 }
 
 export const loadUser = async () => {

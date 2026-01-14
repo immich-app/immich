@@ -223,6 +223,17 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, ['description']] })
+  unlockProperties(assetId: string, properties: LockableProperty[]) {
+    return this.db
+      .updateTable('asset_exif')
+      .where('assetId', '=', assetId)
+      .set((eb) => ({
+        lockedProperties: sql`nullif(array(select distinct property from unnest(${eb.ref('asset_exif.lockedProperties')}) property where not property = any(${properties})), '{}')`,
+      }))
+      .execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;

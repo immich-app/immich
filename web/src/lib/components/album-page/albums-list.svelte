@@ -138,7 +138,11 @@
   const normalizedSearchQuery = $derived(normalizeSearchString(searchQuery));
   let filteredAlbums = $derived(
     normalizedSearchQuery
-      ? albums.filter(({ albumName }) => normalizeSearchString(albumName).includes(normalizedSearchQuery))
+      ? albums.filter(
+          ({ albumName, description }) =>
+            normalizeSearchString(albumName).includes(normalizedSearchQuery) ||
+            normalizeSearchString(description).includes(normalizedSearchQuery),
+        )
       : albums,
   );
 

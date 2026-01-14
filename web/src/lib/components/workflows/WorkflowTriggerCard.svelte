@@ -71,7 +71,7 @@
       <Icon icon={getTriggerIcon(trigger.type)} size="24" />
     </div>
     <div class="flex-1">
-      <Text class="font-semibold mb-1">{getTriggerName(trigger.type)}</Text>
+      <Text fontWeight="semi-bold" class="mb-1">{getTriggerName(trigger.type)}</Text>
       {#if getTriggerDescription(trigger.type)}
         <Text size="small">{getTriggerDescription(trigger.type)}</Text>
       {/if}

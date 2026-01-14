@@ -155,7 +155,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
-                                fontFamily: 'Inconsolata',
+                                fontFamily: 'GoogleSansCode',
                               ),
                             ),
                       trailing: IconButton(
@@ -175,7 +175,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: enabled ? context.primaryColor : context.colorScheme.onSurface.withAlpha(100),
-                                fontFamily: 'Inconsolata',
+                                fontFamily: 'GoogleSansCode',
                               ),
                             ),
                       trailing: IconButton(

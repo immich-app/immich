@@ -35,11 +35,11 @@
   let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));
 </script>
 
-<div class="max-w-[300px]">
+<div class="max-w-75">
   {#if showSettingDescription}
     <div>
       <div class="flex h-6.5 place-items-center gap-1">
-        <Label>{$t('language')}</Label>
+        <Label size="small">{$t('language')}</Label>
       </div>
 
       <Text size="small" color="muted">{$t('language_setting_description')}</Text>
