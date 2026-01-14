@@ -19,7 +19,7 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Field, Heading, HStack, Modal, ModalBody, Select, Stack, Switch, Text } from '@immich/ui';
+  import { Field, Heading, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -29,21 +29,6 @@
   };
 
   let { album, onClose }: Props = $props();
-
-  const orderOptions = [
-    { label: $t('newest_first'), value: AssetOrder.Desc },
-    { label: $t('oldest_first'), value: AssetOrder.Asc },
-  ];
-
-  const roleOptions: Array<{ label: string; value: AlbumUserRole | 'none'; icon?: string }> = [
-    { label: $t('role_editor'), value: AlbumUserRole.Editor },
-    { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
-    { label: $t('remove_user'), value: 'none' },
-  ];
-
-  const selectedOrderOption = $derived(
-    album.order ? orderOptions.find(({ value }) => value === album.order) : orderOptions[0],
-  );
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -97,9 +82,12 @@
           {#if album.order}
             <Field label={$t('display_order')}>
               <Select
-                data={orderOptions}
-                value={selectedOrderOption}
-                onChange={({ value }) => handleUpdateAlbum(album, { order: value })}
+                value={album.order}
+                options={[
+                  { label: $t('newest_first'), value: AssetOrder.Desc },
+                  { label: $t('oldest_first'), value: AssetOrder.Asc },
+                ]}
+                onChange={(value) => handleUpdateAlbum(album, { order: value })}
               />
             </Field>
           {/if}
@@ -123,7 +111,7 @@
             </div>
             <div class="w-full">{$user.name}</div>
             <Field disabled class="w-32 shrink-0">
-              <Select data={[{ label: $t('owner'), value: 'owner' }]} value={{ label: $t('owner'), value: 'owner' }} />
+              <Select options={[{ label: $t('owner'), value: 'owner' }]} value="owner" />
             </Field>
           </div>
 
@@ -137,9 +125,13 @@
               </div>
               <Field class="w-32">
                 <Select
-                  data={roleOptions}
-                  value={roleOptions.find(({ value }) => value === role)}
-                  onChange={({ value }) => handleRoleSelect(user, value)}
+                  value={role}
+                  options={[
+                    { label: $t('role_editor'), value: AlbumUserRole.Editor },
+                    { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
+                    { label: $t('remove_user'), value: 'none' },
+                  ] as SelectOption<AlbumUserRole | 'none'>[]}
+                  onChange={(value) => handleRoleSelect(user, value)}
                 />
               </Field>
             </div>

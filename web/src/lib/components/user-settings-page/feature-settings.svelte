@@ -1,10 +1,9 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
-  import { Button, Field, NumberInput, Switch, toastManager } from '@immich/ui';
+  import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -71,15 +70,15 @@
       <div class="ms-4 mt-4 flex flex-col">
         <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
           <div class="ms-4 mt-6 flex flex-col gap-4">
-            <SettingSelect
-              label={$t('albums_default_sort_order')}
-              desc={$t('albums_default_sort_order_description')}
-              options={[
-                { value: AssetOrder.Asc, text: $t('oldest_first') },
-                { value: AssetOrder.Desc, text: $t('newest_first') },
-              ]}
-              bind:value={defaultAssetOrder}
-            />
+            <Field label={$t('albums_default_sort_order')} description={$t('albums_default_sort_order_description')}>
+              <Select
+                options={[
+                  { label: $t('oldest_first'), value: AssetOrder.Asc },
+                  { label: $t('newest_first'), value: AssetOrder.Desc },
+                ]}
+                bind:value={defaultAssetOrder}
+              />
+            </Field>
           </div>
         </SettingAccordion>
 

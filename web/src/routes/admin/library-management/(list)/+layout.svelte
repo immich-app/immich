@@ -104,6 +104,7 @@
         </Table>
       {:else}
         <EmptyPlaceholder
+          fullWidth
           text={$t('no_libraries_message')}
           onClick={() => goto(AppRoute.ADMIN_LIBRARIES_NEW)}
           class="mt-10 mx-auto"
