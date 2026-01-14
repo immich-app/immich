@@ -17,6 +17,7 @@ import {
   LogLevel,
   QueueName,
   RawExtractedFormat,
+  StorageBackend,
   StorageFolder,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -25,6 +26,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { StorageAdapterFactory } from 'src/repositories/storage/storage-adapter.factory';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -50,6 +52,7 @@ interface UpsertFileOptions {
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
+  private storageAdapterFactory = new StorageAdapterFactory();
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
@@ -336,7 +339,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
+    const { machineLearning, metadata, image, storage } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.Skipped;
     }
@@ -347,7 +350,7 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath, storageBackend, s3Key } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
@@ -355,6 +358,20 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
       inputImage = previewPath;
+    } else if (storageBackend === StorageBackend.S3 && s3Key) {
+      // Asset is stored in S3, download it for processing
+      if (!storage.s3.enabled) {
+        this.logger.error(`Could not generate person thumbnail for ${id}: asset is in S3 but S3 is not enabled`);
+        return JobStatus.Failed;
+      }
+      try {
+        this.logger.debug(`Downloading asset from S3 for person thumbnail generation: ${s3Key}`);
+        const s3Adapter = this.storageAdapterFactory.getS3Adapter(storage.s3);
+        inputImage = await s3Adapter.read(s3Key);
+      } catch (error) {
+        this.logger.error(`Could not download asset from S3 for person thumbnail ${id}: ${error}`);
+        return JobStatus.Failed;
+      }
     } else if (image.extractEmbedded && mimeTypes.isRaw(originalPath)) {
       const extracted = await this.extractImage(originalPath, image.preview.size);
       inputImage = extracted ? extracted.buffer : originalPath;
@@ -565,6 +582,9 @@ export class MediaService extends BaseService {
 
     // Track video encoding completion for encryption coordination
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
+
+    // Queue S3 upload for encoded video if S3 is enabled for encoded videos
+    await this.jobRepository.queue({ name: JobName.S3UploadEncodedVideo, data: { id: asset.id } });
 
     return JobStatus.Success;
   }

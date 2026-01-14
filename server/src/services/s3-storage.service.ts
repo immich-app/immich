@@ -219,12 +219,162 @@ export class S3StorageService extends BaseService {
   }
 
   /**
-   * Generate S3 key for an asset.
+   * Handle uploading a single asset's encoded video to S3.
+   * This is called after video transcoding is complete.
+   */
+  @OnJob({ name: JobName.S3UploadEncodedVideo, queue: QueueName.S3Upload })
+  async handleS3UploadEncodedVideo(job: JobOf<JobName.S3UploadEncodedVideo>): Promise<JobStatus> {
+    const { id } = job;
+
+    const config = await this.getConfig({ withCache: true });
+
+    // Check if S3 is enabled for encoded videos
+    if (!config.storage.s3.enabled || config.storage.locations.encodedVideos !== StorageBackend.S3) {
+      this.logger.debug(`S3 upload skipped for encoded video ${id}: S3 not enabled for encoded videos`);
+      return JobStatus.Success;
+    }
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      this.logger.warn(`Asset not found for encoded video S3 upload: ${id}`);
+      return JobStatus.Failed;
+    }
+
+    // Skip if no encoded video exists
+    if (!asset.encodedVideoPath) {
+      this.logger.debug(`Asset ${id} has no encoded video, skipping S3 upload`);
+      return JobStatus.Success;
+    }
+
+    // Skip if already uploaded to S3
+    if (asset.s3KeyEncodedVideo) {
+      this.logger.debug(`Encoded video for asset ${id} is already in S3, skipping upload`);
+      return JobStatus.Success;
+    }
+
+    try {
+      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const localAdapter = this.storageAdapterFactory.getLocalAdapter();
+
+      // Generate S3 key for encoded video
+      const s3Key = this.generateEncodedVideoS3Key(asset.ownerId, asset.id);
+
+      // Check if local file exists
+      const localFileExists = await localAdapter.exists(asset.encodedVideoPath);
+      if (!localFileExists) {
+        // Check if already in S3
+        try {
+          const s3Exists = await s3Adapter.exists(s3Key);
+          if (s3Exists) {
+            this.logger.debug(`Encoded video ${id} local file missing but already in S3, marking as uploaded`);
+            await this.assetRepository.update({
+              id: asset.id,
+              s3KeyEncodedVideo: s3Key,
+            });
+            return JobStatus.Success;
+          }
+        } catch {
+          // S3 check failed
+        }
+        this.logger.warn(`Local encoded video not found for asset ${id}: ${asset.encodedVideoPath}`);
+        return JobStatus.Failed;
+      }
+
+      this.logger.log(`Uploading encoded video for asset ${id} to S3: ${s3Key}`);
+
+      // Read from local storage
+      const fileBuffer = await localAdapter.read(asset.encodedVideoPath);
+
+      // Upload to S3 with STANDARD_IA storage class for encoded videos
+      const storageClass = config.storage.s3.storageClasses.encodedVideos;
+      await s3Adapter.write(s3Key, fileBuffer, {
+        contentType: 'video/mp4',
+        storageClass,
+      });
+      this.logger.debug(`Using storage class ${storageClass} for encoded video ${id}`);
+
+      // Verify upload
+      const s3Stat = await s3Adapter.stat(s3Key);
+      const localStat = await localAdapter.stat(asset.encodedVideoPath);
+
+      if (s3Stat.size !== localStat.size) {
+        throw new Error(`Size mismatch after S3 upload: local=${localStat.size}, s3=${s3Stat.size}`);
+      }
+
+      // Update database with S3 key for encoded video
+      await this.assetRepository.update({
+        id: asset.id,
+        s3KeyEncodedVideo: s3Key,
+      });
+
+      this.logger.log(`Successfully uploaded encoded video for asset ${id} to S3`);
+
+      // Optionally delete local encoded video after successful upload
+      if (config.storage.upload.deleteLocalAfterUpload) {
+        try {
+          await localAdapter.delete(asset.encodedVideoPath);
+          await this.assetRepository.update({
+            id: asset.id,
+            encodedVideoPath: null,
+          });
+          this.logger.debug(`Deleted local encoded video for asset ${id}: ${asset.encodedVideoPath}`);
+        } catch (error) {
+          this.logger.warn(`Failed to delete local encoded video after S3 upload: ${error}`);
+        }
+      }
+
+      return JobStatus.Success;
+    } catch (error) {
+      this.logger.error(`Failed to upload encoded video ${id} to S3: ${error}`);
+      return JobStatus.Failed;
+    }
+  }
+
+  /**
+   * Queue all local encoded videos for S3 upload.
+   */
+  @OnJob({ name: JobName.S3UploadEncodedVideoQueueAll, queue: QueueName.S3Upload })
+  async handleS3UploadEncodedVideoQueueAll(): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
+
+    if (!config.storage.s3.enabled || config.storage.locations.encodedVideos !== StorageBackend.S3) {
+      this.logger.log('S3 encoded video upload queue all skipped: S3 not enabled for encoded videos');
+      return JobStatus.Success;
+    }
+
+    this.logger.log('Queueing all local encoded videos for S3 upload');
+
+    // Get all assets with local encoded videos that haven't been uploaded to S3
+    const assets = await this.assetRepository.getWithLocalEncodedVideos();
+
+    let queued = 0;
+    for (const asset of assets) {
+      await this.jobRepository.queue({
+        name: JobName.S3UploadEncodedVideo,
+        data: { id: asset.id },
+      });
+      queued++;
+    }
+
+    this.logger.log(`Queued ${queued} encoded videos for S3 upload`);
+    return JobStatus.Success;
+  }
+
+  /**
+   * Generate S3 key for an asset original.
    * Format: users/{userId}/{assetId}/original.{ext}
    */
   private generateS3Key(userId: string, assetId: string, originalPath: string): string {
     const ext = originalPath.split('.').pop() || '';
     return `users/${userId}/${assetId}/original.${ext}`;
+  }
+
+  /**
+   * Generate S3 key for an encoded video.
+   * Format: users/{userId}/{assetId}/encoded.mp4
+   */
+  private generateEncodedVideoS3Key(userId: string, assetId: string): string {
+    return `users/${userId}/${assetId}/encoded.mp4`;
   }
 
   /**
@@ -237,7 +387,7 @@ export class S3StorageService extends BaseService {
   }
 
   /**
-   * Get a presigned download URL for an S3 asset.
+   * Get a presigned download URL for an S3 asset original.
    */
   async getPresignedDownloadUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
     const config = await this.getConfig({ withCache: true });
@@ -258,6 +408,30 @@ export class S3StorageService extends BaseService {
     }
 
     return s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn });
+  }
+
+  /**
+   * Get a presigned download URL for an encoded video in S3.
+   */
+  async getPresignedEncodedVideoUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
+    const config = await this.getConfig({ withCache: true });
+
+    if (!config.storage.s3.enabled) {
+      return null;
+    }
+
+    const asset = await this.assetRepository.getById(assetId);
+    if (!asset || !asset.s3KeyEncodedVideo) {
+      return null;
+    }
+
+    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+
+    if (!s3Adapter.getPresignedDownloadUrl) {
+      return null;
+    }
+
+    return s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn });
   }
 
   /**

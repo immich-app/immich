@@ -273,6 +273,8 @@ export class PersonRepository {
         'asset_face.imageHeight as oldHeight',
         'asset.type',
         'asset.originalPath',
+        'asset.storageBackend',
+        'asset.s3Key',
         'asset_exif.orientation as exifOrientation',
       ])
       .select((eb) =>

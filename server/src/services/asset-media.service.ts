@@ -298,10 +298,25 @@ export class AssetMediaService extends BaseService {
     // Check if asset is encrypted and get decryption key
     const encryption = await this.getEncryptionInfo(auth, id);
 
-    // Handle S3 storage - redirect to presigned URL for original video
-    // (encoded videos are stored locally for now)
+    const config = await this.getConfig({ withCache: true });
+
+    // Handle S3 storage for encoded videos
+    if (asset.s3KeyEncodedVideo && config.storage.s3.enabled) {
+      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn: 3600 });
+      if (presignedUrl) {
+        return new ImmichFileResponse({
+          path: filepath,
+          fileName: asset.originalFileName,
+          contentType: 'video/mp4',
+          cacheControl: CacheControl.PrivateWithCache,
+          redirectUrl: presignedUrl,
+        });
+      }
+    }
+
+    // Handle S3 storage for original video (when no encoded video exists)
     if (!asset.encodedVideoPath && asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
-      const config = await this.getConfig({ withCache: true });
       if (config.storage.s3.enabled) {
         const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
         const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });

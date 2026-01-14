@@ -129,9 +129,10 @@ export type MapAsset = {
   tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
-  storageBackend?: StorageBackend;
-  s3Bucket?: string | null;
-  s3Key?: string | null;
+  storageBackend: StorageBackend;
+  s3Bucket: string | null;
+  s3Key: string | null;
+  s3KeyEncodedVideo: string | null;
 };
 
 export class AssetStackResponseDto {

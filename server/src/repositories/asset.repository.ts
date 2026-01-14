@@ -1000,4 +1000,18 @@ export class AssetRepository {
       .where('deletedAt', 'is', null)
       .execute();
   }
+
+  /**
+   * Get all assets with local encoded videos that haven't been uploaded to S3.
+   */
+  @GenerateSql()
+  getWithLocalEncodedVideos() {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'ownerId', 'encodedVideoPath', 's3KeyEncodedVideo'])
+      .where('encodedVideoPath', 'is not', null)
+      .where('s3KeyEncodedVideo', 'is', null)
+      .where('deletedAt', 'is', null)
+      .execute();
+  }
 }

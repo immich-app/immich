@@ -390,6 +390,8 @@ export type JobItem =
   // S3 Storage
   | { name: JobName.S3UploadAsset; data: IEntityJob }
   | { name: JobName.S3UploadQueueAll; data?: IBaseJob }
+  | { name: JobName.S3UploadEncodedVideo; data: IEntityJob }
+  | { name: JobName.S3UploadEncodedVideoQueueAll; data?: IBaseJob }
   | { name: JobName.S3MigrateStorageClass; data: IEntityJob }
   | { name: JobName.S3MigrateStorageClassAll; data?: IBaseJob }
 

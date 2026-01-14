@@ -256,6 +256,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   storageBackend: StorageBackend.Local,
   s3Bucket: null,
   s3Key: null,
+  s3KeyEncodedVideo: null,
   ...asset,
 });
 
