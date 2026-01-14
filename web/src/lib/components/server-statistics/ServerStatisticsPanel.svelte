@@ -54,7 +54,7 @@
             <Text class="font-medium" size="medium">{$t('photos')}</Text>
           </div>
 
-          <div class="relative text-center font-immich-mono text-2xl font-medium">
+          <div class="relative text-center font-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(stats.photos)}</span><span class="text-primary">{stats.photos}</span>
           </div>
         </div>
@@ -64,7 +64,7 @@
             <Text class="font-medium" size="medium">{$t('videos')}</Text>
           </div>
 
-          <div class="relative text-center font-immich-mono text-2xl font-medium">
+          <div class="relative text-center font-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(stats.videos)}</span><span class="text-primary">{stats.videos}</span>
           </div>
         </div>
@@ -74,11 +74,11 @@
             <Text class="font-medium" size="medium">{$t('storage')}</Text>
           </div>
 
-          <div class="relative flex text-center font-immich-mono text-2xl font-medium">
+          <div class="relative flex text-center font-mono text-2xl font-medium">
             <span class="text-light-300">{zeros(statsUsage)}</span><span class="text-primary">{statsUsage}</span>
 
-            <div class="absolute -right-1.5 -bottom-4">
-              <Code color="muted" class="text-xs font-light font-immich-mono">{statsUsageUnit}</Code>
+            <div class="absolute -end-1.5 -bottom-4">
+              <Code color="muted" class="text-xs font-light font-mono">{statsUsageUnit}</Code>
             </div>
           </div>
         </div>
