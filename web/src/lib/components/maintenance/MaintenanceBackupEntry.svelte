@@ -77,6 +77,7 @@
         position="top-right"
         aria-label={$t('open')}
         items={[Download, Delete]}
+        class="flex-shrink-0"
       />
     </HStack>
   </CardBody>
