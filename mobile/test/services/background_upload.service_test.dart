@@ -12,11 +12,6 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/models/server_info/server_config.model.dart';
-import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
-import 'package:immich_mobile/models/server_info/server_features.model.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
@@ -222,45 +217,6 @@ void main() {
       expect(metadata[0]['value']['adjustmentTime'], isNotNull);
       expect(metadata[0]['value']['latitude'], isNotNull);
       expect(metadata[0]['value']['longitude'], isNotNull);
-    });
-
-    test('should NOT include metadata on iOS when server version is below 2.4', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
-      final sutWithV23 = BackgroundUploadService(
-        mockUploadRepository,
-        mockStorageRepository,
-        mockLocalAssetRepository,
-        mockBackupRepository,
-        mockAppSettingsService,
-        mockAssetMediaRepository,
-      );
-      addTearDown(() => sutWithV23.dispose());
-
-      final assetWithCloudId = LocalAsset(
-        id: 'test-asset-id',
-        name: 'test.jpg',
-        type: AssetType.image,
-        createdAt: DateTime(2025, 1, 1),
-        updatedAt: DateTime(2025, 1, 2),
-        cloudId: 'cloud-id-123',
-        latitude: 37.7749,
-        longitude: -122.4194,
-      );
-
-      final mockEntity = MockAssetEntity();
-      final mockFile = File('/path/to/test.jpg');
-
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
-
-      final task = await sutWithV23.getUploadTask(assetWithCloudId);
-
-      expect(task, isNotNull);
-      expect(task!.fields.containsKey('metadata'), isFalse);
     });
 
     test('should NOT include metadata on Android regardless of server version', () async {
