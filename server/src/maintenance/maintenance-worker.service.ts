@@ -119,9 +119,9 @@ export class MaintenanceWorkerService {
   /**
    * {@link _VersionService.getVersion}
    */
-    getVersion() {
-      return ServerVersionResponseDto.fromSemVer(serverVersion);
-    }
+  getVersion() {
+    return ServerVersionResponseDto.fromSemVer(serverVersion);
+  }
 
   /**
    * {@link _ApiService.ssr}
