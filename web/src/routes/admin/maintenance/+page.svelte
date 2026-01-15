@@ -72,13 +72,12 @@
 
   function onJobCreate({ dto }: { dto: JobCreateDto }) {
     if (
-      Object.values(INTEGRITY_JOB_NAMES).some((name) => name === dto.name) ||
-      Object.values(INTEGRITY_REFRESH_JOB_NAMES).some((name) => name === dto.name)
+      (Object.values(INTEGRITY_JOB_NAMES).includes(dto.name) ||
+        Object.values(INTEGRITY_REFRESH_JOB_NAMES).includes(dto.name)) &&
+      jobs
     ) {
-      if (jobs) {
-        expectingUpdate = true;
-        jobs.integrityCheck.queueStatus.isActive = true;
-      }
+      expectingUpdate = true;
+      jobs.integrityCheck.queueStatus.isActive = true;
     }
   }
 </script>
@@ -93,14 +92,22 @@
         <Button
           size="tiny"
           variant="ghost"
-          onclick={() => Object.values(INTEGRITY_JOB_NAMES).forEach((name) => handleCreateJob({ name }))}
+          onclick={() => {
+            for (const name of Object.values(INTEGRITY_JOB_NAMES)) {
+              void handleCreateJob({ name });
+            }
+          }}
           class="self-end mt-1"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('admin.maintenance_integrity_check_all')}</Button
         >
         <Button
           size="tiny"
           variant="ghost"
-          onclick={() => Object.values(INTEGRITY_REFRESH_JOB_NAMES).forEach((name) => handleCreateJob({ name }))}
+          onclick={() => {
+            for (const name of Object.values(INTEGRITY_REFRESH_JOB_NAMES)) {
+              void handleCreateJob({ name });
+            }
+          }}
           class="self-end mt-1"
           disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
         ></HStack
