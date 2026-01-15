@@ -122,7 +122,7 @@
     }
 
     // Stream progress updates via SSE or polling
-    await pollImportProgress(await response.json());
+    pollImportProgress(await response.json());
   }
 
   async function importFromDrive(fileIds: string[]) {
@@ -144,7 +144,7 @@
       throw new Error(`Failed to import from Google Drive: ${error}`);
     }
 
-    await pollImportProgress(await response.json());
+    pollImportProgress(await response.json());
   }
 
   function pollImportProgress(jobId: { id: string }) {

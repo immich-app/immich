@@ -100,7 +100,7 @@
         {@const lastRun = new Date(queue.lastTriggeredAt)}
         {@const now = new Date()}
         {@const diffMs = now.getTime() - lastRun.getTime()}
-        {@const diffMins = Math.floor(diffMs / 60000)}
+        {@const diffMins = Math.floor(diffMs / 60_000)}
         {@const diffHours = Math.floor(diffMins / 60)}
         {@const diffDays = Math.floor(diffHours / 24)}
         <div class="text-xs text-gray-500 dark:text-gray-400">

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { googlePhotosImportStore } from '$lib/stores/google-photos-import.store';
-  import { Button } from '@immich/ui';
   import byteSize from 'byte-size';
 
   let isDragging = $state(false);
@@ -114,7 +113,7 @@
     <div class="file-list">
       <h4>Selected files ({store.uploadedFiles.length})</h4>
       <ul>
-        {#each store.uploadedFiles as file, index}
+        {#each store.uploadedFiles as file, index (index)}
           <li>
             <div class="file-info">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="file-icon">
@@ -124,7 +123,7 @@
               <span class="file-name">{file.name}</span>
               <span class="file-size">{byteSize(file.size).toString()}</span>
             </div>
-            <button class="remove-btn" onclick={() => removeFile(index)} aria-label="Remove file">
+            <button type="button" class="remove-btn" onclick={() => removeFile(index)} aria-label="Remove file">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
               </svg>

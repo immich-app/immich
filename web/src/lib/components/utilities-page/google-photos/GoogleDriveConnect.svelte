@@ -4,11 +4,10 @@
   import byteSize from 'byte-size';
 
   interface Props {
-    onConnect?: () => void;
     onDisconnect?: () => void;
   }
 
-  let { onConnect, onDisconnect }: Props = $props();
+  let { onDisconnect }: Props = $props();
 
   let isConnecting = $state(false);
   let isLoadingFiles = $state(false);
@@ -45,7 +44,7 @@
       const { authUrl } = await response.json();
 
       // Redirect to Google OAuth
-      window.location.href = authUrl;
+      globalThis.location.href = authUrl;
     } catch (error) {
       console.error('Failed to connect:', error);
       googlePhotosImportStore.setError(
@@ -159,7 +158,7 @@
           </svg>
           Connected
         </span>
-        <button class="disconnect-btn" onclick={disconnectGoogleDrive}>Disconnect</button>
+        <button type="button" class="disconnect-btn" onclick={disconnectGoogleDrive}>Disconnect</button>
       </div>
 
       {#if isLoadingFiles}
@@ -183,14 +182,14 @@
           <div class="file-list-header">
             <h4>Found {takeoutFiles.length} Takeout file{takeoutFiles.length === 1 ? '' : 's'}</h4>
             <div class="selection-actions">
-              <button class="link-btn" onclick={selectAll}>Select all</button>
+              <button type="button" class="link-btn" onclick={selectAll}>Select all</button>
               <span class="separator">|</span>
-              <button class="link-btn" onclick={deselectAll}>Deselect all</button>
+              <button type="button" class="link-btn" onclick={deselectAll}>Deselect all</button>
             </div>
           </div>
 
           <ul>
-            {#each takeoutFiles as file}
+            {#each takeoutFiles as file (file.id)}
               <li>
                 <label class="file-row">
                   <Checkbox
