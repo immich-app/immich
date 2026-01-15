@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
+import { ChildProcessWithoutNullStreams, fork, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
 import { Duplex } from 'node:stream';
 
 @Injectable()
@@ -102,5 +102,9 @@ export class ProcessRepository {
     });
 
     return Object.assign(duplex, { _process: process });
+  }
+
+  fork(...args: Parameters<typeof fork>): ReturnType<typeof fork> {
+    return fork(...args);
   }
 }

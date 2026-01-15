@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
-import path, { basename, join } from 'node:path';
+import path, { basename, dirname, join } from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
@@ -298,8 +298,68 @@ export async function restoreDatabaseBackup(
     await pipeline(sqlStream, progressSource, psql, progressSink);
 
     try {
-      progressCb?.('migrations', 0.95);
+      progressCb?.('migrations', 0.8);
       await databaseRepository.runMigrations();
+
+      progressCb?.('migrations', 0.9);
+      await new Promise<void>((resolve, reject) => {
+        // eslint-disable-next-line unicorn/prefer-module
+        const basePath = dirname(__filename);
+        const workerFile = join(basePath, '..', 'workers', `api.js`);
+
+        const worker = processRepository.fork(workerFile, [], {
+          execArgv: process.execArgv.filter((arg) => !arg.startsWith('--inspect')),
+          env: {
+            ...process.env,
+            IMMICH_HOST: '127.0.0.1',
+            IMMICH_PORT: '33001',
+          },
+          stdio: ['ignore', 'pipe', 'ignore', 'ipc'],
+        });
+
+        worker.on('error', reject);
+        worker.on('exit', reject);
+
+        async function checkHealth() {
+          try {
+            const response = await fetch('http://127.0.0.1:33001/api/server/config');
+            const { isOnboarded } = await response.json();
+            if (isOnboarded) {
+              resolve();
+            } else {
+              reject(new Error('Server health check failed, no admin exists.'));
+            }
+          } catch (error) {
+            reject(error);
+          } finally {
+            if (worker.exitCode !== null) {
+              worker.kill('SIGTERM');
+            }
+          }
+        }
+
+        let output = '',
+          alive = false;
+
+        worker.stdout?.on('data', (data) => {
+          if (alive) {
+            return;
+          }
+
+          output += data;
+
+          if (output.includes('Immich Server is listening')) {
+            alive = true;
+            void checkHealth();
+          }
+        });
+
+        setTimeout(() => {
+          if (worker.exitCode !== null) {
+            worker.kill('SIGTERM');
+          }
+        }, 20_000);
+      });
     } catch (error) {
       progressCb?.('rollback', 0);
 
