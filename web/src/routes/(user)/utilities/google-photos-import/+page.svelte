@@ -22,7 +22,7 @@
 
   // Handle OAuth callback URL parameters
   onMount(() => {
-    const url = new URL(window.location.href);
+    const url = new URL(globalThis.location.href);
     const connected = url.searchParams.get('connected');
     const error = url.searchParams.get('error');
 
@@ -30,14 +30,14 @@
       googlePhotosImportStore.setGoogleDriveConnected(true);
       // Clean up URL
       url.searchParams.delete('connected');
-      window.history.replaceState({}, '', url.pathname);
+      globalThis.history.replaceState({}, '', url.pathname);
       // Load files from Drive
-      loadDriveFiles();
+      void loadDriveFiles();
     } else if (error) {
       googlePhotosImportStore.setError(decodeURIComponent(error));
       // Clean up URL
       url.searchParams.delete('error');
-      window.history.replaceState({}, '', url.pathname);
+      globalThis.history.replaceState({}, '', url.pathname);
     }
   });
 
@@ -68,7 +68,9 @@
   );
 
   async function startImport() {
-    if (!hasFilesToImport) return;
+    if (!hasFilesToImport) {
+      return;
+    }
 
     isImporting = true;
     googlePhotosImportStore.setStep('processing');
@@ -145,31 +147,33 @@
     await pollImportProgress(await response.json());
   }
 
-  async function pollImportProgress(jobId: { id: string }) {
+  function pollImportProgress(jobId: { id: string }) {
     // Poll for progress updates
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await fetch(`/api/google-photos/import/${jobId.id}/progress`);
-        if (!response.ok) {
-          clearInterval(pollInterval);
-          return;
-        }
+    const pollInterval = setInterval(() => {
+      void (async () => {
+        try {
+          const response = await fetch(`/api/google-photos/import/${jobId.id}/progress`);
+          if (!response.ok) {
+            clearInterval(pollInterval);
+            return;
+          }
 
-        const progress = await response.json();
-        googlePhotosImportStore.setProgress(progress);
+          const progress = await response.json();
+          googlePhotosImportStore.setProgress(progress);
 
-        if (progress.phase === 'complete') {
+          if (progress.phase === 'complete') {
+            clearInterval(pollInterval);
+          }
+        } catch (error) {
+          console.error('Failed to poll progress:', error);
           clearInterval(pollInterval);
         }
-      } catch (error) {
-        console.error('Failed to poll progress:', error);
-        clearInterval(pollInterval);
-      }
+      })();
     }, 1000);
   }
 
   function handleComplete() {
-    goto('/photos');
+    void goto('/photos');
   }
 
   function handleCancel() {
@@ -179,7 +183,9 @@
 
   function getPlatform(): string {
     const userAgent = navigator.userAgent.toLowerCase();
-    if (userAgent.includes('win')) return 'windows-amd64';
+    if (userAgent.includes('win')) {
+      return 'windows-amd64';
+    }
     if (userAgent.includes('mac')) {
       // Check for Apple Silicon
       if (userAgent.includes('arm') || navigator.platform === 'MacIntel') {
@@ -214,9 +220,9 @@
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = platform.includes('windows') ? 'immich-importer-setup.exe' : 'immich-importer-setup';
-      document.body.appendChild(link);
+      document.body.append(link);
       link.click();
-      document.body.removeChild(link);
+      link.remove();
     } catch (error) {
       console.error('Failed to download importer:', error);
       googlePhotosImportStore.setError(
@@ -314,7 +320,7 @@
           </div>
 
           <!-- Toggle for advanced options -->
-          <button class="advanced-toggle" onclick={() => showAdvancedOptions = !showAdvancedOptions}>
+          <button type="button" class="advanced-toggle" onclick={() => showAdvancedOptions = !showAdvancedOptions}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class:rotated={showAdvancedOptions}>
               <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" />
             </svg>
@@ -364,7 +370,7 @@
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
           </svg>
           <span>{store.error}</span>
-          <button onclick={() => googlePhotosImportStore.setError(null)}>Dismiss</button>
+          <button type="button" onclick={() => googlePhotosImportStore.setError(null)}>Dismiss</button>
         </div>
       {/if}
     {/if}

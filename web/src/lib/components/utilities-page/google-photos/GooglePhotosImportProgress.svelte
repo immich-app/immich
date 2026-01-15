@@ -94,7 +94,7 @@
       <div class="errors-section">
         <h4>Errors ({progress.errors.length})</h4>
         <ul>
-          {#each progress.errors.slice(0, 5) as error}
+          {#each progress.errors.slice(0, 5) as error, index (index)}
             <li>{error}</li>
           {/each}
           {#if progress.errors.length > 5}
