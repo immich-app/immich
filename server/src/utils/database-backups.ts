@@ -158,7 +158,7 @@ export async function buildPostgresLaunchArguments(
 export async function createDatabaseBackup(
   { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
   filenamePrefix: string = '',
-): Promise<void> {
+): Promise<string> {
   logger.debug(`Database Backup Started`);
 
   const { bin, args, databasePassword, databaseVersion, databaseMajorVersion } = await buildPostgresLaunchArguments(
@@ -168,10 +168,9 @@ export async function createDatabaseBackup(
 
   logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
 
-  const backupFilePath = join(
-    StorageCore.getBaseFolder(StorageFolder.Backups),
-    `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz.tmp`,
-  );
+  const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz`;
+  const backupFilePath = join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
+  const temporaryFilePath = `${backupFilePath}.tmp`;
 
   try {
     const pgdump = processRepository.spawnDuplexStream(bin, args, {
@@ -182,25 +181,44 @@ export async function createDatabaseBackup(
     });
 
     const gzip = processRepository.spawnDuplexStream('gzip', ['--rsyncable']);
-    const fileStream = storage.createWriteStream(backupFilePath);
+    const fileStream = storage.createWriteStream(temporaryFilePath);
 
     await pipeline(pgdump, gzip, fileStream);
-    await storage.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
+    await storage.rename(temporaryFilePath, backupFilePath);
   } catch (error) {
     logger.error(`Database Backup Failure: ${error}`);
     await storage
-      .unlink(backupFilePath)
+      .unlink(temporaryFilePath)
       .catch((error) => logger.error(`Failed to delete failed backup file: ${error}`));
     throw error;
   }
 
   logger.log(`Database Backup Success`);
+  return backupFilePath;
 }
 
+const SQL_DROP_CONNECTIONS = `
+  -- drop all other database connections
+  SELECT pg_terminate_backend(pid)
+  FROM pg_stat_activity
+  WHERE datname = current_database()
+    AND pid <> pg_backend_pid();
+`;
+
+const SQL_RESET_SCHEMA = `
+  -- re-create the default schema
+  DROP SCHEMA public CASCADE;
+  CREATE SCHEMA public;
+
+  -- restore access to schema
+  GRANT ALL ON SCHEMA public TO postgres;
+  GRANT ALL ON SCHEMA public TO public;
+`;
+
 export async function restoreDatabaseBackup(
-  { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
+  { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos }: BackupRepos,
   filename: string,
-  progressCb?: (action: 'backup' | 'restore', progress: number) => void,
+  progressCb?: (action: 'backup' | 'restore' | 'migrations' | 'rollback', progress: number) => void,
 ): Promise<void> {
   logger.debug(`Database Restore Started`);
 
@@ -220,7 +238,7 @@ export async function restoreDatabaseBackup(
     }
 
     const { bin, args, databasePassword, databaseMajorVersion } = await buildPostgresLaunchArguments(
-      { logger, ...pgRepos },
+      { logger, database: databaseRepository, ...pgRepos },
       'psql',
       {
         singleTransaction: !isPgClusterDump,
@@ -230,7 +248,10 @@ export async function restoreDatabaseBackup(
 
     progressCb?.('backup', 0.05);
 
-    await createDatabaseBackup({ logger, storage, process: processRepository, ...pgRepos }, 'restore-point-');
+    const restorePointFilePath = await createDatabaseBackup(
+      { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos },
+      'restore-point-',
+    );
 
     logger.log(`Database Restore Starting. Database Version: ${databaseMajorVersion}`);
 
@@ -245,27 +266,12 @@ export async function restoreDatabaseBackup(
     }
 
     async function* sql() {
-      yield `
-        -- drop all other database connections
-        SELECT pg_terminate_backend(pid)
-        FROM pg_stat_activity
-        WHERE datname = current_database()
-          AND pid <> pg_backend_pid();
-      `;
-
+      yield SQL_DROP_CONNECTIONS;
       yield isPgClusterDump
         ? String.raw`
           \c postgres
         `
-        : `
-          -- re-create the default schema
-          DROP SCHEMA public CASCADE;
-          CREATE SCHEMA public;
-
-          -- restore access to schema
-          GRANT ALL ON SCHEMA public TO postgres;
-          GRANT ALL ON SCHEMA public TO public;
-        `;
+        : SQL_RESET_SCHEMA;
 
       for await (const chunk of inputStream) {
         yield chunk;
@@ -290,6 +296,56 @@ export async function restoreDatabaseBackup(
     });
 
     await pipeline(sqlStream, progressSource, psql, progressSink);
+
+    try {
+      progressCb?.('migrations', 0.95);
+      await databaseRepository.runMigrations();
+    } catch (error) {
+      progressCb?.('rollback', 0);
+
+      const fileStream = storage.createPlainReadStream(restorePointFilePath);
+      const gunzip = storage.createGunzip();
+      fileStream.pipe(gunzip);
+      inputStream = gunzip;
+
+      async function* sql() {
+        yield SQL_DROP_CONNECTIONS;
+
+        if (isPgClusterDump) {
+          yield String.raw`
+            CREATE DATABASE IF NOT EXISTS immich;
+            \c immich
+          `;
+        }
+
+        yield SQL_RESET_SCHEMA;
+
+        for await (const chunk of inputStream) {
+          yield chunk;
+        }
+      }
+
+      const sqlStream = Readable.from(sql());
+      const psql = processRepository.spawnDuplexStream(bin, args, {
+        env: {
+          PATH: process.env.PATH,
+          PGPASSWORD: databasePassword,
+        },
+      });
+
+      const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
+        if (complete) {
+          return;
+        }
+
+        logger.log(`Rollback progress ~ ${(progress * 100).toFixed(2)}%`);
+        progressCb?.('rollback', progress);
+      });
+
+      await pipeline(sqlStream, progressSource, psql, progressSink);
+
+      throw error;
+    }
   } catch (error) {
     logger.error(`Database Restore Failure: ${error}`);
     throw error;

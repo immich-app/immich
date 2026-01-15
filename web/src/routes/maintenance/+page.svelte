@@ -7,6 +7,13 @@
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
+
+  type Props = {
+    data: PageData;
+  };
+
+  const { data }: Props = $props();
 
   const { auth, status } = maintenanceStore;
 
@@ -50,9 +57,15 @@
         {#if $status.task === 'restore'}
           <Text>{$t('maintenance_task_restore')}</Text>
         {/if}
+        {#if $status.task === 'migrations'}
+          <Text>{$t('maintenance_task_migrations')}</Text>
+        {/if}
+        {#if $status.task === 'rollback'}
+          <Text>{$t('maintenance_task_rollback')}</Text>
+        {/if}
       {/if}
     {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
-      <MaintenanceRestoreFlow {end} />
+      <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
     {:else}
       <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
       <p>

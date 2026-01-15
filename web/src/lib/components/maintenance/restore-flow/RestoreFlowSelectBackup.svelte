@@ -7,14 +7,15 @@
   type Props = {
     previous: () => void;
     end: () => void;
+    expectedVersion: string;
   };
 
-  const { previous, end }: Props = $props();
+  const { previous, end, expectedVersion }: Props = $props();
 </script>
 
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_from_backup')}</Heading>
 <Scrollable class="max-h-120 bg-white dark:bg-black p-4 rounded-2xl border border-light-300 w-full">
-  <MaintenanceBackupsList />
+  <MaintenanceBackupsList {expectedVersion} />
 </Scrollable>
 <HStack>
   <Button onclick={end} variant="ghost">{$t('cancel')}</Button>

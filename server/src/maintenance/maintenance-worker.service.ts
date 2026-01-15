@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import {
   MaintenanceAuthDto,
@@ -11,7 +12,7 @@ import {
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
-import { ServerConfigDto } from 'src/dtos/server.dto';
+import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
@@ -25,6 +26,7 @@ import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
 import { type DatabaseBackupService as _DatabaseBackupService } from 'src/services/database-backup.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
+import { type VersionService as _VersionService } from 'src/services/version.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
 import {
@@ -113,6 +115,13 @@ export class MaintenanceWorkerService {
       maintenanceMode: true,
     } as ServerConfigDto;
   }
+
+  /**
+   * {@link _VersionService.getVersion}
+   */
+    getVersion() {
+      return ServerVersionResponseDto.fromSemVer(serverVersion);
+    }
 
   /**
    * {@link _ApiService.ssr}

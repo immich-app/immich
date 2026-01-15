@@ -4,9 +4,10 @@
 
   type Props = {
     end: () => void;
+    expectedVersion: string;
   };
 
-  const { end }: Props = $props();
+  const { end, expectedVersion }: Props = $props();
 
   let stage = $state(0);
 </script>
@@ -14,5 +15,5 @@
 {#if stage === 0}
   <RestoreFlowDetectInstall next={() => stage++} {end} />
 {:else}
-  <RestoreFlowSelectBackup previous={() => stage--} {end} />
+  <RestoreFlowSelectBackup previous={() => stage--} {end} {expectedVersion} />
 {/if}

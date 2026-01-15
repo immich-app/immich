@@ -20,7 +20,7 @@ import {
   MaintenanceStatusResponseDto,
   SetMaintenanceModeDto,
 } from 'src/dtos/maintenance.dto';
-import { ServerConfigDto } from 'src/dtos/server.dto';
+import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
@@ -48,6 +48,11 @@ export class MaintenanceWorkerController {
   @Get('server/config')
   getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
+  }
+
+  @Get('server/version')
+  getServerVersion(): ServerVersionResponseDto {
+    return this.service.getVersion();
   }
 
   /**
