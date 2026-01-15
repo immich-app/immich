@@ -2,7 +2,11 @@ import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { createZoomImageWheel } from '@zoom-image/core';
 
 export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolean }) => {
-  const zoomInstance = createZoomImageWheel(node, { maxZoom: 10, initialState: assetViewerManager.zoomState });
+  const zoomInstance = createZoomImageWheel(node, {
+    maxZoom: 10,
+    initialState: assetViewerManager.zoomState,
+    zoomTarget: null,
+  });
 
   const unsubscribes = [
     assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
