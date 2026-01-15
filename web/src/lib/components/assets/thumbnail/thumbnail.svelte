@@ -431,7 +431,7 @@
 </div>
 
 <style>
-  [data-asset]:focus > [data-outline] {
+  [data-asset]:focus-visible > [data-outline] {
     outline-style: solid;
   }
 </style>
