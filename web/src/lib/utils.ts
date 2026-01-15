@@ -146,7 +146,8 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
 export const getQueueName = derived(t, ($t) => {
   return (name: QueueName) => {
     const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
+      [QueueName.AssetThumbnailGeneration]: $t('admin.asset_thumbnail_generation_job'),
+      [QueueName.PersonThumbnailGeneration]: $t('admin.person_thumbnail_generation_job'),
       [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
       [QueueName.Sidecar]: $t('admin.sidecar_job'),
       [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
@@ -163,6 +164,8 @@ export const getQueueName = derived(t, ($t) => {
       [QueueName.BackupDatabase]: $t('admin.backup_database'),
       [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
       [QueueName.Workflow]: $t('workflows'),
+      [QueueName.S3Upload]: $t('admin.s3_upload'),
+      [QueueName.Encryption]: $t('admin.encryption'),
     };
 
     return names[name];

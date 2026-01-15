@@ -29,11 +29,16 @@
     refreshText?: string;
     missingText: string;
     disabled?: boolean;
+    isDestructive?: boolean;
     handleCommand?: (jobId: QueueName, jobCommand: QueueCommandDto) => Promise<void>;
   };
 
   const queueDetails: Partial<Record<QueueName, QueueDetails>> = {
-    [QueueName.ThumbnailGeneration]: {
+    [QueueName.AssetThumbnailGeneration]: {
+      allText: $t('all'),
+      missingText: $t('missing'),
+    },
+    [QueueName.PersonThumbnailGeneration]: {
       allText: $t('all'),
       missingText: $t('missing'),
     },
@@ -64,11 +69,13 @@
       refreshText: $t('refresh'),
       missingText: $t('missing'),
       disabled: !featureFlags.facialRecognition,
+      isDestructive: true,
     },
     [QueueName.FacialRecognition]: {
       allText: $t('reset'),
       missingText: $t('missing'),
       disabled: !featureFlags.facialRecognition,
+      isDestructive: true,
     },
     [QueueName.Ocr]: {
       allText: $t('all'),
@@ -92,16 +99,34 @@
 
   const handleCommand = async (name: QueueName, dto: QueueCommandDto) => {
     const item = asQueueItem($t, { name });
+    const details = queueDetails[name];
 
-    switch (name) {
-      case QueueName.FaceDetection:
-      case QueueName.FacialRecognition: {
-        if (dto.force) {
-          const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
-          if (!confirmed) {
-            return;
+    // Confirmation for destructive operations
+    if (dto.force === true || dto.command === QueueCommand.Empty) {
+      let promptKey: string | undefined;
+
+      if (dto.command === QueueCommand.Empty) {
+        promptKey = 'admin.confirm_clear_queue';
+      } else if (dto.force === true) {
+        if (details?.isDestructive) {
+          // For face detection/recognition with reset
+          if (name === QueueName.FaceDetection || name === QueueName.FacialRecognition) {
+            promptKey = 'admin.confirm_reprocess_all_faces';
+          } else {
+            promptKey = 'admin.confirm_reset_queue';
           }
-          break;
+        } else {
+          // For "all" operations that reprocess everything
+          promptKey = 'admin.confirm_reprocess_all';
+        }
+      }
+
+      if (promptKey) {
+        const confirmed = await modalManager.showDialog({
+          prompt: $t(promptKey, { values: { job: item.title } }),
+        });
+        if (!confirmed) {
+          return;
         }
       }
     }

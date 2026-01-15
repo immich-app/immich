@@ -14,7 +14,8 @@
   let configToEdit = $state(systemConfigManager.cloneValue());
 
   const queueNames = [
-    QueueName.ThumbnailGeneration,
+    QueueName.AssetThumbnailGeneration,
+    QueueName.PersonThumbnailGeneration,
     QueueName.MetadataExtraction,
     QueueName.Library,
     QueueName.Sidecar,

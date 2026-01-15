@@ -17,7 +17,9 @@ import {
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
 import {
+  mdiAccountBox,
   mdiClose,
+  mdiCloudUpload,
   mdiCog,
   mdiContentDuplicate,
   mdiDatabaseOutline,
@@ -27,6 +29,7 @@ import {
   mdiFolderMove,
   mdiImageSearch,
   mdiLibraryShelves,
+  mdiLock,
   mdiOcr,
   mdiPause,
   mdiPlay,
@@ -164,10 +167,15 @@ const handleRemoveFailedJobs = async (queue: QueueResponseDto) => {
 export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): QueueItem => {
   // TODO merge this mapping with data from QueuePanel.svelte
   const items: Record<QueueName, QueueItem> = {
-    [QueueName.ThumbnailGeneration]: {
+    [QueueName.AssetThumbnailGeneration]: {
       icon: mdiFileJpgBox,
-      title: $t('admin.thumbnail_generation_job'),
-      subtitle: $t('admin.thumbnail_generation_job_description'),
+      title: $t('admin.asset_thumbnail_generation_job'),
+      subtitle: $t('admin.asset_thumbnail_generation_job_description'),
+    },
+    [QueueName.PersonThumbnailGeneration]: {
+      icon: mdiAccountBox,
+      title: $t('admin.person_thumbnail_generation_job'),
+      subtitle: $t('admin.person_thumbnail_generation_job_description'),
     },
     [QueueName.MetadataExtraction]: {
       icon: mdiTable,
@@ -242,6 +250,14 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.Workflow]: {
       icon: mdiStateMachine,
       title: $t('workflows'),
+    },
+    [QueueName.S3Upload]: {
+      icon: mdiCloudUpload,
+      title: $t('admin.s3_upload'),
+    },
+    [QueueName.Encryption]: {
+      icon: mdiLock,
+      title: $t('admin.encryption'),
     },
   };
 

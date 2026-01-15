@@ -27,10 +27,12 @@
     allText?: string;
     refreshText?: string;
     missingText: string;
+    isDestructive?: boolean;
     onCommand: (command: QueueCommandDto) => void;
   }
 
-  let { queue, description, disabled = false, allText, refreshText, missingText, onCommand }: Props = $props();
+  let { queue, description, disabled = false, allText, refreshText, missingText, isDestructive = false, onCommand }: Props =
+    $props();
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
   const { statistics } = $derived(queue);
@@ -92,6 +94,27 @@
 
       {#if subtitle}
         <div class="whitespace-pre-line text-sm dark:text-white">{subtitle}</div>
+      {/if}
+
+      {#if queue.lastTriggeredAt}
+        {@const lastRun = new Date(queue.lastTriggeredAt)}
+        {@const now = new Date()}
+        {@const diffMs = now.getTime() - lastRun.getTime()}
+        {@const diffMins = Math.floor(diffMs / 60000)}
+        {@const diffHours = Math.floor(diffMins / 60)}
+        {@const diffDays = Math.floor(diffHours / 24)}
+        <div class="text-xs text-gray-500 dark:text-gray-400">
+          {$t('last_run')}:
+          {#if diffDays > 0}
+            {diffDays}d {$t('ago')}
+          {:else if diffHours > 0}
+            {diffHours}h {$t('ago')}
+          {:else if diffMins > 0}
+            {diffMins}m {$t('ago')}
+          {:else}
+            {$t('just_now')}
+          {/if}
+        </div>
       {/if}
 
       {#if description}
@@ -158,7 +181,10 @@
 
     {#if !disabled && multipleButtons && isIdle}
       {#if allText}
-        <QueueCardButton color="dark-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: true })}>
+        <QueueCardButton
+          color={isDestructive ? 'danger' : 'warning'}
+          onClick={() => onCommand({ command: QueueCommand.Start, force: true })}
+        >
           <Icon icon={mdiAllInclusive} size="24" />
           <span class="uppercase">{allText}</span>
         </QueueCardButton>
