@@ -319,7 +319,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     return PhotoView.customChild(
-      key: ValueKey(displayAsset.heroTag),
+      key: ValueKey(displayAsset),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
@@ -335,7 +335,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       enablePanAlways: true,
       backgroundDecoration: backgroundDecoration,
       child: NativeVideoViewer(
-        key: ValueKey(displayAsset.heroTag),
+        key: ValueKey(displayAsset),
         asset: displayAsset,
         scaleStateNotifier: _videoScaleStateNotifier,
         disableScaleGestures: showingDetails,
