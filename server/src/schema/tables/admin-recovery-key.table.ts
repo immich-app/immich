@@ -1,11 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Generated,
-  PrimaryGeneratedColumn,
-  Table,
-  Timestamp,
-} from 'src/sql-tools';
+import { Column, CreateDateColumn, Generated, PrimaryGeneratedColumn, Table, Timestamp } from 'src/sql-tools';
 
 /**
  * Stores admin public keys for vault recovery.

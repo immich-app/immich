@@ -5,7 +5,15 @@ import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility, StorageBackend } from 'src/enum';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetOrder,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  StorageBackend,
+} from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';

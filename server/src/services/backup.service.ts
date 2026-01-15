@@ -83,7 +83,10 @@ export class BackupService extends BaseService {
   /**
    * Clean up old database backups from S3.
    */
-  private async cleanupS3DatabaseBackups(config: Awaited<ReturnType<typeof this.getConfig>>, keepLastAmount: number): Promise<void> {
+  private async cleanupS3DatabaseBackups(
+    config: Awaited<ReturnType<typeof this.getConfig>>,
+    keepLastAmount: number,
+  ): Promise<void> {
     try {
       const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
       const s3Objects = await s3Adapter.listObjects('backups/database/');
@@ -244,7 +247,10 @@ export class BackupService extends BaseService {
   /**
    * Upload a database backup file to S3.
    */
-  private async uploadBackupToS3(localBackupPath: string, config: Awaited<ReturnType<typeof this.getConfig>>): Promise<void> {
+  private async uploadBackupToS3(
+    localBackupPath: string,
+    config: Awaited<ReturnType<typeof this.getConfig>>,
+  ): Promise<void> {
     try {
       const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
       const filename = path.basename(localBackupPath);

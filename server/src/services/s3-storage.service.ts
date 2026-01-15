@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { SystemConfig } from 'src/config';
 import { OnJob } from 'src/decorators';
 import { AssetType, JobName, JobStatus, QueueName, StorageBackend } from 'src/enum';
+import { StorageAdapterFactory } from 'src/repositories/storage';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { StorageAdapterFactory } from 'src/repositories/storage';
 import { mimeTypes } from 'src/utils/mime-types';
-import { SystemConfig } from 'src/config';
 
 /**
  * Service for handling S3 storage operations.

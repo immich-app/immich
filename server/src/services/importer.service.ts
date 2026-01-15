@@ -177,9 +177,8 @@ export class ImporterService extends BaseService {
 
   private getBootstrapTemplatePath(platform: ImporterPlatform): string {
     // Bootstrap binaries are stored in assets/bootstrap/
-    const filename = platform === ImporterPlatform.WINDOWS_AMD64
-      ? `bootstrap-${platform}.exe`
-      : `bootstrap-${platform}`;
+    const filename =
+      platform === ImporterPlatform.WINDOWS_AMD64 ? `bootstrap-${platform}.exe` : `bootstrap-${platform}`;
 
     return join(process.cwd(), 'assets', 'bootstrap', filename);
   }

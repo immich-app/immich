@@ -31,20 +31,13 @@ export class AssetEncryptionRepository {
   }
 
   async create(data: Insertable<AssetEncryptionTable>): Promise<AssetEncryption> {
-    const result = await this.db
-      .insertInto('asset_encryption')
-      .values(data)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    const result = await this.db.insertInto('asset_encryption').values(data).returningAll().executeTakeFirstOrThrow();
 
     return this.mapToAssetEncryption(result);
   }
 
   async delete(assetId: string): Promise<void> {
-    await this.db
-      .deleteFrom('asset_encryption')
-      .where('assetId', '=', assetId)
-      .execute();
+    await this.db.deleteFrom('asset_encryption').where('assetId', '=', assetId).execute();
   }
 
   async getUnencryptedAssetIds(userId: string, limit: number): Promise<string[]> {

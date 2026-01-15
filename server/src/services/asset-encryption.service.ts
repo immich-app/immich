@@ -2,17 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { createCipheriv, randomBytes, scrypt, ScryptOptions } from 'node:crypto';
 import { createReadStream, createWriteStream, renameSync, unlinkSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType, JobName, JobStatus, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { OnJob } from 'src/decorators';
 
 function scryptAsync(password: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     scrypt(password, salt, keylen, options, (err, derivedKey) => {
-      if (err) {reject(err);}
-      else {resolve(derivedKey);}
+      if (err) {
+        reject(err);
+      } else {
+        resolve(derivedKey);
+      }
     });
   });
 }

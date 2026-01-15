@@ -1,26 +1,15 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Query,
-  Res,
-  UploadedFiles,
-  UseInterceptors,
-} from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, Delete, Get, Param, Post, Query, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { Auth } from 'src/middleware/auth.guard';
 import {
+  GoogleDriveFilesResponseDto,
   GooglePhotosImportFromDriveDto,
   GooglePhotosImportJobDto,
   GooglePhotosImportProgressDto,
-  GoogleDriveFilesResponseDto,
 } from 'src/dtos/google-photos-import.dto';
+import { Auth } from 'src/middleware/auth.guard';
 import { GooglePhotosImportService } from 'src/services/google-photos-import.service';
 
 @ApiTags('Google Photos Import')
@@ -55,29 +44,20 @@ export class GooglePhotosImportController {
   @Post('import-from-drive')
   @ApiOperation({ summary: 'Import Google Photos Takeout from Google Drive' })
   @ApiResponse({ status: 201, type: GooglePhotosImportJobDto })
-  importFromDrive(
-    @Auth() auth: AuthDto,
-    @Body() dto: GooglePhotosImportFromDriveDto,
-  ): GooglePhotosImportJobDto {
+  importFromDrive(@Auth() auth: AuthDto, @Body() dto: GooglePhotosImportFromDriveDto): GooglePhotosImportJobDto {
     return this.importService.createImportJobFromDrive(auth.user.id, dto.fileIds);
   }
 
   @Get('import/:id/progress')
   @ApiOperation({ summary: 'Get import job progress' })
   @ApiResponse({ status: 200, type: GooglePhotosImportProgressDto })
-  getProgress(
-    @Auth() auth: AuthDto,
-    @Param('id') jobId: string,
-  ): GooglePhotosImportProgressDto | null {
+  getProgress(@Auth() auth: AuthDto, @Param('id') jobId: string): GooglePhotosImportProgressDto | null {
     return this.importService.getJobProgress(jobId);
   }
 
   @Delete('import/:id')
   @ApiOperation({ summary: 'Cancel import job' })
-  async cancelImport(
-    @Auth() auth: AuthDto,
-    @Param('id') jobId: string,
-  ): Promise<void> {
+  async cancelImport(@Auth() auth: AuthDto, @Param('id') jobId: string): Promise<void> {
     return this.importService.cancelJob(jobId);
   }
 
@@ -95,9 +75,7 @@ export class GooglePhotosImportController {
       throw new Error('Google OAuth not configured');
     }
 
-    const scopes = [
-      'https://www.googleapis.com/auth/drive.readonly',
-    ];
+    const scopes = ['https://www.googleapis.com/auth/drive.readonly'];
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', clientId);
@@ -167,10 +145,7 @@ export class GooglePhotosImportController {
   @Get('google-drive/files')
   @ApiOperation({ summary: 'List Takeout files in Google Drive' })
   @ApiResponse({ status: 200, type: GoogleDriveFilesResponseDto })
-  listDriveFiles(
-    @Auth() _auth: AuthDto,
-    @Query('query') _query?: string,
-  ): GoogleDriveFilesResponseDto {
+  listDriveFiles(@Auth() _auth: AuthDto, @Query('query') _query?: string): GoogleDriveFilesResponseDto {
     // This would fetch files using stored OAuth token
     // For now, return empty array
     return { files: [] };

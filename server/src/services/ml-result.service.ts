@@ -23,7 +23,6 @@ type OcrResult = OCR;
 
 @Injectable()
 export class MlResultService extends BaseService {
-
   @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Microservices] })
   async onBootstrap(): Promise<void> {
     const { machineLearning } = await this.getConfig({ withCache: false });
@@ -122,17 +121,12 @@ export class MlResultService extends BaseService {
         name: JobName.FacialRecognition as const,
         data: { id: face.id as string }, // id is always set explicitly above
       }));
-      await this.jobRepository.queueAll([
-        { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
-        ...jobs,
-      ]);
+      await this.jobRepository.queueAll([{ name: JobName.FacialRecognitionQueueAll, data: { force: false } }, ...jobs]);
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: result.assetId, facesRecognizedAt: new Date() });
 
-    this.logger.debug(
-      `Saved ${faces.length} face(s) for asset ${result.assetId} (${result.processingTimeMs}ms)`,
-    );
+    this.logger.debug(`Saved ${faces.length} face(s) for asset ${result.assetId} (${result.processingTimeMs}ms)`);
   }
 
   private async handleOcrResult(result: MlWorkResult): Promise<void> {

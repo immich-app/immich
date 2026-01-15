@@ -27,21 +27,13 @@ export class VaultRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async getByUserId(userId: string): Promise<UserVault | null> {
-    const result = await this.db
-      .selectFrom('user_vault')
-      .selectAll()
-      .where('userId', '=', userId)
-      .executeTakeFirst();
+    const result = await this.db.selectFrom('user_vault').selectAll().where('userId', '=', userId).executeTakeFirst();
 
     return result ? this.mapToUserVault(result) : null;
   }
 
   async create(data: Insertable<UserVaultTable>): Promise<UserVault> {
-    const result = await this.db
-      .insertInto('user_vault')
-      .values(data)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    const result = await this.db.insertInto('user_vault').values(data).returningAll().executeTakeFirstOrThrow();
 
     return this.mapToUserVault(result);
   }
@@ -58,18 +50,11 @@ export class VaultRepository {
   }
 
   async delete(userId: string): Promise<void> {
-    await this.db
-      .deleteFrom('user_vault')
-      .where('userId', '=', userId)
-      .execute();
+    await this.db.deleteFrom('user_vault').where('userId', '=', userId).execute();
   }
 
   async exists(userId: string): Promise<boolean> {
-    const result = await this.db
-      .selectFrom('user_vault')
-      .select('id')
-      .where('userId', '=', userId)
-      .executeTakeFirst();
+    const result = await this.db.selectFrom('user_vault').select('id').where('userId', '=', userId).executeTakeFirst();
 
     return !!result;
   }

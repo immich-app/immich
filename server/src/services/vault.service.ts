@@ -6,8 +6,11 @@ import { BaseService } from 'src/services/base.service';
 function scryptAsync(password: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     scrypt(password, salt, keylen, options, (err, derivedKey) => {
-      if (err) {reject(err);}
-      else {resolve(derivedKey);}
+      if (err) {
+        reject(err);
+      } else {
+        resolve(derivedKey);
+      }
     });
   });
 }

@@ -287,7 +287,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   }),
 
   trashed: Object.freeze({
@@ -591,7 +590,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -613,7 +611,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
@@ -636,7 +633,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -709,7 +705,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   }),
 
   sidecar: Object.freeze({
@@ -828,7 +823,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
-
   }),
 
   hasFileExtension: Object.freeze({

@@ -389,7 +389,7 @@ export const defaults = Object.freeze<SystemConfig>({
         previews: 'STANDARD',
         originalsPhotos: 'GLACIER_IR',
         originalsVideos: 'GLACIER_IR',
-        encodedVideos: 'STANDARD_IA',  // Infrequent access - for playback
+        encodedVideos: 'STANDARD_IA', // Infrequent access - for playback
       },
     },
     locations: {

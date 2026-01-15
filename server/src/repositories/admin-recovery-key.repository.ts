@@ -16,11 +16,7 @@ export class AdminRecoveryKeyRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async get(id: string): Promise<AdminRecoveryKey | null> {
-    const result = await this.db
-      .selectFrom('admin_recovery_key')
-      .selectAll()
-      .where('id', '=', id)
-      .executeTakeFirst();
+    const result = await this.db.selectFrom('admin_recovery_key').selectAll().where('id', '=', id).executeTakeFirst();
 
     return result
       ? {
@@ -71,11 +67,7 @@ export class AdminRecoveryKeyRepository {
   }
 
   async create(data: Insertable<AdminRecoveryKeyTable>): Promise<AdminRecoveryKey> {
-    const result = await this.db
-      .insertInto('admin_recovery_key')
-      .values(data)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    const result = await this.db.insertInto('admin_recovery_key').values(data).returningAll().executeTakeFirstOrThrow();
 
     return {
       ...result,

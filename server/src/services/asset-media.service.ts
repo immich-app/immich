@@ -39,6 +39,7 @@ import {
   StorageFolder,
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
+import { StorageAdapterFactory } from 'src/repositories/storage';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
@@ -47,7 +48,6 @@ import { isAssetChecksumConstraint } from 'src/utils/database';
 import { EncryptionInfo, getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-import { StorageAdapterFactory } from 'src/repositories/storage';
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -316,7 +316,12 @@ export class AssetMediaService extends BaseService {
     }
 
     // Handle S3 storage for original video (when no encoded video exists)
-    if (!asset.encodedVideoPath && asset.storageBackend === StorageBackend.S3 && asset.s3Key && config.storage.s3.enabled) {
+    if (
+      !asset.encodedVideoPath &&
+      asset.storageBackend === StorageBackend.S3 &&
+      asset.s3Key &&
+      config.storage.s3.enabled
+    ) {
       const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
       const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
       if (presignedUrl) {

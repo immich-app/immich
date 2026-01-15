@@ -250,7 +250,21 @@ export class StorageService extends BaseService {
    * Check if a folder should use local storage based on configuration.
    * Upload folder is always local. Other folders depend on storage.locations config.
    */
-  private shouldCheckLocalMount(folder: StorageFolder, config: { storage: { locations: { originals: StorageBackend; thumbnails: StorageBackend; previews: StorageBackend; encodedVideos: StorageBackend; profile: StorageBackend; backups: StorageBackend } } }): boolean {
+  private shouldCheckLocalMount(
+    folder: StorageFolder,
+    config: {
+      storage: {
+        locations: {
+          originals: StorageBackend;
+          thumbnails: StorageBackend;
+          previews: StorageBackend;
+          encodedVideos: StorageBackend;
+          profile: StorageBackend;
+          backups: StorageBackend;
+        };
+      };
+    },
+  ): boolean {
     // Upload folder is always local (temp storage for incoming files)
     if (folder === StorageFolder.Upload) {
       return true;
@@ -291,7 +305,9 @@ export class StorageService extends BaseService {
   /**
    * Check if S3 is enabled for any storage location.
    */
-  private isS3EnabledForAnyLocation(config: { storage: { s3: { enabled: boolean }; locations: Record<string, StorageBackend> } }): boolean {
+  private isS3EnabledForAnyLocation(config: {
+    storage: { s3: { enabled: boolean }; locations: Record<string, StorageBackend> };
+  }): boolean {
     if (!config.storage.s3.enabled) {
       return false;
     }
@@ -302,7 +318,20 @@ export class StorageService extends BaseService {
    * Verify S3 connectivity using HeadBucket API.
    * This is a fatal check - no ignore flag.
    */
-  private async verifyS3Connectivity(config: { storage: { s3: { enabled: boolean; endpoint: string; bucket: string; region: string; accessKeyId: string; secretAccessKey: string; prefix: string; forcePathStyle: boolean } } }): Promise<void> {
+  private async verifyS3Connectivity(config: {
+    storage: {
+      s3: {
+        enabled: boolean;
+        endpoint: string;
+        bucket: string;
+        region: string;
+        accessKeyId: string;
+        secretAccessKey: string;
+        prefix: string;
+        forcePathStyle: boolean;
+      };
+    };
+  }): Promise<void> {
     this.logger.log('Verifying S3 connectivity...');
     try {
       const s3Adapter = new S3StorageAdapter({
@@ -320,7 +349,7 @@ export class StorageService extends BaseService {
       this.logger.error(`S3 connectivity check failed: ${error}`);
       throw new S3ConnectivityError(
         `Failed to connect to S3 bucket "${config.storage.s3.bucket}": ${error}. ` +
-        `Please verify your S3 configuration (endpoint, bucket, credentials).`
+          `Please verify your S3 configuration (endpoint, bucket, credentials).`,
       );
     }
   }

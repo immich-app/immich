@@ -108,12 +108,7 @@ export interface IStorageAdapter {
   /**
    * Upload a part in multipart upload (optional, S3 only)
    */
-  uploadPart?(
-    key: string,
-    uploadId: string,
-    partNumber: number,
-    data: Buffer,
-  ): Promise<MultipartUploadPart>;
+  uploadPart?(key: string, uploadId: string, partNumber: number, data: Buffer): Promise<MultipartUploadPart>;
 
   /**
    * Complete multipart upload (optional, S3 only)

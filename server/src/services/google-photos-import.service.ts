@@ -3,12 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import * as path from 'node:path';
-import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
-import {
-  GooglePhotosImportProgressDto,
-  GoogleDriveFileDto,
-} from 'src/dtos/google-photos-import.dto';
+import { pipeline } from 'node:stream/promises';
+import { GoogleDriveFileDto, GooglePhotosImportProgressDto } from 'src/dtos/google-photos-import.dto';
 
 // Google Photos JSON metadata structure
 interface GooglePhotosMetadata {
@@ -43,12 +40,11 @@ export class GooglePhotosImportService {
   private readonly jobs = new Map<string, ImportJob>();
   private readonly tempDir = '/tmp/immich-google-photos-import';
 
-  constructor(
-    // Inject required repositories
-    // @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    // @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    // @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {}
+  constructor() // Inject required repositories
+  // @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+  // @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
+  // @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+  {}
 
   async createImportJob(userId: string, files: Express.Multer.File[]): Promise<{ id: string }> {
     const jobId = randomUUID();
@@ -224,10 +220,7 @@ export class GooglePhotosImportService {
     await execAsync(`unzip -o -q "${zipPath}" -d "${extractDir}"`);
   }
 
-  private async parseTakeoutDirectory(
-    extractDir: string,
-    job: ImportJob,
-  ): Promise<TakeoutAsset[]> {
+  private async parseTakeoutDirectory(extractDir: string, job: ImportJob): Promise<TakeoutAsset[]> {
     const assets: TakeoutAsset[] = [];
     const albums = new Set<string>();
 
@@ -241,9 +234,7 @@ export class GooglePhotosImportService {
     // Collect all files
     const allFiles = await this.collectFiles(takeoutPath);
     const mediaFiles = allFiles.filter((f) => this.isMediaFile(f));
-    const jsonFiles = new Map(
-      allFiles.filter((f) => f.endsWith('.json')).map((f) => [f, f]),
-    );
+    const jsonFiles = new Map(allFiles.filter((f) => f.endsWith('.json')).map((f) => [f, f]));
 
     job.progress.total = mediaFiles.length;
 
@@ -330,19 +321,40 @@ export class GooglePhotosImportService {
   private isMediaFile(filePath: string): boolean {
     const ext = path.extname(filePath).toLowerCase();
     const mediaExtensions = new Set([
-      '.jpg', '.jpeg', '.png', '.gif', '.heic', '.heif', '.webp',
-      '.tiff', '.tif', '.bmp', '.raw', '.dng', '.cr2', '.nef',
-      '.arw', '.raf', '.orf', '.rw2', '.pef', '.srw',
-      '.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v', '.3gp',
-      '.mts', '.m2ts',
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.heic',
+      '.heif',
+      '.webp',
+      '.tiff',
+      '.tif',
+      '.bmp',
+      '.raw',
+      '.dng',
+      '.cr2',
+      '.nef',
+      '.arw',
+      '.raf',
+      '.orf',
+      '.rw2',
+      '.pef',
+      '.srw',
+      '.mp4',
+      '.mov',
+      '.avi',
+      '.mkv',
+      '.webm',
+      '.m4v',
+      '.3gp',
+      '.mts',
+      '.m2ts',
     ]);
     return mediaExtensions.has(ext);
   }
 
-  private findMatchingJson(
-    mediaPath: string,
-    jsonFiles: Map<string, string>,
-  ): string | undefined {
+  private findMatchingJson(mediaPath: string, jsonFiles: Map<string, string>): string | undefined {
     const baseName = path.basename(mediaPath);
     const dir = path.dirname(mediaPath);
 
@@ -369,10 +381,7 @@ export class GooglePhotosImportService {
     return undefined;
   }
 
-  private extractAlbumName(
-    mediaPath: string,
-    basePath: string,
-  ): string | undefined {
+  private extractAlbumName(mediaPath: string, basePath: string): string | undefined {
     const relativePath = path.relative(basePath, mediaPath);
     const parts = relativePath.split(path.sep);
 

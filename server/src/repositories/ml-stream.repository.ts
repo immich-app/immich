@@ -155,7 +155,7 @@ export class MlStreamRepository implements OnModuleDestroy {
       return;
     }
 
-    const response = await this.subscriber.xreadgroup(
+    const response = (await this.subscriber.xreadgroup(
       'GROUP',
       CONSUMER_GROUP,
       this.consumerName,
@@ -166,7 +166,7 @@ export class MlStreamRepository implements OnModuleDestroy {
       'STREAMS',
       STREAM_KEYS.results,
       '>',
-    ) as [string, [string, string[]][]][] | null;
+    )) as [string, [string, string[]][]][] | null;
 
     if (!response) {
       return;

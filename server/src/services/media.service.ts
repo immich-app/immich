@@ -61,7 +61,9 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.AssetThumbnailGeneration })
-  async handleQueueGenerateAssetThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+  async handleQueueGenerateAssetThumbnails({
+    force,
+  }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -87,7 +89,9 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnailsQueueAll, queue: QueueName.PersonThumbnailGeneration })
-  async handleQueueGeneratePersonThumbnails({ force }: JobOf<JobName.PersonGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+  async handleQueueGeneratePersonThumbnails({
+    force,
+  }: JobOf<JobName.PersonGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -362,7 +366,20 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath, storageBackend, s3Key } = data;
+    const {
+      ownerId,
+      x1,
+      y1,
+      x2,
+      y2,
+      oldWidth,
+      oldHeight,
+      exifOrientation,
+      previewPath,
+      originalPath,
+      storageBackend,
+      s3Key,
+    } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {

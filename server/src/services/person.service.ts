@@ -431,7 +431,11 @@ export class PersonService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.jobRepository.waitForQueueCompletion(QueueName.AssetThumbnailGeneration, QueueName.PersonThumbnailGeneration, QueueName.FaceDetection);
+    await this.jobRepository.waitForQueueCompletion(
+      QueueName.AssetThumbnailGeneration,
+      QueueName.PersonThumbnailGeneration,
+      QueueName.FaceDetection,
+    );
 
     if (nightly) {
       const [state, latestFaceDate] = await Promise.all([

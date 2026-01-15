@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { StorageBackend, StorageLocationType } from 'src/enum';
 import { StorageCore } from 'src/cores/storage.core';
-import { IStorageAdapter } from 'src/repositories/storage/storage-adapter.interface';
+import { StorageBackend, StorageLocationType } from 'src/enum';
 import { LocalStorageAdapter } from 'src/repositories/storage/local-storage.adapter';
 import { S3StorageAdapter, S3StorageConfig } from 'src/repositories/storage/s3-storage.adapter';
+import { IStorageAdapter } from 'src/repositories/storage/storage-adapter.interface';
 
 /**
  * Factory for creating storage adapters based on configuration.
@@ -78,10 +78,7 @@ export class StorageAdapterFactory {
   /**
    * Determine which backend to use for a given location type.
    */
-  private getBackendForLocation(
-    config: SystemConfig['storage'],
-    locationType: StorageLocationType,
-  ): StorageBackend {
+  private getBackendForLocation(config: SystemConfig['storage'], locationType: StorageLocationType): StorageBackend {
     switch (locationType) {
       case StorageLocationType.Originals: {
         return config.locations.originals;

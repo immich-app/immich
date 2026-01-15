@@ -110,11 +110,7 @@ export class StorageRepository {
    * @param dek Data Encryption Key (32 bytes)
    * @param mimeType Optional MIME type
    */
-  async createDecryptedReadStream(
-    filepath: string,
-    dek: Buffer,
-    mimeType?: string | null,
-  ): Promise<ImmichReadStream> {
+  async createDecryptedReadStream(filepath: string, dek: Buffer, mimeType?: string | null): Promise<ImmichReadStream> {
     const { createDecipheriv } = await import('node:crypto');
     const { size } = await fs.stat(filepath);
     await fs.access(filepath, constants.R_OK);

@@ -3,11 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  ImporterConfigResponseDto,
-  ImporterPlatform,
-  SetupTokenResponseDto,
-} from 'src/dtos/importer.dto';
+import { ImporterConfigResponseDto, ImporterPlatform, SetupTokenResponseDto } from 'src/dtos/importer.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ImporterService } from 'src/services/importer.service';
@@ -58,9 +54,7 @@ export class ImporterController {
     const binary = await this.service.buildBootstrap(token, platform);
 
     const filename =
-      platform === ImporterPlatform.WINDOWS_AMD64
-        ? 'immich-importer-setup.exe'
-        : 'immich-importer-setup';
+      platform === ImporterPlatform.WINDOWS_AMD64 ? 'immich-importer-setup.exe' : 'immich-importer-setup';
 
     const contentType =
       platform === ImporterPlatform.WINDOWS_AMD64
