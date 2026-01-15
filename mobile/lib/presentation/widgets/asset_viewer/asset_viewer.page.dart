@@ -274,7 +274,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
-    // videoScaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
+    videoScaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
   }
 
   void _onDragStart(
@@ -619,7 +619,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       child: NativeVideoViewer(
         key: ValueKey(asset.heroTag),
         asset: asset,
-        viewController: viewController,
         scaleStateNotifier: videoScaleStateNotifier,
         disableScaleGestures: showingBottomSheet,
         image: Image(

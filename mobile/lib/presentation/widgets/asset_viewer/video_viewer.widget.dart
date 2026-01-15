@@ -55,7 +55,6 @@ class NativeVideoViewer extends HookConsumerWidget {
   final int playbackDelayFactor;
   final Widget image;
   final ValueNotifier<PhotoViewScaleState>? scaleStateNotifier;
-  final PhotoViewControllerBase? viewController;
   final bool disableScaleGestures;
 
   const NativeVideoViewer({
@@ -65,7 +64,6 @@ class NativeVideoViewer extends HookConsumerWidget {
     this.showControls = true,
     this.playbackDelayFactor = 1,
     this.scaleStateNotifier,
-    this.viewController,
     this.disableScaleGestures = false,
   });
 
@@ -432,7 +430,6 @@ class NativeVideoViewer extends HookConsumerWidget {
                 // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
                 backgroundDecoration: const BoxDecoration(color: Colors.transparent),
                 scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
-                controller: viewController,
                 childSize: videoContextSize,
                 child: AspectRatio(
                   key: ValueKey(asset),
