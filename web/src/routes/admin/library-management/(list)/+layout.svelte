@@ -8,7 +8,17 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
-  import { Button, CommandPaletteDefaultProvider } from '@immich/ui';
+  import {
+    Button,
+    CommandPaletteDefaultProvider,
+    Container,
+    Table,
+    TableBody,
+    TableCell,
+    TableHeader,
+    TableHeading,
+    TableRow,
+  } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -47,6 +57,15 @@
   };
 
   const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
+
+  const classes = {
+    column1: 'w-4/12',
+    column2: 'w-4/12',
+    column3: 'w-2/12',
+    column4: 'w-2/12',
+    column5: 'w-2/12',
+    column6: 'w-2/12',
+  };
 </script>
 
 <OnEvents {onLibraryCreate} {onLibraryUpdate} {onLibraryDelete} />
@@ -54,53 +73,38 @@
 <CommandPaletteDefaultProvider name={$t('library')} actions={[Create, ScanAll]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ScanAll, Create]}>
-  <section class="my-4">
+  <Container size="large" center class="my-4">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <table class="text-start">
-          <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
-          >
-            <tr class="grid grid-cols-6 w-full place-items-center">
-              <th class="text-center text-sm font-medium">{$t('name')}</th>
-              <th class="text-center text-sm font-medium">{$t('owner')}</th>
-              <th class="text-center text-sm font-medium">{$t('photos')}</th>
-              <th class="text-center text-sm font-medium">{$t('videos')}</th>
-              <th class="text-center text-sm font-medium">{$t('size')}</th>
-              <th class="text-center text-sm font-medium"></th>
-            </tr>
-          </thead>
-          <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <Table striped size="small" spacing="small">
+          <TableHeader>
+            <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
+            <TableHeading class={classes.column2}>{$t('owner')}</TableHeading>
+            <TableHeading class={classes.column3}>{$t('photos')}</TableHeading>
+            <TableHeading class={classes.column4}>{$t('videos')}</TableHeading>
+            <TableHeading class={classes.column5}>{$t('size')}</TableHeading>
+            <TableHeading class={classes.column6}></TableHeading>
+          </TableHeader>
+          <TableBody>
             {#each libraries as library (library.id + library.name)}
               {@const { photos, usage, videos } = statistics[library.id]}
               {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
-              <tr
-                class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
-              >
-                <td class="text-ellipsis px-4 text-sm">{library.name}</td>
-                <td class="text-ellipsis px-4 text-sm">
-                  {owners[library.id].name}
-                </td>
-                <td class="text-ellipsis px-4 text-sm">
-                  {photos.toLocaleString($locale)}
-                </td>
-                <td class="text-ellipsis px-4 text-sm">
-                  {videos.toLocaleString($locale)}
-                </td>
-                <td class="text-ellipsis px-4 text-sm">
-                  {diskUsage}
-                  {diskUsageUnit}
-                </td>
-
-                <td class="flex gap-2 text-ellipsis px-4 text-sm">
+              <TableRow>
+                <TableCell class={classes.column1}>{library.name}</TableCell>
+                <TableCell class={classes.column2}>{owners[library.id].name}</TableCell>
+                <TableCell class={classes.column3}>{photos.toLocaleString($locale)}</TableCell>
+                <TableCell class={classes.column4}>{videos.toLocaleString($locale)}</TableCell>
+                <TableCell class={classes.column5}>{diskUsage} {diskUsageUnit}</TableCell>
+                <TableCell class={classes.column6}>
                   <Button size="small" onclick={() => handleViewLibrary(library)}>{$t('view')}</Button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             {/each}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       {:else}
         <EmptyPlaceholder
+          fullWidth
           text={$t('no_libraries_message')}
           onClick={() => goto(AppRoute.ADMIN_LIBRARIES_NEW)}
           class="mt-10 mx-auto"
@@ -109,5 +113,5 @@
 
       {@render children?.()}
     </div>
-  </section>
+  </Container>
 </AdminPageLayout>

@@ -47,7 +47,7 @@
     class="flex items-start gap-3 p-3 rounded-lg text-left bg-light-100 hover:border-primary border text-dark"
   >
     <div class="flex-1">
-      <Text color="primary" class="font-medium">{title}</Text>
+      <Text color="primary" fontWeight="medium">{title}</Text>
       {#if description}
         <Text size="small" class="mt-1">{description}</Text>
       {/if}
