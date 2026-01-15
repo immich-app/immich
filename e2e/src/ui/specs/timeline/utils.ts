@@ -163,13 +163,11 @@ export const assetViewerUtils = {
     return page.locator('#immich-asset-viewer');
   },
   async waitForViewerLoad(page: Page, asset: TimelineAssetConfig) {
+    const previewUrl = `/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.thumbhash}&edited=true`;
     await page
-      .locator(
-        `img[draggable="false"][src="/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.thumbhash}&edited=true"]`,
-      )
-      .or(
-        page.locator(`video[poster="/api/assets/${asset.id}/thumbnail?size=preview&c=${asset.thumbhash}&edited=true"]`),
-      )
+      .getByTestId('preview')
+      .and(page.locator(`[src="${previewUrl}"]`))
+      .or(page.locator(`video[poster="${previewUrl}"]`))
       .waitFor();
   },
   async expectActiveAssetToBe(page: Page, assetId: string) {
