@@ -22,7 +22,7 @@ describe('/jobs', () => {
         force: false,
       });
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Resume,
         force: false,
       });
@@ -144,7 +144,7 @@ describe('/jobs', () => {
     it('should queue thumbnail extraction for assets missing thumbs', async () => {
       const path = `${testAssetDir}/albums/nature/tanners_ridge.jpg`;
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Pause,
         force: false,
       });
@@ -154,31 +154,31 @@ describe('/jobs', () => {
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.AssetThumbnailGeneration);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, id);
       expect(assetBefore.thumbhash).toBeNull();
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Empty,
         force: false,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.AssetThumbnailGeneration);
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Resume,
         force: false,
       });
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Start,
         force: false,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.AssetThumbnailGeneration);
 
       const assetAfter = await utils.getAssetInfo(admin.accessToken, id);
       expect(assetAfter.thumbhash).not.toBeNull();
@@ -194,25 +194,25 @@ describe('/jobs', () => {
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.AssetThumbnailGeneration);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, id);
 
       cpSync(`${testAssetDir}/albums/nature/notocactus_minimus.jpg`, path);
 
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Resume,
         force: false,
       });
 
       // This runs the missing thumbnail job
-      await utils.queueCommand(admin.accessToken, QueueName.ThumbnailGeneration, {
+      await utils.queueCommand(admin.accessToken, QueueName.AssetThumbnailGeneration, {
         command: QueueCommand.Start,
         force: false,
       });
 
       await utils.waitForQueueFinish(admin.accessToken, QueueName.MetadataExtraction);
-      await utils.waitForQueueFinish(admin.accessToken, QueueName.ThumbnailGeneration);
+      await utils.waitForQueueFinish(admin.accessToken, QueueName.AssetThumbnailGeneration);
 
       const assetAfter = await utils.getAssetInfo(admin.accessToken, id);
 
