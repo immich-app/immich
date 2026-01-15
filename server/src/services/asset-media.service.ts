@@ -316,19 +316,17 @@ export class AssetMediaService extends BaseService {
     }
 
     // Handle S3 storage for original video (when no encoded video exists)
-    if (!asset.encodedVideoPath && asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
-      if (config.storage.s3.enabled) {
-        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
-        if (presignedUrl) {
-          return new ImmichFileResponse({
-            path: filepath,
-            fileName: asset.originalFileName,
-            contentType: mimeTypes.lookup(filepath),
-            cacheControl: CacheControl.PrivateWithCache,
-            redirectUrl: presignedUrl,
-          });
-        }
+    if (!asset.encodedVideoPath && asset.storageBackend === StorageBackend.S3 && asset.s3Key && config.storage.s3.enabled) {
+      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
+      if (presignedUrl) {
+        return new ImmichFileResponse({
+          path: filepath,
+          fileName: asset.originalFileName,
+          contentType: mimeTypes.lookup(filepath),
+          cacheControl: CacheControl.PrivateWithCache,
+          redirectUrl: presignedUrl,
+        });
       }
     }
 

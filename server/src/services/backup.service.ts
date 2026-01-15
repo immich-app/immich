@@ -96,7 +96,7 @@ export class BackupService extends BaseService {
           const newBackupStyle = filename.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
           return oldBackupStyle || newBackupStyle;
         })
-        .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
+        .toSorted((a, b) => b.lastModified.getTime() - a.lastModified.getTime());
 
       const s3ToDelete = backupObjects.slice(keepLastAmount);
 

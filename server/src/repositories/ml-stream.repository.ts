@@ -55,7 +55,7 @@ export class MlStreamRepository implements OnModuleDestroy {
     this.logger.log('ML stream repository initialized');
   }
 
-  async teardown(): Promise<void> {
+  teardown(): void {
     this.resultConsumerRunning = false;
 
     if (this.redis) {

@@ -19,7 +19,7 @@ interface FaceResult {
   imageWidth: number;
 }
 
-interface OcrResult extends OCR {}
+type OcrResult = OCR;
 
 @Injectable()
 export class MlResultService extends BaseService {
@@ -40,7 +40,7 @@ export class MlResultService extends BaseService {
   }
 
   @OnEvent({ name: 'AppShutdown', workers: [ImmichWorker.Microservices] })
-  async onShutdown(): Promise<void> {
+  onShutdown(): void {
     this.mlStreamRepository.stopResultConsumer();
   }
 
@@ -52,17 +52,21 @@ export class MlResultService extends BaseService {
 
     try {
       switch (result.taskType) {
-        case MlStreamTask.Clip:
+        case MlStreamTask.Clip: {
           await this.handleClipResult(result);
           break;
-        case MlStreamTask.Face:
+        }
+        case MlStreamTask.Face: {
           await this.handleFaceResult(result);
           break;
-        case MlStreamTask.Ocr:
+        }
+        case MlStreamTask.Ocr: {
           await this.handleOcrResult(result);
           break;
-        default:
+        }
+        default: {
           this.logger.warn(`Unknown task type: ${result.taskType}`);
+        }
       }
     } catch (error) {
       this.logger.error(`Failed to process ${result.taskType} result for asset ${result.assetId}: ${error}`);

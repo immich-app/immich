@@ -327,7 +327,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     streamMode: {
       enabled: process.env.ML_STREAM_MODE_ENABLED === 'true',
-      maxPending: Number(process.env.ML_STREAM_MAX_PENDING) || 10000,
+      maxPending: Number(process.env.ML_STREAM_MAX_PENDING) || 10_000,
       resultTtlHours: Number(process.env.ML_STREAM_RESULT_TTL_HOURS) || 24,
       maxRetries: Number(process.env.ML_STREAM_RETRY_MAX) || 3,
     },
