@@ -5,7 +5,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class RemoteAssetCloudIdEntity extends Table with DriftDefaultsMixin {
   TextColumn get assetId => text().references(RemoteAssetEntity, #id, onDelete: KeyAction.cascade)();
 
-  TextColumn get cloudId => text().unique().nullable()();
+  TextColumn get cloudId => text().nullable()();
 
   DateTimeColumn get createdAt => dateTime().nullable()();
 
