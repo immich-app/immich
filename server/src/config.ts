@@ -22,6 +22,7 @@ export interface SystemConfig {
       enabled: boolean;
       cronExpression: string;
       keepLastAmount: number;
+      uploadToS3: boolean;
     };
   };
   ffmpeg: {
@@ -241,6 +242,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_2AM,
       keepLastAmount: 14,
+      uploadToS3: true,
     },
   },
   ffmpeg: {

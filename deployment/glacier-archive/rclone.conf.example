@@ -1,0 +1,27 @@
+# rclone Configuration Template for Glacier Archive
+#
+# Copy this file to ~/.config/rclone/rclone.conf and fill in your credentials.
+# Or set RCLONE_CONFIG environment variable to point to this file.
+#
+# Alternatively, configure via environment variables:
+#   RCLONE_CONFIG_TIGRIS_TYPE=s3
+#   RCLONE_CONFIG_TIGRIS_PROVIDER=Other
+#   ... etc
+
+# Tigris S3 Configuration
+[tigris]
+type = s3
+provider = Other
+endpoint = https://fly.storage.tigris.dev
+access_key_id = YOUR_TIGRIS_ACCESS_KEY
+secret_access_key = YOUR_TIGRIS_SECRET_KEY
+# No region needed for Tigris
+
+# AWS S3 Glacier Configuration
+[glacier]
+type = s3
+provider = AWS
+region = us-east-1
+access_key_id = YOUR_AWS_ACCESS_KEY
+secret_access_key = YOUR_AWS_SECRET_KEY
+# storage_class is set per-command, not here

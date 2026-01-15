@@ -7,6 +7,7 @@ import {
   GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
   UploadPartCommand,
@@ -226,6 +227,41 @@ export class S3StorageAdapter implements IStorageAdapter {
 
   async ensureDir(_path: string): Promise<void> {
     // S3 doesn't have directories, no-op
+  }
+
+  /**
+   * List objects in a bucket with optional prefix filter.
+   * Returns an array of object keys.
+   */
+  async listObjects(prefix?: string): Promise<{ key: string; lastModified: Date; size: number }[]> {
+    const results: { key: string; lastModified: Date; size: number }[] = [];
+    let continuationToken: string | undefined;
+
+    do {
+      const response = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix ? this.getKey(prefix) : this.prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      if (response.Contents) {
+        for (const obj of response.Contents) {
+          if (obj.Key && obj.LastModified) {
+            results.push({
+              key: obj.Key,
+              lastModified: obj.LastModified,
+              size: obj.Size || 0,
+            });
+          }
+        }
+      }
+
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    return results;
   }
 
   async getPresignedDownloadUrl(key: string, options?: PresignedUrlOptions): Promise<string> {

@@ -55,6 +55,9 @@ export class DatabaseBackupConfig {
   @IsPositive()
   @IsNotEmpty()
   keepLastAmount!: number;
+
+  @ValidateBoolean()
+  uploadToS3!: boolean;
 }
 
 export class SystemConfigBackupsDto {

@@ -1,0 +1,47 @@
+# Tigris Snapshot Scheduled Machine
+#
+# This Fly app creates daily snapshots of your Tigris bucket for operational recovery.
+# It runs as a scheduled machine that executes the snapshot script on a cron schedule.
+#
+# Prerequisites:
+# 1. Your Tigris bucket must be snapshot-enabled:
+#    - Create bucket with: X-Tigris-Enable-Snapshot: true header
+#    - Or migrate to a new snapshot-enabled bucket
+#
+# 2. Set secrets:
+#    fly secrets set FLY_API_TOKEN=<your-token> -a immich-tigris-snapshots
+#
+# Deployment:
+#    fly launch --no-deploy
+#    fly deploy
+#
+# Manual trigger:
+#    fly machine run . -a immich-tigris-snapshots
+
+app = "immich-tigris-snapshots"
+primary_region = "sea"  # Change to match your main Immich app region
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Your Tigris bucket name (without s3:// prefix)
+  BUCKET_NAME = "your-immich-bucket"
+  # Number of snapshots to retain
+  SNAPSHOT_RETENTION = "7"
+  # Prefix for snapshot names
+  SNAPSHOT_PREFIX = "daily"
+
+# Scheduled machine configuration
+# Run daily at 3:00 AM UTC (after database backup at 2:00 AM)
+[[machines]]
+  schedule = "0 3 * * *"
+
+[machines.env]
+  # Inherit from [env] section
+
+# Resource configuration (minimal - this is a short-lived job)
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
