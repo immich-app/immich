@@ -5197,7 +5197,7 @@
     "/importer/config/{token}": {
       "get": {
         "description": "Returns the server URL, API key, and OAuth credentials for the desktop importer app. This endpoint is called by the desktop app after receiving the setup token.",
-        "operationId": "getConfig",
+        "operationId": "getImporterConfig",
         "parameters": [
           {
             "name": "token",
@@ -14573,7 +14573,7 @@
     "/vault/change-password": {
       "post": {
         "description": "Change your vault password. This will re-encrypt the vault key.",
-        "operationId": "changePassword",
+        "operationId": "changeVaultPassword",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -17764,6 +17764,7 @@
           "AssetFileMigration",
           "AssetGenerateThumbnailsQueueAll",
           "AssetGenerateThumbnails",
+          "PersonGenerateThumbnailsQueueAll",
           "AuditLogCleanup",
           "AuditTableCleanup",
           "DatabaseBackup",
@@ -17802,6 +17803,10 @@
           "StorageTemplateMigrationSingle",
           "S3UploadAsset",
           "S3UploadQueueAll",
+          "S3UploadEncodedVideo",
+          "S3UploadEncodedVideoQueueAll",
+          "S3MigrateStorageClass",
+          "S3MigrateStorageClassAll",
           "TagCleanup",
           "VersionCheck",
           "OcrQueueAll",
@@ -18041,6 +18046,49 @@
           "enabled",
           "interval",
           "timeout"
+        ],
+        "type": "object"
+      },
+      "MachineLearningCircuitBreakerDto": {
+        "properties": {
+          "failureThreshold": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "resetTimeout": {
+            "minimum": 1000,
+            "type": "number"
+          }
+        },
+        "required": [
+          "failureThreshold",
+          "resetTimeout"
+        ],
+        "type": "object"
+      },
+      "MachineLearningStreamModeDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxPending": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxRetries": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "resultTtlHours": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxPending",
+          "maxRetries",
+          "resultTtlHours"
         ],
         "type": "object"
       },
@@ -19692,7 +19740,8 @@
       },
       "QueueName": {
         "enum": [
-          "thumbnailGeneration",
+          "assetThumbnailGeneration",
+          "personThumbnailGeneration",
           "metadataExtraction",
           "videoConversion",
           "faceDetection",
@@ -19718,6 +19767,10 @@
         "properties": {
           "isPaused": {
             "type": "boolean"
+          },
+          "lastTriggeredAt": {
+            "format": "date-time",
+            "type": "string"
           },
           "name": {
             "allOf": [
@@ -19808,6 +19861,9 @@
       },
       "QueuesResponseLegacyDto": {
         "properties": {
+          "assetThumbnailGeneration": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -19841,6 +19897,9 @@
           "ocr": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "personThumbnailGeneration": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "s3Upload": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -19856,9 +19915,6 @@
           "storageTemplateMigration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
-          "thumbnailGeneration": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
           "videoConversion": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -19867,6 +19923,7 @@
           }
         },
         "required": [
+          "assetThumbnailGeneration",
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
@@ -19878,12 +19935,12 @@
           "migration",
           "notifications",
           "ocr",
+          "personThumbnailGeneration",
           "s3Upload",
           "search",
           "sidecar",
           "smartSearch",
           "storageTemplateMigration",
-          "thumbnailGeneration",
           "videoConversion",
           "workflow"
         ],
@@ -22746,6 +22803,9 @@
       },
       "SystemConfigJobDto": {
         "properties": {
+          "assetThumbnailGeneration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -22770,6 +22830,9 @@
           "ocr": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "personThumbnailGeneration": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "s3Upload": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -22782,9 +22845,6 @@
           "smartSearch": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "thumbnailGeneration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -22793,6 +22853,7 @@
           }
         },
         "required": [
+          "assetThumbnailGeneration",
           "backgroundTask",
           "encryption",
           "faceDetection",
@@ -22801,11 +22862,11 @@
           "migration",
           "notifications",
           "ocr",
+          "personThumbnailGeneration",
           "s3Upload",
           "search",
           "sidecar",
           "smartSearch",
-          "thumbnailGeneration",
           "videoConversion",
           "workflow"
         ],
@@ -22876,6 +22937,9 @@
           "availabilityChecks": {
             "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
           },
+          "circuitBreaker": {
+            "$ref": "#/components/schemas/MachineLearningCircuitBreakerDto"
+          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -22891,6 +22955,13 @@
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
+          "requestTimeout": {
+            "minimum": 1000,
+            "type": "number"
+          },
+          "streamMode": {
+            "$ref": "#/components/schemas/MachineLearningStreamModeDto"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -22903,11 +22974,14 @@
         },
         "required": [
           "availabilityChecks",
+          "circuitBreaker",
           "clip",
           "duplicateDetection",
           "enabled",
           "facialRecognition",
           "ocr",
+          "requestTimeout",
+          "streamMode",
           "urls"
         ],
         "type": "object"
@@ -23183,6 +23257,58 @@
         ],
         "type": "object"
       },
+      "SystemConfigStorageClassesDto": {
+        "properties": {
+          "encodedVideos": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          },
+          "originalsPhotos": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          },
+          "originalsVideos": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          },
+          "previews": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          },
+          "thumbnails": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "encodedVideos",
+          "originalsPhotos",
+          "originalsVideos",
+          "previews",
+          "thumbnails"
+        ],
+        "type": "object"
+      },
       "SystemConfigStorageDto": {
         "properties": {
           "backend": {
@@ -23212,6 +23338,13 @@
       },
       "SystemConfigStorageLocationsDto": {
         "properties": {
+          "backups": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
           "encodedVideos": {
             "allOf": [
               {
@@ -23233,6 +23366,13 @@
               }
             ]
           },
+          "profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageBackend"
+              }
+            ]
+          },
           "thumbnails": {
             "allOf": [
               {
@@ -23242,9 +23382,11 @@
           }
         },
         "required": [
+          "backups",
           "encodedVideos",
           "originals",
           "previews",
+          "profile",
           "thumbnails"
         ],
         "type": "object"
@@ -23274,6 +23416,9 @@
           },
           "secretAccessKey": {
             "type": "string"
+          },
+          "storageClasses": {
+            "$ref": "#/components/schemas/SystemConfigStorageClassesDto"
           }
         },
         "required": [
@@ -23284,7 +23429,8 @@
           "forcePathStyle",
           "prefix",
           "region",
-          "secretAccessKey"
+          "secretAccessKey",
+          "storageClasses"
         ],
         "type": "object"
       },
@@ -24517,7 +24663,8 @@
           "mov",
           "mp4",
           "ogg",
-          "webm"
+          "webm",
+          "matroska,webm"
         ],
         "type": "string"
       },
