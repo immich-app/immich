@@ -1,0 +1,84 @@
+# Tigris Bucket Snapshot Workflow
+#
+# Creates daily snapshots of the Tigris bucket for point-in-time recovery.
+# This is an alternative to the Fly scheduled machine approach.
+#
+# Required secrets:
+#   FLY_API_TOKEN: Your Fly.io API token
+#
+# Required variables:
+#   TIGRIS_BUCKET_NAME: Your Tigris bucket name
+#
+# Setup:
+# 1. Go to repo Settings > Secrets and variables > Actions
+# 2. Add FLY_API_TOKEN secret
+# 3. Add TIGRIS_BUCKET_NAME variable
+
+name: Tigris Snapshot
+
+on:
+  schedule:
+    # Run daily at 3:00 AM UTC (after database backup at 2:00 AM)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+    inputs:
+      snapshot_name:
+        description: 'Custom snapshot name (optional)'
+        required: false
+        type: string
+
+env:
+  BUCKET_NAME: ${{ vars.TIGRIS_BUCKET_NAME }}
+
+jobs:
+  snapshot:
+    name: Create Tigris Snapshot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate configuration
+        run: |
+          if [ -z "${{ env.BUCKET_NAME }}" ]; then
+            echo "ERROR: TIGRIS_BUCKET_NAME variable is not set"
+            echo "Go to repo Settings > Secrets and variables > Actions > Variables"
+            exit 1
+          fi
+          echo "Bucket: ${{ env.BUCKET_NAME }}"
+
+      - name: Install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Generate snapshot name
+        id: snapshot-name
+        run: |
+          if [ -n "${{ inputs.snapshot_name }}" ]; then
+            NAME="${{ inputs.snapshot_name }}"
+          else
+            NAME="daily-$(date +%Y%m%d-%H%M%S)"
+          fi
+          echo "name=${NAME}" >> $GITHUB_OUTPUT
+          echo "Snapshot name: ${NAME}"
+
+      - name: Create Tigris snapshot
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "Creating snapshot: ${{ steps.snapshot-name.outputs.name }}"
+          fly storage snapshots create "${{ env.BUCKET_NAME }}" \
+            --name "${{ steps.snapshot-name.outputs.name }}"
+
+      - name: List snapshots
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          echo "Current snapshots:"
+          fly storage snapshots list "${{ env.BUCKET_NAME }}" || true
+
+      - name: Summary
+        run: |
+          echo "## Tigris Snapshot Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bucket**: ${{ env.BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Snapshot**: ${{ steps.snapshot-name.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY

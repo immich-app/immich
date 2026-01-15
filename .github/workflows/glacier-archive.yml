@@ -1,0 +1,114 @@
+# Glacier Archive Workflow
+#
+# Archives Immich data from Tigris to AWS Glacier Deep Archive for disaster recovery.
+# Runs weekly by default, can be triggered manually.
+#
+# Required secrets:
+#   TIGRIS_ACCESS_KEY: Tigris access key
+#   TIGRIS_SECRET_KEY: Tigris secret key
+#   AWS_ACCESS_KEY_ID: AWS access key with S3/Glacier permissions
+#   AWS_SECRET_ACCESS_KEY: AWS secret key
+#
+# Required variables:
+#   TIGRIS_BUCKET_NAME: Source Tigris bucket
+#   GLACIER_BUCKET_NAME: Destination AWS S3 bucket
+
+name: Glacier Archive
+
+on:
+  schedule:
+    # Run weekly on Sunday at 4:00 AM UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual changes)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  TIGRIS_BUCKET: ${{ vars.TIGRIS_BUCKET_NAME }}
+  GLACIER_BUCKET: ${{ vars.GLACIER_BUCKET_NAME }}
+
+jobs:
+  archive:
+    name: Archive to Glacier
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hour timeout for large archives
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate configuration
+        run: |
+          if [ -z "${{ env.TIGRIS_BUCKET }}" ]; then
+            echo "ERROR: TIGRIS_BUCKET_NAME variable is not set"
+            exit 1
+          fi
+          if [ -z "${{ env.GLACIER_BUCKET }}" ]; then
+            echo "ERROR: GLACIER_BUCKET_NAME variable is not set"
+            exit 1
+          fi
+          echo "Source: tigris:${{ env.TIGRIS_BUCKET }}"
+          echo "Destination: glacier:${{ env.GLACIER_BUCKET }}"
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << 'EOF'
+          [tigris]
+          type = s3
+          provider = Other
+          endpoint = https://fly.storage.tigris.dev
+          access_key_id = ${{ secrets.TIGRIS_ACCESS_KEY }}
+          secret_access_key = ${{ secrets.TIGRIS_SECRET_KEY }}
+
+          [glacier]
+          type = s3
+          provider = AWS
+          region = us-east-1
+          access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EOF
+
+      - name: Test connections
+        run: |
+          echo "Testing Tigris connection..."
+          rclone lsd "tigris:${{ env.TIGRIS_BUCKET }}" --max-depth 1 || {
+            echo "ERROR: Cannot connect to Tigris"
+            exit 1
+          }
+          echo "Testing AWS connection..."
+          rclone lsd "glacier:${{ env.GLACIER_BUCKET }}" --max-depth 1 2>/dev/null || {
+            echo "Note: Glacier bucket may be empty or not exist yet"
+          }
+
+      - name: Archive to Glacier
+        env:
+          DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+        run: |
+          chmod +x deployment/glacier-archive/archive.sh
+          ./deployment/glacier-archive/archive.sh
+
+      - name: Generate summary
+        run: |
+          echo "## Glacier Archive Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source**: tigris:${{ env.TIGRIS_BUCKET }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Destination**: glacier:${{ env.GLACIER_BUCKET }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ inputs.dry_run && 'Yes' || 'No' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Archived Data" >> $GITHUB_STEP_SUMMARY
+          echo "- Original photos/videos (users/)" >> $GITHUB_STEP_SUMMARY
+          echo "- Database backups (backups/)" >> $GITHUB_STEP_SUMMARY
+          echo "- Profile images (profile/)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Storage Class" >> $GITHUB_STEP_SUMMARY
+          echo "DEEP_ARCHIVE (~\$1/TB/month, 12-48hr retrieval)" >> $GITHUB_STEP_SUMMARY
