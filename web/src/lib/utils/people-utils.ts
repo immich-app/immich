@@ -4,6 +4,7 @@ import type { ContentMetrics } from '$lib/utils/container-utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 
 export interface BoundingBox {
+  id: string;
   top: number;
   left: number;
   width: number;
@@ -25,6 +26,7 @@ export const getBoundingBox = (faces: Faces[], metrics: ContentMetrics): Boundin
     };
 
     boxes.push({
+      id: face.id,
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),

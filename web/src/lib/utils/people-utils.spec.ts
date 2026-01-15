@@ -3,6 +3,7 @@ import type { ContentMetrics } from '$lib/utils/container-utils';
 import { getBoundingBox } from '$lib/utils/people-utils';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
+  id: 'face-1',
   imageWidth: 4000,
   imageHeight: 3000,
   boundingBoxX1: 1000,
@@ -21,6 +22,7 @@ describe('getBoundingBox', () => {
 
     expect(boxes).toHaveLength(1);
     expect(boxes[0]).toEqual({
+      id: 'face-1',
       top: Math.round(600 * (750 / 3000)),
       left: Math.round(800 * (1000 / 4000)),
       width: Math.round(800 * (2000 / 4000) - 800 * (1000 / 4000)),
@@ -42,6 +44,7 @@ describe('getBoundingBox', () => {
     const boxes = getBoundingBox([face], metrics);
 
     expect(boxes[0]).toEqual({
+      id: 'face-1',
       top: 0,
       left: 100,
       width: 600,
@@ -68,6 +71,7 @@ describe('getBoundingBox', () => {
     const boxes = getBoundingBox([face], metrics);
 
     expect(boxes[0]).toEqual({
+      id: 'face-1',
       top: -100,
       left: -200,
       width: 800,
@@ -82,8 +86,8 @@ describe('getBoundingBox', () => {
 
   it('should handle multiple faces', () => {
     const faces = [
-      makeFace({ boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 1000, boundingBoxY2: 1000 }),
-      makeFace({ boundingBoxX1: 2000, boundingBoxY1: 1500, boundingBoxX2: 3000, boundingBoxY2: 2500 }),
+      makeFace({ id: 'face-1', boundingBoxX1: 0, boundingBoxY1: 0, boundingBoxX2: 1000, boundingBoxY2: 1000 }),
+      makeFace({ id: 'face-2', boundingBoxX1: 2000, boundingBoxY1: 1500, boundingBoxX2: 3000, boundingBoxY2: 2500 }),
     ];
     const metrics: ContentMetrics = { contentWidth: 800, contentHeight: 600, offsetX: 0, offsetY: 0 };
 

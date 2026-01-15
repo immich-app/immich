@@ -248,8 +248,7 @@
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox}
+      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox (boundingbox.id)}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
