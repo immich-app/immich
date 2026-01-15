@@ -21,7 +21,7 @@
 
 <AppShell>
   <AppShellHeader>
-    <NavigationBar showUploadButton={false} noBorder />
+    <NavigationBar noBorder />
   </AppShellHeader>
   <AppShellSidebar
     bind:open={sidebarStore.isOpen}
