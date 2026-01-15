@@ -30,7 +30,6 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
-    getAllAlbums,
     getAssetInfo,
     getStack,
     type AlbumResponseDto,
@@ -105,7 +104,6 @@
   const asset = $derived(cursor.current);
   const nextAsset = $derived(cursor.nextAsset);
   const previousAsset = $derived(cursor.previousAsset);
-  let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
   let fullscreenElement = $state<Element>();
@@ -147,7 +145,7 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     syncAssetViewerOpenClass(true);
     unsubscribes.push(
       slideshowState.subscribe((value) => {
@@ -166,8 +164,6 @@
         }
       }),
     );
-
-    await onAlbumAddAssets();
   });
 
   onDestroy(() => {
@@ -179,18 +175,6 @@
     assetViewerManager.closeEditor();
     syncAssetViewerOpenClass(false);
   });
-
-  const onAlbumAddAssets = async () => {
-    if (authManager.isSharedLink) {
-      return;
-    }
-
-    try {
-      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
-    } catch (error) {
-      console.error('Error getting album that asset belong to', error);
-    }
-  };
 
   const closeViewer = () => {
     onClose?.(asset);
@@ -363,7 +347,6 @@
 
   const refresh = async () => {
     await refreshStack();
-    await onAlbumAddAssets();
     ocrManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
@@ -441,7 +424,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
-<OnEvents {onAssetReplace} {onAssetUpdate} {onAlbumAddAssets} />
+<OnEvents {onAssetReplace} {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />
 
@@ -586,7 +569,7 @@
     >
       {#if showDetailPanel}
         <div class="w-90 h-full">
-          <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
+          <DetailPanel {asset} currentAlbum={album} />
         </div>
       {:else if assetViewerManager.isShowEditor}
         <div class="w-100 h-full">
