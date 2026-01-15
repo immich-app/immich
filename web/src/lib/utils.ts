@@ -200,13 +200,10 @@ export const getAssetUrl = ({
   sharedLink,
   forceOriginal = false,
 }: {
-  asset: AssetResponseDto | undefined;
+  asset: AssetResponseDto;
   sharedLink?: SharedLinkResponseDto;
   forceOriginal?: boolean;
 }) => {
-  if (!asset) {
-    return;
-  }
   const id = asset.id;
   const cacheKey = asset.thumbhash;
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {

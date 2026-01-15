@@ -1,9 +1,8 @@
 <script lang="ts">
+  import { imageLoader } from '$lib/actions/image-loader.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import type { ActionReturn } from 'svelte/action';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {
@@ -54,16 +53,6 @@
     onComplete?.(true);
   };
 
-  function mount(elem: HTMLImageElement): ActionReturn {
-    if (elem.complete) {
-      loaded = true;
-      onComplete?.(false);
-    }
-    return {
-      destroy: () => imageManager.cancelPreloadUrl(url),
-    };
-  }
-
   let optionalClasses = $derived(
     [
       curve && 'rounded-xl',
@@ -76,26 +65,28 @@
       .filter(Boolean)
       .join(' '),
   );
+
+  let style = $derived(
+    `width: ${widthStyle}; height: ${heightStyle ?? ''}; filter: ${hidden ? 'grayscale(50%)' : 'none'}; opacity: ${hidden ? '0.5' : '1'};`,
+  );
 </script>
 
 {#if errored}
   <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
-  <img
-    use:mount
-    onload={setLoaded}
-    onerror={setErrored}
-    style:width={widthStyle}
-    style:height={heightStyle}
-    style:filter={hidden ? 'grayscale(50%)' : 'none'}
-    style:opacity={hidden ? '0.5' : '1'}
-    src={url}
-    alt={loaded || errored ? altText : ''}
-    {title}
-    class={['object-cover', optionalClasses, imageClass]}
-    draggable="false"
-    loading={preload ? 'eager' : 'lazy'}
-  />
+  <div
+    use:imageLoader={{
+      src: url,
+      onLoad: setLoaded,
+      onError: setErrored,
+      imgClass: ['object-cover', optionalClasses, imageClass],
+      style,
+      alt: loaded || errored ? altText : '',
+      draggable: false,
+      title,
+      loading: preload ? 'eager' : 'lazy',
+    }}
+  ></div>
 {/if}
 
 {#if hidden}

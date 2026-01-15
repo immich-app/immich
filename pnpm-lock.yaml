@@ -771,11 +771,8 @@ importers:
         specifier: ^7946.0.16
         version: 7946.0.16
       '@zoom-image/core':
-        specifier: ^0.41.0
-        version: 0.41.4
-      '@zoom-image/svelte':
-        specifier: ^0.3.0
-        version: 0.3.8(svelte@5.48.0)
+        specifier: ^0.42.0
+        version: 0.42.0
       dom-to-image:
         specifier: ^2.6.0
         version: 2.6.0
@@ -5681,13 +5678,8 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@zoom-image/core@0.41.4':
-    resolution: {integrity: sha512-zUJNHWQzx8rmfNOlp2Rr0+n8I7QK9hLNThnusdtvz20/HN+J//RcDJmCuRDj6jUW/qJGh9FWR5sROMFBuPLPfQ==}
-
-  '@zoom-image/svelte@0.3.8':
-    resolution: {integrity: sha512-rkXS+JS4qkBccmRK9+I5j+Pe4rp78GWK/7y0EduBJNtt38q+AwmKhhQs8oTMKTU6lOzLgxjXy1TI802mtvcAmw==}
-    peerDependencies:
-      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0
+  '@zoom-image/core@0.42.0':
+    resolution: {integrity: sha512-aF7siQqxqmOVlBd65deaCM7L/6V80Rp7HazZJpxtErh8zAn5itXXKBv1KA1NufSPfRZsXl1QtysxkjB3gVIzxw==}
 
   abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
@@ -18675,14 +18667,9 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@zoom-image/core@0.41.4':
+  '@zoom-image/core@0.42.0':
     dependencies:
       '@namnode/store': 0.1.0
-
-  '@zoom-image/svelte@0.3.8(svelte@5.48.0)':
-    dependencies:
-      '@zoom-image/core': 0.41.4
-      svelte: 5.48.0
 
   abab@2.0.6:
     optional: true
