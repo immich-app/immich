@@ -158,7 +158,7 @@ export async function buildPostgresLaunchArguments(
 }
 
 export async function createDatabaseBackup(
-  { logger, storage, process: processRepository, ...pgRepos }: BackupRepos,
+  { logger, storage, process: processRepository, ...pgRepos }: Omit<BackupRepos, 'health'>,
   filenamePrefix: string = '',
 ): Promise<string> {
   logger.debug(`Database Backup Started`);
@@ -281,7 +281,7 @@ export async function restoreDatabaseBackup(
     progressCb?.('backup', 0.05);
 
     const restorePointFilePath = await createDatabaseBackup(
-      { logger, storage, process: processRepository, database: databaseRepository, health, ...pgRepos },
+      { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos },
       'restore-point-',
     );
 
