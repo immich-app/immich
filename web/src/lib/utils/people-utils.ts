@@ -3,15 +3,16 @@ import { getAssetMediaUrl } from '$lib/utils';
 import type { DisplayMetrics } from '$lib/utils/container-utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 
-export interface BoundingBox {
+interface FaceBoundingBox {
+  id: string;
   top: number;
   left: number;
   width: number;
   height: number;
 }
 
-export const getBoundingBox = (faces: Faces[], metrics: DisplayMetrics): BoundingBox[] => {
-  const boxes: BoundingBox[] = [];
+export const getBoundingBox = (faces: Faces[], metrics: DisplayMetrics): FaceBoundingBox[] => {
+  const boxes: FaceBoundingBox[] = [];
 
   for (const face of faces) {
     const scaleX = metrics.displayWidth / face.imageWidth;
@@ -25,6 +26,7 @@ export const getBoundingBox = (faces: Faces[], metrics: DisplayMetrics): Boundin
     };
 
     boxes.push({
+      id: face.id,
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),
