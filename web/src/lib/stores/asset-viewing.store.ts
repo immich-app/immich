@@ -5,7 +5,6 @@ import { readonly, writable } from 'svelte/store';
 
 function createAssetViewingStore() {
   const viewingAssetStoreState = writable<AssetResponseDto>();
-
   const viewState = writable<boolean>(false);
   const gridScrollTarget = writable<AssetGridRouteSearchParams | null | undefined>();
 
