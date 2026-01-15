@@ -14,15 +14,20 @@ class SystemConfigMachineLearningDto {
   /// Returns a new [SystemConfigMachineLearningDto] instance.
   SystemConfigMachineLearningDto({
     required this.availabilityChecks,
+    required this.circuitBreaker,
     required this.clip,
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
     required this.ocr,
+    required this.requestTimeout,
+    required this.streamMode,
     this.urls = const [],
   });
 
   MachineLearningAvailabilityChecksDto availabilityChecks;
+
+  MachineLearningCircuitBreakerDto circuitBreaker;
 
   CLIPConfig clip;
 
@@ -34,40 +39,54 @@ class SystemConfigMachineLearningDto {
 
   OcrConfig ocr;
 
+  /// Minimum value: 1000
+  num requestTimeout;
+
+  MachineLearningStreamModeDto streamMode;
+
   List<String> urls;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
     other.availabilityChecks == availabilityChecks &&
+    other.circuitBreaker == circuitBreaker &&
     other.clip == clip &&
     other.duplicateDetection == duplicateDetection &&
     other.enabled == enabled &&
     other.facialRecognition == facialRecognition &&
     other.ocr == ocr &&
+    other.requestTimeout == requestTimeout &&
+    other.streamMode == streamMode &&
     _deepEquality.equals(other.urls, urls);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (availabilityChecks.hashCode) +
+    (circuitBreaker.hashCode) +
     (clip.hashCode) +
     (duplicateDetection.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
     (ocr.hashCode) +
+    (requestTimeout.hashCode) +
+    (streamMode.hashCode) +
     (urls.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, urls=$urls]';
+  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, circuitBreaker=$circuitBreaker, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, requestTimeout=$requestTimeout, streamMode=$streamMode, urls=$urls]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'availabilityChecks'] = this.availabilityChecks;
+      json[r'circuitBreaker'] = this.circuitBreaker;
       json[r'clip'] = this.clip;
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'ocr'] = this.ocr;
+      json[r'requestTimeout'] = this.requestTimeout;
+      json[r'streamMode'] = this.streamMode;
       json[r'urls'] = this.urls;
     return json;
   }
@@ -82,11 +101,14 @@ class SystemConfigMachineLearningDto {
 
       return SystemConfigMachineLearningDto(
         availabilityChecks: MachineLearningAvailabilityChecksDto.fromJson(json[r'availabilityChecks'])!,
+        circuitBreaker: MachineLearningCircuitBreakerDto.fromJson(json[r'circuitBreaker'])!,
         clip: CLIPConfig.fromJson(json[r'clip'])!,
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
         ocr: OcrConfig.fromJson(json[r'ocr'])!,
+        requestTimeout: num.parse('${json[r'requestTimeout']}'),
+        streamMode: MachineLearningStreamModeDto.fromJson(json[r'streamMode'])!,
         urls: json[r'urls'] is Iterable
             ? (json[r'urls'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -138,11 +160,14 @@ class SystemConfigMachineLearningDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'availabilityChecks',
+    'circuitBreaker',
     'clip',
     'duplicateDetection',
     'enabled',
     'facialRecognition',
     'ocr',
+    'requestTimeout',
+    'streamMode',
     'urls',
   };
 }

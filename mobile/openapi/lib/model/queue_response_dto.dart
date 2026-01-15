@@ -14,11 +14,20 @@ class QueueResponseDto {
   /// Returns a new [QueueResponseDto] instance.
   QueueResponseDto({
     required this.isPaused,
+    this.lastTriggeredAt,
     required this.name,
     required this.statistics,
   });
 
   bool isPaused;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? lastTriggeredAt;
 
   QueueName name;
 
@@ -27,6 +36,7 @@ class QueueResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueResponseDto &&
     other.isPaused == isPaused &&
+    other.lastTriggeredAt == lastTriggeredAt &&
     other.name == name &&
     other.statistics == statistics;
 
@@ -34,15 +44,21 @@ class QueueResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (isPaused.hashCode) +
+    (lastTriggeredAt == null ? 0 : lastTriggeredAt!.hashCode) +
     (name.hashCode) +
     (statistics.hashCode);
 
   @override
-  String toString() => 'QueueResponseDto[isPaused=$isPaused, name=$name, statistics=$statistics]';
+  String toString() => 'QueueResponseDto[isPaused=$isPaused, lastTriggeredAt=$lastTriggeredAt, name=$name, statistics=$statistics]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'isPaused'] = this.isPaused;
+    if (this.lastTriggeredAt != null) {
+      json[r'lastTriggeredAt'] = this.lastTriggeredAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'lastTriggeredAt'] = null;
+    }
       json[r'name'] = this.name;
       json[r'statistics'] = this.statistics;
     return json;
@@ -58,6 +74,7 @@ class QueueResponseDto {
 
       return QueueResponseDto(
         isPaused: mapValueOfType<bool>(json, r'isPaused')!,
+        lastTriggeredAt: mapDateTime(json, r'lastTriggeredAt', r''),
         name: QueueName.fromJson(json[r'name'])!,
         statistics: QueueStatisticsDto.fromJson(json[r'statistics'])!,
       );

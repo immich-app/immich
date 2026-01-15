@@ -26,12 +26,14 @@ class UserMetadataKey {
   static const preferences = UserMetadataKey._(r'preferences');
   static const license = UserMetadataKey._(r'license');
   static const onboarding = UserMetadataKey._(r'onboarding');
+  static const googleDriveTokens = UserMetadataKey._(r'google-drive-tokens');
 
   /// List of all possible values in this [enum][UserMetadataKey].
   static const values = <UserMetadataKey>[
     preferences,
     license,
     onboarding,
+    googleDriveTokens,
   ];
 
   static UserMetadataKey? fromJson(dynamic value) => UserMetadataKeyTypeTransformer().decode(value);
@@ -73,6 +75,7 @@ class UserMetadataKeyTypeTransformer {
         case r'preferences': return UserMetadataKey.preferences;
         case r'license': return UserMetadataKey.license;
         case r'onboarding': return UserMetadataKey.onboarding;
+        case r'google-drive-tokens': return UserMetadataKey.googleDriveTokens;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

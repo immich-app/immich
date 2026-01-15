@@ -37,6 +37,7 @@ class JobName {
   static const assetFileMigration = JobName._(r'AssetFileMigration');
   static const assetGenerateThumbnailsQueueAll = JobName._(r'AssetGenerateThumbnailsQueueAll');
   static const assetGenerateThumbnails = JobName._(r'AssetGenerateThumbnails');
+  static const personGenerateThumbnailsQueueAll = JobName._(r'PersonGenerateThumbnailsQueueAll');
   static const auditLogCleanup = JobName._(r'AuditLogCleanup');
   static const auditTableCleanup = JobName._(r'AuditTableCleanup');
   static const databaseBackup = JobName._(r'DatabaseBackup');
@@ -73,11 +74,19 @@ class JobName {
   static const smartSearch = JobName._(r'SmartSearch');
   static const storageTemplateMigration = JobName._(r'StorageTemplateMigration');
   static const storageTemplateMigrationSingle = JobName._(r'StorageTemplateMigrationSingle');
+  static const s3UploadAsset = JobName._(r'S3UploadAsset');
+  static const s3UploadQueueAll = JobName._(r'S3UploadQueueAll');
+  static const s3UploadEncodedVideo = JobName._(r'S3UploadEncodedVideo');
+  static const s3UploadEncodedVideoQueueAll = JobName._(r'S3UploadEncodedVideoQueueAll');
+  static const s3MigrateStorageClass = JobName._(r'S3MigrateStorageClass');
+  static const s3MigrateStorageClassAll = JobName._(r'S3MigrateStorageClassAll');
   static const tagCleanup = JobName._(r'TagCleanup');
   static const versionCheck = JobName._(r'VersionCheck');
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
   static const ocr = JobName._(r'Ocr');
   static const workflowRun = JobName._(r'WorkflowRun');
+  static const assetEncrypt = JobName._(r'AssetEncrypt');
+  static const assetEncryptAll = JobName._(r'AssetEncryptAll');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -95,6 +104,7 @@ class JobName {
     assetFileMigration,
     assetGenerateThumbnailsQueueAll,
     assetGenerateThumbnails,
+    personGenerateThumbnailsQueueAll,
     auditLogCleanup,
     auditTableCleanup,
     databaseBackup,
@@ -131,11 +141,19 @@ class JobName {
     smartSearch,
     storageTemplateMigration,
     storageTemplateMigrationSingle,
+    s3UploadAsset,
+    s3UploadQueueAll,
+    s3UploadEncodedVideo,
+    s3UploadEncodedVideoQueueAll,
+    s3MigrateStorageClass,
+    s3MigrateStorageClassAll,
     tagCleanup,
     versionCheck,
     ocrQueueAll,
     ocr,
     workflowRun,
+    assetEncrypt,
+    assetEncryptAll,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -188,6 +206,7 @@ class JobNameTypeTransformer {
         case r'AssetFileMigration': return JobName.assetFileMigration;
         case r'AssetGenerateThumbnailsQueueAll': return JobName.assetGenerateThumbnailsQueueAll;
         case r'AssetGenerateThumbnails': return JobName.assetGenerateThumbnails;
+        case r'PersonGenerateThumbnailsQueueAll': return JobName.personGenerateThumbnailsQueueAll;
         case r'AuditLogCleanup': return JobName.auditLogCleanup;
         case r'AuditTableCleanup': return JobName.auditTableCleanup;
         case r'DatabaseBackup': return JobName.databaseBackup;
@@ -224,11 +243,19 @@ class JobNameTypeTransformer {
         case r'SmartSearch': return JobName.smartSearch;
         case r'StorageTemplateMigration': return JobName.storageTemplateMigration;
         case r'StorageTemplateMigrationSingle': return JobName.storageTemplateMigrationSingle;
+        case r'S3UploadAsset': return JobName.s3UploadAsset;
+        case r'S3UploadQueueAll': return JobName.s3UploadQueueAll;
+        case r'S3UploadEncodedVideo': return JobName.s3UploadEncodedVideo;
+        case r'S3UploadEncodedVideoQueueAll': return JobName.s3UploadEncodedVideoQueueAll;
+        case r'S3MigrateStorageClass': return JobName.s3MigrateStorageClass;
+        case r'S3MigrateStorageClassAll': return JobName.s3MigrateStorageClassAll;
         case r'TagCleanup': return JobName.tagCleanup;
         case r'VersionCheck': return JobName.versionCheck;
         case r'OcrQueueAll': return JobName.ocrQueueAll;
         case r'Ocr': return JobName.ocr;
         case r'WorkflowRun': return JobName.workflowRun;
+        case r'AssetEncrypt': return JobName.assetEncrypt;
+        case r'AssetEncryptAll': return JobName.assetEncryptAll;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

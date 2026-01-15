@@ -150,6 +150,17 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | Delete a face
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | Re-assign a face to another person
+*GooglePhotosImportApi* | [**cancelImport**](doc//GooglePhotosImportApi.md#cancelimport) | **DELETE** /google-photos/import/{id} | Cancel import job
+*GooglePhotosImportApi* | [**disconnectGoogleDrive**](doc//GooglePhotosImportApi.md#disconnectgoogledrive) | **DELETE** /google-photos/google-drive/auth | Disconnect Google Drive
+*GooglePhotosImportApi* | [**getProgress**](doc//GooglePhotosImportApi.md#getprogress) | **GET** /google-photos/import/{id}/progress | Get import job progress
+*GooglePhotosImportApi* | [**handleGoogleDriveCallback**](doc//GooglePhotosImportApi.md#handlegoogledrivecallback) | **GET** /google-photos/google-drive/callback | Google Drive OAuth callback
+*GooglePhotosImportApi* | [**importFromDrive**](doc//GooglePhotosImportApi.md#importfromdrive) | **POST** /google-photos/import-from-drive | Import Google Photos Takeout from Google Drive
+*GooglePhotosImportApi* | [**importFromFiles**](doc//GooglePhotosImportApi.md#importfromfiles) | **POST** /google-photos/import | Import Google Photos Takeout ZIP files
+*GooglePhotosImportApi* | [**initiateGoogleDriveAuth**](doc//GooglePhotosImportApi.md#initiategoogledriveauth) | **POST** /google-photos/google-drive/auth | Initiate Google Drive OAuth flow
+*GooglePhotosImportApi* | [**listDriveFiles**](doc//GooglePhotosImportApi.md#listdrivefiles) | **GET** /google-photos/google-drive/files | List Takeout files in Google Drive
+*ImporterApi* | [**createSetupToken**](doc//ImporterApi.md#createsetuptoken) | **POST** /importer/setup-token | Create a setup token for the Google Photos Importer app
+*ImporterApi* | [**getBootstrap**](doc//ImporterApi.md#getbootstrap) | **GET** /importer/bootstrap/{token}/{platform} | Download bootstrap binary
+*ImporterApi* | [**getImporterConfig**](doc//ImporterApi.md#getimporterconfig) | **GET** /importer/config/{token} | Get importer configuration
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | Create a manual job
 *JobsApi* | [**getQueuesLegacy**](doc//JobsApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *JobsApi* | [**runQueueCommandLegacy**](doc//JobsApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
@@ -305,6 +316,18 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | Search users
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | Update a user
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
+*VaultApi* | [**adminRecoverVault**](doc//VaultApi.md#adminrecovervault) | **POST** /vault/admin/recover | Recover user vault
+*VaultApi* | [**changeVaultPassword**](doc//VaultApi.md#changevaultpassword) | **POST** /vault/change-password | Change vault password
+*VaultApi* | [**deleteAdminRecoveryKey**](doc//VaultApi.md#deleteadminrecoverykey) | **DELETE** /vault/admin/recovery-key/{id} | Delete admin recovery key
+*VaultApi* | [**deleteVault**](doc//VaultApi.md#deletevault) | **DELETE** /vault | Delete vault
+*VaultApi* | [**getAdminRecoveryKeys**](doc//VaultApi.md#getadminrecoverykeys) | **GET** /vault/admin/recovery-keys | List admin recovery keys
+*VaultApi* | [**getAdminRecoveryStatus**](doc//VaultApi.md#getadminrecoverystatus) | **GET** /vault/admin/recovery-status | Check admin recovery status
+*VaultApi* | [**getVaultStatus**](doc//VaultApi.md#getvaultstatus) | **GET** /vault/status | Get vault status
+*VaultApi* | [**lockVault**](doc//VaultApi.md#lockvault) | **POST** /vault/lock | Lock vault
+*VaultApi* | [**migrateAssets**](doc//VaultApi.md#migrateassets) | **POST** /vault/migrate | Encrypt existing assets
+*VaultApi* | [**registerAdminRecoveryKey**](doc//VaultApi.md#registeradminrecoverykey) | **POST** /vault/admin/recovery-key | Register admin recovery key
+*VaultApi* | [**setupVault**](doc//VaultApi.md#setupvault) | **POST** /vault/setup | Set up vault
+*VaultApi* | [**unlockVault**](doc//VaultApi.md#unlockvault) | **POST** /vault/unlock | Unlock vault
 *ViewsApi* | [**getAssetsByOriginalPath**](doc//ViewsApi.md#getassetsbyoriginalpath) | **GET** /view/folder | Retrieve assets by original path
 *ViewsApi* | [**getUniqueOriginalPaths**](doc//ViewsApi.md#getuniqueoriginalpaths) | **GET** /view/folder/unique-paths | Retrieve unique paths
 *WorkflowsApi* | [**createWorkflow**](doc//WorkflowsApi.md#createworkflow) | **POST** /workflows | Create a workflow
@@ -402,7 +425,14 @@ Class | Method | HTTP request | Description
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
+ - [GoogleDriveFileDto](doc//GoogleDriveFileDto.md)
+ - [GoogleDriveFilesResponseDto](doc//GoogleDriveFilesResponseDto.md)
+ - [GooglePhotosImportFromDriveDto](doc//GooglePhotosImportFromDriveDto.md)
+ - [GooglePhotosImportJobDto](doc//GooglePhotosImportJobDto.md)
+ - [GooglePhotosImportProgressDto](doc//GooglePhotosImportProgressDto.md)
  - [ImageFormat](doc//ImageFormat.md)
+ - [ImporterConfigResponseDto](doc//ImporterConfigResponseDto.md)
+ - [ImporterConfigResponseDtoOauth](doc//ImporterConfigResponseDtoOauth.md)
  - [JobCreateDto](doc//JobCreateDto.md)
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
@@ -415,6 +445,8 @@ Class | Method | HTTP request | Description
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
  - [MachineLearningAvailabilityChecksDto](doc//MachineLearningAvailabilityChecksDto.md)
+ - [MachineLearningCircuitBreakerDto](doc//MachineLearningCircuitBreakerDto.md)
+ - [MachineLearningStreamModeDto](doc//MachineLearningStreamModeDto.md)
  - [MaintenanceAction](doc//MaintenanceAction.md)
  - [MaintenanceAuthDto](doc//MaintenanceAuthDto.md)
  - [MaintenanceLoginDto](doc//MaintenanceLoginDto.md)
@@ -517,6 +549,7 @@ Class | Method | HTTP request | Description
  - [SessionUnlockDto](doc//SessionUnlockDto.md)
  - [SessionUpdateDto](doc//SessionUpdateDto.md)
  - [SetMaintenanceModeDto](doc//SetMaintenanceModeDto.md)
+ - [SetupTokenResponseDto](doc//SetupTokenResponseDto.md)
  - [SharedLinkCreateDto](doc//SharedLinkCreateDto.md)
  - [SharedLinkEditDto](doc//SharedLinkEditDto.md)
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
@@ -530,6 +563,7 @@ Class | Method | HTTP request | Description
  - [StackResponseDto](doc//StackResponseDto.md)
  - [StackUpdateDto](doc//StackUpdateDto.md)
  - [StatisticsSearchDto](doc//StatisticsSearchDto.md)
+ - [StorageBackend](doc//StorageBackend.md)
  - [SyncAckDeleteDto](doc//SyncAckDeleteDto.md)
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)
@@ -588,7 +622,12 @@ Class | Method | HTTP request | Description
  - [SystemConfigServerDto](doc//SystemConfigServerDto.md)
  - [SystemConfigSmtpDto](doc//SystemConfigSmtpDto.md)
  - [SystemConfigSmtpTransportDto](doc//SystemConfigSmtpTransportDto.md)
+ - [SystemConfigStorageClassesDto](doc//SystemConfigStorageClassesDto.md)
+ - [SystemConfigStorageDto](doc//SystemConfigStorageDto.md)
+ - [SystemConfigStorageLocationsDto](doc//SystemConfigStorageLocationsDto.md)
+ - [SystemConfigStorageS3Dto](doc//SystemConfigStorageS3Dto.md)
  - [SystemConfigStorageTemplateDto](doc//SystemConfigStorageTemplateDto.md)
+ - [SystemConfigStorageUploadDto](doc//SystemConfigStorageUploadDto.md)
  - [SystemConfigTemplateEmailsDto](doc//SystemConfigTemplateEmailsDto.md)
  - [SystemConfigTemplateStorageOptionDto](doc//SystemConfigTemplateStorageOptionDto.md)
  - [SystemConfigTemplatesDto](doc//SystemConfigTemplatesDto.md)
@@ -616,6 +655,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
+ - [UploadStrategy](doc//UploadStrategy.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
  - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)

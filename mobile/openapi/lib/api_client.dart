@@ -354,8 +354,22 @@ class ApiClient {
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
           return FoldersUpdate.fromJson(value);
+        case 'GoogleDriveFileDto':
+          return GoogleDriveFileDto.fromJson(value);
+        case 'GoogleDriveFilesResponseDto':
+          return GoogleDriveFilesResponseDto.fromJson(value);
+        case 'GooglePhotosImportFromDriveDto':
+          return GooglePhotosImportFromDriveDto.fromJson(value);
+        case 'GooglePhotosImportJobDto':
+          return GooglePhotosImportJobDto.fromJson(value);
+        case 'GooglePhotosImportProgressDto':
+          return GooglePhotosImportProgressDto.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
+        case 'ImporterConfigResponseDto':
+          return ImporterConfigResponseDto.fromJson(value);
+        case 'ImporterConfigResponseDtoOauth':
+          return ImporterConfigResponseDtoOauth.fromJson(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
@@ -380,6 +394,10 @@ class ApiClient {
           return LogoutResponseDto.fromJson(value);
         case 'MachineLearningAvailabilityChecksDto':
           return MachineLearningAvailabilityChecksDto.fromJson(value);
+        case 'MachineLearningCircuitBreakerDto':
+          return MachineLearningCircuitBreakerDto.fromJson(value);
+        case 'MachineLearningStreamModeDto':
+          return MachineLearningStreamModeDto.fromJson(value);
         case 'MaintenanceAction':
           return MaintenanceActionTypeTransformer().decode(value);
         case 'MaintenanceAuthDto':
@@ -584,6 +602,8 @@ class ApiClient {
           return SessionUpdateDto.fromJson(value);
         case 'SetMaintenanceModeDto':
           return SetMaintenanceModeDto.fromJson(value);
+        case 'SetupTokenResponseDto':
+          return SetupTokenResponseDto.fromJson(value);
         case 'SharedLinkCreateDto':
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
@@ -610,6 +630,8 @@ class ApiClient {
           return StackUpdateDto.fromJson(value);
         case 'StatisticsSearchDto':
           return StatisticsSearchDto.fromJson(value);
+        case 'StorageBackend':
+          return StorageBackendTypeTransformer().decode(value);
         case 'SyncAckDeleteDto':
           return SyncAckDeleteDto.fromJson(value);
         case 'SyncAckDto':
@@ -726,8 +748,18 @@ class ApiClient {
           return SystemConfigSmtpDto.fromJson(value);
         case 'SystemConfigSmtpTransportDto':
           return SystemConfigSmtpTransportDto.fromJson(value);
+        case 'SystemConfigStorageClassesDto':
+          return SystemConfigStorageClassesDto.fromJson(value);
+        case 'SystemConfigStorageDto':
+          return SystemConfigStorageDto.fromJson(value);
+        case 'SystemConfigStorageLocationsDto':
+          return SystemConfigStorageLocationsDto.fromJson(value);
+        case 'SystemConfigStorageS3Dto':
+          return SystemConfigStorageS3Dto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
+        case 'SystemConfigStorageUploadDto':
+          return SystemConfigStorageUploadDto.fromJson(value);
         case 'SystemConfigTemplateEmailsDto':
           return SystemConfigTemplateEmailsDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
@@ -782,6 +814,8 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
+        case 'UploadStrategy':
+          return UploadStrategyTypeTransformer().decode(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserAdminCreateDto':

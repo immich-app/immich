@@ -157,6 +157,9 @@ String parameterToString(dynamic value) {
   if (value is SourceType) {
     return SourceTypeTypeTransformer().encode(value).toString();
   }
+  if (value is StorageBackend) {
+    return StorageBackendTypeTransformer().encode(value).toString();
+  }
   if (value is SyncEntityType) {
     return SyncEntityTypeTypeTransformer().encode(value).toString();
   }
@@ -171,6 +174,9 @@ String parameterToString(dynamic value) {
   }
   if (value is TranscodePolicy) {
     return TranscodePolicyTypeTransformer().encode(value).toString();
+  }
+  if (value is UploadStrategy) {
+    return UploadStrategyTypeTransformer().encode(value).toString();
   }
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();

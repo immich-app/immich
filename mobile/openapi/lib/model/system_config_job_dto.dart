@@ -13,22 +13,29 @@ part of openapi.api;
 class SystemConfigJobDto {
   /// Returns a new [SystemConfigJobDto] instance.
   SystemConfigJobDto({
+    required this.assetThumbnailGeneration,
     required this.backgroundTask,
+    required this.encryption,
     required this.faceDetection,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
     required this.notifications,
     required this.ocr,
+    required this.personThumbnailGeneration,
+    required this.s3Upload,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
-    required this.thumbnailGeneration,
     required this.videoConversion,
     required this.workflow,
   });
 
+  JobSettingsDto assetThumbnailGeneration;
+
   JobSettingsDto backgroundTask;
+
+  JobSettingsDto encryption;
 
   JobSettingsDto faceDetection;
 
@@ -42,13 +49,15 @@ class SystemConfigJobDto {
 
   JobSettingsDto ocr;
 
+  JobSettingsDto personThumbnailGeneration;
+
+  JobSettingsDto s3Upload;
+
   JobSettingsDto search;
 
   JobSettingsDto sidecar;
 
   JobSettingsDto smartSearch;
-
-  JobSettingsDto thumbnailGeneration;
 
   JobSettingsDto videoConversion;
 
@@ -56,53 +65,62 @@ class SystemConfigJobDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
+    other.assetThumbnailGeneration == assetThumbnailGeneration &&
     other.backgroundTask == backgroundTask &&
+    other.encryption == encryption &&
     other.faceDetection == faceDetection &&
     other.library_ == library_ &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
     other.notifications == notifications &&
     other.ocr == ocr &&
+    other.personThumbnailGeneration == personThumbnailGeneration &&
+    other.s3Upload == s3Upload &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
-    other.thumbnailGeneration == thumbnailGeneration &&
     other.videoConversion == videoConversion &&
     other.workflow == workflow;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (assetThumbnailGeneration.hashCode) +
     (backgroundTask.hashCode) +
+    (encryption.hashCode) +
     (faceDetection.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
     (notifications.hashCode) +
     (ocr.hashCode) +
+    (personThumbnailGeneration.hashCode) +
+    (s3Upload.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
-    (thumbnailGeneration.hashCode) +
     (videoConversion.hashCode) +
     (workflow.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'SystemConfigJobDto[assetThumbnailGeneration=$assetThumbnailGeneration, backgroundTask=$backgroundTask, encryption=$encryption, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, personThumbnailGeneration=$personThumbnailGeneration, s3Upload=$s3Upload, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'assetThumbnailGeneration'] = this.assetThumbnailGeneration;
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'encryption'] = this.encryption;
       json[r'faceDetection'] = this.faceDetection;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
       json[r'notifications'] = this.notifications;
       json[r'ocr'] = this.ocr;
+      json[r'personThumbnailGeneration'] = this.personThumbnailGeneration;
+      json[r's3Upload'] = this.s3Upload;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
       json[r'workflow'] = this.workflow;
     return json;
@@ -117,17 +135,20 @@ class SystemConfigJobDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigJobDto(
+        assetThumbnailGeneration: JobSettingsDto.fromJson(json[r'assetThumbnailGeneration'])!,
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
+        encryption: JobSettingsDto.fromJson(json[r'encryption'])!,
         faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
         notifications: JobSettingsDto.fromJson(json[r'notifications'])!,
         ocr: JobSettingsDto.fromJson(json[r'ocr'])!,
+        personThumbnailGeneration: JobSettingsDto.fromJson(json[r'personThumbnailGeneration'])!,
+        s3Upload: JobSettingsDto.fromJson(json[r's3Upload'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
-        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
         workflow: JobSettingsDto.fromJson(json[r'workflow'])!,
       );
@@ -177,17 +198,20 @@ class SystemConfigJobDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetThumbnailGeneration',
     'backgroundTask',
+    'encryption',
     'faceDetection',
     'library',
     'metadataExtraction',
     'migration',
     'notifications',
     'ocr',
+    'personThumbnailGeneration',
+    's3Upload',
     'search',
     'sidecar',
     'smartSearch',
-    'thumbnailGeneration',
     'videoConversion',
     'workflow',
   };

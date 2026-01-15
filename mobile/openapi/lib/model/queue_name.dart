@@ -23,7 +23,8 @@ class QueueName {
 
   String toJson() => value;
 
-  static const thumbnailGeneration = QueueName._(r'thumbnailGeneration');
+  static const assetThumbnailGeneration = QueueName._(r'assetThumbnailGeneration');
+  static const personThumbnailGeneration = QueueName._(r'personThumbnailGeneration');
   static const metadataExtraction = QueueName._(r'metadataExtraction');
   static const videoConversion = QueueName._(r'videoConversion');
   static const faceDetection = QueueName._(r'faceDetection');
@@ -40,10 +41,13 @@ class QueueName {
   static const backupDatabase = QueueName._(r'backupDatabase');
   static const ocr = QueueName._(r'ocr');
   static const workflow = QueueName._(r'workflow');
+  static const s3Upload = QueueName._(r's3Upload');
+  static const encryption = QueueName._(r'encryption');
 
   /// List of all possible values in this [enum][QueueName].
   static const values = <QueueName>[
-    thumbnailGeneration,
+    assetThumbnailGeneration,
+    personThumbnailGeneration,
     metadataExtraction,
     videoConversion,
     faceDetection,
@@ -60,6 +64,8 @@ class QueueName {
     backupDatabase,
     ocr,
     workflow,
+    s3Upload,
+    encryption,
   ];
 
   static QueueName? fromJson(dynamic value) => QueueNameTypeTransformer().decode(value);
@@ -98,7 +104,8 @@ class QueueNameTypeTransformer {
   QueueName? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'thumbnailGeneration': return QueueName.thumbnailGeneration;
+        case r'assetThumbnailGeneration': return QueueName.assetThumbnailGeneration;
+        case r'personThumbnailGeneration': return QueueName.personThumbnailGeneration;
         case r'metadataExtraction': return QueueName.metadataExtraction;
         case r'videoConversion': return QueueName.videoConversion;
         case r'faceDetection': return QueueName.faceDetection;
@@ -115,6 +122,8 @@ class QueueNameTypeTransformer {
         case r'backupDatabase': return QueueName.backupDatabase;
         case r'ocr': return QueueName.ocr;
         case r'workflow': return QueueName.workflow;
+        case r's3Upload': return QueueName.s3Upload;
+        case r'encryption': return QueueName.encryption;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

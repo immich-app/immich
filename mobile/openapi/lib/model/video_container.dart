@@ -27,6 +27,7 @@ class VideoContainer {
   static const mp4 = VideoContainer._(r'mp4');
   static const ogg = VideoContainer._(r'ogg');
   static const webm = VideoContainer._(r'webm');
+  static const matroskaCommaWebm = VideoContainer._(r'matroska,webm');
 
   /// List of all possible values in this [enum][VideoContainer].
   static const values = <VideoContainer>[
@@ -34,6 +35,7 @@ class VideoContainer {
     mp4,
     ogg,
     webm,
+    matroskaCommaWebm,
   ];
 
   static VideoContainer? fromJson(dynamic value) => VideoContainerTypeTransformer().decode(value);
@@ -76,6 +78,7 @@ class VideoContainerTypeTransformer {
         case r'mp4': return VideoContainer.mp4;
         case r'ogg': return VideoContainer.ogg;
         case r'webm': return VideoContainer.webm;
+        case r'matroska,webm': return VideoContainer.matroskaCommaWebm;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

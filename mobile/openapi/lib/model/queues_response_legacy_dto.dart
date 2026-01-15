@@ -13,9 +13,11 @@ part of openapi.api;
 class QueuesResponseLegacyDto {
   /// Returns a new [QueuesResponseLegacyDto] instance.
   QueuesResponseLegacyDto({
+    required this.assetThumbnailGeneration,
     required this.backgroundTask,
     required this.backupDatabase,
     required this.duplicateDetection,
+    required this.encryption,
     required this.faceDetection,
     required this.facialRecognition,
     required this.library_,
@@ -23,20 +25,25 @@ class QueuesResponseLegacyDto {
     required this.migration,
     required this.notifications,
     required this.ocr,
+    required this.personThumbnailGeneration,
+    required this.s3Upload,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
     required this.storageTemplateMigration,
-    required this.thumbnailGeneration,
     required this.videoConversion,
     required this.workflow,
   });
+
+  QueueResponseLegacyDto assetThumbnailGeneration;
 
   QueueResponseLegacyDto backgroundTask;
 
   QueueResponseLegacyDto backupDatabase;
 
   QueueResponseLegacyDto duplicateDetection;
+
+  QueueResponseLegacyDto encryption;
 
   QueueResponseLegacyDto faceDetection;
 
@@ -52,6 +59,10 @@ class QueuesResponseLegacyDto {
 
   QueueResponseLegacyDto ocr;
 
+  QueueResponseLegacyDto personThumbnailGeneration;
+
+  QueueResponseLegacyDto s3Upload;
+
   QueueResponseLegacyDto search;
 
   QueueResponseLegacyDto sidecar;
@@ -60,17 +71,17 @@ class QueuesResponseLegacyDto {
 
   QueueResponseLegacyDto storageTemplateMigration;
 
-  QueueResponseLegacyDto thumbnailGeneration;
-
   QueueResponseLegacyDto videoConversion;
 
   QueueResponseLegacyDto workflow;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueuesResponseLegacyDto &&
+    other.assetThumbnailGeneration == assetThumbnailGeneration &&
     other.backgroundTask == backgroundTask &&
     other.backupDatabase == backupDatabase &&
     other.duplicateDetection == duplicateDetection &&
+    other.encryption == encryption &&
     other.faceDetection == faceDetection &&
     other.facialRecognition == facialRecognition &&
     other.library_ == library_ &&
@@ -78,20 +89,23 @@ class QueuesResponseLegacyDto {
     other.migration == migration &&
     other.notifications == notifications &&
     other.ocr == ocr &&
+    other.personThumbnailGeneration == personThumbnailGeneration &&
+    other.s3Upload == s3Upload &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
     other.storageTemplateMigration == storageTemplateMigration &&
-    other.thumbnailGeneration == thumbnailGeneration &&
     other.videoConversion == videoConversion &&
     other.workflow == workflow;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (assetThumbnailGeneration.hashCode) +
     (backgroundTask.hashCode) +
     (backupDatabase.hashCode) +
     (duplicateDetection.hashCode) +
+    (encryption.hashCode) +
     (faceDetection.hashCode) +
     (facialRecognition.hashCode) +
     (library_.hashCode) +
@@ -99,22 +113,25 @@ class QueuesResponseLegacyDto {
     (migration.hashCode) +
     (notifications.hashCode) +
     (ocr.hashCode) +
+    (personThumbnailGeneration.hashCode) +
+    (s3Upload.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
     (storageTemplateMigration.hashCode) +
-    (thumbnailGeneration.hashCode) +
     (videoConversion.hashCode) +
     (workflow.hashCode);
 
   @override
-  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'QueuesResponseLegacyDto[assetThumbnailGeneration=$assetThumbnailGeneration, backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, encryption=$encryption, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, personThumbnailGeneration=$personThumbnailGeneration, s3Upload=$s3Upload, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'assetThumbnailGeneration'] = this.assetThumbnailGeneration;
       json[r'backgroundTask'] = this.backgroundTask;
       json[r'backupDatabase'] = this.backupDatabase;
       json[r'duplicateDetection'] = this.duplicateDetection;
+      json[r'encryption'] = this.encryption;
       json[r'faceDetection'] = this.faceDetection;
       json[r'facialRecognition'] = this.facialRecognition;
       json[r'library'] = this.library_;
@@ -122,11 +139,12 @@ class QueuesResponseLegacyDto {
       json[r'migration'] = this.migration;
       json[r'notifications'] = this.notifications;
       json[r'ocr'] = this.ocr;
+      json[r'personThumbnailGeneration'] = this.personThumbnailGeneration;
+      json[r's3Upload'] = this.s3Upload;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
       json[r'storageTemplateMigration'] = this.storageTemplateMigration;
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
       json[r'workflow'] = this.workflow;
     return json;
@@ -141,9 +159,11 @@ class QueuesResponseLegacyDto {
       final json = value.cast<String, dynamic>();
 
       return QueuesResponseLegacyDto(
+        assetThumbnailGeneration: QueueResponseLegacyDto.fromJson(json[r'assetThumbnailGeneration'])!,
         backgroundTask: QueueResponseLegacyDto.fromJson(json[r'backgroundTask'])!,
         backupDatabase: QueueResponseLegacyDto.fromJson(json[r'backupDatabase'])!,
         duplicateDetection: QueueResponseLegacyDto.fromJson(json[r'duplicateDetection'])!,
+        encryption: QueueResponseLegacyDto.fromJson(json[r'encryption'])!,
         faceDetection: QueueResponseLegacyDto.fromJson(json[r'faceDetection'])!,
         facialRecognition: QueueResponseLegacyDto.fromJson(json[r'facialRecognition'])!,
         library_: QueueResponseLegacyDto.fromJson(json[r'library'])!,
@@ -151,11 +171,12 @@ class QueuesResponseLegacyDto {
         migration: QueueResponseLegacyDto.fromJson(json[r'migration'])!,
         notifications: QueueResponseLegacyDto.fromJson(json[r'notifications'])!,
         ocr: QueueResponseLegacyDto.fromJson(json[r'ocr'])!,
+        personThumbnailGeneration: QueueResponseLegacyDto.fromJson(json[r'personThumbnailGeneration'])!,
+        s3Upload: QueueResponseLegacyDto.fromJson(json[r's3Upload'])!,
         search: QueueResponseLegacyDto.fromJson(json[r'search'])!,
         sidecar: QueueResponseLegacyDto.fromJson(json[r'sidecar'])!,
         smartSearch: QueueResponseLegacyDto.fromJson(json[r'smartSearch'])!,
         storageTemplateMigration: QueueResponseLegacyDto.fromJson(json[r'storageTemplateMigration'])!,
-        thumbnailGeneration: QueueResponseLegacyDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: QueueResponseLegacyDto.fromJson(json[r'videoConversion'])!,
         workflow: QueueResponseLegacyDto.fromJson(json[r'workflow'])!,
       );
@@ -205,9 +226,11 @@ class QueuesResponseLegacyDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetThumbnailGeneration',
     'backgroundTask',
     'backupDatabase',
     'duplicateDetection',
+    'encryption',
     'faceDetection',
     'facialRecognition',
     'library',
@@ -215,11 +238,12 @@ class QueuesResponseLegacyDto {
     'migration',
     'notifications',
     'ocr',
+    'personThumbnailGeneration',
+    's3Upload',
     'search',
     'sidecar',
     'smartSearch',
     'storageTemplateMigration',
-    'thumbnailGeneration',
     'videoConversion',
     'workflow',
   };
