@@ -215,6 +215,36 @@ const SQL_RESET_SCHEMA = `
   GRANT ALL ON SCHEMA public TO public;
 `;
 
+async function* sql(inputStream: Readable, isPgClusterDump: boolean) {
+  yield SQL_DROP_CONNECTIONS;
+  yield isPgClusterDump
+    ? String.raw`
+          \c postgres
+        `
+    : SQL_RESET_SCHEMA;
+
+  for await (const chunk of inputStream) {
+    yield chunk;
+  }
+}
+
+async function* sqlRollback(inputStream: Readable, isPgClusterDump: boolean) {
+  yield SQL_DROP_CONNECTIONS;
+
+  if (isPgClusterDump) {
+    yield String.raw`
+            CREATE DATABASE IF NOT EXISTS immich;
+            \c immich
+          `;
+  }
+
+  yield SQL_RESET_SCHEMA;
+
+  for await (const chunk of inputStream) {
+    yield chunk;
+  }
+}
+
 export async function restoreDatabaseBackup(
   { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos }: BackupRepos,
   filename: string,
@@ -265,20 +295,7 @@ export async function restoreDatabaseBackup(
       inputStream = storage.createPlainReadStream(backupFilePath);
     }
 
-    async function* sql() {
-      yield SQL_DROP_CONNECTIONS;
-      yield isPgClusterDump
-        ? String.raw`
-          \c postgres
-        `
-        : SQL_RESET_SCHEMA;
-
-      for await (const chunk of inputStream) {
-        yield chunk;
-      }
-    }
-
-    const sqlStream = Readable.from(sql());
+    const sqlStream = Readable.from(sql(inputStream, isPgClusterDump));
     const psql = processRepository.spawnDuplexStream(bin, args, {
       env: {
         PATH: process.env.PATH,
@@ -298,68 +315,9 @@ export async function restoreDatabaseBackup(
     await pipeline(sqlStream, progressSource, psql, progressSink);
 
     try {
-      progressCb?.('migrations', 0.8);
-      await databaseRepository.runMigrations();
-
       progressCb?.('migrations', 0.9);
-      await new Promise<void>((resolve, reject) => {
-        // eslint-disable-next-line unicorn/prefer-module
-        const basePath = dirname(__filename);
-        const workerFile = join(basePath, '..', 'workers', `api.js`);
 
-        const worker = processRepository.fork(workerFile, [], {
-          execArgv: process.execArgv.filter((arg) => !arg.startsWith('--inspect')),
-          env: {
-            ...process.env,
-            IMMICH_HOST: '127.0.0.1',
-            IMMICH_PORT: '33001',
-          },
-          stdio: ['ignore', 'pipe', 'ignore', 'ipc'],
-        });
-
-        worker.on('error', reject);
-        worker.on('exit', reject);
-
-        async function checkHealth() {
-          try {
-            const response = await fetch('http://127.0.0.1:33001/api/server/config');
-            const { isOnboarded } = await response.json();
-            if (isOnboarded) {
-              resolve();
-            } else {
-              reject(new Error('Server health check failed, no admin exists.'));
-            }
-          } catch (error) {
-            reject(error);
-          } finally {
-            if (worker.exitCode !== null) {
-              worker.kill('SIGTERM');
-            }
-          }
-        }
-
-        let output = '',
-          alive = false;
-
-        worker.stdout?.on('data', (data) => {
-          if (alive) {
-            return;
-          }
-
-          output += data;
-
-          if (output.includes('Immich Server is listening')) {
-            alive = true;
-            void checkHealth();
-          }
-        });
-
-        setTimeout(() => {
-          if (worker.exitCode !== null) {
-            worker.kill('SIGTERM');
-          }
-        }, 20_000);
-      });
+      await immichHealthCheck({ database: databaseRepository, process: processRepository });
     } catch (error) {
       progressCb?.('rollback', 0);
 
@@ -368,24 +326,7 @@ export async function restoreDatabaseBackup(
       fileStream.pipe(gunzip);
       inputStream = gunzip;
 
-      async function* sql() {
-        yield SQL_DROP_CONNECTIONS;
-
-        if (isPgClusterDump) {
-          yield String.raw`
-            CREATE DATABASE IF NOT EXISTS immich;
-            \c immich
-          `;
-        }
-
-        yield SQL_RESET_SCHEMA;
-
-        for await (const chunk of inputStream) {
-          yield chunk;
-        }
-      }
-
-      const sqlStream = Readable.from(sql());
+      const sqlStream = Readable.from(sqlRollback(inputStream, isPgClusterDump));
       const psql = processRepository.spawnDuplexStream(bin, args, {
         env: {
           PATH: process.env.PATH,
@@ -414,6 +355,68 @@ export async function restoreDatabaseBackup(
   }
 
   logger.log(`Database Restore Success`);
+}
+
+async function immichHealthCheck({ database, process: processRepository }: Pick<BackupRepos, 'database' | 'process'>) {
+  await database.runMigrations();
+  await new Promise<void>((resolve, reject) => {
+    // eslint-disable-next-line unicorn/prefer-module
+    const basePath = dirname(__filename);
+    const workerFile = join(basePath, '..', 'workers', `api.js`);
+
+    const worker = processRepository.fork(workerFile, [], {
+      execArgv: process.execArgv.filter((arg) => !arg.startsWith('--inspect')),
+      env: {
+        ...process.env,
+        IMMICH_HOST: '127.0.0.1',
+        IMMICH_PORT: '33001',
+      },
+      stdio: ['ignore', 'pipe', 'ignore', 'ipc'],
+    });
+
+    worker.on('error', reject);
+    worker.on('exit', reject);
+
+    async function checkHealth() {
+      try {
+        const response = await fetch('http://127.0.0.1:33001/api/server/config');
+        const { isOnboarded } = await response.json();
+        if (isOnboarded) {
+          resolve();
+        } else {
+          reject(new Error('Server health check failed, no admin exists.'));
+        }
+      } catch (error) {
+        reject(error);
+      } finally {
+        if (worker.exitCode !== null) {
+          worker.kill('SIGTERM');
+        }
+      }
+    }
+
+    let output = '',
+      alive = false;
+
+    worker.stdout?.on('data', (data) => {
+      if (alive) {
+        return;
+      }
+
+      output += data;
+
+      if (output.includes('Immich Server is listening')) {
+        alive = true;
+        void checkHealth();
+      }
+    });
+
+    setTimeout(() => {
+      if (worker.exitCode !== null) {
+        worker.kill('SIGTERM');
+      }
+    }, 20_000);
+  });
 }
 
 export async function deleteDatabaseBackup({ storage }: Pick<BackupRepos, 'storage'>, files: string[]): Promise<void> {
