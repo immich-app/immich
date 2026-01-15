@@ -15,6 +15,7 @@
 </script>
 
 <div
+  data-broken-asset
   class={[
     'flex flex-col overflow-hidden max-h-full max-w-full justify-center items-center bg-gray-100/40 dark:bg-gray-700/40 dark:text-gray-100 p-4',
     className,

@@ -1,7 +1,7 @@
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
 import { getTabbable } from '$lib/utils/focus-util';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import { timelineAssetFactory } from '@test-data/factories/asset-factory';
 import { render } from '@testing-library/svelte';
 
 vi.hoisted(() => {
@@ -31,7 +31,7 @@ describe('Thumbnail component', () => {
   });
 
   it('should only contain a single tabbable element (the container)', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const asset = timelineAssetFactory.build();
     const { baseElement } = render(Thumbnail, {
       asset,
       selected: true,
@@ -47,7 +47,7 @@ describe('Thumbnail component', () => {
   });
 
   it('shows thumbhash while image is loading', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const asset = timelineAssetFactory.build();
     const sut = render(Thumbnail, {
       asset,
       selected: true,
@@ -55,5 +55,23 @@ describe('Thumbnail component', () => {
 
     const thumbhash = sut.getByTestId('thumbhash');
     expect(thumbhash).not.toBeFalsy();
+  });
+
+  it('sets data-selected attribute when selected', () => {
+    const asset = timelineAssetFactory.build();
+    const { baseElement } = render(Thumbnail, { asset, selected: true });
+
+    const container = baseElement.querySelector<HTMLElement>('[data-thumbnail-focus-container]');
+    expect(container).not.toBeNull();
+    expect(Object.hasOwn(container!.dataset, 'selected')).toBe(true);
+  });
+
+  it('does not set data-selected attribute when not selected', () => {
+    const asset = timelineAssetFactory.build();
+    const { baseElement } = render(Thumbnail, { asset, selected: false });
+
+    const container = baseElement.querySelector<HTMLElement>('[data-thumbnail-focus-container]');
+    expect(container).not.toBeNull();
+    expect(Object.hasOwn(container!.dataset, 'selected')).toBe(false);
   });
 });
