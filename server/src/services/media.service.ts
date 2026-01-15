@@ -60,8 +60,8 @@ export class MediaService extends BaseService {
     this.videoInterfaces = { dri, mali };
   }
 
-  @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
-  async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.AssetThumbnailGeneration })
+  async handleQueueGenerateAssetThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -82,6 +82,18 @@ export class MediaService extends BaseService {
     }
 
     await queueAll();
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.PersonGenerateThumbnailsQueueAll, queue: QueueName.PersonThumbnailGeneration })
+  async handleQueueGeneratePersonThumbnails({ force }: JobOf<JobName.PersonGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+    let jobs: JobItem[] = [];
+
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
 
     const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
@@ -157,7 +169,7 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
+  @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.AssetThumbnailGeneration })
   async handleGenerateThumbnails({ id }: JobOf<JobName.AssetGenerateThumbnails>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     if (!asset) {
@@ -337,7 +349,7 @@ export class MediaService extends BaseService {
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
-  @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
+  @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.PersonThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { machineLearning, metadata, image, storage } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {

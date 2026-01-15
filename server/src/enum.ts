@@ -321,6 +321,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  QueueState = 'queue-state',
 }
 
 export enum UserMetadataKey {
@@ -555,7 +556,8 @@ export enum BootstrapEventPriority {
 }
 
 export enum QueueName {
-  ThumbnailGeneration = 'thumbnailGeneration',
+  AssetThumbnailGeneration = 'assetThumbnailGeneration',
+  PersonThumbnailGeneration = 'personThumbnailGeneration',
   MetadataExtraction = 'metadataExtraction',
   VideoConversion = 'videoConversion',
   FaceDetection = 'faceDetection',
@@ -600,6 +602,7 @@ export enum JobName {
   AssetFileMigration = 'AssetFileMigration',
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
+  PersonGenerateThumbnailsQueueAll = 'PersonGenerateThumbnailsQueueAll',
 
   AuditLogCleanup = 'AuditLogCleanup',
   AuditTableCleanup = 'AuditTableCleanup',

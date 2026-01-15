@@ -26,6 +26,7 @@ import {
   QueueCleanType,
   QueueCommand,
   QueueName,
+  SystemMetadataKey,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
@@ -176,11 +177,13 @@ export class QueueService extends BaseService {
   }
 
   private async getByName(name: QueueName): Promise<QueueResponseDto> {
-    const [statistics, isPaused] = await Promise.all([
+    const [statistics, isPaused, queueState] = await Promise.all([
       this.jobRepository.getJobCounts(name),
       this.jobRepository.isPaused(name),
+      this.systemMetadataRepository.get(SystemMetadataKey.QueueState),
     ]);
-    return { name, isPaused, statistics };
+    const lastTriggeredAt = queueState?.[name]?.lastTriggeredAt;
+    return { name, isPaused, statistics, lastTriggeredAt };
   }
 
   private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {
@@ -188,6 +191,11 @@ export class QueueService extends BaseService {
     if (isActive) {
       throw new BadRequestException(`Job is already running`);
     }
+
+    // Save the timestamp when queue was triggered
+    const queueState = (await this.systemMetadataRepository.get(SystemMetadataKey.QueueState)) || {};
+    queueState[name] = { lastTriggeredAt: new Date().toISOString() };
+    await this.systemMetadataRepository.set(SystemMetadataKey.QueueState, queueState);
 
     await this.eventRepository.emit('QueueStart', { name });
 
@@ -220,8 +228,12 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.SidecarQueueAll, data: { force } });
       }
 
-      case QueueName.ThumbnailGeneration: {
+      case QueueName.AssetThumbnailGeneration: {
         return this.jobRepository.queue({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force } });
+      }
+
+      case QueueName.PersonThumbnailGeneration: {
+        return this.jobRepository.queue({ name: JobName.PersonGenerateThumbnailsQueueAll, data: { force } });
       }
 
       case QueueName.FaceDetection: {
@@ -284,7 +296,10 @@ export class QueueService extends BaseService {
     }
 
     if (config.nightlyTasks.missingThumbnails) {
-      jobs.push({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } });
+      jobs.push(
+        { name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } },
+        { name: JobName.PersonGenerateThumbnailsQueueAll, data: { force: false } },
+      );
     }
 
     if (config.nightlyTasks.clusterNewFaces) {

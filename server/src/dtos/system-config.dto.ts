@@ -159,7 +159,13 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.ThumbnailGeneration]!: JobSettingsDto;
+  [QueueName.AssetThumbnailGeneration]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.PersonThumbnailGeneration]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()

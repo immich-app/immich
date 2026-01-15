@@ -54,6 +54,9 @@ export class QueueResponseDto {
   isPaused!: boolean;
 
   statistics!: QueueStatisticsDto;
+
+  @ApiProperty({ type: 'string', format: 'date-time', required: false })
+  lastTriggeredAt?: string;
 }
 
 export class QueueStatisticsDto {

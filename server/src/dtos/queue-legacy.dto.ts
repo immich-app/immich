@@ -17,7 +17,10 @@ export class QueueResponseLegacyDto {
 
 export class QueuesResponseLegacyDto implements Record<QueueName, QueueResponseLegacyDto> {
   @ApiProperty({ type: QueueResponseLegacyDto })
-  [QueueName.ThumbnailGeneration]!: QueueResponseLegacyDto;
+  [QueueName.AssetThumbnailGeneration]!: QueueResponseLegacyDto;
+
+  @ApiProperty({ type: QueueResponseLegacyDto })
+  [QueueName.PersonThumbnailGeneration]!: QueueResponseLegacyDto;
 
   @ApiProperty({ type: QueueResponseLegacyDto })
   [QueueName.MetadataExtraction]!: QueueResponseLegacyDto;

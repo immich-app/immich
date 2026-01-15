@@ -299,6 +299,7 @@ export type JobItem =
   // Thumbnails
   | { name: JobName.AssetGenerateThumbnailsQueueAll; data: IBaseJob }
   | { name: JobName.AssetGenerateThumbnails; data: IEntityJob }
+  | { name: JobName.PersonGenerateThumbnailsQueueAll; data: IBaseJob }
 
   // User
   | { name: JobName.UserDeleteCheck; data?: IBaseJob }
@@ -515,6 +516,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VersionCheckState]: VersionCheckMetadata;
   [SystemMetadataKey.MemoriesState]: MemoriesState;
+  [SystemMetadataKey.QueueState]: Partial<Record<QueueName, { lastTriggeredAt?: string }>>;
 }
 
 export interface UserPreferences {

@@ -67,7 +67,8 @@ describe(QueueService.name, () => {
         [QueueName.Search]: expected,
         [QueueName.StorageTemplateMigration]: expected,
         [QueueName.Migration]: expected,
-        [QueueName.ThumbnailGeneration]: expected,
+        [QueueName.AssetThumbnailGeneration]: expected,
+        [QueueName.PersonThumbnailGeneration]: expected,
         [QueueName.VideoConversion]: expected,
         [QueueName.FaceDetection]: expected,
         [QueueName.FacialRecognition]: expected,
@@ -165,14 +166,26 @@ describe(QueueService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SidecarQueueAll, data: { force: false } });
     });
 
-    it('should handle a start thumbnail generation command', async () => {
+    it('should handle a start asset thumbnail generation command', async () => {
       mocks.job.isActive.mockResolvedValue(false);
       mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
 
-      await sut.runCommandLegacy(QueueName.ThumbnailGeneration, { command: QueueCommand.Start, force: false });
+      await sut.runCommandLegacy(QueueName.AssetThumbnailGeneration, { command: QueueCommand.Start, force: false });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.AssetGenerateThumbnailsQueueAll,
+        data: { force: false },
+      });
+    });
+
+    it('should handle a start person thumbnail generation command', async () => {
+      mocks.job.isActive.mockResolvedValue(false);
+      mocks.job.getJobCounts.mockResolvedValue(factory.queueStatistics());
+
+      await sut.runCommandLegacy(QueueName.PersonThumbnailGeneration, { command: QueueCommand.Start, force: false });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.PersonGenerateThumbnailsQueueAll,
         data: { force: false },
       });
     });
