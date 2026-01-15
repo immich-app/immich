@@ -40,11 +40,12 @@ export class GooglePhotosImportService {
   private readonly jobs = new Map<string, ImportJob>();
   private readonly tempDir = '/tmp/immich-google-photos-import';
 
-  constructor() // Inject required repositories
-  // @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-  // @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-  // @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  {}
+  constructor() {
+    // Inject required repositories
+    // @Inject(IAssetRepository) private assetRepository: IAssetRepository,
+    // @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
+    // @Inject(IStorageRepository) private storageRepository: IStorageRepository,
+  }
 
   async createImportJob(userId: string, files: Express.Multer.File[]): Promise<{ id: string }> {
     const jobId = randomUUID();

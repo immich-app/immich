@@ -73,7 +73,7 @@
     },
     [QueueName.FacialRecognition]: {
       allText: $t('reset'),
-      missingText: $t('missing'),
+      missingText: $t('unassigned'),
       disabled: !featureFlags.facialRecognition,
       isDestructive: true,
     },
