@@ -8,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/api",
+    baseUrl: "/api"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
@@ -708,6 +708,58 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
+export type GoogleDriveFileDto = {
+    /** Creation timestamp */
+    createdTime: string;
+    /** Google Drive file ID */
+    id: string;
+    /** MIME type */
+    mimeType: string;
+    /** File name */
+    name: string;
+    /** File size in bytes */
+    size: number;
+};
+export type GoogleDriveFilesResponseDto = {
+    files: GoogleDriveFileDto[];
+};
+export type GooglePhotosImportJobDto = {
+    /** Import job ID */
+    id: string;
+};
+export type GooglePhotosImportFromDriveDto = {
+    /** Array of Google Drive file IDs to import */
+    fileIds: string[];
+};
+export type GooglePhotosImportProgressDto = {
+    /** Number of albums found */
+    albumsFound: number;
+    /** Current progress count */
+    current: number;
+    /** Current file being processed */
+    currentFile?: string;
+    /** List of errors encountered */
+    errors: string[];
+    phase: Phase;
+    /** Number of photos with metadata */
+    photosMatched: number;
+    /** Number of photos missing metadata */
+    photosMissingMetadata: number;
+    /** Total items to process */
+    total: number;
+};
+export type ImporterConfigResponseDto = {
+    apiKey: string;
+    oauth: {
+        clientId: string;
+        clientSecret: string;
+    };
+    serverUrl: string;
+};
+export type SetupTokenResponseDto = {
+    expiresAt: string;
+    token: string;
+};
 export type QueueStatisticsDto = {
     active: number;
     completed: number;
@@ -725,9 +777,11 @@ export type QueueResponseLegacyDto = {
     queueStatus: QueueStatusLegacyDto;
 };
 export type QueuesResponseLegacyDto = {
+    assetThumbnailGeneration: QueueResponseLegacyDto;
     backgroundTask: QueueResponseLegacyDto;
     backupDatabase: QueueResponseLegacyDto;
     duplicateDetection: QueueResponseLegacyDto;
+    encryption: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
@@ -735,12 +789,12 @@ export type QueuesResponseLegacyDto = {
     migration: QueueResponseLegacyDto;
     notifications: QueueResponseLegacyDto;
     ocr: QueueResponseLegacyDto;
+    personThumbnailGeneration: QueueResponseLegacyDto;
     s3Upload: QueueResponseLegacyDto;
     search: QueueResponseLegacyDto;
     sidecar: QueueResponseLegacyDto;
     smartSearch: QueueResponseLegacyDto;
     storageTemplateMigration: QueueResponseLegacyDto;
-    thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
 };
@@ -973,6 +1027,7 @@ export type PluginTriggerResponseDto = {
 };
 export type QueueResponseDto = {
     isPaused: boolean;
+    lastTriggeredAt?: string;
     name: QueueName;
     statistics: QueueStatisticsDto;
 };
@@ -1463,18 +1518,20 @@ export type JobSettingsDto = {
     concurrency: number;
 };
 export type SystemConfigJobDto = {
+    assetThumbnailGeneration: JobSettingsDto;
     backgroundTask: JobSettingsDto;
+    encryption: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
     notifications: JobSettingsDto;
     ocr: JobSettingsDto;
+    personThumbnailGeneration: JobSettingsDto;
     s3Upload: JobSettingsDto;
     search: JobSettingsDto;
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
-    thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
     workflow: JobSettingsDto;
 };
@@ -1498,6 +1555,10 @@ export type MachineLearningAvailabilityChecksDto = {
     interval: number;
     timeout: number;
 };
+export type MachineLearningCircuitBreakerDto = {
+    failureThreshold: number;
+    resetTimeout: number;
+};
 export type ClipConfig = {
     enabled: boolean;
     modelName: string;
@@ -1520,13 +1581,22 @@ export type OcrConfig = {
     minRecognitionScore: number;
     modelName: string;
 };
+export type MachineLearningStreamModeDto = {
+    enabled: boolean;
+    maxPending: number;
+    maxRetries: number;
+    resultTtlHours: number;
+};
 export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;
+    circuitBreaker: MachineLearningCircuitBreakerDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
     ocr: OcrConfig;
+    requestTimeout: number;
+    streamMode: MachineLearningStreamModeDto;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -1586,10 +1656,19 @@ export type SystemConfigServerDto = {
     publicUsers: boolean;
 };
 export type SystemConfigStorageLocationsDto = {
+    backups: StorageBackend;
     encodedVideos: StorageBackend;
     originals: StorageBackend;
     previews: StorageBackend;
+    profile: StorageBackend;
     thumbnails: StorageBackend;
+};
+export type SystemConfigStorageClassesDto = {
+    encodedVideos: EncodedVideos;
+    originalsPhotos: OriginalsPhotos;
+    originalsVideos: OriginalsVideos;
+    previews: Previews;
+    thumbnails: Thumbnails;
 };
 export type SystemConfigStorageS3Dto = {
     accessKeyId: string;
@@ -1600,6 +1679,7 @@ export type SystemConfigStorageS3Dto = {
     prefix: string;
     region: string;
     secretAccessKey: string;
+    storageClasses: SystemConfigStorageClassesDto;
 };
 export type SystemConfigStorageUploadDto = {
     deleteLocalAfterUpload: boolean;
@@ -1760,6 +1840,14 @@ export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
 };
+export type AdminRecoverVaultDto = {};
+export type AdminRecoveryKeyDto = {};
+export type AdminRecoveryKeyResponseDto = {};
+export type AdminRecoveryStatusDto = {};
+export type VaultChangePasswordDto = {};
+export type VaultMigrationResponseDto = {};
+export type VaultSetupDto = {};
+export type VaultUnlockDto = {};
 export type WorkflowActionResponseDto = {
     actionConfig: object | null;
     id: string;
@@ -2970,6 +3058,147 @@ export function reassignFacesById({ id, faceDto }: {
         method: "PUT",
         body: faceDto
     })));
+}
+/**
+ * Disconnect Google Drive
+ */
+export function disconnectGoogleDrive(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/google-photos/google-drive/auth", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Initiate Google Drive OAuth flow
+ */
+export function initiateGoogleDriveAuth(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/google-photos/google-drive/auth", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Google Drive OAuth callback
+ */
+export function handleGoogleDriveCallback({ code, error, state }: {
+    code: string;
+    error: string;
+    state: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/google-photos/google-drive/callback${QS.query(QS.explode({
+        code,
+        error,
+        state
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * List Takeout files in Google Drive
+ */
+export function listDriveFiles({ query }: {
+    query: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GoogleDriveFilesResponseDto;
+    }>(`/google-photos/google-drive/files${QS.query(QS.explode({
+        query
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Import Google Photos Takeout ZIP files
+ */
+export function importFromFiles({ body }: {
+    body: {
+        files?: Blob[];
+    };
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: GooglePhotosImportJobDto;
+    }>("/google-photos/import", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body
+    })));
+}
+/**
+ * Import Google Photos Takeout from Google Drive
+ */
+export function importFromDrive({ googlePhotosImportFromDriveDto }: {
+    googlePhotosImportFromDriveDto: GooglePhotosImportFromDriveDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: GooglePhotosImportJobDto;
+    }>("/google-photos/import-from-drive", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: googlePhotosImportFromDriveDto
+    })));
+}
+/**
+ * Cancel import job
+ */
+export function cancelImport({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/google-photos/import/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get import job progress
+ */
+export function getProgress({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GooglePhotosImportProgressDto;
+    }>(`/google-photos/import/${encodeURIComponent(id)}/progress`, {
+        ...opts
+    }));
+}
+/**
+ * Download bootstrap binary
+ */
+export function getBootstrap({ platform, token }: {
+    platform: string;
+    token: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/importer/bootstrap/${encodeURIComponent(token)}/${encodeURIComponent(platform)}`, {
+        ...opts
+    }));
+}
+/**
+ * Get importer configuration
+ */
+export function getImporterConfig({ token }: {
+    token: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ImporterConfigResponseDto;
+    }>(`/importer/config/${encodeURIComponent(token)}`, {
+        ...opts
+    }));
+}
+/**
+ * Create a setup token for the Google Photos Importer app
+ */
+export function createSetupToken(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SetupTokenResponseDto;
+    }>("/importer/setup-token", {
+        ...opts,
+        method: "POST"
+    }));
 }
 /**
  * Retrieve queue counts and status
@@ -5074,6 +5303,140 @@ export function getProfileImage({ id }: {
     }));
 }
 /**
+ * Delete vault
+ */
+export function deleteVault(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Recover user vault
+ */
+export function adminRecoverVault({ adminRecoverVaultDto }: {
+    adminRecoverVaultDto: AdminRecoverVaultDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/admin/recover", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: adminRecoverVaultDto
+    })));
+}
+/**
+ * Register admin recovery key
+ */
+export function registerAdminRecoveryKey({ adminRecoveryKeyDto }: {
+    adminRecoveryKeyDto: AdminRecoveryKeyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/admin/recovery-key", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: adminRecoveryKeyDto
+    })));
+}
+/**
+ * Delete admin recovery key
+ */
+export function deleteAdminRecoveryKey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/vault/admin/recovery-key/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * List admin recovery keys
+ */
+export function getAdminRecoveryKeys(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AdminRecoveryKeyResponseDto[];
+    }>("/vault/admin/recovery-keys", {
+        ...opts
+    }));
+}
+/**
+ * Check admin recovery status
+ */
+export function getAdminRecoveryStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AdminRecoveryStatusDto;
+    }>("/vault/admin/recovery-status", {
+        ...opts
+    }));
+}
+/**
+ * Change vault password
+ */
+export function changeVaultPassword({ vaultChangePasswordDto }: {
+    vaultChangePasswordDto: VaultChangePasswordDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/change-password", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: vaultChangePasswordDto
+    })));
+}
+/**
+ * Lock vault
+ */
+export function lockVault(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/lock", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Encrypt existing assets
+ */
+export function migrateAssets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: VaultMigrationResponseDto;
+    }>("/vault/migrate", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Set up vault
+ */
+export function setupVault({ vaultSetupDto }: {
+    vaultSetupDto: VaultSetupDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/setup", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: vaultSetupDto
+    })));
+}
+/**
+ * Get vault status
+ */
+export function getVaultStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: object;
+    }>("/vault/status", {
+        ...opts
+    }));
+}
+/**
+ * Unlock vault
+ */
+export function unlockVault({ vaultUnlockDto }: {
+    vaultUnlockDto: VaultUnlockDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/vault/unlock", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: vaultUnlockDto
+    })));
+}
+/**
  * Retrieve assets by original path
  */
 export function getAssetsByOriginalPath({ path }: {
@@ -5419,6 +5782,12 @@ export enum AssetMediaSize {
     Preview = "preview",
     Thumbnail = "thumbnail"
 }
+export enum Phase {
+    Extracting = "extracting",
+    Parsing = "parsing",
+    Uploading = "uploading",
+    Complete = "complete"
+}
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
     TagCleanup = "tag-cleanup",
@@ -5428,7 +5797,8 @@ export enum ManualJobName {
     BackupDatabase = "backup-database"
 }
 export enum QueueName {
-    ThumbnailGeneration = "thumbnailGeneration",
+    AssetThumbnailGeneration = "assetThumbnailGeneration",
+    PersonThumbnailGeneration = "personThumbnailGeneration",
     MetadataExtraction = "metadataExtraction",
     VideoConversion = "videoConversion",
     FaceDetection = "faceDetection",
@@ -5445,7 +5815,8 @@ export enum QueueName {
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
     Workflow = "workflow",
-    S3Upload = "s3Upload"
+    S3Upload = "s3Upload",
+    Encryption = "encryption"
 }
 export enum QueueCommand {
     Start = "start",
@@ -5498,6 +5869,7 @@ export enum JobName {
     AssetFileMigration = "AssetFileMigration",
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
+    PersonGenerateThumbnailsQueueAll = "PersonGenerateThumbnailsQueueAll",
     AuditLogCleanup = "AuditLogCleanup",
     AuditTableCleanup = "AuditTableCleanup",
     DatabaseBackup = "DatabaseBackup",
@@ -5536,11 +5908,17 @@ export enum JobName {
     StorageTemplateMigrationSingle = "StorageTemplateMigrationSingle",
     S3UploadAsset = "S3UploadAsset",
     S3UploadQueueAll = "S3UploadQueueAll",
+    S3UploadEncodedVideo = "S3UploadEncodedVideo",
+    S3UploadEncodedVideoQueueAll = "S3UploadEncodedVideoQueueAll",
+    S3MigrateStorageClass = "S3MigrateStorageClass",
+    S3MigrateStorageClassAll = "S3MigrateStorageClassAll",
     TagCleanup = "TagCleanup",
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowRun = "WorkflowRun"
+    WorkflowRun = "WorkflowRun",
+    AssetEncrypt = "AssetEncrypt",
+    AssetEncryptAll = "AssetEncryptAll"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5647,7 +6025,8 @@ export enum VideoContainer {
     Mov = "mov",
     Mp4 = "mp4",
     Ogg = "ogg",
-    Webm = "webm"
+    Webm = "webm",
+    MatroskaWebm = "matroska,webm"
 }
 export enum VideoCodec {
     H264 = "h264",
@@ -5696,6 +6075,31 @@ export enum OAuthTokenEndpointAuthMethod {
 export enum StorageBackend {
     Local = "local",
     S3 = "s3"
+}
+export enum EncodedVideos {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
+}
+export enum OriginalsPhotos {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
+}
+export enum OriginalsVideos {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
+}
+export enum Previews {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
+}
+export enum Thumbnails {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
 }
 export enum UploadStrategy {
     LocalFirst = "local-first",

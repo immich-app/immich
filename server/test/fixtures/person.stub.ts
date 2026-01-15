@@ -1,4 +1,4 @@
-import { AssetType } from 'src/enum';
+import { AssetType, StorageBackend } from 'src/enum';
 import { previewFile } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
@@ -178,6 +178,8 @@ export const personThumbnailStub = {
     oldWidth: 2160,
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -191,6 +193,8 @@ export const personThumbnailStub = {
     oldWidth: 400,
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -204,6 +208,8 @@ export const personThumbnailStub = {
     oldWidth: 500,
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -217,6 +223,8 @@ export const personThumbnailStub = {
     oldWidth: 400,
     type: AssetType.Image,
     originalPath: '/original/path.dng',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -230,6 +238,8 @@ export const personThumbnailStub = {
     oldWidth: 2162,
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -243,6 +253,8 @@ export const personThumbnailStub = {
     oldWidth: 2162,
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),
@@ -256,6 +268,8 @@ export const personThumbnailStub = {
     oldWidth: 400,
     type: AssetType.Video,
     originalPath: '/original/path.mp4',
+    storageBackend: StorageBackend.Local,
+    s3Key: null,
     exifOrientation: '1',
     previewPath: previewFile.path,
   }),

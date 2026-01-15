@@ -108,7 +108,7 @@ export class VaultController {
     description: 'Change your vault password. This will re-encrypt the vault key.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
-  async changePassword(@Auth() auth: AuthDto, @Body() dto: VaultChangePasswordDto): Promise<void> {
+  async changeVaultPassword(@Auth() auth: AuthDto, @Body() dto: VaultChangePasswordDto): Promise<void> {
     await this.vaultService.changePassword(auth, dto);
   }
 

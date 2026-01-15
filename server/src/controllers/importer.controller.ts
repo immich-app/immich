@@ -39,7 +39,7 @@ export class ImporterController {
       'Returns the server URL, API key, and OAuth credentials for the desktop importer app. This endpoint is called by the desktop app after receiving the setup token.',
     history: new HistoryBuilder().added('v1'),
   })
-  getConfig(@Param('token') token: string): Promise<ImporterConfigResponseDto> {
+  getImporterConfig(@Param('token') token: string): Promise<ImporterConfigResponseDto> {
     return this.service.getImporterConfig(token);
   }
 
