@@ -605,6 +605,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
+  GlobalKey _getVideoPlayerKey(String id) {
+    videoPlayerKeys.putIfAbsent(id, () => GlobalKey());
+    return videoPlayerKeys[id]!;
+  }
+
   PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
     return PhotoViewGalleryPageOptions.customChild(
       key: ValueKey(asset),
@@ -617,7 +622,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       basePosition: Alignment.center,
       tightMode: true,
       child: NativeVideoViewer(
-        key: ValueKey(asset),
+        key: _getVideoPlayerKey(asset.heroTag),
         asset: asset,
         scaleStateNotifier: videoScaleStateNotifier,
         disableScaleGestures: showingBottomSheet,
