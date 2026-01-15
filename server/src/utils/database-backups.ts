@@ -221,8 +221,8 @@ async function* sql(inputStream: Readable, isPgClusterDump: boolean) {
   yield SQL_DROP_CONNECTIONS;
   yield isPgClusterDump
     ? String.raw`
-          \c postgres
-        `
+        \c postgres
+      `
     : SQL_RESET_SCHEMA;
 
   for await (const chunk of inputStream) {
@@ -235,9 +235,9 @@ async function* sqlRollback(inputStream: Readable, isPgClusterDump: boolean) {
 
   if (isPgClusterDump) {
     yield String.raw`
-            CREATE DATABASE IF NOT EXISTS immich;
-            \c immich
-          `;
+      CREATE DATABASE IF NOT EXISTS immich;
+      \c immich
+    `;
   }
 
   yield SQL_RESET_SCHEMA;

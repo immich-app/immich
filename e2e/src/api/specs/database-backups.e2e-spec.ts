@@ -263,5 +263,76 @@ describe('/admin/database-backups', () => {
         ({ status, body }) => status === 200 && !body.maintenanceMode,
       );
     });
+
+    it.sequential('rollback to restore point if backup is missing admin', { timeout: 60_000 }, async () => {
+      await utils.prepareTestBackup('empty');
+
+      const { status, headers } = await request(app)
+        .post('/admin/maintenance')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          action: 'restore_database',
+          restoreBackupFilename: 'development-empty.sql.gz',
+        });
+
+      expect(status).toBe(201);
+      cookie = headers['set-cookie'][0].split(';')[0];
+
+      await expect
+        .poll(
+          async () => {
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
+            return body.maintenanceMode;
+          },
+          {
+            interval: 500,
+            timeout: 10_000,
+          },
+        )
+        .toBeTruthy();
+
+      await expect
+        .poll(
+          async () => {
+            const { status, body } = await request(app).get('/admin/maintenance/status').send({ token: 'token' });
+            expect(status).toBe(200);
+            return body;
+          },
+          {
+            interval: 500,
+            timeout: 30_000,
+          },
+        )
+        .toEqual(
+          expect.objectContaining({
+            active: true,
+            action: 'restore_database',
+            error: 'Something went wrong, see logs!',
+          }),
+        );
+
+      const { status: status2, body: body2 } = await request(app)
+        .get('/admin/maintenance/status')
+        .set('cookie', cookie!)
+        .send({ token: 'token' });
+      expect(status2).toBe(200);
+      expect(body2).toEqual(
+        expect.objectContaining({
+          active: true,
+          action: 'restore_database',
+          error: expect.stringContaining('Server health check failed, no admin exists.'),
+        }),
+      );
+
+      await request(app).post('/admin/maintenance').set('cookie', cookie!).send({
+        action: 'end',
+      });
+
+      await utils.poll(
+        () => request(app).get('/server/config'),
+        ({ status, body }) => status === 200 && !body.maintenanceMode,
+      );
+    });
   });
 });

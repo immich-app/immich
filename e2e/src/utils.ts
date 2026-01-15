@@ -603,11 +603,11 @@ export const utils = {
     await deleteDatabaseBackup({ databaseBackupDeleteDto: { backups } }, { headers: asBearerAuth(accessToken) });
   },
 
-  prepareTestBackup: async (generate: 'corrupted') => {
+  prepareTestBackup: async (generate: 'empty' | 'corrupted') => {
     const dir = await mkdtemp(join(tmpdir(), 'test-'));
     const fn = join(dir, 'file');
 
-    const sql = Readable.from('IM CORRUPTED;');
+    const sql = Readable.from(generate === 'corrupted' ? 'IM CORRUPTED;' : 'SELECT 1;');
     const gzip = createGzip();
     const writeStream = createWriteStream(fn);
     await pipeline(sql, gzip, writeStream);

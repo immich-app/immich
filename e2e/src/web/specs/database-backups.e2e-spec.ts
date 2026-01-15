@@ -45,6 +45,23 @@ test.describe('Database Backups', () => {
     await page.waitForURL('/admin/maintenance**');
   });
 
+  test('rollback to restore point if backup is missing admin', async ({ context, page }) => {
+    test.setTimeout(60_000);
+
+    await utils.resetBackups(admin.accessToken);
+    await utils.prepareTestBackup('empty');
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/admin/maintenance?isOpen=backups');
+    await page.getByRole('button', { name: 'Restore', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();
+
+    await page.waitForURL('/maintenance?**');
+    await expect(page.getByText('Server health check failed, no admin exists.')).toBeVisible({ timeout: 60_000 });
+    await page.getByRole('button', { name: 'End maintenance mode' }).click();
+    await page.waitForURL('/admin/maintenance**');
+  });
+
   test('restore a backup from onboarding', async ({ context, page }) => {
     test.setTimeout(60_000);
 
