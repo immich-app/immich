@@ -527,6 +527,43 @@ export const mockDuplex = vitest.fn(
   },
 );
 
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
 export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
   for (const item of items) {
     await Promise.resolve();

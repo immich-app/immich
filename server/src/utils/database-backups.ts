@@ -1,13 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { debounce } from 'lodash';
 import { DateTime } from 'luxon';
-import path, { basename, dirname, join } from 'node:path';
+import path, { basename, join } from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import semver from 'semver';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { CacheControl, StorageFolder } from 'src/enum';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -39,6 +40,7 @@ type BackupRepos = {
   config: ConfigRepository;
   process: ProcessRepository;
   database: DatabaseRepository;
+  health: MaintenanceHealthRepository;
 };
 
 export class UnsupportedPostgresError extends Error {
@@ -246,7 +248,7 @@ async function* sqlRollback(inputStream: Readable, isPgClusterDump: boolean) {
 }
 
 export async function restoreDatabaseBackup(
-  { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos }: BackupRepos,
+  { logger, storage, process: processRepository, database: databaseRepository, health, ...pgRepos }: BackupRepos,
   filename: string,
   progressCb?: (action: 'backup' | 'restore' | 'migrations' | 'rollback', progress: number) => void,
 ): Promise<void> {
@@ -279,7 +281,7 @@ export async function restoreDatabaseBackup(
     progressCb?.('backup', 0.05);
 
     const restorePointFilePath = await createDatabaseBackup(
-      { logger, storage, process: processRepository, database: databaseRepository, ...pgRepos },
+      { logger, storage, process: processRepository, database: databaseRepository, health, ...pgRepos },
       'restore-point-',
     );
 
@@ -316,8 +318,8 @@ export async function restoreDatabaseBackup(
 
     try {
       progressCb?.('migrations', 0.9);
-
-      await immichHealthCheck({ database: databaseRepository, process: processRepository });
+      await databaseRepository.runMigrations();
+      await health.checkApiHealth();
     } catch (error) {
       progressCb?.('rollback', 0);
 
@@ -355,68 +357,6 @@ export async function restoreDatabaseBackup(
   }
 
   logger.log(`Database Restore Success`);
-}
-
-async function immichHealthCheck({ database, process: processRepository }: Pick<BackupRepos, 'database' | 'process'>) {
-  await database.runMigrations();
-  await new Promise<void>((resolve, reject) => {
-    // eslint-disable-next-line unicorn/prefer-module
-    const basePath = dirname(__filename);
-    const workerFile = join(basePath, '..', 'workers', `api.js`);
-
-    const worker = processRepository.fork(workerFile, [], {
-      execArgv: process.execArgv.filter((arg) => !arg.startsWith('--inspect')),
-      env: {
-        ...process.env,
-        IMMICH_HOST: '127.0.0.1',
-        IMMICH_PORT: '33001',
-      },
-      stdio: ['ignore', 'pipe', 'ignore', 'ipc'],
-    });
-
-    worker.on('error', reject);
-    worker.on('exit', reject);
-
-    async function checkHealth() {
-      try {
-        const response = await fetch('http://127.0.0.1:33001/api/server/config');
-        const { isOnboarded } = await response.json();
-        if (isOnboarded) {
-          resolve();
-        } else {
-          reject(new Error('Server health check failed, no admin exists.'));
-        }
-      } catch (error) {
-        reject(error);
-      } finally {
-        if (worker.exitCode !== null) {
-          worker.kill('SIGTERM');
-        }
-      }
-    }
-
-    let output = '',
-      alive = false;
-
-    worker.stdout?.on('data', (data) => {
-      if (alive) {
-        return;
-      }
-
-      output += data;
-
-      if (output.includes('Immich Server is listening')) {
-        alive = true;
-        void checkHealth();
-      }
-    });
-
-    setTimeout(() => {
-      if (worker.exitCode !== null) {
-        worker.kill('SIGTERM');
-      }
-    }, 20_000);
-  });
 }
 
 export async function deleteDatabaseBackup({ storage }: Pick<BackupRepos, 'storage'>, files: string[]): Promise<void> {

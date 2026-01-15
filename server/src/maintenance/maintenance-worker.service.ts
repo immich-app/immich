@@ -14,6 +14,7 @@ import {
 } from 'src/dtos/maintenance.dto';
 import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { DatabaseLock, ImmichCookie, MaintenanceAction, SystemMetadataKey } from 'src/enum';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -57,6 +58,7 @@ export class MaintenanceWorkerService {
     private configRepository: ConfigRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private maintenanceWebsocketRepository: MaintenanceWebsocketRepository,
+    private maintenanceHealthRepository: MaintenanceHealthRepository,
     private storageRepository: StorageRepository,
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
@@ -225,6 +227,7 @@ export class MaintenanceWorkerService {
       config: this.configRepository,
       process: this.processRepository,
       database: this.databaseRepository,
+      health: this.maintenanceHealthRepository,
     };
   }
 

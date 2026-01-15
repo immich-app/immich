@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { PassThrough, Readable } from 'node:stream';
 import { StorageCore } from 'src/cores/storage.core';
 import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils';
@@ -16,10 +17,15 @@ describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
   let maintenanceWebsocketRepositoryMock: AutoMocked<MaintenanceWebsocketRepository>;
+  let maintenanceHealthRepositoryMock: AutoMocked<MaintenanceHealthRepository>;
 
   beforeEach(() => {
     mocks = getMocks();
     maintenanceWebsocketRepositoryMock = automock(MaintenanceWebsocketRepository, {
+      args: [mocks.logger],
+      strict: false,
+    });
+    maintenanceHealthRepositoryMock = automock(MaintenanceHealthRepository, {
       args: [mocks.logger],
       strict: false,
     });
@@ -30,6 +36,7 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.config,
       mocks.systemMetadata as never,
       maintenanceWebsocketRepositoryMock,
+      maintenanceHealthRepositoryMock,
       mocks.storage as never,
       mocks.process,
       mocks.database as never,
@@ -307,6 +314,7 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.storage.readdir.mockResolvedValue([]);
       mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
       mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
+      mocks.process.fork.mockImplementation(() => mockSpawn(0, 'Immich Server is listening', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.storage.createPlainReadStream.mockReturnValue(Readable.from(mockData()));
@@ -372,6 +380,9 @@ describe(MaintenanceWorkerService.name, () => {
           action: 'end',
         },
       );
+
+      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(3);
     });
 
     it('should fail if backup creation fails', async () => {
@@ -423,6 +434,44 @@ describe(MaintenanceWorkerService.name, () => {
           task: 'error',
         }),
       );
+    });
+
+    it('should rollback if database migrations fail', async () => {
+      mocks.database.runMigrations.mockRejectedValue(new Error('Migrations Error'));
+
+      await sut.runAction({
+        action: MaintenanceAction.RestoreDatabase,
+        restoreBackupFilename: 'development-filename.sql',
+      });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
+        active: true,
+        action: MaintenanceAction.RestoreDatabase,
+        error: 'Error: Migrations Error',
+        task: 'error',
+      });
+
+      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalledTimes(0);
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
+    });
+
+    it('should rollback if API healthcheck fails', async () => {
+      maintenanceHealthRepositoryMock.checkApiHealth.mockRejectedValue(new Error('Health Error'));
+
+      await sut.runAction({
+        action: MaintenanceAction.RestoreDatabase,
+        restoreBackupFilename: 'development-filename.sql',
+      });
+
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
+        active: true,
+        action: MaintenanceAction.RestoreDatabase,
+        error: 'Error: Health Error',
+        task: 'error',
+      });
+
+      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
     });
   });
 
