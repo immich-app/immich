@@ -103,8 +103,8 @@
   const stackSelectedThumbnailSize = 65;
 
   const asset = $derived(cursor.current);
-  let nextAsset = $derived(cursor.nextAsset);
-  let previousAsset = $derived(cursor.previousAsset);
+  const nextAsset = $derived(cursor.nextAsset);
+  const previousAsset = $derived(cursor.previousAsset);
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();

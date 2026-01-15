@@ -117,6 +117,7 @@
 
   // TODO: Enable when edits are ready for release
   // let showEditorButton = $derived(
+  //   isOwner &&
   //     asset.type === AssetTypeEnum.Image &&
   //     !(
   //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
