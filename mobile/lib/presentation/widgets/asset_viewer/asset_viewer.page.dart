@@ -607,7 +607,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
     return PhotoViewGalleryPageOptions.customChild(
-      key: ValueKey(asset.heroTag),
+      key: ValueKey(asset),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
@@ -617,7 +617,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       basePosition: Alignment.center,
       tightMode: true,
       child: NativeVideoViewer(
-        key: ValueKey(asset.heroTag),
+        key: ValueKey(asset),
         asset: asset,
         scaleStateNotifier: videoScaleStateNotifier,
         disableScaleGestures: showingBottomSheet,
