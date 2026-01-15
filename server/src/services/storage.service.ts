@@ -264,20 +264,27 @@ export class StorageService extends BaseService {
 
     // Map StorageLocationType to config key
     switch (locationType) {
-      case StorageLocationType.Originals:
+      case StorageLocationType.Originals: {
         return config.storage.locations.originals === StorageBackend.Local;
-      case StorageLocationType.Thumbnails:
+      }
+      case StorageLocationType.Thumbnails: {
         return config.storage.locations.thumbnails === StorageBackend.Local;
-      case StorageLocationType.Previews:
+      }
+      case StorageLocationType.Previews: {
         return config.storage.locations.previews === StorageBackend.Local;
-      case StorageLocationType.EncodedVideos:
+      }
+      case StorageLocationType.EncodedVideos: {
         return config.storage.locations.encodedVideos === StorageBackend.Local;
-      case StorageLocationType.Profile:
+      }
+      case StorageLocationType.Profile: {
         return config.storage.locations.profile === StorageBackend.Local;
-      case StorageLocationType.Backups:
+      }
+      case StorageLocationType.Backups: {
         return config.storage.locations.backups === StorageBackend.Local;
-      default:
+      }
+      default: {
         return true;
+      }
     }
   }
 
@@ -288,7 +295,7 @@ export class StorageService extends BaseService {
     if (!config.storage.s3.enabled) {
       return false;
     }
-    return Object.values(config.storage.locations).some((backend) => backend === StorageBackend.S3);
+    return Object.values(config.storage.locations).includes(StorageBackend.S3);
   }
 
   /**

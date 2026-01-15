@@ -40,8 +40,8 @@ export class MlStreamRepository implements OnModuleDestroy {
     this.consumerName = `server-${process.pid}-${Date.now()}`;
   }
 
-  async onModuleDestroy() {
-    await this.teardown();
+  onModuleDestroy() {
+    this.teardown();
   }
 
   async setup(): Promise<void> {

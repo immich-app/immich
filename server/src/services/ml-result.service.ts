@@ -46,7 +46,7 @@ export class MlResultService extends BaseService {
 
   private async handleResult(result: MlWorkResult): Promise<void> {
     if (result.status === 'error') {
-      await this.handleError(result);
+      this.handleError(result);
       return;
     }
 
@@ -177,7 +177,7 @@ export class MlResultService extends BaseService {
     return { ocrDataList, searchText: searchTokens.join(' ') };
   }
 
-  private async handleError(result: MlWorkResult): Promise<void> {
+  private handleError(result: MlWorkResult): void {
     this.logger.error(
       `ML ${result.taskType} failed for asset ${result.assetId}: ${result.error?.message} (${result.error?.code})`,
     );
