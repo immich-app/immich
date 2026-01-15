@@ -42,20 +42,24 @@
       <Stack class="grow">
         <Text>{filename}</Text>
         {#if timeText || version !== expectedVersion}
-          <HStack class="grow">
+          <span>
             {#if timeText}
-              <Text color="primary" size="small">{timeText}</Text>
+              <Text color="primary" size="small" class="inline">{timeText}</Text>
             {/if}
             {#if timeText && version !== expectedVersion}
               &middot;
             {/if}
             {#if !version}
-              <Text color="danger" size="small">{$t('admin.maintenance_restore_backup_unknown_version')}</Text>
+              <Text color="danger" size="small" class="inline"
+                >{$t('admin.maintenance_restore_backup_unknown_version')}</Text
+              >
             {/if}
             {#if version && version !== expectedVersion}
-              <Text color="warning" size="small">{$t('admin.maintenance_restore_backup_different_version')}</Text>
+              <Text color="warning" size="small" class="inline"
+                >{$t('admin.maintenance_restore_backup_different_version')}</Text
+              >
             {/if}
-          </HStack>
+          </span>
         {/if}
       </Stack>
 
