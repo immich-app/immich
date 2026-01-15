@@ -226,31 +226,36 @@
       return;
     }
 
-    void tracker.invoke(async () => {
-      let hasNext = false;
+    void tracker.invoke(
+      async () => {
+        let hasNext = false;
 
-      if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-        hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
-        if (!hasNext) {
-          const asset = await onRandom?.();
-          if (asset) {
-            slideshowHistory.queue(asset);
-            hasNext = true;
+        if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+          hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+          if (!hasNext) {
+            const asset = await onRandom?.();
+            if (asset) {
+              slideshowHistory.queue(asset);
+              hasNext = true;
+            }
+          }
+        } else {
+          hasNext =
+            order === 'previous'
+              ? await navigateToAsset(cursor.previousAsset)
+              : await navigateToAsset(cursor.nextAsset);
+        }
+
+        if ($slideshowState === SlideshowState.PlaySlideshow) {
+          if (hasNext) {
+            $restartSlideshowProgress = true;
+          } else {
+            await handleStopSlideshow();
           }
         }
-      } else {
-        hasNext =
-          order === 'previous' ? await navigateToAsset(cursor.previousAsset) : await navigateToAsset(cursor.nextAsset);
-      }
-
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
-        if (hasNext) {
-          $restartSlideshowProgress = true;
-        } else {
-          await handleStopSlideshow();
-        }
-      }
-    });
+      },
+      (error: Error) => $t('error_while_navigating', { values: { message: error.message } }),
+    );
   };
 
   // const showEditor = () => {
