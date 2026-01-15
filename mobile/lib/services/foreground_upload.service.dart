@@ -12,12 +12,10 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -42,7 +40,6 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(connectivityApiProvider),
     ref.watch(appSettingsServiceProvider),
-    ref.watch(serverInfoProvider),
   );
 });
 
@@ -58,7 +55,6 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._appSettingsService,
-    this._serverInfo,
   );
 
   final UploadRepository _uploadRepository;
@@ -66,7 +62,6 @@ class ForegroundUploadService {
   final DriftBackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AppSettingsService _appSettingsService;
-  final ServerInfo _serverInfo;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -327,7 +322,7 @@ class ForegroundUploadService {
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
         'duration': asset.duration.toString(),
-        if (CurrentPlatform.isIOS && asset.cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+        if (CurrentPlatform.isIOS && asset.cloudId != null)
           'metadata': jsonEncode([
             RemoteAssetMetadataItem(
               key: RemoteAssetMetadataKey.mobileApp,

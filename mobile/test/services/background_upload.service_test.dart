@@ -27,27 +27,6 @@ import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
 
-// Test ServerInfo stub
-const _serverInfo = ServerInfo(
-  serverVersion: ServerVersion(major: 2, minor: 4, patch: 0),
-  latestVersion: ServerVersion(major: 2, minor: 4, patch: 0),
-  serverFeatures: ServerFeatures(trash: true, map: true, oauthEnabled: false, passwordLogin: true, ocr: false),
-  serverConfig: ServerConfig(
-    trashDays: 30,
-    oauthButtonText: 'Login with OAuth',
-    externalDomain: '',
-    mapDarkStyleUrl: '',
-    mapLightStyleUrl: '',
-  ),
-  serverDiskInfo: ServerDiskInfo(
-    diskAvailable: '100GB',
-    diskSize: '500GB',
-    diskUse: '400GB',
-    diskUsagePercentage: 80.0,
-  ),
-  versionStatus: VersionStatus.upToDate,
-);
-
 void main() {
   late BackgroundUploadService sut;
   late MockUploadRepository mockUploadRepository;
@@ -91,7 +70,6 @@ void main() {
       mockBackupRepository,
       mockAppSettingsService,
       mockAssetMediaRepository,
-      _serverInfo,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};
@@ -208,7 +186,6 @@ void main() {
         mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -258,10 +235,6 @@ void main() {
         mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo.copyWith(
-          serverVersion: const ServerVersion(major: 2, minor: 3, patch: 0),
-          latestVersion: const ServerVersion(major: 2, minor: 3, patch: 0),
-        ),
       );
       addTearDown(() => sutWithV23.dispose());
 
@@ -301,7 +274,6 @@ void main() {
         mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutAndroid.dispose());
 
@@ -341,7 +313,6 @@ void main() {
         mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -381,7 +352,6 @@ void main() {
         mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 

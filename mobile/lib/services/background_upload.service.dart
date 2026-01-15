@@ -14,11 +14,9 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -35,7 +33,6 @@ final backgroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(assetMediaRepositoryProvider),
-    ref.watch(serverInfoProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -108,7 +105,6 @@ class BackgroundUploadService {
     this._backupRepository,
     this._appSettingsService,
     this._assetMediaRepository,
-    this._serverInfo,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -120,7 +116,6 @@ class BackgroundUploadService {
   final DriftBackupRepository _backupRepository;
   final AppSettingsService _appSettingsService;
   final AssetMediaRepository _assetMediaRepository;
-  final ServerInfo _serverInfo;
   final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -397,8 +392,7 @@ class BackgroundUploadService {
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
-      // Include cloudId and eTag in metadata if available and server version supports it
-      if (CurrentPlatform.isIOS && cloudId != null && _serverInfo.serverVersion.isAtLeast(major: 2, minor: 4))
+      if (CurrentPlatform.isIOS && cloudId != null)
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(
             key: RemoteAssetMetadataKey.mobileApp,
