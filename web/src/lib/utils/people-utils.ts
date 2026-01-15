@@ -1,7 +1,6 @@
 import type { Faces } from '$lib/stores/people.store';
 import { getAssetMediaUrl } from '$lib/utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
-import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
   const ratio = img.naturalWidth / img.naturalHeight;
@@ -14,55 +13,35 @@ const getContainedSize = (img: HTMLImageElement): { width: number; height: numbe
   return { width, height };
 };
 
-export interface boundingBox {
+interface FaceBoundingBox {
+  id: string;
   top: number;
   left: number;
   width: number;
   height: number;
 }
 
-export const getBoundingBox = (
-  faces: Faces[],
-  zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | undefined,
-): boundingBox[] => {
-  const boxes: boundingBox[] = [];
+export const getBoundingBox = (faces: Faces[], photoViewer: HTMLImageElement | undefined) => {
+  const boxes: FaceBoundingBox[] = [];
 
   if (!photoViewer) {
     return boxes;
   }
+
   const clientHeight = photoViewer.clientHeight;
   const clientWidth = photoViewer.clientWidth;
-
   const { width, height } = getContainedSize(photoViewer);
 
   for (const face of faces) {
-    /*
-     *
-     * Create the coordinates of the box based on the displayed image.
-     * The coordinates must take into account margins due to the 'object-fit: contain;' css property of the photo-viewer.
-     *
-     */
     const coordinates = {
-      x1:
-        (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX1 +
-        ((clientWidth - width) / 2) * zoom.currentZoom +
-        zoom.currentPositionX,
-      x2:
-        (width / face.imageWidth) * zoom.currentZoom * face.boundingBoxX2 +
-        ((clientWidth - width) / 2) * zoom.currentZoom +
-        zoom.currentPositionX,
-      y1:
-        (height / face.imageHeight) * zoom.currentZoom * face.boundingBoxY1 +
-        ((clientHeight - height) / 2) * zoom.currentZoom +
-        zoom.currentPositionY,
-      y2:
-        (height / face.imageHeight) * zoom.currentZoom * face.boundingBoxY2 +
-        ((clientHeight - height) / 2) * zoom.currentZoom +
-        zoom.currentPositionY,
+      x1: (width / face.imageWidth) * face.boundingBoxX1 + (clientWidth - width) / 2,
+      x2: (width / face.imageWidth) * face.boundingBoxX2 + (clientWidth - width) / 2,
+      y1: (height / face.imageHeight) * face.boundingBoxY1 + (clientHeight - height) / 2,
+      y2: (height / face.imageHeight) * face.boundingBoxY2 + (clientHeight - height) / 2,
     };
 
     boxes.push({
+      id: face.id,
       top: Math.round(coordinates.y1),
       left: Math.round(coordinates.x1),
       width: Math.round(coordinates.x2 - coordinates.x1),

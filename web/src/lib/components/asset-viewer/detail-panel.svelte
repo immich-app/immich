@@ -17,9 +17,16 @@
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetMediaSize,
+    getAllAlbums,
+    getAssetInfo,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
     mdiCalendar,
@@ -34,20 +41,21 @@
     mdiPlus,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
   interface Props {
     asset: AssetResponseDto;
-    albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
   }
 
-  let { asset, albums = [], currentAlbum = null }: Props = $props();
+  let { asset, currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -74,14 +82,38 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
+  let albums = $state<AlbumResponseDto[]>([]);
+
+  const refreshAlbums = async () => {
+    if (authManager.isSharedLink) {
+      return;
+    }
+
+    try {
+      albums = await getAllAlbums({ assetId: asset.id });
+    } catch (error) {
+      handleError(error, 'Error getting asset album membership');
+    }
+  };
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset;
+    untrack(() => void refreshAlbums());
+  });
+
   $effect(() => {
     if (!previousId) {
       previousId = asset.id;
+      return;
     }
-    if (asset.id !== previousId) {
-      showEditFaces = false;
-      previousId = asset.id;
+
+    if (asset.id === previousId) {
+      return;
     }
+
+    showEditFaces = false;
+    previousId = asset.id;
   });
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -118,6 +150,8 @@
     });
   };
 </script>
+
+<OnEvents onAlbumAddAssets={() => void refreshAlbums()} />
 
 <section class="relative p-2">
   <div class="flex place-items-center gap-2">

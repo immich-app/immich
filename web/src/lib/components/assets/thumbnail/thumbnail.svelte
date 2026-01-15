@@ -196,12 +196,22 @@
       document.removeEventListener('pointermove', moveHandler, true);
     };
   });
+  const backgroundColorClass = $derived.by(() => {
+    if (loaded) {
+      return 'bg-transparent';
+    }
+    if (disabled) {
+      return 'bg-gray-300';
+    }
+    return 'dark:bg-neutral-700 bg-neutral-200';
+  });
 </script>
 
 <div
   class={[
-    'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'dark:bg-neutral-700 bg-neutral-200',
+    'group focus-visible:outline-none focus-visible:rounded-lg flex overflow-hidden',
+    backgroundColorClass,
+    { 'rounded-xl': selected },
   ]}
   style:width="{width}px"
   style:height="{height}px"
@@ -223,18 +233,10 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
+  data-selected={selected ? true : undefined}
   tabindex={0}
   role="link"
 >
-  <!-- Outline on focus -->
-  <div
-    class={[
-      'pointer-events-none absolute z-1 size-full outline-hidden outline-4 -outline-offset-4 outline-immich-primary',
-      { 'rounded-xl': selected },
-    ]}
-    data-outline
-  ></div>
-
   <div
     class={['group absolute top-0 bottom-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
@@ -247,13 +249,81 @@
         { 'rounded-xl': selected },
       ]}
     >
+      <ImageThumbnail
+        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
+        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
+        url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+        altText={$getAltText(asset)}
+        widthStyle="{width}px"
+        heightStyle="{height}px"
+        curve={selected}
+        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
+      />
+      {#if asset.isVideo}
+        <div class="absolute h-full w-full pointer-events-none group-focus-visible:rounded-lg">
+          <VideoThumbnail
+            class="group-focus-visible:rounded-lg"
+            url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
+            curve={selected}
+            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
+            playbackOnIconHover={!$playVideoThumbnailOnHover}
+          />
+        </div>
+      {:else if asset.isImage && asset.livePhotoVideoId}
+        <div class="absolute h-full w-full pointer-events-none group-focus-visible:rounded-lg">
+          <VideoThumbnail
+            class="group-focus-visible:rounded-lg"
+            url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
+            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
+            pauseIcon={mdiMotionPauseOutline}
+            playIcon={mdiMotionPlayOutline}
+            showTime={false}
+            curve={selected}
+            playbackOnIconHover={!$playVideoThumbnailOnHover}
+          />
+        </div>
+      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
+        <!-- GIF -->
+        <div class="absolute top-0 h-full w-full pointer-events-none">
+          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+          <ImageThumbnail
+            class={imageClass}
+            {brokenAssetClass}
+            url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Original, cacheKey: asset.thumbhash })}
+            altText={$getAltText(asset)}
+            widthStyle="{width}px"
+            heightStyle="{height}px"
+            curve={selected}
+          />
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
+            </span>
+          </div>
+        </div>
+      {/if}
+
+      {#if (!loaded || thumbError) && asset.thumbhash}
+        <canvas
+          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+          data-testid="thumbhash"
+          class="absolute top-0 object-cover group-focus-visible:rounded-lg"
+          style:width="{width}px"
+          style:height="{height}px"
+          class:rounded-xl={selected}
+          draggable="false"
+          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+        ></canvas>
+      {/if}
+
       <!-- icon overlay -->
       <div>
         <!-- Gradient overlay on hover -->
         {#if !usingMobileDevice && !disabled}
           <div
             class={[
-              'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
+              'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:rounded-lg',
               { 'rounded-xl': selected },
             ]}
           ></div>
@@ -261,7 +331,10 @@
 
         <!-- Dimmed support -->
         {#if dimmed && !mouseOver}
-          <div id="a" class={['absolute h-full w-full bg-gray-700/40', { 'rounded-xl': selected }]}></div>
+          <div
+            id="a"
+            class={['absolute h-full w-full bg-gray-700/40 group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
+          ></div>
         {/if}
 
         <!-- Favorite asset star -->
@@ -329,72 +402,6 @@
         >
         </a>
       {/if}
-
-      <ImageThumbnail
-        class={imageClass}
-        {brokenAssetClass}
-        url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
-        altText={$getAltText(asset)}
-        widthStyle="{width}px"
-        heightStyle="{height}px"
-        curve={selected}
-        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
-      />
-      {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <VideoThumbnail
-            url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
-            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
-            curve={selected}
-            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
-            playbackOnIconHover={!$playVideoThumbnailOnHover}
-          />
-        </div>
-      {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <VideoThumbnail
-            url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
-            enablePlayback={mouseOver && $playVideoThumbnailOnHover}
-            pauseIcon={mdiMotionPauseOutline}
-            playIcon={mdiMotionPlayOutline}
-            showTime={false}
-            curve={selected}
-            playbackOnIconHover={!$playVideoThumbnailOnHover}
-          />
-        </div>
-      {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
-        <!-- GIF -->
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
-          <ImageThumbnail
-            class={imageClass}
-            {brokenAssetClass}
-            url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Original, cacheKey: asset.thumbhash })}
-            altText={$getAltText(asset)}
-            widthStyle="{width}px"
-            heightStyle="{height}px"
-            curve={selected}
-          />
-          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pe-2 pt-2">
-              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
-            </span>
-          </div>
-        </div>
-      {/if}
-
-      {#if (!loaded || thumbError) && asset.thumbhash}
-        <canvas
-          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-          data-testid="thumbhash"
-          class="absolute top-0 object-cover"
-          style:width="{width}px"
-          style:height="{height}px"
-          class:rounded-xl={selected}
-          draggable="false"
-          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-        ></canvas>
-      {/if}
     </div>
 
     {#if selectionCandidate}
@@ -427,11 +434,14 @@
         {/if}
       </button>
     {/if}
+
+    <!-- Outline on focus -->
+    <div
+      class={[
+        'pointer-events-none absolute z-1 size-full outline-immich-primary dark:outline-immich-dark-primary group-focus-visible:rounded-lg group-focus-visible:outline-2 group-focus-visible:-outline-offset-2',
+        { 'rounded-xl': selected },
+      ]}
+      data-outline
+    ></div>
   </div>
 </div>
-
-<style>
-  [data-asset]:focus > [data-outline] {
-    outline-style: solid;
-  }
-</style>
