@@ -229,7 +229,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Downloading from iCloud...",
+                    "downloading_from_icloud".t(context: context),
                     style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -316,7 +316,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                       const SizedBox(height: 2),
                       Text(
                         isFailed
-                            ? item.error ?? "Upload failed"
+                            ? item.error ?? "unable_to_upload_file".t(context: context)
                             : "${formatHumanReadableBytes(item.fileSize, 1)} • ${item.networkSpeedAsString}",
                         style: context.textTheme.labelLarge?.copyWith(
                           color: isFailed
@@ -393,7 +393,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.error ?? "Upload failed",
+                      item.error ?? "unable_to_upload_file".t(context: context),
                       style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.error),
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,

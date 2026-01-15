@@ -11,8 +11,8 @@ import 'package:path/path.dart' as p;
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
     ref.watch(appRouterProvider),
-    ref.watch(foregroundUploadServiceProvider),
-    ref.watch(shareIntentServiceProvider),
+    ref.read(foregroundUploadServiceProvider),
+    ref.read(shareIntentServiceProvider),
   )),
 );
 

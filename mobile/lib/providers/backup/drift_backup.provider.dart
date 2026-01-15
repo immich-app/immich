@@ -185,11 +185,15 @@ class DriftBackupState {
 }
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
-  return DriftBackupNotifier(ref.watch(foregroundUploadServiceProvider), ref.watch(backgroundUploadServiceProvider));
+  return DriftBackupNotifier(
+    ref.watch(foregroundUploadServiceProvider),
+    ref.watch(backgroundUploadServiceProvider),
+    UploadSpeedManager(),
+  );
 });
 
 class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
-  DriftBackupNotifier(this._foregroundUploadService, this._backgroundUploadService)
+  DriftBackupNotifier(this._foregroundUploadService, this._backgroundUploadService, this._uploadSpeedManager)
     : super(
         const DriftBackupState(
           totalCount: 0,
@@ -204,9 +208,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   final ForegroundUploadService _foregroundUploadService;
   final BackgroundUploadService _backgroundUploadService;
+  final UploadSpeedManager _uploadSpeedManager;
 
   final _logger = Logger("DriftBackupNotifier");
-  final _uploadSpeedManager = UploadSpeedManager();
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {

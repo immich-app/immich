@@ -937,6 +937,7 @@
   "download_waiting_to_retry": "Waiting to retry",
   "downloading": "Downloading",
   "downloading_asset_filename": "Downloading asset {filename}",
+  "downloading_from_icloud": "Downloading from iCloud",
   "downloading_media": "Downloading media",
   "drop_files_to_upload": "Drop files anywhere to upload",
   "duplicates": "Duplicates",
