@@ -6903,7 +6903,6 @@ i1.GeneratedColumn<String> _column_99(String aliasedName) =>
       aliasedName,
       true,
       type: i1.DriftSqlType.string,
-      defaultConstraints: i1.GeneratedColumn.constraintIsAlways('UNIQUE'),
     );
 i1.GeneratedColumn<DateTime> _column_100(String aliasedName) =>
     i1.GeneratedColumn<DateTime>(
