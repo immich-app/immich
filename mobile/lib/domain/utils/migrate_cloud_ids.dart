@@ -161,10 +161,10 @@ Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId) 
             // Skip locked assets as we cannot update them without unlocking first
             drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
             (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
-                ((drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime)) &
-                    (drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude)) &
-                    (drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude)) &
-                    (drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)))),
+                drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime) |
+                drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude) |
+                drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude) |
+                drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)),
       );
   return query.map((row) {
     return (
