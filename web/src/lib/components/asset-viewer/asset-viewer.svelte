@@ -107,9 +107,9 @@
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let fullscreenElement = $state<Element>();
+  let fullscreenElement: Element | undefined = $state();
   let unsubscribes: (() => void)[] = [];
-  let stack: StackResponseDto | null = $state(null);
+  let stack: StackResponseDto | undefined = $state();
 
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
@@ -128,7 +128,7 @@
     }
 
     if (!stack?.assets.some(({ id }) => id === asset.id)) {
-      stack = null;
+      stack = undefined;
     }
 
     untrack(() => {
