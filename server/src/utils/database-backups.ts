@@ -235,7 +235,11 @@ async function* sqlRollback(inputStream: Readable, isPgClusterDump: boolean) {
 
   if (isPgClusterDump) {
     yield String.raw`
-      CREATE DATABASE IF NOT EXISTS immich;
+      -- try to create database
+      -- may fail but script will continue running
+      CREATE DATABASE immich;
+
+      -- switch to database / newly created database
       \c immich
     `;
   }
