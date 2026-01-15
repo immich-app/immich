@@ -49,7 +49,7 @@
 }
 
 @theme {
-  --font-immich-mono: GoogleSansCode, monospace;
+  --font-mono: 'GoogleSansCode', monospace;
 
   --spacing-18: 4.5rem;
 

@@ -84,6 +84,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   isFavorite: row.isFavorite,
                   durationInSeconds: row.durationInSeconds,
                   orientation: row.orientation,
+                  cloudId: row.iCloudId,
+                  latitude: row.latitude,
+                  longitude: row.longitude,
+                  adjustmentTime: row.adjustmentTime,
                 ),
         )
         .get();

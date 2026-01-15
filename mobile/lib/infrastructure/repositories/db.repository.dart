@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
@@ -58,6 +59,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     RemoteAlbumUserEntity,
+    RemoteAssetCloudIdEntity,
     MemoryEntity,
     MemoryAssetEntity,
     StackEntity,
@@ -97,7 +99,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -196,10 +198,16 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
           },
           from15To16: (m, v16) async {
-            await m.create(v16.trashSyncEntity);
-            await m.createIndex(v16.idxTrashSyncChecksum);
-            await m.createIndex(v16.idxTrashSyncStatus);
-            await m.createIndex(v16.idxTrashSyncChecksumStatus);
+            // Add i_cloud_id to local and remote asset tables
+            await m.addColumn(v16.localAssetEntity, v16.localAssetEntity.iCloudId);
+            await m.createIndex(v16.idxLocalAssetCloudId);
+            await m.createTable(v16.remoteAssetCloudIdEntity);
+          },
+          from16To17: (m, v17) async {
+            await m.create(v17.trashSyncEntity);
+            await m.createIndex(v17.idxTrashSyncChecksum);
+            await m.createIndex(v17.idxTrashSyncStatus);
+            await m.createIndex(v17.idxTrashSyncChecksumStatus);
           },
         ),
       );

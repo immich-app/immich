@@ -42,7 +42,7 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
         fontWeight: FontWeight.w600,
         fontSize: 18,
       ),
-      backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.primary,
       elevation: 0,
       scrolledUnderElevation: 0,
