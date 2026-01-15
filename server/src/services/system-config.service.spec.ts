@@ -23,7 +23,11 @@ const partialConfig = {
   ffmpeg: { crf: 30 },
   oauth: { autoLaunch: true },
   trash: { days: 10 },
-  user: { deleteDelay: 15 },
+  user: {
+    deleteDelay: 15,
+    sessionDeleteDelayBrowser: 90,
+    sessionDeleteDelayMobile: 90,
+  },
 } satisfies DeepPartial<SystemConfig>;
 
 const updatedConfig = Object.freeze<SystemConfig>({
@@ -198,6 +202,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 15,
+    sessionDeleteDelayBrowser: 90,
+    sessionDeleteDelayMobile: 90,
   },
   notifications: {
     smtp: {
@@ -256,7 +262,11 @@ describe(SystemConfigService.name, () => {
         ffmpeg: { crf: 30 },
         oauth: { autoLaunch: true },
         trash: { days: 10 },
-        user: { deleteDelay: 15 },
+        user: {
+          deleteDelay: 15,
+          sessionDeleteDelayBrowser: 90,
+          sessionDeleteDelayMobile: 90,
+        },
       });
 
       await expect(sut.getSystemConfig()).resolves.toEqual(updatedConfig);
