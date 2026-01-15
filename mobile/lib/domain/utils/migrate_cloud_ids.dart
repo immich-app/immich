@@ -21,6 +21,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   if (!CurrentPlatform.isIOS) {
     return;
   }
+  final logger = Logger('migrateCloudIds');
 
   final db = ref.read(driftProvider);
   // Populate cloud IDs for local assets that don't have one yet
@@ -29,9 +30,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   final serverInfo = await ref.read(serverInfoProvider.notifier).getServerInfo();
   final canUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 4);
   if (!canUpdateMetadata) {
-    Logger(
-      'migrateCloudIds',
-    ).fine('Server version does not support asset metadata updates. Skipping cloudId migration.');
+    logger.fine('Server version does not support asset metadata updates. Skipping cloudId migration.');
     return;
   }
   final canBulkUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 5);
@@ -40,25 +39,35 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   try {
     await ref.read(syncStreamServiceProvider).sync();
   } catch (e, s) {
-    Logger('migrateCloudIds').fine('Failed to complete remote sync before cloudId migration.', e, s);
+    logger.fine('Failed to complete remote sync before cloudId migration.', e, s);
     return;
   }
 
   // Fetch the mapping for backed up assets that have a cloud ID locally but do not have a cloud ID on the server
   final currentUser = ref.read(currentUserProvider);
   if (currentUser == null) {
-    Logger('migrateCloudIds').warning('Current user is null. Aborting cloudId migration.');
+    logger.warning('Current user is null. Aborting cloudId migration.');
     return;
   }
 
   final mappingsToUpdate = await _fetchCloudIdMappings(db, currentUser.id);
+  // Deduplicate mappings as a single remote asset ID can match multiple local assets
+  final seenRemoteAssetIds = <String>{};
+  final uniqueMapping = mappingsToUpdate.where((mapping) {
+    if (!seenRemoteAssetIds.add(mapping.remoteAssetId)) {
+      logger.fine('Duplicate remote asset ID found: ${mapping.remoteAssetId}. Skipping duplicate entry.');
+      return false;
+    }
+    return true;
+  }).toList();
+
   final assetApi = ref.read(apiServiceProvider).assetsApi;
 
   if (canBulkUpdateMetadata) {
-    await _bulkUpdateCloudIds(assetApi, mappingsToUpdate);
+    await _bulkUpdateCloudIds(assetApi, uniqueMapping);
     return;
   }
-  await _sequentialUpdateCloudIds(assetApi, mappingsToUpdate);
+  await _sequentialUpdateCloudIds(assetApi, uniqueMapping);
 }
 
 Future<void> _sequentialUpdateCloudIds(AssetsApi assetsApi, List<_CloudIdMapping> mappings) async {
