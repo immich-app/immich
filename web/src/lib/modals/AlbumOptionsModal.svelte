@@ -19,7 +19,7 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Field, Heading, HStack, Modal, ModalBody, Select, Stack, Switch, Text } from '@immich/ui';
+  import { Field, HStack, Modal, ModalBody, Select, Stack, Switch, Text, type SelectOption } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -29,21 +29,6 @@
   };
 
   let { album, onClose }: Props = $props();
-
-  const orderOptions = [
-    { label: $t('newest_first'), value: AssetOrder.Desc },
-    { label: $t('oldest_first'), value: AssetOrder.Asc },
-  ];
-
-  const roleOptions: Array<{ label: string; value: AlbumUserRole | 'none'; icon?: string }> = [
-    { label: $t('role_editor'), value: AlbumUserRole.Editor },
-    { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
-    { label: $t('remove_user'), value: 'none' },
-  ];
-
-  const selectedOrderOption = $derived(
-    album.order ? orderOptions.find(({ value }) => value === album.order) : orderOptions[0],
-  );
 
   const handleRoleSelect = async (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
@@ -92,14 +77,17 @@
   <ModalBody>
     <Stack gap={6}>
       <div>
-        <Heading size="tiny" class="mb-2">{$t('settings')}</Heading>
-        <div class="grid gap-y-2 ps-2">
+        <Text size="medium" fontWeight="semi-bold">{$t('settings')}</Text>
+        <div class="grid gap-y-3 ps-2 mt-2">
           {#if album.order}
             <Field label={$t('display_order')}>
               <Select
-                data={orderOptions}
-                value={selectedOrderOption}
-                onChange={({ value }) => handleUpdateAlbum(album, { order: value })}
+                value={album.order}
+                options={[
+                  { label: $t('newest_first'), value: AssetOrder.Desc },
+                  { label: $t('oldest_first'), value: AssetOrder.Asc },
+                ]}
+                onChange={(value) => handleUpdateAlbum(album, { order: value })}
               />
             </Field>
           {/if}
@@ -111,19 +99,20 @@
           </Field>
         </div>
       </div>
+
       <div>
         <HStack fullWidth class="justify-between mb-2">
-          <Heading size="tiny">{$t('people')}</Heading>
+          <Text size="medium" fontWeight="semi-bold">{$t('people')}</Text>
           <HeaderActionButton action={AddUsers} />
         </HStack>
         <div class="ps-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 mb-2">
             <div>
               <UserAvatar user={$user} size="md" />
             </div>
-            <div class="w-full">{$user.name}</div>
+            <Text class="w-full" size="small">{$user.name}</Text>
             <Field disabled class="w-32 shrink-0">
-              <Select data={[{ label: $t('owner'), value: 'owner' }]} value={{ label: $t('owner'), value: 'owner' }} />
+              <Select options={[{ label: $t('owner'), value: 'owner' }]} value="owner" />
             </Field>
           </div>
 
@@ -133,30 +122,36 @@
                 <div>
                   <UserAvatar {user} size="md" />
                 </div>
-                <Text>{user.name}</Text>
+                <Text size="small">{user.name}</Text>
               </div>
               <Field class="w-32">
                 <Select
-                  data={roleOptions}
-                  value={roleOptions.find(({ value }) => value === role)}
-                  onChange={({ value }) => handleRoleSelect(user, value)}
+                  value={role}
+                  options={[
+                    { label: $t('role_editor'), value: AlbumUserRole.Editor },
+                    { label: $t('role_viewer'), value: AlbumUserRole.Viewer },
+                    { label: $t('remove_user'), value: 'none' },
+                  ] as SelectOption<AlbumUserRole | 'none'>[]}
+                  onChange={(value) => handleRoleSelect(user, value)}
                 />
               </Field>
             </div>
           {/each}
         </div>
       </div>
-      <div>
+      <div class="mb-4">
         <HStack class="justify-between mb-2">
-          <Heading size="tiny">{$t('shared_links')}</Heading>
+          <Text size="medium" fontWeight="semi-bold">{$t('shared_links')}</Text>
           <HeaderActionButton action={CreateSharedLink} />
         </HStack>
 
-        <Stack gap={4}>
-          {#each sharedLinks as sharedLink (sharedLink.id)}
-            <AlbumSharedLink {album} {sharedLink} />
-          {/each}
-        </Stack>
+        <div class="ps-2">
+          <Stack gap={4}>
+            {#each sharedLinks as sharedLink (sharedLink.id)}
+              <AlbumSharedLink {album} {sharedLink} />
+            {/each}
+          </Stack>
+        </div>
       </div>
     </Stack>
   </ModalBody>

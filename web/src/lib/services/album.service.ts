@@ -43,6 +43,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     title: $t('invite_people'),
     type: $t('command'),
     icon: mdiPlus,
+    color: 'primary',
     onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
   };
 
@@ -50,6 +51,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     title: $t('create_link'),
     type: $t('command'),
     icon: mdiLink,
+    color: 'primary',
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
   };
 
@@ -60,6 +62,7 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
   const AddAssets: ActionItem = {
     title: $t('add_assets'),
     type: $t('command'),
+    color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
     onAction: () => addAssets(album, assets),

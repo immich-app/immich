@@ -23,7 +23,6 @@
 
   let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-  const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
@@ -43,24 +42,6 @@
   onDestroy(() => {
     assetViewingStore.showAssetViewer(false);
   });
-
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
 
   const onRandom = async () => {
     if (assets.length <= 0) {
@@ -191,8 +172,6 @@
       <AssetViewer
         cursor={assetCursor}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
