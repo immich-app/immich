@@ -81,16 +81,13 @@
             {@const options = component.options?.map((opt) => {
               return { label: opt.label, value: String(opt.value) };
             }) || [{ label: 'N/A', value: '' }]}
-            {@const currentValue = actualConfig[key]}
-            {@const selectedItem = options.find((opt) => opt.value === String(currentValue)) ?? options[0]}
-
             <Field
               {label}
               required={component.required}
               description={component.description}
               requiredIndicator={component.required}
             >
-              <Select data={options} onChange={(opt) => updateConfig(key, opt.value)} value={selectedItem} />
+              <Select {options} onChange={(value) => updateConfig(key, value)} value={actualConfig[key] as string} />
             </Field>
           {/if}
 
@@ -107,9 +104,6 @@
             {@const options = component.options?.map((opt) => {
               return { label: opt.label, value: String(opt.value) };
             }) || [{ label: 'N/A', value: '' }]}
-            {@const currentValues = (actualConfig[key] as string[]) ?? []}
-            {@const selectedItems = options.filter((opt) => currentValues.includes(opt.value))}
-
             <Field
               {label}
               required={component.required}
@@ -117,13 +111,9 @@
               requiredIndicator={component.required}
             >
               <MultiSelect
-                data={options}
-                onChange={(opt) =>
-                  updateConfig(
-                    key,
-                    opt.map((o) => o.value),
-                  )}
-                values={selectedItems}
+                {options}
+                values={(actualConfig[key] as string[]) ?? []}
+                onChange={(values) => updateConfig(key, values)}
               />
             </Field>
           {/if}

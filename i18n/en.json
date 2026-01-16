@@ -948,6 +948,7 @@
   "download_waiting_to_retry": "Waiting to retry",
   "downloading": "Downloading",
   "downloading_asset_filename": "Downloading asset {filename}",
+  "downloading_from_icloud": "Downloading from iCloud",
   "downloading_media": "Downloading media",
   "drop_files_to_upload": "Drop files anywhere to upload",
   "duplicates": "Duplicates",
@@ -1133,6 +1134,7 @@
     "unable_to_update_workflow": "Unable to update workflow",
     "unable_to_upload_file": "Unable to upload file"
   },
+  "errors_text": "Errors",
   "exclusion_pattern": "Exclusion pattern",
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",
@@ -2265,7 +2267,6 @@
   "updated_at": "Updated",
   "updated_password": "Updated password",
   "upload": "Upload",
-  "upload_action_prompt": "{count} queued for upload",
   "upload_concurrency": "Upload concurrency",
   "upload_details": "Upload Details",
   "upload_dialog_info": "Do you want to backup the selected Asset(s) to the server?",

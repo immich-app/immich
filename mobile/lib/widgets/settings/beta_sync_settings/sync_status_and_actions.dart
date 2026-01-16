@@ -194,7 +194,7 @@ class _SyncStatusIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (status) {
-      SyncStatus.idle => const Icon(Icons.pause_circle_outline_rounded),
+      SyncStatus.idle => const SizedBox.shrink(),
       SyncStatus.syncing => const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
       SyncStatus.success => const Icon(Icons.check_circle_outline, color: Colors.green),
       SyncStatus.error => Icon(Icons.error_outline, color: context.colorScheme.error),
