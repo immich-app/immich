@@ -599,6 +599,21 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should apply Display Aspect Ratio (DAR) for anamorphic video', async () => {
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.video);
+      mocks.media.probe.mockResolvedValue(probeStub.videoStreamAnamorphic);
+      mockReadTags({});
+
+      await sut.handleMetadataExtraction({ id: assetStub.video.id });
+
+      expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(assetStub.video.id);
+      // Anamorphic video: 1440x1080 with DAR 16:9 should display as 1920x1080
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ exifImageWidth: 1920, exifImageHeight: 1080 }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+    });
+
     it('should extract the MotionPhotoVideo tag from Samsung HEIC motion photos', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
         ...assetStub.livePhotoWithOriginalFileName,

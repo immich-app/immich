@@ -258,6 +258,7 @@ export class MediaRepository {
           colorPrimaries: stream.color_primaries,
           colorSpace: stream.color_space,
           colorTransfer: stream.color_transfer,
+          displayAspectRatio: stream.display_aspect_ratio,
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
