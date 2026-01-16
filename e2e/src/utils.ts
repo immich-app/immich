@@ -604,7 +604,12 @@ export const utils = {
 
   resetBackups: async (accessToken: string) => {
     const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
-    await deleteDatabaseBackup({ databaseBackupDeleteDto: { backups } }, { headers: asBearerAuth(accessToken) });
+
+    const backupFiles = backups.map((b) => b.filename);
+    await deleteDatabaseBackup(
+      { databaseBackupDeleteDto: { backups: backupFiles } },
+      { headers: asBearerAuth(accessToken) },
+    );
   },
 
   prepareTestBackup: async (generate: 'empty' | 'corrupted') => {
