@@ -598,7 +598,7 @@ export const utils = {
     return utils.poll(
       () => request(app).get('/admin/database-backups').set('Authorization', `Bearer ${accessToken}`),
       ({ status, body }) => status === 200 && body.backups.length === 1,
-      ({ body }) => body.backups[0],
+      ({ body }) => body.backups[0].filename,
     );
   },
 

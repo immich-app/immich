@@ -49,7 +49,12 @@ describe('/admin/database-backups', () => {
         )
         .toEqual(
           expect.objectContaining({
-            backups: [expect.stringMatching(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/)],
+            backups: [
+              expect.objectContaining({
+                filename: expect.stringMatching(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/),
+                filesize: expect.any(Number),
+              }),
+            ],
           }),
         );
     });
