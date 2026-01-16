@@ -48,7 +48,7 @@
               required={true}
               {disabled}
               label="S3 Endpoint"
-              desc="The S3-compatible endpoint URL (e.g., https://fly.storage.tigris.dev)"
+              description="The S3-compatible endpoint URL (e.g., https://fly.storage.tigris.dev)"
               bind:value={configToEdit.storage.s3.endpoint}
               isEdited={configToEdit.storage.s3.endpoint !== config.storage.s3.endpoint}
             />
@@ -58,7 +58,7 @@
               required={true}
               {disabled}
               label="Bucket Name"
-              desc="The S3 bucket to store assets in"
+              description="The S3 bucket to store assets in"
               bind:value={configToEdit.storage.s3.bucket}
               isEdited={configToEdit.storage.s3.bucket !== config.storage.s3.bucket}
             />
@@ -68,7 +68,7 @@
               required={false}
               {disabled}
               label="Region"
-              desc="AWS region (default: us-east-1)"
+              description="AWS region (default: us-east-1)"
               bind:value={configToEdit.storage.s3.region}
               isEdited={configToEdit.storage.s3.region !== config.storage.s3.region}
             />
@@ -78,7 +78,7 @@
               required={true}
               {disabled}
               label="Access Key ID"
-              desc="S3 access key ID for authentication"
+              description="S3 access key ID for authentication"
               bind:value={configToEdit.storage.s3.accessKeyId}
               isEdited={configToEdit.storage.s3.accessKeyId !== config.storage.s3.accessKeyId}
             />
@@ -88,7 +88,7 @@
               required={true}
               {disabled}
               label="Secret Access Key"
-              desc="S3 secret access key for authentication"
+              description="S3 secret access key for authentication"
               bind:value={configToEdit.storage.s3.secretAccessKey}
               isEdited={configToEdit.storage.s3.secretAccessKey !== config.storage.s3.secretAccessKey}
             />
@@ -98,7 +98,7 @@
               required={false}
               {disabled}
               label="Key Prefix"
-              desc="Prefix for all S3 keys (default: users/)"
+              description="Prefix for all S3 keys (default: users/)"
               bind:value={configToEdit.storage.s3.prefix}
               isEdited={configToEdit.storage.s3.prefix !== config.storage.s3.prefix}
             />
@@ -122,7 +122,7 @@
             {disabled}
             name="originals-backend"
             label="Original Files"
-            desc="Where to store original uploaded photos and videos"
+            description="Where to store original uploaded photos and videos"
             bind:value={configToEdit.storage.locations.originals}
           />
 
@@ -131,7 +131,7 @@
             {disabled}
             name="thumbnails-backend"
             label="Thumbnails"
-            desc="Where to store thumbnail images (local recommended for ML)"
+            description="Where to store thumbnail images (local recommended for ML)"
             bind:value={configToEdit.storage.locations.thumbnails}
           />
 
@@ -140,7 +140,7 @@
             {disabled}
             name="previews-backend"
             label="Previews"
-            desc="Where to store preview images (local recommended for ML)"
+            description="Where to store preview images (local recommended for ML)"
             bind:value={configToEdit.storage.locations.previews}
           />
 
@@ -149,7 +149,7 @@
             {disabled}
             name="encoded-videos-backend"
             label="Encoded Videos"
-            desc="Where to store transcoded video files"
+            description="Where to store transcoded video files"
             bind:value={configToEdit.storage.locations.encodedVideos}
           />
 
@@ -160,7 +160,7 @@
             {disabled}
             name="upload-strategy"
             label="Upload Strategy"
-            desc="How uploads are handled when S3 is enabled"
+            description="How uploads are handled when S3 is enabled"
             bind:value={configToEdit.storage.upload.strategy}
           />
 

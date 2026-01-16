@@ -8,6 +8,7 @@ import {
   LogLevel,
   OAuthTokenEndpointAuthMethod,
   QueueName,
+  StorageBackend,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -175,6 +176,38 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: false,
     hashVerificationEnabled: true,
     template: '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  },
+  storage: {
+    backend: StorageBackend.Local,
+    s3: {
+      enabled: false,
+      endpoint: '',
+      bucket: '',
+      region: 'us-east-1',
+      accessKeyId: '',
+      secretAccessKey: '',
+      prefix: 'users/',
+      forcePathStyle: true,
+      storageClasses: {
+        thumbnails: 'STANDARD',
+        previews: 'STANDARD',
+        originalsPhotos: 'GLACIER_IR',
+        originalsVideos: 'GLACIER_IR',
+        encodedVideos: 'STANDARD_IA',
+      },
+    },
+    locations: {
+      originals: StorageBackend.Local,
+      thumbnails: StorageBackend.Local,
+      previews: StorageBackend.Local,
+      encodedVideos: StorageBackend.Local,
+      profile: StorageBackend.Local,
+      backups: StorageBackend.Local,
+    },
+    upload: {
+      strategy: 'local-first',
+      deleteLocalAfterUpload: false,
+    },
   },
   image: {
     thumbnail: {
