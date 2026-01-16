@@ -6,7 +6,7 @@
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -32,12 +32,11 @@
       <NavbarItem title={$t('external_libraries')} href={AppRoute.ADMIN_LIBRARIES} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={AppRoute.ADMIN_QUEUES} icon={mdiTrayFull} />
       <NavbarItem title={$t('settings')} href={AppRoute.ADMIN_SETTINGS} icon={mdiCog} />
-      <NavbarItem
-        title={$t('admin.maintenance_settings')}
-        href={AppRoute.ADMIN_MAINTENANCE_SETTINGS}
-      />
+      <NavbarItem title={$t('admin.maintenance_settings')} href={AppRoute.ADMIN_MAINTENANCE_SETTINGS} />
       <NavbarItem title={$t('server_stats')} href={AppRoute.ADMIN_STATS} icon={mdiServer} />
     </div>
+
+    <div class="mb-2 me-4">
       <BottomInfo />
     </div>
   </AppShellSidebar>
