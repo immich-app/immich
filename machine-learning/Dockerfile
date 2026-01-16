@@ -64,8 +64,6 @@ RUN --mount=type=cache,target=/ccache \
     --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
-RUN ls -lah /opt
-
 FROM builder-${DEVICE} AS builder
 
 ARG DEVICE
