@@ -35,7 +35,10 @@ describe(AssetMediaController.name, () => {
   beforeAll(async () => {
     ctx = await controllerSetup(AssetMediaController, [
       { provide: LoggingRepository, useValue: automock(LoggingRepository, { strict: false }) },
-      { provide: StorageRepository, useValue: automock(StorageRepository, { args: [{ setContext: () => {} }], strict: false }) },
+      {
+        provide: StorageRepository,
+        useValue: automock(StorageRepository, { args: [{ setContext: () => {} }], strict: false }),
+      },
       { provide: AssetMediaService, useValue: service },
     ]);
     return () => ctx.close();
