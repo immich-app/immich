@@ -98,6 +98,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
 
   @Property({ history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
   resized?: boolean;
+  @Property({ history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
+  isEdited!: boolean;
 }
 
 export type MapAsset = {
@@ -137,6 +139,7 @@ export type MapAsset = {
   type: AssetType;
   width: number | null;
   height: number | null;
+  editCount: number;
 };
 
 export class AssetStackResponseDto {
@@ -245,5 +248,6 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     resized: true,
     width: entity.width,
     height: entity.height,
+    isEdited: entity.editCount > 0,
   };
 }
