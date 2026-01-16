@@ -23,11 +23,11 @@ describe(QueueService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(17);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
-      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.StorageTemplateMigration, 1);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(20);
+      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(6, QueueName.FacialRecognition, 1);
+      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.DuplicateDetection, 1);
+      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(9, QueueName.BackgroundTask, 5);
+      expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(10, QueueName.StorageTemplateMigration, 1);
     });
   });
 
@@ -46,6 +46,7 @@ describe(QueueService.name, () => {
         { name: JobName.MemoryGenerate },
         { name: JobName.UserSyncUsage },
         { name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } },
+        { name: JobName.PersonGenerateThumbnailsQueueAll, data: { force: false } },
         { name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } },
       ]);
     });
@@ -78,6 +79,8 @@ describe(QueueService.name, () => {
         [QueueName.BackupDatabase]: expected,
         [QueueName.Ocr]: expected,
         [QueueName.Workflow]: expected,
+        [QueueName.S3Upload]: expected,
+        [QueueName.Encryption]: expected,
       });
     });
   });

@@ -2785,7 +2785,7 @@ describe(MediaService.name, () => {
       sut.videoInterfaces = { dri: ['renderD128'], mali: false };
       mocks.media.probe.mockResolvedValue(probeStub.noAudioStreams);
       mocks.systemMetadata.get.mockResolvedValue({
-        ffmpeg: { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true, crf: 30, maxBitrate: '0' },
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true, crf: 30, maxBitrate: '0', acceptedVideoCodecs: [VideoCodec.H264] },
       });
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
