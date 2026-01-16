@@ -1,10 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { AppRoute } from '$lib/constants';
   import { handleCreateLibrary } from '$lib/services/library.service';
   import { user } from '$lib/stores/user.store';
-  import { FormModal, Text } from '@immich/ui';
+  import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { type PageData } from './$types';
@@ -17,7 +16,6 @@
 
   let ownerId: string = $state($user.id);
   const users = $state(data.allUsers);
-  const userOptions = $derived(users.map((user) => ({ value: user.id, text: user.name })));
 
   const onClose = async () => {
     await goto(AppRoute.ADMIN_LIBRARIES);
@@ -34,11 +32,13 @@
 <FormModal
   title={$t('create_library')}
   icon={mdiFolderSync}
-  {onClose}
   size="small"
-  {onSubmit}
   submitText={$t('create')}
+  {onClose}
+  {onSubmit}
 >
-  <SettingSelect label={$t('owner')} bind:value={ownerId} options={userOptions} name="user" />
-  <Text color="warning" size="small">{$t('admin.note_cannot_be_changed_later')}</Text>
+  <Field label={$t('owner')}>
+    <Select bind:value={ownerId} options={users.map((user) => ({ label: user.name, value: user.id }))} />
+    <HelperText color="warning">{$t('admin.note_cannot_be_changed_later')}</HelperText>
+  </Field>
 </FormModal>

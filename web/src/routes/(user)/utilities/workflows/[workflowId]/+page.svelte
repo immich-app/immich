@@ -326,7 +326,7 @@
 
 {#snippet cardOrder(index: number)}
   <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border bg-light-50">
-    <Text size="small" class="font-immich-mono font-bold">
+    <Text size="small" class="font-mono font-bold">
       {index + 1}
     </Text>
   </div>
@@ -350,7 +350,7 @@
     class="w-full p-8 rounded-lg border-2 border-dashed hover:border-light-400 hover:bg-light-50 transition-all flex flex-col items-center justify-center gap-2"
   >
     <Icon icon={mdiPlus} size="32" />
-    <Text size="small" class="font-medium">{title}</Text>
+    <Text size="small" fontWeight="medium">{title}</Text>
     <Text size="tiny">{description}</Text>
   </button>
 {/snippet}

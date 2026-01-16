@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -15,7 +15,6 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -26,12 +25,12 @@ import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
-final uploadServiceProvider = Provider((ref) {
-  final service = UploadService(
+final backgroundUploadServiceProvider = Provider((ref) {
+  final service = BackgroundUploadService(
     ref.watch(uploadRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
     ref.watch(storageRepositoryProvider),
     ref.watch(localAssetRepository),
+    ref.watch(backupRepositoryProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(assetMediaRepositoryProvider),
   );
@@ -40,12 +39,70 @@ final uploadServiceProvider = Provider((ref) {
   return service;
 });
 
-class UploadService {
-  UploadService(
+/// Metadata for upload tasks to track live photo handling
+class UploadTaskMetadata {
+  final String localAssetId;
+  final bool isLivePhotos;
+  final String livePhotoVideoId;
+
+  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
+
+  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
+    return UploadTaskMetadata(
+      localAssetId: localAssetId ?? this.localAssetId,
+      isLivePhotos: isLivePhotos ?? this.isLivePhotos,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'localAssetId': localAssetId,
+      'isLivePhotos': isLivePhotos,
+      'livePhotoVideoId': livePhotoVideoId,
+    };
+  }
+
+  factory UploadTaskMetadata.fromMap(Map<String, dynamic> map) {
+    return UploadTaskMetadata(
+      localAssetId: map['localAssetId'] as String,
+      isLivePhotos: map['isLivePhotos'] as bool,
+      livePhotoVideoId: map['livePhotoVideoId'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory UploadTaskMetadata.fromJson(String source) =>
+      UploadTaskMetadata.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() =>
+      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
+
+  @override
+  bool operator ==(covariant UploadTaskMetadata other) {
+    if (identical(this, other)) return true;
+
+    return other.localAssetId == localAssetId &&
+        other.isLivePhotos == isLivePhotos &&
+        other.livePhotoVideoId == livePhotoVideoId;
+  }
+
+  @override
+  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+}
+
+/// Service for handling background uploads using iOS URLSession (background_downloader)
+///
+/// This service handles asynchronous background uploads that can continue
+/// even when the app is suspended. Primarily used for iOS background backup.
+class BackgroundUploadService {
+  BackgroundUploadService(
     this._uploadRepository,
-    this._backupRepository,
     this._storageRepository,
     this._localAssetRepository,
+    this._backupRepository,
     this._appSettingsService,
     this._assetMediaRepository,
   ) {
@@ -54,12 +111,12 @@ class UploadService {
   }
 
   final UploadRepository _uploadRepository;
-  final DriftBackupRepository _backupRepository;
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final DriftBackupRepository _backupRepository;
   final AppSettingsService _appSettingsService;
   final AssetMediaRepository _assetMediaRepository;
-  final Logger _logger = Logger('UploadService');
+  final Logger _logger = Logger('BackgroundUploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
@@ -87,116 +144,49 @@ class UploadService {
     _taskProgressController.close();
   }
 
+  /// Enqueue tasks to the background upload queue
   Future<List<bool>> enqueueTasks(List<UploadTask> tasks) {
     return _uploadRepository.enqueueBackgroundAll(tasks);
   }
 
+  /// Get a list of tasks that are ENQUEUED or RUNNING
   Future<List<Task>> getActiveTasks(String group) {
     return _uploadRepository.getActiveTasks(group);
   }
 
-  Future<({int total, int remainder, int processing})> getBackupCounts(String userId) {
-    return _backupRepository.getAllCounts(userId);
-  }
-
-  Future<void> manualBackup(List<LocalAsset> localAssets) async {
+  /// Start background upload using iOS URLSession
+  ///
+  /// Finds backup candidates, builds upload tasks, and enqueues them
+  /// for background processing.
+  Future<void> uploadBackupCandidates(String userId) async {
     await _storageRepository.clearCache();
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    const batchSize = 100;
+    final batch = candidates.take(batchSize).toList();
     List<UploadTask> tasks = [];
-    for (final asset in localAssets) {
-      final task = await getUploadTask(
-        asset,
-        group: kManualUploadGroup,
-        priority: 1, // High priority after upload motion photo part
-      );
+
+    for (final asset in batch) {
+      final task = await getUploadTask(asset);
       if (task != null) {
         tasks.add(task);
       }
     }
 
-    if (tasks.isNotEmpty) {
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
       await enqueueTasks(tasks);
     }
   }
 
-  /// Find backup candidates
-  /// Build the upload tasks
-  /// Enqueue the tasks
-  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
-    await _storageRepository.clearCache();
-
-    shouldAbortQueuingTasks = false;
-
-    final candidates = await _backupRepository.getCandidates(userId);
-    if (candidates.isEmpty) {
-      return;
-    }
-
-    const batchSize = 100;
-    int count = 0;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks) {
-        break;
-      }
-
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTask> tasks = [];
-      for (final asset in batch) {
-        final task = await getUploadTask(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
-
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
-
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
-      }
-    }
-  }
-
-  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
-    await _storageRepository.clearCache();
-
-    shouldAbortQueuingTasks = false;
-
-    final candidates = await _backupRepository.getCandidates(userId);
-    if (candidates.isEmpty) {
-      return;
-    }
-
-    const batchSize = 100;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks || token.isCancelled) {
-        break;
-      }
-
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTaskWithFile> tasks = [];
-      for (final asset in batch) {
-        final requireWifi = _shouldRequireWiFi(asset);
-        if (requireWifi && !hasWifi) {
-          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
-          continue;
-        }
-
-        final task = await _getUploadTaskWithFile(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
-
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        await _uploadRepository.backupWithDartClient(tasks, token);
-      }
-    }
-  }
-
-  /// Cancel all ongoing uploads and reset the upload queue
+  /// Cancel all ongoing background uploads and reset the upload queue
   ///
-  /// Return the number of left over tasks in the queue
-  Future<int> cancelBackup() async {
+  /// Returns the number of tasks left in the queue
+  Future<int> cancel() async {
     shouldAbortQueuingTasks = true;
 
     await _storageRepository.clearCache();
@@ -207,7 +197,8 @@ class UploadService {
     return activeTasks.length;
   }
 
-  Future<void> resumeBackup() {
+  /// Resume background backup processing
+  Future<void> resume() {
     return _uploadRepository.start();
   }
 
@@ -265,42 +256,6 @@ class UploadService {
     }
   }
 
-  Future<UploadTaskWithFile?> _getUploadTaskWithFile(LocalAsset asset) async {
-    final entity = await _storageRepository.getAssetEntityForAsset(asset);
-    if (entity == null) {
-      return null;
-    }
-
-    final file = await _storageRepository.getFileForAsset(asset.id);
-    if (file == null) {
-      return null;
-    }
-
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
-
-    String metadata = UploadTaskMetadata(
-      localAssetId: asset.id,
-      isLivePhotos: entity.isLivePhoto,
-      livePhotoVideoId: '',
-    ).toJson();
-
-    return UploadTaskWithFile(
-      file: file,
-      task: await buildUploadTask(
-        file,
-        createdAt: asset.createdAt,
-        modifiedAt: asset.updatedAt,
-        originalFileName: originalFileName,
-        deviceAssetId: asset.id,
-        metadata: metadata,
-        group: "group",
-        priority: 0,
-        isFavorite: asset.isFavorite,
-        requiresWiFi: false,
-      ),
-    );
-  }
-
   @visibleForTesting
   Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
@@ -352,6 +307,10 @@ class UploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -383,6 +342,10 @@ class UploadService {
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      cloudId: asset.cloudId,
+      adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+      latitude: asset.latitude?.toString(),
+      longitude: asset.longitude?.toString(),
     );
   }
 
@@ -410,6 +373,10 @@ class UploadService {
     int? priority,
     bool? isFavorite,
     bool requiresWiFi = true,
+    String? cloudId,
+    String? adjustmentTime,
+    String? latitude,
+    String? longitude,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -425,6 +392,19 @@ class UploadService {
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
+      if (CurrentPlatform.isIOS && cloudId != null)
+        'metadata': jsonEncode([
+          RemoteAssetMetadataItem(
+            key: RemoteAssetMetadataKey.mobileApp,
+            value: RemoteAssetMobileAppMetadata(
+              cloudId: cloudId,
+              createdAt: createdAt.toIso8601String(),
+              adjustmentTime: adjustmentTime,
+              latitude: latitude,
+              longitude: longitude,
+            ),
+          ),
+        ]),
     };
 
     return UploadTask(
@@ -446,57 +426,4 @@ class UploadService {
       retries: 3,
     );
   }
-}
-
-class UploadTaskMetadata {
-  final String localAssetId;
-  final bool isLivePhotos;
-  final String livePhotoVideoId;
-
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
-
-  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
-    return UploadTaskMetadata(
-      localAssetId: localAssetId ?? this.localAssetId,
-      isLivePhotos: isLivePhotos ?? this.isLivePhotos,
-      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'localAssetId': localAssetId,
-      'isLivePhotos': isLivePhotos,
-      'livePhotoVideoId': livePhotoVideoId,
-    };
-  }
-
-  factory UploadTaskMetadata.fromMap(Map<String, dynamic> map) {
-    return UploadTaskMetadata(
-      localAssetId: map['localAssetId'] as String,
-      isLivePhotos: map['isLivePhotos'] as bool,
-      livePhotoVideoId: map['livePhotoVideoId'] as String,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory UploadTaskMetadata.fromJson(String source) =>
-      UploadTaskMetadata.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() =>
-      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
-
-  @override
-  bool operator ==(covariant UploadTaskMetadata other) {
-    if (identical(this, other)) return true;
-
-    return other.localAssetId == localAssetId &&
-        other.isLivePhotos == isLivePhotos &&
-        other.livePhotoVideoId == livePhotoVideoId;
-  }
-
-  @override
-  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
 }

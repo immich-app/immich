@@ -23,13 +23,13 @@
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
     <Icon {icon} size="40" />
-    <Text size="giant" class="font-medium">{title}</Text>
+    <Text size="giant" fontWeight="medium">{title}</Text>
   </div>
 
-  <div class="relative mx-auto font-immich-mono text-2xl font-medium">
+  <div class="relative mx-auto font-mono text-2xl font-medium">
     <span class="text-gray-300 dark:text-gray-600">{zeros()}</span><span>{value}</span>
     {#if unit}
-      <Code color="muted" class="font-immich-mono absolute -top-5 end-1 font-light p-0">{unit}</Code>
+      <Code color="muted" class="font-mono absolute -top-5 end-1 font-light p-0">{unit}</Code>
     {/if}
   </div>
 </div>

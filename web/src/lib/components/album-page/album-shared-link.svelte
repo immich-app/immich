@@ -32,7 +32,7 @@
       .filter(Boolean)
       .join(' • ');
 
-  const { ViewQrCode, Copy } = $derived(getSharedLinkActions($t, sharedLink));
+  const { ViewQrCode, Copy, Delete } = $derived(getSharedLinkActions($t, sharedLink));
 </script>
 
 <div class="flex justify-between items-center">
@@ -43,5 +43,6 @@
   <div class="flex">
     <ActionButton action={ViewQrCode} />
     <ActionButton action={Copy} />
+    <ActionButton action={Delete} />
   </div>
 </div>
