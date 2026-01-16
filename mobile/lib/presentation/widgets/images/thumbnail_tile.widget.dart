@@ -8,6 +8,7 @@ import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -61,6 +62,10 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     if (isSelected) {
       _showSelectionContainer = true;
     }
+
+    final uploadProgress = asset is LocalAsset
+        ? ref.watch(assetUploadProgressProvider.select((map) => map[asset.id]))
+        : null;
 
     return Stack(
       children: [
@@ -168,6 +173,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       ),
                     ),
                   ),
+                if (uploadProgress != null) _UploadProgressOverlay(progress: uploadProgress),
               ],
             ),
           ),
@@ -290,6 +296,49 @@ class _AssetTypeIcons extends StatelessWidget {
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
       ],
+    );
+  }
+}
+
+class _UploadProgressOverlay extends StatelessWidget {
+  final double progress;
+
+  const _UploadProgressOverlay({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final isError = progress < 0;
+    final percentage = isError ? 0 : (progress * 100).toInt();
+
+    return Positioned.fill(
+      child: Container(
+        color: isError ? Colors.red.withValues(alpha: 0.6) : Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isError)
+                const Icon(Icons.error_outline, color: Colors.white, size: 36)
+              else
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 3,
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                isError ? 'Error' : '$percentage%',
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
