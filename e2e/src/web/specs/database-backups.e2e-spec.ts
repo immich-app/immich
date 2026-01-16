@@ -17,8 +17,14 @@ test.describe('Database Backups', () => {
     test.setTimeout(60_000);
 
     await utils.resetBackups(admin.accessToken);
-    await utils.createBackup(admin.accessToken);
+    const filename = await utils.createBackup(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
+
+    // work-around until test is running on released version
+    await utils.move(
+      `/data/backups/${filename}`,
+      '/data/backups/immich-db-backup-20260114T184016-v2.5.0-pg14.19.sql.gz',
+    );
 
     await page.goto('/admin/maintenance?isOpen=backups');
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
@@ -66,8 +72,15 @@ test.describe('Database Backups', () => {
     test.setTimeout(60_000);
 
     await utils.resetBackups(admin.accessToken);
-    await utils.createBackup(admin.accessToken);
+    const filename = await utils.createBackup(admin.accessToken);
     await utils.setAuthCookies(context, admin.accessToken);
+
+    // work-around until test is running on released version
+    await utils.move(
+      `/data/backups/${filename}`,
+      '/data/backups/immich-db-backup-20260114T184016-v2.5.0-pg14.19.sql.gz',
+    );
+
     await utils.resetDatabase();
 
     await page.goto('/');

@@ -143,7 +143,14 @@ describe('/admin/database-backups', () => {
     });
 
     it.sequential('should restore a backup', { timeout: 60_000 }, async () => {
-      const filename = await utils.createBackup(admin.accessToken);
+      let filename = await utils.createBackup(admin.accessToken);
+
+      // work-around until test is running on released version
+      await utils.move(
+        `/data/backups/${filename}`,
+        '/data/backups/immich-db-backup-20260114T184016-v2.5.0-pg14.19.sql.gz',
+      );
+      filename = 'immich-db-backup-20260114T184016-v2.5.0-pg14.19.sql.gz';
 
       const { status } = await request(app)
         .post('/admin/maintenance')

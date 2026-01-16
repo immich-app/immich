@@ -586,6 +586,10 @@ export const utils = {
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
   },
 
+  async move(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
   createBackup: async (accessToken: string) => {
     await utils.createJob(accessToken, {
       name: ManualJobName.BackupDatabase,
