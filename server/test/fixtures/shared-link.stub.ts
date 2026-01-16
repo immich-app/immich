@@ -4,7 +4,7 @@ import { AssetResponseDto, MapAsset } from 'src/dtos/asset-response.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
-import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SharedLinkType } from 'src/enum';
+import { AssetOrder, AssetStatus, AssetType, AssetVisibility, SharedLinkType, StorageBackend } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -257,6 +257,10 @@ export const sharedLinkStub = {
           libraryId: null,
           stackId: null,
           visibility: AssetVisibility.Timeline,
+          storageBackend: StorageBackend.Local,
+          s3Bucket: null,
+          s3Key: null,
+          s3KeyEncodedVideo: null,
         },
       ],
     },

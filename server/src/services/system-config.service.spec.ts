@@ -50,6 +50,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       cronExpression: '0 02 * * *',
       keepLastAmount: 14,
+      uploadToS3: true,
     },
   },
   ffmpeg: {
@@ -92,6 +93,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
       interval: 30_000,
       timeout: 2000,
     },
+    requestTimeout: 120_000,
+    circuitBreaker: {
+      failureThreshold: 5,
+      resetTimeout: 60_000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -113,6 +119,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
       minDetectionScore: 0.5,
       minRecognitionScore: 0.8,
       maxResolution: 736,
+    },
+    streamMode: {
+      enabled: false,
+      maxPending: 10_000,
+      resultTtlHours: 24,
+      maxRetries: 3,
     },
   },
   map: {
