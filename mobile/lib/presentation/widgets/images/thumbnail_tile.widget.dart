@@ -101,7 +101,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
                     // but other solutions have failed thus far.
                     key: ValueKey(isCurrentAsset),
-                    tag: '${asset!.heroTag}_$heroIndex',
+                    tag: '${asset?.heroTag}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
