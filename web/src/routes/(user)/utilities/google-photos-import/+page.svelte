@@ -79,9 +79,9 @@
       current: 0,
       total: store.uploadedFiles.length + store.selectedDriveFiles.length,
       albumsFound: 0,
-      photosImported: 0,
+      photosMatched: 0,
+      photosMissingMetadata: 0,
       errors: [],
-      events: [{ timestamp: new Date().toISOString(), type: 'info', message: 'Starting import...' }],
     });
 
     try {
@@ -230,7 +230,7 @@
 
 <UserPageLayout title={data.meta.title}>
   <svelte:fragment slot="buttons">
-    <Button href="/utilities" color="secondary" size="sm">
+    <Button href="/utilities" color="secondary" size="small">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
         <path
           fill-rule="evenodd"
@@ -310,7 +310,7 @@
                 <span>Works with Takeout files still generating</span>
               </div>
             </div>
-            <Button onclick={downloadImporter} color="primary" size="lg" disabled={isGeneratingToken}>
+            <Button onclick={downloadImporter} color="primary" size="large" disabled={isGeneratingToken}>
               {#if isGeneratingToken}
                 <span class="spinner"></span>
                 Preparing download...
@@ -371,7 +371,7 @@
 
       {#if hasFilesToImport}
         <div class="import-action">
-          <Button onclick={startImport} color="primary" size="lg" disabled={isImporting}>
+          <Button onclick={startImport} color="primary" size="large" disabled={isImporting}>
             {#if isImporting}
               <span class="spinner"></span>
               Starting import...

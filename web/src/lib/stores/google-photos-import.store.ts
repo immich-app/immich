@@ -12,7 +12,7 @@ export interface GoogleDriveFile {
 }
 
 export interface ImportProgress {
-  phase: 'extracting' | 'parsing' | 'uploading' | 'complete';
+  phase: 'downloading' | 'extracting' | 'parsing' | 'uploading' | 'complete';
   current: number;
   total: number;
   currentFile?: string;

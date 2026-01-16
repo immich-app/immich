@@ -31,7 +31,11 @@ const probeStubDefault: VideoInfo = {
 
 export const probeStub = {
   noVideoStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, videoStreams: [] }),
-  noAudioStreams: Object.freeze<VideoInfo>({ ...probeStubDefault, audioStreams: [] }),
+  noAudioStreams: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'hevc' }],
+    audioStreams: [],
+  }),
   multipleVideoStreams: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
@@ -280,6 +284,7 @@ export const probeStub = {
     videoStreams: [
       {
         ...probeStubDefaultVideoStream[0],
+        codecName: 'hevc',
         colorPrimaries: 'reserved',
         colorSpace: 'reserved',
         colorTransfer: 'reserved',

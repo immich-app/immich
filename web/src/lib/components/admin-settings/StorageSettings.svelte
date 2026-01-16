@@ -122,7 +122,7 @@
             {disabled}
             name="originals-backend"
             label="Original Files"
-            description="Where to store original uploaded photos and videos"
+            desc="Where to store original uploaded photos and videos"
             bind:value={configToEdit.storage.locations.originals}
           />
 
@@ -131,7 +131,7 @@
             {disabled}
             name="thumbnails-backend"
             label="Thumbnails"
-            description="Where to store thumbnail images (local recommended for ML)"
+            desc="Where to store thumbnail images (local recommended for ML)"
             bind:value={configToEdit.storage.locations.thumbnails}
           />
 
@@ -140,7 +140,7 @@
             {disabled}
             name="previews-backend"
             label="Previews"
-            description="Where to store preview images (local recommended for ML)"
+            desc="Where to store preview images (local recommended for ML)"
             bind:value={configToEdit.storage.locations.previews}
           />
 
@@ -149,7 +149,7 @@
             {disabled}
             name="encoded-videos-backend"
             label="Encoded Videos"
-            description="Where to store transcoded video files"
+            desc="Where to store transcoded video files"
             bind:value={configToEdit.storage.locations.encodedVideos}
           />
 
@@ -160,7 +160,7 @@
             {disabled}
             name="upload-strategy"
             label="Upload Strategy"
-            description="How uploads are handled when S3 is enabled"
+            desc="How uploads are handled when S3 is enabled"
             bind:value={configToEdit.storage.upload.strategy}
           />
 

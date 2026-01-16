@@ -187,7 +187,7 @@
         <div class="no-files">
           <p>No Takeout files found in your Google Drive.</p>
           <p class="hint">Make sure you selected "Add to Drive" when creating your export in Google Takeout.</p>
-          <Button onclick={loadDriveFiles} size="sm">
+          <Button onclick={loadDriveFiles} size="small">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 mr-1">
               <path
                 fill-rule="evenodd"

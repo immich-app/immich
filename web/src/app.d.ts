@@ -2,6 +2,17 @@
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
+
+declare module 'byte-size' {
+  interface ByteSizeResult {
+    value: string;
+    unit: string;
+    long: string;
+    toString(): string;
+  }
+  function byteSize(bytes: number, options?: { precision?: number; units?: string }): ByteSizeResult;
+  export default byteSize;
+}
 declare namespace App {
   interface PageData {
     meta: {

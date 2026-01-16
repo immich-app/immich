@@ -298,7 +298,7 @@ export const getMocks = () => {
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
-    assetEncryption: automock(AssetEncryptionRepository),
+    assetEncryption: automock(AssetEncryptionRepository, { strict: false }),
     assetJob: automock(AssetJobRepository),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),

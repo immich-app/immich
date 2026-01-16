@@ -19,6 +19,7 @@ import {
   RawExtractedFormat,
   StorageBackend,
   StorageFolder,
+  ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   TranscodeTarget,
@@ -679,7 +680,8 @@ export class MediaService extends BaseService {
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
     // Accept both 8-bit (yuv420p) and 10-bit (yuv420p10le/yuv420p10be) 4:2:0 formats
     const isAcceptedPixelFormat = stream.pixelFormat.startsWith('yuv420p');
-    const isRequired = !isTargetVideoCodec || !isAcceptedPixelFormat;
+    const shouldTonemap = stream.isHDR && ffmpegConfig.tonemap !== ToneMapping.Disabled;
+    const isRequired = !isTargetVideoCodec || !isAcceptedPixelFormat || shouldTonemap;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.Disabled: {

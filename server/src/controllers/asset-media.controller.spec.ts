@@ -2,6 +2,7 @@ import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import request from 'supertest';
 import { factory } from 'test/small.factory';
@@ -34,6 +35,7 @@ describe(AssetMediaController.name, () => {
   beforeAll(async () => {
     ctx = await controllerSetup(AssetMediaController, [
       { provide: LoggingRepository, useValue: automock(LoggingRepository, { strict: false }) },
+      { provide: StorageRepository, useValue: automock(StorageRepository, { strict: false }) },
       { provide: AssetMediaService, useValue: service },
     ]);
     return () => ctx.close();

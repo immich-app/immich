@@ -122,7 +122,7 @@
 
       if (promptKey) {
         const confirmed = await modalManager.showDialog({
-          prompt: $t(promptKey, { values: { job: item.title } }),
+          prompt: $t(promptKey as Parameters<typeof $t>[0], { values: { job: item.title } }),
         });
         if (!confirmed) {
           return;
