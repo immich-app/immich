@@ -10,6 +10,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
+  import { Route } from '$lib/route';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -17,7 +18,6 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
@@ -207,7 +207,7 @@
               class="w-22"
               href={resolve(
                 `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
-                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
+                  currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos()
                 }`,
               )}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
@@ -385,12 +385,10 @@
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href={resolve(
-                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({
-                    ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
-                    ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
-                  })}`,
-                )}
+                href={Route.search({
+                  make: asset.exifInfo?.make ?? undefined,
+                  model: asset.exifInfo?.model ?? undefined,
+                })}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
                 class="hover:text-primary"
               >
@@ -421,7 +419,7 @@
           {#if asset.exifInfo?.lensModel}
             <p>
               <a
-                href={resolve(`${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`)}
+                href={Route.search({ lensModel: asset.exifInfo.lensModel })}
                 title="{$t('search_for')} {asset.exifInfo.lensModel}"
                 class="hover:text-primary line-clamp-1"
               >
@@ -515,7 +513,7 @@
   <section class="px-6 py-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
-      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
+      <a href={Route.viewAlbum(album)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
