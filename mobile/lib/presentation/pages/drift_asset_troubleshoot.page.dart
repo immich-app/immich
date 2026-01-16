@@ -118,6 +118,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
+      _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
     ]);
   }
 

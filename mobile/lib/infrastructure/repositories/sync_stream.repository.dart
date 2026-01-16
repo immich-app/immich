@@ -200,6 +200,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             libraryId: Value(asset.libraryId),
             width: Value(asset.width),
             height: Value(asset.height),
+            editCount: Value(asset.editCount),
           );
 
           batch.insert(
