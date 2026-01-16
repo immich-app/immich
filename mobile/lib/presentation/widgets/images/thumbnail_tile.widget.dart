@@ -98,6 +98,9 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
               children: [
                 Positioned.fill(
                   child: Hero(
+                    // This key resets the hero animation when the asset is changed in the asset viewer.
+                    // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
+                    // but other solutions have failed thus far.
                     key: ValueKey(isCurrentAsset),
                     tag: '${asset!.heroTag}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
