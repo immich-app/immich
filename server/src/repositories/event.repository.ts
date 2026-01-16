@@ -6,6 +6,7 @@ import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
 import { Asset } from 'src/database';
 import { EventConfig } from 'src/decorators';
+import { AssetBulkDeleteDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -51,6 +52,7 @@ type EventMap = {
   AssetTrash: [{ assetId: string; userId: string }];
   AssetDelete: [{ assetId: string; userId: string }];
   AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
+  DeleteAssets: [{ auth: AuthDto; dto: AssetBulkDeleteDto }];
 
   // asset bulk events
   AssetTrashAll: [{ assetIds: string[]; userId: string }];

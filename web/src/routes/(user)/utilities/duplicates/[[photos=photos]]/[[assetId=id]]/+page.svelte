@@ -11,10 +11,17 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
+  import type { AssetResponseDto, DuplicateResponseDto } from '@immich/sdk';
+  import {
+    countDeDuplicateAll,
+    countKeepAll,
+    deDuplicateAll,
+    deleteAssets,
+    getAssetDuplicates,
+    keepAll,
+    updateAssets,
+  } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -28,12 +35,15 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { SvelteMap } from 'svelte/reactivity';
 
   interface Props {
     data: PageData;
   }
 
   let { data = $bindable() }: Props = $props();
+
+  const PAGE_SIZE = data.pageSize;
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -56,11 +66,20 @@
     ],
   };
 
-  let duplicates = $state(data.duplicates);
+  let duplicatesRes = $state(data.duplicatesRes);
+  let pageCache = new SvelteMap<number, DuplicateResponseDto>();
+
+  $effect(() => {
+    const initialPage = Math.floor(duplicatesIndex / PAGE_SIZE) + 1;
+    if (!pageCache.has(initialPage)) {
+      pageCache.set(initialPage, duplicatesRes);
+    }
+  });
+
   const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
-    return Math.max(0, Math.min(index, duplicates.length - 1));
+    return Math.max(0, Math.min(index, duplicatesRes.totalItems - 1));
   };
 
   let duplicatesIndex = $derived(
@@ -71,7 +90,7 @@
     })(),
   );
 
-  let hasDuplicates = $derived(duplicates.length > 0);
+  let hasDuplicates = $derived(duplicatesRes.totalItems > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
       const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
@@ -98,13 +117,11 @@
     toastManager.success(message);
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const handleResolve = async (duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-
-        duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
@@ -114,42 +131,30 @@
     );
   };
 
-  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+  const handleStack = async (assets: AssetResponseDto[]) => {
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-    duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await correctDuplicatesIndexAndGo(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
-
+    const count = await countDeDuplicateAll();
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
-      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count } });
       confirmText = $t('confirm');
     } else {
-      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count } });
       confirmText = $t('permanently_delete');
     }
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
-          },
-        });
+        await deDuplicateAll();
+        deletedNotification(1);
 
-        duplicates = [];
-
-        deletedNotification(idsToDelete.length);
+        duplicatesRes.items = [];
 
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
@@ -160,18 +165,16 @@
   };
 
   const handleKeepAll = async () => {
-    const ids = duplicates.map(({ duplicateId }) => duplicateId);
+    const count = await countKeepAll();
     return withConfirmation(
       async () => {
-        await deleteDuplicates({ bulkIdsDto: { ids } });
-
-        duplicates = [];
+        await keepAll();
 
         toastManager.success($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
-      $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
+      $t('bulk_keep_duplicates_confirmation', { values: { count } }),
       $t('confirm'),
     );
   };
@@ -179,30 +182,79 @@
   const handleFirst = async () => {
     await correctDuplicatesIndexAndGo(0);
   };
+
   const handlePrevious = async () => {
     await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
+
   const handlePreviousShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handlePrevious();
   };
+
   const handleNext = async () => {
-    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicatesRes.totalItems - 1));
   };
+
   const handleNextShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handleNext();
   };
+
   const handleLast = async () => {
-    await correctDuplicatesIndexAndGo(duplicates.length - 1);
+    await correctDuplicatesIndexAndGo(duplicatesRes.totalItems - 1);
   };
+
   const correctDuplicatesIndexAndGo = async (index: number) => {
-    page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
+    const correctedIndex = correctDuplicatesIndex(index);
+    const pageNeeded = Math.floor(correctedIndex / PAGE_SIZE) + 1;
+    const currentPage = Math.floor(duplicatesIndex / PAGE_SIZE) + 1;
+
+    if (pageNeeded !== currentPage || !pageCache.has(pageNeeded)) {
+      await loadDuplicates(pageNeeded);
+    } else {
+      duplicatesRes = pageCache.get(pageNeeded)!;
+    }
+
+    page.url.searchParams.set('index', correctedIndex.toString());
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
+
+    void preloadAdjacentPages(pageNeeded, correctedIndex);
+  };
+
+  const loadDuplicates = async (pageNumber: number) => {
+    if (pageCache.has(pageNumber)) {
+      duplicatesRes = pageCache.get(pageNumber)!;
+      return;
+    }
+
+    duplicatesRes = await getAssetDuplicates({ page: pageNumber, size: PAGE_SIZE });
+    pageCache.set(pageNumber, duplicatesRes);
+  };
+
+  const preloadAdjacentPages = async (currentPageNumber: number, currentIndex: number) => {
+    const localIndex = currentIndex % PAGE_SIZE;
+    const maxPage = Math.ceil(duplicatesRes.totalItems / PAGE_SIZE);
+
+    if (localIndex === PAGE_SIZE - 1 && currentPageNumber < maxPage) {
+      const nextPage = currentPageNumber + 1;
+      if (!pageCache.has(nextPage)) {
+        const res = await getAssetDuplicates({ page: nextPage, size: PAGE_SIZE });
+        pageCache.set(nextPage, res);
+      }
+    }
+
+    if (localIndex === 0 && currentPageNumber > 1) {
+      const prevPage = currentPageNumber - 1;
+      if (!pageCache.has(prevPage)) {
+        const res = await getAssetDuplicates({ page: prevPage, size: PAGE_SIZE });
+        pageCache.set(prevPage, res);
+      }
+    }
   };
 </script>
 
@@ -213,7 +265,7 @@
   ]}
 />
 
-<UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
+<UserPageLayout title={data.meta.title + ` (${duplicatesRes.totalItems.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
@@ -248,8 +300,11 @@
     </HStack>
   {/snippet}
 
-  <div class="">
-    {#if duplicates && duplicates.length > 0}
+  <div>
+    {#if duplicatesRes.items.length > 0 && duplicatesRes.totalItems > 0}
+      {@const localIndex = duplicatesIndex % PAGE_SIZE}
+      {@const currentDuplicate = duplicatesRes.items[localIndex]}
+
       <div class="flex items-center mb-2">
         <div class="text-sm dark:text-white">
           <p>{$t('duplicates_description')}</p>
@@ -265,65 +320,64 @@
         />
       </div>
 
-      {#key duplicates[duplicatesIndex].duplicateId}
-        <DuplicatesCompareControl
-          assets={duplicates[duplicatesIndex].assets}
-          onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
-        />
-        <div class="max-w-5xl mx-auto mb-16">
-          <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
-            <div class="flex text-xs text-black">
-              <Button
-                size="small"
-                leadingIcon={mdiPageFirst}
-                color="primary"
-                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
-                onclick={handleFirst}
-                disabled={duplicatesIndex === 0}
-              >
-                {$t('first')}
-              </Button>
-              <Button
-                size="small"
-                leadingIcon={mdiChevronLeft}
-                color="primary"
-                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
-                onclick={handlePrevious}
-                disabled={duplicatesIndex === 0}
-              >
-                {$t('previous')}
-              </Button>
-            </div>
-            <p class="border px-3 md:px-6 py-1 dark:bg-subtle rounded-lg text-xs md:text-sm">
-              {duplicatesIndex + 1} / {duplicates.length.toLocaleString($locale)}
-            </p>
-            <div class="flex text-xs text-black">
-              <Button
-                size="small"
-                trailingIcon={mdiChevronRight}
-                color="primary"
-                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
-                onclick={handleNext}
-                disabled={duplicatesIndex === duplicates.length - 1}
-              >
-                {$t('next')}
-              </Button>
-              <Button
-                size="small"
-                trailingIcon={mdiPageLast}
-                color="primary"
-                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
-                onclick={handleLast}
-                disabled={duplicatesIndex === duplicates.length - 1}
-              >
-                {$t('last')}
-              </Button>
-            </div>
+      {#if currentDuplicate}
+        {#key currentDuplicate.duplicateId}
+          <DuplicatesCompareControl
+            assets={currentDuplicate.assets}
+            onResolve={(duplicateAssetIds, trashIds) => handleResolve(duplicateAssetIds, trashIds)}
+            onStack={(assets) => handleStack(assets)}
+          />
+        {/key}
+      {/if}
+      <div class="max-w-5xl mx-auto mb-16">
+        <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
+          <div class="flex text-xs text-black">
+            <Button
+              size="small"
+              leadingIcon={mdiPageFirst}
+              color="primary"
+              class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+              onclick={handleFirst}
+              disabled={duplicatesIndex === 0}
+            >
+              {$t('first')}
+            </Button>
+            <Button
+              size="small"
+              leadingIcon={mdiChevronLeft}
+              color="primary"
+              class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+              onclick={handlePrevious}
+              disabled={duplicatesIndex === 0}
+            >
+              {$t('previous')}
+            </Button>
+          </div>
+          <p>{duplicatesIndex + 1}/{duplicatesRes.totalItems.toLocaleString($locale)}</p>
+          <div class="flex text-xs text-black">
+            <Button
+              size="small"
+              trailingIcon={mdiChevronRight}
+              color="primary"
+              class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+              onclick={handleNext}
+              disabled={duplicatesIndex === duplicatesRes.totalItems - 1}
+            >
+              {$t('next')}
+            </Button>
+            <Button
+              size="small"
+              trailingIcon={mdiPageLast}
+              color="primary"
+              class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+              onclick={handleLast}
+              disabled={duplicatesIndex === duplicatesRes.totalItems - 1}
+            >
+              {$t('last')}
+            </Button>
           </div>
         </div>
-      {/key}
+      </div>
     {:else}
       <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
         {$t('no_duplicates_found')}

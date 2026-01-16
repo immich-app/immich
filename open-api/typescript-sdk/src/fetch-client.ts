@@ -730,9 +730,15 @@ export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
 };
-export type DuplicateResponseDto = {
+export type DuplicateItem = {
     assets: AssetResponseDto[];
     duplicateId: string;
+};
+export type DuplicateResponseDto = {
+    hasNextPage: boolean;
+    items: DuplicateItem[];
+    totalItems: number;
+    totalPages: number;
 };
 export type PersonResponseDto = {
     birthDate: string | null;
@@ -3006,11 +3012,45 @@ export function deleteDuplicates({ bulkIdsDto }: {
 /**
  * Retrieve duplicates
  */
-export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+export function getAssetDuplicates({ page, size }: {
+    page?: number;
+    size?: number;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DuplicateResponseDto[];
-    }>("/duplicates", {
+        data: DuplicateResponseDto;
+    }>(`/duplicates${QS.query(QS.explode({
+        page,
+        size
+    }))}`, {
+        ...opts
+    }));
+}
+export function deDuplicateAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/de-duplicate-all", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function countDeDuplicateAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: number;
+    }>("/duplicates/de-duplicate-all/count", {
+        ...opts
+    }));
+}
+export function keepAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/keep-all", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+export function countKeepAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: number;
+    }>("/duplicates/keep-all/count", {
         ...opts
     }));
 }

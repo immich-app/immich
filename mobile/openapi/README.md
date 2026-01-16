@@ -148,9 +148,13 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
+*DuplicatesApi* | [**countDeDuplicateAll**](doc//DuplicatesApi.md#countdeduplicateall) | **GET** /duplicates/de-duplicate-all/count | 
+*DuplicatesApi* | [**countKeepAll**](doc//DuplicatesApi.md#countkeepall) | **GET** /duplicates/keep-all/count | 
+*DuplicatesApi* | [**deDuplicateAll**](doc//DuplicatesApi.md#deduplicateall) | **DELETE** /duplicates/de-duplicate-all | 
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Delete a duplicate
 *DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | Delete duplicates
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | Retrieve duplicates
+*DuplicatesApi* | [**keepAll**](doc//DuplicatesApi.md#keepall) | **DELETE** /duplicates/keep-all | 
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | Create a face
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | Delete a face
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
@@ -411,6 +415,7 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
+ - [DuplicateItem](doc//DuplicateItem.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)

@@ -27,7 +27,33 @@ export class DuplicateRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string) {
+  async getAll(userId: string, page: number, size: number) {
+    const query = this.buildGetAllQuery(userId);
+
+    const [items, totalItems] = await Promise.all([
+      query
+        .offset((page - 1) * size)
+        .limit(size)
+        .execute(),
+      query
+        .clearSelect()
+        .select((eb) => eb.fn.countAll<number>().as('count'))
+        .executeTakeFirstOrThrow()
+        .then((r) => r.count),
+    ]);
+
+    return {
+      items,
+      totalItems,
+    };
+  }
+
+  streamForGetAll(userId: string) {
+    const query = this.buildGetAllQuery(userId);
+    return query.stream();
+  }
+
+  private buildGetAllQuery(userId: string) {
     return (
       this.db
         .with('duplicates', (qb) =>
@@ -74,7 +100,6 @@ export class DuplicateRepository {
         .where(({ not, exists }) =>
           not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
         )
-        .execute()
     );
   }
 
