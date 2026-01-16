@@ -48,10 +48,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
   Widget build(BuildContext context) {
     final asset = widget.asset;
     final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
-    // Only watch if this specific tile's asset is the current asset
     final isCurrentAsset = ref.watch(assetViewerProvider.select((current) => current.currentAsset == asset));
-
-    log.info("Thumbnail: ${asset!.name} rebuilt");
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -102,7 +99,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                 Positioned.fill(
                   child: Hero(
                     key: ValueKey(isCurrentAsset),
-                    tag: '${asset.heroTag}_$heroIndex',
+                    tag: '${asset!.heroTag}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
