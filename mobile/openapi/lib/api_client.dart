@@ -352,6 +352,8 @@ class ApiClient {
           return DatabaseBackupConfig.fromJson(value);
         case 'DatabaseBackupDeleteDto':
           return DatabaseBackupDeleteDto.fromJson(value);
+        case 'DatabaseBackupDto':
+          return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
         case 'DownloadArchiveInfo':

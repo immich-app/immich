@@ -187,8 +187,9 @@ export class MaintenanceWorkerService {
   /**
    * {@link _DatabaseBackupService.listBackups}
    */
-  async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listDatabaseBackups(this.backupRepos) };
+  async listBackups(): Promise<{ backups: { filename: string; filesize: number }[] }> {
+    const backups = await listDatabaseBackups(this.backupRepos);
+    return { backups };
   }
 
   /**

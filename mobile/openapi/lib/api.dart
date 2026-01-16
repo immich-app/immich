@@ -153,6 +153,7 @@ part 'model/create_profile_image_response_dto.dart';
 part 'model/crop_parameters.dart';
 part 'model/database_backup_config.dart';
 part 'model/database_backup_delete_dto.dart';
+part 'model/database_backup_dto.dart';
 part 'model/database_backup_list_response_dto.dart';
 part 'model/download_archive_info.dart';
 part 'model/download_info_dto.dart';

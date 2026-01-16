@@ -1,8 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
+export class DatabaseBackupDto {
+  filename!: string;
+  filesize!: number;
+}
+
 export class DatabaseBackupListResponseDto {
-  backups!: string[];
+  backups!: DatabaseBackupDto[];
 }
 
 export class DatabaseBackupUploadDto {

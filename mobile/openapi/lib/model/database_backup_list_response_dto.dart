@@ -16,7 +16,7 @@ class DatabaseBackupListResponseDto {
     this.backups = const [],
   });
 
-  List<String> backups;
+  List<DatabaseBackupDto> backups;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupListResponseDto &&
@@ -45,9 +45,7 @@ class DatabaseBackupListResponseDto {
       final json = value.cast<String, dynamic>();
 
       return DatabaseBackupListResponseDto(
-        backups: json[r'backups'] is Iterable
-            ? (json[r'backups'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        backups: DatabaseBackupDto.listFromJson(json[r'backups']),
       );
     }
     return null;

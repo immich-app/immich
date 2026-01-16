@@ -487,12 +487,13 @@ describe(MaintenanceWorkerService.name, () => {
         'immich-db-backup-1753789649000.sql.gz',
         `immich-db-backup-${DateTime.fromISO('2025-07-29T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
       ]);
+      mocks.storage.stat.mockResolvedValue({ size: 1024 } as any);
 
       await expect(sut.listBackups()).resolves.toMatchObject({
         backups: [
-          'immich-db-backup-20250729T110116-v1.234.5-pg14.5.sql.gz',
-          'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz',
-          'immich-db-backup-1753789649000.sql.gz',
+          { filename: 'immich-db-backup-20250729T110116-v1.234.5-pg14.5.sql.gz', filesize: 1024 },
+          { filename: 'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz', filesize: 1024 },
+          { filename: 'immich-db-backup-1753789649000.sql.gz', filesize: 1024 },
         ],
       });
     });

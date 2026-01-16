@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
 import { BaseService } from 'src/services/base.service';
 import {
   deleteDatabaseBackup,
@@ -13,8 +14,9 @@ import { ImmichFileResponse } from 'src/utils/file';
  */
 @Injectable()
 export class DatabaseBackupService extends BaseService {
-  async listBackups(): Promise<{ backups: string[] }> {
-    return { backups: await listDatabaseBackups(this.backupRepos) };
+  async listBackups(): Promise<DatabaseBackupListResponseDto> {
+    const backups = await listDatabaseBackups(this.backupRepos);
+    return { backups };
   }
 
   deleteBackup(files: string[]): Promise<void> {

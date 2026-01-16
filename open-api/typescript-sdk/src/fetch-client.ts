@@ -43,8 +43,12 @@ export type ActivityStatisticsResponseDto = {
 export type DatabaseBackupDeleteDto = {
     backups: string[];
 };
+export type DatabaseBackupDto = {
+    filename: string;
+    filesize: number;
+};
 export type DatabaseBackupListResponseDto = {
-    backups: string[];
+    backups: DatabaseBackupDto[];
 };
 export type DatabaseBackupUploadDto = {
     file?: Blob;

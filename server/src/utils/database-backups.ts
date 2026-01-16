@@ -373,13 +373,25 @@ export async function deleteDatabaseBackup({ storage }: Pick<BackupRepos, 'stora
   await Promise.all(files.map((filename) => storage.unlink(path.join(backupsFolder, filename))));
 }
 
-export async function listDatabaseBackups({ storage }: Pick<BackupRepos, 'storage'>): Promise<string[]> {
+export async function listDatabaseBackups({
+  storage,
+}: Pick<BackupRepos, 'storage'>): Promise<{ filename: string; filesize: number }[]> {
   const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
   const files = await storage.readdir(backupsFolder);
-  return files
+
+  const validFiles = files
     .filter((fn) => isValidDatabaseBackupName(fn))
     .toSorted((a, b) => (a.startsWith('uploaded-') === b.startsWith('uploaded-') ? a.localeCompare(b) : 1))
     .toReversed();
+
+  const backups = await Promise.all(
+    validFiles.map(async (filename) => {
+      const stats = await storage.stat(path.join(backupsFolder, filename));
+      return { filename, filesize: stats.size };
+    }),
+  );
+
+  return backups;
 }
 
 export async function uploadDatabaseBackup(

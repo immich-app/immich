@@ -413,6 +413,7 @@ Class | Method | HTTP request | Description
  - [CropParameters](doc//CropParameters.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
+ - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
  - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)

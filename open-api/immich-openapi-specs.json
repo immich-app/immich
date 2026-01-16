@@ -17164,11 +17164,26 @@
         ],
         "type": "object"
       },
+      "DatabaseBackupDto": {
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "filesize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "filename",
+          "filesize"
+        ],
+        "type": "object"
+      },
       "DatabaseBackupListResponseDto": {
         "properties": {
           "backups": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/DatabaseBackupDto"
             },
             "type": "array"
           }
