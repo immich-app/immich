@@ -163,13 +163,13 @@ export interface DuplicateSettings {
 }
 
 const defaultDuplicateSettings: DuplicateSettings = {
-  synchronizeAlbums: false,
-  synchronizeVisibility: false,
-  synchronizeFavorites: false,
-  synchronizeRating: false,
-  synchronizeDescription: false,
-  synchronizeLocation: false,
-  synchronizeTags: false,
+  synchronizeAlbums: true,
+  synchronizeVisibility: true,
+  synchronizeFavorites: true,
+  synchronizeRating: true,
+  synchronizeDescription: true,
+  synchronizeLocation: true,
+  synchronizeTags: true,
 };
 
 const normalizeDuplicateSettings = (
