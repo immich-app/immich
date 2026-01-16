@@ -112,14 +112,17 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
   } else {
     final String assetId;
+    final String? thumbhash;
     if (asset is LocalAsset && asset.hasRemote) {
       assetId = asset.remoteId!;
+      thumbhash = null;
     } else if (asset is RemoteAsset) {
       assetId = asset.id;
+      thumbhash = asset.thumbHash;
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId);
+    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash);
   }
 
   return provider;
@@ -132,7 +135,8 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
-  return assetId != null ? RemoteThumbProvider(assetId: assetId) : null;
+  final thumbhash = asset is RemoteAsset ? asset.thumbHash : null;
+  return assetId != null ? RemoteThumbProvider(assetId: assetId, thumbhash: thumbhash) : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>
