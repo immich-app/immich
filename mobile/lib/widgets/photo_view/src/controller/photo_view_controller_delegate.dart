@@ -65,7 +65,9 @@ mixin PhotoViewControllerDelegate on State<PhotoViewCore> {
 
   double get scale {
     // for figuring out initial scale
-    final needsRecalc = markNeedsScaleRecalc && !scaleStateController.scaleState.isScaleStateZooming;
+    final isZooming = scaleStateController.scaleState.isScaleStateZooming;
+    final isUserInteracting = controller.position != Offset.zero;
+    final needsRecalc = markNeedsScaleRecalc && !isZooming && !isUserInteracting;
 
     final scaleExistsOnController = controller.scale != null;
     if (needsRecalc || !scaleExistsOnController) {
