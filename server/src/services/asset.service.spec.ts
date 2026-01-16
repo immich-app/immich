@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -775,6 +775,42 @@ describe(AssetService.name, () => {
 
       expect(result.length).toEqual(2);
       expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
+    });
+  });
+
+  describe('upsertMetadata', () => {
+    it('should throw a bad request exception if duplicate keys are sent', async () => {
+      const asset = factory.asset();
+      const items = [
+        { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+      ];
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrowError(
+        'Duplicate items are not allowed:',
+      );
+
+      expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('upsertBulkMetadata', () => {
+    it('should throw a bad request exception if duplicate keys are sent', async () => {
+      const asset = factory.asset();
+      const items = [
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+      ];
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrowError(
+        'Duplicate items are not allowed:',
+      );
+
+      expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
     });
   });
 });

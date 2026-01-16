@@ -44,6 +44,7 @@ SyncAssetV1 _createAsset({
     livePhotoVideoId: null,
     stackId: null,
     thumbhash: null,
+    editCount: 0,
   );
 }
 

@@ -118,6 +118,10 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
+      case SyncEntityType.assetMetadataV1:
+        return _syncStreamRepository.updateAssetsMetadataV1(data.cast());
+      case SyncEntityType.assetMetadataDeleteV1:
+        return _syncStreamRepository.deleteAssetsMetadataV1(data.cast());
       case SyncEntityType.partnerAssetV1:
         return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'partner');
       case SyncEntityType.partnerAssetBackfillV1:

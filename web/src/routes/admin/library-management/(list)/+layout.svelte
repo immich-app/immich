@@ -76,7 +76,7 @@
   <Container size="large" center class="my-4">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <Table striped>
+        <Table striped size="small" spacing="small">
           <TableHeader>
             <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
             <TableHeading class={classes.column2}>{$t('owner')}</TableHeading>
@@ -104,6 +104,7 @@
         </Table>
       {:else}
         <EmptyPlaceholder
+          fullWidth
           text={$t('no_libraries_message')}
           onClick={() => goto(AppRoute.ADMIN_LIBRARIES_NEW)}
           class="mt-10 mx-auto"

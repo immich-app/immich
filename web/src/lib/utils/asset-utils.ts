@@ -508,11 +508,13 @@ export const delay = async (ms: number) => {
 };
 
 export const getNextAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  return currentAsset && assets[assets.indexOf(currentAsset) + 1];
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index + 1] : undefined;
 };
 
 export const getPreviousAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  return currentAsset && assets[assets.indexOf(currentAsset) - 1];
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index - 1] : undefined;
 };
 
 export const canCopyImageToClipboard = (): boolean => {
@@ -546,4 +548,13 @@ const imgToBlob = async (imageElement: HTMLImageElement) => {
 export const copyImageToClipboard = async (source: HTMLImageElement) => {
   // do not await, so the Safari clipboard write happens in the context of the user gesture
   await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
+};
+
+export const navigateToAsset = async (targetAsset: AssetResponseDto | undefined | null) => {
+  if (!targetAsset) {
+    return false;
+  }
+
+  await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+  return true;
 };

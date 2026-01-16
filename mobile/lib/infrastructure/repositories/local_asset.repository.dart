@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -171,5 +173,41 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+  }
+
+  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
+    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Future<Map<String, String>> getHashMappingFromCloudId() async {
+    final query =
+        _db.localAssetEntity.selectOnly().join([
+            leftOuterJoin(
+              _db.remoteAssetCloudIdEntity,
+              _db.localAssetEntity.iCloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
+          ..where(
+            _db.remoteAssetCloudIdEntity.cloudId.isNotNull() &
+                _db.localAssetEntity.checksum.isNull() &
+                ((_db.remoteAssetCloudIdEntity.adjustmentTime.isExp(_db.localAssetEntity.adjustmentTime)) &
+                    (_db.remoteAssetCloudIdEntity.latitude.isExp(_db.localAssetEntity.latitude)) &
+                    (_db.remoteAssetCloudIdEntity.longitude.isExp(_db.localAssetEntity.longitude)) &
+                    (_db.remoteAssetCloudIdEntity.createdAt.isExp(_db.localAssetEntity.createdAt))),
+          );
+    final mapping = await query
+        .map(
+          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
+        )
+        .get();
+    return {for (final entry in mapping) entry.assetId: entry.checksum};
   }
 }

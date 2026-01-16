@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -21,7 +22,6 @@ import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.coroutines.coroutineContext
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -298,7 +298,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         var bytesRead: Int
         val buffer = ByteArray(HASH_BUFFER_SIZE)
         while (inputStream.read(buffer).also { bytesRead = it } > 0) {
-          coroutineContext.ensureActive()
+          currentCoroutineContext().ensureActive()
           digest.update(buffer, 0, bytesRead)
         }
       } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
@@ -315,5 +315,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   fun cancelHashing() {
     hashTask?.cancel()
     hashTask = null
+  }
+
+  // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs
+  @Suppress("unused", "UNUSED_PARAMETER")
+  fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult> {
+    return emptyList()
   }
 }

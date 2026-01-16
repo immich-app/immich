@@ -22,7 +22,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -164,11 +164,7 @@
     imageError = imageLoaded = true;
   };
 
-  onMount(() => {
-    return () => {
-      preloadManager.cancelPreloadUrl(imageLoaderUrl);
-    };
-  });
+  onDestroy(() => preloadManager.cancelPreloadUrl(imageLoaderUrl));
 
   let imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),
@@ -181,9 +177,11 @@
 
   $effect(() => {
     if (lastUrl && lastUrl !== imageLoaderUrl) {
-      imageLoaded = false;
-      originalImageLoaded = false;
-      imageError = false;
+      untrack(() => {
+        imageLoaded = false;
+        originalImageLoaded = false;
+        imageError = false;
+      });
     }
     lastUrl = imageLoaderUrl;
   });

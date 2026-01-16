@@ -19,8 +19,7 @@
     const permissions = isAllPermissions ? [Permission.All] : selectedPermissions;
     const response = await handleCreateApiKey({ name, permissions });
     if (response) {
-      // no nested modal
-      void modalManager.show(ApiKeySecretModal, { secret: response.secret });
+      await modalManager.show(ApiKeySecretModal, { secret: response.secret });
       onClose();
     }
   };

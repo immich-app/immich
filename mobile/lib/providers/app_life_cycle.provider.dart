@@ -160,6 +160,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             _resumeBackup();
           }),
           _resumeBackup(),
+          backgroundManager.syncCloudIds(),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
@@ -180,7 +181,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+          _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }
@@ -237,6 +238,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
+      } else {
+        await _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
       }
 
       _ref.read(websocketProvider.notifier).disconnect();

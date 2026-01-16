@@ -16,6 +16,7 @@ class SyncAssetV1 {
     required this.checksum,
     required this.deletedAt,
     required this.duration,
+    required this.editCount,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.height,
@@ -38,6 +39,8 @@ class SyncAssetV1 {
   DateTime? deletedAt;
 
   String? duration;
+
+  int editCount;
 
   DateTime? fileCreatedAt;
 
@@ -74,6 +77,7 @@ class SyncAssetV1 {
     other.checksum == checksum &&
     other.deletedAt == deletedAt &&
     other.duration == duration &&
+    other.editCount == editCount &&
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.height == height &&
@@ -96,6 +100,7 @@ class SyncAssetV1 {
     (checksum.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (duration == null ? 0 : duration!.hashCode) +
+    (editCount.hashCode) +
     (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (height == null ? 0 : height!.hashCode) +
@@ -113,7 +118,7 @@ class SyncAssetV1 {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, editCount=$editCount, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -128,6 +133,7 @@ class SyncAssetV1 {
     } else {
     //  json[r'duration'] = null;
     }
+      json[r'editCount'] = this.editCount;
     if (this.fileCreatedAt != null) {
       json[r'fileCreatedAt'] = this.fileCreatedAt!.toUtc().toIso8601String();
     } else {
@@ -194,6 +200,7 @@ class SyncAssetV1 {
         checksum: mapValueOfType<String>(json, r'checksum')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         duration: mapValueOfType<String>(json, r'duration'),
+        editCount: mapValueOfType<int>(json, r'editCount')!,
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r''),
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
         height: mapValueOfType<int>(json, r'height'),
@@ -259,6 +266,7 @@ class SyncAssetV1 {
     'checksum',
     'deletedAt',
     'duration',
+    'editCount',
     'fileCreatedAt',
     'fileModifiedAt',
     'height',

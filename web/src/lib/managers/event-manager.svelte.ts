@@ -3,6 +3,7 @@ import type { ReleaseEvent } from '$lib/types';
 import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
+  AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
   LibraryResponseDto,
@@ -39,6 +40,8 @@ export type Events = {
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
+  AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
+  AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
 

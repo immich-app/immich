@@ -1,8 +1,7 @@
 <script lang="ts">
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { handleCreateApiKey } from '$lib/services/api-key.service';
   import { Permission } from '@immich/sdk';
-  import { Button, Field, Input, Modal, ModalBody, obtainiumBadge, Text } from '@immich/ui';
+  import { Button, Field, Input, Modal, ModalBody, obtainiumBadge, Select, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   let inputUrl = $state(location.origin);
   let inputApiKey = $state('');
@@ -29,6 +28,18 @@
   <ModalBody>
     <Text color="muted" size="small">{$t('obtainium_configurator_instructions')}</Text>
 
+    <Field label={$t('app_architecture_variant')} class="mt-4">
+      <Select
+        bind:value={archVariant}
+        options={[
+          { label: 'arm64-v8a', value: 'arm64-v8a-release' },
+          { label: 'armeabi-v7a', value: 'armeabi-v7a-release' },
+          { label: 'universal', value: 'release' },
+          { label: 'x86_64', value: 'x86_64-release' },
+        ]}
+      />
+    </Field>
+
     <Field label={$t('url')} class="mt-4">
       <Input bind:value={inputUrl} />
     </Field>
@@ -40,17 +51,6 @@
     <div class="flex justify-end mt-2">
       <Button size="small" onclick={handleCreate}>{$t('create_api_key')}</Button>
     </div>
-
-    <SettingSelect
-      label={$t('app_architecture_variant')}
-      bind:value={archVariant}
-      options={[
-        { value: 'arm64-v8a-release', text: 'arm64-v8a' },
-        { value: 'armeabi-v7a-release', text: 'armeabi-v7a' },
-        { value: 'release', text: 'universal' },
-        { value: 'x86_64-release', text: 'x86_64' },
-      ]}
-    />
 
     {#if inputUrl && inputApiKey && archVariant}
       <div class="content-center">

@@ -103,7 +103,6 @@
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
-          initialAssetId={data.asset?.id}
           assets={data.pathAssets}
           {assetInteraction}
           {viewport}

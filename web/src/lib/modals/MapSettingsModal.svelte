@@ -1,16 +1,15 @@
 <script lang="ts">
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
-  import { Button, Field, FormModal, Stack, Switch } from '@immich/ui';
+  import { Button, Field, FormModal, Select, Stack, Switch } from '@immich/ui';
   import { Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
-  interface Props {
+  type Props = {
     settings: MapSettings;
     onClose: (settings?: MapSettings) => void;
-  }
+  };
 
   let { settings: initialValues, onClose }: Props = $props();
   let settings = $state(initialValues);
@@ -73,37 +72,37 @@
       </div>
     {:else}
       <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
-        <SettingSelect
-          label={$t('date_range')}
-          name="date-range"
-          bind:value={settings.relativeDate}
-          options={[
-            {
-              value: '',
-              text: $t('all'),
-            },
-            {
-              value: Duration.fromObject({ hours: 24 }).toISO() || '',
-              text: $t('past_durations.hours', { values: { hours: 24 } }),
-            },
-            {
-              value: Duration.fromObject({ days: 7 }).toISO() || '',
-              text: $t('past_durations.days', { values: { days: 7 } }),
-            },
-            {
-              value: Duration.fromObject({ days: 30 }).toISO() || '',
-              text: $t('past_durations.days', { values: { days: 30 } }),
-            },
-            {
-              value: Duration.fromObject({ years: 1 }).toISO() || '',
-              text: $t('past_durations.years', { values: { years: 1 } }),
-            },
-            {
-              value: Duration.fromObject({ years: 3 }).toISO() || '',
-              text: $t('past_durations.years', { values: { years: 3 } }),
-            },
-          ]}
-        />
+        <Field label={$t('date_range')}>
+          <Select
+            bind:value={settings.relativeDate}
+            options={[
+              {
+                label: $t('all'),
+                value: '',
+              },
+              {
+                label: $t('past_durations.hours', { values: { hours: 24 } }),
+                value: Duration.fromObject({ hours: 24 }).toISO() || '',
+              },
+              {
+                label: $t('past_durations.days', { values: { days: 7 } }),
+                value: Duration.fromObject({ days: 7 }).toISO() || '',
+              },
+              {
+                label: $t('past_durations.days', { values: { days: 30 } }),
+                value: Duration.fromObject({ days: 30 }).toISO() || '',
+              },
+              {
+                label: $t('past_durations.years', { values: { years: 1 } }),
+                value: Duration.fromObject({ years: 1 }).toISO() || '',
+              },
+              {
+                label: $t('past_durations.years', { values: { years: 3 } }),
+                value: Duration.fromObject({ years: 3 }).toISO() || '',
+              },
+            ]}
+          />
+        </Field>
         <div class="text-xs">
           <Button
             color="primary"

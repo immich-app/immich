@@ -22,6 +22,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
   mdiDownload,
+  mdiDownloadBox,
   mdiHeart,
   mdiHeartOutline,
   mdiInformationOutline,
@@ -51,7 +52,15 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: { key: 'd', shift: true },
     type: $t('assets'),
     $if: () => !!currentAuthUser,
-    onAction: () => handleDownloadAsset(asset),
+    onAction: () => handleDownloadAsset(asset, { edited: true }),
+  };
+
+  const DownloadOriginal: ActionItem = {
+    title: $t('download_original'),
+    icon: mdiDownloadBox,
+    type: $t('assets'),
+    $if: () => !!currentAuthUser && asset.isEdited,
+    onAction: () => handleDownloadAsset(asset, { edited: false }),
   };
 
   const SharedLinkDownload: ActionItem = {
@@ -115,10 +124,21 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'i' }],
   };
 
-  return { Share, Download, SharedLinkDownload, Offline, Info, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto };
+  return {
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Info,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+  };
 };
 
-export const handleDownloadAsset = async (asset: AssetResponseDto) => {
+export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: { edited: boolean }) => {
   const $t = await getFormatter();
 
   const assets = [
@@ -154,7 +174,12 @@ export const handleDownloadAsset = async (asset: AssetResponseDto) => {
 
     try {
       toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
-      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
+      downloadUrl(
+        getBaseUrl() +
+          `/assets/${id}/original` +
+          (queryParams ? `?${queryParams}&edited=${edited}` : `?edited=${edited}`),
+        filename,
+      );
     } catch (error) {
       handleError(error, $t('errors.error_downloading', { values: { filename } }));
     }

@@ -67,7 +67,7 @@
 
 <section class="my-6 w-full">
   <Heading size="tiny">{$t('photos_and_videos')}</Heading>
-  <Table striped spacing="medium" class="mt-4">
+  <Table striped spacing="small" class="mt-4" size="small">
     <TableHeader>
       <TableHeading class="w-1/4">{$t('view_name')}</TableHeading>
       <TableHeading class="w-1/4">{$t('photos')}</TableHeading>
@@ -83,7 +83,7 @@
   </Table>
 
   <Heading size="tiny" class="mt-8">{$t('albums')}</Heading>
-  <Table striped spacing="medium" class="mt-4">
+  <Table striped spacing="small" class="mt-4" size="small">
     <TableHeader>
       <TableHeading class="w-1/2">{$t('owned')}</TableHeading>
       <TableHeading class="w-1/2">{$t('shared')}</TableHeading>

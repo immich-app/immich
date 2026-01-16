@@ -25,14 +25,13 @@
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
 
-  interface Props {
-    showUploadButton?: boolean;
+  type Props = {
     onUploadClick?: () => void;
     // TODO: remove once this is only used in <AppShellHeader>
     noBorder?: boolean;
-  }
+  };
 
-  let { showUploadButton = true, onUploadClick, noBorder = false }: Props = $props();
+  let { onUploadClick, noBorder = false }: Props = $props();
 
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
@@ -105,7 +104,7 @@
           />
         {/if}
 
-        {#if !page.url.pathname.includes('/admin') && showUploadButton && onUploadClick}
+        {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}
