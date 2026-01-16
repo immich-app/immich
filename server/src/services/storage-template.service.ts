@@ -59,6 +59,9 @@ const storagePresets = [
 export interface MoveAssetMetadata {
   storageLabel: string | null;
   filename: string;
+  albumName?: string | null;
+  albumStartDate?: Date | null;
+  albumEndDate?: Date | null;
 }
 
 interface RenderMetadata {
@@ -154,7 +157,29 @@ export class StorageTemplateService extends BaseService {
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
+      
+      // Get asset metadata so that live photos and regular photos can share the same asset information
+      let albumName  = null;
+      let albumStartDate = null;
+      let albumEndDate = null;
+      if (this.template.needsAlbum) {
+        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        const album = albums?.[0];
+        if (album) {
+          albumName = album.albumName ?? null;
+
+          if (this.template.needsAlbumMetadata) {
+            const [metadata] =
+              await this.albumRepository.getMetadataForIds([album.id]);
+            albumStartDate = metadata?.startDate ?? null;
+            albumEndDate = metadata?.endDate ?? null;
+          }
+        }
+      }
+
+      const assetMetadata:MoveAssetMetadata  = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
+      await this.moveAsset(asset, assetMetadata);
+
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
@@ -163,7 +188,8 @@ export class StorageTemplateService extends BaseService {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+      const liveAssetMetadata:MoveAssetMetadata = { storageLabel: assetMetadata.storageLabel , filename: motionFilename, albumName: assetMetadata.albumName, albumStartDate: assetMetadata.albumStartDate, albumEndDate: assetMetadata.albumEndDate};
+      await this.moveAsset(livePhotoVideo, liveAssetMetadata);
     }
     return JobStatus.Success;
   }
@@ -187,14 +213,36 @@ export class StorageTemplateService extends BaseService {
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      await this.moveAsset(asset, { storageLabel, filename });
+      
+      // Get asset metadata so that live photos and regular photos can share the same asset information
+      let albumName  = null;
+      let albumStartDate = null;
+      let albumEndDate = null;
+      if (this.template.needsAlbum) {
+        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        const album = albums?.[0];
+        if (album) {
+          albumName = album.albumName ?? null;
+
+          if (this.template.needsAlbumMetadata) {
+            const [metadata] =
+              await this.albumRepository.getMetadataForIds([album.id]);
+            albumStartDate = metadata?.startDate ?? null;
+            albumEndDate = metadata?.endDate ?? null;
+          }
+        }
+      }
+
+      const assetMetadata:MoveAssetMetadata  = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
+      await this.moveAsset(asset, assetMetadata);
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
         const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+          const liveAssetMetadata:MoveAssetMetadata = { storageLabel: assetMetadata.storageLabel , filename: motionFilename, albumName: assetMetadata.albumName, albumStartDate: assetMetadata.albumStartDate, albumEndDate: assetMetadata.albumEndDate};
+          await this.moveAsset(livePhotoVideo, liveAssetMetadata);
         }
       }
     }
@@ -297,17 +345,9 @@ export class StorageTemplateService extends BaseService {
       let albumStartDate = null;
       let albumEndDate = null;
       if (this.template.needsAlbum) {
-        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
-        const album = albums?.[0];
-        if (album) {
-          albumName = album.albumName || null;
-
-          if (this.template.needsAlbumMetadata) {
-            const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
-            albumStartDate = metadata?.startDate || null;
-            albumEndDate = metadata?.endDate || null;
-          }
-        }
+        albumName = metadata.albumName || null;
+        albumStartDate = metadata.albumStartDate || null;
+        albumEndDate = metadata?.albumEndDate || null;
       }
 
       const storagePath = this.render(this.template.compiled, {
