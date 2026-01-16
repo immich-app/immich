@@ -112,8 +112,18 @@
 
   const { Cast } = $derived(getGlobalActions($t));
 
-  const { Share, Download, SharedLinkDownload, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } =
-    $derived(getAssetActions($t, asset));
+  const {
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    Info,
+  } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 
   // TODO: Enable when edits are ready for release
@@ -195,6 +205,7 @@
         {/if}
 
         <ActionMenuItem action={Download} />
+        <ActionMenuItem action={DownloadOriginal} />
 
         {#if !isLocked}
           {#if asset.isTrashed}

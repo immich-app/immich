@@ -30,6 +30,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   visibility: AssetVisibility.Timeline,
   width: faker.number.int({ min: 100, max: 1000 }),
   height: faker.number.int({ min: 100, max: 1000 }),
+  isEdited: false,
 });
 
 export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({

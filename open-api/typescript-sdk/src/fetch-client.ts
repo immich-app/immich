@@ -382,6 +382,7 @@ export type AssetResponseDto = {
     height: number | null;
     id: string;
     isArchived: boolean;
+    isEdited: boolean;
     isFavorite: boolean;
     isOffline: boolean;
     isTrashed: boolean;

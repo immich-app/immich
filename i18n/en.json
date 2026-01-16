@@ -939,6 +939,7 @@
   "download_include_embedded_motion_videos": "Embedded videos",
   "download_include_embedded_motion_videos_description": "Include videos embedded in motion photos as a separate file",
   "download_notfound": "Download not found",
+  "download_original": "Download original",
   "download_paused": "Download paused",
   "download_settings": "Download",
   "download_settings_description": "Manage settings related to asset download",

@@ -255,3 +255,31 @@ export const asset_face_audit = registerFunction({
       RETURN NULL;
     END`,
 });
+
+export const asset_edit_insert = registerFunction({
+  name: 'asset_edit_insert',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset
+      SET "editCount" = "editCount" + 1
+      WHERE "id" = NEW."assetId";
+      RETURN NULL;
+    END
+  `,
+});
+
+export const asset_edit_delete = registerFunction({
+  name: 'asset_edit_delete',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      UPDATE asset
+      SET "editCount" = "editCount" - 1
+      WHERE "id" = OLD."assetId";
+      RETURN NULL;
+    END
+  `,
+});
