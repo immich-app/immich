@@ -444,4 +444,10 @@ export enum ToggleVisibility {
   SHOW_ALL = 'show-all',
 }
 
+export enum BackupFileStatus {
+  OK,
+  DifferentVersion,
+  UnknownVersion,
+}
+
 export const assetViewerFadeDuration: number = 150;
