@@ -14,14 +14,14 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -681,7 +681,7 @@ class _GridAlbumCard extends ConsumerWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: album.thumbnailAssetId != null
-                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
+                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!, thumbhash: "")
                       : Container(
                           color: context.colorScheme.surfaceContainerHighest,
                           child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),

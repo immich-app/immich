@@ -16,9 +16,9 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     with CancellableImageProviderMixin<RemoteThumbProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final String? thumbhash;
+  final String thumbhash;
 
-  RemoteThumbProvider({required this.assetId, this.thumbhash});
+  RemoteThumbProvider({required this.assetId, required this.thumbhash});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -64,9 +64,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     with CancellableImageProviderMixin<RemoteFullImageProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final String? thumbhash;
+  final String thumbhash;
 
-  RemoteFullImageProvider({required this.assetId, this.thumbhash});
+  RemoteFullImageProvider({required this.assetId, required this.thumbhash});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {

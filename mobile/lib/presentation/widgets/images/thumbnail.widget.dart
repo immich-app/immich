@@ -23,7 +23,7 @@ class Thumbnail extends StatefulWidget {
 
   Thumbnail.remote({
     required String remoteId,
-    String? thumbhash,
+    required String thumbhash,
     this.fit = BoxFit.cover,
     Size size = kThumbnailResolution,
     super.key,

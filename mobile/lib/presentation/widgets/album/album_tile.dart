@@ -32,7 +32,11 @@ class AlbumTile extends StatelessWidget {
       leading: album.thumbnailAssetId != null
           ? ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: SizedBox(width: 80, height: 80, child: Thumbnail.remote(remoteId: album.thumbnailAssetId!)),
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: Thumbnail.remote(remoteId: album.thumbnailAssetId!, thumbhash: ""),
+              ),
             )
           : SizedBox(
               width: 80,
