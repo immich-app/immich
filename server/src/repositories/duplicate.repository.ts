@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, NotNull, sql } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
+
+// Maximum number of candidate duplicates to return from vector search
+const DUPLICATE_SEARCH_LIMIT = 64;
 
 interface DuplicateSearch {
   assetId: string;
@@ -34,12 +39,25 @@ export class DuplicateRepository {
           qb
             .selectFrom('asset')
             .$call(withDefaultVisibility)
+            // Use innerJoinLateral to build a composite object per asset that includes
+            // exifInfo and tags. This "asset2" object is then aggregated via jsonAgg.
+            // Tags must be included here (not via separate joins) so they appear in the
+            // final MapAsset[] output - needed for tag synchronization during resolution.
             .innerJoinLateral(
               (qb) =>
                 qb
                   .selectFrom('asset_exif')
                   .selectAll('asset')
-                  .select((eb) => eb.table('asset_exif').as('exifInfo'))
+                  .select((eb) => eb.fn.toJson('asset_exif').as('exifInfo'))
+                  .select((eb) =>
+                    jsonArrayFrom(
+                      eb
+                        .selectFrom('tag')
+                        .select(columns.tag)
+                        .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+                        .whereRef('tag_asset.assetId', '=', 'asset.id'),
+                    ).as('tags'),
+                  )
                   .whereRef('asset_exif.assetId', '=', 'asset.id')
                   .as('asset2'),
               (join) => join.onTrue(),
@@ -55,27 +73,84 @@ export class DuplicateRepository {
             .where('asset.stackId', 'is', null)
             .groupBy('asset.duplicateId'),
         )
-        .with('unique', (qb) =>
-          qb
-            .selectFrom('duplicates')
-            .select('duplicateId')
-            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
-        )
-        .with('removed_unique', (qb) =>
-          qb
-            .updateTable('asset')
-            .set({ duplicateId: null })
-            .from('unique')
-            .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
-        )
         .selectFrom('duplicates')
         .selectAll()
-        // TODO: compare with filtering by json_array_length > 1
-        .where(({ not, exists }) =>
-          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-        )
+        // Filter out singleton groups (only 1 asset) directly in the query
+        .where((eb) => eb(eb.fn('json_array_length', ['assets']), '>', 1))
         .execute()
     );
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async cleanupSingletonGroups(userId: string): Promise<void> {
+    // Remove duplicateId from assets that are the only member of their duplicate group
+    await this.db
+      .with('singletons', (qb) =>
+        qb
+          .selectFrom('asset')
+          .select('duplicateId')
+          .where('ownerId', '=', asUuid(userId))
+          .where('duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('deletedAt', 'is', null)
+          .where('stackId', 'is', null)
+          .groupBy('duplicateId')
+          .having((eb) => eb.fn.count('id'), '=', 1),
+      )
+      .updateTable('asset')
+      .set({ duplicateId: null })
+      .from('singletons')
+      .whereRef('asset.duplicateId', '=', 'singletons.duplicateId')
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getByIdForUser(
+    userId: string,
+    duplicateId: string,
+  ): Promise<{ duplicateId: string; assets: MapAsset[] } | undefined> {
+    const result = await this.db
+      .selectFrom('asset')
+      .$call(withDefaultVisibility)
+      // Use innerJoinLateral to build a composite object per asset that includes
+      // exifInfo and tags. This "asset2" object is then aggregated via jsonAgg.
+      // Tags must be included here (not via separate joins) so they appear in the
+      // final MapAsset[] output - needed for tag synchronization during resolution.
+      .innerJoinLateral(
+        (qb) =>
+          qb
+            .selectFrom('asset_exif')
+            .selectAll('asset')
+            .select((eb) => eb.fn.toJson('asset_exif').as('exifInfo'))
+            .select((eb) =>
+              jsonArrayFrom(
+                eb
+                  .selectFrom('tag')
+                  .select(columns.tag)
+                  .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+                  .whereRef('tag_asset.assetId', '=', 'asset.id'),
+              ).as('tags'),
+            )
+            .whereRef('asset_exif.assetId', '=', 'asset.id')
+            .as('asset2'),
+        (join) => join.onTrue(),
+      )
+      .select('asset.duplicateId')
+      .select((eb) =>
+        eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
+      )
+      .where('asset.ownerId', '=', asUuid(userId))
+      .where('asset.duplicateId', '=', asUuid(duplicateId))
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.stackId', 'is', null)
+      .groupBy('asset.duplicateId')
+      .executeTakeFirst();
+
+    if (!result || !result.duplicateId) {
+      return undefined;
+    }
+
+    return { duplicateId: result.duplicateId, assets: result.assets };
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -134,7 +209,7 @@ export class DuplicateRepository {
             .where('asset.id', '!=', asUuid(assetId))
             .where('asset.stackId', 'is', null)
             .orderBy('distance')
-            .limit(64),
+            .limit(DUPLICATE_SEARCH_LIMIT),
         )
         .selectFrom('cte')
         .selectAll()

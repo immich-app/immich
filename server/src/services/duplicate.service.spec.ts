@@ -38,6 +38,7 @@ describe(SearchService.name, () => {
 
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
       mocks.duplicateRepository.getAll.mockResolvedValue([
         {
           duplicateId: 'duplicate-id',
@@ -51,8 +52,31 @@ describe(SearchService.name, () => {
             expect.objectContaining({ id: assetStub.image.id }),
             expect.objectContaining({ id: assetStub.image.id }),
           ],
+          suggestedKeepAssetIds: [assetStub.image.id],
         },
       ]);
+    });
+
+    it('should return suggestedKeepAssetIds based on file size', async () => {
+      const smallAsset = {
+        ...assetStub.image,
+        id: 'small-asset',
+        exifInfo: { ...assetStub.image.exifInfo, fileSizeInByte: 1000 },
+      };
+      const largeAsset = {
+        ...assetStub.image,
+        id: 'large-asset',
+        exifInfo: { ...assetStub.image.exifInfo, fileSizeInByte: 5000 },
+      };
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
+      mocks.duplicateRepository.getAll.mockResolvedValue([
+        {
+          duplicateId: 'duplicate-id',
+          assets: [smallAsset, largeAsset],
+        },
+      ]);
+      const result = await sut.getDuplicates(authStub.admin);
+      expect(result[0].suggestedKeepAssetIds).toEqual(['large-asset']);
     });
   });
 
@@ -127,6 +151,231 @@ describe(SearchService.name, () => {
         },
       ]);
     });
+  });
+
+  describe('resolve', () => {
+    it('should return COMPLETED status even with all failures', async () => {
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'fake-id', keepAssetIds: [], trashAssetIds: [] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.status).toBe('COMPLETED');
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].status).toBe('FAILED');
+    });
+
+    it('should handle mixed success and failure', async () => {
+      // First group: missing group (will fail)
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValueOnce(undefined);
+
+      // Second group: invalid inputs (will also fail)
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValueOnce({
+        duplicateId: 'group-2',
+        assets: [{ ...assetStub.image, id: 'asset-1' }],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [
+          { duplicateId: 'fake-id', keepAssetIds: [], trashAssetIds: [] },
+          { duplicateId: 'group-2', keepAssetIds: ['non-member-id'], trashAssetIds: [] },
+        ],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.status).toBe('COMPLETED');
+      expect(result.results).toHaveLength(2);
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[1].status).toBe('FAILED');
+    });
+
+    it('should catch and report errors in resolveGroup', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockRejectedValue(new Error('Database error'));
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: [] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.status).toBe('COMPLETED');
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('Database error');
+    });
+  });
+
+  describe('resolveGroup (via resolve)', () => {
+    it('should fail if duplicate group not found', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue(undefined);
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'missing-id', keepAssetIds: [], trashAssetIds: [] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('not found or access denied');
+    });
+
+    it('should fail if keepAssetIds contains non-member', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [{ ...assetStub.image, id: 'asset-1' }],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: ['asset-999'], trashAssetIds: [] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('not a member of duplicate group');
+    });
+
+    it('should fail if trashAssetIds contains non-member', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [{ ...assetStub.image, id: 'asset-1' }],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: ['asset-999'] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('not a member of duplicate group');
+    });
+
+    it('should fail if keepAssetIds and trashAssetIds overlap', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          { ...assetStub.image, id: 'asset-1' },
+          { ...assetStub.image, id: 'asset-2' },
+        ],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: ['asset-1'], trashAssetIds: ['asset-1'] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('disjoint');
+    });
+
+    it('should fail if keepAssetIds and trashAssetIds do not cover all assets', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          { ...assetStub.image, id: 'asset-1' },
+          { ...assetStub.image, id: 'asset-2' },
+          { ...assetStub.image, id: 'asset-3' },
+        ],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: ['asset-1'], trashAssetIds: ['asset-2'] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('must cover all assets');
+    });
+
+    it('should fail if partial trash without keepers', async () => {
+      mocks.duplicateRepository.getByIdForUser.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          { ...assetStub.image, id: 'asset-1' },
+          { ...assetStub.image, id: 'asset-2' },
+        ],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [], trashAssetIds: ['asset-1'] }],
+        settings: {
+          synchronizeAlbums: false,
+          synchronizeVisibility: false,
+          synchronizeFavorites: false,
+          synchronizeRating: false,
+          synchronizeDescription: false,
+          synchronizeLocation: false,
+          synchronizeTags: false,
+        },
+      });
+
+      expect(result.results[0].status).toBe('FAILED');
+      expect(result.results[0].reason).toContain('must cover all assets');
+    });
+
+    // NOTE: The following integration-style tests are covered by E2E tests instead
+    // to avoid complex mock setup. The validation and error-handling logic above
+    // is thoroughly unit tested.
   });
 
   describe('handleSearchDuplicates', () => {

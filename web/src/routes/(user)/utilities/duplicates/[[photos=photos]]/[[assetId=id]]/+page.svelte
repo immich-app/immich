@@ -5,27 +5,15 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicateSettingsModal from '$lib/components/utilities-page/duplicates/duplicate-settings-modal.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { duplicateSettings, locale } from '$lib/stores/preferences.store';
-  import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetBulkUpdateDto, AssetResponseDto } from '@immich/sdk';
-  import {
-    addAssetsToAlbums,
-    AssetVisibility,
-    bulkTagAssets,
-    deleteAssets,
-    deleteDuplicates,
-    getAllAlbums,
-    getAssetInfo,
-    updateAssets,
-  } from '@immich/sdk';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { deleteDuplicates, resolveDuplicates, stackDuplicates, Status } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -39,7 +27,6 @@
     mdiTrashCanOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
 
   interface Props {
@@ -118,160 +105,34 @@
     toastManager.success(message);
   };
 
-  const getSyncedInfo = async (assetIds: string[]) => {
-    if (assetIds.length === 0) {
-      return {
-        isFavorite: false,
-        visibility: undefined,
-        rating: 0,
-        description: null,
-        latitude: null,
-        longitude: null,
-        tagIds: [],
-      };
-    }
-
-    const allAssetsInfo = await Promise.all(
-      assetIds.map((assetId) => getAssetInfo({ ...authManager.params, id: assetId })),
-    );
-    // If any of the assets is favorite, we consider the synced info as favorite
-    const isFavorite = allAssetsInfo.some((asset) => asset.isFavorite);
-    // Choose the most restrictive user-visible level (Hidden is internal-only)
-    const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
-    let visibility = visibilityOrder.find((level) => allAssetsInfo.some((asset) => asset.visibility === level));
-    if (!visibility && allAssetsInfo.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
-      visibility = AssetVisibility.Hidden;
-    }
-    // Choose the highest rating from the exif data of the assets
-    let rating = 0;
-    for (const asset of allAssetsInfo) {
-      const assetRating = asset.exifInfo?.rating ?? 0;
-      if (assetRating > rating) {
-        rating = assetRating;
-      }
-    }
-    // Concatenate unique non-empty description lines to avoid duplicates across multi-line values
-    const uniqueNonEmptyLines = (values: Array<string | null | undefined>) => {
-      const unique = new SvelteSet<string>();
-      const lines: string[] = [];
-      for (const value of values) {
-        if (!value) {
-          continue;
-        }
-        for (const line of value.split(/\r?\n/)) {
-          const trimmed = line.trim();
-          if (!trimmed || unique.has(trimmed)) {
-            continue;
-          }
-          unique.add(trimmed);
-          lines.push(trimmed);
-        }
-      }
-      return lines;
-    };
-    const description =
-      uniqueNonEmptyLines(allAssetsInfo.map((asset) => asset.exifInfo?.description)).join('\n') || null;
-
-    // Helper: return unique numeric coordinate pair or null
-    const getUniqueCoordinate = (assets: AssetResponseDto[], key: 'latitude' | 'longitude'): number | null => {
-      const values = assets
-        .map((asset) => asset.exifInfo?.[key])
-        .filter((value): value is number => Number.isFinite(value));
-
-      if (values.length === 0) {
-        return null;
-      }
-
-      const unique = new SvelteSet(values);
-      return unique.size === 1 ? Array.from(unique)[0] : null;
-    };
-
-    const latitude: number | null = getUniqueCoordinate(allAssetsInfo, 'latitude');
-    const longitude: number | null = getUniqueCoordinate(allAssetsInfo, 'longitude');
-
-    // Collect all unique tag IDs from all assets: flatten tags, extract IDs, deduplicate
-    const tagIds = [
-      ...new SvelteSet(
-        allAssetsInfo
-          .flatMap((asset) => asset.tags ?? [])
-          .map((tag) => tag.id)
-          .filter((id): id is string => !!id),
-      ),
-    ];
-
-    return { isFavorite, visibility, rating, description, latitude, longitude, tagIds };
-  };
-
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     const forceDelete = !featureFlagsManager.value.trash;
     const shouldConfirmDelete = trashIds.length > 0 && forceDelete;
 
     return withConfirmation(
       async () => {
-        const idsToKeep = duplicateAssetIds.filter((id) => !trashIds.includes(id));
+        const keepAssetIds = duplicateAssetIds.filter((id) => !trashIds.includes(id));
 
-        const needsSyncedInfo =
-          $duplicateSettings.synchronizeFavorites ||
-          $duplicateSettings.synchronizeVisibility ||
-          $duplicateSettings.synchronizeRating ||
-          $duplicateSettings.synchronizeDescription ||
-          $duplicateSettings.synchronizeLocation ||
-          $duplicateSettings.synchronizeTags;
-        const syncedInfo = needsSyncedInfo ? await getSyncedInfo(duplicateAssetIds) : null;
+        const response = await resolveDuplicates({
+          duplicateResolveDto: {
+            groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }],
+            settings: {
+              synchronizeAlbums: $duplicateSettings.synchronizeAlbums,
+              synchronizeVisibility: $duplicateSettings.synchronizeVisibility,
+              synchronizeFavorites: $duplicateSettings.synchronizeFavorites,
+              synchronizeRating: $duplicateSettings.synchronizeRating,
+              synchronizeDescription: $duplicateSettings.synchronizeDescription,
+              synchronizeLocation: $duplicateSettings.synchronizeLocation,
+              synchronizeTags: $duplicateSettings.synchronizeTags,
+            },
+          },
+        });
 
-        let assetBulkUpdate: AssetBulkUpdateDto = {
-          ids: idsToKeep,
-          duplicateId: null,
-        };
-        if ($duplicateSettings.synchronizeFavorites && syncedInfo) {
-          assetBulkUpdate.isFavorite = syncedInfo.isFavorite;
-        }
-        if ($duplicateSettings.synchronizeVisibility && syncedInfo) {
-          assetBulkUpdate.visibility = syncedInfo.visibility;
-        }
-        if ($duplicateSettings.synchronizeRating && syncedInfo) {
-          assetBulkUpdate.rating = syncedInfo.rating;
-        }
-        if ($duplicateSettings.synchronizeDescription && syncedInfo && syncedInfo.description !== null) {
-          assetBulkUpdate.description = syncedInfo.description;
-        }
-        // If all assets have the same location, use it; otherwise don't set it (leave as-is)
-        // Note: We cannot explicitly clear location via updateAssets API - it doesn't accept null
-        // The keeper asset will retain its original location if coordinates differ
-        if (
-          $duplicateSettings.synchronizeLocation &&
-          syncedInfo &&
-          syncedInfo.latitude !== null &&
-          syncedInfo.longitude !== null
-        ) {
-          assetBulkUpdate.latitude = syncedInfo.latitude;
-          assetBulkUpdate.longitude = syncedInfo.longitude;
+        const result = response.results[0];
+        if (result.status === Status.Failed) {
+          throw new Error(result.reason ?? 'Failed to resolve duplicate group');
         }
 
-        if ($duplicateSettings.synchronizeAlbums) {
-          const mergedAlbumIds = new SvelteSet<string>();
-          for (const sourceId of duplicateAssetIds) {
-            const albums = await getAllAlbums({ assetId: sourceId });
-            for (const album of albums) {
-              mergedAlbumIds.add(album.id);
-            }
-          }
-
-          const albumIds = [...mergedAlbumIds];
-          if (albumIds.length > 0 && idsToKeep.length > 0) {
-            await addAssetsToAlbums({ albumsAddAssetsDto: { albumIds, assetIds: idsToKeep } });
-          }
-        }
-
-        if ($duplicateSettings.synchronizeTags && idsToKeep.length > 0 && syncedInfo && syncedInfo.tagIds.length > 0) {
-          await bulkTagAssets({ tagBulkAssetsDto: { tagIds: syncedInfo.tagIds, assetIds: idsToKeep } });
-        }
-
-        await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
-        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: forceDelete } });
-
-        // This line ensures that once a duplicate group is resolved, it disappears from the
-        // duplicates list shown to the user, maintaining consistent UI state
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
@@ -283,18 +144,23 @@
   };
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
-    await stackAssets(assets, false);
-    const duplicateAssetIds = assets.map((asset) => asset.id);
-    await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    const assetIds = assets.map((asset) => asset.id);
+    await stackDuplicates({
+      duplicateStackDto: {
+        duplicateId,
+        assetIds,
+      },
+    });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
+    // Use server-provided suggestedKeepAssetIds from each group
+    const idsToDelete = duplicates.flatMap((group) => {
+      const keepIds = new Set(group.suggestedKeepAssetIds);
+      return group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id));
+    });
 
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
@@ -307,13 +173,34 @@
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
+        // Resolve all groups in a single batch request
+        const response = await resolveDuplicates({
+          duplicateResolveDto: {
+            groups: duplicates.map((group) => {
+              const keepIds = new Set(group.suggestedKeepAssetIds);
+              return {
+                duplicateId: group.duplicateId,
+                keepAssetIds: group.suggestedKeepAssetIds,
+                trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
+              };
+            }),
+            settings: {
+              synchronizeAlbums: $duplicateSettings.synchronizeAlbums,
+              synchronizeVisibility: $duplicateSettings.synchronizeVisibility,
+              synchronizeFavorites: $duplicateSettings.synchronizeFavorites,
+              synchronizeRating: $duplicateSettings.synchronizeRating,
+              synchronizeDescription: $duplicateSettings.synchronizeDescription,
+              synchronizeLocation: $duplicateSettings.synchronizeLocation,
+              synchronizeTags: $duplicateSettings.synchronizeTags,
+            },
           },
         });
+
+        // Count failures and show appropriate message
+        const failedCount = response.results.filter((r) => r.status === Status.Failed).length;
+        if (failedCount > 0) {
+          toastManager.danger($t('errors.unable_to_resolve_duplicate'));
+        }
 
         duplicates = [];
 
@@ -436,6 +323,7 @@
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
+          suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}

@@ -5270,6 +5270,118 @@
         "x-immich-state": "Stable"
       }
     },
+    "/duplicates/resolve": {
+      "post": {
+        "description": "Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.",
+        "operationId": "resolveDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateResolveDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateResolveResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Resolve duplicate groups",
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/duplicates/stack": {
+      "post": {
+        "description": "Create a stack from assets in a duplicate group and clear their duplicate membership.",
+        "operationId": "stackDuplicates",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateStackDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StackResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Stack duplicates",
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/duplicates/{id}": {
       "delete": {
         "description": "Delete a single duplicate asset specified by its ID.",
@@ -17695,6 +17807,151 @@
         ],
         "type": "object"
       },
+      "DuplicateResolveDto": {
+        "properties": {
+          "groups": {
+            "description": "List of duplicate groups to resolve",
+            "items": {
+              "$ref": "#/components/schemas/DuplicateResolveGroupDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "settings": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DuplicateResolveSettingsDto"
+              }
+            ],
+            "description": "Settings for synchronization behavior"
+          }
+        },
+        "required": [
+          "groups",
+          "settings"
+        ],
+        "type": "object"
+      },
+      "DuplicateResolveGroupDto": {
+        "properties": {
+          "duplicateId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "keepAssetIds": {
+            "description": "Asset IDs to keep (will have duplicateId cleared)",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "trashAssetIds": {
+            "description": "Asset IDs to trash or delete",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "duplicateId",
+          "keepAssetIds",
+          "trashAssetIds"
+        ],
+        "type": "object"
+      },
+      "DuplicateResolveResponseDto": {
+        "properties": {
+          "results": {
+            "description": "Per-group results of the resolve operation",
+            "items": {
+              "$ref": "#/components/schemas/DuplicateResolveResultDto"
+            },
+            "type": "array"
+          },
+          "status": {
+            "description": "Overall status of the resolve operation",
+            "enum": [
+              "COMPLETED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "results",
+          "status"
+        ],
+        "type": "object"
+      },
+      "DuplicateResolveResultDto": {
+        "properties": {
+          "duplicateId": {
+            "description": "The duplicate group ID that was processed",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Error reason if status is FAILED",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of the resolve operation for this group",
+            "enum": [
+              "SUCCESS",
+              "FAILED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "duplicateId",
+          "status"
+        ],
+        "type": "object"
+      },
+      "DuplicateResolveSettingsDto": {
+        "properties": {
+          "synchronizeAlbums": {
+            "description": "Synchronize album membership across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeDescription": {
+            "description": "Synchronize description across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeFavorites": {
+            "description": "Synchronize favorite status across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeLocation": {
+            "description": "Synchronize GPS location across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeRating": {
+            "description": "Synchronize EXIF rating across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeTags": {
+            "description": "Synchronize tags across duplicate group",
+            "type": "boolean"
+          },
+          "synchronizeVisibility": {
+            "description": "Synchronize visibility (archive/timeline) across duplicate group",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "synchronizeAlbums",
+          "synchronizeDescription",
+          "synchronizeFavorites",
+          "synchronizeLocation",
+          "synchronizeRating",
+          "synchronizeTags",
+          "synchronizeVisibility"
+        ],
+        "type": "object"
+      },
       "DuplicateResponseDto": {
         "properties": {
           "assets": {
@@ -17707,10 +17964,45 @@
           "duplicateId": {
             "description": "Duplicate group ID",
             "type": "string"
+          },
+          "suggestedKeepAssetIds": {
+            "description": "Suggested asset IDs to keep based on file size and EXIF data",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "required": [
           "assets",
+          "duplicateId",
+          "suggestedKeepAssetIds"
+        ],
+        "type": "object"
+      },
+      "DuplicateStackDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs to stack (minimum 2). All must be members of the duplicate group.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "minItems": 2,
+            "type": "array"
+          },
+          "duplicateId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "primaryAssetId": {
+            "description": "Optional primary asset ID. Must be in assetIds if provided. If omitted, first asset becomes primary.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds",
           "duplicateId"
         ],
         "type": "object"

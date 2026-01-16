@@ -1161,6 +1161,66 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     /** Duplicate group ID */
     duplicateId: string;
+    /** Suggested asset IDs to keep based on file size and EXIF data */
+    suggestedKeepAssetIds: string[];
+};
+export type DuplicateResolveGroupDto = {
+    duplicateId: string;
+    /** Asset IDs to keep (will have duplicateId cleared) */
+    keepAssetIds: string[];
+    /** Asset IDs to trash or delete */
+    trashAssetIds: string[];
+};
+export type DuplicateResolveSettingsDto = {
+    /** Synchronize album membership across duplicate group */
+    synchronizeAlbums: boolean;
+    /** Synchronize description across duplicate group */
+    synchronizeDescription: boolean;
+    /** Synchronize favorite status across duplicate group */
+    synchronizeFavorites: boolean;
+    /** Synchronize GPS location across duplicate group */
+    synchronizeLocation: boolean;
+    /** Synchronize EXIF rating across duplicate group */
+    synchronizeRating: boolean;
+    /** Synchronize tags across duplicate group */
+    synchronizeTags: boolean;
+    /** Synchronize visibility (archive/timeline) across duplicate group */
+    synchronizeVisibility: boolean;
+};
+export type DuplicateResolveDto = {
+    /** List of duplicate groups to resolve */
+    groups: DuplicateResolveGroupDto[];
+    /** Settings for synchronization behavior */
+    settings: DuplicateResolveSettingsDto;
+};
+export type DuplicateResolveResultDto = {
+    /** The duplicate group ID that was processed */
+    duplicateId: string;
+    /** Error reason if status is FAILED */
+    reason?: string;
+    /** Status of the resolve operation for this group */
+    status: Status;
+};
+export type DuplicateResolveResponseDto = {
+    /** Per-group results of the resolve operation */
+    results: DuplicateResolveResultDto[];
+    /** Overall status of the resolve operation */
+    status: Status2;
+};
+export type DuplicateStackDto = {
+    /** Asset IDs to stack (minimum 2). All must be members of the duplicate group. */
+    assetIds: string[];
+    duplicateId: string;
+    /** Optional primary asset ID. Must be in assetIds if provided. If omitted, first asset becomes primary. */
+    primaryAssetId?: string;
+};
+export type StackResponseDto = {
+    /** Stack assets */
+    assets: AssetResponseDto[];
+    /** Stack ID */
+    id: string;
+    /** Primary asset ID */
+    primaryAssetId: string;
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -2310,14 +2370,6 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     /** Whether operation succeeded */
     success: boolean;
-};
-export type StackResponseDto = {
-    /** Stack assets */
-    assets: AssetResponseDto[];
-    /** Stack ID */
-    id: string;
-    /** Primary asset ID */
-    primaryAssetId: string;
 };
 export type StackCreateDto = {
     /** Asset IDs (first becomes primary, min 2) */
@@ -4486,6 +4538,36 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     }>("/duplicates", {
         ...opts
     }));
+}
+/**
+ * Resolve duplicate groups
+ */
+export function resolveDuplicates({ duplicateResolveDto }: {
+    duplicateResolveDto: DuplicateResolveDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateResolveResponseDto;
+    }>("/duplicates/resolve", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: duplicateResolveDto
+    })));
+}
+/**
+ * Stack duplicates
+ */
+export function stackDuplicates({ duplicateStackDto }: {
+    duplicateStackDto: DuplicateStackDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: StackResponseDto;
+    }>("/duplicates/stack", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: duplicateStackDto
+    })));
 }
 /**
  * Delete a duplicate
@@ -7029,6 +7111,13 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum Status {
+    Success = "SUCCESS",
+    Failed = "FAILED"
+}
+export enum Status2 {
+    Completed = "COMPLETED"
 }
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",

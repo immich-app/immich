@@ -163,4 +163,116 @@ class DuplicatesApi {
     }
     return null;
   }
+
+  /// Resolve duplicate groups
+  ///
+  /// Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateResolveDto] duplicateResolveDto (required):
+  Future<Response> resolveDuplicatesWithHttpInfo(DuplicateResolveDto duplicateResolveDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/resolve';
+
+    // ignore: prefer_final_locals
+    Object? postBody = duplicateResolveDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Resolve duplicate groups
+  ///
+  /// Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateResolveDto] duplicateResolveDto (required):
+  Future<DuplicateResolveResponseDto?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
+    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateResolveResponseDto',) as DuplicateResolveResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Stack duplicates
+  ///
+  /// Create a stack from assets in a duplicate group and clear their duplicate membership.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateStackDto] duplicateStackDto (required):
+  Future<Response> stackDuplicatesWithHttpInfo(DuplicateStackDto duplicateStackDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/stack';
+
+    // ignore: prefer_final_locals
+    Object? postBody = duplicateStackDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Stack duplicates
+  ///
+  /// Create a stack from assets in a duplicate group and clear their duplicate membership.
+  ///
+  /// Parameters:
+  ///
+  /// * [DuplicateStackDto] duplicateStackDto (required):
+  Future<StackResponseDto?> stackDuplicates(DuplicateStackDto duplicateStackDto,) async {
+    final response = await stackDuplicatesWithHttpInfo(duplicateStackDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'StackResponseDto',) as StackResponseDto;
+    
+    }
+    return null;
+  }
 }
