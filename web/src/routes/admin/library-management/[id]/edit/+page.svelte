@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleUpdateLibrary } from '$lib/services/library.service';
   import { Field, FormModal, Input } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
@@ -17,7 +17,7 @@
   let name = $state(library.name);
 
   const onClose = async () => {
-    await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`);
+    await goto(Route.viewLibrary(library));
   };
 
   const onSubmit = async () => {

@@ -4,7 +4,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -48,7 +48,7 @@
       >
         <Text class="hidden md:block">{$t('create_album')}</Text>
       </Button>
-      <Button leadingIcon={mdiLink} href={AppRoute.SHARED_LINKS} size="small" variant="ghost" color="secondary">
+      <Button leadingIcon={mdiLink} href={Route.sharedLinks()} size="small" variant="ghost" color="secondary">
         <Text class="hidden md:block">{$t('shared_links')}</Text>
       </Button>
     </HStack>
@@ -64,7 +64,7 @@
         <div class="flex flex-row flex-wrap gap-4">
           {#each data.partners as partner (partner.id)}
             <a
-              href="{AppRoute.PARTNERS}/{partner.id}"
+              href={Route.viewPartner(partner)}
               class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
             >
               <UserAvatar user={partner} size="lg" />

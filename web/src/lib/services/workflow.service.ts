@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -331,7 +331,7 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
   const Edit: ActionItem = {
     title: $t('edit'),
     icon: mdiPencil,
-    onAction: () => handleNavigateToWorkflow(workflow),
+    onAction: () => goto(Route.viewWorkflow(workflow)),
   };
 
   const Delete: ActionItem = {
@@ -370,7 +370,7 @@ export const handleCreateWorkflow = async (): Promise<WorkflowResponseDto | unde
       },
     });
 
-    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
+    await goto(Route.viewWorkflow(workflow));
     return workflow;
   } catch (error) {
     handleError(error, $t('errors.unable_to_create'));
@@ -417,10 +417,6 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
     handleError(error, $t('errors.unable_to_delete_workflow'));
     return false;
   }
-};
-
-export const handleNavigateToWorkflow = async (workflow: WorkflowResponseDto): Promise<void> => {
-  await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
 };
 
 export const fetchPickerMetadata = async (

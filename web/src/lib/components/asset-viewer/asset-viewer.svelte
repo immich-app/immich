@@ -6,12 +6,13 @@
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -395,7 +396,7 @@
     }
 
     await new Promise((promise) => setTimeout(promise, 500));
-    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+    await goto(Route.viewAsset({ id: newAssetId }));
   };
 
   const onAssetUpdate = (update: AssetResponseDto) => {

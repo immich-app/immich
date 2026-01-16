@@ -4,6 +4,7 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { NavbarGroup, NavbarItem } from '@immich/ui';
@@ -37,15 +38,10 @@
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
-  <NavbarItem
-    title={$t('photos')}
-    href={AppRoute.PHOTOS}
-    icon={mdiImageMultipleOutline}
-    activeIcon={mdiImageMultiple}
-  />
+  <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
   {#if featureFlagsManager.value.search}
-    <NavbarItem title={$t('explore')} href={AppRoute.EXPLORE} icon={mdiMagnify} />
+    <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
   {/if}
 
   {#if featureFlagsManager.value.map}
@@ -57,23 +53,23 @@
   {/if}
 
   {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
-    <NavbarItem title={$t('shared_links')} href={AppRoute.SHARED_LINKS} icon={mdiLink} />
+    <NavbarItem title={$t('shared_links')} href={Route.sharedLinks()} icon={mdiLink} />
   {/if}
 
   <NavbarItem
     title={$t('sharing')}
-    href={AppRoute.SHARING}
+    href={Route.sharing()}
     icon={mdiAccountMultipleOutline}
     activeIcon={mdiAccountMultiple}
   />
 
   <NavbarGroup title={$t('library')} size="tiny" />
 
-  <NavbarItem title={$t('favorites')} href={AppRoute.FAVORITES} icon={mdiHeartOutline} activeIcon={mdiHeart} />
+  <NavbarItem title={$t('favorites')} href={Route.favorites()} icon={mdiHeartOutline} activeIcon={mdiHeart} />
 
   <NavbarItem
     title={$t('albums')}
-    href={AppRoute.ALBUMS}
+    href={Route.albums()}
     icon={{ icon: mdiImageAlbum, flipped: true }}
     bind:expanded={$recentAlbumsDropdown}
   >
@@ -92,19 +88,19 @@
     <NavbarItem title={$t('folders')} href={AppRoute.FOLDERS} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 
-  <NavbarItem title={$t('utilities')} href={AppRoute.UTILITIES} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
+  <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
 
   <NavbarItem
     title={$t('archive')}
-    href={AppRoute.ARCHIVE}
+    href={Route.archive()}
     icon={mdiArchiveArrowDownOutline}
     activeIcon={mdiArchiveArrowDown}
   />
 
-  <NavbarItem title={$t('locked_folder')} href={AppRoute.LOCKED} icon={mdiLockOutline} activeIcon={mdiLock} />
+  <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
 
   {#if featureFlagsManager.value.trash}
-    <NavbarItem title={$t('trash')} href={AppRoute.TRASH} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
+    <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
 
   <BottomInfo />
