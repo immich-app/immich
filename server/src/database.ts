@@ -395,6 +395,7 @@ export const columns = {
     'asset.libraryId',
     'asset.width',
     'asset.height',
+    'asset.editCount',
   ],
   syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
