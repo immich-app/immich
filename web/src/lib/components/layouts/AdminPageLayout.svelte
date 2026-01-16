@@ -35,12 +35,9 @@
       <NavbarItem
         title={$t('admin.maintenance_settings')}
         href={AppRoute.ADMIN_MAINTENANCE_SETTINGS}
-        icon={mdiWrench}
       />
       <NavbarItem title={$t('server_stats')} href={AppRoute.ADMIN_STATS} icon={mdiServer} />
     </div>
-
-    <div class="mb-2 me-4">
       <BottomInfo />
     </div>
   </AppShellSidebar>
