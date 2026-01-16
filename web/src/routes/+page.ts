@@ -1,5 +1,6 @@
 import { AppRoute } from '$lib/constants';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
 import { redirect } from '@sveltejs/kit';
@@ -19,12 +20,12 @@ export const load = (async ({ fetch }) => {
 
     const authenticated = await loadUser();
     if (authenticated) {
-      redirect(307, AppRoute.PHOTOS);
+      redirect(307, Route.photos());
     }
 
     if (serverConfigManager.value.isInitialized) {
       // Redirect to login page if there exists an admin account (i.e. server is initialized)
-      redirect(307, AppRoute.AUTH_LOGIN);
+      redirect(307, Route.login());
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

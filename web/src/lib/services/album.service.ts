@@ -1,11 +1,11 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
 import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
 import { user } from '$lib/stores/user.store';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -161,9 +161,7 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
         button: {
           text: $t('view_album'),
           color: 'primary',
-          onClick() {
-            return goto(`${AppRoute.ALBUMS}/${id}`);
-          },
+          onClick: () => goto(Route.viewAlbum({ id })),
         },
       },
     });
