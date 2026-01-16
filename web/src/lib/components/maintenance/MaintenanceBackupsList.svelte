@@ -3,13 +3,14 @@
   import MaintenanceBackupEntry from '$lib/components/maintenance/MaintenanceBackupEntry.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { handleUploadDatabaseBackup } from '$lib/services/database-backups.service';
+  import type { DatabaseBackupDto } from '@immich/sdk';
   import { listDatabaseBackups } from '@immich/sdk';
   import { Card, CardBody, HStack, ProgressBar, Stack, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    backups?: string[];
+    backups?: DatabaseBackupDto[];
     expectedVersion: string;
   };
 
@@ -31,7 +32,7 @@
   let uploadProgress = $state(-1);
 
   function onBackupDeleted(event: { filename: string }) {
-    backups = backups.filter((filename) => filename !== event.filename);
+    backups = backups.filter((backup) => backup.filename !== event.filename);
   }
 
   function onBackupUpload(event: { progress: number; isComplete: boolean }) {
@@ -68,7 +69,11 @@
     </CardBody>
   </Card>
 
-  {#each backups as filename (filename)}
-    <MaintenanceBackupEntry {filename} expectedVersion={props.expectedVersion} />
+  {#each backups as backup (backup.filename)}
+    <MaintenanceBackupEntry
+      filename={backup.filename}
+      filesize={backup.filesize}
+      expectedVersion={props.expectedVersion}
+    />
   {/each}
 </Stack>
