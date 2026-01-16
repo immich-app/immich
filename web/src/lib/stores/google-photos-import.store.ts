@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
 export type ImportStep = 'connect' | 'export' | 'upload' | 'processing' | 'complete';
 export type ImportMethod = 'drive' | 'upload' | null;
@@ -54,68 +54,80 @@ function createGooglePhotosImportStore() {
 
     setStep: (step: ImportStep) => update((state) => ({ ...state, step })),
 
-    setMethod: (method: ImportMethod) => update((state) => ({
-      ...state,
-      method,
-      step: method === 'drive' ? 'connect' : 'upload'
-    })),
+    setMethod: (method: ImportMethod) =>
+      update((state) => ({
+        ...state,
+        method,
+        step: method === 'drive' ? 'connect' : 'upload',
+      })),
 
-    setGoogleDriveConnected: (connected: boolean) => update((state) => ({
-      ...state,
-      isGoogleDriveConnected: connected,
-    })),
+    setGoogleDriveConnected: (connected: boolean) =>
+      update((state) => ({
+        ...state,
+        isGoogleDriveConnected: connected,
+      })),
 
-    setDriveFiles: (files: GoogleDriveFile[]) => update((state) => ({
-      ...state,
-      driveFiles: files,
-    })),
+    setDriveFiles: (files: GoogleDriveFile[]) =>
+      update((state) => ({
+        ...state,
+        driveFiles: files,
+      })),
 
-    toggleDriveFile: (fileId: string) => update((state) => {
-      const selected = state.selectedDriveFiles.includes(fileId)
-        ? state.selectedDriveFiles.filter((id) => id !== fileId)
-        : [...state.selectedDriveFiles, fileId];
-      return { ...state, selectedDriveFiles: selected };
-    }),
+    toggleDriveFile: (fileId: string) =>
+      update((state) => {
+        const selected = state.selectedDriveFiles.includes(fileId)
+          ? state.selectedDriveFiles.filter((id) => id !== fileId)
+          : [...state.selectedDriveFiles, fileId];
+        return { ...state, selectedDriveFiles: selected };
+      }),
 
-    selectAllDriveFiles: () => update((state) => ({
-      ...state,
-      selectedDriveFiles: state.driveFiles.map((f) => f.id),
-    })),
+    selectAllDriveFiles: () =>
+      update((state) => ({
+        ...state,
+        selectedDriveFiles: state.driveFiles.map((f) => f.id),
+      })),
 
-    deselectAllDriveFiles: () => update((state) => ({
-      ...state,
-      selectedDriveFiles: [],
-    })),
+    deselectAllDriveFiles: () =>
+      update((state) => ({
+        ...state,
+        selectedDriveFiles: [],
+      })),
 
-    addUploadedFiles: (files: File[]) => update((state) => ({
-      ...state,
-      uploadedFiles: [...state.uploadedFiles, ...files],
-    })),
+    addUploadedFiles: (files: File[]) =>
+      update((state) => ({
+        ...state,
+        uploadedFiles: [...state.uploadedFiles, ...files],
+      })),
 
-    removeUploadedFile: (index: number) => update((state) => ({
-      ...state,
-      uploadedFiles: state.uploadedFiles.filter((_, i) => i !== index),
-    })),
+    removeUploadedFile: (index: number) =>
+      update((state) => ({
+        ...state,
+        uploadedFiles: state.uploadedFiles.filter((_, i) => i !== index),
+      })),
 
-    clearUploadedFiles: () => update((state) => ({
-      ...state,
-      uploadedFiles: [],
-    })),
+    clearUploadedFiles: () =>
+      update((state) => ({
+        ...state,
+        uploadedFiles: [],
+      })),
 
-    setProgress: (progress: ImportProgress | null) => update((state) => ({
-      ...state,
-      progress,
-    })),
+    setProgress: (progress: ImportProgress | null) =>
+      update((state) => ({
+        ...state,
+        progress,
+      })),
 
-    updateProgress: (partial: Partial<ImportProgress>) => update((state) => ({
-      ...state,
-      progress: state.progress ? { ...state.progress, ...partial } : null,
-    })),
+    updateProgress: (partial: Partial<ImportProgress>) =>
+      update((state) => ({
+        ...state,
+        progress: state.progress ? { ...state.progress, ...partial } : null,
+      })),
 
-    setError: (error: string | null) => update((state) => ({
-      ...state,
-      error,
-    })),
+    setError: (error: string | null) =>
+      update((state) => ({
+        ...state,
+        error,
+      })),
   };
 }
 
@@ -127,5 +139,5 @@ export const importMethod = derived(googlePhotosImportStore, ($store) => $store.
 export const importProgress = derived(googlePhotosImportStore, ($store) => $store.progress);
 export const hasFilesToImport = derived(
   googlePhotosImportStore,
-  ($store) => $store.selectedDriveFiles.length > 0 || $store.uploadedFiles.length > 0
+  ($store) => $store.selectedDriveFiles.length > 0 || $store.uploadedFiles.length > 0,
 );

@@ -41,6 +41,7 @@ import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { MlStreamRepository } from 'src/repositories/ml-stream.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
@@ -238,6 +239,7 @@ export type ServiceOverrides = {
   media: MediaRepository;
   memory: MemoryRepository;
   metadata: MetadataRepository;
+  mlStream: MlStreamRepository;
   move: MoveRepository;
   notification: NotificationRepository;
   ocr: OcrRepository;
@@ -314,6 +316,7 @@ export const getMocks = () => {
     media: newMediaRepositoryMock(),
     memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
+    mlStream: automock(MlStreamRepository, { args: [configMock, loggerMock], strict: false }),
     move: automock(MoveRepository, { strict: false }),
     notification: automock(NotificationRepository),
     ocr: automock(OcrRepository, { strict: false }),
@@ -384,6 +387,7 @@ export const newTestService = <T extends BaseService>(
     overrides.media || (mocks.media as As<MediaRepository>),
     overrides.memory || (mocks.memory as As<MemoryRepository>),
     overrides.metadata || (mocks.metadata as As<MetadataRepository>),
+    overrides.mlStream || (mocks.mlStream as As<MlStreamRepository>),
     overrides.move || (mocks.move as As<MoveRepository>),
     overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),

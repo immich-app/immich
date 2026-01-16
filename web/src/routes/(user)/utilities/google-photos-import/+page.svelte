@@ -63,9 +63,7 @@
     return unsubscribe;
   });
 
-  const hasFilesToImport = $derived(
-    store.selectedDriveFiles.length > 0 || store.uploadedFiles.length > 0
-  );
+  const hasFilesToImport = $derived(store.selectedDriveFiles.length > 0 || store.uploadedFiles.length > 0);
 
   async function startImport() {
     if (!hasFilesToImport) {
@@ -98,9 +96,7 @@
       googlePhotosImportStore.updateProgress({ phase: 'complete' });
     } catch (error) {
       console.error('Import failed:', error);
-      googlePhotosImportStore.setError(
-        error instanceof Error ? error.message : 'Import failed'
-      );
+      googlePhotosImportStore.setError(error instanceof Error ? error.message : 'Import failed');
     } finally {
       isImporting = false;
     }
@@ -225,9 +221,7 @@
       link.remove();
     } catch (error) {
       console.error('Failed to download importer:', error);
-      googlePhotosImportStore.setError(
-        error instanceof Error ? error.message : 'Failed to download importer'
-      );
+      googlePhotosImportStore.setError(error instanceof Error ? error.message : 'Failed to download importer');
     } finally {
       isGeneratingToken = false;
     }
@@ -238,7 +232,11 @@
   <svelte:fragment slot="buttons">
     <Button href="/utilities" color="secondary" size="sm">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
-        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        <path
+          fill-rule="evenodd"
+          d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
+          clip-rule="evenodd"
+        />
       </svg>
       Back
     </Button>
@@ -251,13 +249,15 @@
       <div class="intro-section">
         <div class="intro-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+            <path
+              d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+            />
           </svg>
         </div>
         <h1>Import from Google Photos</h1>
         <p>
-          Transfer your photos and videos from Google Photos to Immich.
-          Your albums, dates, locations, and descriptions will be preserved.
+          Transfer your photos and videos from Google Photos to Immich. Your albums, dates, locations, and descriptions
+          will be preserved.
         </p>
       </div>
 
@@ -266,9 +266,7 @@
 
         <div class="import-options">
           <h2>Step 2: Import your Takeout files</h2>
-          <p class="options-description">
-            Choose how to import your Google Takeout files:
-          </p>
+          <p class="options-description">Choose how to import your Google Takeout files:</p>
 
           <!-- Desktop Importer - Recommended Option -->
           <div class="desktop-importer-card">
@@ -277,25 +275,37 @@
               <h3>Desktop Importer App</h3>
             </div>
             <p class="card-description">
-              Download a small desktop app that handles the entire import process on your computer.
-              Works with large libraries, can be paused and resumed, and runs faster than browser uploads.
+              Download a small desktop app that handles the entire import process on your computer. Works with large
+              libraries, can be paused and resumed, and runs faster than browser uploads.
             </p>
             <div class="card-features">
               <div class="feature">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
                 <span>Resumable - safe to close and restart</span>
               </div>
               <div class="feature">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
                 <span>Downloads directly from Google Drive</span>
               </div>
               <div class="feature">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
                 <span>Works with Takeout files still generating</span>
               </div>
@@ -306,23 +316,38 @@
                 Preparing download...
               {:else}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
-                  <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
-                  <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                  <path
+                    d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z"
+                  />
+                  <path
+                    d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"
+                  />
                 </svg>
                 Download Importer App
               {/if}
             </Button>
             {#if setupToken}
               <p class="token-info">
-                App downloaded! Run it to start importing. Token valid until {new Date(setupToken.expiresAt).toLocaleDateString()}.
+                App downloaded! Run it to start importing. Token valid until {new Date(
+                  setupToken.expiresAt,
+                ).toLocaleDateString()}.
               </p>
             {/if}
           </div>
 
           <!-- Toggle for advanced options -->
-          <button type="button" class="advanced-toggle" onclick={() => showAdvancedOptions = !showAdvancedOptions}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class:rotated={showAdvancedOptions}>
-              <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z" clip-rule="evenodd" />
+          <button type="button" class="advanced-toggle" onclick={() => (showAdvancedOptions = !showAdvancedOptions)}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class:rotated={showAdvancedOptions}
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.22 8.22a.75.75 0 011.06 0L10 11.94l3.72-3.72a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.28a.75.75 0 010-1.06z"
+                clip-rule="evenodd"
+              />
             </svg>
             {showAdvancedOptions ? 'Hide' : 'Show'} advanced import options
           </button>
@@ -352,14 +377,23 @@
               Starting import...
             {:else}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
-                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
-                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+                <path
+                  d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z"
+                />
+                <path
+                  d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"
+                />
               </svg>
               Start Import
             {/if}
           </Button>
           <p class="import-summary">
-            Ready to import {store.uploadedFiles.length + store.selectedDriveFiles.length} file{store.uploadedFiles.length + store.selectedDriveFiles.length === 1 ? '' : 's'}
+            Ready to import {store.uploadedFiles.length + store.selectedDriveFiles.length} file{store.uploadedFiles
+              .length +
+              store.selectedDriveFiles.length ===
+            1
+              ? ''
+              : 's'}
           </p>
         </div>
       {/if}
@@ -367,7 +401,11 @@
       {#if store.error}
         <div class="error-banner">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
+              clip-rule="evenodd"
+            />
           </svg>
           <span>{store.error}</span>
           <button type="button" onclick={() => googlePhotosImportStore.setError(null)}>Dismiss</button>

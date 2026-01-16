@@ -30,8 +30,8 @@
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <h3 class="text-lg font-semibold dark:text-white">S3 Storage Configuration</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400">
-          Configure S3-compatible object storage for storing original photos and videos.
-          Thumbnails and previews remain on local storage for fast ML processing.
+          Configure S3-compatible object storage for storing original photos and videos. Thumbnails and previews remain
+          on local storage for fast ML processing.
         </p>
 
         <SettingSwitch
@@ -46,7 +46,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
-              disabled={disabled}
+              {disabled}
               label="S3 Endpoint"
               desc="The S3-compatible endpoint URL (e.g., https://fly.storage.tigris.dev)"
               bind:value={configToEdit.storage.s3.endpoint}
@@ -56,7 +56,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
-              disabled={disabled}
+              {disabled}
               label="Bucket Name"
               desc="The S3 bucket to store assets in"
               bind:value={configToEdit.storage.s3.bucket}
@@ -66,7 +66,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={false}
-              disabled={disabled}
+              {disabled}
               label="Region"
               desc="AWS region (default: us-east-1)"
               bind:value={configToEdit.storage.s3.region}
@@ -76,7 +76,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
-              disabled={disabled}
+              {disabled}
               label="Access Key ID"
               desc="S3 access key ID for authentication"
               bind:value={configToEdit.storage.s3.accessKeyId}
@@ -86,7 +86,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
               required={true}
-              disabled={disabled}
+              {disabled}
               label="Secret Access Key"
               desc="S3 secret access key for authentication"
               bind:value={configToEdit.storage.s3.secretAccessKey}
@@ -96,7 +96,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={false}
-              disabled={disabled}
+              {disabled}
               label="Key Prefix"
               desc="Prefix for all S3 keys (default: users/)"
               bind:value={configToEdit.storage.s3.prefix}
@@ -113,12 +113,13 @@
 
           <h4 class="mt-4 text-md font-semibold dark:text-white">Storage Locations</h4>
           <p class="text-sm text-gray-600 dark:text-gray-400">
-            Choose where each type of file is stored. For optimal performance, keep thumbnails and previews on local storage.
+            Choose where each type of file is stored. For optimal performance, keep thumbnails and previews on local
+            storage.
           </p>
 
           <SettingSelect
             options={storageBackendOptions}
-            disabled={disabled}
+            {disabled}
             name="originals-backend"
             label="Original Files"
             desc="Where to store original uploaded photos and videos"
@@ -127,7 +128,7 @@
 
           <SettingSelect
             options={storageBackendOptions}
-            disabled={disabled}
+            {disabled}
             name="thumbnails-backend"
             label="Thumbnails"
             desc="Where to store thumbnail images (local recommended for ML)"
@@ -136,7 +137,7 @@
 
           <SettingSelect
             options={storageBackendOptions}
-            disabled={disabled}
+            {disabled}
             name="previews-backend"
             label="Previews"
             desc="Where to store preview images (local recommended for ML)"
@@ -145,7 +146,7 @@
 
           <SettingSelect
             options={storageBackendOptions}
-            disabled={disabled}
+            {disabled}
             name="encoded-videos-backend"
             label="Encoded Videos"
             desc="Where to store transcoded video files"
@@ -156,7 +157,7 @@
 
           <SettingSelect
             options={uploadStrategyOptions}
-            disabled={disabled}
+            {disabled}
             name="upload-strategy"
             label="Upload Strategy"
             desc="How uploads are handled when S3 is enabled"

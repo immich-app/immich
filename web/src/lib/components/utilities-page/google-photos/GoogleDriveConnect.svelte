@@ -23,8 +23,8 @@
     store.driveFiles.filter(
       (f) =>
         f.name.toLowerCase().startsWith('takeout-') &&
-        (f.name.toLowerCase().endsWith('.zip') || f.mimeType === 'application/zip')
-    )
+        (f.name.toLowerCase().endsWith('.zip') || f.mimeType === 'application/zip'),
+    ),
   );
 
   async function connectGoogleDrive() {
@@ -48,7 +48,7 @@
     } catch (error) {
       console.error('Failed to connect:', error);
       googlePhotosImportStore.setError(
-        error instanceof Error ? error.message : 'Failed to connect to Google Drive. Please try again.'
+        error instanceof Error ? error.message : 'Failed to connect to Google Drive. Please try again.',
       );
       isConnecting = false;
     }
@@ -112,12 +112,21 @@
   <div class="header">
     <div class="icon">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 87.3 78" class="drive-logo">
-        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-        <path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3L1.2 52.35c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47"/>
-        <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57.1c.8-1.4 1.2-2.95 1.2-4.5H59.85L73.55 76.8z" fill="#ea4335"/>
-        <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-        <path d="M59.85 52.6h27.5c0-1.55-.4-3.1-1.2-4.5L73.55 26.8l-3.85-6.65c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l16.2 27.6z" fill="#2684fc"/>
-        <path d="M73.4 26.85L43.65 25 27.5 52.6h32.35l13.55 23.8c1.35-.8 2.5-1.9 3.3-3.3l3.85-6.65L73.4 26.85z" fill="#ffba00"/>
+        <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da" />
+        <path d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3L1.2 52.35c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47" />
+        <path
+          d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57.1c.8-1.4 1.2-2.95 1.2-4.5H59.85L73.55 76.8z"
+          fill="#ea4335"
+        />
+        <path d="M43.65 25L57.4 1.2C56.05.4 54.5 0 52.9 0H34.4c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d" />
+        <path
+          d="M59.85 52.6h27.5c0-1.55-.4-3.1-1.2-4.5L73.55 26.8l-3.85-6.65c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l16.2 27.6z"
+          fill="#2684fc"
+        />
+        <path
+          d="M73.4 26.85L43.65 25 27.5 52.6h32.35l13.55 23.8c1.35-.8 2.5-1.9 3.3-3.3l3.85-6.65L73.4 26.85z"
+          fill="#ffba00"
+        />
       </svg>
     </div>
     <div class="text">
@@ -143,7 +152,11 @@
           Connecting...
         {:else}
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
-            <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+              clip-rule="evenodd"
+            />
           </svg>
           Connect Google Drive
         {/if}
@@ -154,7 +167,11 @@
       <div class="connected-status">
         <span class="status-badge">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+              clip-rule="evenodd"
+            />
           </svg>
           Connected
         </span>
@@ -172,7 +189,11 @@
           <p class="hint">Make sure you selected "Add to Drive" when creating your export in Google Takeout.</p>
           <Button onclick={loadDriveFiles} size="sm">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 mr-1">
-              <path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd" />
+              <path
+                fill-rule="evenodd"
+                d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0V5.36l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z"
+                clip-rule="evenodd"
+              />
             </svg>
             Refresh
           </Button>
@@ -192,10 +213,7 @@
             {#each takeoutFiles as file (file.id)}
               <li>
                 <label class="file-row">
-                  <Checkbox
-                    checked={store.selectedDriveFiles.includes(file.id)}
-                    onchange={() => toggleFile(file.id)}
-                  />
+                  <Checkbox checked={store.selectedDriveFiles.includes(file.id)} onchange={() => toggleFile(file.id)} />
                   <div class="file-info">
                     <span class="file-name">{file.name}</span>
                     <span class="file-meta">
@@ -209,11 +227,8 @@
 
           {#if store.selectedDriveFiles.length > 0}
             <div class="selection-summary">
-              {store.selectedDriveFiles.length} file{store.selectedDriveFiles.length === 1 ? '' : 's'} selected
-              ({byteSize(
-                takeoutFiles
-                  .filter((f) => store.selectedDriveFiles.includes(f.id))
-                  .reduce((sum, f) => sum + f.size, 0)
+              {store.selectedDriveFiles.length} file{store.selectedDriveFiles.length === 1 ? '' : 's'} selected ({byteSize(
+                takeoutFiles.filter((f) => store.selectedDriveFiles.includes(f.id)).reduce((sum, f) => sum + f.size, 0),
               ).toString()})
             </div>
           {/if}

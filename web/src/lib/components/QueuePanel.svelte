@@ -110,11 +110,10 @@
       } else if (dto.force === true) {
         if (details?.isDestructive) {
           // For face detection/recognition with reset
-          if (name === QueueName.FaceDetection || name === QueueName.FacialRecognition) {
-            promptKey = 'admin.confirm_reprocess_all_faces';
-          } else {
-            promptKey = 'admin.confirm_reset_queue';
-          }
+          promptKey =
+            name === QueueName.FaceDetection || name === QueueName.FacialRecognition
+              ? 'admin.confirm_reprocess_all_faces'
+              : 'admin.confirm_reset_queue';
         } else {
           // For "all" operations that reprocess everything
           promptKey = 'admin.confirm_reprocess_all';

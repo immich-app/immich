@@ -12,7 +12,9 @@
   <div class="header">
     <div class="icon">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
-        <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+        <path
+          d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+        />
       </svg>
     </div>
     <div class="text">
@@ -23,8 +25,16 @@
 
   <Button onclick={openTakeout} color="primary" class="takeout-button">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
-      <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
-      <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+      <path
+        fill-rule="evenodd"
+        d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z"
+        clip-rule="evenodd"
+      />
+      <path
+        fill-rule="evenodd"
+        d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z"
+        clip-rule="evenodd"
+      />
     </svg>
     Open Google Takeout
   </Button>
@@ -40,8 +50,8 @@
           <strong>Add to Drive</strong> (recommended)
         </div>
         <div class="setting-hint">
-          Files will be added to your Google Drive and you'll receive an email with the link.
-          This allows direct import without downloading.
+          Files will be added to your Google Drive and you'll receive an email with the link. This allows direct import
+          without downloading.
         </div>
       </div>
     </div>
@@ -66,9 +76,7 @@
         <div class="setting-value">
           <strong>.zip</strong>
         </div>
-        <div class="setting-hint">
-          ZIP files can be opened on almost any computer. Do not use .tgz format.
-        </div>
+        <div class="setting-hint">ZIP files can be opened on almost any computer. Do not use .tgz format.</div>
       </div>
     </div>
 
@@ -80,15 +88,15 @@
           <strong>50 GB</strong>
         </div>
         <div class="setting-hint">
-          Larger size = fewer files to manage. Your export may still be split into multiple files
-          if your library exceeds this size.
+          Larger size = fewer files to manage. Your export may still be split into multiple files if your library
+          exceeds this size.
         </div>
       </div>
     </div>
 
     <p class="note">
-      <strong>Processing time:</strong> Google may take several hours (or days for very large libraries)
-      to prepare your export. You'll receive an email when it's ready.
+      <strong>Processing time:</strong> Google may take several hours (or days for very large libraries) to prepare your export.
+      You'll receive an email when it's ready.
     </p>
   </div>
 </div>

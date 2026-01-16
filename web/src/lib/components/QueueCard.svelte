@@ -31,8 +31,16 @@
     onCommand: (command: QueueCommandDto) => void;
   }
 
-  let { queue, description, disabled = false, allText, refreshText, missingText, isDestructive = false, onCommand }: Props =
-    $props();
+  let {
+    queue,
+    description,
+    disabled = false,
+    allText,
+    refreshText,
+    missingText,
+    isDestructive = false,
+    onCommand,
+  }: Props = $props();
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
   const { statistics } = $derived(queue);
