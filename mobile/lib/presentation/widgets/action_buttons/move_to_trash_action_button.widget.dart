@@ -20,7 +20,7 @@ void showTrashResultToast(BuildContext context, ActionResult result) {
     context: context,
     msg: message,
     gravity: ToastGravity.BOTTOM,
-    toastType: result.success ? ToastType.success : ToastType.error,
+    toastType: result.success ? ToastType.info : ToastType.error,
   );
 }
 

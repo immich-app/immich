@@ -78,6 +78,9 @@ void main() {
       localFilesManagerRepository,
       Logger('ActionServiceTest'),
     );
+
+    when(() => localAssetRepository.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
+    when(() => trashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
   });
 
   tearDown(() async {
@@ -131,45 +134,75 @@ void main() {
   });
 
   group('ActionService.resolveRemoteTrash', () {
-    test('updates approvals and returns true when disallowed', () async {
+    test('updates approvals and returns requested count when disallowed', () async {
       when(() => trashSyncRepository.updateApproves(any(), false)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: false);
 
-      expect(result, isTrue);
+      expect(result, 1);
       verify(() => trashSyncRepository.updateApproves(any(), false)).called(1);
-      verifyNever(() => localAssetRepository.getByChecksums(any()));
+      verifyNever(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      );
       verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
     });
 
-    test('returns false when no local assets match', () async {
-      when(() => localAssetRepository.getByChecksums(any())).thenAnswer((_) async => []);
+    test('returns 0 when no local assets match', () async {
+      when(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      ).thenAnswer((_) async => []);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
-      expect(result, isFalse);
-      verify(() => localAssetRepository.getByChecksums(any())).called(1);
+      expect(result, 0);
+      verify(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      ).called(1);
       verifyNever(() => trashSyncRepository.updateApproves(any(), true));
       verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
     });
 
     test('closes review when no local files are found', () async {
-      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
-      when(() => localAssetRepository.getByChecksums(any())).thenAnswer((_) async => [localAsset]);
+      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', deletedAt: DateTime(2024, 1, 1));
+      when(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      ).thenAnswer((_) async => [localAsset]);
       when(() => storageRepository.getAssetEntityForAsset(localAsset)).thenAnswer((_) async => null);
       when(() => trashSyncRepository.updateApproves(any(), true)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
-      expect(result, isTrue);
+      expect(result, 0);
       verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
       verifyNever(() => localFilesManagerRepository.moveToTrash(any()));
     });
 
     test('moves files to trash and updates approvals on success', () async {
-      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
+      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', deletedAt: DateTime(2024, 1, 1));
       final entity = MockAssetEntity();
-      when(() => localAssetRepository.getByChecksums(any())).thenAnswer((_) async => [localAsset]);
+      when(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      ).thenAnswer((_) async => [localAsset]);
       when(() => storageRepository.getAssetEntityForAsset(localAsset)).thenAnswer((_) async => entity);
       when(() => entity.getMediaUrl()).thenAnswer((_) async => 'content://asset-1');
       when(() => localFilesManagerRepository.moveToTrash(any())).thenAnswer((_) async => true);
@@ -177,22 +210,28 @@ void main() {
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
-      expect(result, isTrue);
+      expect(result, 1);
       verify(() => localFilesManagerRepository.moveToTrash(['content://asset-1'])).called(1);
       verify(() => trashSyncRepository.updateApproves(any(), true)).called(1);
     });
 
     test('does not update approvals when move to trash fails', () async {
-      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1');
+      final localAsset = LocalAssetStub.image1.copyWith(checksum: 'checksum-1', deletedAt: DateTime(2024, 1, 1));
       final entity = MockAssetEntity();
-      when(() => localAssetRepository.getByChecksums(any())).thenAnswer((_) async => [localAsset]);
+      when(
+        () => localAssetRepository.getByChecksumsFiltered(
+          any(),
+          backupSelection: any(named: 'backupSelection'),
+          isRemoteTrashed: any(named: 'isRemoteTrashed'),
+        ),
+      ).thenAnswer((_) async => [localAsset]);
       when(() => storageRepository.getAssetEntityForAsset(localAsset)).thenAnswer((_) async => entity);
       when(() => entity.getMediaUrl()).thenAnswer((_) async => 'content://asset-1');
       when(() => localFilesManagerRepository.moveToTrash(any())).thenAnswer((_) async => false);
 
       final result = await sut.resolveRemoteTrash(['checksum-1'], isSyncApproved: true);
 
-      expect(result, isFalse);
+      expect(result, 0);
       verify(() => localFilesManagerRepository.moveToTrash(['content://asset-1'])).called(1);
       verifyNever(() => trashSyncRepository.updateApproves(any(), true));
     });

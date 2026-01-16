@@ -69,7 +69,7 @@ void main() {
     when(() => mockTrashedLocalAssetRepository.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepository.getToTrash()).thenAnswer((_) async => <String, List<LocalAsset>>{});
     when(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any())).thenAnswer((_) async {});
-    when(() => mockTrashedLocalAssetRepository.trashLocalAsset(any())).thenAnswer((_) async {});
+    when(() => mockTrashedLocalAssetRepository.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockLocalFilesManager.moveToTrash(any<List<String>>())).thenAnswer((_) async => true);
     when(() => mockStorageRepository.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
     when(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<LocalAsset>>())).thenAnswer((_) async {});
@@ -164,7 +164,7 @@ void main() {
       verify(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<LocalAsset>>())).called(1);
       verify(() => mockTrashSyncRepo.deleteOutdated()).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
-      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAsset(any()));
+      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
 
     test('processes trashed snapshot, restores assets, and trashes local files', () async {
@@ -218,7 +218,7 @@ void main() {
       final moveArgs = verify(() => mockLocalFilesManager.moveToTrash(captureAny())).captured.single as List<String>;
       expect(moveArgs, ['content://local-trash']);
       final trashArgs =
-          verify(() => mockTrashedLocalAssetRepository.trashLocalAsset(captureAny())).captured.single
+          verify(() => mockTrashedLocalAssetRepository.trashLocalAssets(captureAny())).captured.single
               as Map<String, List<LocalAsset>>;
       expect(trashArgs.keys, ['album-a']);
       expect(trashArgs['album-a'], [localAssetToTrash]);
@@ -243,7 +243,7 @@ void main() {
       await sut.processTrashedAssets({});
 
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
-      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAsset(any()));
+      verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAssets(any()));
     });
   });
 

@@ -142,7 +142,7 @@ void main() {
     );
 
     when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((_) async => {});
-    when(() => mockTrashedLocalAssetRepo.trashLocalAsset(any())).thenAnswer((_) async {});
+    when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
     hasManageMediaPermission = false;
@@ -447,7 +447,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verify(() => mockTrashedLocalAssetRepo.trashLocalAsset(assetsByAlbum)).called(1);
+      verify(() => mockTrashedLocalAssetRepo.trashLocalAssets(assetsByAlbum)).called(1);
       verify(() => mockSyncApiRepo.ack(['asset-remote-only-3'])).called(1);
     });
 
@@ -475,7 +475,7 @@ void main() {
 
       verify(() => mockTrashSyncRepo.upsertReviewCandidates(any())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
-      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
     });
 
     test("does not check MANAGE_MEDIA permission on non-Android platforms", () async {
@@ -506,7 +506,7 @@ void main() {
 
       verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
-      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAssets(any()));
     });
 
     test("does not request local deletions for permanent remote delete events", () async {

@@ -211,9 +211,51 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return {for (final entry in mapping) entry.assetId: entry.checksum};
   }
 
-  Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
+  Future<List<LocalAsset>> getByChecksumsFiltered(
+    Iterable<String> checksums, {
+    BackupSelection? backupSelection,
+    bool? isRemoteTrashed,
+  }) {
     if (checksums.isEmpty) return Future.value([]);
-    final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
-    return query.map((row) => row.toDto()).get();
+
+    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.deletedAt]).join([
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+        useColumns: false,
+      ),
+    ]);
+
+    Expression<bool> whereClause = _db.localAssetEntity.checksum.isIn(checksums);
+
+    if (backupSelection != null) {
+      final selectionQuery =
+          _db.localAlbumAssetEntity.selectOnly().join([
+              innerJoin(
+                _db.localAlbumEntity,
+                _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+                useColumns: false,
+              ),
+            ])
+            ..addColumns([_db.localAlbumAssetEntity.assetId])
+            ..where(
+              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                  _db.localAlbumEntity.backupSelection.equalsValue(backupSelection),
+            );
+      whereClause = whereClause & existsQuery(selectionQuery);
+    }
+
+    if (isRemoteTrashed != null) {
+      whereClause =
+          whereClause &
+          (isRemoteTrashed ? _db.remoteAssetEntity.deletedAt.isNotNull() : _db.remoteAssetEntity.deletedAt.isNull());
+    }
+
+    query.where(whereClause);
+
+    return query.map((row) {
+      final asset = row.readTable(_db.localAssetEntity).toDto();
+      return asset.copyWith(deletedAt: row.read(_db.remoteAssetEntity.deletedAt));
+    }).get();
   }
 }

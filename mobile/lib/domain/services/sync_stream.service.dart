@@ -284,7 +284,7 @@ class SyncStreamService {
           _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
           final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
           if (result) {
-            await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+            await _trashedLocalAssetRepository.trashLocalAssets(localAssetsToTrash);
           }
         }
       } else {

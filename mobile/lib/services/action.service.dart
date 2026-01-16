@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -11,9 +12,9 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -263,34 +264,45 @@ class ActionService {
     return deletedIds.length;
   }
 
-  Future<bool> resolveRemoteTrash(Iterable<String> trashedChecksums, {required bool isSyncApproved}) async {
-    if (trashedChecksums.isEmpty) {
-      return false;
-    }
+  Future<int> resolveRemoteTrash(Iterable<String> trashedChecksums, {required bool isSyncApproved}) async {
     if (!isSyncApproved) {
-      await _trashSyncRepository.updateApproves(trashedChecksums, isSyncApproved);
-      return true;
+      await _trashSyncRepository.updateApproves(trashedChecksums, false);
+      return trashedChecksums.length;
     }
-    final localAssets = await _localAssetRepository.getByChecksums(trashedChecksums);
-    if (localAssets.isEmpty) {
-      return false;
+    final assetsToTrash = await _localAssetRepository.getByChecksumsFiltered(
+      trashedChecksums,
+      backupSelection: BackupSelection.selected,
+      isRemoteTrashed: true,
+    );
+    if (assetsToTrash.isEmpty) {
+      return 0;
     }
     final mediaUrls = await Future.wait(
-      localAssets.map(
+      assetsToTrash.map(
         (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
       ),
     );
-    _logger.info("Moving assets to trash: ${mediaUrls.join(", ")}");
-    final nonNullUrls = mediaUrls.nonNulls;
-    if (nonNullUrls.isEmpty) {
+    final trashUrls = mediaUrls.nonNulls;
+    _logger.info("Moving assets to trash: ${trashUrls.join(", ")}");
+    if (trashUrls.isEmpty) {
       // No local files found; close review to avoid re-showing the same items.
-      await _trashSyncRepository.updateApproves(trashedChecksums, isSyncApproved);
-      return true;
+      await _trashSyncRepository.updateApproves(trashedChecksums, true);
+      return 0;
     }
-    final result = await _localFilesManager.moveToTrash(nonNullUrls.toList());
-    if (result) {
-      await _trashSyncRepository.updateApproves(trashedChecksums, isSyncApproved);
+    final isMoved = await _localFilesManager.moveToTrash(trashUrls.toList());
+    if (!isMoved) {
+      return 0;
     }
-    return result;
+
+    await _trashSyncRepository.updateApproves(trashedChecksums, true);
+
+    final trashedAssetsMap = Map<String, DateTime>.fromEntries(
+      assetsToTrash.map((e) => MapEntry(e.checksum!, e.deletedAt!)),
+    );
+
+    final assetsByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);
+    await _trashedLocalAssetRepository.trashLocalAssets(assetsByAlbum);
+
+    return trashUrls.length;
   }
 }

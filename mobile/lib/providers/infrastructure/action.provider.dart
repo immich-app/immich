@@ -423,18 +423,22 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool isSyncApproved}) async {
-    final remoteChecksums = _getAssets(source).map((a) => a.checksum).nonNulls;
-    _logger.info('resolveRemoteTrash, remoteChecksums: $remoteChecksums, allow: $isSyncApproved');
+    final selectedChecksums = _getAssets(source).map((a) => a.checksum).nonNulls;
+    _logger.info('resolveRemoteTrash, selectedChecksums: $selectedChecksums, isSyncApproved: $isSyncApproved');
+    if (selectedChecksums.isEmpty){
+      return const ActionResult(count: 0, success: false, error: 'Failed to select asset(s)');
+    }
     try {
-      final result = await _service.resolveRemoteTrash(remoteChecksums, isSyncApproved: isSyncApproved);
+      //todo maybe need to compare selectedChecksums with resolvedCount and inform user? PeterO 16/01/2026
+      final resolvedCount = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
       return ActionResult(
-        count: remoteChecksums.length,
-        success: result,
-        error: result ? null : 'Failed to move assets to trash',
+        count: resolvedCount,
+        success: isSyncApproved ? resolvedCount > 0 : true,
+        error: isSyncApproved && resolvedCount == 0 ? 'Failed to move assets to trash' : null,
       );
     } catch (error, stack) {
       _logger.severe('Failed to ${isSyncApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
-      return ActionResult(count: remoteChecksums.length, success: false, error: error.toString());
+      return ActionResult(count: selectedChecksums.length, success: false, error: error.toString());
     }
   }
 }
