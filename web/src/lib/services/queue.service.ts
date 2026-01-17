@@ -1,8 +1,9 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
+import { OpenQueryParam } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { queueManager } from '$lib/managers/queue-manager.svelte';
 import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
+import { Route } from '$lib/route';
 import type { HeaderButtonActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
@@ -73,7 +74,7 @@ export const getQueuesActions = ($t: MessageFormatter, queues: QueueResponseDto[
     title: $t('admin.manage_concurrency'),
     description: $t('admin.manage_concurrency_description'),
     type: $t('page'),
-    onAction: () => goto(`${AppRoute.ADMIN_SETTINGS}?isOpen=job`),
+    onAction: () => goto(Route.systemSettings({ isOpen: OpenQueryParam.JOB })),
   };
 
   return { ResumePaused, ManageConcurrency, CreateJob };
@@ -249,23 +250,4 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
   };
 
   return items[queue.name];
-};
-
-export const asQueueSlug = (name: QueueName) => {
-  return name.replaceAll(/[A-Z]/g, (m) => '-' + m.toLowerCase());
-};
-
-export const fromQueueSlug = (slug: string): QueueName | undefined => {
-  const name = slug.replaceAll(/-([a-z])/g, (_, c) => c.toUpperCase());
-  if (Object.values(QueueName).includes(name as QueueName)) {
-    return name as QueueName;
-  }
-};
-
-export const getQueueDetailUrl = (queue: QueueResponseDto) => {
-  return `${AppRoute.ADMIN_QUEUES}/${asQueueSlug(queue.name)}`;
-};
-
-export const handleViewQueue = (queue: QueueResponseDto) => {
-  return goto(getQueueDetailUrl(queue));
 };

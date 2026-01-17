@@ -3,7 +3,7 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
   import PincodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
   import { unlockAuthSession } from '@immich/sdk';
   import { Button, Icon } from '@immich/ui';
@@ -65,7 +65,7 @@
           onFilled={handleUnlockSession}
         />
 
-        <Button type="button" color="secondary" onclick={() => goto(AppRoute.PHOTOS)}>{$t('cancel')}</Button>
+        <Button type="button" color="secondary" onclick={() => goto(Route.photos())}>{$t('cancel')}</Button>
       </div>
     </div>
   {:else}

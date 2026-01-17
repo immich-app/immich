@@ -14,13 +14,11 @@
 
   interface Props {
     hideNavbar?: boolean;
-    showUploadButton?: boolean;
     title?: string | undefined;
     description?: string | undefined;
     scrollbar?: boolean;
     use?: ActionArray;
     actions?: Array<HeaderButtonActionItem | MenuItemType>;
-    header?: Snippet;
     sidebar?: Snippet;
     buttons?: Snippet;
     children?: Snippet;
@@ -28,13 +26,11 @@
 
   let {
     hideNavbar = false,
-    showUploadButton = false,
     title = undefined,
     description = undefined,
     scrollbar = true,
     use = [],
     actions = [],
-    header,
     sidebar,
     buttons,
     children,
@@ -52,10 +48,8 @@
 
 <header>
   {#if !hideNavbar}
-    <NavigationBar {showUploadButton} onUploadClick={() => openFileUploadDialog()} />
+    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
   {/if}
-
-  {@render header?.()}
 </header>
 <div
   tabindex="-1"
@@ -79,7 +73,7 @@
       <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
         <div class="flex gap-2 items-center">
           {#if title}
-            <div class="font-medium outline-none pe-8" tabindex="-1" id={headerId}>{title}</div>
+            <div class="outline-none pe-8" tabindex="-1" id={headerId}>{title}</div>
           {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>

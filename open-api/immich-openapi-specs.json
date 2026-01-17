@@ -16276,6 +16276,20 @@
           "isArchived": {
             "type": "boolean"
           },
+          "isEdited": {
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v2.5.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.5.0",
+                "state": "Beta"
+              }
+            ],
+            "x-immich-state": "Beta"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -16408,6 +16422,7 @@
           "height",
           "id",
           "isArchived",
+          "isEdited",
           "isFavorite",
           "isOffline",
           "isTrashed",
@@ -21276,6 +21291,9 @@
             "nullable": true,
             "type": "string"
           },
+          "editCount": {
+            "type": "integer"
+          },
           "fileCreatedAt": {
             "format": "date-time",
             "nullable": true,
@@ -21346,6 +21364,7 @@
           "checksum",
           "deletedAt",
           "duration",
+          "editCount",
           "fileCreatedAt",
           "fileModifiedAt",
           "height",

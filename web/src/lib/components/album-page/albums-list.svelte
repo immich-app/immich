@@ -5,7 +5,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import RightClickContextMenu from '$lib/components/shared-components/context-menu/right-click-context-menu.svelte';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
-  import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+  import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
   import {
     AlbumFilter,
@@ -138,7 +138,11 @@
   const normalizedSearchQuery = $derived(normalizeSearchString(searchQuery));
   let filteredAlbums = $derived(
     normalizedSearchQuery
-      ? albums.filter(({ albumName }) => normalizeSearchString(albumName).includes(normalizedSearchQuery))
+      ? albums.filter(
+          ({ albumName, description }) =>
+            normalizeSearchString(albumName).includes(normalizedSearchQuery) ||
+            normalizeSearchString(description).includes(normalizedSearchQuery),
+        )
       : albums,
   );
 
@@ -198,7 +202,7 @@
       }
 
       case 'share': {
-        await modalManager.show(AlbumShareModal, { album: selectedAlbum });
+        await modalManager.show(AlbumOptionsModal, { album: selectedAlbum });
         break;
       }
 

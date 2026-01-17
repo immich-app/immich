@@ -1,9 +1,11 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
+import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
+import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
 import { user } from '$lib/stores/user.store';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -12,14 +14,17 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum,
   addUsersToAlbum,
+  AlbumUserRole,
   deleteAlbum,
+  removeUserFromAlbum,
   updateAlbumInfo,
+  updateAlbumUser,
   type AlbumResponseDto,
-  type AlbumUserAddDto,
   type UpdateAlbumDto,
+  type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import { mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
@@ -31,16 +36,33 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     type: $t('command'),
     icon: mdiShareVariantOutline,
     $if: () => isOwned,
-    onAction: () => modalManager.show(AlbumShareModal, { album }),
+    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
   };
 
-  return { Share };
+  const AddUsers: ActionItem = {
+    title: $t('invite_people'),
+    type: $t('command'),
+    icon: mdiPlus,
+    color: 'primary',
+    onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
+  };
+
+  const CreateSharedLink: ActionItem = {
+    title: $t('create_link'),
+    type: $t('command'),
+    icon: mdiLink,
+    color: 'primary',
+    onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
+  };
+
+  return { Share, AddUsers, CreateSharedLink };
 };
 
 export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponseDto, assets: TimelineAsset[]) => {
   const AddAssets: ActionItem = {
     title: $t('add_assets'),
     type: $t('command'),
+    color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
     onAction: () => addAssets(album, assets),
@@ -72,18 +94,56 @@ const addAssets = async (album: AlbumResponseDto, assets: TimelineAsset[]) => {
   }
 };
 
-export const handleAddUsersToAlbum = async (album: AlbumResponseDto, albumUsers: AlbumUserAddDto[]) => {
+export const handleUpdateUserAlbumRole = async ({
+  albumId,
+  userId,
+  role,
+}: {
+  albumId: string;
+  userId: string;
+  role: AlbumUserRole;
+}) => {
   const $t = await getFormatter();
 
   try {
-    await addUsersToAlbum({ id: album.id, addUsersDto: { albumUsers } });
+    await updateAlbumUser({ id: albumId, userId, updateAlbumUserDto: { role } });
+    eventManager.emit('AlbumUserUpdate', { albumId, userId, role });
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_change_album_user_role'));
+  }
+};
+
+export const handleAddUsersToAlbum = async (album: AlbumResponseDto, users: UserResponseDto[]) => {
+  const $t = await getFormatter();
+
+  try {
+    await addUsersToAlbum({ id: album.id, addUsersDto: { albumUsers: users.map(({ id }) => ({ userId: id })) } });
     eventManager.emit('AlbumShare');
     return true;
   } catch (error) {
     handleError(error, $t('errors.error_adding_users_to_album'));
   }
+};
 
-  return false;
+export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUser: UserResponseDto) => {
+  const $t = await getFormatter();
+
+  const confirmed = await modalManager.showDialog({
+    title: $t('album_remove_user'),
+    prompt: $t('album_remove_user_confirmation', { values: { user: albumUser.name } }),
+    confirmText: $t('remove_user'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await removeUserFromAlbum({ id: album.id, userId: albumUser.id });
+    eventManager.emit('AlbumUserDelete', { albumId: album.id, userId: albumUser.id });
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_remove_album_users'));
+  }
 };
 
 export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbumDto) => {
@@ -101,9 +161,7 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
         button: {
           text: $t('view_album'),
           color: 'primary',
-          onClick() {
-            return goto(`${AppRoute.ALBUMS}/${id}`);
-          },
+          onClick: () => goto(Route.viewAlbum({ id })),
         },
       },
     });

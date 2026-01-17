@@ -118,7 +118,7 @@
     </div>
 
     <Stack class="text-left" gap={1}>
-      <Text size="tiny" class="text-black dark:text-white font-semibold text-base">{notification.title}</Text>
+      <Text size="tiny" class="text-black dark:text-white text-base" fontWeight="semi-bold">{notification.title}</Text>
       {#if notification.description}
         <Text class="overflow-hidden text-gray-600 dark:text-gray-300">{notification.description}</Text>
       {/if}

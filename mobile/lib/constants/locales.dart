@@ -51,4 +51,4 @@ const Map<String, Locale> locales = {
 
 const String translationsPath = 'assets/i18n';
 
-const List<Locale> localesNotSupportedByOverpass = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];
+const List<Locale> localesNotSupportedByAppFont = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];
