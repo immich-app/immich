@@ -320,6 +320,20 @@ class NativeVideoViewer extends HookConsumerWidget {
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
+    Size? videoContextSize(double? videoAspectRatio, BuildContext? context) {
+      Size? videoContextSize;
+      if (videoAspectRatio == null || context == null) {
+        return null;
+      }
+      final contextAspectRatio = context.width / context.height;
+      if (videoAspectRatio > contextAspectRatio) {
+        videoContextSize = Size(context.width, context.width / aspectRatio.value!);
+      } else {
+        videoContextSize = Size(context.height * aspectRatio.value!, context.height);
+      }
+      return videoContextSize;
+    }
+
     ref.listen(currentAssetNotifier, (_, value) {
       final playerController = controller.value;
       if (playerController != null && value != asset) {
@@ -400,18 +414,6 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
-    Size? videoContextSize;
-
-    if (aspectRatio.value != null) {
-      final contextAspectRatio = context.width / context.height;
-
-      if (aspectRatio.value! > contextAspectRatio) {
-        videoContextSize = Size(context.width, context.width / aspectRatio.value!);
-      } else {
-        videoContextSize = Size(context.height * aspectRatio.value!, context.height);
-      }
-    }
-
     return SizedBox(
       width: context.width,
       height: context.height,
@@ -419,7 +421,7 @@ class NativeVideoViewer extends HookConsumerWidget {
         children: [
           // Hide thumbnail once video is visible to avoid it showing in background when zooming out on video.
           if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
-          if (aspectRatio.value != null && !isCasting)
+          if (aspectRatio.value != null && !isCasting && isCurrent)
             Visibility.maintain(
               key: ValueKey(asset),
               visible: isVisible.value,
@@ -430,12 +432,8 @@ class NativeVideoViewer extends HookConsumerWidget {
                 // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
                 backgroundDecoration: const BoxDecoration(color: Colors.transparent),
                 scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
-                childSize: videoContextSize,
-                child: AspectRatio(
-                  key: ValueKey(asset),
-                  aspectRatio: aspectRatio.value!,
-                  child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
-                ),
+                childSize: videoContextSize(aspectRatio.value, context),
+                child: NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController),
               ),
             ),
           if (showControls) const Center(child: VideoViewerControls()),
