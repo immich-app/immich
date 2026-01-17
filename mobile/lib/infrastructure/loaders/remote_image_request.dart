@@ -15,7 +15,7 @@ class RemoteImageRequest extends ImageRequest {
     final Map<String, int> info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
 
     try {
-      final frame = await _fromPlatformImage(info, Platform.isIOS);
+      final frame = await _fromPlatformImage(info, shouldFree: Platform.isIOS);
       return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
     } finally {
       if (Platform.isAndroid) {
