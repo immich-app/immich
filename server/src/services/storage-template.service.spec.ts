@@ -319,7 +319,9 @@ describe(StorageTemplateService.name, () => {
 
         mocks.user.get.mockResolvedValue(user);
         mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(standaloneVideo);
-        mocks.assetJob.getStillPhotoForMotionVideo.mockImplementationOnce((): Promise<any | undefined> => Promise.resolve());
+        mocks.assetJob.getStillPhotoForMotionVideo.mockImplementationOnce(
+          (): Promise<any | undefined> => Promise.resolve(),
+        );
 
         mocks.move.create.mockResolvedValueOnce({
           id: '123',
