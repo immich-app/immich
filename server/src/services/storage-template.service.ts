@@ -154,8 +154,7 @@ export class StorageTemplateService extends BaseService {
     // Check if this is a motion video that belongs to a live photo
     // If so, skip it - the motion video will be migrated when its still photo is processed
     // This prevents the motion video from "jumping around" if processed before its still photo
-    const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(id);
-    if (stillPhoto) {
+    if (asset.type == AssetType.Video && await this.assetJobRepository.getStillPhotoForMotionVideo(id)) {
       // This is a motion video part of a live photo - skip and let the still photo handle it
       return JobStatus.Skipped;
     }

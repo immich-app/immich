@@ -551,6 +551,45 @@ where
   "asset"."deletedAt" is null
   and "asset"."id" = $2
 
+-- AssetJobRepository.getStillPhotoForMotionVideo
+select
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."type",
+  "asset"."checksum",
+  "asset"."originalPath",
+  "asset"."isExternal",
+  "asset"."originalFileName",
+  "asset"."livePhotoVideoId",
+  "asset"."fileCreatedAt",
+  "asset_exif"."timeZone",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."deletedAt" is null
+  and "asset"."livePhotoVideoId" = $2
+
 -- AssetJobRepository.streamForStorageTemplateJob
 select
   "asset"."id",
