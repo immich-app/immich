@@ -340,6 +340,11 @@ export class AssetJobRepository {
     return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getStillPhotoForMotionVideo(motionVideoId: string) {
+    return this.storageTemplateAssetQuery().where('asset.livePhotoVideoId', '=', motionVideoId).executeTakeFirst();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
     return this.storageTemplateAssetQuery().stream();

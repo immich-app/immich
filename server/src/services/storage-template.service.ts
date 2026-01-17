@@ -151,6 +151,15 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.Failed;
     }
 
+    // Check if this is a motion video that belongs to a live photo
+    // If so, skip it - the motion video will be migrated when its still photo is processed
+    // This prevents the motion video from "jumping around" if processed before its still photo
+    const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(id);
+    if (stillPhoto) {
+      // This is a motion video part of a live photo - skip and let the still photo handle it
+      return JobStatus.Skipped;
+    }
+
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
@@ -163,7 +172,7 @@ export class StorageTemplateService extends BaseService {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
     }
     return JobStatus.Success;
   }
@@ -194,7 +203,7 @@ export class StorageTemplateService extends BaseService {
         const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
         }
       }
     }
@@ -214,7 +223,7 @@ export class StorageTemplateService extends BaseService {
     await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
 
-  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata) {
+  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata, stillPhoto?: StorageAsset) {
     if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
@@ -224,7 +233,7 @@ export class StorageTemplateService extends BaseService {
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
       const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
-      const newPath = await this.getTemplatePath(asset, metadata);
+      const newPath = await this.getTemplatePath(asset, metadata, stillPhoto);
 
       if (!fileSizeInByte) {
         this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
@@ -255,7 +264,11 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
-  private async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
+  private async getTemplatePath(
+    asset: StorageAsset,
+    metadata: MoveAssetMetadata,
+    stillPhoto?: StorageAsset,
+  ): Promise<string> {
     const { storageLabel, filename } = metadata;
 
     try {
@@ -297,7 +310,10 @@ export class StorageTemplateService extends BaseService {
       let albumStartDate = null;
       let albumEndDate = null;
       if (this.template.needsAlbum) {
-        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        // For motion videos, use the still photo's album information since motion videos
+        // don't have album metadata attached directly
+        const albumLookupAsset = stillPhoto || asset;
+        const albums = await this.albumRepository.getByAssetId(albumLookupAsset.ownerId, albumLookupAsset.id);
         const album = albums?.[0];
         if (album) {
           albumName = album.albumName || null;
@@ -310,16 +326,20 @@ export class StorageTemplateService extends BaseService {
         }
       }
 
+      // For motion videos that are part of live photos, use the still photo's date
+      // to ensure both parts end up in the same folder
+      const assetForDateTemplate = stillPhoto || asset;
+
       const storagePath = this.render(this.template.compiled, {
-        asset,
+        asset: assetForDateTemplate,
         filename: sanitized,
         extension,
         albumName,
         albumStartDate,
         albumEndDate,
-        make: asset.make,
-        model: asset.model,
-        lensModel: asset.lensModel,
+        make: assetForDateTemplate.make,
+        model: assetForDateTemplate.model,
+        lensModel: assetForDateTemplate.lensModel,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;
