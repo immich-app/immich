@@ -11,6 +11,10 @@ import android.os.OperationCanceledException
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
+import androidx.annotation.RequiresApi
+import app.alextran.immich.images.LocalImagesImpl.Companion.allocateNative
+import app.alextran.immich.images.LocalImagesImpl.Companion.freeNative
+import app.alextran.immich.images.LocalImagesImpl.Companion.wrapAsBuffer
 import java.nio.ByteBuffer
 import kotlin.math.*
 import java.util.concurrent.Executors
@@ -28,6 +32,37 @@ data class Request(
   val cancellationSignal: CancellationSignal,
   val callback: (Result<Map<String, Long>>) -> Unit
 )
+
+@RequiresApi(Build.VERSION_CODES.Q)
+inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
+  return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
+    if (target.width > 0 && target.height > 0) {
+      val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
+      decoder.setTargetSampleSize(sample)
+    }
+    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+    decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
+  }
+}
+
+fun Bitmap.toNativeBuffer(): Map<String, Long>  {
+  val size = width * height * 4
+  val pointer = allocateNative(size)
+  try {
+    val buffer = wrapAsBuffer(pointer, size)
+    copyPixelsToBuffer(buffer)
+    recycle()
+    return mapOf(
+      "pointer" to pointer,
+      "width" to width.toLong(),
+      "height" to height.toLong()
+    )
+  } catch (e: Exception) {
+    freeNative(pointer)
+    recycle()
+    throw e
+  }
+}
 
 class LocalImagesImpl(context: Context) : LocalImageApi {
   private val ctx: Context = context.applicationContext
@@ -131,31 +166,12 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
       decodeImage(id, size, signal)
     }
 
-    processBitmap(bitmap, callback, signal)
-  }
-
-  private fun processBitmap(
-    bitmap: Bitmap, callback: (Result<Map<String, Long>>) -> Unit, signal: CancellationSignal
-  ) {
-    signal.throwIfCanceled()
-    val actualWidth = bitmap.width
-    val actualHeight = bitmap.height
-
-    val size = actualWidth * actualHeight * 4
-    val pointer = allocateNative(size)
-
     try {
       signal.throwIfCanceled()
-      val buffer = wrapAsBuffer(pointer, size)
-      bitmap.copyPixelsToBuffer(buffer)
-      bitmap.recycle()
+      val res = bitmap.toNativeBuffer()
       signal.throwIfCanceled()
-      val res = mapOf(
-        "pointer" to pointer, "width" to actualWidth.toLong(), "height" to actualHeight.toLong()
-      )
       callback(Result.success(res))
     } catch (e: Exception) {
-      freeNative(pointer)
       callback(if (e is OperationCanceledException) CANCELLED else Result.failure(e))
     }
   }
@@ -191,16 +207,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val source = ImageDecoder.createSource(resolver, uri)
-      signal.throwIfCanceled()
-      ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-        if (target.width > 0 && target.height > 0) {
-          val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
-          decoder.setTargetSampleSize(sample)
-        }
-        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
-      }
+      ImageDecoder.createSource(resolver, uri).decodeBitmap(target)
     } else {
       val ref =
         Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()

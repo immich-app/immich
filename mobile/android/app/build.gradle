@@ -105,8 +105,10 @@ dependencies {
   def serialization_version = '1.8.1'
   def compose_version = '1.1.1'
   def gson_version = '2.10.1'
+  def okhttp_version = '4.12.0'
 
   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlin_coroutines_version"
   implementation "androidx.work:work-runtime-ktx:$work_version"
   implementation "androidx.concurrent:concurrent-futures:$concurrent_version"
