@@ -110,6 +110,9 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     defer { remove(requestId: requestId) }
     
     if let error = error {
+      if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
+        return request.completion(Self.cancelledResult)
+      }
       return request.completion(.failure(error))
     }
     

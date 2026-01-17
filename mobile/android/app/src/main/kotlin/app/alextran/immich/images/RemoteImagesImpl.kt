@@ -8,6 +8,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
 import app.alextran.immich.core.SSLConfig
+import com.google.net.cronet.okhttptransport.CronetCallFactory
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -16,6 +17,7 @@ import okhttp3.Response
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
+import org.chromium.net.CronetEngine
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -33,6 +35,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val lockedBitmaps = ConcurrentHashMap<Long, Bitmap>()
 
   init {
+    appContext = context.applicationContext
     cacheDir = context.cacheDir
     client = buildClient()
   }
@@ -47,8 +50,10 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     private val decodePool =
       Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2 + 1)
 
+    private var appContext: Context? = null
     private var cacheDir: File? = null
-    private var client: OkHttpClient? = null
+    private var client: Call.Factory? = null
+    private var cronetEngine: CronetEngine? = null
 
     init {
       System.loadLibrary("native_buffer")
@@ -62,15 +67,42 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     external fun unlockBitmapPixels(bitmap: Bitmap)
 
     private fun invalidateClient() {
-      client?.let {
+      (client as? OkHttpClient)?.let {
         it.dispatcher.cancelAll()
         it.connectionPool.evictAll()
         it.cache?.close()
       }
+      cronetEngine?.shutdown()
+      cronetEngine = null
+
       client = buildClient()
     }
 
-    private fun buildClient(): OkHttpClient {
+    private fun buildClient(): Call.Factory {
+      val dir = cacheDir ?: throw IllegalStateException("Cache dir not set")
+      return if (SSLConfig.requiresCustomSSL) {
+        buildOkHttpClient(dir)
+      } else {
+        buildCronetClient(dir)
+      }
+    }
+
+    private fun buildCronetClient(cacheDir: File): Call.Factory {
+      val ctx = appContext ?: throw IllegalStateException("Context not set")
+      val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
+      val engine = CronetEngine.Builder(ctx)
+        .enableHttp2(true)
+        .enableQuic(true)
+        .enableBrotli(true)
+        .setStoragePath(storageDir.absolutePath)
+        .build()
+        .also { cronetEngine = it }
+
+      return CronetCallFactory.newBuilder(engine).build()
+    }
+
+    private fun buildOkHttpClient(cacheDir: File): OkHttpClient {
+      val dir = File(cacheDir, "okhttp")
       val connectionPool = ConnectionPool(
         maxIdleConnections = KEEP_ALIVE_CONNECTIONS,
         keepAliveDuration = KEEP_ALIVE_DURATION_MINUTES,
@@ -81,10 +113,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
         .connectionPool(connectionPool)
 
-      cacheDir?.let { dir ->
-        val cacheSubdir = File(dir, "thumbnails")
-        builder.cache(Cache(cacheSubdir, CACHE_SIZE_BYTES))
-      }
+      builder.cache(Cache((File(dir, "thumbnails")), CACHE_SIZE_BYTES))
 
       val sslSocketFactory = SSLConfig.sslSocketFactory
       val trustManager = SSLConfig.trustManager

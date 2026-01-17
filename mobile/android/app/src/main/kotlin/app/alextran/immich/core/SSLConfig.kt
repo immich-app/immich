@@ -19,6 +19,9 @@ object SSLConfig {
   var trustManager: X509TrustManager? = null
     private set
 
+  var requiresCustomSSL: Boolean = false
+    private set
+
   private val listeners = mutableListOf<() -> Unit>()
   private var configHash: Int = 0
 
@@ -34,7 +37,8 @@ object SSLConfig {
     clientCertHash: Int
   ) {
     val newHash = computeHash(allowSelfSigned, serverHost, clientCertHash)
-    if (newHash == configHash && sslSocketFactory != null) {
+    val newRequiresCustomSSL = allowSelfSigned || keyManagers != null
+    if (newHash == configHash && sslSocketFactory != null && requiresCustomSSL == newRequiresCustomSSL) {
       return  // Config unchanged, skip
     }
 
@@ -43,6 +47,7 @@ object SSLConfig {
     sslSocketFactory = sslContext.socketFactory
     trustManager = trustManagers?.filterIsInstance<X509TrustManager>()?.firstOrNull()
       ?: getDefaultTrustManager()
+    requiresCustomSSL = newRequiresCustomSSL
     configHash = newHash
     notifyListeners()
   }
