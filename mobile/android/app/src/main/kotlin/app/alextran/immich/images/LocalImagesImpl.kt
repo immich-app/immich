@@ -12,9 +12,6 @@ import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
-import app.alextran.immich.images.LocalImagesImpl.Companion.allocateNative
-import app.alextran.immich.images.LocalImagesImpl.Companion.freeNative
-import app.alextran.immich.images.LocalImagesImpl.Companion.wrapAsBuffer
 import java.nio.ByteBuffer
 import kotlin.math.*
 import java.util.concurrent.Executors
@@ -47,9 +44,9 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
 
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
   val size = width * height * 4
-  val pointer = allocateNative(size)
+  val pointer = LocalImagesImpl.allocateNative(size)
   try {
-    val buffer = wrapAsBuffer(pointer, size)
+    val buffer = LocalImagesImpl.wrapAsBuffer(pointer, size)
     copyPixelsToBuffer(buffer)
     recycle()
     return mapOf(
@@ -58,7 +55,7 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
       "height" to height.toLong()
     )
   } catch (e: Exception) {
-    freeNative(pointer)
+    LocalImagesImpl.freeNative(pointer)
     recycle()
     throw e
   }

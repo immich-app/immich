@@ -14,12 +14,16 @@ class RemoteImageRequest extends ImageRequest {
 
     final Map<String, int> info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
 
-    final frame = await _fromPlatformImage(info);
-    return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
+    try {
+      final frame = await _fromPlatformImage(info, ui.PixelFormat.bgra8888, false);
+      return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
+    } finally {
+      unawaited(remoteImageApi.releaseImage(requestId));
+    }
   }
 
   @override
   Future<void> _onCancelled() {
-    return localImageApi.cancelRequest(requestId);
+    return remoteImageApi.cancelRequest(requestId);
   }
 }

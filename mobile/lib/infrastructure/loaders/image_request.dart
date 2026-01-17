@@ -34,7 +34,7 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
+  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info, ui.PixelFormat pixelFormat, bool shouldFree) async {
     final address = info['pointer'];
     if (address == null) {
       return null;
@@ -42,7 +42,9 @@ abstract class ImageRequest {
 
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
-      malloc.free(pointer);
+      if (shouldFree) {
+        malloc.free(pointer);
+      }
       return null;
     }
 
@@ -58,7 +60,9 @@ abstract class ImageRequest {
       actualSize = rowBytes * actualHeight;
       buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
     } finally {
-      malloc.free(pointer);
+      if (shouldFree) {
+        malloc.free(pointer);
+      }
     }
 
     if (_isCancelled) {
@@ -71,7 +75,7 @@ abstract class ImageRequest {
       width: actualWidth,
       height: actualHeight,
       rowBytes: rowBytes,
-      pixelFormat: ui.PixelFormat.rgba8888,
+      pixelFormat: pixelFormat,
     );
     final codec = await descriptor.instantiateCodec();
     if (_isCancelled) {

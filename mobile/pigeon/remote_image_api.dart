@@ -22,4 +22,6 @@ abstract class RemoteImageApi {
   });
 
   void cancelRequest(int requestId);
+
+  void releaseImage(int requestId);
 }

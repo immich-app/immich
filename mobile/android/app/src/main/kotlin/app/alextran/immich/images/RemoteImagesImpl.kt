@@ -7,7 +7,6 @@ import android.graphics.ColorSpace
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
-import android.util.Size
 import app.alextran.immich.core.SSLConfig
 import okhttp3.Call
 import okhttp3.Callback
@@ -31,9 +30,9 @@ data class RemoteRequest(
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
+  private val lockedBitmaps = ConcurrentHashMap<Long, Bitmap>()
 
   init {
-    System.loadLibrary("native_buffer")
     cacheDir = context.cacheDir
     client = buildClient()
   }
@@ -45,16 +44,22 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
 
     val CANCELLED = Result.success<Map<String, Long>>(emptyMap())
-    private val decodePool = Executors.newFixedThreadPool(
-      (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(2)
-    )
+    private val decodePool =
+      Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2 + 1)
 
     private var cacheDir: File? = null
     private var client: OkHttpClient? = null
 
     init {
+      System.loadLibrary("native_buffer")
       SSLConfig.addListener(::invalidateClient)
     }
+
+    @JvmStatic
+    external fun lockBitmapPixels(bitmap: Bitmap): Long
+
+    @JvmStatic
+    external fun unlockBitmapPixels(bitmap: Bitmap)
 
     private fun invalidateClient() {
       client?.let {
@@ -123,8 +128,20 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
             signal.throwIfCanceled()
             val bitmap = decodeImage(bytes)
             signal.throwIfCanceled()
-            val res = bitmap.toNativeBuffer()
-            callback(Result.success(res))
+
+            val pointer = lockBitmapPixels(bitmap)
+            if (pointer == 0L) {
+              bitmap.recycle()
+              return@execute callback(Result.failure(RuntimeException("Failed to lock bitmap pixels")))
+            }
+
+            lockedBitmaps[requestId] = bitmap
+            callback(Result.success(mapOf(
+              "pointer" to pointer,
+              "width" to bitmap.width.toLong(),
+              "height" to bitmap.height.toLong(),
+              "rowBytes" to bitmap.rowBytes.toLong()
+            )))
           } catch (e: Exception) {
             val result = if (signal.isCanceled) CANCELLED else Result.failure(e)
             callback(result)
@@ -138,8 +155,14 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   }
 
   override fun cancelRequest(requestId: Long) {
-    val request = requestMap.remove(requestId) ?: return
-    request.cancellationSignal.cancel()
+    requestMap.remove(requestId)?.cancellationSignal?.cancel()
+    releaseImage(requestId)
+  }
+
+  override fun releaseImage(requestId: Long) {
+    val bitmap = lockedBitmaps.remove(requestId) ?: return
+    unlockBitmapPixels(bitmap)
+    bitmap.recycle()
   }
 
   private fun decodeImage(bytes: ByteArray): Bitmap {
