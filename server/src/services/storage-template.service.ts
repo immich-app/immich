@@ -204,7 +204,7 @@ export class StorageTemplateService extends BaseService {
       if (asset.type === AssetType.Video) {
         const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(asset.id);
         // This is a motion video part of a live photo - this case we would want to skip the current iteration since the migration will be handled by the still
-        if(stillPhoto){
+        if (stillPhoto) {
           continue;
         }
       }
