@@ -15,10 +15,12 @@ class RemoteImageRequest extends ImageRequest {
     final Map<String, int> info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
 
     try {
-      final frame = await _fromPlatformImage(info, ui.PixelFormat.bgra8888, false);
+      final frame = await _fromPlatformImage(info, Platform.isIOS);
       return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
     } finally {
-      unawaited(remoteImageApi.releaseImage(requestId));
+      if (Platform.isAndroid) {
+        unawaited(remoteImageApi.releaseImage(requestId));
+      }
     }
   }
 

@@ -1,5 +1,4 @@
-import CoreImage
-import CoreVideo
+import Accelerate
 import Flutter
 import MobileCoreServices
 import Photos
@@ -21,7 +20,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let delegate = RemoteImageApiDelegate()
   static let session = {
     let config = URLSessionConfiguration.default
-    let thumbnailPath = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails2", isDirectory: true)
+    let thumbnailPath = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails", isDirectory: true)
     try! FileManager.default.createDirectory(at: thumbnailPath, withIntermediateDirectories: true)
     config.urlCache = URLCache(
       memoryCapacity: 0,
@@ -48,20 +47,27 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   
   func cancelRequest(requestId: Int64) {
     Self.delegate.cancel(requestId: requestId)
-    Self.delegate.releasePixelBuffer(requestId: requestId)
   }
   
-  func releaseImage(requestId: Int64) {
-    Self.delegate.releasePixelBuffer(requestId: requestId)
-  }
+  func releaseImage(requestId: Int64) throws {}
 }
 
 class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
   private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated)
+  private static var rgbaFormat = vImage_CGImageFormat(
+    bitsPerComponent: 8,
+    bitsPerPixel: 32,
+    colorSpace: CGColorSpaceCreateDeviceRGB(),
+    bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+    renderingIntent: .perceptual
+  )!
   private static var requests = [Int64: RemoteImageRequest]()
-  private static var lockedPixelBuffers = [Int64: CVPixelBuffer]()
   private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
-  private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+  private static let decodeOptions = [
+    kCGImageSourceShouldCache: false,
+    kCGImageSourceShouldCacheImmediately: true,
+    kCGImageSourceCreateThumbnailWithTransform: true,
+  ] as CFDictionary
   
   func urlSession(
     _ session: URLSession, dataTask: URLSessionDataTask,
@@ -104,13 +110,11 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     defer { remove(requestId: requestId) }
     
     if let error = error {
-      if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
-        return request.completion(Self.cancelledResult)
-      }
       return request.completion(.failure(error))
     }
     
-    guard let ciImage = CIImage(data: data as Data, options: [.applyOrientationProperty: true]) else {
+    guard let imageSource = CGImageSourceCreateWithData(data, nil),
+          let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, Self.decodeOptions) else {
       return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request \(requestId)", details: nil)))
     }
     
@@ -118,52 +122,24 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
       return request.completion(Self.cancelledResult)
     }
     
-    let extent = ciImage.extent
-    let width = Int(extent.width)
-    let height = Int(extent.height)
-    
-    guard width > 0 && height > 0 else {
-      return request.completion(.failure(PigeonError(code: "", message: "Invalid image dimensions \(width)x\(height) for request \(requestId)", details: nil)))
+    do {
+      let buffer = try vImage_Buffer(cgImage: cgImage, format: Self.rgbaFormat)
+      
+      if request.isCancelled {
+        buffer.free()
+        return request.completion(Self.cancelledResult)
+      }
+      
+      request.completion(
+        .success([
+          "pointer": Int64(Int(bitPattern: buffer.data)),
+          "width": Int64(buffer.width),
+          "height": Int64(buffer.height),
+          "rowBytes": Int64(buffer.rowBytes),
+        ]))
+    } catch {
+      return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request \(requestId): \(error)", details: nil)))
     }
-    
-    var pixelBuffer: CVPixelBuffer?
-    let attrs: [String: Any] = [
-      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-      kCVPixelBufferWidthKey as String: width,
-      kCVPixelBufferHeightKey as String: height,
-      kCVPixelBufferIOSurfacePropertiesKey as String: [:],
-    ]
-    let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attrs as CFDictionary, &pixelBuffer)
-    
-    guard status == kCVReturnSuccess, let pixelBuffer = pixelBuffer else {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to create pixel buffer for request \(requestId), status: \(status)", details: nil)))
-    }
-    
-    if request.isCancelled {
-      return request.completion(Self.cancelledResult)
-    }
-    
-    Self.ciContext.render(ciImage, to: pixelBuffer)
-    
-    CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
-    guard let pointer = CVPixelBufferGetBaseAddress(pixelBuffer) else {
-      CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to lock pixel buffer for request \(requestId)", details: nil)))
-    }
-    
-    let rowBytes = CVPixelBufferGetBytesPerRow(pixelBuffer)
-    
-    Self.requestQueue.sync {
-      Self.lockedPixelBuffers[requestId] = pixelBuffer
-    }
-    
-    request.completion(
-      .success([
-        "pointer": Int64(Int(bitPattern: pointer)),
-        "width": Int64(width),
-        "height": Int64(height),
-        "rowBytes": Int64(rowBytes),
-      ]))
   }
   
   func get(requestId: Int64) -> RemoteImageRequest? {
@@ -182,10 +158,5 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     guard let request = (Self.requestQueue.sync { Self.requests[requestId] }) else { return }
     request.isCancelled = true
     request.task?.cancel()
-  }
-  
-  func releasePixelBuffer(requestId: Int64) -> Void {
-    guard let pixelBuffer = (Self.requestQueue.sync { Self.lockedPixelBuffers.removeValue(forKey: requestId) }) else { return }
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
   }
 }

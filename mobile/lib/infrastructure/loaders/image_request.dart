@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info, ui.PixelFormat pixelFormat, bool shouldFree) async {
+  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info, bool shouldFree) async {
     final address = info['pointer'];
     if (address == null) {
       return null;
@@ -75,7 +76,7 @@ abstract class ImageRequest {
       width: actualWidth,
       height: actualHeight,
       rowBytes: rowBytes,
-      pixelFormat: pixelFormat,
+      pixelFormat: ui.PixelFormat.rgba8888,
     );
     final codec = await descriptor.instantiateCodec();
     if (_isCancelled) {
