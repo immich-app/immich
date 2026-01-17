@@ -7,6 +7,7 @@ import android.graphics.ColorSpace
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
+import app.alextran.immich.BuildConfig
 import app.alextran.immich.core.SSLConfig
 import com.google.net.cronet.okhttptransport.CronetCallFactory
 import okhttp3.Call
@@ -24,11 +25,26 @@ import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import okhttp3.Interceptor
 
 data class RemoteRequest(
   val callback: (Result<Map<String, Long>>) -> Unit,
   val cancellationSignal: CancellationSignal,
 )
+
+class UserAgentInterceptor : Interceptor {
+  companion object {
+    const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
+  }
+
+  override fun intercept(chain: Interceptor.Chain): Response {
+    return chain.proceed(
+      chain.request().newBuilder()
+        .header("User-Agent", USER_AGENT)
+        .build()
+    )
+  }
+}
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
@@ -96,6 +112,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         .enableBrotli(true)
         .setStoragePath(storageDir.absolutePath)
         .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
+        .setUserAgent(UserAgentInterceptor.USER_AGENT)
         .build()
         .also { cronetEngine = it }
 
@@ -111,6 +128,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
       )
 
       val builder = OkHttpClient.Builder()
+        .addInterceptor(UserAgentInterceptor())
         .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
         .connectionPool(connectionPool)
 

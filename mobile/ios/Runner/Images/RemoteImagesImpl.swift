@@ -20,6 +20,8 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let delegate = RemoteImageApiDelegate()
   static let session = {
     let config = URLSessionConfiguration.default
+    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+    config.httpAdditionalHeaders = ["User-Agent": "Immich_iOS_\(version)"]
     let thumbnailPath = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails", isDirectory: true)
     try! FileManager.default.createDirectory(at: thumbnailPath, withIntermediateDirectories: true)
     config.urlCache = URLCache(
