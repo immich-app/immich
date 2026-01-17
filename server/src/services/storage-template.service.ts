@@ -151,16 +151,22 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // Check if this is a motion video that belongs to a live photo
-    // If so, skip it - the motion video will be migrated when its still photo is processed
-    // This prevents the motion video from "jumping around" if processed before its still photo
-    if (asset.type == AssetType.Video && await this.assetJobRepository.getStillPhotoForMotionVideo(id)) {
-      // This is a motion video part of a live photo - skip and let the still photo handle it
-      return JobStatus.Skipped;
-    }
-
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
+
+    // Check if this is a motion video that belongs to a live photo
+    // If so, we need to use the still photo's album and date info for path calculation
+    if (asset.type === AssetType.Video) {
+      const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(id);
+      if (stillPhoto) {
+        // This is a motion video part of a live photo - use still photo's info for migration
+        const stillPhotoFilename = stillPhoto.originalFileName || stillPhoto.id;
+        const motionFilename = getLivePhotoMotionFilename(stillPhotoFilename, asset.originalPath);
+        await this.moveAsset(asset, { storageLabel, filename: motionFilename }, stillPhoto);
+        return JobStatus.Success;
+      }
+    }
+
     const filename = asset.originalFileName || asset.id;
     await this.moveAsset(asset, { storageLabel, filename });
 
