@@ -201,6 +201,13 @@ export class StorageTemplateService extends BaseService {
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
+      if (asset.type === AssetType.Video) {
+        const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(asset.id);
+        // This is a motion video part of a live photo - this case we would want to skip the current iteration since the migration will be handled by the still
+        if(stillPhoto){
+          continue;
+        }
+      }
       await this.moveAsset(asset, { storageLabel, filename });
 
       // move motion part of live photo
