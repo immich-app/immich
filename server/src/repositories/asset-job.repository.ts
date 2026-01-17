@@ -340,9 +340,27 @@ export class AssetJobRepository {
     return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getLivePhotoParentAsset(livePhotoVideoId: string) {
+    return this.storageTemplateAssetQuery()
+      .where('asset.livePhotoVideoId', '=', livePhotoVideoId)
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream();
+    return this.storageTemplateAssetQuery()
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('asset as parent')
+              .select('parent.id')
+              .whereRef('parent.livePhotoVideoId', '=', 'asset.id'),
+          ),
+        ),
+      )
+      .stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

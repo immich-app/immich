@@ -154,42 +154,62 @@ export class StorageTemplateService extends BaseService {
       return JobStatus.Failed;
     }
 
+    // Check if this asset is a live photo video (referenced by a parent image)
+    // If so, skip it - the parent image will handle migrating it with proper metadata
+    const parentAsset = await this.assetJobRepository.getLivePhotoParentAsset(id);
+    if (parentAsset) {
+      return JobStatus.Skipped;
+    }
+
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-      
-      // Get asset metadata so that live photos and regular photos can share the same asset information
-      let albumName  = null;
-      let albumStartDate = null;
-      let albumEndDate = null;
-      if (this.template.needsAlbum) {
-        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
-        const album = albums?.[0];
-        if (album) {
-          albumName = album.albumName ?? null;
 
-          if (this.template.needsAlbumMetadata) {
-            const [metadata] =
-              await this.albumRepository.getMetadataForIds([album.id]);
-            albumStartDate = metadata?.startDate ?? null;
-            albumEndDate = metadata?.endDate ?? null;
-          }
+    // Get asset metadata so that live photos and regular photos can share the same asset information
+    let albumName = null;
+    let albumStartDate = null;
+    let albumEndDate = null;
+    if (this.template.needsAlbum) {
+      const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+      const album = albums?.[0];
+      if (album) {
+        albumName = album.albumName ?? null;
+
+        if (this.template.needsAlbumMetadata) {
+          const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+          albumStartDate = metadata?.startDate ?? null;
+          albumEndDate = metadata?.endDate ?? null;
         }
       }
+    }
 
-      const assetMetadata:MoveAssetMetadata  = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
-      await this.moveAsset(asset, assetMetadata);
+    const assetMetadata: MoveAssetMetadata = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
+    await this.moveAsset(asset, assetMetadata);
 
-
-    // move motion part of live photo
+    // move motion part of live photo, inheriting metadata from parent image
     if (asset.livePhotoVideoId) {
       const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      const liveAssetMetadata:MoveAssetMetadata = { storageLabel: assetMetadata.storageLabel , filename: motionFilename, albumName: assetMetadata.albumName, albumStartDate: assetMetadata.albumStartDate, albumEndDate: assetMetadata.albumEndDate};
-      await this.moveAsset(livePhotoVideo, liveAssetMetadata);
+      const liveAssetMetadata: MoveAssetMetadata = {
+        storageLabel: assetMetadata.storageLabel,
+        filename: motionFilename,
+        albumName: assetMetadata.albumName,
+        albumStartDate: assetMetadata.albumStartDate,
+        albumEndDate: assetMetadata.albumEndDate,
+      };
+      // Use parent image's metadata (make, model, lensModel) for the live photo video
+      await this.moveAsset(
+        {
+          ...livePhotoVideo,
+          make: livePhotoVideo.make ?? asset.make,
+          model: livePhotoVideo.model ?? asset.model,
+          lensModel: livePhotoVideo.lensModel ?? asset.lensModel,
+        },
+        liveAssetMetadata,
+      );
     }
     return JobStatus.Success;
   }
@@ -213,7 +233,7 @@ export class StorageTemplateService extends BaseService {
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      
+
       // Get asset metadata so that live photos and regular photos can share the same asset information
       let albumName  = null;
       let albumStartDate = null;
@@ -233,16 +253,31 @@ export class StorageTemplateService extends BaseService {
         }
       }
 
-      const assetMetadata:MoveAssetMetadata  = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
+      const assetMetadata: MoveAssetMetadata = { storageLabel, filename, albumName, albumStartDate, albumEndDate };
       await this.moveAsset(asset, assetMetadata);
 
-      // move motion part of live photo
+      // move motion part of live photo, inheriting metadata from parent image
       if (asset.livePhotoVideoId) {
         const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          const liveAssetMetadata:MoveAssetMetadata = { storageLabel: assetMetadata.storageLabel , filename: motionFilename, albumName: assetMetadata.albumName, albumStartDate: assetMetadata.albumStartDate, albumEndDate: assetMetadata.albumEndDate};
-          await this.moveAsset(livePhotoVideo, liveAssetMetadata);
+          const liveAssetMetadata: MoveAssetMetadata = {
+            storageLabel: assetMetadata.storageLabel,
+            filename: motionFilename,
+            albumName: assetMetadata.albumName,
+            albumStartDate: assetMetadata.albumStartDate,
+            albumEndDate: assetMetadata.albumEndDate,
+          };
+          // Use parent image's metadata (make, model, lensModel) for the live photo video
+          await this.moveAsset(
+            {
+              ...livePhotoVideo,
+              make: livePhotoVideo.make ?? asset.make,
+              model: livePhotoVideo.model ?? asset.model,
+              lensModel: livePhotoVideo.lensModel ?? asset.lensModel,
+            },
+            liveAssetMetadata,
+          );
         }
       }
     }
