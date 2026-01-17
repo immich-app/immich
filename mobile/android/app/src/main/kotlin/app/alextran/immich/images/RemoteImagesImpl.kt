@@ -95,6 +95,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         .enableQuic(true)
         .enableBrotli(true)
         .setStoragePath(storageDir.absolutePath)
+        .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
         .build()
         .also { cronetEngine = it }
 
