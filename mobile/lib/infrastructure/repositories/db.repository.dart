@@ -202,7 +202,7 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createTable(v16.remoteAssetCloudIdEntity);
           },
           from16To17: (m, v17) async {
-            await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.editCount);
+            await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.isEdited);
           },
         ),
       );

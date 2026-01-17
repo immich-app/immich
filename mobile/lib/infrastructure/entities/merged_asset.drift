@@ -26,7 +26,7 @@ SELECT
 	NULL as latitude,
 	NULL as longitude,
 	NULL as adjustmentTime,
-	rae.edit_count
+	rae.is_edited
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -63,7 +63,7 @@ SELECT
 	lae.latitude,
 	lae.longitude,
 	lae.adjustment_time,
-	0 as edit_count
+	0 as is_edited
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (

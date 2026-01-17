@@ -24,32 +24,32 @@ beforeAll(async () => {
 
 describe(AssetEditRepository.name, () => {
   describe('replaceAll', () => {
-    it('should increment editCount on insert', async () => {
+    it('should set isEdited on insert', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 0 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: false });
 
       await sut.replaceAll(asset.id, [
         { action: AssetEditAction.Crop, parameters: { height: 1, width: 1, x: 1, y: 1 } },
       ]);
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 1 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: true });
     });
 
-    it('should increment editCount when inserting multiple edits', async () => {
+    it('should set isEdited when inserting multiple edits', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 0 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: false });
 
       await sut.replaceAll(asset.id, [
         { action: AssetEditAction.Crop, parameters: { height: 1, width: 1, x: 1, y: 1 } },
@@ -58,18 +58,18 @@ describe(AssetEditRepository.name, () => {
       ]);
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 3 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: true });
     });
 
-    it('should decrement editCount', async () => {
+    it('should keep isEdited when removing some edits', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 0 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: false });
 
       await sut.replaceAll(asset.id, [
         { action: AssetEditAction.Crop, parameters: { height: 1, width: 1, x: 1, y: 1 } },
@@ -77,23 +77,27 @@ describe(AssetEditRepository.name, () => {
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
       ]);
 
+      await expect(
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: true });
+
       await sut.replaceAll(asset.id, [
         { action: AssetEditAction.Crop, parameters: { height: 1, width: 1, x: 1, y: 1 } },
       ]);
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 1 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: true });
     });
 
-    it('should set editCount to 0 if all edits are deleted', async () => {
+    it('should set isEdited to false if all edits are deleted', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 0 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: false });
 
       await sut.replaceAll(asset.id, [
         { action: AssetEditAction.Crop, parameters: { height: 1, width: 1, x: 1, y: 1 } },
@@ -104,8 +108,8 @@ describe(AssetEditRepository.name, () => {
       await sut.replaceAll(asset.id, []);
 
       await expect(
-        ctx.database.selectFrom('asset').select('editCount').where('id', '=', asset.id).executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ editCount: 0 });
+        ctx.database.selectFrom('asset').select('isEdited').where('id', '=', asset.id).executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ isEdited: false });
     });
   });
 });

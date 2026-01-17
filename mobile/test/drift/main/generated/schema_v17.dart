@@ -476,12 +476,15 @@ class RemoteAssetEntity extends Table
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  late final GeneratedColumn<int> editCount = GeneratedColumn<int>(
-    'edit_count',
+  late final GeneratedColumn<bool> isEdited = GeneratedColumn<bool>(
+    'is_edited',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.bool,
     requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_edited" IN (0, 1))',
+    ),
     defaultValue: const CustomExpression('0'),
   );
   @override
@@ -504,7 +507,7 @@ class RemoteAssetEntity extends Table
     visibility,
     stackId,
     libraryId,
-    editCount,
+    isEdited,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -589,9 +592,9 @@ class RemoteAssetEntity extends Table
         DriftSqlType.string,
         data['${effectivePrefix}library_id'],
       ),
-      editCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}edit_count'],
+      isEdited: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_edited'],
       )!,
     );
   }
@@ -627,7 +630,7 @@ class RemoteAssetEntityData extends DataClass
   final int visibility;
   final String? stackId;
   final String? libraryId;
-  final int editCount;
+  final bool isEdited;
   const RemoteAssetEntityData({
     required this.name,
     required this.type,
@@ -647,7 +650,7 @@ class RemoteAssetEntityData extends DataClass
     required this.visibility,
     this.stackId,
     this.libraryId,
-    required this.editCount,
+    required this.isEdited,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -688,7 +691,7 @@ class RemoteAssetEntityData extends DataClass
     if (!nullToAbsent || libraryId != null) {
       map['library_id'] = Variable<String>(libraryId);
     }
-    map['edit_count'] = Variable<int>(editCount);
+    map['is_edited'] = Variable<bool>(isEdited);
     return map;
   }
 
@@ -716,7 +719,7 @@ class RemoteAssetEntityData extends DataClass
       visibility: serializer.fromJson<int>(json['visibility']),
       stackId: serializer.fromJson<String?>(json['stackId']),
       libraryId: serializer.fromJson<String?>(json['libraryId']),
-      editCount: serializer.fromJson<int>(json['editCount']),
+      isEdited: serializer.fromJson<bool>(json['isEdited']),
     );
   }
   @override
@@ -741,7 +744,7 @@ class RemoteAssetEntityData extends DataClass
       'visibility': serializer.toJson<int>(visibility),
       'stackId': serializer.toJson<String?>(stackId),
       'libraryId': serializer.toJson<String?>(libraryId),
-      'editCount': serializer.toJson<int>(editCount),
+      'isEdited': serializer.toJson<bool>(isEdited),
     };
   }
 
@@ -764,7 +767,7 @@ class RemoteAssetEntityData extends DataClass
     int? visibility,
     Value<String?> stackId = const Value.absent(),
     Value<String?> libraryId = const Value.absent(),
-    int? editCount,
+    bool? isEdited,
   }) => RemoteAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -790,7 +793,7 @@ class RemoteAssetEntityData extends DataClass
     visibility: visibility ?? this.visibility,
     stackId: stackId.present ? stackId.value : this.stackId,
     libraryId: libraryId.present ? libraryId.value : this.libraryId,
-    editCount: editCount ?? this.editCount,
+    isEdited: isEdited ?? this.isEdited,
   );
   RemoteAssetEntityData copyWithCompanion(RemoteAssetEntityCompanion data) {
     return RemoteAssetEntityData(
@@ -822,7 +825,7 @@ class RemoteAssetEntityData extends DataClass
           : this.visibility,
       stackId: data.stackId.present ? data.stackId.value : this.stackId,
       libraryId: data.libraryId.present ? data.libraryId.value : this.libraryId,
-      editCount: data.editCount.present ? data.editCount.value : this.editCount,
+      isEdited: data.isEdited.present ? data.isEdited.value : this.isEdited,
     );
   }
 
@@ -847,7 +850,7 @@ class RemoteAssetEntityData extends DataClass
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
           ..write('libraryId: $libraryId, ')
-          ..write('editCount: $editCount')
+          ..write('isEdited: $isEdited')
           ..write(')'))
         .toString();
   }
@@ -872,7 +875,7 @@ class RemoteAssetEntityData extends DataClass
     visibility,
     stackId,
     libraryId,
-    editCount,
+    isEdited,
   );
   @override
   bool operator ==(Object other) =>
@@ -896,7 +899,7 @@ class RemoteAssetEntityData extends DataClass
           other.visibility == this.visibility &&
           other.stackId == this.stackId &&
           other.libraryId == this.libraryId &&
-          other.editCount == this.editCount);
+          other.isEdited == this.isEdited);
 }
 
 class RemoteAssetEntityCompanion
@@ -919,7 +922,7 @@ class RemoteAssetEntityCompanion
   final Value<int> visibility;
   final Value<String?> stackId;
   final Value<String?> libraryId;
-  final Value<int> editCount;
+  final Value<bool> isEdited;
   const RemoteAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -939,7 +942,7 @@ class RemoteAssetEntityCompanion
     this.visibility = const Value.absent(),
     this.stackId = const Value.absent(),
     this.libraryId = const Value.absent(),
-    this.editCount = const Value.absent(),
+    this.isEdited = const Value.absent(),
   });
   RemoteAssetEntityCompanion.insert({
     required String name,
@@ -960,7 +963,7 @@ class RemoteAssetEntityCompanion
     required int visibility,
     this.stackId = const Value.absent(),
     this.libraryId = const Value.absent(),
-    this.editCount = const Value.absent(),
+    this.isEdited = const Value.absent(),
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
@@ -986,7 +989,7 @@ class RemoteAssetEntityCompanion
     Expression<int>? visibility,
     Expression<String>? stackId,
     Expression<String>? libraryId,
-    Expression<int>? editCount,
+    Expression<bool>? isEdited,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -1007,7 +1010,7 @@ class RemoteAssetEntityCompanion
       if (visibility != null) 'visibility': visibility,
       if (stackId != null) 'stack_id': stackId,
       if (libraryId != null) 'library_id': libraryId,
-      if (editCount != null) 'edit_count': editCount,
+      if (isEdited != null) 'is_edited': isEdited,
     });
   }
 
@@ -1030,7 +1033,7 @@ class RemoteAssetEntityCompanion
     Value<int>? visibility,
     Value<String?>? stackId,
     Value<String?>? libraryId,
-    Value<int>? editCount,
+    Value<bool>? isEdited,
   }) {
     return RemoteAssetEntityCompanion(
       name: name ?? this.name,
@@ -1051,7 +1054,7 @@ class RemoteAssetEntityCompanion
       visibility: visibility ?? this.visibility,
       stackId: stackId ?? this.stackId,
       libraryId: libraryId ?? this.libraryId,
-      editCount: editCount ?? this.editCount,
+      isEdited: isEdited ?? this.isEdited,
     );
   }
 
@@ -1112,8 +1115,8 @@ class RemoteAssetEntityCompanion
     if (libraryId.present) {
       map['library_id'] = Variable<String>(libraryId.value);
     }
-    if (editCount.present) {
-      map['edit_count'] = Variable<int>(editCount.value);
+    if (isEdited.present) {
+      map['is_edited'] = Variable<bool>(isEdited.value);
     }
     return map;
   }
@@ -1139,7 +1142,7 @@ class RemoteAssetEntityCompanion
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
           ..write('libraryId: $libraryId, ')
-          ..write('editCount: $editCount')
+          ..write('isEdited: $isEdited')
           ..write(')'))
         .toString();
   }

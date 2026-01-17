@@ -12,7 +12,7 @@ import {
 } from 'src/sql-tools';
 
 @Table('asset_edit')
-@AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert })
+@AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert, referencingNewTableAs: 'new' })
 @AfterDeleteTrigger({
   scope: 'statement',
   function: asset_edit_delete,

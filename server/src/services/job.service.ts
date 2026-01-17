@@ -120,7 +120,7 @@ export class JobService extends BaseService {
               libraryId: asset.libraryId,
               width: asset.width,
               height: asset.height,
-              editCount: asset.editCount,
+              isEdited: asset.isEdited,
             },
           });
         }
@@ -175,7 +175,7 @@ export class JobService extends BaseService {
                 libraryId: asset.libraryId,
                 width: asset.width,
                 height: asset.height,
-                editCount: asset.editCount,
+                isEdited: asset.isEdited,
               },
               exif: {
                 assetId: exif.assetId,

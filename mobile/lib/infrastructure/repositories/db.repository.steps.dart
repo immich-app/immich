@@ -7393,16 +7393,19 @@ class Shape28 extends i0.VersionedTable {
       columnsByName['stack_id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get libraryId =>
       columnsByName['library_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<int> get editCount =>
-      columnsByName['edit_count']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<bool> get isEdited =>
+      columnsByName['is_edited']! as i1.GeneratedColumn<bool>;
 }
 
-i1.GeneratedColumn<int> _column_101(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'edit_count',
+i1.GeneratedColumn<bool> _column_101(String aliasedName) =>
+    i1.GeneratedColumn<bool>(
+      'is_edited',
       aliasedName,
       false,
-      type: i1.DriftSqlType.int,
+      type: i1.DriftSqlType.bool,
+      defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+        'CHECK ("is_edited" IN (0, 1))',
+      ),
       defaultValue: const CustomExpression('0'),
     );
 i0.MigrationStepWithVersion migrationSteps({
