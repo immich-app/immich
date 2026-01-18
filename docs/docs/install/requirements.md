@@ -24,7 +24,7 @@ Hardware and software requirements for Immich:
 
 :::note RAM requirements
 For a smooth experience, especially during asset upload, Immich requires at least 6GB of RAM.
-For heavily limited systems, processing jobs should be paused during initial import or machine learning features should be disabled.
+For systems with only 4GB of RAM, Immich can be run with machine learning features disabled.
 :::
 
 :::tip Postgres setup
