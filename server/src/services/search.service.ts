@@ -60,7 +60,7 @@ export class SearchService extends BaseService {
     const page = dto.page ?? 1;
     const size = dto.size || 250;
     const userIds = await this.getUserIdsToSearch(auth);
-    const { hasNextPage, items } = await this.searchRepository.searchMetadata(
+    const { page: {items, hasNextPage}, total } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
@@ -70,7 +70,7 @@ export class SearchService extends BaseService {
       },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    return this.mapResponse(items, total, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
@@ -137,12 +137,12 @@ export class SearchService extends BaseService {
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;
-    const { hasNextPage, items } = await this.searchRepository.searchSmart(
+    const { page: {items, hasNextPage}, total } = await this.searchRepository.searchSmart(
       { page, size },
       { ...dto, userIds: await userIds, embedding },
     );
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    return this.mapResponse(items, total, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
@@ -195,11 +195,11 @@ export class SearchService extends BaseService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: MapAsset[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
+  private mapResponse(assets: MapAsset[], total: number, nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
-        total: assets.length,
+        total,
         count: assets.length,
         items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],

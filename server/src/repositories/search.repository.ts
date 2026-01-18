@@ -9,7 +9,7 @@ import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
-import { paginationHelper } from 'src/utils/pagination';
+import { paginationHelper, PaginationResult } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
 export interface SearchAssetIdOptions {
@@ -197,16 +197,25 @@ export class SearchRepository {
       },
     ],
   })
-  async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
+  async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Promise<{page: PaginationResult<MapAsset>, total: number}> {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
-    const items = await searchAssetBuilder(this.db, options)
-      .selectAll('asset')
-      .orderBy('asset.fileCreatedAt', orderDirection)
-      .limit(pagination.size + 1)
-      .offset((pagination.page - 1) * pagination.size)
-      .execute();
 
-    return paginationHelper(items, pagination.size);
+    return this.db.transaction().execute(async(trx) => {
+      const items = await searchAssetBuilder(trx, options)
+        .selectAll('asset')
+        .orderBy('asset.fileCreatedAt', orderDirection)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute();
+  
+     const { count } = await searchAssetBuilder(trx, options).clearSelect()
+        .select((eb) => eb.fn.count<number>('asset.id').as('count'))
+        .executeTakeFirstOrThrow();
+      
+        const page = paginationHelper(items, pagination.size);
+
+      return { page, total: count };
+    });
   }
 
   @GenerateSql({
@@ -304,7 +313,16 @@ export class SearchRepository {
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
-      return paginationHelper(items, pagination.size);
+      
+     const {count} = await searchAssetBuilder(trx, options)
+        .clearSelect()
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        .select((eb) => eb.fn.count<number>('asset.id').as('count'))
+        .executeTakeFirstOrThrow();
+
+      const page = paginationHelper(items, pagination.size)
+
+      return {page, total: count };
     });
   }
 
