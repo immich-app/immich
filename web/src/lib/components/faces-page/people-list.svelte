@@ -16,7 +16,7 @@
 
   let { screenHeight, people, peopleToNotShow, onSelect, handleSearch }: Props = $props();
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
-  let sortBySimilarirty = $state(false);
+  let sortBySimilarity = $state(false);
   let name = $state('');
 
   const showPeople = $derived(
@@ -27,19 +27,19 @@
 </script>
 
 <div class="w-40 sm:w-48 md:w-full h-14 flex gap-4 place-items-center">
-  <div class="md:w-96">
-    <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
-  </div>
-
   {#if handleSearch}
+    <div class="md:w-96">
+      <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
+    </div>
+
     <IconButton
       shape="round"
       color="secondary"
       variant="ghost"
       icon={mdiSwapVertical}
       onclick={() => {
-        sortBySimilarirty = !sortBySimilarirty;
-        handleSearch(sortBySimilarirty);
+        sortBySimilarity = !sortBySimilarity;
+        handleSearch(sortBySimilarity);
       }}
       aria-label={$t('sort_people_by_similarity')}
     />
