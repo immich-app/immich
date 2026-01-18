@@ -60,7 +60,7 @@ export class SearchService extends BaseService {
     const page = dto.page ?? 1;
     const size = dto.size || 250;
     const userIds = await this.getUserIdsToSearch(auth);
-    const { page: {items, hasNextPage}, total } = await this.searchRepository.searchMetadata(
+    const { items, hasNextPage, total } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
@@ -137,7 +137,7 @@ export class SearchService extends BaseService {
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;
-    const { page: {items, hasNextPage}, total } = await this.searchRepository.searchSmart(
+    const { items, hasNextPage, total } = await this.searchRepository.searchSmart(
       { page, size },
       { ...dto, userIds: await userIds, embedding },
     );
@@ -195,7 +195,12 @@ export class SearchService extends BaseService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: MapAsset[], total: number, nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
+  private mapResponse(
+    assets: MapAsset[],
+    total: number,
+    nextPage: string | null,
+    options: AssetMapOptions,
+  ): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
