@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -35,35 +34,55 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info, {required bool shouldFree}) async {
-    final address = info['pointer'];
-    if (address == null) {
-      return null;
-    }
-
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
-      if (shouldFree) {
-        malloc.free(pointer);
-      }
+      malloc.free(pointer);
       return null;
     }
 
-    final int actualWidth;
-    final int actualHeight;
-    final int rowBytes;
-    final int actualSize;
     final ui.ImmutableBuffer buffer;
     try {
-      actualWidth = info['width']!;
-      actualHeight = info['height']!;
-      rowBytes = info['rowBytes'] ?? actualWidth * 4;
-      actualSize = rowBytes * actualHeight;
-      buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
+      buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(length));
     } finally {
-      if (shouldFree) {
-        malloc.free(pointer);
-      }
+      malloc.free(pointer);
+    }
+
+    if (_isCancelled) {
+      buffer.dispose();
+      return null;
+    }
+
+    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    if (_isCancelled) {
+      buffer.dispose();
+      descriptor.dispose();
+      return null;
+    }
+
+    final codec = await descriptor.instantiateCodec();
+    if (_isCancelled) {
+      buffer.dispose();
+      descriptor.dispose();
+      codec.dispose();
+      return null;
+    }
+    return await codec.getNextFrame();
+  }
+
+  Future<ui.FrameInfo?> _fromDecodedPlatformImage(int address, int width, int height, int rowBytes) async {
+    final pointer = Pointer<Uint8>.fromAddress(address);
+    if (_isCancelled) {
+      malloc.free(pointer);
+      return null;
+    }
+
+    final size = rowBytes * height;
+    final ui.ImmutableBuffer buffer;
+    try {
+      buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(size));
+    } finally {
+      malloc.free(pointer);
     }
 
     if (_isCancelled) {
@@ -73,8 +92,8 @@ abstract class ImageRequest {
 
     final descriptor = ui.ImageDescriptor.raw(
       buffer,
-      width: actualWidth,
-      height: actualHeight,
+      width: width,
+      height: height,
       rowBytes: rowBytes,
       pixelFormat: ui.PixelFormat.rgba8888,
     );

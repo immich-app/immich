@@ -80,8 +80,6 @@ PODS:
     - Flutter
   - network_info_plus (0.0.1):
     - Flutter
-  - objective_c (0.0.1):
-    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -160,7 +158,6 @@ DEPENDENCIES:
   - maplibre_gl (from `.symlinks/plugins/maplibre_gl/ios`)
   - native_video_player (from `.symlinks/plugins/native_video_player/ios`)
   - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
-  - objective_c (from `.symlinks/plugins/objective_c/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -229,8 +226,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/native_video_player/ios"
   network_info_plus:
     :path: ".symlinks/plugins/network_info_plus/ios"
-  objective_c:
-    :path: ".symlinks/plugins/objective_c/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -282,7 +277,6 @@ SPEC CHECKSUMS:
   maplibre_gl: 3c924e44725147b03dda33430ad216005b40555f
   native_video_player: b65c58951ede2f93d103a25366bdebca95081265
   network_info_plus: cf61925ab5205dce05a4f0895989afdb6aade5fc
-  objective_c: 89e720c30d716b036faf9c9684022048eee1eee2
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d

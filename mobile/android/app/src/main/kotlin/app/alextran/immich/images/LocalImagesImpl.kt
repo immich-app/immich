@@ -52,7 +52,8 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
     return mapOf(
       "pointer" to pointer,
       "width" to width.toLong(),
-      "height" to height.toLong()
+      "height" to height.toLong(),
+      "rowBytes" to (width * 4).toLong()
     )
   } catch (e: Exception) {
     LocalImagesImpl.freeNative(pointer)
@@ -84,6 +85,9 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     external fun freeNative(pointer: Long)
 
     @JvmStatic
+    external fun reallocNative(pointer: Long, size: Int): Long
+
+    @JvmStatic
     external fun wrapAsBuffer(address: Long, capacity: Int): ByteBuffer
   }
 
@@ -95,7 +99,8 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
         val res = mapOf(
           "pointer" to image.pointer,
           "width" to image.width.toLong(),
-          "height" to image.height.toLong()
+          "height" to image.height.toLong(),
+          "rowBytes" to (image.width * 4).toLong()
         )
         callback(Result.success(res))
       } catch (e: Exception) {

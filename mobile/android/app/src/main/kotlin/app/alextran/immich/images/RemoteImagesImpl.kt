@@ -1,11 +1,6 @@
 package app.alextran.immich.images
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ColorSpace
-import android.graphics.ImageDecoder
-import android.os.Build
 import android.os.CancellationSignal
 import app.alextran.immich.BuildConfig
 import app.alextran.immich.core.SSLConfig
@@ -21,15 +16,14 @@ import okhttp3.Dispatcher
 import org.chromium.net.CronetEngine
 import java.io.File
 import java.io.IOException
-import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import okhttp3.Interceptor
 
 data class RemoteRequest(
   val callback: (Result<Map<String, Long>>) -> Unit,
   val cancellationSignal: CancellationSignal,
+  var pointer: Long = 0L,
 )
 
 class UserAgentInterceptor : Interceptor {
@@ -48,7 +42,6 @@ class UserAgentInterceptor : Interceptor {
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
-  private val lockedBitmaps = ConcurrentHashMap<Long, Bitmap>()
 
   init {
     appContext = context.applicationContext
@@ -62,9 +55,9 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     private const val KEEP_ALIVE_DURATION_MINUTES = 5L
     private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
 
+    private const val INITIAL_BUFFER_SIZE = 64 * 1024
+
     val CANCELLED = Result.success<Map<String, Long>>(emptyMap())
-    private val decodePool =
-      Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2 + 1)
 
     private var appContext: Context? = null
     private var cacheDir: File? = null
@@ -75,12 +68,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
       System.loadLibrary("native_buffer")
       SSLConfig.addListener(::invalidateClient)
     }
-
-    @JvmStatic
-    external fun lockBitmapPixels(bitmap: Bitmap): Long
-
-    @JvmStatic
-    external fun unlockBitmapPixels(bitmap: Bitmap)
 
     private fun invalidateClient() {
       (client as? OkHttpClient)?.let {
@@ -111,7 +98,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         .enableQuic(true)
         .enableBrotli(true)
         .setStoragePath(storageDir.absolutePath)
-        .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
+//        .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
         .setUserAgent(UserAgentInterceptor.USER_AGENT)
         .build()
         .also { cronetEngine = it }
@@ -168,60 +155,56 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
       }
 
       override fun onResponse(call: Call, response: Response) {
-        decodePool.execute {
-          try {
-            signal.throwIfCanceled()
-            val bytes = response.takeIf { it.isSuccessful }?.body?.bytes()
-              ?: return@execute callback(Result.failure(IOException(response.toString())))
-            signal.throwIfCanceled()
-            val bitmap = decodeImage(bytes)
-            signal.throwIfCanceled()
+        var pointer = 0L
+        var capacity: Int
+        try {
+          signal.throwIfCanceled()
+          val body = response.takeIf { it.isSuccessful }?.body
+            ?: return callback(Result.failure(IOException(response.toString())))
 
-            val pointer = lockBitmapPixels(bitmap)
-            if (pointer == 0L) {
-              bitmap.recycle()
-              return@execute callback(Result.failure(RuntimeException("Failed to lock bitmap pixels")))
+          val contentLength = body.contentLength()
+          capacity = if (contentLength > 0) contentLength.toInt() else INITIAL_BUFFER_SIZE
+          pointer = LocalImagesImpl.allocateNative(capacity)
+          request.pointer = pointer
+
+          var position = 0
+          body.source().use { source ->
+            while (!source.exhausted()) {
+              signal.throwIfCanceled()
+              if (position >= capacity) {
+                capacity = maxOf(capacity * 2, position + 8192)
+                pointer = LocalImagesImpl.reallocNative(pointer, capacity)
+                request.pointer = pointer
+              }
+              val buffer = LocalImagesImpl.wrapAsBuffer(pointer + position, capacity - position)
+              val read = source.read(buffer)
+              if (read == -1) break
+              position += read
             }
-
-            lockedBitmaps[requestId] = bitmap
-            callback(Result.success(mapOf(
-              "pointer" to pointer,
-              "width" to bitmap.width.toLong(),
-              "height" to bitmap.height.toLong(),
-              "rowBytes" to bitmap.rowBytes.toLong()
-            )))
-          } catch (e: Exception) {
-            val result = if (signal.isCanceled) CANCELLED else Result.failure(e)
-            callback(result)
-          } finally {
-            requestMap.remove(requestId)
-            response.close()
           }
+
+          signal.throwIfCanceled()
+          request.pointer = 0L // Transfer ownership to Dart before callback
+          callback(Result.success(mapOf(
+            "pointer" to pointer,
+            "length" to position.toLong()
+          )))
+        } catch (e: Exception) {
+          if (pointer != 0L) LocalImagesImpl.freeNative(pointer)
+          val result = if (signal.isCanceled) CANCELLED else Result.failure(e)
+          callback(result)
+        } finally {
+          requestMap.remove(requestId)
+          response.close()
         }
       }
     })
   }
 
   override fun cancelRequest(requestId: Long) {
-    requestMap.remove(requestId)?.cancellationSignal?.cancel()
-    releaseImage(requestId)
+    // Just cancel the signal - memory cleanup happens in onResponse/onFailure
+    requestMap[requestId]?.cancellationSignal?.cancel()
   }
 
-  override fun releaseImage(requestId: Long) {
-    val bitmap = lockedBitmaps.remove(requestId) ?: return
-    unlockBitmapPixels(bitmap)
-    bitmap.recycle()
-  }
-
-  private fun decodeImage(bytes: ByteArray): Bitmap {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      ImageDecoder.createSource(ByteBuffer.wrap(bytes)).decodeBitmap()
-    } else {
-      val options = BitmapFactory.Options().apply {
-        inPreferredConfig = Bitmap.Config.ARGB_8888
-        inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
-      }
-      BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
-    }
-  }
+  override fun releaseImage(requestId: Long) {}
 }

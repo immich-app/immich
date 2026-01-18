@@ -24,7 +24,7 @@ class LocalImageRequest extends ImageRequest {
       isVideo: assetType == AssetType.video,
     );
 
-    final frame = await _fromPlatformImage(info, shouldFree: true);
+    final frame = await _fromDecodedPlatformImage(info["pointer"]!, info["width"]!, info["height"]!, info["rowBytes"]!);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
