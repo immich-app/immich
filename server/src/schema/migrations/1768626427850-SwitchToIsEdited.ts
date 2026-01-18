@@ -8,8 +8,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     BEGIN
       UPDATE asset
       SET "isEdited" = true
-      FROM new
-      WHERE asset.id = new."assetId" AND NOT asset."isEdited";
+      FROM inserted_edit
+      WHERE asset.id = inserted_edit."assetId" AND NOT asset."isEdited";
       RETURN NULL;
     END
   $$;`.execute(db);
@@ -20,8 +20,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     BEGIN
       UPDATE asset
       SET "isEdited" = false
-      FROM old
-      WHERE asset.id = old."assetId" AND asset."isEdited" 
+      FROM deleted_edit
+      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited" 
         AND NOT EXISTS (SELECT FROM asset_edit edit WHERE edit."assetId" = asset.id);
       RETURN NULL;
     END
@@ -29,13 +29,13 @@ export async function up(db: Kysely<any>): Promise<void> {
   await sql`ALTER TABLE "asset" ADD "isEdited" boolean NOT NULL DEFAULT false;`.execute(db);
   await sql`CREATE OR REPLACE TRIGGER "asset_edit_delete"
   AFTER DELETE ON "asset_edit"
-  REFERENCING OLD TABLE AS "old"
+  REFERENCING OLD TABLE AS "deleted_edit"
   FOR EACH STATEMENT
   WHEN (pg_trigger_depth() = 0)
   EXECUTE FUNCTION asset_edit_delete();`.execute(db);
   await sql`CREATE OR REPLACE TRIGGER "asset_edit_insert"
   AFTER INSERT ON "asset_edit"
-  REFERENCING NEW TABLE AS "new"
+  REFERENCING NEW TABLE AS "inserted_edit"
   FOR EACH STATEMENT
   EXECUTE FUNCTION asset_edit_insert();`.execute(db);
   await sql`ALTER TABLE "asset" DROP COLUMN "editCount";`.execute(db);
