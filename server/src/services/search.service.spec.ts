@@ -203,7 +203,7 @@ describe(SearchService.name, () => {
 
   describe('searchSmart', () => {
     beforeEach(() => {
-      mocks.search.searchSmart.mockResolvedValue({ hasNextPage: false, items: [] });
+      mocks.search.searchSmart.mockResolvedValue({ hasNextPage: false, items: [], total: 0 });
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
     });
 
