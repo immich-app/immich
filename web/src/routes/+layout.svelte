@@ -14,6 +14,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
@@ -49,6 +50,8 @@
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
       toast_danger_title: $t('error'),
+      navigate_next: $t('next'),
+      navigate_previous: $t('previous'),
     });
   });
 
@@ -145,7 +148,6 @@
       icon: mdiThemeLightDark,
       onAction: () => themeManager.toggleTheme(),
       shortcuts: { shift: true, key: 't' },
-      isGlobal: true,
     },
   ];
 
@@ -154,34 +156,34 @@
       title: $t('users'),
       description: $t('admin.users_page_description'),
       icon: mdiAccountMultipleOutline,
-      onAction: () => goto(AppRoute.ADMIN_USERS),
+      onAction: () => goto(Route.users()),
     },
     {
       title: $t('settings'),
       description: $t('admin.settings_page_description'),
       icon: mdiCog,
-      onAction: () => goto(AppRoute.ADMIN_SETTINGS),
+      onAction: () => goto(Route.systemSettings()),
     },
     {
       title: $t('admin.queues'),
       description: $t('admin.queues_page_description'),
       icon: mdiSync,
       type: $t('page'),
-      onAction: () => goto(AppRoute.ADMIN_QUEUES),
+      onAction: () => goto(Route.queues()),
     },
     {
       title: $t('external_libraries'),
       description: $t('admin.external_libraries_page_description'),
       icon: mdiBookshelf,
-      onAction: () => goto(AppRoute.ADMIN_LIBRARIES),
+      onAction: () => goto(Route.libraries()),
     },
     {
       title: $t('server_stats'),
       description: $t('admin.server_stats_page_description'),
       icon: mdiServer,
-      onAction: () => goto(AppRoute.ADMIN_STATS),
+      onAction: () => goto(Route.systemStatistics()),
     },
-  ].map((route) => ({ ...route, type: $t('page'), isGlobal: true, $if: () => $user?.isAdmin }));
+  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>

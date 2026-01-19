@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
+  import { NavbarGroup, NavbarItem } from '@immich/ui';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -33,119 +35,72 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import SideBarLink from './side-bar-link.svelte';
-
-  let isArchiveSelected: boolean = $state(false);
-  let isFavoritesSelected: boolean = $state(false);
-  let isMapSelected: boolean = $state(false);
-  let isPeopleSelected: boolean = $state(false);
-  let isPhotosSelected: boolean = $state(false);
-  let isSharingSelected: boolean = $state(false);
-  let isTrashSelected: boolean = $state(false);
-  let isUtilitiesSelected: boolean = $state(false);
-  let isLockedFolderSelected: boolean = $state(false);
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
-  <SideBarLink
-    title={$t('photos')}
-    href={resolve('/(user)/photos')}
-    bind:isSelected={isPhotosSelected}
-    icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
-  ></SideBarLink>
+  <NavbarItem title={$t('photos')} href={Route.photos()} icon={mdiImageMultipleOutline} activeIcon={mdiImageMultiple} />
 
   {#if featureFlagsManager.value.search}
-    <SideBarLink title={$t('explore')} href={resolve('/(user)/explore')} icon={mdiMagnify} />
+    <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
   {/if}
 
   {#if featureFlagsManager.value.map}
-    <SideBarLink
-      title={$t('map')}
-      href={resolve('/(user)/map')}
-      bind:isSelected={isMapSelected}
-      icon={isMapSelected ? mdiMap : mdiMapOutline}
-    />
+    <NavbarItem title={$t('map')} href={AppRoute.MAP} icon={mdiMapOutline} activeIcon={mdiMap} />
   {/if}
 
   {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
-    <SideBarLink
-      title={$t('people')}
-      href={resolve('/(user)/people')}
-      bind:isSelected={isPeopleSelected}
-      icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
-    />
+    <NavbarItem title={$t('people')} href={AppRoute.PEOPLE} icon={mdiAccountOutline} activeIcon={mdiAccount} />
   {/if}
 
   {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
-    <SideBarLink title={$t('shared_links')} href={resolve('/(user)/shared-links')} icon={mdiLink} />
+    <NavbarItem title={$t('shared_links')} href={Route.sharedLinks()} icon={mdiLink} />
   {/if}
 
-  <SideBarLink
+  <NavbarItem
     title={$t('sharing')}
-    href={resolve('/(user)/sharing')}
-    icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
-    bind:isSelected={isSharingSelected}
-  ></SideBarLink>
+    href={Route.sharing()}
+    icon={mdiAccountMultipleOutline}
+    activeIcon={mdiAccountMultiple}
+  />
 
-  <p class="text-xs p-6 dark:text-immich-dark-fg uppercase">{$t('library')}</p>
+  <NavbarGroup title={$t('library')} size="tiny" />
 
-  <SideBarLink
-    title={$t('favorites')}
-    href={resolve('/(user)/favorites')}
-    icon={isFavoritesSelected ? mdiHeart : mdiHeartOutline}
-    bind:isSelected={isFavoritesSelected}
-  ></SideBarLink>
+  <NavbarItem title={$t('favorites')} href={Route.favorites()} icon={mdiHeartOutline} activeIcon={mdiHeart} />
 
-  <SideBarLink
+  <NavbarItem
     title={$t('albums')}
-    href={resolve('/(user)/albums')}
-    icon={mdiImageAlbum}
-    flippedLogo
-    bind:dropdownOpen={$recentAlbumsDropdown}
+    href={Route.albums()}
+    icon={{ icon: mdiImageAlbum, flipped: true }}
+    bind:expanded={$recentAlbumsDropdown}
   >
-    {#snippet dropDownContent()}
+    {#snippet items()}
       <span in:fly={{ y: -20 }} class="hidden md:block">
         <RecentAlbums />
       </span>
     {/snippet}
-  </SideBarLink>
+  </NavbarItem>
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
-    <SideBarLink title={$t('tags')} href={resolve('/(user)/tags')} icon={mdiTagMultipleOutline} flippedLogo />
+    <NavbarItem title={$t('tags')} href={AppRoute.TAGS} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />
   {/if}
 
   {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
-    <SideBarLink title={$t('folders')} href={resolve('/(user)/folders')} icon={mdiFolderOutline} flippedLogo />
+    <NavbarItem title={$t('folders')} href={AppRoute.FOLDERS} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 
-  <SideBarLink
-    title={$t('utilities')}
-    href={resolve('/(user)/utilities')}
-    bind:isSelected={isUtilitiesSelected}
-    icon={isUtilitiesSelected ? mdiToolbox : mdiToolboxOutline}
-  ></SideBarLink>
+  <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
 
-  <SideBarLink
+  <NavbarItem
     title={$t('archive')}
-    href={resolve('/(user)/archive')}
-    bind:isSelected={isArchiveSelected}
-    icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
-  ></SideBarLink>
+    href={Route.archive()}
+    icon={mdiArchiveArrowDownOutline}
+    activeIcon={mdiArchiveArrowDown}
+  />
 
-  <SideBarLink
-    title={$t('locked_folder')}
-    href={resolve('/(user)/locked')}
-    bind:isSelected={isLockedFolderSelected}
-    icon={isLockedFolderSelected ? mdiLock : mdiLockOutline}
-  ></SideBarLink>
+  <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
 
   {#if featureFlagsManager.value.trash}
-    <SideBarLink
-      title={$t('trash')}
-      href={resolve('/(user)/trash')}
-      bind:isSelected={isTrashSelected}
-      icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}
-    ></SideBarLink>
+    <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
 
   <BottomInfo />

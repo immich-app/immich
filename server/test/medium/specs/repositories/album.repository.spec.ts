@@ -36,5 +36,24 @@ describe(AlbumRepository.name, () => {
         expect.objectContaining({ assetCount: 1, startDate: new Date(date), endDate: new Date(date) }),
       ]);
     });
+
+    it('should return start/end date in UTC time zone', async () => {
+      const date = '2023-11-19T18:11:21.456';
+
+      const oldTz = process.env.TZ;
+      process.env.TZ = 'Europe/Berlin'; // not UTC
+
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: date });
+      const _ = await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      await expect(sut.getMetadataForIds([album.id])).resolves.toEqual([
+        expect.objectContaining({ assetCount: 1, startDate: new Date(date), endDate: new Date(date) }),
+      ]);
+
+      process.env.TZ = oldTz;
+    });
   });
 });

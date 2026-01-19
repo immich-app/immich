@@ -91,7 +91,7 @@
       class="rounded-xl border-transparent border-2 hover:shadow-xl hover:border-dashed bg-light-50 shadow-sm p-4 hover:border-light-300 transition-all"
     >
       <div class="flex items-center justify-between mb-4 cursor-grab select-none">
-        <Text size="small" class="font-semibold">{$t('workflow_summary')}</Text>
+        <Text size="small" fontWeight="semi-bold">{$t('workflow_summary')}</Text>
         <div class="flex items-center gap-1">
           <IconButton
             icon={mdiClose}

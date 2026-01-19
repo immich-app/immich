@@ -1,42 +1,60 @@
 import { AssetFace, AssetFile, Exif } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { factory } from 'test/small.factory';
 
-export const previewFile: AssetFile = {
-  id: 'file-1',
-  type: AssetFileType.Preview,
-  path: '/uploads/user-id/thumbs/path.jpg',
-};
+export const previewFile = factory.assetFile({ type: AssetFileType.Preview });
 
-const thumbnailFile: AssetFile = {
-  id: 'file-2',
+const thumbnailFile = factory.assetFile({
   type: AssetFileType.Thumbnail,
   path: '/uploads/user-id/webp/path.ext',
-};
+});
 
-const fullsizeFile: AssetFile = {
-  id: 'file-3',
+const fullsizeFile = factory.assetFile({
   type: AssetFileType.FullSize,
   path: '/uploads/user-id/fullsize/path.webp',
-};
+});
 
-const sidecarFileWithExt: AssetFile = {
-  id: 'sidecar-with-ext',
+const sidecarFileWithExt = factory.assetFile({
   type: AssetFileType.Sidecar,
   path: '/original/path.ext.xmp',
-};
+});
 
-const sidecarFileWithoutExt: AssetFile = {
-  id: 'sidecar-without-ext',
+const sidecarFileWithoutExt = factory.assetFile({
   type: AssetFileType.Sidecar,
   path: '/original/path.xmp',
-};
+});
+
+const editedPreviewFile = factory.assetFile({
+  type: AssetFileType.PreviewEdited,
+  path: '/uploads/user-id/preview/path_edited.jpg',
+});
+
+const editedThumbnailFile = factory.assetFile({
+  type: AssetFileType.ThumbnailEdited,
+  path: '/uploads/user-id/thumbnail/path_edited.jpg',
+});
+
+const editedFullsizeFile = factory.assetFile({
+  type: AssetFileType.FullSizeEdited,
+  path: '/uploads/user-id/fullsize/path_edited.jpg',
+});
 
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
+
+const editedFiles: AssetFile[] = [
+  fullsizeFile,
+  previewFile,
+  thumbnailFile,
+  editedFullsizeFile,
+  editedPreviewFile,
+  editedThumbnailFile,
+];
 
 export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif })[]) => {
   return {
@@ -68,6 +86,7 @@ export const assetStub = {
     make: 'FUJIFILM',
     model: 'X-T50',
     lensModel: 'XF27mm F2.8 R WR',
+    editCount: 0,
     ...asset,
   }),
   noResizePath: Object.freeze({
@@ -104,6 +123,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   noWebpPath: Object.freeze({
@@ -142,6 +165,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   noThumbhash: Object.freeze({
@@ -177,6 +204,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   primaryImage: Object.freeze({
@@ -222,6 +253,10 @@ export const assetStub = {
     updateId: '42',
     libraryId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   image: Object.freeze({
@@ -264,9 +299,11 @@ export const assetStub = {
     stack: null,
     orientation: '',
     projectionType: null,
-    height: 3840,
-    width: 2160,
+    height: null,
+    width: null,
     visibility: AssetVisibility.Timeline,
+    edits: [],
+    editCount: 0,
   }),
 
   trashed: Object.freeze({
@@ -307,6 +344,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   trashedOffline: Object.freeze({
@@ -347,6 +388,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -386,6 +431,10 @@ export const assetStub = {
     stackId: null,
     updateId: '42',
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   external: Object.freeze({
@@ -425,6 +474,10 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   image1: Object.freeze({
@@ -464,6 +517,10 @@ export const assetStub = {
     libraryId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   imageFrom2015: Object.freeze({
@@ -502,6 +559,10 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   video: Object.freeze({
@@ -542,6 +603,10 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -559,7 +624,11 @@ export const assetStub = {
     files: [] as AssetFile[],
     libraryId: null,
     visibility: AssetVisibility.Hidden,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
+    width: null,
+    height: null,
+    edits: [] as AssetEditActionItem[],
+    editCount: 0,
+  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif; edits: AssetEditActionItem[] }),
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
@@ -577,7 +646,11 @@ export const assetStub = {
     files,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
+    width: null,
+    height: null,
+    edits: [] as AssetEditActionItem[],
+    editCount: 0,
+  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; edits: AssetEditActionItem[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',
@@ -597,7 +670,11 @@ export const assetStub = {
     libraryId: null,
     faces: [] as AssetFace[],
     visibility: AssetVisibility.Timeline,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
+    width: null,
+    height: null,
+    edits: [] as AssetEditActionItem[],
+    editCount: 0,
+  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; edits: AssetEditActionItem[] }),
 
   withLocation: Object.freeze({
     id: 'asset-with-favorite-id',
@@ -641,6 +718,10 @@ export const assetStub = {
     isOffline: false,
     tags: [],
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   sidecar: Object.freeze({
@@ -676,6 +757,10 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -708,6 +793,10 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -747,6 +836,10 @@ export const assetStub = {
     stackId: null,
     stack: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   hasFileExtension: Object.freeze({
@@ -783,6 +876,10 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   imageDng: Object.freeze({
@@ -823,6 +920,10 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
 
   imageHif: Object.freeze({
@@ -863,7 +964,12 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    editCount: 0,
   }),
+
   panoramaTif: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.Active,
@@ -902,5 +1008,114 @@ export const assetStub = {
     libraryId: null,
     stackId: null,
     visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+  }),
+
+  withCropEdit: Object.freeze({
+    id: 'asset-id',
+    status: AssetStatus.Active,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.jpg',
+    files,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.Image,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2025-01-01T01:02:03.456Z'),
+    isFavorite: true,
+    duration: null,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
+    sharedLinks: [],
+    originalFileName: 'asset-id.jpg',
+    faces: [],
+    deletedAt: null,
+    sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5000,
+      exifImageHeight: 3840,
+      exifImageWidth: 2160,
+    } as Exif,
+    duplicateId: null,
+    isOffline: false,
+    stack: null,
+    orientation: '',
+    projectionType: null,
+    height: 3840,
+    width: 2160,
+    visibility: AssetVisibility.Timeline,
+    edits: [
+      {
+        action: AssetEditAction.Crop,
+        parameters: {
+          width: 1512,
+          height: 1152,
+          x: 216,
+          y: 1512,
+        },
+      },
+    ] as AssetEditActionItem[],
+    editCount: 1,
+  }),
+
+  withoutEdits: Object.freeze({
+    id: 'asset-id',
+    status: AssetStatus.Active,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/original/path.jpg',
+    files: editedFiles,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.Image,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2025-01-01T01:02:03.456Z'),
+    isFavorite: true,
+    duration: null,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    updateId: 'foo',
+    libraryId: null,
+    stackId: null,
+    sharedLinks: [],
+    originalFileName: 'asset-id.jpg',
+    faces: [],
+    deletedAt: null,
+    sidecarPath: null,
+    exifInfo: {
+      fileSizeInByte: 5000,
+      exifImageHeight: 3840,
+      exifImageWidth: 2160,
+    } as Exif,
+    duplicateId: null,
+    isOffline: false,
+    stack: null,
+    orientation: '',
+    projectionType: null,
+    height: 3840,
+    width: 2160,
+    visibility: AssetVisibility.Timeline,
+    edits: [],
+    editCount: 0,
   }),
 };

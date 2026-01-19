@@ -10,7 +10,7 @@ final localFilesManagerRepositoryProvider = Provider(
 class LocalFilesManagerRepository {
   LocalFilesManagerRepository(this._service);
 
-  final Logger _logger = Logger('SyncStreamService');
+  final Logger _logger = Logger('LocalFilesManagerRepo');
   final LocalFilesManagerService _service;
 
   Future<bool> moveToTrash(List<String> mediaUrls) async {
@@ -38,8 +38,10 @@ class LocalFilesManagerRepository {
     for (final asset in assets) {
       _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
       try {
-        await _service.restoreFromTrashById(asset.id, asset.type.index);
-        restoredIds.add(asset.id);
+        final result = await _service.restoreFromTrashById(asset.id, asset.type.index);
+        if (result) {
+          restoredIds.add(asset.id);
+        }
       } catch (e) {
         _logger.warning("Restoring failure: $e");
       }

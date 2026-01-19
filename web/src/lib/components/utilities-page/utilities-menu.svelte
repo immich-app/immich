@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { AppRoute } from '$lib/constants';
   import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
   import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
+  import { Route } from '$lib/route';
   import { Icon, modalManager } from '@immich/ui';
   import {
     mdiCellphoneArrowDownVariant,
@@ -14,10 +14,10 @@
   import { t } from 'svelte-i18n';
 
   const links = [
-    { href: AppRoute.DUPLICATES, icon: mdiContentDuplicate, label: $t('review_duplicates') },
-    { href: AppRoute.LARGE_FILES, icon: mdiImageSizeSelectLarge, label: $t('review_large_files') },
-    { href: AppRoute.GEOLOCATION, icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
-    { href: AppRoute.WORKFLOWS, icon: mdiStateMachine, label: $t('workflows') },
+    { href: Route.duplicatesUtility(), icon: mdiContentDuplicate, label: $t('review_duplicates') },
+    { href: Route.largeFileUtility(), icon: mdiImageSizeSelectLarge, label: $t('review_large_files') },
+    { href: Route.geolocationUtility(), icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
+    { href: Route.workflows(), icon: mdiStateMachine, label: $t('workflows') },
   ];
 </script>
 

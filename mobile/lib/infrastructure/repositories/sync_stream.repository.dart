@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
@@ -18,10 +19,12 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
 import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
@@ -54,6 +57,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.authUserEntity.deleteAll();
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
+          await _db.remoteAssetCloudIdEntity.deleteAll();
         });
         await _db.customStatement('PRAGMA foreign_keys = ON');
       });
@@ -194,6 +198,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             livePhotoVideoId: Value(asset.livePhotoVideoId),
             stackId: Value(asset.stackId),
             libraryId: Value(asset.libraryId),
+            width: Value(asset.width),
+            height: Value(asset.height),
           );
 
           batch.insert(
@@ -245,15 +251,70 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
       await _db.batch((batch) {
         for (final exif in data) {
+          int? width;
+          int? height;
+
+          if (ExifDtoConverter.isOrientationFlipped(exif.orientation)) {
+            width = exif.exifImageHeight;
+            height = exif.exifImageWidth;
+          } else {
+            width = exif.exifImageWidth;
+            height = exif.exifImageHeight;
+          }
+
           batch.update(
             _db.remoteAssetEntity,
-            RemoteAssetEntityCompanion(width: Value(exif.exifImageWidth), height: Value(exif.exifImageHeight)),
-            where: (row) => row.id.equals(exif.assetId),
+            RemoteAssetEntityCompanion(width: Value(width), height: Value(height)),
+            where: (row) => row.id.equals(exif.assetId) & row.width.isNull() & row.height.isNull(),
           );
         }
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsExifV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetsMetadataV1(Iterable<SyncAssetMetadataDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          if (metadata.key == kMobileMetadataKey) {
+            batch.deleteWhere(_db.remoteAssetCloudIdEntity, (row) => row.assetId.equals(metadata.assetId));
+          }
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetsMetadataV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetsMetadataV1(Iterable<SyncAssetMetadataV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          if (metadata.key == kMobileMetadataKey) {
+            final map = metadata.value as Map<String, Object?>;
+            final companion = RemoteAssetCloudIdEntityCompanion(
+              cloudId: Value(map['iCloudId']?.toString()),
+              createdAt: Value(map['createdAt'] != null ? DateTime.parse(map['createdAt'] as String) : null),
+              adjustmentTime: Value(
+                map['adjustmentTime'] != null ? DateTime.parse(map['adjustmentTime'] as String) : null,
+              ),
+              latitude: Value(map['latitude'] != null ? (double.tryParse(map['latitude'] as String)) : null),
+              longitude: Value(map['longitude'] != null ? (double.tryParse(map['longitude'] as String)) : null),
+            );
+            batch.insert(
+              _db.remoteAssetCloudIdEntity,
+              companion.copyWith(assetId: Value(metadata.assetId)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsMetadataV1', error, stack);
       rethrow;
     }
   }
