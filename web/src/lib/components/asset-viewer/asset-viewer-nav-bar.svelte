@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import ActionButton from '$lib/components/ActionButton.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
@@ -20,8 +19,8 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -112,8 +111,18 @@
 
   const { Cast } = $derived(getGlobalActions($t));
 
-  const { Share, Download, SharedLinkDownload, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } =
-    $derived(getAssetActions($t, asset));
+  const {
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    Info,
+  } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 
   // TODO: Enable when edits are ready for release
@@ -195,6 +204,7 @@
         {/if}
 
         <ActionMenuItem action={Download} />
+        <ActionMenuItem action={DownloadOriginal} />
 
         {#if !isLocked}
           {#if asset.isTrashed}
@@ -239,7 +249,7 @@
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
-                onClick={() => goto(resolve(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`))}
+                onClick={() => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id }))}
                 text={$t('view_in_timeline')}
               />
             {/if}
@@ -247,8 +257,7 @@
           {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
             <MenuOption
               icon={mdiCompare}
-              onClick={() =>
-                goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+              onClick={() => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }))}
               text={$t('view_similar_photos')}
             />
           {/if}

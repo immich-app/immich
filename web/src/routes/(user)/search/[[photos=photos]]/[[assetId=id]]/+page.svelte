@@ -20,9 +20,10 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
@@ -55,7 +56,7 @@
   // The GalleryViewer pushes it's own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
-  let previousRoute = $state(AppRoute.EXPLORE as string);
+  let previousRoute = $state<string>(Route.explore());
 
   let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
@@ -108,11 +109,11 @@
     const route = from?.route?.id;
 
     if (isPeopleRoute(route)) {
-      previousRoute = AppRoute.PHOTOS;
+      previousRoute = Route.photos();
     }
 
     if (isAlbumsRoute(route)) {
-      previousRoute = AppRoute.EXPLORE;
+      previousRoute = Route.explore();
     }
 
     tick()

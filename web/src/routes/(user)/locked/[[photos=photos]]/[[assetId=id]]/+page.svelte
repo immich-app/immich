@@ -11,8 +11,9 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility, lockAuthSession } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -45,7 +46,7 @@
 
   const handleLock = async () => {
     await lockAuthSession();
-    await goto(AppRoute.PHOTOS);
+    await goto(Route.photos());
   };
 </script>
 
