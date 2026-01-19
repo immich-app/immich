@@ -18,8 +18,18 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
+import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+
+export const getSharedLinksActions = ($t: MessageFormatter) => {
+  const ViewAll: ActionItem = {
+    title: $t('shared_links'),
+    icon: mdiLink,
+    onAction: () => goto(Route.sharedLinks()),
+  };
+
+  return { ViewAll };
+};
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
   const Edit: ActionItem = {

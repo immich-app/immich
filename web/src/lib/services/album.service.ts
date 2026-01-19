@@ -7,6 +7,7 @@ import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { Route } from '$lib/route';
 import { user } from '$lib/stores/user.store';
+import { createAlbumAndRedirect } from '$lib/utils/album-utils';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
@@ -27,6 +28,16 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
+
+export const getAlbumsActions = ($t: MessageFormatter) => {
+  const Create: ActionItem = {
+    title: $t('create_album'),
+    icon: mdiPlusBoxOutline,
+    onAction: () => createAlbumAndRedirect(),
+  };
+
+  return { Create };
+};
 
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
   const isOwned = get(user).id === album.ownerId;
