@@ -165,17 +165,6 @@
     color: var(--immich-fg);
   }
 
-  .instructions ul {
-    margin: 0;
-    padding-left: 1.25rem;
-    color: var(--immich-fg-muted);
-    font-size: 0.875rem;
-  }
-
-  .instructions li {
-    margin-bottom: 0.5rem;
-  }
-
   .setting-group {
     display: flex;
     gap: 1rem;
