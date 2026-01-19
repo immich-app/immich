@@ -24,12 +24,11 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
-import 'package:immich_mobile/wm_executor.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
@@ -93,7 +92,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait(
         [
           loadTranslations(),
-          workerManagerPatch.init(dynamicSpawning: true),
           _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
           // Initialize the file downloader
           FileDownloader().configure(
@@ -203,14 +201,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
-        workerManagerPatch.dispose().catchError((_) async {
-          // Discard any errors on the dispose call
-          return;
-        }),
         LogService.I.dispose(),
         Store.dispose(),
-
-        backgroundSyncManager?.cancel(),
+        backgroundSyncManager?.cancel(immediate: true),
+        backgroundSyncManager?.cancelLocal(immediate: true),
       ];
 
       if (_isar.isOpen) {

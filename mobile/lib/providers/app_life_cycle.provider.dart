@@ -160,7 +160,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             _resumeBackup();
           }),
           _resumeBackup(),
-          backgroundManager.syncCloudIds(),
+          _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
@@ -218,7 +218,14 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     try {
       if (Store.isBetaTimelineEnabled) {
-        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+        unawaited(
+          Future.wait([
+            _ref.read(backgroundWorkerLockServiceProvider).unlock(),
+            _ref.read(nativeSyncApiProvider).cancelHashing(),
+            _ref.read(backgroundSyncProvider).cancel(immediate: true),
+            _ref.read(backgroundSyncProvider).cancelLocal(immediate: true),
+          ]),
+        );
       }
       await _performPause();
     } catch (e, stackTrace) {

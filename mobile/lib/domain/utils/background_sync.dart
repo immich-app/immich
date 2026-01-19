@@ -4,7 +4,6 @@ import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 typedef SyncCallback = void Function();
 typedef SyncCallbackWithResult<T> = void Function(T result);
@@ -27,12 +26,12 @@ class BackgroundSyncManager {
   final SyncCallback? onCloudIdSyncComplete;
   final SyncErrorCallback? onCloudIdSyncError;
 
-  Cancelable<bool?>? _syncTask;
-  Cancelable<void>? _syncWebsocketTask;
-  Cancelable<void>? _cloudIdSyncTask;
-  Cancelable<void>? _deviceAlbumSyncTask;
-  Cancelable<void>? _linkedAlbumSyncTask;
-  Cancelable<void>? _hashTask;
+  CancellableTask<bool>? _syncTask;
+  CancellableTask<void>? _syncWebsocketTask;
+  CancellableTask<void>? _cloudIdSyncTask;
+  CancellableTask<void>? _deviceAlbumSyncTask;
+  CancellableTask<void>? _linkedAlbumSyncTask;
+  CancellableTask<void>? _hashTask;
 
   BackgroundSyncManager({
     this.onRemoteSyncStart,
@@ -49,60 +48,43 @@ class BackgroundSyncManager {
     this.onCloudIdSyncError,
   });
 
-  Future<void> cancel() async {
-    final futures = <Future>[];
-
-    if (_syncTask != null) {
-      futures.add(_syncTask!.future);
-    }
-    _syncTask?.cancel();
-    _syncTask = null;
-
-    if (_syncWebsocketTask != null) {
-      futures.add(_syncWebsocketTask!.future);
-    }
-    _syncWebsocketTask?.cancel();
-    _syncWebsocketTask = null;
-
-    if (_cloudIdSyncTask != null) {
-      futures.add(_cloudIdSyncTask!.future);
-    }
-    _cloudIdSyncTask?.cancel();
-    _cloudIdSyncTask = null;
-
-    if (_linkedAlbumSyncTask != null) {
-      futures.add(_linkedAlbumSyncTask!.future);
-    }
-    _linkedAlbumSyncTask?.cancel();
-    _linkedAlbumSyncTask = null;
+  Future<void> cancel({bool immediate = false}) async {
+    _syncTask!.cancel(immediate: immediate);
+    _syncWebsocketTask!.cancel(immediate: immediate);
+    _cloudIdSyncTask!.cancel(immediate: immediate);
+    _linkedAlbumSyncTask!.cancel(immediate: immediate);
 
     try {
-      await Future.wait(futures);
-    } on CanceledError {
-      // Ignore cancellation errors
+      await Future.wait(
+        [
+          _syncTask?.future,
+          _syncWebsocketTask?.future,
+          _cloudIdSyncTask?.future,
+          _linkedAlbumSyncTask?.future,
+        ].nonNulls,
+      );
+    } catch (e) {
+      // Ignore cancellation errors and cleanup timeouts
     }
+
+    _syncTask = null;
+    _syncWebsocketTask = null;
+    _cloudIdSyncTask = null;
+    _linkedAlbumSyncTask = null;
   }
 
-  Future<void> cancelLocal() async {
-    final futures = <Future>[];
-
-    if (_hashTask != null) {
-      futures.add(_hashTask!.future);
-    }
-    _hashTask?.cancel();
-    _hashTask = null;
-
-    if (_deviceAlbumSyncTask != null) {
-      futures.add(_deviceAlbumSyncTask!.future);
-    }
-    _deviceAlbumSyncTask?.cancel();
-    _deviceAlbumSyncTask = null;
+  Future<void> cancelLocal({bool immediate = false}) async {
+    _hashTask!.cancel(immediate: immediate);
+    _deviceAlbumSyncTask!.cancel(immediate: immediate);
 
     try {
-      await Future.wait(futures);
-    } on CanceledError {
-      // Ignore cancellation errors
+      await Future.wait([_hashTask?.future, _deviceAlbumSyncTask?.future].nonNulls);
+    } catch (e) {
+      // Ignore cancellation errors and cleanup timeouts
     }
+
+    _hashTask = null;
+    _deviceAlbumSyncTask = null;
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
@@ -133,7 +115,8 @@ class BackgroundSyncManager {
         .catchError((error) {
           onLocalSyncError?.call(error.toString());
           _deviceAlbumSyncTask = null;
-        });
+        })
+        .future;
   }
 
   Future<void> hashAssets() {
@@ -156,7 +139,8 @@ class BackgroundSyncManager {
         .catchError((error) {
           onHashingError?.call(error.toString());
           _hashTask = null;
-        });
+        })
+        .future;
   }
 
   Future<bool> syncRemote() {
@@ -170,7 +154,7 @@ class BackgroundSyncManager {
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
       debugLabel: 'remote-sync',
     );
-    return _syncTask!
+    return _syncTask!.future
         .then((result) {
           final success = result ?? false;
           onRemoteSyncComplete?.call(success);
@@ -193,7 +177,7 @@ class BackgroundSyncManager {
     _syncWebsocketTask = _handleWsAssetUploadReadyV1Batch(batchData);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
-    });
+    }).future;
   }
 
   Future<void> syncLinkedAlbum() {
@@ -204,7 +188,7 @@ class BackgroundSyncManager {
     _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated, debugLabel: 'linked-album-sync');
     return _linkedAlbumSyncTask!.whenComplete(() {
       _linkedAlbumSyncTask = null;
-    });
+    }).future;
   }
 
   Future<void> syncCloudIds() {
@@ -214,7 +198,7 @@ class BackgroundSyncManager {
 
     onCloudIdSyncStart?.call();
 
-    _cloudIdSyncTask = runInIsolateGentle(computation: m.syncCloudIds);
+    _cloudIdSyncTask = runInIsolateGentle(computation: m.syncCloudIds, debugLabel: 'cloud-id-sync');
     return _cloudIdSyncTask!
         .whenComplete(() {
           onCloudIdSyncComplete?.call();
@@ -223,11 +207,12 @@ class BackgroundSyncManager {
         .catchError((error) {
           onCloudIdSyncError?.call(error.toString());
           _cloudIdSyncTask = null;
-        });
+        })
+        .future;
   }
 }
 
-Cancelable<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
+CancellableTask<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
   computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1Batch(batchData),
   debugLabel: 'websocket-batch',
 );
