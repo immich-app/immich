@@ -57,7 +57,7 @@ class BetaTimelineListTile extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 4.0),
       child: ListTile(
-        title: Text("new_timeline".t(context: context)),
+        title: Text("new_timeline".t(context: context), style: context.textTokenSettingTitle),
         trailing: Switch.adaptive(
           value: betaTimelineValue,
           onChanged: onSwitchChanged,

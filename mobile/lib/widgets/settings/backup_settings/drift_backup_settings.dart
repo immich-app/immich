@@ -27,9 +27,12 @@ class DriftBackupSettings extends ConsumerWidget {
       settings: [
         Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Text(
-            "network_requirements".t(context: context).toUpperCase(),
-            style: context.textTheme.labelSmall?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+          child: Row(
+            children: [
+              Icon(Icons.cell_tower, color: context.colorScheme.onSurface.withValues(alpha: 0.7), size: 20),
+              const SizedBox(width: 8),
+              Text("network_requirements".t(context: context), style: context.textTokenSettingGroupTitle),
+            ],
           ),
         ),
         const _UseWifiForUploadVideosButton(),
@@ -38,11 +41,16 @@ class DriftBackupSettings extends ConsumerWidget {
           const Divider(),
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
-            child: Text(
-              "background_options".t(context: context).toUpperCase(),
-              style: context.textTheme.labelSmall?.copyWith(
-                color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.charging_station_rounded,
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text("background_options".t(context: context), style: context.textTokenSettingGroupTitle),
+              ],
             ),
           ),
           const _BackupOnlyWhenChargingButton(),
@@ -51,9 +59,12 @@ class DriftBackupSettings extends ConsumerWidget {
         const Divider(),
         Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Text(
-            "backup_albums_sync".t(context: context).toUpperCase(),
-            style: context.textTheme.labelSmall?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+          child: Row(
+            children: [
+              Icon(Icons.sync, color: context.colorScheme.onSurface.withValues(alpha: 0.7), size: 20),
+              const SizedBox(width: 8),
+              Text("backup_albums_sync".t(context: context), style: context.textTokenSettingGroupTitle),
+            ],
           ),
         ),
         const _AlbumSyncActionButton(),
@@ -116,13 +127,10 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
             return Column(
               children: [
                 ListTile(
-                  title: Text(
-                    "sync_albums".t(context: context),
-                    style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
-                  ),
+                  title: Text("sync_albums".t(context: context), style: context.textTokenSettingTitle),
                   subtitle: Text(
                     "sync_upload_album_setting_subtitle".t(context: context),
-                    style: context.textTheme.labelLarge,
+                    style: context.textTokenSettingSubtitle,
                   ),
                   trailing: Switch(
                     value: albumSyncEnable,
@@ -147,16 +155,11 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
                             contentPadding: const EdgeInsets.only(left: 32, right: 16),
                             title: Text(
                               "organize_into_albums".t(context: context),
-                              style: context.textTheme.titleSmall?.copyWith(
-                                color: context.colorScheme.onSurface,
-                                fontWeight: FontWeight.normal,
-                              ),
+                              style: context.textTokenSettingTitle,
                             ),
                             subtitle: Text(
                               "organize_into_albums_description".t(context: context),
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-                              ),
+                              style: context.textTokenSettingSubtitle,
                             ),
                             trailing: isAlbumSyncInProgress
                                 ? const SizedBox(
@@ -223,11 +226,8 @@ class _SettingsSwitchTileState extends ConsumerState<_SettingsSwitchTile> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(
-        widget.titleKey.t(context: context),
-        style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
-      ),
-      subtitle: Text(widget.subtitleKey.t(context: context), style: context.textTheme.labelLarge),
+      title: Text(widget.titleKey.t(context: context), style: context.textTokenSettingTitle),
+      subtitle: Text(widget.subtitleKey.t(context: context), style: context.textTokenSettingSubtitle),
       trailing: StreamBuilder(
         stream: valueStream,
         initialData: Store.tryGet(widget.appSettingsEnum.storeKey) ?? widget.appSettingsEnum.defaultValue,
@@ -354,7 +354,7 @@ class _BackupDelaySliderState extends ConsumerState<_BackupDelaySlider> {
             'backup_controller_page_background_delay'.tr(
               namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},
             ),
-            style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
+            style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
           ),
         ),
         Slider(

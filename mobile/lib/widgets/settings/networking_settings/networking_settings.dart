@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -90,7 +91,7 @@ class NetworkingSettings extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
           child: NetworkPreferenceTitle(
-            title: "current_server_address".tr().toUpperCase(),
+            title: "current_server_address".t(context: context),
             icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
           ),
         ),
@@ -108,12 +109,7 @@ class NetworkingSettings extends HookConsumerWidget {
                   : const Icon(Icons.circle_outlined),
               title: Text(
                 currentEndpoint ?? "--",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'GoogleSansCode',
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
-                ),
+                style: TextStyle(fontSize: 14, fontFamily: 'GoogleSansCode', color: context.primaryColor),
               ),
             ),
           ),
@@ -130,12 +126,18 @@ class NetworkingSettings extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(title: "local_network".tr().toUpperCase(), icon: Icons.home_outlined),
+          child: NetworkPreferenceTitle(
+            title: "local_network".t(context: context),
+            icon: Icons.home_outlined,
+          ),
         ),
         LocalNetworkPreference(enabled: featureEnabled.value),
         Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(title: "external_network".tr().toUpperCase(), icon: Icons.dns_outlined),
+          child: NetworkPreferenceTitle(
+            title: "external_network".t(context: context),
+            icon: Icons.dns_outlined,
+          ),
         ),
         ExternalNetworkPreference(enabled: featureEnabled.value),
       ],
@@ -155,13 +157,7 @@ class NetworkPreferenceTitle extends StatelessWidget {
       children: [
         Icon(icon, color: context.colorScheme.onSurface.withAlpha(150)),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: context.textTheme.displaySmall?.copyWith(
-            color: context.colorScheme.onSurface.withAlpha(200),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+        Text(title, style: context.textTokenSettingGroupTitle),
       ],
     );
   }

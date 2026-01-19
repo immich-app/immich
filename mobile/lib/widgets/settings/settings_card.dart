@@ -36,10 +36,7 @@ class SettingsCard extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Icon(icon, color: context.primaryColor),
           ),
-          title: Text(
-            title,
-            style: context.textTheme.titleMedium!.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
-          ),
+          title: Text(title, style: context.textTheme.titleMedium!.copyWith(color: context.primaryColor)),
           subtitle: Text(subtitle),
           onTap: () => context.pushRoute(settingRoute),
         ),

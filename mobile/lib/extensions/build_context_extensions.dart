@@ -64,4 +64,12 @@ extension ContextHelper on BuildContext {
 
   // Show SnackBars from the current context
   void showSnackBar(SnackBar snackBar) => ScaffoldMessenger.of(this).showSnackBar(snackBar);
+
+  // Text style token
+  TextStyle get textTokenSettingTitle => textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5);
+
+  TextStyle get textTokenSettingSubtitle =>
+      textTheme.bodyMedium!.copyWith(color: textTheme.bodyMedium!.color!.withAlpha(215));
+
+  TextStyle get textTokenSettingGroupTitle => textTheme.bodyMedium!.copyWith(color: colorScheme.onSurfaceVariant);
 }

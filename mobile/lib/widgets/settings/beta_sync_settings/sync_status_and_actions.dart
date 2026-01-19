@@ -116,11 +116,8 @@ class SyncStatusAndActions extends HookConsumerWidget {
         const SizedBox(height: 24),
         _SectionHeaderText(text: "jobs".t(context: context)),
         ListTile(
-          title: Text(
-            "sync_local".t(context: context),
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          subtitle: Text("tap_to_run_job".t(context: context)),
+          title: Text("sync_local".t(context: context), style: context.textTokenSettingTitle),
+          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
           leading: const Icon(Icons.sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
           onTap: () {
@@ -128,11 +125,8 @@ class SyncStatusAndActions extends HookConsumerWidget {
           },
         ),
         ListTile(
-          title: Text(
-            "sync_remote".t(context: context),
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          subtitle: Text("tap_to_run_job".t(context: context)),
+          title: Text("sync_remote".t(context: context), style: context.textTokenSettingTitle),
+          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
           leading: const Icon(Icons.cloud_sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
           onTap: () {
@@ -140,12 +134,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
           },
         ),
         ListTile(
-          title: Text(
-            "hash_asset".t(context: context),
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
+          title: Text("hash_asset".t(context: context), style: context.textTokenSettingTitle),
           leading: const Icon(Icons.tag),
-          subtitle: Text("tap_to_run_job".t(context: context)),
+          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).hashAssets();
@@ -211,13 +202,7 @@ class _SectionHeaderText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 16.0),
-      child: Text(
-        text.toUpperCase(),
-        style: context.textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: context.colorScheme.onSurface.withAlpha(200),
-        ),
-      ),
+      child: Text(text, style: context.textTokenSettingGroupTitle),
     );
   }
 }
