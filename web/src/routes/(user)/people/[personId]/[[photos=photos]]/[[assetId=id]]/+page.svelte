@@ -27,7 +27,7 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -219,7 +219,7 @@
       await updateAssetCount();
       return { merged: true };
     }
-    await goto(`${AppRoute.PEOPLE}/${personToBeMergedInto.id}`, { replaceState: true });
+    await goto(Route.viewPerson(personToBeMergedInto), { replaceState: true });
     return { merged: true };
   };
 
@@ -339,7 +339,7 @@
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
   use:scrollMemoryClearer={{
-    routeStartsWith: AppRoute.PEOPLE,
+    routeStartsWith: Route.people(),
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     },

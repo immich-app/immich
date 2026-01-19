@@ -1,7 +1,7 @@
 import { page } from '$app/state';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
@@ -40,7 +40,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV1: (data: { assetId: string }) => void;
+  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -81,7 +81,7 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (get(user) || get(websocketStore.serverRestarting) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if (get(user) || get(websocketStore.serverRestarting) || page.url.pathname.startsWith(Route.maintenanceMode())) {
       websocket.connect();
     }
   } catch (error) {

@@ -25,7 +25,8 @@ SELECT
 	NULL as i_cloud_id,
 	NULL as latitude,
 	NULL as longitude,
-	NULL as adjustmentTime
+	NULL as adjustmentTime,
+	rae.is_edited
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -61,7 +62,8 @@ SELECT
 	lae.i_cloud_id,
 	lae.latitude,
 	lae.longitude,
-	lae.adjustment_time
+	lae.adjustment_time,
+	0 as is_edited
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (

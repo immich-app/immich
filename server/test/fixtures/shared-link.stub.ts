@@ -159,7 +159,7 @@ export const sharedLinkStub = {
         visibility: AssetVisibility.Timeline,
         width: 500,
         height: 500,
-        editCount: 0,
+        isEdited: false,
       },
     ],
     albumId: null,

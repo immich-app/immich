@@ -24,6 +24,20 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.tags.name, () => {
+    it('should work', () => {
+      expect(Route.tags()).toBe('/tags');
+    });
+
+    it('should support query parameters', () => {
+      expect(Route.tags({ path: '/some/path' })).toBe('/tags?path=%2Fsome%2Fpath');
+    });
+
+    it('should ignore an empty path', () => {
+      expect(Route.tags({ path: '' })).toBe('/tags');
+    });
+  });
+
   describe(Route.systemSettings.name, () => {
     it('should work', () => {
       expect(Route.systemSettings()).toBe('/admin/system-settings');
