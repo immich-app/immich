@@ -16,6 +16,8 @@ import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart'
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
+import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
+import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -115,28 +117,28 @@ class SyncStatusAndActions extends HookConsumerWidget {
         const Divider(height: 1, indent: 16, endIndent: 16),
         const SizedBox(height: 24),
         _SectionHeaderText(text: "jobs".t(context: context)),
-        ListTile(
-          title: Text("sync_local".t(context: context), style: context.textTokenSettingTitle),
-          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
+        SettingListTile(
+          title: "sync_local".t(context: context),
+          subtitle: "tap_to_run_job".t(context: context),
           leading: const Icon(Icons.sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).syncLocal(full: true);
           },
         ),
-        ListTile(
-          title: Text("sync_remote".t(context: context), style: context.textTokenSettingTitle),
-          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
+        SettingListTile(
+          title: "sync_remote".t(context: context),
+          subtitle: "tap_to_run_job".t(context: context),
           leading: const Icon(Icons.cloud_sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).syncRemote();
           },
         ),
-        ListTile(
-          title: Text("hash_asset".t(context: context), style: context.textTokenSettingTitle),
+        SettingListTile(
+          title: "hash_asset".t(context: context),
           leading: const Icon(Icons.tag),
-          subtitle: Text("tap_to_run_job".t(context: context), style: context.textTokenSettingSubtitle),
+          subtitle: "tap_to_run_job".t(context: context),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
           onTap: () {
             ref.read(backgroundSyncProvider).hashAssets();
@@ -202,7 +204,7 @@ class _SectionHeaderText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 16.0),
-      child: Text(text, style: context.textTokenSettingGroupTitle),
+      child: SettingGroupTitle(title: text),
     );
   }
 }

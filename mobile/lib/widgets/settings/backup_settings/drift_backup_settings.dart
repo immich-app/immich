@@ -16,6 +16,8 @@ import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
+import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
 class DriftBackupSettings extends ConsumerWidget {
@@ -27,12 +29,9 @@ class DriftBackupSettings extends ConsumerWidget {
       settings: [
         Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Row(
-            children: [
-              Icon(Icons.cell_tower, color: context.colorScheme.onSurface.withValues(alpha: 0.7), size: 20),
-              const SizedBox(width: 8),
-              Text("network_requirements".t(context: context), style: context.textTokenSettingGroupTitle),
-            ],
+          child: SettingGroupTitle(
+            title: "network_requirements".t(context: context),
+            icon: Icons.cell_tower,
           ),
         ),
         const _UseWifiForUploadVideosButton(),
@@ -41,16 +40,9 @@ class DriftBackupSettings extends ConsumerWidget {
           const Divider(),
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.charging_station_rounded,
-                  color: context.colorScheme.onSurface.withValues(alpha: 0.7),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text("background_options".t(context: context), style: context.textTokenSettingGroupTitle),
-              ],
+            child: SettingGroupTitle(
+              title: "background_options".t(context: context),
+              icon: Icons.charging_station_rounded,
             ),
           ),
           const _BackupOnlyWhenChargingButton(),
@@ -59,12 +51,9 @@ class DriftBackupSettings extends ConsumerWidget {
         const Divider(),
         Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Row(
-            children: [
-              Icon(Icons.sync, color: context.colorScheme.onSurface.withValues(alpha: 0.7), size: 20),
-              const SizedBox(width: 8),
-              Text("backup_albums_sync".t(context: context), style: context.textTokenSettingGroupTitle),
-            ],
+          child: SettingGroupTitle(
+            title: "backup_albums_sync".t(context: context),
+            icon: Icons.sync,
           ),
         ),
         const _AlbumSyncActionButton(),
@@ -126,12 +115,9 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
             final albumSyncEnable = snapshot.data ?? false;
             return Column(
               children: [
-                ListTile(
-                  title: Text("sync_albums".t(context: context), style: context.textTokenSettingTitle),
-                  subtitle: Text(
-                    "sync_upload_album_setting_subtitle".t(context: context),
-                    style: context.textTokenSettingSubtitle,
-                  ),
+                SettingListTile(
+                  title: "sync_albums".t(context: context),
+                  subtitle: "sync_upload_album_setting_subtitle".t(context: context),
                   trailing: Switch(
                     value: albumSyncEnable,
                     onChanged: (bool newValue) async {
@@ -150,17 +136,11 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
                     duration: const Duration(milliseconds: 200),
                     opacity: albumSyncEnable ? 1.0 : 0.0,
                     child: albumSyncEnable
-                        ? ListTile(
+                        ? SettingListTile(
                             onTap: _manualSyncAlbums,
                             contentPadding: const EdgeInsets.only(left: 32, right: 16),
-                            title: Text(
-                              "organize_into_albums".t(context: context),
-                              style: context.textTokenSettingTitle,
-                            ),
-                            subtitle: Text(
-                              "organize_into_albums_description".t(context: context),
-                              style: context.textTokenSettingSubtitle,
-                            ),
+                            title: "organize_into_albums".t(context: context),
+                            subtitle: "organize_into_albums_description".t(context: context),
                             trailing: isAlbumSyncInProgress
                                 ? const SizedBox(
                                     width: 32,
@@ -225,9 +205,9 @@ class _SettingsSwitchTileState extends ConsumerState<_SettingsSwitchTile> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.titleKey.t(context: context), style: context.textTokenSettingTitle),
-      subtitle: Text(widget.subtitleKey.t(context: context), style: context.textTokenSettingSubtitle),
+    return SettingListTile(
+      title: widget.titleKey.t(context: context),
+      subtitle: widget.subtitleKey.t(context: context),
       trailing: StreamBuilder(
         stream: valueStream,
         initialData: Store.tryGet(widget.appSettingsEnum.storeKey) ?? widget.appSettingsEnum.defaultValue,

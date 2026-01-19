@@ -11,6 +11,7 @@ import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/external_network_preference.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/local_network_preference.dart';
+import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 class NetworkingSettings extends HookConsumerWidget {
@@ -90,7 +91,7 @@ class NetworkingSettings extends HookConsumerWidget {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
-          child: NetworkPreferenceTitle(
+          child: SettingGroupTitle(
             title: "current_server_address".t(context: context),
             icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
           ),
@@ -126,7 +127,7 @@ class NetworkingSettings extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(
+          child: SettingGroupTitle(
             title: "local_network".t(context: context),
             icon: Icons.home_outlined,
           ),
@@ -134,30 +135,12 @@ class NetworkingSettings extends HookConsumerWidget {
         LocalNetworkPreference(enabled: featureEnabled.value),
         Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
-          child: NetworkPreferenceTitle(
+          child: SettingGroupTitle(
             title: "external_network".t(context: context),
             icon: Icons.dns_outlined,
           ),
         ),
         ExternalNetworkPreference(enabled: featureEnabled.value),
-      ],
-    );
-  }
-}
-
-class NetworkPreferenceTitle extends StatelessWidget {
-  const NetworkPreferenceTitle({super.key, required this.icon, required this.title});
-
-  final IconData icon;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: context.colorScheme.onSurface.withAlpha(150)),
-        const SizedBox(width: 8),
-        Text(title, style: context.textTokenSettingGroupTitle),
       ],
     );
   }
@@ -171,10 +154,10 @@ class NetworkStatusIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(duration: const Duration(milliseconds: 200), child: _buildIcon(context));
+    return AnimatedSwitcher(duration: const Duration(milliseconds: 200), child: buildIcon(context));
   }
 
-  Widget _buildIcon(BuildContext context) => switch (status) {
+  Widget buildIcon(BuildContext context) => switch (status) {
     AuxCheckStatus.loading => Padding(
       padding: const EdgeInsets.only(left: 4.0),
       child: SizedBox(
