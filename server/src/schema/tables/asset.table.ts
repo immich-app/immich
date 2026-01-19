@@ -144,6 +144,6 @@ export class AssetTable {
   @Column({ type: 'integer', nullable: true })
   height!: number | null;
 
-  @Column({ type: 'integer', default: 0 })
-  editCount!: Generated<number>;
+  @Column({ type: 'boolean', default: false })
+  isEdited!: Generated<boolean>;
 }

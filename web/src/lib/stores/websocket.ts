@@ -31,7 +31,7 @@ export interface Events {
   on_notification: (notification: NotificationDto) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
-  AssetEditReadyV1: (data: { assetId: string }) => void;
+  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
 }
 
 const websocket: Socket<Events> = io({

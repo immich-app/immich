@@ -21291,9 +21291,6 @@
             "nullable": true,
             "type": "string"
           },
-          "editCount": {
-            "type": "integer"
-          },
           "fileCreatedAt": {
             "format": "date-time",
             "nullable": true,
@@ -21310,6 +21307,9 @@
           },
           "id": {
             "type": "string"
+          },
+          "isEdited": {
+            "type": "boolean"
           },
           "isFavorite": {
             "type": "boolean"
@@ -21364,11 +21364,11 @@
           "checksum",
           "deletedAt",
           "duration",
-          "editCount",
           "fileCreatedAt",
           "fileModifiedAt",
           "height",
           "id",
+          "isEdited",
           "isFavorite",
           "libraryId",
           "livePhotoVideoId",
