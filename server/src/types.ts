@@ -317,7 +317,7 @@ export type JobItem =
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
   | { name: JobName.SidecarCheck; data: IEntityJob }
-  | { name: JobName.SidecarWrite; data: ISidecarWriteJob }
+  | { name: JobName.SidecarWrite; data: IEntityJob }
 
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }

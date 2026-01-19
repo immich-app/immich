@@ -387,6 +387,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from TagsList', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent'] } } as any);
       mockReadTags({ TagsList: ['Parent'] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -397,6 +398,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchy from TagsList', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent/Child'] } } as any);
       mockReadTags({ TagsList: ['Parent/Child'] });
       mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
       mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
@@ -417,6 +419,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a string', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent'] } } as any);
       mockReadTags({ Keywords: 'Parent' });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -427,6 +430,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a list', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent'] } } as any);
       mockReadTags({ Keywords: ['Parent'] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -437,6 +441,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from Keywords as a list with a number', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent', '2024'] } } as any);
       mockReadTags({ Keywords: ['Parent', 2024] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -448,6 +453,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchal tags from Keywords', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent/Child'] } } as any);
       mockReadTags({ Keywords: 'Parent/Child' });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -467,6 +473,7 @@ describe(MetadataService.name, () => {
 
     it('should ignore Keywords when TagsList is present', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent/Child', 'Child'] } } as any);
       mockReadTags({ Keywords: 'Child', TagsList: ['Parent/Child'] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -486,6 +493,7 @@ describe(MetadataService.name, () => {
 
     it('should extract hierarchy from HierarchicalSubject', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent/Child', 'TagA'] } } as any);
       mockReadTags({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
       mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
       mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
@@ -507,6 +515,7 @@ describe(MetadataService.name, () => {
 
     it('should extract tags from HierarchicalSubject as a list with a number', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(removeNonSidecarFiles(assetStub.image));
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent', '2024'] } } as any);
       mockReadTags({ HierarchicalSubject: ['Parent', 2024] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -518,6 +527,7 @@ describe(MetadataService.name, () => {
 
     it('should extract ignore / characters in a HierarchicalSubject tag', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Mom|Dad'] } } as any);
       mockReadTags({ HierarchicalSubject: ['Mom/Dad'] });
       mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
 
@@ -532,6 +542,7 @@ describe(MetadataService.name, () => {
 
     it('should ignore HierarchicalSubject when TagsList is present', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+      mocks.asset.getById.mockResolvedValue({ exifInfo: { tags: ['Parent/Child', 'Parent2/Child2'] } } as any);
       mockReadTags({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
       mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
@@ -896,6 +907,7 @@ describe(MetadataService.name, () => {
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
         tz: 'UTC-11:30',
+        TagsList: ['parent/child'],
         Rating: 3,
       };
 
@@ -935,6 +947,7 @@ describe(MetadataService.name, () => {
           country: null,
           state: null,
           city: null,
+          tags: ['parent/child'],
         },
         { lockedPropertiesBehavior: 'skip' },
       );
