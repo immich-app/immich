@@ -310,18 +310,17 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () => onMenuTapped(sortMode),
               style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(16, 16, 32, 16)),
+                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(12, 12, 24, 12)),
                 backgroundColor: WidgetStateProperty.all(
                   albumSortOption == sortMode ? context.colorScheme.primary : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                 ),
               ),
               child: Text(
                 sortMode.label.t(context: context),
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: context.textTheme.labelLarge?.copyWith(
                   color: albumSortOption == sortMode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
@@ -349,10 +348,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
               ),
               Text(
                 albumSortOption.label.t(context: context),
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: context.colorScheme.onSurface.withAlpha(225),
-                ),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(225)),
               ),
               isSorting
                   ? SizedBox(
