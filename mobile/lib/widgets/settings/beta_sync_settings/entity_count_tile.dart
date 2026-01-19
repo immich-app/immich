@@ -34,10 +34,10 @@ class EntityCountTile extends StatelessWidget {
         children: [
           // Icon and Label
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: context.primaryColor, size: 18),
-              const SizedBox(width: 8),
+              Icon(icon, color: context.primaryColor, size: 14),
+              const SizedBox(width: 4),
               Flexible(
                 child: Text(
                   label,
@@ -48,19 +48,22 @@ class EntityCountTile extends StatelessWidget {
           ),
           // Number
           const Spacer(),
-          RichText(
-            text: TextSpan(
-              style: const TextStyle(fontSize: 16, fontFamily: 'GoogleSansCode'),
-              children: [
-                TextSpan(
-                  text: zeroPadding(count, maxDigits),
-                  style: TextStyle(color: context.colorScheme.onSurfaceSecondary.withAlpha(75)),
-                ),
-                TextSpan(
-                  text: count.toString(),
-                  style: TextStyle(color: context.primaryColor),
-                ),
-              ],
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 18, fontFamily: 'GoogleSansCode'),
+                children: [
+                  TextSpan(
+                    text: zeroPadding(count, maxDigits),
+                    style: TextStyle(color: context.colorScheme.onSurfaceSecondary.withAlpha(75)),
+                  ),
+                  TextSpan(
+                    text: count.toString(),
+                    style: TextStyle(color: context.colorScheme.onSurface),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
