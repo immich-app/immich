@@ -1,28 +1,29 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import PageContent from '$lib/components/PageContent.svelte';
   import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
   import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { Route } from '$lib/route';
   import { purchaseStore } from '$lib/stores/purchase.store';
-  import { Alert, Container, Stack } from '@immich/ui';
+  import { Alert, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
   let showLicenseActivated = $state(false);
   const { isPurchased } = purchaseStore;
 </script>
 
-<UserPageLayout title={$t('buy')}>
-  <Container size="medium" center>
-    <Stack gap={4} class="mt-4">
+<UserPageLayout title={data.meta.title}>
+  <PageContent size="medium" center class="pt-10">
+    <Stack gap={4}>
       {#if data.isActivated === false}
         <Alert icon={mdiAlertCircleOutline} color="danger" title={$t('purchase_failed_activation')} />
       {/if}
@@ -41,5 +42,5 @@
         />
       {/if}
     </Stack>
-  </Container>
+  </PageContent>
 </UserPageLayout>

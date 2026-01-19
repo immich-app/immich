@@ -4,12 +4,8 @@
   import StorageSpace from './storage-space.svelte';
 </script>
 
-<div class="mt-auto">
+<div class="mt-auto flex flex-col gap-2 mb-4">
   <StorageSpace />
-</div>
-
-<PurchaseInfo />
-
-<div class="mb-6 mt-2">
+  <PurchaseInfo />
   <ServerStatus />
 </div>

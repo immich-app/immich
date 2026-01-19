@@ -1,5 +1,6 @@
 <script lang="ts">
   import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
+  import PageContent from '$lib/components/PageContent.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { Route } from '$lib/route';
@@ -35,12 +36,12 @@
       <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />
     </div>
 
-    <div class="mb-2 me-4">
+    <div class="pe-6">
       <BottomInfo />
     </div>
   </AppShellSidebar>
 
   <BreadcrumbActionPage {breadcrumbs} {actions}>
-    {@render children?.()}
+    <PageContent {children} />
   </BreadcrumbActionPage>
 </AppShell>

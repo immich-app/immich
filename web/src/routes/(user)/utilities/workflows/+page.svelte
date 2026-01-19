@@ -1,8 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import emptyWorkflows from '$lib/assets/empty-workflows.svg';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
+  import PageContent from '$lib/components/PageContent.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { Route } from '$lib/route';
   import {
@@ -151,131 +152,128 @@
   </span>
 {/snippet}
 
-<UserPageLayout title={data.meta.title} actions={[Create]} scrollbar={false}>
-  <section class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
-      {#if workflows.length === 0}
-        <EmptyPlaceholder
-          title={$t('create_first_workflow')}
-          text={$t('workflows_help_text')}
-          onClick={() => Create.onAction(Create)}
-          src={emptyWorkflows}
-          class="mt-10 mx-auto"
-        />
-      {:else}
-        <div class="my-6 grid gap-6">
-          {#each workflows as workflow (workflow.id)}
-            <Card class="border border-light-200">
-              <CardHeader
-                class={`flex flex-row px-8 py-6 gap-4 sm:items-center sm:gap-6 ${
-                  workflow.enabled
-                    ? 'bg-linear-to-r from-green-50 to-white dark:from-green-800/50 dark:to-green-950/45'
-                    : 'bg-neutral-50 dark:bg-neutral-900'
-                }`}
-              >
-                <div class="flex-1">
-                  <div class="flex items-center gap-3">
-                    <span
-                      class="rounded-full {workflow.enabled ? 'h-3 w-3 bg-success' : 'h-3 w-3 rounded-full bg-muted'}"
-                    ></span>
-                    <CardTitle>{workflow.name}</CardTitle>
+<UserPageLayout title={data.meta.title} actions={[Create]}>
+  <PageContent center size="large" class="pt-10">
+    {#if workflows.length === 0}
+      <EmptyPlaceholder
+        title={$t('create_first_workflow')}
+        text={$t('workflows_help_text')}
+        onClick={() => Create.onAction(Create)}
+        src={emptyWorkflows}
+        class="mt-10 mx-auto"
+      />
+    {:else}
+      <div class="grid gap-6">
+        {#each workflows as workflow (workflow.id)}
+          <Card class="border border-light-200">
+            <CardHeader
+              class={`flex flex-row px-8 py-6 gap-4 sm:items-center sm:gap-6 ${
+                workflow.enabled
+                  ? 'bg-linear-to-r from-green-50 to-white dark:from-green-800/50 dark:to-green-950/45'
+                  : 'bg-neutral-50 dark:bg-neutral-900'
+              }`}
+            >
+              <div class="flex-1">
+                <div class="flex items-center gap-3">
+                  <span class="rounded-full {workflow.enabled ? 'h-3 w-3 bg-success' : 'h-3 w-3 rounded-full bg-muted'}"
+                  ></span>
+                  <CardTitle>{workflow.name}</CardTitle>
+                </div>
+                <CardDescription class="mt-1 text-sm">
+                  {workflow.description || $t('workflows_help_text')}
+                </CardDescription>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                  <Text size="tiny">{$t('created_at')}</Text>
+                  <Text size="small" fontWeight="medium">
+                    {formatTimestamp(workflow.createdAt)}
+                  </Text>
+                </div>
+                <IconButton
+                  shape="round"
+                  variant="ghost"
+                  color="secondary"
+                  icon={mdiDotsVertical}
+                  aria-label={$t('menu')}
+                  onclick={(event: MouseEvent) => showWorkflowMenu(event, workflow)}
+                />
+              </div>
+            </CardHeader>
+
+            <CardBody class="space-y-6">
+              <div class="grid gap-4 md:grid-cols-3">
+                <!-- Trigger Section -->
+                <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="mb-3">
+                    <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                      >{$t('trigger')}</Text
+                    >
                   </div>
-                  <CardDescription class="mt-1 text-sm">
-                    {workflow.description || $t('workflows_help_text')}
-                  </CardDescription>
+                  {@render chipItem(getTriggerLabel(workflow.triggerType))}
                 </div>
 
-                <div class="flex items-center gap-4">
-                  <div class="text-right hidden sm:block">
-                    <Text size="tiny">{$t('created_at')}</Text>
-                    <Text size="small" fontWeight="medium">
-                      {formatTimestamp(workflow.createdAt)}
-                    </Text>
+                <!-- Filters Section -->
+                <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="mb-3">
+                    <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                      >{$t('filters')}</Text
+                    >
                   </div>
-                  <IconButton
-                    shape="round"
+                  <div class="flex flex-wrap gap-2">
+                    {#if workflow.filters.length === 0}
+                      <span class="text-sm text-light-600">
+                        {$t('no_filters_added')}
+                      </span>
+                    {:else}
+                      {#each workflow.filters as workflowFilter (workflowFilter.id)}
+                        {@render chipItem(getFilterLabel(workflowFilter.pluginFilterId))}
+                      {/each}
+                    {/if}
+                  </div>
+                </div>
+
+                <!-- Actions Section -->
+                <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
+                  <div class="mb-3">
+                    <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
+                      >{$t('actions')}</Text
+                    >
+                  </div>
+
+                  <div>
+                    {#if workflow.actions.length === 0}
+                      <span class="text-sm text-light-600">
+                        {$t('no_actions_added')}
+                      </span>
+                    {:else}
+                      <div class="flex flex-wrap gap-2">
+                        {#each workflow.actions as workflowAction (workflowAction.id)}
+                          {@render chipItem(getActionLabel(workflowAction.pluginActionId))}
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+                </div>
+              </div>
+
+              {#if expandedWorkflows.has(workflow.id)}
+                <VStack gap={2} class="w-full rounded-2xl border bg-light-50 p-4 border-light-200 ">
+                  <CodeBlock code={getJson(workflow)} lineNumbers />
+                  <Button
+                    leadingIcon={mdiClose}
+                    fullWidth
                     variant="ghost"
                     color="secondary"
-                    icon={mdiDotsVertical}
-                    aria-label={$t('menu')}
-                    onclick={(event: MouseEvent) => showWorkflowMenu(event, workflow)}
-                  />
-                </div>
-              </CardHeader>
-
-              <CardBody class="space-y-6">
-                <div class="grid gap-4 md:grid-cols-3">
-                  <!-- Trigger Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
-                    <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('trigger')}</Text
-                      >
-                    </div>
-                    {@render chipItem(getTriggerLabel(workflow.triggerType))}
-                  </div>
-
-                  <!-- Filters Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
-                    <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('filters')}</Text
-                      >
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                      {#if workflow.filters.length === 0}
-                        <span class="text-sm text-light-600">
-                          {$t('no_filters_added')}
-                        </span>
-                      {:else}
-                        {#each workflow.filters as workflowFilter (workflowFilter.id)}
-                          {@render chipItem(getFilterLabel(workflowFilter.pluginFilterId))}
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-
-                  <!-- Actions Section -->
-                  <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
-                    <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('actions')}</Text
-                      >
-                    </div>
-
-                    <div>
-                      {#if workflow.actions.length === 0}
-                        <span class="text-sm text-light-600">
-                          {$t('no_actions_added')}
-                        </span>
-                      {:else}
-                        <div class="flex flex-wrap gap-2">
-                          {#each workflow.actions as workflowAction (workflowAction.id)}
-                            {@render chipItem(getActionLabel(workflowAction.pluginActionId))}
-                          {/each}
-                        </div>
-                      {/if}
-                    </div>
-                  </div>
-                </div>
-
-                {#if expandedWorkflows.has(workflow.id)}
-                  <VStack gap={2} class="w-full rounded-2xl border bg-light-50 p-4 border-light-200 ">
-                    <CodeBlock code={getJson(workflow)} lineNumbers />
-                    <Button
-                      leadingIcon={mdiClose}
-                      fullWidth
-                      variant="ghost"
-                      color="secondary"
-                      onclick={() => toggleShowingSchema(workflow.id)}>{$t('close')}</Button
-                    >
-                  </VStack>
-                {/if}
-              </CardBody>
-            </Card>
-          {/each}
-        </div>
-      {/if}
-    </section>
-  </section>
+                    onclick={() => toggleShowingSchema(workflow.id)}>{$t('close')}</Button
+                  >
+                </VStack>
+              {/if}
+            </CardBody>
+          </Card>
+        {/each}
+      </div>
+    {/if}
+  </PageContent>
 </UserPageLayout>

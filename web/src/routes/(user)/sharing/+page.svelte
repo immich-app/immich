@@ -1,7 +1,8 @@
 <script lang="ts">
   import empty2Url from '$lib/assets/empty-2.svg';
   import Albums from '$lib/components/album-page/albums-list.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import PageContent from '$lib/components/PageContent.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { Route } from '$lib/route';
@@ -38,8 +39,8 @@
   const { ViewAll: ViewSharedLinks } = $derived(getSharedLinksActions($t));
 </script>
 
-<UserPageLayout title={data.meta.title} actions={[ViewSharedLinks, CreateAlbum]}>
-  <div class="flex flex-col">
+<UserPageLayout title={data.meta.title} actions={[CreateAlbum, ViewSharedLinks]}>
+  <PageContent>
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
         <div>
@@ -84,5 +85,5 @@
         </Albums>
       </div>
     </div>
-  </div>
+  </PageContent>
 </UserPageLayout>

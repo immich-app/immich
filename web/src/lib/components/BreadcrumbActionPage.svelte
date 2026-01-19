@@ -3,11 +3,9 @@
   import {
     Breadcrumbs,
     Button,
-    Container,
     ContextMenuButton,
     HStack,
     MenuItemType,
-    Scrollable,
     isMenuItemType,
     type BreadcrumbItem,
   } from '@immich/ui';
@@ -55,7 +53,5 @@
       <ContextMenuButton aria-label={$t('open')} items={actions} class="md:hidden" />
     {/if}
   </div>
-  <Scrollable class="grow">
-    <Container class="p-2 pb-16" {children} />
-  </Scrollable>
+  {@render children?.()}
 </div>

@@ -397,3 +397,5 @@ export enum ToggleVisibility {
 }
 
 export const assetViewerFadeDuration: number = 150;
+
+export const headerId = 'user-page-header';

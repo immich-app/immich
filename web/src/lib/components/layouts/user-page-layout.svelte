@@ -1,11 +1,10 @@
-<script lang="ts" module>
-  export const headerId = 'user-page-header';
-</script>
-
 <script lang="ts">
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
+  import Sidebar from '$lib/components/sidebar/sidebar.svelte';
+  import { headerId } from '$lib/constants';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
@@ -61,7 +60,10 @@
   {#if sidebar}
     {@render sidebar()}
   {:else}
-    <UserSidebar />
+    <Sidebar ariaLabel={$t('primary')}>
+      <UserSidebar />
+      <BottomInfo />
+    </Sidebar>
   {/if}
 
   <main class="relative">

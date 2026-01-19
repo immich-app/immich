@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import PageContent from '$lib/components/PageContent.svelte';
   import LargeAssetData from '$lib/components/utilities-page/large-assets/large-asset-data.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -54,18 +55,20 @@
   });
 </script>
 
-<UserPageLayout title={data.meta.title} scrollbar={true}>
-  <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-    {#if assets && data.assets.length > 0}
-      {#each assets as asset (asset.id)}
-        <LargeAssetData {asset} {onViewAsset} />
-      {/each}
-    {:else}
-      <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
-        {$t('no_assets_to_show')}
-      </p>
-    {/if}
-  </div>
+<UserPageLayout title={data.meta.title}>
+  <PageContent>
+    <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+      {#if assets && data.assets.length > 0}
+        {#each assets as asset (asset.id)}
+          <LargeAssetData {asset} {onViewAsset} />
+        {/each}
+      {:else}
+        <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
+          {$t('no_assets_to_show')}
+        </p>
+      {/if}
+    </div>
+  </PageContent>
 </UserPageLayout>
 
 {#if $showAssetViewer}
