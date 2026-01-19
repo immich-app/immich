@@ -1,0 +1,15 @@
+# fly.toml app configuration file generated for immich-migrate on 2026-01-19T12:25:04-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'immich-migrate'
+primary_region = 'ord'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[[vm]]
+  memory = '2gb'
+  cpus = 2
+  memory_mb = 2048

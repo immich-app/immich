@@ -65,7 +65,7 @@ jobs:
           [tigris]
           type = s3
           provider = Other
-          endpoint = https://fly.storage.tigris.dev
+          endpoint = https://t3.storage.dev
           access_key_id = ${{ secrets.TIGRIS_ACCESS_KEY }}
           secret_access_key = ${{ secrets.TIGRIS_SECRET_KEY }}
 

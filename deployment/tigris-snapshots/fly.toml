@@ -9,24 +9,24 @@
 #    - Or migrate to a new snapshot-enabled bucket
 #
 # 2. Set secrets:
-#    fly secrets set FLY_API_TOKEN=<your-token> -a immich-tigris-snapshots
+#    fly secrets set FLY_API_TOKEN=<your-token> -a immich-snapshots
 #
 # Deployment:
 #    fly launch --no-deploy
 #    fly deploy
 #
 # Manual trigger:
-#    fly machine run . -a immich-tigris-snapshots
+#    fly machine run . -a immich-snapshots
 
-app = "immich-tigris-snapshots"
-primary_region = "sea"  # Change to match your main Immich app region
+app = "immich-snapshots"
+primary_region = "ord"  # Matches main Immich app region
 
 [build]
   dockerfile = "Dockerfile"
 
 [env]
   # Your Tigris bucket name (without s3:// prefix)
-  BUCKET_NAME = "your-immich-bucket"
+  BUCKET_NAME = "user-media"
   # Number of snapshots to retain
   SNAPSHOT_RETENTION = "7"
   # Prefix for snapshot names

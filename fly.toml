@@ -1,37 +1,36 @@
-# Immich Server with S3 support (custom fork)
-app = 'immich-falling-sun-1817'
+# fly.toml app configuration file generated for immich-server on 2026-01-19T14:25:43-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'immich-server'
 primary_region = 'ord'
 
 [build]
   dockerfile = 'server/Dockerfile'
 
 [env]
-  IMMICH_ENV = 'production'
-  IMMICH_LOG_LEVEL = 'log'
-  IMMICH_MEDIA_LOCATION = '/usr/src/app/upload'
-  IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
-  # Database
-  DB_HOSTNAME = 'immich-postgres.internal'
-  DB_PORT = '5432'
   DB_DATABASE_NAME = 'immich'
+  DB_HOSTNAME = 'immich-db.internal'
+  DB_PORT = '5432'
   DB_USERNAME = 'immich'
-  # Redis (Upstash managed)
-  REDIS_HOSTNAME = 'fly-immich-redis-managed.upstash.io'
-  REDIS_PORT = '6379'
-  REDIS_USERNAME = 'default'
-  # Machine Learning
-  IMMICH_MACHINE_LEARNING_URL = 'http://immich-ml1.flycast:3003'
-  # S3/Tigris Storage
-  STORAGE_S3_ENDPOINT = 'https://fly.storage.tigris.dev'
-  STORAGE_S3_BUCKET = 'immich-media'
-  STORAGE_S3_REGION = 'auto'
-  STORAGE_S3_PREFIX = 'users/'
-  # Google OAuth (restricted signup)
+  IMMICH_ENV = 'production'
+  IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
+  IMMICH_LOG_LEVEL = 'log'
+  IMMICH_MACHINE_LEARNING_URL = 'http://ml-immich.flycast:3003'
+  IMMICH_MEDIA_LOCATION = '/usr/src/app/upload'
+  OAUTH_AUTO_REGISTER = 'false'
+  OAUTH_BUTTON_TEXT = 'Sign in with Google'
   OAUTH_ENABLED = 'true'
   OAUTH_ISSUER_URL = 'https://accounts.google.com'
   OAUTH_SCOPE = 'openid email profile'
-  OAUTH_AUTO_REGISTER = 'false'
-  OAUTH_BUTTON_TEXT = 'Sign in with Google'
+  REDIS_HOSTNAME = 'fly-redis-immich.upstash.io'
+  REDIS_PORT = '6379'
+  REDIS_USERNAME = 'default'
+  STORAGE_S3_BUCKET = 'user-media'
+  STORAGE_S3_ENDPOINT = 'https://t3.storage.dev'
+  STORAGE_S3_PREFIX = 'users/'
+  STORAGE_S3_REGION = 'auto'
 
 [[mounts]]
   source = 'immich_upload'
@@ -52,3 +51,4 @@ primary_region = 'ord'
 [[vm]]
   memory = '4gb'
   cpus = 2
+  memory_mb = 4096
