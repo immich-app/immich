@@ -6,13 +6,9 @@
 # Required secrets:
 #   FLY_API_TOKEN: Your Fly.io API token
 #
-# Required variables:
-#   TIGRIS_BUCKET_NAME: Your Tigris bucket name
-#
 # Setup:
 # 1. Go to repo Settings > Secrets and variables > Actions
 # 2. Add FLY_API_TOKEN secret
-# 3. Add TIGRIS_BUCKET_NAME variable
 
 name: Tigris Snapshot
 
@@ -28,23 +24,25 @@ on:
         required: false
         type: string
 
-env:
-  BUCKET_NAME: ${{ vars.TIGRIS_BUCKET_NAME }}
-
 jobs:
   snapshot:
     name: Create Tigris Snapshot
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate configuration
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract bucket name from fly.toml
+        id: bucket
         run: |
-          if [ -z "${{ env.BUCKET_NAME }}" ]; then
-            echo "ERROR: TIGRIS_BUCKET_NAME variable is not set"
-            echo "Go to repo Settings > Secrets and variables > Actions > Variables"
+          BUCKET_NAME=$(grep 'STORAGE_S3_BUCKET' fly.toml | sed "s/.*= *['\"]\\([^'\"]*\\)['\"].*/\\1/")
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "ERROR: Could not find STORAGE_S3_BUCKET in fly.toml"
             exit 1
           fi
-          echo "Bucket: ${{ env.BUCKET_NAME }}"
+          echo "name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
+          echo "Bucket: ${BUCKET_NAME}"
 
       - name: Install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
@@ -65,7 +63,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           echo "Creating snapshot: ${{ steps.snapshot-name.outputs.name }}"
-          fly storage snapshots create "${{ env.BUCKET_NAME }}" \
+          fly storage snapshots create "${{ steps.bucket.outputs.name }}" \
             --name "${{ steps.snapshot-name.outputs.name }}"
 
       - name: List snapshots
@@ -73,12 +71,12 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           echo "Current snapshots:"
-          fly storage snapshots list "${{ env.BUCKET_NAME }}" || true
+          fly storage snapshots list "${{ steps.bucket.outputs.name }}" || true
 
       - name: Summary
         run: |
           echo "## Tigris Snapshot Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Bucket**: ${{ env.BUCKET_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bucket**: ${{ steps.bucket.outputs.name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Snapshot**: ${{ steps.snapshot-name.outputs.name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Time**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
