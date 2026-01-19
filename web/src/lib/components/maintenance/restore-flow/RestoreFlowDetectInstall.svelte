@@ -14,11 +14,21 @@
 
   let detectedInstall: MaintenanceDetectInstallResponseDto | undefined = $state();
 
-  async function reload() {
+  const reload = async () => {
     detectedInstall = await detectPriorInstall();
-  }
+  };
 
-  onMount(() => void reload());
+  const getLibraryFolderCheckStatus = (writable: boolean, readable: boolean) => {
+    if (writable) {
+      return $t('maintenance_restore_library_folder_pass');
+    } else if (readable) {
+      return $t('maintenance_restore_library_folder_write_fail');
+    } else {
+      return $t('maintenance_restore_library_folder_read_fail');
+    }
+  };
+
+  onMount(() => reload());
 </script>
 
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_library')}</Heading>
@@ -28,24 +38,16 @@
     {#if detectedInstall}
       {#each detectedInstall.storage as { folder, readable, writable } (folder)}
         <HStack>
-          <Icon
-            icon={writable ? mdiCheck : mdiClose}
-            color={`var(--immich-ui-${writable ? 'success' : 'danger'}-500)`}
-          />
-          <Text
-            >{folder} ({$t(
-              `maintenance_restore_library_folder_${writable ? 'pass' : readable ? 'write_fail' : 'read_fail'}`,
-            )})
-          </Text>
+          <Icon icon={writable ? mdiCheck : mdiClose} class={writable ? 'text-success' : 'text-danger'} />
+          <Text>{folder} ({getLibraryFolderCheckStatus(writable, readable)})</Text>
         </HStack>
       {/each}
       {#each detectedInstall.storage as { folder, files } (folder)}
         {#if folder !== 'backups'}
           <HStack class="items-start">
             <Icon
-              class="mt-1"
+              class={`mt-1  ${files ? 'text-success' : folder === 'profile' || folder === 'upload' ? 'text-danger' : 'text-warning'}`}
               icon={files ? mdiCheck : folder === 'profile' || folder === 'upload' ? mdiClose : mdiAlert}
-              color={`var(--immich-ui-${files ? 'success' : folder === 'profile' || folder === 'upload' ? 'danger' : 'warning'}-500)`}
             />
             <Stack gap={0} class="items-start">
               <Text>

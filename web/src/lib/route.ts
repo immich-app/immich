@@ -120,7 +120,6 @@ export const Route = {
   // system
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
   systemStatistics: () => '/admin/server-status',
-  systemMaintenance: () => '/admin/maintenance',
   systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
 
   // tags
