@@ -45,7 +45,9 @@ jobs:
           echo "Bucket: ${BUCKET_NAME}"
 
       - name: Install flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
 
       - name: Generate snapshot name
         id: snapshot-name
