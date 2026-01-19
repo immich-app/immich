@@ -1,11 +1,9 @@
-import { AppRoute } from '$lib/constants';
+import { Route } from '$lib/route';
 import { maintenanceAuth as maintenanceAuth$ } from '$lib/stores/maintenance.store';
 import { maintenanceLogin } from '@immich/sdk';
 
 export function maintenanceCreateUrl(url: URL) {
-  const target = new URL(AppRoute.MAINTENANCE, url.origin);
-  target.searchParams.set('continue', url.pathname + url.search);
-  return target.href;
+  return new URL(Route.maintenanceMode({ continue: url.pathname + url.search }), url.origin).href;
 }
 
 export function maintenanceReturnUrl(searchParams: URLSearchParams) {
@@ -13,7 +11,7 @@ export function maintenanceReturnUrl(searchParams: URLSearchParams) {
 }
 
 export function maintenanceShouldRedirect(maintenanceMode: boolean, currentUrl: URL | Location) {
-  return maintenanceMode !== currentUrl.pathname.startsWith(AppRoute.MAINTENANCE);
+  return maintenanceMode !== currentUrl.pathname.startsWith(Route.maintenanceMode());
 }
 
 export const loadMaintenanceAuth = async () => {

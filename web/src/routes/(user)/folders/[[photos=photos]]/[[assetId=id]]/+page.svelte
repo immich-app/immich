@@ -19,9 +19,9 @@
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -44,11 +44,7 @@
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
-  function getLinkForPath(path: string) {
-    const url = new URL(AppRoute.FOLDERS, globalThis.location.href);
-    url.searchParams.set(QueryParameter.PATH, path);
-    return url.href;
-  }
+  const getLinkForPath = (path: string) => Route.folders({ path });
 
   afterNavigate(function clearAssetSelection() {
     // Clear the asset selection when we navigate (like going to another folder)

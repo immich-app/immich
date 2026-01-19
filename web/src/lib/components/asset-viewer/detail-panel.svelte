@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { timeToLoadTheMap } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -73,6 +72,7 @@
     })(),
   );
   let previousId: string | undefined = $state();
+  let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
   $effect(() => {
     if (!previousId) {
@@ -100,11 +100,8 @@
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
-    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
     // Remove the last part of the path to get the parent path
-    const assetParentPath = getParentPath(asset.originalPath);
-    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
-    return folderUrl.href;
+    return Route.folders({ path: getParentPath(asset.originalPath) });
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -205,11 +202,7 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-22"
-              href={resolve(
-                `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
-                  currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos()
-                }`,
-              )}
+              href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
@@ -472,7 +465,7 @@
         simplified
         useLocationPin
         showSimpleControls={!showEditFaces}
-        onOpenInMapView={() => goto(resolve(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`))}
+        onOpenInMapView={() => goto(Route.map({ ...latlng, zoom: 12.5 }))}
       >
         {#snippet popup({ marker })}
           {@const { lat, lon } = marker}

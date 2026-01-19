@@ -65,12 +65,15 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
+  SessionLocked: [];
+
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
 
+  WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 

@@ -3,7 +3,6 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
-  import { AppRoute } from '$lib/constants';
   import { Route } from '$lib/route';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
@@ -47,7 +46,7 @@
       <div class="flex justify-between">
         <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
         <a
-          href={AppRoute.PEOPLE}
+          href={Route.people()}
           class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
           draggable="false">{$t('view_all')}</a
         >
@@ -55,7 +54,7 @@
       <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
-            <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center relative">
+            <a href={Route.viewPerson(person)} class="text-center relative">
               <ImageThumbnail
                 circle
                 shadow

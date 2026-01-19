@@ -2,7 +2,6 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
@@ -45,11 +44,11 @@
   {/if}
 
   {#if featureFlagsManager.value.map}
-    <NavbarItem title={$t('map')} href={AppRoute.MAP} icon={mdiMapOutline} activeIcon={mdiMap} />
+    <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
   {/if}
 
   {#if $preferences.people.enabled && $preferences.people.sidebarWeb}
-    <NavbarItem title={$t('people')} href={AppRoute.PEOPLE} icon={mdiAccountOutline} activeIcon={mdiAccount} />
+    <NavbarItem title={$t('people')} href={Route.people()} icon={mdiAccountOutline} activeIcon={mdiAccount} />
   {/if}
 
   {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
@@ -81,11 +80,11 @@
   </NavbarItem>
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
-    <NavbarItem title={$t('tags')} href={AppRoute.TAGS} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />
+    <NavbarItem title={$t('tags')} href={Route.tags()} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />
   {/if}
 
   {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
-    <NavbarItem title={$t('folders')} href={AppRoute.FOLDERS} icon={{ icon: mdiFolderOutline, flipped: true }} />
+    <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 
   <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
