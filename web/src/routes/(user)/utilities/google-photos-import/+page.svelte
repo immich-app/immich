@@ -229,7 +229,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <svelte:fragment slot="buttons">
+  {#snippet buttons()}
     <Button href="/utilities" color="secondary" size="small">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-1">
         <path
@@ -240,7 +240,7 @@
       </svg>
       Back
     </Button>
-  </svelte:fragment>
+  {/snippet}
 
   <div class="import-container">
     {#if store.step === 'processing' || isImporting}
