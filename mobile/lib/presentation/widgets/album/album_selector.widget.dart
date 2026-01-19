@@ -344,8 +344,8 @@ class _SortButtonState extends ConsumerState<_SortButton> {
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: albumSortIsReverse
-                    ? const Icon(Icons.keyboard_arrow_down)
-                    : const Icon(Icons.keyboard_arrow_up_rounded),
+                    ? Icon(Icons.keyboard_arrow_down, color: context.colorScheme.onSurface)
+                    : Icon(Icons.keyboard_arrow_up_rounded, color: context.colorScheme.onSurface),
               ),
               Text(
                 albumSortOption.label.t(context: context),
@@ -542,7 +542,11 @@ class _QuickSortAndViewMode extends StatelessWidget {
               initialIsReverse: currentIsReverse,
             ),
             IconButton(
-              icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
+              icon: Icon(
+                isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined,
+                size: 24,
+                color: context.colorScheme.onSurface,
+              ),
               onPressed: onToggleViewMode,
             ),
           ],
