@@ -48,11 +48,11 @@ class BackgroundSyncManager {
     this.onCloudIdSyncError,
   });
 
-  Future<void> cancel({bool immediate = false}) async {
-    _syncTask!.cancel(immediate: immediate);
-    _syncWebsocketTask!.cancel(immediate: immediate);
-    _cloudIdSyncTask!.cancel(immediate: immediate);
-    _linkedAlbumSyncTask!.cancel(immediate: immediate);
+  Future<void> cancel() async {
+    _syncTask!.cancel();
+    _syncWebsocketTask!.cancel();
+    _cloudIdSyncTask!.cancel();
+    _linkedAlbumSyncTask!.cancel();
 
     try {
       await Future.wait(
@@ -73,9 +73,9 @@ class BackgroundSyncManager {
     _linkedAlbumSyncTask = null;
   }
 
-  Future<void> cancelLocal({bool immediate = false}) async {
-    _hashTask!.cancel(immediate: immediate);
-    _deviceAlbumSyncTask!.cancel(immediate: immediate);
+  Future<void> cancelLocal() async {
+    _hashTask!.cancel();
+    _deviceAlbumSyncTask!.cancel();
 
     try {
       await Future.wait([_hashTask?.future, _deviceAlbumSyncTask?.future].nonNulls);

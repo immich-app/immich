@@ -203,8 +203,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         nativeSyncApi?.cancelHashing(),
         LogService.I.dispose(),
         Store.dispose(),
-        backgroundSyncManager?.cancel(immediate: true),
-        backgroundSyncManager?.cancelLocal(immediate: true),
+        backgroundSyncManager?.cancel(),
+        backgroundSyncManager?.cancelLocal(),
       ];
 
       if (_isar.isOpen) {

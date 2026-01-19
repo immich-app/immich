@@ -222,8 +222,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           Future.wait([
             _ref.read(backgroundWorkerLockServiceProvider).unlock(),
             _ref.read(nativeSyncApiProvider).cancelHashing(),
-            _ref.read(backgroundSyncProvider).cancel(immediate: true),
-            _ref.read(backgroundSyncProvider).cancelLocal(immediate: true),
+            _ref.read(backgroundSyncProvider).cancel(),
+            _ref.read(backgroundSyncProvider).cancelLocal(),
           ]),
         );
       }

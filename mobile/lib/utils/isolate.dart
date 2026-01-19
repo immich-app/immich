@@ -19,7 +19,7 @@ import 'package:logging/logging.dart';
 
 class CancellableTask<T> {
   final Future<T?> future;
-  final void Function({bool immediate}) cancel;
+  final void Function() cancel;
 
   const CancellableTask({required this.future, required this.cancel});
 
@@ -57,7 +57,7 @@ class _ResultMessage extends _IsolateMessage {
 class _ErrorMessage extends _IsolateMessage {
   final Object? error;
   final StackTrace? stackTrace;
-  const _ErrorMessage(this.error, this.stackTrace);
+  const _ErrorMessage(this.error, [this.stackTrace]);
 }
 
 class _DoneMessage extends _IsolateMessage {
@@ -115,24 +115,14 @@ class _IsolateTaskRunner<T> {
     }
   }
 
-  void cancel({bool immediate = false}) {
+  void cancel() {
     if (_isCancelled || _isCleanedUp) return;
 
     _isCancelled = true;
     dPrint(() => "[$debugLabel] Cancellation requested");
 
-    if (immediate) {
-      _isolate?.kill(priority: Isolate.immediate);
-      if (!_completer.isCompleted) {
-        _completer.completeError(Exception("Isolate task cancelled immediately"));
-      }
-      dPrint(() => "[$debugLabel] Isolate killed immediately");
-      _cleanup();
-      return;
-    }
-
     _isolateSendPort?.send(const _CancelMessage());
-    _cleanupTimeoutTimer = Timer(const Duration(seconds: 2), () {
+    _cleanupTimeoutTimer = Timer(const Duration(seconds: 4), () {
       if (!_isCleanedUp) {
         dPrint(() => "[$debugLabel] Cleanup timeout - force killing isolate");
         _isolate?.kill(priority: Isolate.immediate);
@@ -196,17 +186,35 @@ class _IsolateTaskRunner<T> {
   Future<T?> get future => _completer.future;
 }
 
+Future<void> _cleanupResources<T>(ProviderContainer? ref, Isar isar, Drift drift, DriftLogger logDb) async {
+  try {
+    final cleanupFutures = <Future>[
+      Store.dispose(),
+      LogService.I.dispose(),
+      logDb.close(),
+      drift.close(),
+      if (isar.isOpen) isar.close().catchError((_) => false),
+    ];
+
+    ref?.dispose();
+
+    await Future.wait(cleanupFutures).timeout(
+      const Duration(seconds: 2),
+      onTimeout: () {
+        dPrint(() => "Cleanup timeout - some resources may not be closed");
+        return [];
+      },
+    );
+  } catch (error, stack) {
+    dPrint(() => "Error during isolate cleanup: $error with stack: $stack");
+  }
+}
+
 Future<void> _isolateEntryPoint<T>(_IsolateTaskConfig<T> config) async {
   final receivePort = ReceivePort();
   config.mainSendPort.send(_InitMessage(receivePort.sendPort));
 
   bool isCancelled = false;
-  final subscription = receivePort.listen((message) {
-    if (message is _CancelMessage) {
-      isCancelled = true;
-    }
-  });
-
   ProviderContainer? ref;
   final Isar isar;
   final Drift drift;
@@ -225,6 +233,20 @@ Future<void> _isolateEntryPoint<T>(_IsolateTaskConfig<T> config) async {
     config.mainSendPort.send(_ErrorMessage(error, stack));
     return;
   }
+
+  final subscription = receivePort.listen((message) async {
+    if (message is _CancelMessage) {
+      isCancelled = true;
+      try {
+        receivePort.close();
+        await _cleanupResources(ref, isar, drift, logDb);
+      } catch (error, stack) {
+        dPrint(() => "Error during isolate cancellation cleanup: $error with stack: $stack");
+      } finally {
+        config.mainSendPort.send(const _ErrorMessage("Isolate task cancelled"));
+      }
+    }
+  });
 
   final log = Logger("IsolateWorker[${config.debugLabel}]");
   try {
@@ -259,24 +281,8 @@ Future<void> _isolateEntryPoint<T>(_IsolateTaskConfig<T> config) async {
   } finally {
     try {
       receivePort.close();
-      final cleanupFutures = <Future>[
-        Store.dispose(),
-        LogService.I.dispose(),
-        logDb.close(),
-        drift.close(),
-        subscription.cancel(),
-        if (isar.isOpen) isar.close().catchError((_) => false),
-      ];
-
-      ref?.dispose();
-
-      await Future.wait(cleanupFutures).timeout(
-        const Duration(seconds: 2),
-        onTimeout: () {
-          dPrint(() => "Cleanup timeout - some resources may not be closed");
-          return [];
-        },
-      );
+      unawaited(subscription.cancel());
+      await _cleanupResources(ref, isar, drift, logDb);
     } catch (error, stack) {
       dPrint(() => "Error during isolate cleanup: $error with stack: $stack");
     } finally {
