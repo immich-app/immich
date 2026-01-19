@@ -65,6 +65,8 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
+  SessionLocked: [];
+
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
