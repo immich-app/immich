@@ -73,6 +73,7 @@ export type Events = {
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
 
+  WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 
