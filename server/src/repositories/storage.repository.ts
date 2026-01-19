@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
+import { createHash } from 'node:crypto';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -33,6 +35,16 @@ export interface DiskUsage {
   available: number;
   free: number;
   total: number;
+}
+
+export interface UploadResult {
+  path: string;
+  size: number;
+  checksum?: Buffer;
+}
+
+export interface UploadOptions {
+  computeChecksum?: boolean;
 }
 
 @Injectable()
@@ -63,6 +75,59 @@ export class StorageRepository {
 
   createWriteStream(filepath: string): Writable {
     return createWriteStream(filepath, { flags: 'w' });
+  }
+
+  /**
+   * Upload a file from a readable stream to the specified destination.
+   * Optionally computes a SHA1 checksum while streaming.
+   *
+   * @param stream - The readable stream to upload from
+   * @param destination - The full path where the file should be written
+   * @param options - Upload options (e.g., computeChecksum)
+   * @returns Upload result containing path, size, and optional checksum
+   */
+  async uploadFromStream(stream: Readable, destination: string, options: UploadOptions = {}): Promise<UploadResult> {
+    // Ensure the directory exists
+    const directory = path.dirname(destination);
+    this.mkdirSync(directory);
+
+    let checksum: Buffer | undefined;
+    let size = 0;
+
+    // Create write stream
+    const writeStream = this.createWriteStream(destination);
+
+    // If checksum computation is requested, set up hash stream
+    if (options.computeChecksum) {
+      const hash = createHash('sha1');
+
+      stream.on('data', (chunk: Buffer) => {
+        hash.update(chunk);
+        size += chunk.length;
+      });
+
+      stream.on('end', () => {
+        checksum = hash.digest();
+      });
+
+      stream.on('error', () => {
+        hash.destroy();
+      });
+    } else {
+      // Track size even without checksum
+      stream.on('data', (chunk: Buffer) => {
+        size += chunk.length;
+      });
+    }
+
+    // Pipe the stream to the destination file
+    await pipeline(stream, writeStream);
+
+    return {
+      path: destination,
+      size,
+      checksum,
+    };
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
