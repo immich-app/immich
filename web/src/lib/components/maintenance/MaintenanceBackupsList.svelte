@@ -10,7 +10,6 @@
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { SvelteMap } from 'svelte/reactivity';
 
   type Props = {
     backups?: DatabaseBackupDto[];
@@ -47,7 +46,8 @@
   }
 
   const groupedBackups = $derived.by(() => {
-    const groups = new SvelteMap<string, { date: DateTime; backups: DatabaseBackupDto[] }>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const groups = new Map<string, { date: DateTime; backups: DatabaseBackupDto[] }>();
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
@@ -80,7 +80,7 @@
       return b[1].date.toMillis() - a[1].date.toMillis();
     });
 
-    return new SvelteMap(sortedEntries.map(([key, value]) => [key, value.backups]));
+    return new Map(sortedEntries.map(([key, value]) => [key, value.backups]));
   });
 </script>
 

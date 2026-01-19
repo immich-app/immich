@@ -57,71 +57,69 @@
 
 <Card class="dark:bg-dark-900">
   <CardBody class="pt-3 pb-4 px-6">
-    <HStack gap={3}>
-      <Stack gap={3} class="grow min-w-0">
-        <div class="flex justify-between items-center gap-3">
-          <HStack gap={2} class="min-w-0">
-            {#if status === BackupFileStatus.OK}
-              <Icon icon={mdiCheckCircle} size="18" class="text-success" />
-            {:else if status === BackupFileStatus.DifferentVersion}
-              <Icon icon={mdiAlertCircle} size="18" class="text-warning" />
-            {:else}
-              <Icon icon={mdiAlertCircle} size="18" class="text-danger" />
-            {/if}
+    <Stack gap={3} class="grow min-w-0">
+      <div class="flex justify-between items-center gap-3">
+        <HStack gap={2} class="min-w-0">
+          {#if status === BackupFileStatus.OK}
+            <Icon icon={mdiCheckCircle} size="18" class="text-success" />
+          {:else if status === BackupFileStatus.DifferentVersion}
+            <Icon icon={mdiAlertCircle} size="18" class="text-warning" />
+          {:else}
+            <Icon icon={mdiAlertCircle} size="18" class="text-danger" />
+          {/if}
 
-            {#if timeDisplay}
-              <Text class="font-medium" size="small">{timeDisplay}</Text>
-            {:else}
-              <Text class="font-medium" size="small">{$t('unknown_date')}</Text>
-            {/if}
-            {#if relativeTime}
-              <div class="flex items-center gap-2">
-                <div class="w-1 h-1 bg-light-500"></div>
-                <Text size="tiny" color="muted">{relativeTime}</Text>
-              </div>
-            {/if}
-          </HStack>
+          {#if timeDisplay}
+            <Text class="font-medium" size="small">{timeDisplay}</Text>
+          {:else}
+            <Text class="font-medium" size="small">{$t('unknown_date')}</Text>
+          {/if}
+          {#if relativeTime}
+            <div class="flex items-center gap-2">
+              <div class="w-1 h-1 bg-light-500"></div>
+              <Text size="tiny" color="muted">{relativeTime}</Text>
+            </div>
+          {/if}
+        </HStack>
 
-          <HStack gap={1}>
-            <Button size="small" onclick={() => handleRestoreDatabaseBackup(filename)} disabled={isDeleting}
-              >{$t('restore')}</Button
-            >
-            <ContextMenuButton
-              disabled={isDeleting}
-              position="top-right"
-              aria-label={$t('open')}
-              items={[Download, Delete]}
-            />
-          </HStack>
+        <HStack gap={1}>
+          <Button size="small" onclick={() => handleRestoreDatabaseBackup(filename)} disabled={isDeleting}
+            >{$t('restore')}</Button
+          >
+          <ContextMenuButton
+            disabled={isDeleting}
+            position="top-right"
+            aria-label={$t('open')}
+            items={[Download, Delete]}
+          />
+        </HStack>
+      </div>
+
+      <HStack>
+        <Icon icon={mdiDatabaseRefreshOutline} size="16" color="gray" />
+        <Text size="small" class="break-all font-mono">{filename}</Text>
+      </HStack>
+
+      {#if status === BackupFileStatus.UnknownVersion}
+        <Text size="small" color="danger">
+          {$t('admin.maintenance_restore_backup_unknown_version')}
+        </Text>
+      {:else if status === BackupFileStatus.DifferentVersion}
+        <Text size="small" color="warning">
+          {$t('admin.maintenance_restore_backup_different_version')}
+        </Text>
+      {/if}
+
+      <HStack gap={8}>
+        <div class="flex gap-1">
+          <Text size="tiny" color="muted">{$t('version')}:</Text>
+          <Text size="tiny" fontWeight="medium">{version ? `v${version}` : $t('unknown')}</Text>
         </div>
 
-        <HStack>
-          <Icon icon={mdiDatabaseRefreshOutline} size="16" color="gray" />
-          <Text size="small" class="break-all font-mono">{filename}</Text>
-        </HStack>
-
-        {#if status === BackupFileStatus.UnknownVersion}
-          <Text size="small" color="danger">
-            {$t('admin.maintenance_restore_backup_unknown_version')}
-          </Text>
-        {:else if status === BackupFileStatus.DifferentVersion}
-          <Text size="small" color="warning">
-            {$t('admin.maintenance_restore_backup_different_version')}
-          </Text>
-        {/if}
-
-        <HStack gap={8}>
-          <div class="flex gap-1">
-            <Text size="tiny" color="muted">{$t('version')}:</Text>
-            <Text size="tiny" fontWeight="medium">{version ? `v${version}` : $t('unknown')}</Text>
-          </div>
-
-          <div class="flex gap-1">
-            <Text size="tiny" color="muted">{$t('size')}:</Text>
-            <Text size="tiny" fontWeight="medium">{filesizeText[0]} {filesizeText[1]}</Text>
-          </div>
-        </HStack>
-      </Stack>
-    </HStack>
+        <div class="flex gap-1">
+          <Text size="tiny" color="muted">{$t('size')}:</Text>
+          <Text size="tiny" fontWeight="medium">{filesizeText[0]} {filesizeText[1]}</Text>
+        </div>
+      </HStack>
+    </Stack>
   </CardBody>
 </Card>

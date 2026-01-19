@@ -29,7 +29,7 @@
       action: MaintenanceAction.End,
     });
 
-  let error = $derived(
+  const error = $derived(
     $status?.error
       ?.split('\n')
       .filter((line) => !line.includes('drop cascades'))

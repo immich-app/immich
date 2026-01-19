@@ -19,9 +19,7 @@ export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string)
     type: $t('command'),
     title: $t('download'),
     icon: mdiDownload,
-    onAction() {
-      void handleDownloadDatabaseBackup(filename);
-    },
+    onAction: () => handleDownloadDatabaseBackup(filename),
   };
 
   const Delete: ActionItem = {
@@ -29,9 +27,7 @@ export const getDatabaseBackupActions = ($t: MessageFormatter, filename: string)
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction() {
-      void handleDeleteDatabaseBackup(filename);
-    },
+    onAction: () => handleDeleteDatabaseBackup(filename),
   };
 
   return { Download, Delete };
