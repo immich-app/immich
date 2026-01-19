@@ -216,7 +216,9 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     BackupSelection? backupSelection,
     bool? isRemoteTrashed,
   }) {
-    if (checksums.isEmpty) return Future.value([]);
+    if (checksums.isEmpty) {
+      return Future.value([]);
+    }
 
     final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.deletedAt]).join([
       leftOuterJoin(

@@ -14,8 +14,8 @@ import 'base_action_button.widget.dart';
 void showTrashResultToast(BuildContext context, ActionResult result) {
   if (!context.mounted) return;
   final message = result.success
-      ? 'assets_allowed_to_moved_to_trash_count'.t(args: {'count': '${result.count}'})
-      : 'scaffold_body_error_occurred'.t();
+      ? 'assets_moved_to_trash_count'.t(args: {'count': '${result.count}'})
+      : 'errors.something_went_wrong'.t();
   ImmichToast.show(
     context: context,
     msg: message,

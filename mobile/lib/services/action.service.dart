@@ -275,6 +275,8 @@ class ActionService {
       isRemoteTrashed: true,
     );
     if (assetsToTrash.isEmpty) {
+      // No localAssetEntity found; close review to avoid re-showing the same items.
+      await _trashSyncRepository.updateApproves(trashedChecksums, true);
       return 0;
     }
     final mediaUrls = await Future.wait(
@@ -284,14 +286,12 @@ class ActionService {
     );
     final trashUrls = mediaUrls.nonNulls;
     _logger.info("Moving assets to trash: ${trashUrls.join(", ")}");
-    if (trashUrls.isEmpty) {
-      // No local files found; close review to avoid re-showing the same items.
-      await _trashSyncRepository.updateApproves(trashedChecksums, true);
-      return 0;
-    }
-    final isMoved = await _localFilesManager.moveToTrash(trashUrls.toList());
-    if (!isMoved) {
-      return 0;
+
+    if (trashUrls.isNotEmpty) {
+      final isMoved = await _localFilesManager.moveToTrash(trashUrls.toList());
+      if (!isMoved) {
+        return 0;
+      }
     }
 
     await _trashSyncRepository.updateApproves(trashedChecksums, true);

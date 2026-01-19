@@ -425,16 +425,15 @@ class ActionNotifier extends Notifier<void> {
   Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool isSyncApproved}) async {
     final selectedChecksums = _getAssets(source).map((a) => a.checksum).nonNulls;
     _logger.info('resolveRemoteTrash, selectedChecksums: $selectedChecksums, isSyncApproved: $isSyncApproved');
-    if (selectedChecksums.isEmpty){
+    if (selectedChecksums.isEmpty) {
       return const ActionResult(count: 0, success: false, error: 'Failed to select asset(s)');
     }
     try {
-      //todo maybe need to compare selectedChecksums with resolvedCount and inform user? PeterO 16/01/2026
       final resolvedCount = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
+      final isSuccess = resolvedCount == selectedChecksums.length;
       return ActionResult(
         count: resolvedCount,
-        success: isSyncApproved ? resolvedCount > 0 : true,
-        error: isSyncApproved && resolvedCount == 0 ? 'Failed to move assets to trash' : null,
+        success: isSuccess,
       );
     } catch (error, stack) {
       _logger.severe('Failed to ${isSyncApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
