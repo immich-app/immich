@@ -35,12 +35,15 @@ jobs:
   snapshot:
     name: Create Tigris Snapshot
     runs-on: ubuntu-latest
-    # Skip this job if TIGRIS_BUCKET_NAME is not configured
-    if: vars.TIGRIS_BUCKET_NAME != ''
 
     steps:
-      - name: Show configuration
+      - name: Validate configuration
         run: |
+          if [ -z "${{ env.BUCKET_NAME }}" ]; then
+            echo "ERROR: TIGRIS_BUCKET_NAME variable is not set"
+            echo "Go to repo Settings > Secrets and variables > Actions > Variables"
+            exit 1
+          fi
           echo "Bucket: ${{ env.BUCKET_NAME }}"
 
       - name: Install flyctl
