@@ -114,9 +114,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
       padding: const EdgeInsets.only(top: 16, bottom: 96),
       children: [
         const _SyncStatsCounts(),
-        const Divider(height: 1, indent: 16, endIndent: 16),
-        const SizedBox(height: 24),
-        _SectionHeaderText(text: "jobs".t(context: context)),
+        const Divider(height: 10),
+        const SizedBox(height: 16),
+        SettingGroupTitle(title: "jobs".t(context: context)),
         SettingListTile(
           title: "sync_local".t(context: context),
           subtitle: "tap_to_run_job".t(context: context),
@@ -144,9 +144,9 @@ class SyncStatusAndActions extends HookConsumerWidget {
             ref.read(backgroundSyncProvider).hashAssets();
           },
         ),
-        const Divider(height: 1, indent: 16, endIndent: 16),
-        const SizedBox(height: 24),
-        _SectionHeaderText(text: "actions".t(context: context)),
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        SettingGroupTitle(title: "actions".t(context: context)),
         ListTile(
           title: Text(
             "clear_file_cache".t(context: context),
@@ -192,20 +192,6 @@ class _SyncStatusIcon extends StatelessWidget {
       SyncStatus.success => const Icon(Icons.check_circle_outline, color: Colors.green),
       SyncStatus.error => Icon(Icons.error_outline, color: context.colorScheme.error),
     };
-  }
-}
-
-class _SectionHeaderText extends StatelessWidget {
-  final String text;
-
-  const _SectionHeaderText({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: SettingGroupTitle(title: text),
-    );
   }
 }
 
@@ -266,9 +252,9 @@ class _SyncStatsCounts extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionHeaderText(text: "assets".t(context: context)),
+            SettingGroupTitle(title: "assets".t(context: context)),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               // 1. Wrap in IntrinsicHeight
               child: IntrinsicHeight(
                 child: Flex(
@@ -296,9 +282,9 @@ class _SyncStatsCounts extends ConsumerWidget {
                 ),
               ),
             ),
-            _SectionHeaderText(text: "albums".t(context: context)),
+            SettingGroupTitle(title: "albums".t(context: context)),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: IntrinsicHeight(
                 child: Flex(
                   direction: Axis.horizontal,
@@ -324,9 +310,9 @@ class _SyncStatsCounts extends ConsumerWidget {
                 ),
               ),
             ),
-            _SectionHeaderText(text: "other".t(context: context)),
+            SettingGroupTitle(title: "other".t(context: context)),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: IntrinsicHeight(
                 child: Flex(
                   direction: Axis.horizontal,
@@ -355,7 +341,7 @@ class _SyncStatsCounts extends ConsumerWidget {
             // To be removed once the experimental feature is stable
             if (CurrentPlatform.isAndroid &&
                 appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) ...[
-              _SectionHeaderText(text: "trash".t(context: context)),
+              SettingGroupTitle(title: "trash".t(context: context)),
               Consumer(
                 builder: (context, ref, _) {
                   final counts = ref.watch(trashedAssetsCountProvider);

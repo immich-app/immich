@@ -37,7 +37,7 @@ class SettingsCard extends StatelessWidget {
             child: Icon(icon, color: context.primaryColor),
           ),
           title: Text(title, style: context.textTheme.titleMedium!.copyWith(color: context.primaryColor)),
-          subtitle: Text(subtitle),
+          subtitle: Text(subtitle, style: context.textTheme.bodyMedium),
           onTap: () => context.pushRoute(settingRoute),
         ),
       ),

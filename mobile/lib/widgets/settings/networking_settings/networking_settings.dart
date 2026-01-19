@@ -89,12 +89,10 @@ class NetworkingSettings extends HookConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(bottom: 96),
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
-          child: SettingGroupTitle(
-            title: "current_server_address".t(context: context),
-            icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
-          ),
+        const SizedBox(height: 8),
+        SettingGroupTitle(
+          title: "current_server_address".t(context: context),
+          icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -125,20 +123,16 @@ class NetworkingSettings extends HookConsumerWidget {
           title: "automatic_endpoint_switching_title".tr(),
           subtitle: "automatic_endpoint_switching_subtitle".tr(),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
-          child: SettingGroupTitle(
-            title: "local_network".t(context: context),
-            icon: Icons.home_outlined,
-          ),
+        const SizedBox(height: 8),
+        SettingGroupTitle(
+          title: "local_network".t(context: context),
+          icon: Icons.home_outlined,
         ),
         LocalNetworkPreference(enabled: featureEnabled.value),
-        Padding(
-          padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
-          child: SettingGroupTitle(
-            title: "external_network".t(context: context),
-            icon: Icons.dns_outlined,
-          ),
+        const SizedBox(height: 16),
+        SettingGroupTitle(
+          title: "external_network".t(context: context),
+          icon: Icons.dns_outlined,
         ),
         ExternalNetworkPreference(enabled: featureEnabled.value),
       ],
