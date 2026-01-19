@@ -35,7 +35,7 @@ const forSidecarJob = (
   asset: {
     id?: string;
     originalPath?: string;
-    files?: { id: string; type: AssetFileType; path: string }[];
+    files?: { id: string; type: AssetFileType; path: string; isEdited: boolean }[];
   } = {},
 ) => {
   return {
@@ -1084,6 +1084,7 @@ describe(MetadataService.name, () => {
             id: 'some-id',
             type: AssetFileType.Sidecar,
             path: '/path/to/something',
+            isEdited: false,
           },
         ],
       });
@@ -1691,7 +1692,7 @@ describe(MetadataService.name, () => {
     it('should unset sidecar path if file no longer exist', async () => {
       const asset = forSidecarJob({
         originalPath: '/path/to/IMG_123.jpg',
-        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar }],
+        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar, isEdited: false }],
       });
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValue(false);
@@ -1704,7 +1705,7 @@ describe(MetadataService.name, () => {
     it('should do nothing if the sidecar file still exists', async () => {
       const asset = forSidecarJob({
         originalPath: '/path/to/IMG_123.jpg',
-        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar }],
+        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar, isEdited: false }],
       });
 
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
