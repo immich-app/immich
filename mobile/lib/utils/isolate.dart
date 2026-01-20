@@ -144,19 +144,19 @@ class _IsolateTaskRunner<T> {
         break;
 
       case _ResultMessage(:var data):
+        _cleanup();
         if (!_completer.isCompleted) {
           _completer.complete(data as T?);
           dPrint(() => "[$debugLabel] Isolate task completed with result - $data");
         }
-        _cleanup();
         break;
 
       case _ErrorMessage(:var error, :var stackTrace):
+        _cleanup();
         if (!_completer.isCompleted) {
           dPrint(() => "[$debugLabel] Isolate task completed with error - $error");
           _completer.completeError(error ?? Exception("Unknown error in isolate"), stackTrace ?? StackTrace.current);
         }
-        _cleanup();
         break;
 
       case _DoneMessage():
@@ -172,14 +172,11 @@ class _IsolateTaskRunner<T> {
 
   void _cleanup() {
     if (_isCleanedUp) return;
-    if (!_completer.isCompleted) {
-      _completer.completeError(Exception("Isolate task cleaned up without completing."));
-    }
     _isCleanedUp = true;
 
     _cleanupTimeoutTimer?.cancel();
     _receivePort.close();
-    _isolate?.kill(priority: Isolate.beforeNextEvent);
+    _isolate?.kill(priority: Isolate.immediate);
     _isolate = null;
     _isolateSendPort = null;
 
