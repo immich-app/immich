@@ -43,7 +43,7 @@
   const getAsset = (id: string) => {
     return handleErrorAsync(
       () => assetCacheManager.getAsset({ ...authManager.params, id }),
-      (error: Error) => $t('error_getting_asset_information', { values: { message: error.message } }),
+      $t('error_retrieving_asset_information'),
     );
   };
 

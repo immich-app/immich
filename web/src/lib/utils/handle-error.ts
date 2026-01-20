@@ -48,14 +48,11 @@ export function handleError(error: unknown, localizedMessage: string) {
   }
 }
 
-export async function handleErrorAsync<T>(
-  fn: () => Promise<T>,
-  messageGenerator: (error: Error) => string,
-): Promise<T | undefined> {
+export async function handleErrorAsync<T>(fn: () => Promise<T>, localizedMessage: string): Promise<T | undefined> {
   try {
     return await fn();
   } catch (error: unknown) {
-    handleError(error, messageGenerator(standardizeError(error)));
+    handleError(error, localizedMessage);
     return undefined;
   }
 }
