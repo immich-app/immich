@@ -36,20 +36,22 @@ object SSLConfig {
     serverHost: String?,
     clientCertHash: Int
   ) {
-    val newHash = computeHash(allowSelfSigned, serverHost, clientCertHash)
-    val newRequiresCustomSSL = allowSelfSigned || keyManagers != null
-    if (newHash == configHash && sslSocketFactory != null && requiresCustomSSL == newRequiresCustomSSL) {
-      return  // Config unchanged, skip
-    }
+    synchronized(this) {
+      val newHash = computeHash(allowSelfSigned, serverHost, clientCertHash)
+      val newRequiresCustomSSL = allowSelfSigned || keyManagers != null
+      if (newHash == configHash && sslSocketFactory != null && requiresCustomSSL == newRequiresCustomSSL) {
+        return  // Config unchanged, skip
+      }
 
-    val sslContext = SSLContext.getInstance("TLS")
-    sslContext.init(keyManagers, trustManagers, null)
-    sslSocketFactory = sslContext.socketFactory
-    trustManager = trustManagers?.filterIsInstance<X509TrustManager>()?.firstOrNull()
-      ?: getDefaultTrustManager()
-    requiresCustomSSL = newRequiresCustomSSL
-    configHash = newHash
-    notifyListeners()
+      val sslContext = SSLContext.getInstance("TLS")
+      sslContext.init(keyManagers, trustManagers, null)
+      sslSocketFactory = sslContext.socketFactory
+      trustManager = trustManagers?.filterIsInstance<X509TrustManager>()?.firstOrNull()
+        ?: getDefaultTrustManager()
+      requiresCustomSSL = newRequiresCustomSSL
+      configHash = newHash
+      notifyListeners()
+    }
   }
 
   private fun computeHash(allowSelfSigned: Boolean, serverHost: String?, clientCertHash: Int): Int {

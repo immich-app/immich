@@ -120,13 +120,15 @@ private object ImageFetcherManager {
   }
 
   private fun invalidate() {
-    val oldFetcher = fetcher
-    if (oldFetcher is OkHttpImageFetcher && SSLConfig.requiresCustomSSL) {
-      fetcher = oldFetcher.reconfigure(SSLConfig.sslSocketFactory, SSLConfig.trustManager)
-      return
+    synchronized(this) {
+      val oldFetcher = fetcher
+      if (oldFetcher is OkHttpImageFetcher && SSLConfig.requiresCustomSSL) {
+        fetcher = oldFetcher.reconfigure(SSLConfig.sslSocketFactory, SSLConfig.trustManager)
+        return
+      }
+      fetcher = build()
+      oldFetcher.drain()
     }
-    fetcher = build()
-    oldFetcher.drain()
   }
 
   private fun build(): ImageFetcher {
@@ -205,6 +207,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
 
   override fun drain() {
     val shouldShutdown = synchronized(stateLock) {
+      if (draining) return
       draining = true
       activeCount == 0
     }
@@ -406,6 +409,7 @@ private class OkHttpImageFetcher private constructor(
 
   override fun drain() {
     val shouldClose = synchronized(stateLock) {
+      if (draining) return
       draining = true
       activeCount == 0
     }
