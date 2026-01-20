@@ -9,6 +9,7 @@ import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
+import { UserUploadsStatsQueryDto, UserUploadsStatsResponseDto } from 'src/dtos/user-stats.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
@@ -33,6 +34,59 @@ export class UserService extends BaseService {
 
     return users.map((user) => mapUser(user));
   }
+
+  async getMyUploadStatsUploads(
+    userId: string,
+    { from, to, tz: timeZone = 'UTC' }: UserUploadsStatsQueryDto,
+  ): Promise<UserUploadsStatsResponseDto> {
+    const now = new Date();
+    const endExclusive = to ? new Date(to) : now;
+    const startInclusive = from ? new Date(from) : new Date(endExclusive);
+  
+    if (!from) {
+      startInclusive.setUTCDate(startInclusive.getUTCDate() - 7 * 52);
+    }
+  
+    const rawSeries = await this.assetRepository.getUserDailyUploads(
+      userId,
+      startInclusive,
+      endExclusive,
+      timeZone,
+    );
+  
+    const countByDate = new Map(rawSeries.map((point) => [point.date, point.count]));
+  
+    const cursor = new Date(Date.UTC(
+      startInclusive.getUTCFullYear(),
+      startInclusive.getUTCMonth(),
+      startInclusive.getUTCDate(),
+    ));
+    const endCursor = new Date(Date.UTC(
+      endExclusive.getUTCFullYear(),
+      endExclusive.getUTCMonth(),
+      endExclusive.getUTCDate(),
+    ));
+  
+    const series: Array<{ date: string; count: number }> = [];
+    while (cursor < endCursor) {
+      const year = cursor.getUTCFullYear();
+      const month = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(cursor.getUTCDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+  
+      series.push({ date: dateKey, count: countByDate.get(dateKey) ?? 0 });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+  
+    return {
+      userId,
+      from: series[0]?.date ?? startInclusive.toISOString().slice(0, 10),
+      to: series.at(-1)?.date ?? endExclusive.toISOString().slice(0, 10),
+      series,
+      summary: { totalCount: series.reduce((sum, point) => sum + point.count, 0) },
+    };
+  }
+  
 
   async getMe(auth: AuthDto): Promise<UserAdminResponseDto> {
     const user = await this.userRepository.get(auth.user.id, {});

@@ -544,8 +544,6 @@ from
       "asset" as "stacked"
     where
       "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
   ) as "stacked_assets" on "stack"."id" is not null
 where
   "asset"."ownerId" = any ($1::uuid[])
@@ -584,3 +582,23 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+
+select
+  "date",
+  count(*) as "count"
+from (
+  select
+    to_char(
+      date_trunc('day', ("a"."createdAt" AT TIME ZONE $3)),
+      'YYYY-MM-DD'
+    ) as "date"
+  from "asset" as "a"
+  where
+    "a"."ownerId" = $1
+    and "a"."deletedAt" is null
+    and "a"."createdAt" >= $2
+    and "a"."createdAt" <  $4
+) s
+group by "date"
+order by "date" asc

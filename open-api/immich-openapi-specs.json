@@ -14023,6 +14023,80 @@
         "x-immich-state": "Stable"
       }
     },
+    "/users/me/stats/uploads": {
+      "get": {
+        "description": "Return daily upload counts between the given dates for the current user (used by the Account Usage heatmap). Query params: from=YYYY-MM-DD (optional), to=YYYY-MM-DD (exclusive, optional), tz=IANA timezone like \"Europe/Berlin\" (optional, default UTC).",
+        "operationId": "getMyUploadStatsUploads",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Inclusive start date (YYYY-MM-DD). Defaults to 52 weeks before `to`/now.",
+            "schema": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "example": "2024-11-03",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Exclusive end date (YYYY-MM-DD). Defaults to today.",
+            "schema": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "example": "2025-11-03",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tz",
+            "required": false,
+            "in": "query",
+            "description": "IANA timezone for grouping days (default: UTC).",
+            "schema": {
+              "example": "UTC",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserUploadsStatsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get my upload activity (daily)",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "user.read"
+      }
+    },
     "/users/profile-image": {
       "delete": {
         "description": "Delete the profile image of the current user.",
@@ -16846,6 +16920,25 @@
           "cronExpression",
           "enabled",
           "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "DayCountDto": {
+        "properties": {
+          "count": {
+            "description": "Number of uploads on that date",
+            "example": 3,
+            "type": "number"
+          },
+          "date": {
+            "description": "Date (YYYY-MM-DD)",
+            "example": "2025-01-15",
+            "type": "string"
+          }
+        },
+        "required": [
+          "count",
+          "date"
         ],
         "type": "object"
       },
@@ -23312,6 +23405,19 @@
         },
         "type": "object"
       },
+      "UploadsSummaryDto": {
+        "properties": {
+          "totalCount": {
+            "description": "Total uploads across the series",
+            "example": 42,
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalCount"
+        ],
+        "type": "object"
+      },
       "UsageByUserDto": {
         "properties": {
           "photos": {
@@ -23753,6 +23859,42 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UserUploadsStatsResponseDto": {
+        "properties": {
+          "from": {
+            "description": "First date in the filled series (YYYY-MM-DD)",
+            "example": "2024-11-03",
+            "type": "string"
+          },
+          "series": {
+            "description": "One item per calendar day in range",
+            "items": {
+              "$ref": "#/components/schemas/DayCountDto"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/UploadsSummaryDto"
+          },
+          "to": {
+            "description": "Last date in the filled series (YYYY-MM-DD)",
+            "example": "2025-11-02",
+            "type": "string"
+          },
+          "userId": {
+            "description": "User id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "series",
+          "summary",
+          "to",
+          "userId"
+        ],
         "type": "object"
       },
       "ValidateAccessTokenResponseDto": {
