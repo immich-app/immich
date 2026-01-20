@@ -1,7 +1,8 @@
 import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import {
   IStorageAdapter,
   StorageObjectInfo,
@@ -80,6 +81,13 @@ export class LocalStorageAdapter implements IStorageAdapter {
       mkdirSync(dir, { recursive: true });
     }
     return createWriteStream(filePath);
+  }
+
+  async writeStreamAsync(key: string, sourceStream: Readable, _options?: StorageWriteOptions): Promise<void> {
+    const filePath = this.resolvePath(key);
+    await this.ensureDir(path.dirname(filePath));
+    const writeStream = createWriteStream(filePath);
+    await pipeline(sourceStream, writeStream);
   }
 
   async copy(sourceKey: string, targetKey: string): Promise<void> {

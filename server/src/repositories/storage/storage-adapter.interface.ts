@@ -71,6 +71,12 @@ export interface IStorageAdapter {
   writeStream(key: string, options?: StorageWriteOptions): Writable;
 
   /**
+   * Write from a readable stream (for streaming uploads).
+   * Returns a Promise that resolves when the upload is complete.
+   */
+  writeStreamAsync?(key: string, sourceStream: Readable, options?: StorageWriteOptions): Promise<void>;
+
+  /**
    * Copy a file from one location to another
    */
   copy(sourceKey: string, targetKey: string): Promise<void>;

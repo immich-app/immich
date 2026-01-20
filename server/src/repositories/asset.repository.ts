@@ -1028,7 +1028,7 @@ export class AssetRepository {
    */
   async upsertFileWithS3(file: {
     assetId: string;
-    type: string;
+    type: AssetFileType;
     path: string;
     storageBackend: StorageBackend;
     s3Bucket: string;
@@ -1059,7 +1059,7 @@ export class AssetRepository {
       .innerJoin('asset_file', 'asset.id', 'asset_file.assetId')
       .select(['asset.id', 'asset.ownerId'])
       .distinctOn('asset.id')
-      .where('asset_file.type', 'in', ['thumbnail', 'preview'])
+      .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview])
       .where((eb) =>
         eb.or([
           eb('asset_file.storageBackend', '=', StorageBackend.Local),
@@ -1068,5 +1068,20 @@ export class AssetRepository {
       )
       .where('asset.deletedAt', 'is', null)
       .execute();
+  }
+
+  /**
+   * Get S3 assets that still have local file paths (for orphaned file cleanup).
+   * These are assets where storageBackend='s3' but originalPath is still set.
+   */
+  @GenerateSql({ params: [], stream: true })
+  getS3AssetsWithLocalPaths() {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'originalPath'])
+      .where('storageBackend', '=', StorageBackend.S3)
+      .where('originalPath', 'is not', null)
+      .where('deletedAt', 'is', null)
+      .stream();
   }
 }
