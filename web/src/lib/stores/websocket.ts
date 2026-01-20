@@ -1,7 +1,7 @@
 import { page } from '$app/state';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
 import { createEventEmitter } from '$lib/utils/eventemitter';
@@ -31,6 +31,7 @@ export interface Events {
   on_notification: (notification: NotificationDto) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
+  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -62,7 +63,7 @@ websocket
 
 export const openWebsocketConnection = () => {
   try {
-    if (get(user) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if (get(user) || page.url.pathname.startsWith(Route.maintenanceMode())) {
       websocket.connect();
     }
   } catch (error) {
@@ -72,4 +73,26 @@ export const openWebsocketConnection = () => {
 
 export const closeWebsocketConnection = () => {
   websocket.disconnect();
+};
+
+export const waitForWebsocketEvent = <T extends keyof Events>(
+  event: T,
+  predicate?: (...args: Parameters<Events[T]>) => boolean,
+  timeout: number = 10_000,
+): Promise<Parameters<Events[T]>> => {
+  return new Promise((resolve, reject) => {
+    // @ts-expect-error: The typings are weird on this?
+    const cleanup = websocketEvents.on(event, (...args: Parameters<Events[T]>) => {
+      if (!predicate || predicate(...args)) {
+        cleanup();
+        clearTimeout(timer);
+        resolve(args);
+      }
+    });
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`Timeout waiting for event: ${String(event)}`));
+    }, timeout);
+  });
 };

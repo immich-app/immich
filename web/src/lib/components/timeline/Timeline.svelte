@@ -7,6 +7,7 @@
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
+  import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
@@ -23,9 +24,9 @@
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
 
   interface Props {
@@ -38,19 +39,13 @@
     timelineManager?: TimelineManager;
     options?: TimelineManagerOptions;
     assetInteraction: AssetInteraction;
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE
-      | null;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
     isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
-    isShowDeleteConfirmation?: boolean;
+    album?: AlbumResponseDto;
+    albumUsers?: UserResponseDto[];
+    person?: PersonResponseDto;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -80,9 +75,9 @@
     withStacked = false,
     showArchiveIcon = false,
     isShared = false,
-    album = null,
-    person = null,
-    isShowDeleteConfirmation = $bindable(false),
+    album,
+    albumUsers = [],
+    person,
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -186,7 +181,7 @@
       // the performance benefits of deferred layouts while still supporting deep linking
       // to assets at the end of the timeline.
       timelineManager.isScrollingOnLoad = true;
-      const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
+      const monthGroup = await timelineManager.findMonthGroupForAsset({ id: assetId });
       if (!monthGroup) {
         return false;
       }
@@ -224,6 +219,9 @@
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
+    } else if (scrollTarget) {
+      await tick();
+      focusAsset(scrollTarget);
     }
     invisible = false;
   };
@@ -600,7 +598,6 @@
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
   {timelineManager}
   {assetInteraction}
-  bind:isShowDeleteConfirmation
   {onEscape}
 />
 
@@ -702,6 +699,7 @@
                 showStackedIcon={withStacked}
                 {showArchiveIcon}
                 {asset}
+                {albumUsers}
                 {groupIndex}
                 onClick={(asset) => {
                   if (typeof onThumbnailClick === 'function') {

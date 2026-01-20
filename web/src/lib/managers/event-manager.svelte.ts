@@ -1,29 +1,61 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
+import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
+  AlbumUserRole,
+  ApiKeyResponseDto,
+  AssetResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
+  PersonResponseDto,
+  QueueResponseDto,
   SharedLinkResponseDto,
   SystemConfigDto,
+  TagResponseDto,
   UserAdminResponseDto,
+  WorkflowResponseDto,
 } from '@immich/sdk';
 
 export type Events = {
   AppInit: [];
-  UserLogin: [];
+
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
+  AuthUserLoaded: [UserAdminResponseDto];
+
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
   ThemeChange: [ThemeSetting];
 
-  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  ApiKeyCreate: [ApiKeyResponseDto];
+  ApiKeyUpdate: [ApiKeyResponseDto];
+  ApiKeyDelete: [ApiKeyResponseDto];
 
+  AssetUpdate: [AssetResponseDto];
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  AssetsArchive: [string[]];
+  AssetsDelete: [string[]];
+
+  AlbumAddAssets: [];
+  AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
+  AlbumShare: [];
+  AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
+  AlbumUserDelete: [{ albumId: string; userId: string }];
+
+  PersonUpdate: [PersonResponseDto];
+
+  QueueUpdate: [QueueResponseDto];
 
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];
   SharedLinkDelete: [SharedLinkResponseDto];
+
+  TagCreate: [TagResponseDto];
+  TagUpdate: [TagResponseDto];
+  TagDelete: [TreeNode];
+
+  UserPinCodeReset: [];
 
   UserAdminCreate: [UserAdminResponseDto];
   UserAdminUpdate: [UserAdminResponseDto];
@@ -33,11 +65,17 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
+  SessionLocked: [];
+
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
+
+  WorkflowCreate: [WorkflowResponseDto];
+  WorkflowUpdate: [WorkflowResponseDto];
+  WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEvent];
 };

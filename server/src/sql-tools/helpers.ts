@@ -39,6 +39,10 @@ export const fromColumnValue = (columnValue?: ColumnValue) => {
     return `'${value.toISOString()}'`;
   }
 
+  if (Array.isArray(value)) {
+    return "'{}'";
+  }
+
   return `'${String(value)}'`;
 };
 

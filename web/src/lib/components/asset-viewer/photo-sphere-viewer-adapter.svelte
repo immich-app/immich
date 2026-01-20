@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
+  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -24,15 +26,23 @@
     strokeLinejoin: 'round',
   };
 
-  interface Props {
+  type Props = {
     panorama: string | { source: string };
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
-  }
+    zoomToggle?: (() => void) | null;
+  };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  let {
+    panorama,
+    originalPanorama,
+    adapter = EquirectangularAdapter,
+    plugins = [],
+    navbar = false,
+    zoomToggle = $bindable(),
+  }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
@@ -93,6 +103,14 @@
     }
   });
 
+  zoomToggle = () => {
+    if (!viewer) {
+      return;
+    }
+    viewer.animate({ zoom: $photoZoomState.currentZoom > 1 ? 50 : 83.3, speed: 250 });
+  };
+
+  let hasChangedResolution: boolean = false;
   onMount(() => {
     if (!container) {
       return;
@@ -139,10 +157,15 @@
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel range: [0, 100]
-      if (Math.round(zoomLevel) >= 75) {
+      photoZoomState.set({
+        ...$photoZoomState,
+        currentZoom: zoomLevel / 50,
+      });
+
+      if (Math.round(zoomLevel) >= 75 && !hasChangedResolution) {
         // Replace the preview with the original
         void resolutionPlugin.setResolution('original');
-        viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
+        hasChangedResolution = true;
       }
     };
 
@@ -158,7 +181,13 @@
       viewer.destroy();
     }
     boundingBoxesUnsubscribe();
+    // zoomHandler is not called on initial load. Viewer initial zoom is 1, but photoZoomState could be != 1.
+    photoZoomState.set({
+      ...$photoZoomState,
+      currentZoom: 1,
+    });
   });
 </script>
 
+<svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true }]} />
 <div class="h-full w-full mb-0" bind:this={container}></div>

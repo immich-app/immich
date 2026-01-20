@@ -1,10 +1,10 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
-import { Asset } from 'src/database';
+import { Asset, AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
-  AssetMetadataKey,
   AssetOrder,
   AssetType,
   DatabaseSslMode,
@@ -26,13 +26,6 @@ export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export interface CropOptions {
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-}
-
 export interface FullsizeImageOptions {
   format: ImageFormat;
   quality: number;
@@ -53,9 +46,9 @@ export interface RawImageInfo {
 
 interface DecodeImageOptions {
   colorspace: string;
-  crop?: CropOptions;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
+  edits?: AssetEditActionItem[];
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
@@ -73,7 +66,6 @@ export type GenerateThumbhashFromBufferOptions = GenerateThumbhashOptions & { ra
 
 export interface GenerateThumbnailsOptions {
   colorspace: string;
-  crop?: CropOptions;
   preview?: ImageOptions;
   processInvalidImages: boolean;
   thumbhash?: boolean;
@@ -187,7 +179,7 @@ export interface IDelayedJob extends IBaseJob {
   delay?: number;
 }
 
-export type JobSource = 'upload' | 'sidecar-write' | 'copy';
+export type JobSource = 'upload' | 'sidecar-write' | 'copy' | 'edit';
 export interface IEntityJob extends IBaseJob {
   id: string;
   source?: JobSource;
@@ -223,11 +215,6 @@ export interface IDeleteFilesJob extends IBaseJob {
 }
 
 export interface ISidecarWriteJob extends IEntityJob {
-  description?: string;
-  dateTimeOriginal?: string;
-  latitude?: number;
-  longitude?: number;
-  rating?: number;
   tags?: true;
 }
 
@@ -391,7 +378,10 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob };
+  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+
+  // Editor
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
@@ -476,8 +466,11 @@ export type StorageAsset = {
   fileCreatedAt: Date;
   originalPath: string;
   originalFileName: string;
-  sidecarPath: string | null;
   fileSizeInByte: number | null;
+  files: AssetFile[];
+  make: string | null;
+  model: string | null;
+  lensModel: string | null;
 };
 
 export type OnThisDayData = { year: number };
@@ -562,13 +555,4 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
   [UserMetadataKey.Preferences]: DeepPartial<UserPreferences>;
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
-}
-
-export type AssetMetadataItem<T extends keyof AssetMetadata = AssetMetadataKey> = {
-  key: T;
-  value: AssetMetadata[T];
-};
-
-export interface AssetMetadata extends Record<AssetMetadataKey, Record<string, any>> {
-  [AssetMetadataKey.MobileApp]: { iCloudId: string };
 }

@@ -22,7 +22,7 @@ Immich is known to work with Postgres versions `>= 14, < 19`.
 VectorChord is known to work with pgvector versions `>= 0.7, < 0.9`.
 
 The Immich server will check the VectorChord version on startup to ensure compatibility, and refuse to start if a compatible version is not found.
-The current accepted range for VectorChord is `>= 0.3, < 0.6`.
+The current accepted range for VectorChord is `>= 0.3, < 2.0`.
 :::
 
 ## Specifying the connection URL

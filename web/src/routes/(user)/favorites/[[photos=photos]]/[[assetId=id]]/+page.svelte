@@ -16,7 +16,6 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -55,7 +54,6 @@
     bind:timelineManager
     {options}
     {assetInteraction}
-    removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
   >
     {#snippet empty()}
@@ -85,11 +83,7 @@
       <ArchiveAction
         menuItem
         unarchive={assetInteraction.isAllArchived}
-        onArchive={(ids, visibility) =>
-          timelineManager.updateAssetOperation(ids, (asset) => {
-            asset.visibility = visibility;
-            return { remove: false };
-          })}
+        onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
       />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />

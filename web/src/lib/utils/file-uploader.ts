@@ -1,8 +1,8 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { user } from '$lib/stores/user.store';
+import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
@@ -125,6 +125,7 @@ async function fileUploader({
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
+  const wasInitiallyLoggedIn = !!get(user);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -215,8 +216,9 @@ async function fileUploader({
 
     return responseData.id;
   } catch (error) {
-    // ignore errors if the user logs out during uploads
-    if (!get(user)) {
+    // If the user store no longer holds a user, it means they have logged out
+    // In this case don't bother reporting any errors.
+    if (wasInitiallyLoggedIn && !get(user)) {
       return;
     }
 

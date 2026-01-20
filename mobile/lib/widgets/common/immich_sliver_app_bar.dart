@@ -50,6 +50,10 @@ class ImmichSliverAppBar extends ConsumerWidget {
       duration: Durations.medium1,
       opacity: isMultiSelectEnabled ? 0 : 1,
       sliver: SliverAppBar(
+        backgroundColor: context.colorScheme.surface,
+        surfaceTintColor: context.colorScheme.surfaceTint,
+        elevation: 0,
+        scrolledUnderElevation: 1.0,
         floating: floating,
         pinned: pinned,
         snap: snap,
@@ -74,8 +78,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
             ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
           if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
             IconButton(
-              icon: const Icon(Icons.science_rounded),
-              onPressed: () => context.pushRoute(const FeatInDevRoute()),
+              icon: const Icon(Icons.palette_rounded),
+              onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
             ),
           if (showUploadButton && !isReadonlyModeEnabled)
             const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),

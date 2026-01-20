@@ -4,11 +4,11 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -111,7 +111,7 @@
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
-        await correctDuplicatesIndexAndGo(duplicatesIndex);
+        await navigateToIndex(duplicatesIndex);
       },
       trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('permanently_delete') : undefined,
@@ -123,7 +123,7 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-    await correctDuplicatesIndexAndGo(duplicatesIndex);
+    await navigateToIndex(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
@@ -157,7 +157,7 @@
         deletedNotification(idsToDelete.length);
 
         page.url.searchParams.delete('index');
-        await goto(`${AppRoute.DUPLICATES}`);
+        await goto(Route.duplicatesUtility());
       },
       prompt,
       confirmText,
@@ -174,41 +174,32 @@
 
         toastManager.success($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
-        await goto(`${AppRoute.DUPLICATES}`);
+        await goto(Route.duplicatesUtility());
       },
       $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
       $t('confirm'),
     );
   };
 
-  const handleFirst = async () => {
-    await correctDuplicatesIndexAndGo(0);
-  };
-  const handlePrevious = async () => {
-    await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
-  };
+  const handleFirst = () => navigateToIndex(0);
+  const handlePrevious = () => navigateToIndex(Math.max(duplicatesIndex - 1, 0));
   const handlePreviousShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handlePrevious();
   };
-  const handleNext = async () => {
-    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
-  };
+  const handleNext = async () => navigateToIndex(Math.min(duplicatesIndex + 1, duplicates.length - 1));
   const handleNextShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handleNext();
   };
-  const handleLast = async () => {
-    await correctDuplicatesIndexAndGo(duplicates.length - 1);
-  };
-  const correctDuplicatesIndexAndGo = async (index: number) => {
-    page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
-    await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
-  };
+  const handleLast = () => navigateToIndex(duplicates.length - 1);
+
+  const navigateToIndex = async (index: number) =>
+    goto(Route.duplicatesUtility({ index: correctDuplicatesIndex(index) }));
 </script>
 
 <svelte:document

@@ -10,13 +10,15 @@ import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:openapi/api.dart';
 
 class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     with CancellableImageProviderMixin<RemoteThumbProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
+  final String thumbhash;
 
-  RemoteThumbProvider({required this.assetId});
+  RemoteThumbProvider({required this.assetId, required this.thumbhash});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,7 +39,7 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
     final request = this.request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(key.assetId),
+      uri: getThumbnailUrlForRemoteId(key.assetId, thumbhash: key.thumbhash),
       headers: ApiService.getRequestHeaders(),
       cacheManager: cacheManager,
     );
@@ -48,22 +50,23 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteThumbProvider) {
-      return assetId == other.assetId;
+      return assetId == other.assetId && thumbhash == other.thumbhash;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode;
+  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
     with CancellableImageProviderMixin<RemoteFullImageProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
+  final String thumbhash;
 
-  RemoteFullImageProvider({required this.assetId});
+  RemoteFullImageProvider({required this.assetId, required this.thumbhash});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -74,7 +77,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId)),
+      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId, thumbhash: key.thumbhash)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -93,7 +96,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     final headers = ApiService.getRequestHeaders();
     final request = this.request = RemoteImageRequest(
-      uri: getPreviewUrlForRemoteId(key.assetId),
+      uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
       headers: headers,
       cacheManager: cacheManager,
     );
@@ -114,12 +117,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteFullImageProvider) {
-      return assetId == other.assetId;
+      return assetId == other.assetId && thumbhash == other.thumbhash;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode;
+  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
 }
