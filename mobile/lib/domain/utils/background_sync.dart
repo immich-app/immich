@@ -187,7 +187,7 @@ class BackgroundSyncManager {
     _syncWebsocketTask = _handleWsAssetEditReadyV1Batch(batchData);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
-    });
+    }).future;
   }
 
   Future<void> syncLinkedAlbum() {
@@ -227,7 +227,7 @@ CancellableTask<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) 
   debugLabel: 'websocket-batch',
 );
 
-Cancelable<void> _handleWsAssetEditReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
+CancellableTask<void> _handleWsAssetEditReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
   computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetEditReadyV1Batch(batchData),
   debugLabel: 'websocket-edit',
 );
