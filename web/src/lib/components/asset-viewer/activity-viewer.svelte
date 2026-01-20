@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
@@ -139,10 +139,7 @@
 
               <div class="w-full leading-4 overflow-hidden self-center wrap-break-word text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <a
-                  class="aspect-square w-19 h-19"
-                  href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
-                >
+                <a class="aspect-square w-19 h-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
                   <img
                     class="rounded-lg w-19 h-19 object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId)}
@@ -194,7 +191,7 @@
                 {#if assetId === undefined && reaction.assetId}
                   <a
                     class="aspect-square w-19 h-19"
-                    href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                    href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}
                   >
                     <img
                       class="rounded-lg w-19 h-19 object-cover"

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import ActionButton from '$lib/components/ActionButton.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
@@ -8,6 +7,7 @@
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
+  import EditAction from '$lib/components/asset-viewer/actions/edit-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/rating-action.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
@@ -20,8 +20,9 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { ProjectionType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -72,7 +73,7 @@
     onUndoDelete?: OnUndoDelete;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    // onEdit: () => void;
+    onEdit: () => void;
     onClose?: () => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -92,7 +93,7 @@
     onRunJob,
     onPlaySlideshow,
     onClose,
-    // onEdit,
+    onEdit,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -112,22 +113,29 @@
 
   const { Cast } = $derived(getGlobalActions($t));
 
-  const { Share, Download, SharedLinkDownload, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info } =
-    $derived(getAssetActions($t, asset));
+  const {
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    Info,
+  } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 
-  // TODO: Enable when edits are ready for release
-  // let showEditorButton = $derived(
-  //   isOwner &&
-  //     asset.type === AssetTypeEnum.Image &&
-  //     !(
-  //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-  //       (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-  //     ) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
-  //     !asset.livePhotoVideoId,
-  // );
+  const editorDisabled = $derived(
+    !isOwner ||
+      asset.type !== AssetTypeEnum.Image ||
+      asset.livePhotoVideoId ||
+      (asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR &&
+        asset.originalPath.toLowerCase().endsWith('.insp')) ||
+      asset.originalPath.toLowerCase().endsWith('.gif') ||
+      asset.originalPath.toLowerCase().endsWith('.svg'),
+  );
 </script>
 
 <CommandPaletteDefaultProvider
@@ -180,9 +188,9 @@
       <RatingAction {asset} {onAction} />
     {/if}
 
-    <!-- {#if showEditorButton}
+    {#if !editorDisabled}
       <EditAction onAction={onEdit} />
-    {/if} -->
+    {/if}
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
@@ -195,6 +203,7 @@
         {/if}
 
         <ActionMenuItem action={Download} />
+        <ActionMenuItem action={DownloadOriginal} />
 
         {#if !isLocked}
           {#if asset.isTrashed}
@@ -239,7 +248,7 @@
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
-                onClick={() => goto(resolve(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`))}
+                onClick={() => goto(Route.photos({ at: stack?.primaryAssetId ?? asset.id }))}
                 text={$t('view_in_timeline')}
               />
             {/if}
@@ -247,8 +256,7 @@
           {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
             <MenuOption
               icon={mdiCompare}
-              onClick={() =>
-                goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+              onClick={() => goto(Route.search({ queryAssetId: stack?.primaryAssetId ?? asset.id }))}
               text={$t('view_similar_photos')}
             />
           {/if}

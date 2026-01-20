@@ -11,8 +11,9 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -34,6 +35,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
+
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
   final Ref _ref;
@@ -45,6 +47,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._authService,
     this._apiService,
     this._userService,
+
     this._secureStorageService,
     this._widgetService,
     this._ref,
@@ -87,7 +90,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
-      await _ref.read(uploadServiceProvider).cancelBackup();
+      await _ref.read(backgroundUploadServiceProvider).cancel();
+      _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
       await _cleanUp();
     }

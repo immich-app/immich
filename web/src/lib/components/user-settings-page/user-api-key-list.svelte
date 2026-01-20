@@ -41,7 +41,7 @@
     </div>
 
     {#if keys.length > 0}
-      <Table class="mt-4" striped spacing="small">
+      <Table class="mt-4" striped spacing="small" size="small">
         <TableHeader>
           <TableHeading>{$t('name')}</TableHeading>
           <TableHeading>{$t('permission')}</TableHeading>

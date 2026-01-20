@@ -2,10 +2,11 @@
   import { goto } from '$app/navigation';
   import type { AssetCursor } from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { AppRoute, timeToLoadTheMap } from '$lib/constants';
+  import { timeToLoadTheMap } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { delay } from '$lib/utils/asset-utils';
@@ -24,38 +25,18 @@
   let { isViewing: showAssetViewer, asset: viewingAsset, setAssetId } = assetViewingStore;
 
   let viewingAssets: string[] = $state([]);
-  let viewingAssetCursor = 0;
 
   onDestroy(() => {
     assetViewingStore.showAssetViewer(false);
   });
 
   if (!featureFlagsManager.value.map) {
-    handlePromiseError(goto(AppRoute.PHOTOS));
+    handlePromiseError(goto(Route.photos()));
   }
 
   async function onViewAssets(assetIds: string[]) {
     viewingAssets = assetIds;
-    viewingAssetCursor = 0;
     await setAssetId(assetIds[0]);
-  }
-
-  async function navigateNext() {
-    if (viewingAssetCursor < viewingAssets.length - 1) {
-      await setAssetId(viewingAssets[++viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
-    }
-    return false;
-  }
-
-  async function navigatePrevious() {
-    if (viewingAssetCursor > 0) {
-      await setAssetId(viewingAssets[--viewingAssetCursor]);
-      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
-      return true;
-    }
-    return false;
   }
 
   async function navigateRandom() {
@@ -138,13 +119,11 @@
     </div>
   </UserPageLayout>
   <Portal target="body">
-    {#if $showAssetViewer}
+    {#if $showAssetViewer && assetCursor.current}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
         <AssetViewer
           cursor={assetCursor}
           showNavigation={viewingAssets.length > 1}
-          onNext={navigateNext}
-          onPrevious={navigatePrevious}
           onRandom={navigateRandom}
           onClose={() => {
             assetViewingStore.showAssetViewer(false);

@@ -453,5 +453,6 @@ extension PlatformToLocalAsset on PlatformAsset {
     adjustmentTime: tryFromSecondsSinceEpoch(adjustmentTime, isUtc: true),
     latitude: latitude,
     longitude: longitude,
+    isEdited: false,
   );
 }

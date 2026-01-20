@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
+import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -13,10 +14,11 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -40,7 +42,7 @@ class ActionResult {
 class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
-  late UploadService _uploadService;
+  late ForegroundUploadService _foregroundUploadService;
   late DownloadService _downloadService;
   late AssetService _assetService;
 
@@ -48,7 +50,7 @@ class ActionNotifier extends Notifier<void> {
 
   @override
   void build() {
-    _uploadService = ref.watch(uploadServiceProvider);
+    _foregroundUploadService = ref.watch(foregroundUploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
     _assetService = ref.watch(assetServiceProvider);
     _downloadService = ref.watch(downloadServiceProvider);
@@ -411,14 +413,44 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> upload(ActionSource source) async {
-    final assets = _getAssets(source).whereType<LocalAsset>().toList();
+  Future<ActionResult> upload(ActionSource source, {List<LocalAsset>? assets}) async {
+    final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
+
+    final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
+    final cancelToken = CancellationToken();
+    ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+
+    // Initialize progress for all assets
+    for (final asset in assetsToUpload) {
+      progressNotifier.setProgress(asset.id, 0.0);
+    }
+
     try {
-      await _uploadService.manualBackup(assets);
-      return ActionResult(count: assets.length, success: true);
+      await _foregroundUploadService.uploadManual(
+        assetsToUpload,
+        cancelToken,
+        callbacks: UploadCallbacks(
+          onProgress: (localAssetId, filename, bytes, totalBytes) {
+            final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+            progressNotifier.setProgress(localAssetId, progress);
+          },
+          onSuccess: (localAssetId, remoteAssetId) {
+            progressNotifier.remove(localAssetId);
+          },
+          onError: (localAssetId, errorMessage) {
+            progressNotifier.setError(localAssetId);
+          },
+        ),
+      );
+      return ActionResult(count: assetsToUpload.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);
-      return ActionResult(count: assets.length, success: false, error: error.toString());
+      return ActionResult(count: assetsToUpload.length, success: false, error: error.toString());
+    } finally {
+      ref.read(manualUploadCancelTokenProvider.notifier).state = null;
+      Future.delayed(const Duration(seconds: 2), () {
+        progressNotifier.clear();
+      });
     }
   }
 }

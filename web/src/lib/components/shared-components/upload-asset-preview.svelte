@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { UploadAsset } from '$lib/types';
@@ -34,10 +34,6 @@
     uploadAssetsStore.removeItem(uploadAsset.id);
     await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
   };
-
-  const asLink = (asset: UploadAsset) => {
-    return asset.isTrashed ? `${AppRoute.TRASH}/${asset.assetId}` : `${AppRoute.PHOTOS}/${uploadAsset.assetId}`;
-  };
 </script>
 
 <div
@@ -69,7 +65,9 @@
     {#if uploadAsset.state === UploadState.DUPLICATED && uploadAsset.assetId}
       <div class="flex items-center justify-between gap-1">
         <a
-          href={asLink(uploadAsset)}
+          href={uploadAsset.isTrashed
+            ? Route.viewTrashedAsset({ id: uploadAsset.assetId })
+            : Route.viewAsset({ id: uploadAsset.assetId })}
           target="_blank"
           rel="noopener noreferrer"
           class=""
