@@ -1,16 +1,16 @@
 import {
-    AliasedRawBuilder,
-    DeduplicateJoinsPlugin,
-    Expression,
-    ExpressionBuilder,
-    ExpressionWrapper,
-    Kysely,
-    KyselyConfig,
-    Nullable,
-    Selectable,
-    SelectQueryBuilder,
-    Simplify,
-    sql,
+  AliasedRawBuilder,
+  DeduplicateJoinsPlugin,
+  Expression,
+  ExpressionBuilder,
+  ExpressionWrapper,
+  Kysely,
+  KyselyConfig,
+  Nullable,
+  Selectable,
+  SelectQueryBuilder,
+  Simplify,
+  sql,
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';

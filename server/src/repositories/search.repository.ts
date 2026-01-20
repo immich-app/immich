@@ -188,6 +188,20 @@ export interface GetCameraLensModelsOptions extends FuzzySearchOptions {
   model?: string;
 }
 
+export interface GetCameraModelsOptions extends FuzzySearchOptions {
+  make?: string;
+  lensModel?: string;
+}
+
+export interface GetCameraMakesOptions extends FuzzySearchOptions {
+  model?: string;
+  lensModel?: string;
+}
+
+export interface GetCameraLensModelsOptions extends FuzzySearchOptions {
+  make?: string;
+  model?: string;
+}
 export interface GetCountriesOptions extends FuzzySearchOptions {}
 
 @Injectable()
@@ -458,8 +472,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { query: DummyValue.STRING }] })
-  async getCountries(userIds: string[], options: GetCountriesOptions = {}): Promise<string[]> {
-    const res = await this.getExifField('country', userIds, options.query).execute();
+  async getCountries(userIds: string[], { query }: GetCountriesOptions): Promise<string[]> {
+    const res = await this.getExifField('country', userIds, query).execute();
     return res.map((row) => row.country!);
   }
 
@@ -472,7 +486,9 @@ export class SearchRepository {
     return res.map((row) => row.state!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING, state: DummyValue.STRING, query: DummyValue.STRING }] })
+  @GenerateSql({
+    params: [[DummyValue.UUID], { country: DummyValue.STRING, state: DummyValue.STRING, query: DummyValue.STRING }],
+  })
   async getCities(userIds: string[], { country, state, query }: GetCitiesOptions): Promise<string[]> {
     const res = await this.getExifField('city', userIds, query)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
@@ -482,7 +498,9 @@ export class SearchRepository {
     return res.map((row) => row.city!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }] })
+  @GenerateSql({
+    params: [[DummyValue.UUID], { model: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }],
+  })
   async getCameraMakes(userIds: string[], { model, lensModel, query }: GetCameraMakesOptions): Promise<string[]> {
     const res = await this.getExifField('make', userIds, query)
       .$if(!!model, (qb) => qb.where('model', '=', model!))
@@ -492,7 +510,9 @@ export class SearchRepository {
     return res.map((row) => row.make!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], { make: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }] })
+  @GenerateSql({
+    params: [[DummyValue.UUID], { make: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }],
+  })
   async getCameraModels(userIds: string[], { make, lensModel, query }: GetCameraModelsOptions): Promise<string[]> {
     const res = await this.getExifField('model', userIds, query)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
@@ -502,7 +522,9 @@ export class SearchRepository {
     return res.map((row) => row.model!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], { make: DummyValue.STRING, model: DummyValue.STRING, query: DummyValue.STRING }] })
+  @GenerateSql({
+    params: [[DummyValue.UUID], { make: DummyValue.STRING, model: DummyValue.STRING, query: DummyValue.STRING }],
+  })
   async getCameraLensModels(userIds: string[], { make, model, query }: GetCameraLensModelsOptions): Promise<string[]> {
     const res = await this.getExifField('lensModel', userIds, query)
       .$if(!!make, (qb) => qb.where('make', '=', make!))

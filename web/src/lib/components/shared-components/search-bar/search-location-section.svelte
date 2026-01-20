@@ -7,11 +7,11 @@
 </script>
 
 <script lang="ts">
-  import Combobox, { asComboboxOptions, asSelectedOption } from "$lib/components/shared-components/combobox.svelte";
-  import { handlePromiseError } from "$lib/utils";
-  import { getSearchSuggestions, SearchSuggestionType } from "@immich/sdk";
-  import { onDestroy, onMount } from "svelte";
-  import { t } from "svelte-i18n";
+  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
+  import { handlePromiseError } from '$lib/utils';
+  import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { onDestroy, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     filters: SearchLocationFilter;
@@ -61,7 +61,7 @@
       includeNull: true,
       query,
     });
-    countries = results.map((r) => r ?? "");
+    countries = results.map((r) => r ?? '');
     if (!query && filters.country && !countries.includes(filters.country)) {
       filters.country = undefined;
     }
@@ -74,7 +74,7 @@
       includeNull: true,
       query,
     });
-    states = results.map((r) => r ?? "");
+    states = results.map((r) => r ?? '');
     if (!query && filters.state && !states.includes(filters.state)) {
       filters.state = undefined;
     }
@@ -87,7 +87,7 @@
       state: filters.state,
       query,
     });
-    cities = results.map((r) => r ?? "");
+    cities = results.map((r) => r ?? '');
     if (!query && filters.city && !cities.includes(filters.city)) {
       filters.city = undefined;
     }
@@ -125,10 +125,10 @@
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">
       <Combobox
-        label={$t("country")}
+        label={$t('country')}
         onSelect={(option) => (filters.country = option?.value)}
         options={asComboboxOptions(countries)}
-        placeholder={$t("search_country")}
+        placeholder={$t('search_country')}
         selectedOption={asSelectedOption(filters.country)}
         onSearch={handleCountrySearch}
         isSearching={isSearchingCountry}
@@ -137,10 +137,10 @@
 
     <div class="w-full">
       <Combobox
-        label={$t("state")}
+        label={$t('state')}
         onSelect={(option) => (filters.state = option?.value)}
         options={asComboboxOptions(states)}
-        placeholder={$t("search_state")}
+        placeholder={$t('search_state')}
         selectedOption={asSelectedOption(filters.state)}
         onSearch={handleStateSearch}
         isSearching={isSearchingState}
@@ -149,11 +149,10 @@
 
     <div class="w-full">
       <Combobox
-        label={$t("city")}
+        label={$t('city')}
         onSelect={(option) => (filters.city = option?.value)}
         options={asComboboxOptions(cities)}
-        placeholder={$t("search_city")}
-        selectedOption={asSelectedOption(filters.city)}
+        placeholder={$t('search_country')}
         onSearch={handleCitySearch}
         isSearching={isSearchingCity}
       />

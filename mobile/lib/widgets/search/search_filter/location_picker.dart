@@ -8,9 +8,10 @@ import "package:immich_mobile/models/search/search_filter.model.dart";
 import "package:immich_mobile/providers/search/search_filter.provider.dart";
 import "package:immich_mobile/widgets/search/search_filter/common/dropdown.dart";
 import "package:openapi/api.dart";
+import 'package:openapi/api.dart';
 
-/// Creates a debounced listener for fuzzy search on text input.
-/// Returns a listener function that updates the query state after a delay.
+// Creates a debounced listener for fuzzy search on text input.
+// Returns a listener function that updates the query state after a delay.
 VoidCallback _createDebouncedListener({
   required TextEditingController controller,
   required ValueNotifier<String?> query,
@@ -31,7 +32,7 @@ VoidCallback _createDebouncedListener({
   };
 }
 
-/// Converts async data to dropdown menu entries.
+// Converts async data to dropdown menu entries.
 List<DropdownMenuEntry<String>> _buildMenuEntries(AsyncValue<List<String>> data) {
   return switch (data) {
     AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
@@ -39,7 +40,7 @@ List<DropdownMenuEntry<String>> _buildMenuEntries(AsyncValue<List<String>> data)
   };
 }
 
-/// A widget for selecting location filters (country, state, city) with fuzzy search support.
+// A widget for selecting location filters (country, state, city) with fuzzy search support.
 class LocationPicker extends HookConsumerWidget {
   const LocationPicker({super.key, required this.onSelected, this.filter});
 
