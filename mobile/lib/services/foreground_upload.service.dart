@@ -322,19 +322,6 @@ class ForegroundUploadService {
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
         'duration': asset.duration.toString(),
-        if (CurrentPlatform.isIOS && asset.cloudId != null)
-          'metadata': jsonEncode([
-            RemoteAssetMetadataItem(
-              key: RemoteAssetMetadataKey.mobileApp,
-              value: RemoteAssetMobileAppMetadata(
-                cloudId: asset.cloudId,
-                createdAt: asset.createdAt.toIso8601String(),
-                adjustmentTime: asset.adjustmentTime?.toIso8601String(),
-                latitude: asset.latitude?.toString(),
-                longitude: asset.longitude?.toString(),
-              ),
-            ),
-          ]),
       };
 
       // Upload live photo video first if available
@@ -361,6 +348,22 @@ class ForegroundUploadService {
 
       if (livePhotoVideoId != null) {
         fields['livePhotoVideoId'] = livePhotoVideoId;
+      }
+
+      // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
+      if (CurrentPlatform.isIOS && asset.cloudId != null) {
+        fields['metadata'] = jsonEncode([
+          RemoteAssetMetadataItem(
+            key: RemoteAssetMetadataKey.mobileApp,
+            value: RemoteAssetMobileAppMetadata(
+              cloudId: asset.cloudId,
+              createdAt: asset.createdAt.toIso8601String(),
+              adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+              latitude: asset.latitude?.toString(),
+              longitude: asset.longitude?.toString(),
+            ),
+          ),
+        ]);
       }
 
       final result = await _uploadRepository.uploadFile(
