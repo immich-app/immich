@@ -255,6 +255,9 @@ export class MediaService extends BaseService {
     // S3 upload is now queued after encryption (see asset-encryption.service.ts)
     // For users without vault, encryption service will queue S3 upload directly
 
+    // Queue thumbnail S3 upload if S3 is enabled for thumbnails/previews
+    await this.jobRepository.queue({ name: JobName.S3UploadThumbnails, data: { id: asset.id } });
+
     return JobStatus.Success;
   }
 

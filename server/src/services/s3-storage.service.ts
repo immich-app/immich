@@ -361,6 +361,156 @@ export class S3StorageService extends BaseService {
   }
 
   /**
+   * Handle uploading a single asset's thumbnails and previews to S3.
+   * This is called after thumbnail generation is complete.
+   */
+  @OnJob({ name: JobName.S3UploadThumbnails, queue: QueueName.S3Upload })
+  async handleS3UploadThumbnails(job: JobOf<JobName.S3UploadThumbnails>): Promise<JobStatus> {
+    const { id } = job;
+
+    const config = await this.getConfig({ withCache: true });
+
+    // Check if S3 is enabled for thumbnails or previews
+    const uploadThumbnails = config.storage.s3.enabled && config.storage.locations.thumbnails === StorageBackend.S3;
+    const uploadPreviews = config.storage.s3.enabled && config.storage.locations.previews === StorageBackend.S3;
+
+    if (!uploadThumbnails && !uploadPreviews) {
+      this.logger.debug(`S3 upload skipped for thumbnails ${id}: S3 not enabled for thumbnails/previews`);
+      return JobStatus.Success;
+    }
+
+    const asset = await this.assetRepository.getById(id, { files: true });
+    if (!asset) {
+      this.logger.warn(`Asset not found for thumbnail S3 upload: ${id}`);
+      return JobStatus.Failed;
+    }
+
+    try {
+      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const localAdapter = this.storageAdapterFactory.getLocalAdapter();
+      const storageClass = config.storage.s3.storageClasses.thumbnails;
+
+      // Process thumbnails
+      if (uploadThumbnails) {
+        const thumbnailFile = asset.files?.find((f: { type: string }) => f.type === 'thumbnail');
+        if (thumbnailFile && thumbnailFile.storageBackend !== StorageBackend.S3) {
+          const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'thumbnail.webp');
+
+          const localFileExists = await localAdapter.exists(thumbnailFile.path);
+          if (localFileExists) {
+            this.logger.log(`Uploading thumbnail for asset ${id} to S3: ${s3Key}`);
+            const fileBuffer = await localAdapter.read(thumbnailFile.path);
+            await s3Adapter.write(s3Key, fileBuffer, {
+              contentType: 'image/webp',
+              storageClass,
+            });
+
+            // Update asset_file record
+            await this.assetRepository.upsertFileWithS3({
+              assetId: asset.id,
+              type: 'thumbnail',
+              path: thumbnailFile.path,
+              storageBackend: StorageBackend.S3,
+              s3Bucket: config.storage.s3.bucket,
+              s3Key,
+            });
+
+            // Delete local file after successful upload
+            if (config.storage.upload.deleteLocalAfterUpload) {
+              try {
+                await localAdapter.delete(thumbnailFile.path);
+                this.logger.debug(`Deleted local thumbnail for asset ${id}`);
+              } catch (error) {
+                this.logger.warn(`Failed to delete local thumbnail: ${error}`);
+              }
+            }
+
+            this.logger.log(`Successfully uploaded thumbnail for asset ${id} to S3`);
+          }
+        }
+      }
+
+      // Process previews
+      if (uploadPreviews) {
+        const previewFile = asset.files?.find((f: { type: string }) => f.type === 'preview');
+        if (previewFile && previewFile.storageBackend !== StorageBackend.S3) {
+          const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'preview.webp');
+
+          const localFileExists = await localAdapter.exists(previewFile.path);
+          if (localFileExists) {
+            this.logger.log(`Uploading preview for asset ${id} to S3: ${s3Key}`);
+            const fileBuffer = await localAdapter.read(previewFile.path);
+            await s3Adapter.write(s3Key, fileBuffer, {
+              contentType: 'image/webp',
+              storageClass,
+            });
+
+            // Update asset_file record
+            await this.assetRepository.upsertFileWithS3({
+              assetId: asset.id,
+              type: 'preview',
+              path: previewFile.path,
+              storageBackend: StorageBackend.S3,
+              s3Bucket: config.storage.s3.bucket,
+              s3Key,
+            });
+
+            // Delete local file after successful upload
+            if (config.storage.upload.deleteLocalAfterUpload) {
+              try {
+                await localAdapter.delete(previewFile.path);
+                this.logger.debug(`Deleted local preview for asset ${id}`);
+              } catch (error) {
+                this.logger.warn(`Failed to delete local preview: ${error}`);
+              }
+            }
+
+            this.logger.log(`Successfully uploaded preview for asset ${id} to S3`);
+          }
+        }
+      }
+
+      return JobStatus.Success;
+    } catch (error) {
+      this.logger.error(`Failed to upload thumbnails for asset ${id} to S3: ${error}`);
+      return JobStatus.Failed;
+    }
+  }
+
+  /**
+   * Queue all assets with local thumbnails for S3 upload.
+   */
+  @OnJob({ name: JobName.S3UploadThumbnailsQueueAll, queue: QueueName.S3Upload })
+  async handleS3UploadThumbnailsQueueAll(): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
+
+    const uploadThumbnails = config.storage.s3.enabled && config.storage.locations.thumbnails === StorageBackend.S3;
+    const uploadPreviews = config.storage.s3.enabled && config.storage.locations.previews === StorageBackend.S3;
+
+    if (!uploadThumbnails && !uploadPreviews) {
+      this.logger.log('S3 thumbnail upload queue all skipped: S3 not enabled for thumbnails/previews');
+      return JobStatus.Success;
+    }
+
+    this.logger.log('Queueing all assets with local thumbnails for S3 upload');
+
+    // Get all assets that have local thumbnails/previews
+    const assets = await this.assetRepository.getWithLocalThumbnails();
+
+    let queued = 0;
+    for (const asset of assets) {
+      await this.jobRepository.queue({
+        name: JobName.S3UploadThumbnails,
+        data: { id: asset.id },
+      });
+      queued++;
+    }
+
+    this.logger.log(`Queued ${queued} assets for thumbnail S3 upload`);
+    return JobStatus.Success;
+  }
+
+  /**
    * Generate S3 key for an asset original.
    * Format: users/{userId}/{assetId}/original.{ext}
    */
@@ -375,6 +525,14 @@ export class S3StorageService extends BaseService {
    */
   private generateEncodedVideoS3Key(userId: string, assetId: string): string {
     return `users/${userId}/${assetId}/encoded.mp4`;
+  }
+
+  /**
+   * Generate S3 key for a thumbnail or preview.
+   * Format: users/{userId}/{assetId}/{filename}
+   */
+  private generateThumbnailS3Key(userId: string, assetId: string, filename: string): string {
+    return `users/${userId}/${assetId}/${filename}`;
   }
 
   /**
@@ -432,6 +590,42 @@ export class S3StorageService extends BaseService {
     }
 
     return s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn });
+  }
+
+  /**
+   * Get a presigned download URL for a thumbnail or preview in S3.
+   */
+  async getPresignedThumbnailUrl(
+    assetId: string,
+    fileType: 'thumbnail' | 'preview',
+    expiresIn: number = 3600,
+  ): Promise<string | null> {
+    const config = await this.getConfig({ withCache: true });
+
+    if (!config.storage.s3.enabled) {
+      return null;
+    }
+
+    const asset = await this.assetRepository.getById(assetId, { files: true });
+    if (!asset || !asset.files) {
+      return null;
+    }
+
+    const file = asset.files.find((f: { type: string; storageBackend?: StorageBackend; s3Key?: string }) =>
+      f.type === fileType && f.storageBackend === StorageBackend.S3 && f.s3Key
+    );
+
+    if (!file || !file.s3Key) {
+      return null;
+    }
+
+    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+
+    if (!s3Adapter.getPresignedDownloadUrl) {
+      return null;
+    }
+
+    return s3Adapter.getPresignedDownloadUrl(file.s3Key, { expiresIn });
   }
 
   /**

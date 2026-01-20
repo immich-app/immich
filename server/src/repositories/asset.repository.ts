@@ -1022,4 +1022,51 @@ export class AssetRepository {
       .where('deletedAt', 'is', null)
       .execute();
   }
+
+  /**
+   * Upsert an asset file with S3 storage information.
+   */
+  async upsertFileWithS3(file: {
+    assetId: string;
+    type: string;
+    path: string;
+    storageBackend: StorageBackend;
+    s3Bucket: string;
+    s3Key: string;
+  }): Promise<void> {
+    const value = { ...file, assetId: asUuid(file.assetId) };
+    await this.db
+      .insertInto('asset_file')
+      .values(value)
+      .onConflict((oc) =>
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+          storageBackend: eb.ref('excluded.storageBackend'),
+          s3Bucket: eb.ref('excluded.s3Bucket'),
+          s3Key: eb.ref('excluded.s3Key'),
+        })),
+      )
+      .execute();
+  }
+
+  /**
+   * Get all assets that have local thumbnails/previews (not in S3).
+   */
+  @GenerateSql()
+  getWithLocalThumbnails() {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_file', 'asset.id', 'asset_file.assetId')
+      .select(['asset.id', 'asset.ownerId'])
+      .distinctOn('asset.id')
+      .where('asset_file.type', 'in', ['thumbnail', 'preview'])
+      .where((eb) =>
+        eb.or([
+          eb('asset_file.storageBackend', '=', StorageBackend.Local),
+          eb('asset_file.storageBackend', 'is', null),
+        ]),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .execute();
+  }
 }

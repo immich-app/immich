@@ -393,6 +393,8 @@ export type JobItem =
   | { name: JobName.S3UploadQueueAll; data?: IBaseJob }
   | { name: JobName.S3UploadEncodedVideo; data: IEntityJob }
   | { name: JobName.S3UploadEncodedVideoQueueAll; data?: IBaseJob }
+  | { name: JobName.S3UploadThumbnails; data: IEntityJob }
+  | { name: JobName.S3UploadThumbnailsQueueAll; data?: IBaseJob }
   | { name: JobName.S3MigrateStorageClass; data: IEntityJob }
   | { name: JobName.S3MigrateStorageClassAll; data?: IBaseJob }
 

@@ -660,6 +660,8 @@ export enum JobName {
   S3UploadQueueAll = 'S3UploadQueueAll',
   S3UploadEncodedVideo = 'S3UploadEncodedVideo',
   S3UploadEncodedVideoQueueAll = 'S3UploadEncodedVideoQueueAll',
+  S3UploadThumbnails = 'S3UploadThumbnails',
+  S3UploadThumbnailsQueueAll = 'S3UploadThumbnailsQueueAll',
   S3MigrateStorageClass = 'S3MigrateStorageClass',
   S3MigrateStorageClassAll = 'S3MigrateStorageClassAll',
 

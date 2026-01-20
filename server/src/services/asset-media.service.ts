@@ -250,8 +250,10 @@ export class AssetMediaService extends BaseService {
 
     const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
     let filepath = previewFile?.path;
+    let selectedFile = previewFile;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
+      selectedFile = thumbnailFile;
     } else if (size === AssetMediaSize.FULLSIZE) {
       if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
         // use original file for web supported images
@@ -263,6 +265,7 @@ export class AssetMediaService extends BaseService {
         return { targetSize: AssetMediaSize.PREVIEW };
       }
       filepath = fullsizeFile.path;
+      selectedFile = fullsizeFile;
     }
 
     if (!filepath) {
@@ -271,6 +274,24 @@ export class AssetMediaService extends BaseService {
     let fileName = getFileNameWithoutExtension(asset.originalFileName);
     fileName += `_${size}`;
     fileName += getFilenameExtension(filepath);
+
+    // Check if thumbnail is in S3 and redirect to presigned URL
+    if (selectedFile?.storageBackend === StorageBackend.S3 && selectedFile?.s3Key) {
+      const config = await this.getConfig({ withCache: true });
+      if (config.storage.s3.enabled) {
+        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(selectedFile.s3Key, { expiresIn: 3600 });
+        if (presignedUrl) {
+          return new ImmichFileResponse({
+            path: filepath,
+            fileName,
+            contentType: mimeTypes.lookup(filepath),
+            cacheControl: CacheControl.PrivateWithCache,
+            redirectUrl: presignedUrl,
+          });
+        }
+      }
+    }
 
     // Check if asset is encrypted and get decryption key
     const encryption = await this.getEncryptionInfo(auth, id);

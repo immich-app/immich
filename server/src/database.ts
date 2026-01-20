@@ -11,6 +11,7 @@ import {
   PluginTriggerType,
   SharedLinkType,
   SourceType,
+  StorageBackend,
   UserAvatarColor,
   UserStatus,
 } from 'src/enum';
@@ -39,6 +40,9 @@ export type AssetFile = {
   id: string;
   type: AssetFileType;
   path: string;
+  storageBackend?: StorageBackend | null;
+  s3Bucket?: string | null;
+  s3Key?: string | null;
 };
 
 export type Library = {
@@ -341,7 +345,7 @@ export const columns = {
     'asset.ownerId',
     'asset.type',
   ],
-  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
+  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.storageBackend', 'asset_file.s3Bucket', 'asset_file.s3Key'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
