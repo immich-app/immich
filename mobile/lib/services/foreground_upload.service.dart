@@ -16,6 +16,7 @@ import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -40,6 +41,7 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(connectivityApiProvider),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   );
 });
 
@@ -55,6 +57,7 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._appSettingsService,
+    this._assetMediaRepository,
   );
 
   final UploadRepository _uploadRepository;
@@ -62,6 +65,7 @@ class ForegroundUploadService {
   final DriftBackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AppSettingsService _appSettingsService;
+  final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -311,7 +315,9 @@ class ForegroundUploadService {
         return;
       }
 
-      final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+      print("assetName: ${asset.name}");
+      final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+      final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();
@@ -329,6 +335,7 @@ class ForegroundUploadService {
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
 
+        print("livePhotoTitle: $livePhotoTitle");
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
@@ -366,6 +373,7 @@ class ForegroundUploadService {
         ]);
       }
 
+      print("Uploading asset ${asset.localId} - $originalFileName");
       final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
