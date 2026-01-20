@@ -34,7 +34,7 @@
   confirmText={$t('save')}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onClose())}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <VStack class="items-start">
       <Text class="font-bold">{$t('deduplicate_source_preference')}</Text>
 
