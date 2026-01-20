@@ -106,6 +106,11 @@ class BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   ocr?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  locationQuery?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {
@@ -284,6 +289,12 @@ export class SearchSuggestionRequestDto {
   @ValidateBoolean({ optional: true })
   @Property({ history: new HistoryBuilder().added('v1.111.0').stable('v2') })
   includeNull?: boolean;
+
+  /** Fuzzy search query for filtering suggestions using trigram matching. */
+  @IsString()
+  @Optional()
+  @Property({ history: new HistoryBuilder().added('v1.130.0').stable('v2') })
+  query?: string;
 }
 
 class SearchFacetCountResponseDto {

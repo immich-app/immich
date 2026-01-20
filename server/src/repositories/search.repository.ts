@@ -77,6 +77,7 @@ export interface SearchExifOptions {
   state?: string | null;
   description?: string | null;
   rating?: number | null;
+  locationQuery?: string;
 }
 
 export interface SearchEmbeddingOptions {
@@ -158,7 +159,13 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
-export interface GetStatesOptions {
+/** Options for fuzzy text search using PostgreSQL trigram matching. */
+export interface FuzzySearchOptions {
+  /** Optional search query for trigram fuzzy matching. */
+  query?: string;
+}
+
+export interface GetStatesOptions extends FuzzySearchOptions {
   country?: string;
 }
 
@@ -166,20 +173,36 @@ export interface GetCitiesOptions extends GetStatesOptions {
   state?: string;
 }
 
-export interface GetCameraModelsOptions {
+export interface GetCameraModelsOptions extends FuzzySearchOptions {
   make?: string;
   lensModel?: string;
 }
 
-export interface GetCameraMakesOptions {
+export interface GetCameraMakesOptions extends FuzzySearchOptions {
   model?: string;
   lensModel?: string;
 }
 
-export interface GetCameraLensModelsOptions {
+export interface GetCameraLensModelsOptions extends FuzzySearchOptions {
   make?: string;
   model?: string;
 }
+
+export interface GetCameraModelsOptions extends FuzzySearchOptions {
+  make?: string;
+  lensModel?: string;
+}
+
+export interface GetCameraMakesOptions extends FuzzySearchOptions {
+  model?: string;
+  lensModel?: string;
+}
+
+export interface GetCameraLensModelsOptions extends FuzzySearchOptions {
+  make?: string;
+  model?: string;
+}
+export interface GetCountriesOptions extends FuzzySearchOptions {}
 
 @Injectable()
 export class SearchRepository {
@@ -448,23 +471,26 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const res = await this.getExifField('country', userIds).execute();
+  @GenerateSql({ params: [[DummyValue.UUID], { query: DummyValue.STRING }] })
+  async getCountries(userIds: string[], { query }: GetCountriesOptions): Promise<string[]> {
+    const res = await this.getExifField('country', userIds, query).execute();
     return res.map((row) => row.country!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds)
+  @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING, query: DummyValue.STRING }] })
+  async getStates(userIds: string[], { country, query }: GetStatesOptions): Promise<string[]> {
+    const res = await this.getExifField('state', userIds, query)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .execute();
 
     return res.map((row) => row.state!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds)
+  @GenerateSql({
+    params: [[DummyValue.UUID], { country: DummyValue.STRING, state: DummyValue.STRING, query: DummyValue.STRING }],
+  })
+  async getCities(userIds: string[], { country, state, query }: GetCitiesOptions): Promise<string[]> {
+    const res = await this.getExifField('city', userIds, query)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .$if(!!state, (qb) => qb.where('state', '=', state!))
       .execute();
@@ -472,9 +498,11 @@ export class SearchRepository {
     return res.map((row) => row.city!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
-    const res = await this.getExifField('make', userIds)
+  @GenerateSql({
+    params: [[DummyValue.UUID], { model: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }],
+  })
+  async getCameraMakes(userIds: string[], { model, lensModel, query }: GetCameraMakesOptions): Promise<string[]> {
+    const res = await this.getExifField('make', userIds, query)
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -482,9 +510,11 @@ export class SearchRepository {
     return res.map((row) => row.make!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('model', userIds)
+  @GenerateSql({
+    params: [[DummyValue.UUID], { make: DummyValue.STRING, lensModel: DummyValue.STRING, query: DummyValue.STRING }],
+  })
+  async getCameraModels(userIds: string[], { make, lensModel, query }: GetCameraModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('model', userIds, query)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -492,9 +522,11 @@ export class SearchRepository {
     return res.map((row) => row.model!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraLensModels(userIds: string[], { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds)
+  @GenerateSql({
+    params: [[DummyValue.UUID], { make: DummyValue.STRING, model: DummyValue.STRING, query: DummyValue.STRING }],
+  })
+  async getCameraLensModels(userIds: string[], { make, model, query }: GetCameraLensModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('lensModel', userIds, query)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .execute();
@@ -502,9 +534,17 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
+  /**
+   * Builds a query for distinct EXIF field values with optional fuzzy search.
+   * Uses PostgreSQL trigram operators for typo-tolerant matching.
+   * @param field - The EXIF field to query (city, state, country, make, model, lensModel)
+   * @param userIds - User IDs to filter assets by
+   * @param query - Optional fuzzy search query
+   */
   private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
     field: K,
     userIds: string[],
+    query?: string,
   ) {
     return this.db
       .selectFrom('asset_exif')
@@ -514,6 +554,17 @@ export class SearchRepository {
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
-      .where(field, 'is not', null);
+      .where(field, 'is not', null)
+      .$if(!!query, (qb) =>
+        qb.where(
+          () =>
+            sql`
+              f_unaccent(${sql.ref(field)}) %> f_unaccent(${query})
+              OR f_unaccent(${sql.ref(field)}) ILIKE '%' || f_unaccent(${query}) || '%'
+            `,
+        ),
+      )
+      .$if(!!query, (qb) => qb.orderBy(sql`f_unaccent(${sql.ref(field)}) <-> f_unaccent(${query})`))
+      .limit(20);
   }
 }

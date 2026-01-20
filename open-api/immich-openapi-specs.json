@@ -9262,6 +9262,14 @@
             }
           },
           {
+            "name": "locationQuery",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -9911,6 +9919,26 @@
             "name": "model",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "description": "Fuzzy search query for filtering suggestions using trigram matching.",
+            "x-immich-history": [
+              {
+                "version": "v1.130.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable",
             "schema": {
               "type": "string"
             }
@@ -18307,6 +18335,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -19876,6 +19907,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -21020,6 +21054,9 @@
             "nullable": true,
             "type": "string"
           },
+          "locationQuery": {
+            "type": "string"
+          },
           "make": {
             "type": "string"
           },
@@ -21226,6 +21263,9 @@
           "libraryId": {
             "format": "uuid",
             "nullable": true,
+            "type": "string"
+          },
+          "locationQuery": {
             "type": "string"
           },
           "make": {

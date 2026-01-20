@@ -33,6 +33,7 @@ class SearchService {
     String? state,
     String? make,
     String? model,
+    String? query,
   }) async {
     try {
       return await _searchApiRepository.getSearchSuggestions(
@@ -41,6 +42,7 @@ class SearchService {
         state: state,
         make: make,
         model: model,
+        query: query,
       );
     } catch (e) {
       dPrint(() => "[ERROR] [getSearchSuggestions] ${e.toString()}");

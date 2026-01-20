@@ -453,6 +453,19 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
         .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
+    .$if(!!options.locationQuery, (qb) =>
+      qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId').where(
+        () =>
+          sql`
+            f_unaccent(asset_exif.city) %> f_unaccent(${options.locationQuery}) OR
+            f_unaccent(asset_exif.state) %> f_unaccent(${options.locationQuery}) OR
+            f_unaccent(asset_exif.country) %> f_unaccent(${options.locationQuery}) OR
+            f_unaccent(asset_exif.city) ILIKE '%' || f_unaccent(${options.locationQuery}) || '%' OR
+            f_unaccent(asset_exif.state) ILIKE '%' || f_unaccent(${options.locationQuery}) || '%' OR
+            f_unaccent(asset_exif.country) ILIKE '%' || f_unaccent(${options.locationQuery}) || '%'
+          `,
+      ),
+    )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))

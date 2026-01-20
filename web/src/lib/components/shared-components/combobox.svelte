@@ -46,6 +46,17 @@
      */
     defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
+    /**
+     * Callback for async/server-side search. When provided:
+     * - Client-side filtering is disabled (server handles filtering)
+     * - Called on each keystroke with the current search query
+     * - Use with isSearching prop to show loading state
+     */
+    onSearch?: (query: string) => void;
+    /**
+     * Shows a loading spinner when true. Use with onSearch for async searches.
+     */
+    isSearching?: boolean;
     forceFocus?: boolean;
   }
 
@@ -59,6 +70,8 @@
     allowCreate = false,
     defaultFirstOption = false,
     onSelect = () => {},
+    onSearch,
+    isSearching = false,
     forceFocus = false,
   }: Props = $props();
 
@@ -163,6 +176,8 @@
     searchQuery = event.currentTarget.value;
     selectedIndex = defaultFirstOption ? 0 : undefined;
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
+    // Trigger async search if callback is provided
+    onSearch?.(searchQuery);
   };
 
   let handleSelect = (option: ComboBoxOption) => {
@@ -238,7 +253,10 @@
   const getInputPosition = () => input?.getBoundingClientRect();
 
   let filteredOptions = $derived.by(() => {
-    const _options = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+    // If onSearch is provided, skip client-side filtering (server does fuzzy search)
+    const _options = onSearch
+      ? options
+      : options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (allowCreate && searchQuery !== '' && _options.filter((option) => option.label === searchQuery).length === 0) {
       _options.unshift({ label: searchQuery, value: searchQuery });
@@ -373,7 +391,18 @@
     tabindex="-1"
   >
     {#if isOpen}
-      {#if filteredOptions.length === 0}
+      {#if isSearching}
+        <li
+          role="option"
+          aria-selected={false}
+          aria-disabled={true}
+          class="text-start w-full px-4 py-2 cursor-default text-gray-500 dark:text-gray-400 flex items-center gap-2"
+          id={`${listboxId}-loading`}
+        >
+          <span class="animate-spin h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-gray-600 dark:border-t-gray-300 rounded-full"></span>
+          {$t('searching')}
+        </li>
+      {:else if filteredOptions.length === 0}
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           role="option"

@@ -70,5 +70,6 @@ class SearchApiRepository extends ApiRepository {
     String? state,
     String? make,
     String? model,
-  }) => _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model);
+    String? query,
+  }) => _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model, query: query);
 }
