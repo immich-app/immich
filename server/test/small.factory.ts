@@ -253,7 +253,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   visibility: AssetVisibility.Timeline,
   width: null,
   height: null,
-  editCount: 0,
+  isEdited: false,
   ...asset,
 });
 

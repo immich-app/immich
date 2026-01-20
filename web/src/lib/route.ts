@@ -14,9 +14,29 @@ export const fromQueueSlug = (slug: string): QueueName | undefined => {
 };
 
 type QueryValue = number | string;
-const asQueryString = (params?: Record<string, QueryValue | undefined>) => {
+const asQueryString = (
+  params?: Record<string, QueryValue | undefined>,
+  options?: { skipEmptyStrings?: boolean; skipNullValues?: boolean },
+) => {
+  const { skipEmptyStrings = true, skipNullValues = true } = options ?? {};
   const items = Object.entries(params ?? {})
-    .filter((item): item is [string, QueryValue] => item[1] !== undefined)
+    .filter((item): item is [string, QueryValue] => {
+      const value = item[1];
+
+      if (value === undefined) {
+        return false;
+      }
+
+      if (skipNullValues && value === null) {
+        return false;
+      }
+
+      if (skipEmptyStrings && value === '') {
+        return false;
+      }
+
+      return true;
+    })
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
 
   return items.length === 0 ? '' : `?${items.join('&')}`;
@@ -36,9 +56,15 @@ export const Route = {
   viewAlbumAsset: ({ albumId, assetId }: { albumId: string; assetId: string }) =>
     `/albums/${albumId}/photos/${assetId}`,
 
+  // buy
+  buy: () => '/buy',
+
   // explore
   explore: () => '/explore',
   places: () => '/places',
+
+  // folders
+  folders: (params?: { path?: string }) => '/folders' + asQueryString(params),
 
   // libraries
   libraries: () => '/admin/library-management',
@@ -46,11 +72,23 @@ export const Route = {
   viewLibrary: ({ id }: { id: string }) => `/admin/library-management/${id}`,
   editLibrary: ({ id }: { id: string }) => `/admin/library-management/${id}/edit`,
 
+  // maintenance
+  maintenanceMode: (params?: { continue?: string }) => '/maintenance' + asQueryString(params),
+
+  // map
+  map: (point?: { zoom: number; lat: number; lng: number }) =>
+    '/map' + (point ? `#${point.zoom}/${point.lat}/${point.lng}` : ''),
+
   // memories
   memories: (params?: { id?: string }) => '/memory' + asQueryString(params),
 
   // partners
   viewPartner: ({ id }: { id: string }) => `/partners/${id}`,
+
+  // people
+  people: () => '/people',
+  viewPerson: ({ id }: { id: string }, params?: { previousRoute?: string; action?: 'merge' }) =>
+    `/people/${id}` + asQueryString(params),
 
   // photos
   photos: (params?: { at?: string }) => '/photos' + asQueryString(params),
@@ -82,6 +120,10 @@ export const Route = {
   // system
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
   systemStatistics: () => '/admin/server-status',
+  systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
+
+  // tags
+  tags: (params?: { path?: string }) => '/tags' + asQueryString(params),
 
   // users
   users: () => '/admin/users',

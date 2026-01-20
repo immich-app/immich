@@ -1,4 +1,3 @@
-import { AppRoute } from '$lib/constants';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
@@ -15,7 +14,7 @@ export const load = (async ({ fetch }) => {
     await init(fetch);
 
     if (serverConfigManager.value.maintenanceMode) {
-      redirect(307, AppRoute.MAINTENANCE);
+      redirect(307, Route.maintenanceMode());
     }
 
     const authenticated = await loadUser();

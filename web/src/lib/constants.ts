@@ -19,16 +19,6 @@ export enum AssetAction {
   RATING = 'rating',
 }
 
-export enum AppRoute {
-  PEOPLE = '/people',
-  SEARCH = '/search',
-  MAP = '/map',
-  BUY = '/buy',
-  FOLDERS = '/folders',
-  TAGS = '/tags',
-  MAINTENANCE = '/maintenance',
-}
-
 export type SharedLinkTab = 'all' | 'album' | 'individual';
 
 export enum ProjectionType {
@@ -80,10 +70,6 @@ export enum OpenQueryParam {
   STORAGE_TEMPLATE = 'storage-template',
   NOTIFICATIONS = 'notifications',
   PURCHASE_SETTINGS = 'user-purchase-settings',
-}
-
-export enum ActionQueryParameterValue {
-  MERGE = 'merge',
 }
 
 export const maximumLengthSearchPeople = 1000;
@@ -408,6 +394,12 @@ export enum ToggleVisibility {
   HIDE_ALL = 'hide-all',
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
+}
+
+export enum BackupFileStatus {
+  OK,
+  DifferentVersion,
+  UnknownVersion,
 }
 
 export const assetViewerFadeDuration: number = 150;
