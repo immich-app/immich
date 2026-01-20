@@ -446,8 +446,8 @@ importers:
         specifier: ^1.4.7
         version: 1.4.7
       cron:
-        specifier: 4.4.0
-        version: 4.4.0
+        specifier: 4.3.5
+        version: 4.3.5
       exiftool-vendored:
         specifier: ^34.3.0
         version: 34.3.0
@@ -482,11 +482,11 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       kysely:
-        specifier: 0.28.9
-        version: 0.28.9
+        specifier: 0.28.2
+        version: 0.28.2
       kysely-postgres-js:
         specifier: ^3.0.0
-        version: 3.0.0(kysely@0.28.9)(postgres@3.4.8)
+        version: 3.0.0(kysely@0.28.2)(postgres@3.4.8)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -507,7 +507,7 @@ importers:
         version: 5.4.3(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
-        version: 3.1.2(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(kysely@0.28.9)(reflect-metadata@0.2.2)
+        version: 3.1.2(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(kysely@0.28.2)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^7.0.0
         version: 7.0.1(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)
@@ -6635,10 +6635,6 @@ packages:
     resolution: {integrity: sha512-hKPP7fq1+OfyCqoePkKfVq7tNAdFwiQORr4lZUHwrf0tebC65fYEeWgOrXOL6prn1/fegGOdTfrM6e34PJfksg==}
     engines: {node: '>=18.x'}
 
-  cron@4.4.0:
-    resolution: {integrity: sha512-fkdfq+b+AHI4cKdhZlppHveI/mgz2qpiYxcm+t5E5TsxX7QrLS1VE0+7GENEk9z0EeGPcpSciGv6ez24duWhwQ==}
-    engines: {node: '>=18.x'}
-
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -8766,9 +8762,9 @@ packages:
       postgres:
         optional: true
 
-  kysely@0.28.9:
-    resolution: {integrity: sha512-3BeXMoiOhpOwu62CiVpO6lxfq4eS6KMYfQdMsN/2kUCRNuF2YiEr7u0HLHaQU+O4Xu8YXE3bHVkwaQ85i72EuA==}
-    engines: {node: '>=20.0.0'}
+  kysely@0.28.2:
+    resolution: {integrity: sha512-4YAVLoF0Sf0UTqlhgQMFU9iQECdah7n+13ANkiuVfRvlK+uI0Etbgd7bVP36dKlG+NXWbhGua8vnGt+sdhvT7A==}
+    engines: {node: '>=18.0.0'}
 
   langium@3.3.1:
     resolution: {integrity: sha512-QJv/h939gDpvT+9SiLVlY7tZC3xB2qK57v0J04Sh9wpMb6MP1q8gB21L3WIo8T5P1MSMg3Ep14L7KkDCFG3y4w==}
@@ -19673,11 +19669,6 @@ snapshots:
       '@types/luxon': 3.7.1
       luxon: 3.7.2
 
-  cron@4.4.0:
-    dependencies:
-      '@types/luxon': 3.7.1
-      luxon: 3.7.2
-
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -22258,13 +22249,13 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  kysely-postgres-js@3.0.0(kysely@0.28.9)(postgres@3.4.8):
+  kysely-postgres-js@3.0.0(kysely@0.28.2)(postgres@3.4.8):
     dependencies:
-      kysely: 0.28.9
+      kysely: 0.28.2
     optionalDependencies:
       postgres: 3.4.8
 
-  kysely@0.28.9: {}
+  kysely@0.28.2: {}
 
   langium@3.3.1:
     dependencies:
@@ -23357,11 +23348,11 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.2(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(kysely@0.28.9)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.1.2(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(kysely@0.28.2)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.12(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.12)(@nestjs/websockets@11.1.12)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.28.9
+      kysely: 0.28.2
       reflect-metadata: 0.2.2
       tslib: 2.8.1
 
