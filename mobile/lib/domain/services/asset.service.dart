@@ -1,5 +1,6 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -115,5 +116,13 @@ class AssetService {
 
   Future<List<LocalAlbum>> getSourceAlbums(String localAssetId, {BackupSelection? backupSelection}) {
     return _localAssetRepository.getSourceAlbums(localAssetId, backupSelection: backupSelection);
+  }
+
+  Future<List<AssetEdit>> getAssetEdits(String assetId) {
+    return _remoteAssetRepository.getAssetEdits(assetId);
+  }
+
+  Future<void> editAsset(String assetId, List<AssetEdit> edits) {
+    return _remoteAssetRepository.editAsset(assetId, edits);
   }
 }

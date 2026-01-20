@@ -1004,69 +1004,25 @@ class DriftCreateAlbumRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftCropImagePage]
-class DriftCropImageRoute extends PageRouteInfo<DriftCropImageRouteArgs> {
-  DriftCropImageRoute({
-    Key? key,
-    required Image image,
-    required BaseAsset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriftCropImageRoute.name,
-         args: DriftCropImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'DriftCropImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DriftCropImageRouteArgs>();
-      return DriftCropImagePage(
-        key: args.key,
-        image: args.image,
-        asset: args.asset,
-      );
-    },
-  );
-}
-
-class DriftCropImageRouteArgs {
-  const DriftCropImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final BaseAsset asset;
-
-  @override
-  String toString() {
-    return 'DriftCropImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
-}
-
-/// generated route for
 /// [DriftEditImagePage]
 class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
   DriftEditImageRoute({
     Key? key,
-    required BaseAsset asset,
     required Image image,
-    required bool isEdited,
+    required BaseAsset asset,
+    required List<AssetEdit> edits,
+    required ExifInfo exifInfo,
+    required Future<void> Function(List<AssetEdit>) applyEdits,
     List<PageRouteInfo>? children,
   }) : super(
          DriftEditImageRoute.name,
          args: DriftEditImageRouteArgs(
            key: key,
-           asset: asset,
            image: image,
-           isEdited: isEdited,
+           asset: asset,
+           edits: edits,
+           exifInfo: exifInfo,
+           applyEdits: applyEdits,
          ),
          initialChildren: children,
        );
@@ -1079,9 +1035,11 @@ class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
       final args = data.argsAs<DriftEditImageRouteArgs>();
       return DriftEditImagePage(
         key: args.key,
-        asset: args.asset,
         image: args.image,
-        isEdited: args.isEdited,
+        asset: args.asset,
+        edits: args.edits,
+        exifInfo: args.exifInfo,
+        applyEdits: args.applyEdits,
       );
     },
   );
@@ -1090,22 +1048,28 @@ class DriftEditImageRoute extends PageRouteInfo<DriftEditImageRouteArgs> {
 class DriftEditImageRouteArgs {
   const DriftEditImageRouteArgs({
     this.key,
-    required this.asset,
     required this.image,
-    required this.isEdited,
+    required this.asset,
+    required this.edits,
+    required this.exifInfo,
+    required this.applyEdits,
   });
 
   final Key? key;
 
-  final BaseAsset asset;
-
   final Image image;
 
-  final bool isEdited;
+  final BaseAsset asset;
+
+  final List<AssetEdit> edits;
+
+  final ExifInfo exifInfo;
+
+  final Future<void> Function(List<AssetEdit>) applyEdits;
 
   @override
   String toString() {
-    return 'DriftEditImageRouteArgs{key: $key, asset: $asset, image: $image, isEdited: $isEdited}';
+    return 'DriftEditImageRouteArgs{key: $key, image: $image, asset: $asset, edits: $edits, exifInfo: $exifInfo, applyEdits: $applyEdits}';
   }
 }
 
@@ -1123,54 +1087,6 @@ class DriftFavoriteRoute extends PageRouteInfo<void> {
       return const DriftFavoritePage();
     },
   );
-}
-
-/// generated route for
-/// [DriftFilterImagePage]
-class DriftFilterImageRoute extends PageRouteInfo<DriftFilterImageRouteArgs> {
-  DriftFilterImageRoute({
-    Key? key,
-    required Image image,
-    required BaseAsset asset,
-    List<PageRouteInfo>? children,
-  }) : super(
-         DriftFilterImageRoute.name,
-         args: DriftFilterImageRouteArgs(key: key, image: image, asset: asset),
-         initialChildren: children,
-       );
-
-  static const String name = 'DriftFilterImageRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DriftFilterImageRouteArgs>();
-      return DriftFilterImagePage(
-        key: args.key,
-        image: args.image,
-        asset: args.asset,
-      );
-    },
-  );
-}
-
-class DriftFilterImageRouteArgs {
-  const DriftFilterImageRouteArgs({
-    this.key,
-    required this.image,
-    required this.asset,
-  });
-
-  final Key? key;
-
-  final Image image;
-
-  final BaseAsset asset;
-
-  @override
-  String toString() {
-    return 'DriftFilterImageRouteArgs{key: $key, image: $image, asset: $asset}';
-  }
 }
 
 /// generated route for

@@ -561,6 +561,8 @@
   "asset_adding_to_album": "Adding to album…",
   "asset_created": "Asset created",
   "asset_description_updated": "Asset description has been updated",
+  "asset_edit_failed": "Asset edit failed",
+  "asset_edit_success": "Asset edited successfully",
   "asset_filename_is_offline": "Asset {filename} is offline",
   "asset_has_unassigned_faces": "Asset has unassigned faces",
   "asset_hashing": "Hashing…",
