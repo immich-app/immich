@@ -8,8 +8,7 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
-  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
-  echo "package-import-method=copy" >> /usr/local/etc/npmrc
+  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc
 
 COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
 COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
