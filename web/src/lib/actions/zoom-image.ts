@@ -1,48 +1,42 @@
 import { photoZoomState } from '$lib/stores/zoom-image.store';
-import { useZoomImageWheel } from '@zoom-image/svelte';
+import { createZoomImageWheel } from '@zoom-image/core';
 import { get } from 'svelte/store';
 
 export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolean }) => {
-  const { createZoomImage, zoomImageState, setZoomImageState } = useZoomImageWheel();
-
-  createZoomImage(node, {
+  const state = get(photoZoomState);
+  const zoomInstance = createZoomImageWheel(node, {
     maxZoom: 10,
+    initialState: state,
   });
 
-  const state = get(photoZoomState);
-  if (state) {
-    setZoomImageState(state);
-  }
+  const unsubscribes = [
+    photoZoomState.subscribe((state) => zoomInstance.setState(state)),
+    zoomInstance.subscribe(({ state }) => {
+      photoZoomState.set(state);
+    }),
+  ];
 
-  // Store original event handlers so we can prevent them when disabled
-  const wheelHandler = (event: WheelEvent) => {
+  const stopIfDisabled = (event: Event) => {
     if (options?.disabled) {
       event.stopImmediatePropagation();
     }
   };
 
-  const pointerDownHandler = (event: PointerEvent) => {
-    if (options?.disabled) {
-      event.stopImmediatePropagation();
-    }
-  };
+  node.addEventListener('wheel', stopIfDisabled, { capture: true });
+  node.addEventListener('pointerdown', stopIfDisabled, { capture: true });
 
-  // Add handlers at capture phase with higher priority
-  node.addEventListener('wheel', wheelHandler, { capture: true });
-  node.addEventListener('pointerdown', pointerDownHandler, { capture: true });
-
-  const unsubscribes = [photoZoomState.subscribe(setZoomImageState), zoomImageState.subscribe(photoZoomState.set)];
-
+  node.style.overflow = 'visible';
   return {
     update(newOptions?: { disabled?: boolean }) {
       options = newOptions;
     },
     destroy() {
-      node.removeEventListener('wheel', wheelHandler, { capture: true });
-      node.removeEventListener('pointerdown', pointerDownHandler, { capture: true });
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
+      node.removeEventListener('wheel', stopIfDisabled, { capture: true });
+      node.removeEventListener('pointerdown', stopIfDisabled, { capture: true });
+      zoomInstance.cleanup();
     },
   };
 };
