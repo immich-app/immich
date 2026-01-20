@@ -15,6 +15,7 @@ export class AssetEditFactory {
 
   static from(dto: AssetEditLike = {}) {
     const id = dto.id ?? newUuid();
+    const updateId = dto.updateId ?? newUuid();
 
     return new AssetEditFactory({
       id,
@@ -22,6 +23,7 @@ export class AssetEditFactory {
       action: AssetEditAction.Crop,
       parameters: { x: 5, y: 6, width: 200, height: 100 },
       sequence: 1,
+      updateId,
       ...dto,
     });
   }

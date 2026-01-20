@@ -1,0 +1,20 @@
+--- /tmp/asset_edit_orig.dart	2026-01-20 10:38:05
++++ /tmp/asset_edit_final.dart	2026-01-20 10:40:33
+@@ -19,7 +19,7 @@
+ 
+   AssetEditAction action;
+ 
+-  MirrorParameters parameters;
++  Map<String, dynamic> parameters;
+ 
+   @override
+   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionListDtoEditsInner &&
+@@ -62,7 +62,7 @@
+ 
+       return AssetEditActionListDtoEditsInner(
+         action: AssetEditAction.fromJson(json[r'action'])!,
+-        parameters: MirrorParameters.fromJson(json[r'parameters'])!,
++        parameters: json[r'parameters'],
+       );
+     }
+     return null;

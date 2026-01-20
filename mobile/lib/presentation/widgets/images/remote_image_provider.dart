@@ -16,8 +16,8 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
 
   RemoteImageProvider({required this.url});
 
-  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash})
-    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash);
+  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, bool edited = true})
+    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
 
   @override
   Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -59,8 +59,14 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   final String assetId;
   final String thumbhash;
   final AssetType assetType;
+  final bool edited;
 
-  RemoteFullImageProvider({required this.assetId, required this.thumbhash, required this.assetType});
+  RemoteFullImageProvider({
+    required this.assetId,
+    required this.thumbhash,
+    required this.assetType,
+    this.edited = true,
+  });
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -71,7 +77,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash)),
+      initialImage: getInitialImage(
+        RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash, edited: key.edited),
+      ),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -90,7 +98,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     final headers = ApiService.getRequestHeaders();
     final previewRequest = request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
+      uri: getThumbnailUrlForRemoteId(
+        key.assetId,
+        type: AssetMediaSize.preview,
+        thumbhash: key.thumbhash,
+        edited: key.edited,
+      ),
       headers: headers,
     );
     yield* loadRequest(previewRequest, decode);
@@ -104,7 +117,10 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
-    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+    final originalRequest = request = RemoteImageRequest(
+      uri: getOriginalUrlForRemoteId(key.assetId, edited: key.edited),
+      headers: headers,
+    );
     yield* loadRequest(originalRequest, decode);
   }
 
@@ -112,12 +128,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteFullImageProvider) {
-      return assetId == other.assetId && thumbhash == other.thumbhash;
+      return assetId == other.assetId && thumbhash == other.thumbhash && edited == other.edited;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
+  int get hashCode => assetId.hashCode ^ thumbhash.hashCode ^ edited.hashCode;
 }

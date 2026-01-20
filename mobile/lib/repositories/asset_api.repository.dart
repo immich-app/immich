@@ -1,12 +1,13 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' hide AssetEditAction;
 
 final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
@@ -104,6 +105,25 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> updateRating(String assetId, int rating) {
     return _api.updateAsset(assetId, UpdateAssetDto(rating: rating));
+  }
+
+  Future<void> editAsset(String assetId, List<AssetEdit> edits) async {
+    final editDtos = edits
+        .map((edit) {
+          if (edit.action == AssetEditAction.other) {
+            return null;
+          }
+
+          return AssetEditActionListDtoEditsInner(action: edit.action.toDto()!, parameters: edit.parameters);
+        })
+        .whereType<AssetEditActionListDtoEditsInner>()
+        .toList();
+
+    await _api.editAsset(assetId, AssetEditActionListDto(edits: editDtos));
+  }
+
+  Future<void> removeEdits(String assetId) async {
+    await _api.removeAssetEdits(assetId);
   }
 }
 
