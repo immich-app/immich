@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/stack.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' hide ExifInfo;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
@@ -9,6 +12,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:uuid/uuid.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -263,5 +267,36 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getCount() {
     return _db.managers.remoteAssetEntity.count();
+  }
+
+  Future<List<AssetEdit>> getAssetEdits(String assetId) async {
+    final query = _db.assetEditEntity.select()
+      ..where((row) => row.assetId.equals(assetId))
+      ..orderBy([(row) => OrderingTerm.asc(row.sequence)]);
+
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Future<void> editAsset(String assetId, List<AssetEdit> edits) async {
+    await _db.transaction(() async {
+      await _db.batch((batch) async {
+        // delete existing edits
+        batch.deleteWhere(_db.assetEditEntity, (row) => row.assetId.equals(assetId));
+
+        // insert new edits
+        for (var i = 0; i < edits.length; i++) {
+          final edit = edits[i];
+          final companion = AssetEditEntityCompanion(
+            id: Value(const Uuid().v4()),
+            assetId: Value(assetId),
+            action: Value(edit.action),
+            parameters: Value(edit.parameters),
+            sequence: Value(i),
+          );
+
+          batch.insert(_db.assetEditEntity, companion);
+        }
+      });
+    });
   }
 }
