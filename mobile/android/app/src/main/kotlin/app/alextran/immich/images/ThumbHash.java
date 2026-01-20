@@ -7,6 +7,8 @@ package app.alextran.immich.images;
 
 import java.nio.ByteBuffer;
 
+import app.alextran.immich.NativeBuffer;
+
 // modified to use native allocations
 public final class ThumbHash {
   /**
@@ -56,8 +58,8 @@ public final class ThumbHash {
     int w = Math.round(ratio > 1.0f ? 32.0f : 32.0f * ratio);
     int h = Math.round(ratio > 1.0f ? 32.0f / ratio : 32.0f);
     int size = w * h * 4;
-    long pointer = LocalImagesImpl.allocateNative(size);
-    ByteBuffer rgba = LocalImagesImpl.wrapAsBuffer(pointer, size);
+    long pointer = NativeBuffer.allocate(size);
+    ByteBuffer rgba = NativeBuffer.wrap(pointer, size);
     int cx_stop = Math.max(lx, hasAlpha ? 5 : 3);
     int cy_stop = Math.max(ly, hasAlpha ? 5 : 3);
     float[] fx = new float[cx_stop];

@@ -12,7 +12,7 @@ import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
-import java.nio.ByteBuffer
+import app.alextran.immich.NativeBuffer
 import kotlin.math.*
 import java.util.concurrent.Executors
 import com.bumptech.glide.Glide
@@ -44,9 +44,9 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
 
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
   val size = width * height * 4
-  val pointer = LocalImagesImpl.allocateNative(size)
+  val pointer = NativeBuffer.allocate(size)
   try {
-    val buffer = LocalImagesImpl.wrapAsBuffer(pointer, size)
+    val buffer = NativeBuffer.wrap(pointer, size)
     copyPixelsToBuffer(buffer)
     recycle()
     return mapOf(
@@ -56,7 +56,7 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
       "rowBytes" to (width * 4).toLong()
     )
   } catch (e: Exception) {
-    LocalImagesImpl.freeNative(pointer)
+    NativeBuffer.free(pointer)
     recycle()
     throw e
   }
@@ -73,22 +73,6 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   companion object {
     val CANCELLED = Result.success<Map<String, Long>>(mapOf())
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
-
-    init {
-      System.loadLibrary("native_buffer")
-    }
-
-    @JvmStatic
-    external fun allocateNative(size: Int): Long
-
-    @JvmStatic
-    external fun freeNative(pointer: Long)
-
-    @JvmStatic
-    external fun reallocNative(pointer: Long, size: Int): Long
-
-    @JvmStatic
-    external fun wrapAsBuffer(address: Long, capacity: Int): ByteBuffer
   }
 
   override fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit) {
