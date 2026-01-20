@@ -1,14 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
+  import { Route } from '$lib/route';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -16,13 +17,13 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
+    mdiCamera,
     mdiCameraIris,
     mdiClose,
     mdiEye,
@@ -44,10 +45,9 @@
     asset: AssetResponseDto;
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
-    onClose: () => void;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -72,6 +72,7 @@
     })(),
   );
   let previousId: string | undefined = $state();
+  let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
   $effect(() => {
     if (!previousId) {
@@ -99,11 +100,8 @@
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
-    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
     // Remove the last part of the path to get the parent path
-    const assetParentPath = getParentPath(asset.originalPath);
-    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
-    return folderUrl.href;
+    return Route.folders({ path: getParentPath(asset.originalPath) });
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -113,7 +111,11 @@
       return;
     }
 
-    await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
+    await modalManager.show(AssetChangeDateModal, {
+      asset: toTimelineAsset(asset),
+      initialDate: dateTime,
+      initialTimeZone: timeZone,
+    });
   };
 </script>
 
@@ -122,7 +124,7 @@
     <IconButton
       icon={mdiClose}
       aria-label={$t('close')}
-      onclick={onClose}
+      onclick={() => assetViewerManager.closeDetailPanel()}
       shape="round"
       color="secondary"
       variant="ghost"
@@ -200,11 +202,7 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-22"
-              href={resolve(
-                `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
-                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
-                }`,
-              )}
+              href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
@@ -372,20 +370,18 @@
       </div>
     </div>
 
-    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
+    {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.exposureTime || asset.exifInfo?.iso}
       <div class="flex gap-4 py-4">
-        <div><Icon icon={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCamera} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href={resolve(
-                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({
-                    ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
-                    ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
-                  })}`,
-                )}
+                href={Route.search({
+                  make: asset.exifInfo?.make ?? undefined,
+                  model: asset.exifInfo?.model ?? undefined,
+                })}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
                 class="hover:text-primary"
               >
@@ -395,20 +391,34 @@
             </p>
           {/if}
 
+          <div class="flex gap-2 text-sm">
+            {#if asset.exifInfo.exposureTime}
+              <p>{`${asset.exifInfo.exposureTime} s`}</p>
+            {/if}
+
+            {#if asset.exifInfo.iso}
+              <p>{`ISO ${asset.exifInfo.iso}`}</p>
+            {/if}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if asset.exifInfo?.lensModel || asset.exifInfo?.fNumber || asset.exifInfo?.focalLength}
+      <div class="flex gap-4 py-4">
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
+
+        <div>
           {#if asset.exifInfo?.lensModel}
-            <div class="flex gap-2 text-sm">
-              <p>
-                <a
-                  href={resolve(
-                    `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
-                  )}
-                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
-                >
-                  {asset.exifInfo.lensModel}
-                </a>
-              </p>
-            </div>
+            <p>
+              <a
+                href={Route.search({ lensModel: asset.exifInfo.lensModel })}
+                title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                class="hover:text-primary line-clamp-1"
+              >
+                {asset.exifInfo.lensModel}
+              </a>
+            </p>
           {/if}
 
           <div class="flex gap-2 text-sm">
@@ -416,18 +426,8 @@
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
-            {#if asset.exifInfo.exposureTime}
-              <p>{`${asset.exifInfo.exposureTime} s`}</p>
-            {/if}
-
             {#if asset.exifInfo.focalLength}
               <p>{`${asset.exifInfo.focalLength.toLocaleString($locale)} mm`}</p>
-            {/if}
-
-            {#if asset.exifInfo.iso}
-              <p>
-                {`ISO ${asset.exifInfo.iso}`}
-              </p>
             {/if}
           </div>
         </div>
@@ -465,7 +465,7 @@
         simplified
         useLocationPin
         showSimpleControls={!showEditFaces}
-        onOpenInMapView={() => goto(resolve(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`))}
+        onOpenInMapView={() => goto(Route.map({ ...latlng, zoom: 12.5 }))}
       >
         {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
@@ -503,10 +503,10 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="px-6 pt-6 dark:text-immich-dark-fg">
+  <section class="px-6 py-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
-      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
+      <a href={Route.viewAlbum(album)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img

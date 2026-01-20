@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)')
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)')
 class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const LocalAssetEntity();
 
@@ -15,6 +16,14 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
+
+  TextColumn get iCloudId => text().nullable()();
+
+  DateTimeColumn get adjustmentTime => dateTime().nullable()();
+
+  RealColumn get latitude => real().nullable()();
+
+  RealColumn get longitude => real().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -34,5 +43,10 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     width: width,
     remoteId: remoteId,
     orientation: orientation,
+    adjustmentTime: adjustmentTime,
+    latitude: latitude,
+    longitude: longitude,
+    cloudId: iCloudId,
+    isEdited: false,
   );
 }

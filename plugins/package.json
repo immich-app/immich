@@ -13,7 +13,7 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@extism/js-pdk": "^1.0.1",
-    "esbuild": "^0.19.6",
+    "esbuild": "^0.27.0",
     "typescript": "^5.3.2"
   }
 }

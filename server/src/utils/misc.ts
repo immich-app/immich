@@ -139,7 +139,7 @@ function sortKeys<T>(target: T): T {
   }
 
   const result: Partial<T> = {};
-  const keys = Object.keys(target).sort() as Array<keyof T>;
+  const keys = Object.keys(target).toSorted() as Array<keyof T>;
   for (const key of keys) {
     result[key] = sortKeys(target[key]);
   }
@@ -178,10 +178,7 @@ const patchOpenAPI = (document: OpenAPIObject) => {
             throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
           }
         }
-
-        if (schema.required) {
-          schema.required = schema.required.sort();
-        }
+        schema.required?.sort();
       }
     }
   }
@@ -264,6 +261,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
     extraModels: extraSyncModels,
+    ignoreGlobalPrefix: true,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);

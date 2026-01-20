@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -10,17 +11,16 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
+  import { getTrashActions } from '$lib/services/trash.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text, toastManager } from '@immich/ui';
-  import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
+  import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   let { data }: Props = $props();
 
@@ -29,38 +29,9 @@
 
   const assetInteraction = new AssetInteraction();
 
-  const handleEmptyTrash = async () => {
-    const isConfirmed = await modalManager.showDialog({ prompt: $t('empty_trash_confirmation') });
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      const { count } = await emptyTrash();
-      toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_empty_trash'));
-    }
-  };
-
-  const handleRestoreTrash = async () => {
-    const isConfirmed = await modalManager.showDialog({ prompt: $t('assets_restore_confirmation') });
-    if (!isConfirmed) {
-      return;
-    }
-    try {
-      const { count } = await restoreTrash();
-      toastManager.success($t('assets_restored_count', { values: { count } }));
-
-      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
-      // note - this is still a problem, but updateOptions with the same value will not
-      // do anything, so need to flip it for it to reload/reinit
-      // await timelineManager.updateOptions({ deferInit: true, isTrashed: true });
-      // await timelineManager.updateOptions({ deferInit: false, isTrashed: true });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_restore_trash'));
-    }
-  };
+  if (!featureFlagsManager.value.trash) {
+    handlePromiseError(goto(Route.photos()));
+  }
 
   const handleEscape = () => {
     if (assetInteraction.selectionActive) {
@@ -68,35 +39,17 @@
       return;
     }
   };
+
+  const { Empty, RestoreAll } = $derived(getTrashActions($t));
 </script>
 
 {#if featureFlagsManager.value.trash}
-  <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-    {#snippet buttons()}
-      <HStack gap={0}>
-        <Button
-          leadingIcon={mdiHistory}
-          onclick={handleRestoreTrash}
-          disabled={assetInteraction.selectionActive}
-          variant="ghost"
-          color="secondary"
-          size="small"
-        >
-          <Text class="hidden md:block">{$t('restore_all')}</Text>
-        </Button>
-        <Button
-          leadingIcon={mdiDeleteForeverOutline}
-          onclick={() => handleEmptyTrash()}
-          disabled={assetInteraction.selectionActive}
-          variant="ghost"
-          color="secondary"
-          size="small"
-        >
-          <Text class="hidden md:block">{$t('empty_trash')}</Text>
-        </Button>
-      </HStack>
-    {/snippet}
-
+  <UserPageLayout
+    hideNavbar={assetInteraction.selectionActive}
+    actions={assetInteraction.selectionActive ? [] : [Empty, RestoreAll]}
+    title={data.meta.title}
+    scrollbar={false}
+  >
     <Timeline enableRouting={true} bind:timelineManager {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', {
@@ -104,7 +57,7 @@
         })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
       {/snippet}
     </Timeline>
   </UserPageLayout>

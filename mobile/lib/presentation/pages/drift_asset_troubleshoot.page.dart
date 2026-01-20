@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 @RoutePage()
@@ -117,6 +118,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
+      _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
     ]);
   }
 
@@ -129,6 +131,16 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     properties.insert(4, _PropertyItem(label: 'Orientation', value: asset.orientation.toString()));
     final albums = await ref.read(assetServiceProvider).getSourceAlbums(asset.id);
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
+    if (CurrentPlatform.isIOS) {
+      properties.add(_PropertyItem(label: 'Cloud ID', value: asset.cloudId));
+      properties.add(_PropertyItem(label: 'Adjustment Time', value: asset.adjustmentTime?.toString()));
+    }
+    properties.add(
+      _PropertyItem(
+        label: 'GPS Coordinates',
+        value: asset.hasCoordinates ? '${asset.latitude}, ${asset.longitude}' : null,
+      ),
+    );
   }
 
   Future<void> _addRemoteAssetProperties(RemoteAsset asset) async {
@@ -161,8 +173,6 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
         value: exif.fileSize != null ? '${(exif.fileSize! / 1024 / 1024).toStringAsFixed(2)} MB' : null,
       ),
       _PropertyItem(label: 'Description', value: exif.description),
-      _PropertyItem(label: 'EXIF Width', value: exif.width?.toString()),
-      _PropertyItem(label: 'EXIF Height', value: exif.height?.toString()),
       _PropertyItem(label: 'Date Taken', value: exif.dateTimeOriginal?.toString()),
       _PropertyItem(label: 'Time Zone', value: exif.timeZone),
       _PropertyItem(label: 'Camera Make', value: exif.make),

@@ -9,7 +9,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
@@ -20,13 +19,13 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart' show nativeSyncApiProvider;
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
@@ -177,6 +176,12 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _cleanup() async {
+    await runZonedGuarded(_handleCleanup, (error, stack) {
+      dPrint(() => "Error during background worker cleanup: $error, $stack");
+    });
+  }
+
+  Future<void> _handleCleanup() async {
     // If ref is null, it means the service was never initialized properly
     if (_isCleanedUp || _ref == null) {
       return;
@@ -186,11 +191,16 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _isCleanedUp = true;
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
+
+      await _drift.close();
+      await _driftLogger.close();
+
       _ref?.dispose();
       _ref = null;
 
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
+
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
         workerManagerPatch.dispose().catchError((_) async {
@@ -199,8 +209,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }),
         LogService.I.dispose(),
         Store.dispose(),
-        _drift.close(),
-        _driftLogger.close(),
+
         backgroundSyncManager?.cancel(),
       ];
 
@@ -233,13 +242,12 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }
 
         if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+          return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
         }
 
-        final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
-            ?.read(uploadServiceProvider)
-            .startBackupWithHttpClient(currentUser.id, networkCapabilities.isUnmetered, _cancellationToken);
+            ?.read(foregroundUploadServiceProvider)
+            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");

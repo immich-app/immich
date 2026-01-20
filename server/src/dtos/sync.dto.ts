@@ -4,7 +4,6 @@ import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
-  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
@@ -50,6 +49,7 @@ export class AssetDeltaSyncResponseDto {
 export const extraSyncModels: Function[] = [];
 
 export const ExtraModel = (): ClassDecorator => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   return (object: Function) => {
     extraSyncModels.push(object);
   };
@@ -117,6 +117,12 @@ export class SyncAssetV1 {
   livePhotoVideoId!: string | null;
   stackId!: string | null;
   libraryId!: string | null;
+  @ApiProperty({ type: 'integer' })
+  width!: number | null;
+  @ApiProperty({ type: 'integer' })
+  height!: number | null;
+  @ApiProperty({ type: 'boolean' })
+  isEdited!: boolean;
 }
 
 @ExtraModel()
@@ -166,16 +172,14 @@ export class SyncAssetExifV1 {
 @ExtraModel()
 export class SyncAssetMetadataV1 {
   assetId!: string;
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  key!: string;
   value!: object;
 }
 
 @ExtraModel()
 export class SyncAssetMetadataDeleteV1 {
   assetId!: string;
-  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
-  key!: AssetMetadataKey;
+  key!: string;
 }
 
 @ExtraModel()

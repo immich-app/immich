@@ -7,7 +7,7 @@ import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
-import { Readable, Writable } from 'node:stream';
+import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
@@ -19,6 +19,8 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AppRepository } from 'src/repositories/app.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
@@ -212,8 +214,10 @@ export type ServiceOverrides = {
   album: AlbumRepository;
   albumUser: AlbumUserRepository;
   apiKey: ApiKeyRepository;
+  app: AppRepository;
   audit: AuditRepository;
   asset: AssetRepository;
+  assetEdit: AssetEditRepository;
   assetJob: AssetJobRepository;
   config: ConfigRepository;
   cron: CronRepository;
@@ -271,10 +275,7 @@ type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-export const newTestService = <T extends BaseService>(
-  Service: Constructor<T, BaseServiceArgs>,
-  overrides: Partial<ServiceOverrides> = {},
-) => {
+export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
@@ -290,7 +291,9 @@ export const newTestService = <T extends BaseService>(
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
+    assetEdit: automock(AssetEditRepository),
     assetJob: automock(AssetJobRepository),
+    app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
@@ -338,6 +341,15 @@ export const newTestService = <T extends BaseService>(
     workflow: automock(WorkflowRepository, { strict: true }),
   };
 
+  return mocks;
+};
+
+export const newTestService = <T extends BaseService>(
+  Service: Constructor<T, BaseServiceArgs>,
+  overrides: Partial<ServiceOverrides> = {},
+) => {
+  const mocks = getMocks();
+
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
     overrides.access || (mocks.access as IAccessRepository as AccessRepository),
@@ -345,7 +357,9 @@ export const newTestService = <T extends BaseService>(
     overrides.album || (mocks.album as As<AlbumRepository>),
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
+    overrides.app || (mocks.app as As<AppRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.assetEdit || (mocks.assetEdit as As<AssetEditRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
@@ -479,6 +493,74 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
         callback(exitCode);
       }
     }),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
+export const mockDuplex = vitest.fn(
+  (command: string, exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+    const duplex = new Duplex({
+      write(_chunk, _encoding, callback) {
+        callback();
+      },
+
+      read() {},
+
+      final(callback) {
+        callback();
+      },
+    });
+
+    setImmediate(() => {
+      if (error) {
+        duplex.destroy(error as Error);
+      } else if (exitCode === 0) {
+        /* eslint-disable unicorn/prefer-single-call */
+        duplex.push(stdout);
+        duplex.push(null);
+        /* eslint-enable unicorn/prefer-single-call */
+      } else {
+        duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
+      }
+    });
+
+    return duplex;
+  },
+);
+
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
   } as unknown as ChildProcessWithoutNullStreams;
 });
 

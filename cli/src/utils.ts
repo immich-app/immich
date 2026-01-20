@@ -160,7 +160,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
     ignore: [`**/${exclusionPattern}`],
   });
   globbedFiles.push(...crawledFiles);
-  return globbedFiles.sort();
+  return globbedFiles.toSorted();
 };
 
 export const sha1 = (filepath: string) => {

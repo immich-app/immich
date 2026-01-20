@@ -75,7 +75,7 @@
       };
     });
 
-    timelineManager.updateAssets(assetsWithNewLocation);
+    timelineManager.upsertAssets(assetsWithNewLocation);
 
     handleDeselectAll();
   };
@@ -275,7 +275,7 @@
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >
-    {#snippet customLayout(asset: TimelineAsset)}
+    {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
         <button
           type="button"
@@ -306,7 +306,7 @@
       {/if}
     {/snippet}
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} />
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

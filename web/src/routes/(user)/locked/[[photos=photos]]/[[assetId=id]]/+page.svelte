@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -11,12 +12,13 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
+  import { getUserActions } from '$lib/services/user.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetVisibility, lockAuthSession } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiDotsVertical, mdiLockOutline } from '@mdi/js';
+  import { AssetVisibility } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -43,19 +45,21 @@
     timelineManager.removeAssets(assetIds);
   };
 
-  const handleLock = async () => {
-    await lockAuthSession();
-    await goto(AppRoute.PHOTOS);
+  const { LockSession } = $derived(getUserActions($t));
+
+  const onSessionLocked = async () => {
+    await goto(Route.photos());
   };
 </script>
 
-<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  {#snippet buttons()}
-    <Button size="small" variant="ghost" color="primary" leadingIcon={mdiLockOutline} onclick={handleLock}>
-      {$t('lock')}
-    </Button>
-  {/snippet}
+<OnEvents {onSessionLocked} />
 
+<UserPageLayout
+  title={data.meta.title}
+  actions={[LockSession]}
+  hideNavbar={assetInteraction.selectionActive}
+  scrollbar={false}
+>
   <Timeline
     enableRouting={true}
     bind:timelineManager
@@ -65,7 +69,7 @@
     removeAction={AssetAction.SET_VISIBILITY_TIMELINE}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_locked_photos_message')} title={$t('nothing_here_yet')} />
+      <EmptyPlaceholder text={$t('no_locked_photos_message')} title={$t('nothing_here_yet')} class="mt-10 mx-auto" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

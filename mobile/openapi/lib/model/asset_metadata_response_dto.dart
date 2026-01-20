@@ -18,7 +18,7 @@ class AssetMetadataResponseDto {
     required this.value,
   });
 
-  AssetMetadataKey key;
+  String key;
 
   DateTime updatedAt;
 
@@ -57,7 +57,7 @@ class AssetMetadataResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetMetadataResponseDto(
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
+        key: mapValueOfType<String>(json, r'key')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         value: mapValueOfType<Object>(json, r'value')!,
       );

@@ -11,7 +11,7 @@ import { SharedLinkService } from 'src/services/shared-link.service';
 import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
 
-const render = (index: string, meta: OpenGraphTags) => {
+export const render = (index: string, meta: OpenGraphTags) => {
   const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
     item ? sanitizeHtml(item, { allowedTags: [] }) : '',
   );

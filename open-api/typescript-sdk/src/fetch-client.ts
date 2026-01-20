@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.2.3
+ * 2.4.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -8,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/api",
+    baseUrl: "/api"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
@@ -39,6 +39,45 @@ export type ActivityCreateDto = {
 export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
+};
+export type DatabaseBackupDeleteDto = {
+    backups: string[];
+};
+export type DatabaseBackupDto = {
+    filename: string;
+    filesize: number;
+};
+export type DatabaseBackupListResponseDto = {
+    backups: DatabaseBackupDto[];
+};
+export type DatabaseBackupUploadDto = {
+    file?: Blob;
+};
+export type SetMaintenanceModeDto = {
+    action: MaintenanceAction;
+    restoreBackupFilename?: string;
+};
+export type MaintenanceDetectInstallStorageFolderDto = {
+    files: number;
+    folder: StorageFolder;
+    readable: boolean;
+    writable: boolean;
+};
+export type MaintenanceDetectInstallResponseDto = {
+    storage: MaintenanceDetectInstallStorageFolderDto[];
+};
+export type MaintenanceLoginDto = {
+    token?: string;
+};
+export type MaintenanceAuthDto = {
+    username: string;
+};
+export type MaintenanceStatusResponseDto = {
+    action: MaintenanceAction;
+    active: boolean;
+    error?: string;
+    progress?: number;
+    task?: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -340,8 +379,10 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
     hasMetadata: boolean;
+    height: number | null;
     id: string;
     isArchived: boolean;
+    isEdited: boolean;
     isFavorite: boolean;
     isOffline: boolean;
     isTrashed: boolean;
@@ -364,6 +405,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
     visibility: AssetVisibility;
+    width: number | null;
 };
 export type ContributorCountResponseDto = {
     assetCount: number;
@@ -462,7 +504,7 @@ export type AssetBulkDeleteDto = {
     ids: string[];
 };
 export type AssetMetadataUpsertItemDto = {
-    key: AssetMetadataKey;
+    key: string;
     value: object;
 };
 export type AssetMediaCreateDto = {
@@ -475,7 +517,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
-    metadata: AssetMetadataUpsertItemDto[];
+    metadata?: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -534,6 +576,27 @@ export type AssetJobsDto = {
     assetIds: string[];
     name: AssetJobName;
 };
+export type AssetMetadataBulkDeleteItemDto = {
+    assetId: string;
+    key: string;
+};
+export type AssetMetadataBulkDeleteDto = {
+    items: AssetMetadataBulkDeleteItemDto[];
+};
+export type AssetMetadataBulkUpsertItemDto = {
+    assetId: string;
+    key: string;
+    value: object;
+};
+export type AssetMetadataBulkUpsertDto = {
+    items: AssetMetadataBulkUpsertItemDto[];
+};
+export type AssetMetadataBulkResponseDto = {
+    assetId: string;
+    key: string;
+    updatedAt: string;
+    value: object;
+};
 export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
@@ -544,8 +607,47 @@ export type UpdateAssetDto = {
     rating?: number;
     visibility?: AssetVisibility;
 };
+export type CropParameters = {
+    /** Height of the crop */
+    height: number;
+    /** Width of the crop */
+    width: number;
+    /** Top-Left X coordinate of crop */
+    x: number;
+    /** Top-Left Y coordinate of crop */
+    y: number;
+};
+export type AssetEditActionCrop = {
+    action: AssetEditAction;
+    parameters: CropParameters;
+};
+export type RotateParameters = {
+    /** Rotation angle in degrees */
+    angle: number;
+};
+export type AssetEditActionRotate = {
+    action: AssetEditAction;
+    parameters: RotateParameters;
+};
+export type MirrorParameters = {
+    /** Axis to mirror along */
+    axis: MirrorAxis;
+};
+export type AssetEditActionMirror = {
+    action: AssetEditAction;
+    parameters: MirrorParameters;
+};
+export type AssetEditsDto = {
+    assetId: string;
+    /** list of edits */
+    edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
+};
+export type AssetEditActionListDto = {
+    /** list of edits */
+    edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
+};
 export type AssetMetadataResponseDto = {
-    key: AssetMetadataKey;
+    key: string;
     updatedAt: string;
     value: object;
 };
@@ -707,32 +809,33 @@ export type QueueStatisticsDto = {
     paused: number;
     waiting: number;
 };
-export type QueueStatusDto = {
+export type QueueStatusLegacyDto = {
     isActive: boolean;
     isPaused: boolean;
 };
-export type QueueResponseDto = {
+export type QueueResponseLegacyDto = {
     jobCounts: QueueStatisticsDto;
-    queueStatus: QueueStatusDto;
+    queueStatus: QueueStatusLegacyDto;
 };
-export type QueuesResponseDto = {
-    backgroundTask: QueueResponseDto;
-    backupDatabase: QueueResponseDto;
-    duplicateDetection: QueueResponseDto;
-    faceDetection: QueueResponseDto;
-    facialRecognition: QueueResponseDto;
-    library: QueueResponseDto;
-    metadataExtraction: QueueResponseDto;
-    migration: QueueResponseDto;
-    notifications: QueueResponseDto;
-    ocr: QueueResponseDto;
-    search: QueueResponseDto;
-    sidecar: QueueResponseDto;
-    smartSearch: QueueResponseDto;
-    storageTemplateMigration: QueueResponseDto;
-    thumbnailGeneration: QueueResponseDto;
-    videoConversion: QueueResponseDto;
-    workflow: QueueResponseDto;
+export type QueuesResponseLegacyDto = {
+    backgroundTask: QueueResponseLegacyDto;
+    backupDatabase: QueueResponseLegacyDto;
+    duplicateDetection: QueueResponseLegacyDto;
+    editor: QueueResponseLegacyDto;
+    faceDetection: QueueResponseLegacyDto;
+    facialRecognition: QueueResponseLegacyDto;
+    library: QueueResponseLegacyDto;
+    metadataExtraction: QueueResponseLegacyDto;
+    migration: QueueResponseLegacyDto;
+    notifications: QueueResponseLegacyDto;
+    ocr: QueueResponseLegacyDto;
+    search: QueueResponseLegacyDto;
+    sidecar: QueueResponseLegacyDto;
+    smartSearch: QueueResponseLegacyDto;
+    storageTemplateMigration: QueueResponseLegacyDto;
+    thumbnailGeneration: QueueResponseLegacyDto;
+    videoConversion: QueueResponseLegacyDto;
+    workflow: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
@@ -933,7 +1036,7 @@ export type PluginActionResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginFilterResponseDto = {
@@ -942,7 +1045,7 @@ export type PluginFilterResponseDto = {
     methodName: string;
     pluginId: string;
     schema: object | null;
-    supportedContexts: PluginContext[];
+    supportedContexts: PluginContextType[];
     title: string;
 };
 export type PluginResponseDto = {
@@ -956,6 +1059,28 @@ export type PluginResponseDto = {
     title: string;
     updatedAt: string;
     version: string;
+};
+export type PluginTriggerResponseDto = {
+    contextType: PluginContextType;
+    "type": PluginTriggerType;
+};
+export type QueueResponseDto = {
+    isPaused: boolean;
+    name: QueueName;
+    statistics: QueueStatisticsDto;
+};
+export type QueueUpdateDto = {
+    isPaused?: boolean;
+};
+export type QueueDeleteDto = {
+    /** If true, will also remove failed jobs from the queue. */
+    failed?: boolean;
+};
+export type QueueJobResponseDto = {
+    data: object;
+    id?: string;
+    name: JobName;
+    timestamp: number;
 };
 export type SearchExploreItem = {
     data: AssetResponseDto;
@@ -1183,6 +1308,7 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    maintenanceMode: boolean;
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
@@ -1431,6 +1557,7 @@ export type JobSettingsDto = {
 };
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
+    editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
@@ -1701,16 +1828,16 @@ export type CreateProfileImageResponseDto = {
 };
 export type WorkflowActionResponseDto = {
     actionConfig: object | null;
-    actionId: string;
     id: string;
     order: number;
+    pluginActionId: string;
     workflowId: string;
 };
 export type WorkflowFilterResponseDto = {
     filterConfig: object | null;
-    filterId: string;
     id: string;
     order: number;
+    pluginFilterId: string;
     workflowId: string;
 };
 export type WorkflowResponseDto = {
@@ -1722,15 +1849,15 @@ export type WorkflowResponseDto = {
     id: string;
     name: string | null;
     ownerId: string;
-    triggerType: TriggerType;
+    triggerType: PluginTriggerType;
 };
 export type WorkflowActionItemDto = {
     actionConfig?: object;
-    actionId: string;
+    pluginActionId: string;
 };
 export type WorkflowFilterItemDto = {
     filterConfig?: object;
-    filterId: string;
+    pluginFilterId: string;
 };
 export type WorkflowCreateDto = {
     actions: WorkflowActionItemDto[];
@@ -1746,6 +1873,7 @@ export type WorkflowUpdateDto = {
     enabled?: boolean;
     filters?: WorkflowFilterItemDto[];
     name?: string;
+    triggerType?: PluginTriggerType;
 };
 /**
  * List all activities
@@ -1820,6 +1948,112 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Delete database backup
+ */
+export function deleteDatabaseBackup({ databaseBackupDeleteDto }: {
+    databaseBackupDeleteDto: DatabaseBackupDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: databaseBackupDeleteDto
+    })));
+}
+/**
+ * List database backups
+ */
+export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DatabaseBackupListResponseDto;
+    }>("/admin/database-backups", {
+        ...opts
+    }));
+}
+/**
+ * Start database backup restore flow
+ */
+export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Upload database backup
+ */
+export function uploadDatabaseBackup({ databaseBackupUploadDto }: {
+    databaseBackupUploadDto: DatabaseBackupUploadDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: databaseBackupUploadDto
+    })));
+}
+/**
+ * Download database backup
+ */
+export function downloadDatabaseBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
+ * Set maintenance mode
+ */
+export function setMaintenanceMode({ setMaintenanceModeDto }: {
+    setMaintenanceModeDto: SetMaintenanceModeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: setMaintenanceModeDto
+    })));
+}
+/**
+ * Detect existing install
+ */
+export function detectPriorInstall(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceDetectInstallResponseDto;
+    }>("/admin/maintenance/detect-install", {
+        ...opts
+    }));
+}
+/**
+ * Log into maintenance mode
+ */
+export function maintenanceLogin({ maintenanceLoginDto }: {
+    maintenanceLoginDto: MaintenanceLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: MaintenanceAuthDto;
+    }>("/admin/maintenance/login", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: maintenanceLoginDto
+    })));
+}
+/**
+ * Get maintenance mode status
+ */
+export function getMaintenanceStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceStatusResponseDto;
+    }>("/admin/maintenance/status", {
+        ...opts
     }));
 }
 /**
@@ -2309,6 +2543,9 @@ export function uploadAsset({ key, slug, xImmichChecksum, assetMediaCreateDto }:
     assetMediaCreateDto: AssetMediaCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    } | {
         status: 201;
         data: AssetMediaResponseDto;
     }>(`/assets${QS.query(QS.explode({
@@ -2403,6 +2640,33 @@ export function runAssetJobs({ assetJobsDto }: {
     })));
 }
 /**
+ * Delete asset metadata
+ */
+export function deleteBulkAssetMetadata({ assetMetadataBulkDeleteDto }: {
+    assetMetadataBulkDeleteDto: AssetMetadataBulkDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetMetadataBulkDeleteDto
+    })));
+}
+/**
+ * Upsert asset metadata
+ */
+export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
+    assetMetadataBulkUpsertDto: AssetMetadataBulkUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataBulkResponseDto[];
+    }>("/assets/metadata", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataBulkUpsertDto
+    })));
+}
+/**
  * Get random assets
  */
 export function getRandom({ count }: {
@@ -2471,6 +2735,46 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * Remove edits from an existing asset
+ */
+export function removeAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Retrieve edits for an existing asset
+ */
+export function getAssetEdits({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, {
+        ...opts
+    }));
+}
+/**
+ * Apply edits to an existing asset
+ */
+export function editAsset({ id, assetEditActionListDto }: {
+    id: string;
+    assetEditActionListDto: AssetEditActionListDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetEditsDto;
+    }>(`/assets/${encodeURIComponent(id)}/edits`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetEditActionListDto
+    })));
+}
+/**
  * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
@@ -2504,7 +2808,7 @@ export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
  */
 export function deleteAssetMetadata({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
         ...opts,
@@ -2516,7 +2820,7 @@ export function deleteAssetMetadata({ id, key }: {
  */
 export function getAssetMetadataByKey({ id, key }: {
     id: string;
-    key: AssetMetadataKey;
+    key: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -2541,7 +2845,8 @@ export function getAssetOcr({ id }: {
 /**
  * Download original asset
  */
-export function downloadAsset({ id, key, slug }: {
+export function downloadAsset({ edited, id, key, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     slug?: string;
@@ -2550,6 +2855,7 @@ export function downloadAsset({ id, key, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/original${QS.query(QS.explode({
+        edited,
         key,
         slug
     }))}`, {
@@ -2580,7 +2886,8 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
 /**
  * View asset thumbnail
  */
-export function viewAsset({ id, key, size, slug }: {
+export function viewAsset({ edited, id, key, size, slug }: {
+    edited?: boolean;
     id: string;
     key?: string;
     size?: AssetMediaSize;
@@ -2590,6 +2897,7 @@ export function viewAsset({ id, key, size, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        edited,
         key,
         size,
         slug
@@ -2888,7 +3196,7 @@ export function reassignFacesById({ id, faceDto }: {
 export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: QueuesResponseDto;
+        data: QueuesResponseLegacyDto;
     }>("/jobs", {
         ...opts
     }));
@@ -2914,7 +3222,7 @@ export function runQueueCommandLegacy({ name, queueCommandDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: QueueResponseDto;
+        data: QueueResponseLegacyDto;
     }>(`/jobs/${encodeURIComponent(name)}`, oazapfts.json({
         ...opts,
         method: "PUT",
@@ -3602,6 +3910,17 @@ export function getPlugins(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * List all plugin triggers
+ */
+export function getPluginTriggers(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PluginTriggerResponseDto[];
+    }>("/plugins/triggers", {
+        ...opts
+    }));
+}
+/**
  * Retrieve a plugin
  */
 export function getPlugin({ id }: {
@@ -3611,6 +3930,75 @@ export function getPlugin({ id }: {
         status: 200;
         data: PluginResponseDto;
     }>(`/plugins/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * List all queues
+ */
+export function getQueues(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto[];
+    }>("/queues", {
+        ...opts
+    }));
+}
+/**
+ * Retrieve a queue
+ */
+export function getQueue({ name }: {
+    name: QueueName;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto;
+    }>(`/queues/${encodeURIComponent(name)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a queue
+ */
+export function updateQueue({ name, queueUpdateDto }: {
+    name: QueueName;
+    queueUpdateDto: QueueUpdateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueResponseDto;
+    }>(`/queues/${encodeURIComponent(name)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: queueUpdateDto
+    })));
+}
+/**
+ * Empty a queue
+ */
+export function emptyQueue({ name, queueDeleteDto }: {
+    name: QueueName;
+    queueDeleteDto: QueueDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/queues/${encodeURIComponent(name)}/jobs`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: queueDeleteDto
+    })));
+}
+/**
+ * Retrieve queue jobs
+ */
+export function getQueueJobs({ name, status }: {
+    name: QueueName;
+    status?: QueueJobStatus[];
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: QueueJobResponseDto[];
+    }>(`/queues/${encodeURIComponent(name)}/jobs${QS.query(QS.explode({
+        status
+    }))}`, {
         ...opts
     }));
 }
@@ -4078,14 +4466,16 @@ export function lockSession({ id }: {
 /**
  * Retrieve all shared links
  */
-export function getAllSharedLinks({ albumId }: {
+export function getAllSharedLinks({ albumId, id }: {
     albumId?: string;
+    id?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto[];
     }>(`/shared-links${QS.query(QS.explode({
-        albumId
+        albumId,
+        id
     }))}`, {
         ...opts
     }));
@@ -5018,6 +5408,20 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum MaintenanceAction {
+    Start = "start",
+    End = "end",
+    SelectDatabaseRestore = "select_database_restore",
+    RestoreDatabase = "restore_database"
+}
+export enum StorageFolder {
+    EncodedVideo = "encoded-video",
+    Library = "library",
+    Upload = "upload",
+    Profile = "profile",
+    Thumbs = "thumbs",
+    Backups = "backups"
+}
 export enum NotificationLevel {
     Success = "success",
     Error = "error",
@@ -5095,6 +5499,10 @@ export enum Permission {
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
     AssetCopy = "asset.copy",
+    AssetDerive = "asset.derive",
+    AssetEditGet = "asset.edit.get",
+    AssetEditCreate = "asset.edit.create",
+    AssetEditDelete = "asset.edit.delete",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",
@@ -5110,6 +5518,10 @@ export enum Permission {
     AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
+    BackupList = "backup.list",
+    BackupDownload = "backup.download",
+    BackupUpload = "backup.upload",
+    BackupDelete = "backup.delete",
     DuplicateRead = "duplicate.read",
     DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",
@@ -5125,6 +5537,7 @@ export enum Permission {
     LibraryStatistics = "library.statistics",
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
+    Maintenance = "maintenance",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
@@ -5203,6 +5616,12 @@ export enum Permission {
     UserProfileImageRead = "userProfileImage.read",
     UserProfileImageUpdate = "userProfileImage.update",
     UserProfileImageDelete = "userProfileImage.delete",
+    QueueRead = "queue.read",
+    QueueUpdate = "queue.update",
+    QueueJobCreate = "queueJob.create",
+    QueueJobRead = "queueJob.read",
+    QueueJobUpdate = "queueJob.update",
+    QueueJobDelete = "queueJob.delete",
     WorkflowCreate = "workflow.create",
     WorkflowRead = "workflow.read",
     WorkflowUpdate = "workflow.update",
@@ -5213,9 +5632,6 @@ export enum Permission {
     AdminUserDelete = "adminUser.delete",
     AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
-}
-export enum AssetMetadataKey {
-    MobileApp = "mobile-app"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -5235,6 +5651,15 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum AssetEditAction {
+    Crop = "crop",
+    Rotate = "rotate",
+    Mirror = "mirror"
+}
+export enum MirrorAxis {
+    Horizontal = "horizontal",
+    Vertical = "vertical"
 }
 export enum AssetMediaSize {
     Fullsize = "fullsize",
@@ -5266,7 +5691,8 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
-    Workflow = "workflow"
+    Workflow = "workflow",
+    Editor = "editor"
 }
 export enum QueueCommand {
     Start = "start",
@@ -5287,10 +5713,80 @@ export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
 }
-export enum PluginContext {
+export enum PluginContextType {
     Asset = "asset",
     Album = "album",
     Person = "person"
+}
+export enum PluginTriggerType {
+    AssetCreate = "AssetCreate",
+    PersonRecognized = "PersonRecognized"
+}
+export enum QueueJobStatus {
+    Active = "active",
+    Failed = "failed",
+    Completed = "completed",
+    Delayed = "delayed",
+    Waiting = "waiting",
+    Paused = "paused"
+}
+export enum JobName {
+    AssetDelete = "AssetDelete",
+    AssetDeleteCheck = "AssetDeleteCheck",
+    AssetDetectFacesQueueAll = "AssetDetectFacesQueueAll",
+    AssetDetectFaces = "AssetDetectFaces",
+    AssetDetectDuplicatesQueueAll = "AssetDetectDuplicatesQueueAll",
+    AssetDetectDuplicates = "AssetDetectDuplicates",
+    AssetEditThumbnailGeneration = "AssetEditThumbnailGeneration",
+    AssetEncodeVideoQueueAll = "AssetEncodeVideoQueueAll",
+    AssetEncodeVideo = "AssetEncodeVideo",
+    AssetEmptyTrash = "AssetEmptyTrash",
+    AssetExtractMetadataQueueAll = "AssetExtractMetadataQueueAll",
+    AssetExtractMetadata = "AssetExtractMetadata",
+    AssetFileMigration = "AssetFileMigration",
+    AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
+    AssetGenerateThumbnails = "AssetGenerateThumbnails",
+    AuditLogCleanup = "AuditLogCleanup",
+    AuditTableCleanup = "AuditTableCleanup",
+    DatabaseBackup = "DatabaseBackup",
+    FacialRecognitionQueueAll = "FacialRecognitionQueueAll",
+    FacialRecognition = "FacialRecognition",
+    FileDelete = "FileDelete",
+    FileMigrationQueueAll = "FileMigrationQueueAll",
+    LibraryDeleteCheck = "LibraryDeleteCheck",
+    LibraryDelete = "LibraryDelete",
+    LibraryRemoveAsset = "LibraryRemoveAsset",
+    LibraryScanAssetsQueueAll = "LibraryScanAssetsQueueAll",
+    LibrarySyncAssets = "LibrarySyncAssets",
+    LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",
+    LibrarySyncFiles = "LibrarySyncFiles",
+    LibraryScanQueueAll = "LibraryScanQueueAll",
+    MemoryCleanup = "MemoryCleanup",
+    MemoryGenerate = "MemoryGenerate",
+    NotificationsCleanup = "NotificationsCleanup",
+    NotifyUserSignup = "NotifyUserSignup",
+    NotifyAlbumInvite = "NotifyAlbumInvite",
+    NotifyAlbumUpdate = "NotifyAlbumUpdate",
+    UserDelete = "UserDelete",
+    UserDeleteCheck = "UserDeleteCheck",
+    UserSyncUsage = "UserSyncUsage",
+    PersonCleanup = "PersonCleanup",
+    PersonFileMigration = "PersonFileMigration",
+    PersonGenerateThumbnail = "PersonGenerateThumbnail",
+    SessionCleanup = "SessionCleanup",
+    SendMail = "SendMail",
+    SidecarQueueAll = "SidecarQueueAll",
+    SidecarCheck = "SidecarCheck",
+    SidecarWrite = "SidecarWrite",
+    SmartSearchQueueAll = "SmartSearchQueueAll",
+    SmartSearch = "SmartSearch",
+    StorageTemplateMigration = "StorageTemplateMigration",
+    StorageTemplateMigrationSingle = "StorageTemplateMigrationSingle",
+    TagCleanup = "TagCleanup",
+    VersionCheck = "VersionCheck",
+    OcrQueueAll = "OcrQueueAll",
+    Ocr = "Ocr",
+    WorkflowRun = "WorkflowRun"
 }
 export enum SearchSuggestionType {
     Country = "country",
@@ -5442,12 +5938,4 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
-}
-export enum TriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
-}
-export enum PluginTriggerType {
-    AssetCreate = "AssetCreate",
-    PersonRecognized = "PersonRecognized"
 }

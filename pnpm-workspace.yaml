@@ -2,6 +2,8 @@ packages:
   - cli
   - docs
   - e2e
+  - e2e-auth-server
+  - i18n
   - open-api/typescript-sdk
   - server
   - plugins
@@ -9,6 +11,7 @@ packages:
   - .github
 ignoredBuiltDependencies:
   - '@nestjs/core'
+  - '@parcel/watcher'
   - '@scarf/scarf'
   - '@swc/core'
   - canvas
@@ -28,7 +31,7 @@ onlyBuiltDependencies:
   - bcrypt
 overrides:
   canvas: 2.11.2
-  sharp: ^0.34.4
+  sharp: ^0.34.5
 packageExtensions:
   nestjs-kysely:
     dependencies:

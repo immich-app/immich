@@ -27,7 +27,7 @@
   let { asset = undefined, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
-  let suggestedPlaces: PlacesResponseDto[] = $state([]);
+  let suggestedPlaces: PlacesResponseDto[] = $derived(places.slice(0, 5));
   let searchWord: string = $state('');
   let latestSearchTimeout: number;
   let showLoadingSpinner = $state(false);
@@ -52,9 +52,6 @@
   });
 
   $effect(() => {
-    if (places) {
-      suggestedPlaces = places.slice(0, 5);
-    }
     if (searchWord === '') {
       suggestedPlaces = [];
     }
@@ -87,6 +84,27 @@
         places = [];
         showLoadingSpinner = false;
         return;
+      }
+
+      // Try to parse coordinate pair from search input in the format `LATITUDE, LONGITUDE` as floats
+      const coordinateParts = searchWord.split(',').map((part) => part.trim());
+      if (coordinateParts.length === 2) {
+        const coordinateLat = Number.parseFloat(coordinateParts[0]);
+        const coordinateLng = Number.parseFloat(coordinateParts[1]);
+
+        if (
+          !Number.isNaN(coordinateLat) &&
+          !Number.isNaN(coordinateLng) &&
+          coordinateLat >= -90 &&
+          coordinateLat <= 90 &&
+          coordinateLng >= -180 &&
+          coordinateLng <= 180
+        ) {
+          places = [];
+          showLoadingSpinner = false;
+          handleUseSuggested(coordinateLat, coordinateLng);
+          return;
+        }
       }
 
       searchPlaces({ name: searchWord })
@@ -128,7 +146,7 @@
   size="medium"
   onClose={handleConfirm}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96 z-1">
         {#if suggestionContainer}

@@ -17,7 +17,6 @@
   import ThemeSettings from '$lib/components/admin-settings/ThemeSettings.svelte';
   import TrashSettings from '$lib/components/admin-settings/TrashSettings.svelte';
   import UserSettings from '$lib/components/admin-settings/UserSettings.svelte';
-  import HeaderButton from '$lib/components/HeaderButton.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
@@ -26,7 +25,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { getSystemConfigActions } from '$lib/services/system-config.service';
-  import { Alert, HStack } from '@immich/ui';
+  import { Alert, CommandPaletteDefaultProvider, Container } from '@immich/ui';
   import {
     mdiAccountOutline,
     mdiBackupRestore,
@@ -206,33 +205,22 @@
   );
 </script>
 
-<AdminPageLayout title={data.meta.title}>
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <div class="hidden lg:block">
-        <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
-      </div>
-      <HeaderButton action={CopyToClipboard} />
-      <HeaderButton action={Download} />
-      <HeaderButton action={Upload} />
-    </HStack>
-  {/snippet}
+<CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />
 
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
-      {#if featureFlagsManager.value.configFile}
-        <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
-      {/if}
-      <div class="block lg:hidden">
-        <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
-      </div>
-      <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-        {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-          <SettingAccordion {title} {subtitle} {key} {icon}>
-            <Component />
-          </SettingAccordion>
-        {/each}
-      </SettingAccordionState>
-    </section>
-  </section>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[CopyToClipboard, Download, Upload]}>
+  <Container size="large" center>
+    {#if featureFlagsManager.value.configFile}
+      <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
+    {/if}
+    <div>
+      <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+    </div>
+    <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+      {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
+        <SettingAccordion {title} {subtitle} {key} {icon}>
+          <Component />
+        </SettingAccordion>
+      {/each}
+    </SettingAccordionState>
+  </Container>
 </AdminPageLayout>

@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
@@ -25,6 +26,7 @@ import '../../repository.mocks.dart';
 void main() {
   late LocalSyncService sut;
   late DriftLocalAlbumRepository mockLocalAlbumRepository;
+  late DriftLocalAssetRepository mockLocalAssetRepository;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late LocalFilesManagerRepository mockLocalFilesManager;
   late StorageRepository mockStorageRepository;
@@ -47,6 +49,7 @@ void main() {
 
   setUp(() async {
     mockLocalAlbumRepository = MockLocalAlbumRepository();
+    mockLocalAssetRepository = MockLocalAssetRepository();
     mockTrashedLocalAssetRepository = MockTrashedLocalAssetRepository();
     mockLocalFilesManager = MockLocalFilesManagerRepository();
     mockStorageRepository = MockStorageRepository();
@@ -54,12 +57,7 @@ void main() {
 
     when(() => mockNativeSyncApi.shouldFullSync()).thenAnswer((_) async => false);
     when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
-      (_) async => SyncDelta(
-        hasChanges: false,
-        updates: const [],
-        deletes: const [],
-        assetAlbums: const {},
-      ),
+      (_) async => SyncDelta(hasChanges: false, updates: const [], deletes: const [], assetAlbums: const {}),
     );
     when(() => mockNativeSyncApi.getTrashedAssets()).thenAnswer((_) async => {});
     when(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).thenAnswer((_) async {});
@@ -71,6 +69,7 @@ void main() {
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
+      localAssetRepository: mockLocalAssetRepository,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
       localFilesManager: mockLocalFilesManager,
       storageRepository: mockStorageRepository,
@@ -144,23 +143,35 @@ void main() {
       });
 
       final localAssetToTrash = LocalAssetStub.image2.copyWith(id: 'local-trash', checksum: 'checksum-trash');
-      when(() => mockTrashedLocalAssetRepository.getToTrash()).thenAnswer((_) async => {'album-a': [localAssetToTrash]});
+      when(() => mockTrashedLocalAssetRepository.getToTrash()).thenAnswer(
+        (_) async => {
+          'album-a': [localAssetToTrash],
+        },
+      );
 
       final assetEntity = MockAssetEntity();
       when(() => assetEntity.getMediaUrl()).thenAnswer((_) async => 'content://local-trash');
       when(() => mockStorageRepository.getAssetEntityForAsset(localAssetToTrash)).thenAnswer((_) async => assetEntity);
 
-      await sut.processTrashedAssets({'album-a': [platformAsset]});
+      await sut.processTrashedAssets({
+        'album-a': [platformAsset],
+      });
 
-      verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(any())).called(1);
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot.length, 1);
+      final trashedEntry = trashedSnapshot.single;
+      expect(trashedEntry.albumId, 'album-a');
+      expect(trashedEntry.asset.id, platformAsset.id);
+      expect(trashedEntry.asset.name, platformAsset.name);
       verify(() => mockTrashedLocalAssetRepository.getToTrash()).called(1);
 
       verify(() => mockLocalFilesManager.restoreAssetsFromTrash(any())).called(1);
       verify(() => mockTrashedLocalAssetRepository.applyRestoredAssets(restoredIds)).called(1);
 
       verify(() => mockStorageRepository.getAssetEntityForAsset(localAssetToTrash)).called(1);
-      final moveArgs =
-          verify(() => mockLocalFilesManager.moveToTrash(captureAny())).captured.single as List<String>;
+      final moveArgs = verify(() => mockLocalFilesManager.moveToTrash(captureAny())).captured.single as List<String>;
       expect(moveArgs, ['content://local-trash']);
       final trashArgs =
           verify(() => mockTrashedLocalAssetRepository.trashLocalAsset(captureAny())).captured.single
@@ -174,6 +185,10 @@ void main() {
 
       await sut.processTrashedAssets({});
 
+      final trashedSnapshot =
+          verify(() => mockTrashedLocalAssetRepository.processTrashSnapshot(captureAny())).captured.single
+              as Iterable<TrashedAsset>;
+      expect(trashedSnapshot, isEmpty);
       verifyNever(() => mockLocalFilesManager.restoreAssetsFromTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.applyRestoredAssets(any()));
     });
@@ -185,6 +200,27 @@ void main() {
 
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAsset(any()));
+    });
+  });
+
+  group('LocalSyncService - PlatformAsset conversion', () {
+    test('toLocalAsset uses correct updatedAt timestamp', () {
+      final platformAsset = PlatformAsset(
+        id: 'test-id',
+        name: 'test.jpg',
+        type: AssetType.image.index,
+        durationInSeconds: 0,
+        orientation: 0,
+        isFavorite: false,
+        createdAt: 1700000000,
+        updatedAt: 1732000000,
+      );
+
+      final localAsset = platformAsset.toLocalAsset();
+
+      expect(localAsset.createdAt.millisecondsSinceEpoch ~/ 1000, 1700000000);
+      expect(localAsset.updatedAt.millisecondsSinceEpoch ~/ 1000, 1732000000);
+      expect(localAsset.updatedAt, isNot(localAsset.createdAt));
     });
   });
 }

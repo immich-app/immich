@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
@@ -10,11 +10,11 @@
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { OnboardingRole } from '$lib/models/onboarding-role';
+  import { Route } from '$lib/route';
   import { user } from '$lib/stores/user.store';
+  import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
     mdiCellphoneArrowDownVariant,
@@ -95,7 +95,11 @@
     },
   ]);
 
-  let index = $state(0);
+  const index = $derived.by(() => {
+    const stepState = page.url.searchParams.get('step');
+    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
+    return temporaryIndex === -1 ? 0 : temporaryIndex;
+  });
   let userRole = $derived(
     $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
   );
@@ -113,12 +117,6 @@
         !serverConfigManager.value.isOnboarded)
     );
   };
-
-  $effect(() => {
-    const stepState = $page.url.searchParams.get('step');
-    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
-    index = temporaryIndex === -1 ? 0 : temporaryIndex;
-  });
 
   const previousStepIndex = $derived(
     onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role, userRole) && i < index),
@@ -139,11 +137,9 @@
         onboardingDto: { isOnboarded: true },
       });
 
-      await goto(AppRoute.PHOTOS);
+      await goto(Route.photos());
     } else {
-      await goto(
-        `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[nextStepIndex].name}`,
-      );
+      await goto(Route.onboarding({ step: onboardingSteps[nextStepIndex].name }));
     }
   };
 
@@ -152,9 +148,7 @@
       return;
     }
 
-    await goto(
-      `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[previousStepIndex].name}`,
-    );
+    await goto(Route.onboarding({ step: onboardingSteps[previousStepIndex].name }));
   };
 
   const OnboardingStep = $derived(onboardingSteps[index].component);
