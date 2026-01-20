@@ -16,6 +16,21 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
+/**
+ * Per-media-type S3 bucket configuration override.
+ * All fields are optional - unspecified fields inherit from the default S3 config.
+ */
+export interface S3BucketOverride {
+  endpoint?: string;
+  bucket?: string;
+  region?: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
+  prefix?: string;
+  forcePathStyle?: boolean;
+  storageClass?: string;
+}
+
 export interface SystemConfig {
   backup: {
     database: {
@@ -153,6 +168,16 @@ export interface SystemConfig {
         originalsPhotos: string;
         originalsVideos: string;
         encodedVideos: string;
+      };
+      // Per-media-type bucket overrides (optional)
+      // If specified, these override the default bucket/endpoint/credentials for that media type
+      buckets: {
+        originals?: S3BucketOverride;
+        thumbnails?: S3BucketOverride;
+        previews?: S3BucketOverride;
+        encodedVideos?: S3BucketOverride;
+        profile?: S3BucketOverride;
+        backups?: S3BucketOverride;
       };
     };
     locations: {
@@ -390,6 +415,15 @@ export const defaults = Object.freeze<SystemConfig>({
         originalsPhotos: 'GLACIER_IR',
         originalsVideos: 'GLACIER_IR',
         encodedVideos: 'STANDARD_IA', // Infrequent access - for playback
+      },
+      buckets: {
+        // Empty by default - all media types use the default bucket config
+        // Example override for cold storage originals on AWS:
+        // originals: {
+        //   endpoint: 'https://s3.amazonaws.com',
+        //   bucket: 'my-originals-bucket',
+        //   storageClass: 'GLACIER_IR',
+        // },
       },
     },
     locations: {

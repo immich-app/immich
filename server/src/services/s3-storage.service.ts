@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { OnJob } from 'src/decorators';
-import { AssetType, JobName, JobStatus, QueueName, StorageBackend } from 'src/enum';
-import { StorageAdapterFactory } from 'src/repositories/storage';
+import { AssetFileType, AssetType, JobName, JobStatus, QueueName, StorageBackend, StorageLocationType } from 'src/enum';
+import { LocalStorageAdapter, S3StorageManager } from 'src/repositories/storage';
+import { StorageCore } from 'src/cores/storage.core';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
+import { classifyS3Error, S3ErrorType } from 'src/utils/s3-error';
 
 /**
  * Service for handling S3 storage operations.
@@ -13,7 +15,31 @@ import { mimeTypes } from 'src/utils/mime-types';
  */
 @Injectable()
 export class S3StorageService extends BaseService {
-  private storageAdapterFactory = new StorageAdapterFactory();
+  private s3Manager: S3StorageManager | null = null;
+  private localAdapter: LocalStorageAdapter | null = null;
+
+  /**
+   * Get or create the S3 storage manager with current config.
+   */
+  private async getS3Manager(): Promise<S3StorageManager> {
+    const config = await this.getConfig({ withCache: true });
+    if (!this.s3Manager) {
+      this.s3Manager = new S3StorageManager(config.storage);
+    } else {
+      this.s3Manager.updateConfig(config.storage);
+    }
+    return this.s3Manager;
+  }
+
+  /**
+   * Get the local storage adapter.
+   */
+  private getLocalAdapter(): LocalStorageAdapter {
+    if (!this.localAdapter) {
+      this.localAdapter = new LocalStorageAdapter(StorageCore.getMediaLocation());
+    }
+    return this.localAdapter;
+  }
 
   /**
    * Handle uploading a single asset's original file to S3.
@@ -23,10 +49,10 @@ export class S3StorageService extends BaseService {
   async handleS3UploadAsset(job: JobOf<JobName.S3UploadAsset>): Promise<JobStatus> {
     const { id } = job;
 
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
     // Check if S3 is enabled for originals
-    if (!config.storage.s3.enabled || config.storage.locations.originals !== StorageBackend.S3) {
+    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.Originals)) {
       this.logger.debug(`S3 upload skipped for asset ${id}: S3 not enabled for originals`);
       return JobStatus.Success;
     }
@@ -44,8 +70,13 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-      const localAdapter = this.storageAdapterFactory.getLocalAdapter();
+      // Get the resolved S3 config for originals (includes correct bucket, adapter, storage class)
+      const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
+        StorageLocationType.Originals,
+        asset.type,
+      );
+      const localAdapter = this.getLocalAdapter();
+      const config = await this.getConfig({ withCache: true });
 
       // Generate S3 key
       const s3Key = this.generateS3Key(asset.ownerId, asset.id, asset.originalPath);
@@ -62,7 +93,7 @@ export class S3StorageService extends BaseService {
             await this.assetRepository.update({
               id: asset.id,
               storageBackend: StorageBackend.S3,
-              s3Bucket: config.storage.s3.bucket,
+              s3Bucket: bucket,
               s3Key,
             });
             return JobStatus.Success;
@@ -74,14 +105,13 @@ export class S3StorageService extends BaseService {
         return JobStatus.Failed;
       }
 
-      this.logger.log(`Uploading asset ${id} to S3: ${s3Key}`);
+      this.logger.log(`Uploading asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
 
-      // Read from local storage
-      const fileBuffer = await localAdapter.read(asset.originalPath);
+      // Stream from local storage to S3
+      const { stream: readStream } = await localAdapter.readStream(asset.originalPath);
 
       // Upload to S3 with appropriate storage class based on asset type
-      const storageClass = this.getStorageClassForOriginal(asset.type, config);
-      await s3Adapter.write(s3Key, fileBuffer, {
+      await s3Adapter.writeStreamAsync(s3Key, readStream, {
         contentType: mimeTypes.lookup(asset.originalPath),
         storageClass,
       });
@@ -99,7 +129,7 @@ export class S3StorageService extends BaseService {
       await this.assetRepository.update({
         id: asset.id,
         storageBackend: StorageBackend.S3,
-        s3Bucket: config.storage.s3.bucket,
+        s3Bucket: bucket,
         s3Key,
       });
 
@@ -118,7 +148,12 @@ export class S3StorageService extends BaseService {
 
       return JobStatus.Success;
     } catch (error) {
-      this.logger.error(`Failed to upload asset ${id} to S3: ${error}`);
+      const errorType = classifyS3Error(error);
+      if (errorType === S3ErrorType.Permanent) {
+        this.logger.error(`Permanent S3 error for asset ${id}, will not retry: ${error}`);
+      } else {
+        this.logger.warn(`Transient S3 error for asset ${id}, will retry: ${error}`);
+      }
       return JobStatus.Failed;
     }
   }
@@ -128,9 +163,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadQueueAll(): Promise<JobStatus> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled || config.storage.locations.originals !== StorageBackend.S3) {
+    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.Originals)) {
       this.logger.log('S3 upload queue all skipped: S3 not enabled for originals');
       return JobStatus.Success;
     }
@@ -160,9 +195,9 @@ export class S3StorageService extends BaseService {
   @OnJob({ name: JobName.S3MigrateStorageClass, queue: QueueName.S3Upload })
   async handleS3MigrateStorageClass(job: JobOf<JobName.S3MigrateStorageClass>): Promise<JobStatus> {
     const { id } = job;
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled) {
+    if (!s3Manager.isS3Enabled()) {
       return JobStatus.Success;
     }
 
@@ -173,13 +208,15 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const targetClass = this.getStorageClassForOriginal(asset.type, config);
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const { adapter: s3Adapter, storageClass: targetClass } = s3Manager.getConfigForLocation(
+        StorageLocationType.Originals,
+        asset.type,
+      );
 
       this.logger.log(`Migrating asset ${id} to storage class ${targetClass}`);
 
       // Copy object in-place with new storage class
-      await s3Adapter.copyWithStorageClass(asset.s3Key, targetClass);
+      await s3Adapter.copyWithStorageClass(asset.s3Key, targetClass || 'STANDARD');
 
       this.logger.log(`Successfully migrated asset ${id} to storage class ${targetClass}`);
       return JobStatus.Success;
@@ -194,9 +231,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3MigrateStorageClassAll, queue: QueueName.S3Upload })
   async handleS3MigrateStorageClassAll(): Promise<JobStatus> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled) {
+    if (!s3Manager.isS3Enabled()) {
       this.logger.log('S3 storage class migration skipped: S3 not enabled');
       return JobStatus.Success;
     }
@@ -226,10 +263,10 @@ export class S3StorageService extends BaseService {
   async handleS3UploadEncodedVideo(job: JobOf<JobName.S3UploadEncodedVideo>): Promise<JobStatus> {
     const { id } = job;
 
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
     // Check if S3 is enabled for encoded videos
-    if (!config.storage.s3.enabled || config.storage.locations.encodedVideos !== StorageBackend.S3) {
+    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos)) {
       this.logger.debug(`S3 upload skipped for encoded video ${id}: S3 not enabled for encoded videos`);
       return JobStatus.Success;
     }
@@ -253,8 +290,12 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-      const localAdapter = this.storageAdapterFactory.getLocalAdapter();
+      // Get the resolved S3 config for encoded videos
+      const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
+        StorageLocationType.EncodedVideos,
+      );
+      const localAdapter = this.getLocalAdapter();
+      const config = await this.getConfig({ withCache: true });
 
       // Generate S3 key for encoded video
       const s3Key = this.generateEncodedVideoS3Key(asset.ownerId, asset.id);
@@ -280,14 +321,13 @@ export class S3StorageService extends BaseService {
         return JobStatus.Failed;
       }
 
-      this.logger.log(`Uploading encoded video for asset ${id} to S3: ${s3Key}`);
+      this.logger.log(`Uploading encoded video for asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
 
-      // Read from local storage
-      const fileBuffer = await localAdapter.read(asset.encodedVideoPath);
+      // Stream from local storage to S3
+      const { stream: readStream } = await localAdapter.readStream(asset.encodedVideoPath);
 
-      // Upload to S3 with STANDARD_IA storage class for encoded videos
-      const storageClass = config.storage.s3.storageClasses.encodedVideos;
-      await s3Adapter.write(s3Key, fileBuffer, {
+      // Upload to S3 with appropriate storage class
+      await s3Adapter.writeStreamAsync(s3Key, readStream, {
         contentType: 'video/mp4',
         storageClass,
       });
@@ -325,7 +365,12 @@ export class S3StorageService extends BaseService {
 
       return JobStatus.Success;
     } catch (error) {
-      this.logger.error(`Failed to upload encoded video ${id} to S3: ${error}`);
+      const errorType = classifyS3Error(error);
+      if (errorType === S3ErrorType.Permanent) {
+        this.logger.error(`Permanent S3 error for encoded video ${id}, will not retry: ${error}`);
+      } else {
+        this.logger.warn(`Transient S3 error for encoded video ${id}, will retry: ${error}`);
+      }
       return JobStatus.Failed;
     }
   }
@@ -335,9 +380,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadEncodedVideoQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadEncodedVideoQueueAll(): Promise<JobStatus> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled || config.storage.locations.encodedVideos !== StorageBackend.S3) {
+    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos)) {
       this.logger.log('S3 encoded video upload queue all skipped: S3 not enabled for encoded videos');
       return JobStatus.Success;
     }
@@ -368,11 +413,11 @@ export class S3StorageService extends BaseService {
   async handleS3UploadThumbnails(job: JobOf<JobName.S3UploadThumbnails>): Promise<JobStatus> {
     const { id } = job;
 
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
     // Check if S3 is enabled for thumbnails or previews
-    const uploadThumbnails = config.storage.s3.enabled && config.storage.locations.thumbnails === StorageBackend.S3;
-    const uploadPreviews = config.storage.s3.enabled && config.storage.locations.previews === StorageBackend.S3;
+    const uploadThumbnails = s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
+    const uploadPreviews = s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
 
     if (!uploadThumbnails && !uploadPreviews) {
       this.logger.debug(`S3 upload skipped for thumbnails ${id}: S3 not enabled for thumbnails/previews`);
@@ -386,21 +431,24 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-      const localAdapter = this.storageAdapterFactory.getLocalAdapter();
-      const storageClass = config.storage.s3.storageClasses.thumbnails;
+      const localAdapter = this.getLocalAdapter();
+      const config = await this.getConfig({ withCache: true });
 
       // Process thumbnails
       if (uploadThumbnails) {
+        const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
+          StorageLocationType.Thumbnails,
+        );
+
         const thumbnailFile = asset.files?.find((f: { type: string }) => f.type === 'thumbnail');
         if (thumbnailFile && thumbnailFile.storageBackend !== StorageBackend.S3) {
           const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'thumbnail.webp');
 
           const localFileExists = await localAdapter.exists(thumbnailFile.path);
           if (localFileExists) {
-            this.logger.log(`Uploading thumbnail for asset ${id} to S3: ${s3Key}`);
-            const fileBuffer = await localAdapter.read(thumbnailFile.path);
-            await s3Adapter.write(s3Key, fileBuffer, {
+            this.logger.log(`Uploading thumbnail for asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
+            const { stream: readStream } = await localAdapter.readStream(thumbnailFile.path);
+            await s3Adapter.writeStreamAsync(s3Key, readStream, {
               contentType: 'image/webp',
               storageClass,
             });
@@ -408,10 +456,10 @@ export class S3StorageService extends BaseService {
             // Update asset_file record
             await this.assetRepository.upsertFileWithS3({
               assetId: asset.id,
-              type: 'thumbnail',
+              type: AssetFileType.Thumbnail,
               path: thumbnailFile.path,
               storageBackend: StorageBackend.S3,
-              s3Bucket: config.storage.s3.bucket,
+              s3Bucket: bucket,
               s3Key,
             });
 
@@ -432,15 +480,19 @@ export class S3StorageService extends BaseService {
 
       // Process previews
       if (uploadPreviews) {
+        const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
+          StorageLocationType.Previews,
+        );
+
         const previewFile = asset.files?.find((f: { type: string }) => f.type === 'preview');
         if (previewFile && previewFile.storageBackend !== StorageBackend.S3) {
           const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'preview.webp');
 
           const localFileExists = await localAdapter.exists(previewFile.path);
           if (localFileExists) {
-            this.logger.log(`Uploading preview for asset ${id} to S3: ${s3Key}`);
-            const fileBuffer = await localAdapter.read(previewFile.path);
-            await s3Adapter.write(s3Key, fileBuffer, {
+            this.logger.log(`Uploading preview for asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
+            const { stream: readStream } = await localAdapter.readStream(previewFile.path);
+            await s3Adapter.writeStreamAsync(s3Key, readStream, {
               contentType: 'image/webp',
               storageClass,
             });
@@ -448,10 +500,10 @@ export class S3StorageService extends BaseService {
             // Update asset_file record
             await this.assetRepository.upsertFileWithS3({
               assetId: asset.id,
-              type: 'preview',
+              type: AssetFileType.Preview,
               path: previewFile.path,
               storageBackend: StorageBackend.S3,
-              s3Bucket: config.storage.s3.bucket,
+              s3Bucket: bucket,
               s3Key,
             });
 
@@ -472,7 +524,12 @@ export class S3StorageService extends BaseService {
 
       return JobStatus.Success;
     } catch (error) {
-      this.logger.error(`Failed to upload thumbnails for asset ${id} to S3: ${error}`);
+      const errorType = classifyS3Error(error);
+      if (errorType === S3ErrorType.Permanent) {
+        this.logger.error(`Permanent S3 error for thumbnails ${id}, will not retry: ${error}`);
+      } else {
+        this.logger.warn(`Transient S3 error for thumbnails ${id}, will retry: ${error}`);
+      }
       return JobStatus.Failed;
     }
   }
@@ -482,10 +539,10 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadThumbnailsQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadThumbnailsQueueAll(): Promise<JobStatus> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    const uploadThumbnails = config.storage.s3.enabled && config.storage.locations.thumbnails === StorageBackend.S3;
-    const uploadPreviews = config.storage.s3.enabled && config.storage.locations.previews === StorageBackend.S3;
+    const uploadThumbnails = s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
+    const uploadPreviews = s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
 
     if (!uploadThumbnails && !uploadPreviews) {
       this.logger.log('S3 thumbnail upload queue all skipped: S3 not enabled for thumbnails/previews');
@@ -536,21 +593,12 @@ export class S3StorageService extends BaseService {
   }
 
   /**
-   * Get the appropriate S3 storage class for an original asset based on its type.
-   * Photos and videos have different access patterns and storage class recommendations.
-   */
-  private getStorageClassForOriginal(assetType: AssetType, config: SystemConfig): string {
-    const classes = config.storage.s3.storageClasses;
-    return assetType === AssetType.Video ? classes.originalsVideos : classes.originalsPhotos;
-  }
-
-  /**
    * Get a presigned download URL for an S3 asset original.
    */
   async getPresignedDownloadUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled) {
+    if (!s3Manager.isS3Enabled()) {
       return null;
     }
 
@@ -559,7 +607,8 @@ export class S3StorageService extends BaseService {
       return null;
     }
 
-    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+    // Use the originals adapter (where the asset is stored)
+    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.Originals);
 
     if (!s3Adapter.getPresignedDownloadUrl) {
       return null;
@@ -572,9 +621,9 @@ export class S3StorageService extends BaseService {
    * Get a presigned download URL for an encoded video in S3.
    */
   async getPresignedEncodedVideoUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled) {
+    if (!s3Manager.isS3Enabled()) {
       return null;
     }
 
@@ -583,7 +632,8 @@ export class S3StorageService extends BaseService {
       return null;
     }
 
-    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+    // Use the encoded videos adapter
+    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
 
     if (!s3Adapter.getPresignedDownloadUrl) {
       return null;
@@ -600,9 +650,9 @@ export class S3StorageService extends BaseService {
     fileType: 'thumbnail' | 'preview',
     expiresIn: number = 3600,
   ): Promise<string | null> {
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled) {
+    if (!s3Manager.isS3Enabled()) {
       return null;
     }
 
@@ -611,15 +661,18 @@ export class S3StorageService extends BaseService {
       return null;
     }
 
-    const file = asset.files.find((f: { type: string; storageBackend?: StorageBackend; s3Key?: string }) =>
-      f.type === fileType && f.storageBackend === StorageBackend.S3 && f.s3Key
+    const file = asset.files.find(
+      (f: { type: string; storageBackend?: StorageBackend; s3Key?: string | null }) =>
+        f.type === fileType && f.storageBackend === StorageBackend.S3 && f.s3Key,
     );
 
     if (!file || !file.s3Key) {
       return null;
     }
 
-    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+    // Use the appropriate adapter based on file type
+    const locationType = fileType === 'thumbnail' ? StorageLocationType.Thumbnails : StorageLocationType.Previews;
+    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(locationType);
 
     if (!s3Adapter.getPresignedDownloadUrl) {
       return null;
@@ -638,12 +691,14 @@ export class S3StorageService extends BaseService {
     expiresIn: number = 3600,
   ): Promise<{ url: string; key: string } | null> {
     const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
 
-    if (!config.storage.s3.enabled || config.storage.upload.strategy !== 's3-first') {
+    if (!s3Manager.isS3Enabled() || config.storage.upload.strategy !== 's3-first') {
       return null;
     }
 
-    const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+    // Use the originals adapter for uploads
+    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.Originals);
 
     if (!s3Adapter.getPresignedUploadUrl) {
       return null;
@@ -657,5 +712,49 @@ export class S3StorageService extends BaseService {
     const url = await s3Adapter.getPresignedUploadUrl(key, { expiresIn, contentType });
 
     return { url, key };
+  }
+
+  /**
+   * Clean up orphaned local files for assets that have been uploaded to S3.
+   * This handles the case where the process crashed after S3 upload but before local delete.
+   */
+  @OnJob({ name: JobName.S3CleanupOrphanedFiles, queue: QueueName.S3Upload })
+  async handleS3CleanupOrphanedFiles(): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
+    const s3Manager = await this.getS3Manager();
+
+    if (!s3Manager.isS3Enabled()) {
+      this.logger.log('S3 orphaned files cleanup skipped: S3 not enabled');
+      return JobStatus.Success;
+    }
+
+    if (!config.storage.upload.deleteLocalAfterUpload) {
+      this.logger.log('S3 orphaned files cleanup skipped: deleteLocalAfterUpload is disabled');
+      return JobStatus.Success;
+    }
+
+    this.logger.log('Starting S3 orphaned files cleanup');
+
+    const localAdapter = this.getLocalAdapter();
+    let cleanedCount = 0;
+    let errorCount = 0;
+
+    // Stream through S3 assets that still have local paths
+    for await (const asset of this.assetRepository.getS3AssetsWithLocalPaths()) {
+      try {
+        const localFileExists = await localAdapter.exists(asset.originalPath);
+        if (localFileExists) {
+          this.logger.debug(`Deleting orphaned local file for S3 asset ${asset.id}: ${asset.originalPath}`);
+          await localAdapter.delete(asset.originalPath);
+          cleanedCount++;
+        }
+      } catch (error) {
+        this.logger.warn(`Failed to clean up orphaned file for asset ${asset.id}: ${error}`);
+        errorCount++;
+      }
+    }
+
+    this.logger.log(`S3 orphaned files cleanup complete: ${cleanedCount} files deleted, ${errorCount} errors`);
+    return JobStatus.Success;
   }
 }
