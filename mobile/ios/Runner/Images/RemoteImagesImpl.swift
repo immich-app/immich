@@ -50,8 +50,6 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   func cancelRequest(requestId: Int64) {
     Self.delegate.cancel(requestId: requestId)
   }
-  
-  func releaseImage(requestId: Int64) throws {}
 }
 
 class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {

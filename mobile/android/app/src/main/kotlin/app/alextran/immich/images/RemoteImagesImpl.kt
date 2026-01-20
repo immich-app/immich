@@ -4,7 +4,9 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import app.alextran.immich.BuildConfig
+import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
+import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.SSLConfig
 import okhttp3.Cache
 import okhttp3.Call
@@ -33,82 +35,18 @@ private const val MAX_REQUESTS_PER_HOST = 16
 private const val KEEP_ALIVE_CONNECTIONS = 10
 private const val KEEP_ALIVE_DURATION_MINUTES = 5L
 private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
-private const val INITIAL_BUFFER_SIZE = 64 * 1024
 
-private class RemoteRequest(
-  val cancellationSignal: CancellationSignal,
-)
-
-private class NativeByteBuffer(initialCapacity: Int) {
-  var pointer = NativeBuffer.allocate(initialCapacity)
-  var capacity = initialCapacity
-  var offset = 0
-
-  fun ensureHeadroom(needed: Int = INITIAL_BUFFER_SIZE) {
-    if (offset + needed > capacity) {
-      capacity = (capacity * 2).coerceAtLeast(offset + needed)
-      pointer = NativeBuffer.realloc(pointer, capacity)
-    }
-  }
-
-  fun wrapRemaining() = NativeBuffer.wrap(pointer + offset, capacity - offset)
-
-  fun advance(bytesRead: Int) { offset += bytesRead }
-
-  fun free() {
-    if (pointer != 0L) {
-      NativeBuffer.free(pointer)
-      pointer = 0L
-    }
-  }
-}
+private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
 
   init {
-    appContext = context.applicationContext
-    cacheDir = context.cacheDir
-    fetcher = buildFetcher()
+    ImageFetcherManager.initialize(context)
   }
 
   companion object {
     val CANCELLED = Result.success<Map<String, Long>>(emptyMap())
-
-    private var appContext: Context? = null
-    private var cacheDir: File? = null
-    private var fetcher: ImageFetcher? = null
-
-    init {
-      SSLConfig.addListener(::invalidateFetcher)
-    }
-
-    private fun invalidateFetcher() {
-      val oldFetcher = fetcher
-      val needsOkHttp = SSLConfig.requiresCustomSSL
-
-      fetcher = when {
-        // OkHttp → OkHttp: reconfigure, sharing cache/dispatcher
-        oldFetcher is OkHttpImageFetcher && needsOkHttp -> {
-          oldFetcher.reconfigure(SSLConfig.sslSocketFactory, SSLConfig.trustManager)
-        }
-        // Any other transition: graceful drain, create new
-        else -> {
-          oldFetcher?.drain()
-          buildFetcher()
-        }
-      }
-    }
-
-    private fun buildFetcher(): ImageFetcher {
-      val ctx = appContext ?: throw IllegalStateException("Context not set")
-      val dir = cacheDir ?: throw IllegalStateException("Cache dir not set")
-      return if (SSLConfig.requiresCustomSSL) {
-        OkHttpImageFetcher.create(dir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
-      } else {
-        CronetImageFetcher(ctx, dir)
-      }
-    }
   }
 
   override fun requestImage(
@@ -117,11 +55,10 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     requestId: Long,
     callback: (Result<Map<String, Long>>) -> Unit
   ) {
-    val fetcher = fetcher ?: return callback(Result.failure(RuntimeException("No fetcher")))
     val signal = CancellationSignal()
-    val request = RemoteRequest(signal)
-    requestMap[requestId] = request
-    fetcher.fetch(
+    requestMap[requestId] = RemoteRequest(signal)
+
+    ImageFetcherManager.fetch(
       url,
       headers,
       signal,
@@ -132,10 +69,14 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
           return@fetch callback(CANCELLED)
         }
 
-        callback(Result.success(mapOf(
-          "pointer" to buffer.pointer,
-          "length" to buffer.offset.toLong()
-        )))
+        callback(
+          Result.success(
+            mapOf(
+              "pointer" to buffer.pointer,
+              "length" to buffer.offset.toLong()
+            )
+          )
+        )
       },
       onFailure = { e ->
         requestMap.remove(requestId)
@@ -148,8 +89,53 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   override fun cancelRequest(requestId: Long) {
     requestMap.remove(requestId)?.cancellationSignal?.cancel()
   }
+}
 
-  override fun releaseImage(requestId: Long) {}
+private object ImageFetcherManager {
+  private lateinit var appContext: Context
+  private lateinit var cacheDir: File
+  private lateinit var fetcher: ImageFetcher
+  private var initialized = false
+
+  fun initialize(context: Context) {
+    if (initialized) return
+    synchronized(this) {
+      if (initialized) return
+      appContext = context.applicationContext
+      cacheDir = context.cacheDir
+      fetcher = build()
+      SSLConfig.addListener(::invalidate)
+      initialized = true
+    }
+  }
+
+  fun fetch(
+    url: String,
+    headers: Map<String, String>,
+    signal: CancellationSignal,
+    onSuccess: (NativeByteBuffer) -> Unit,
+    onFailure: (Exception) -> Unit,
+  ) {
+    fetcher.fetch(url, headers, signal, onSuccess, onFailure)
+  }
+
+  private fun invalidate() {
+    val oldFetcher = fetcher
+    if (oldFetcher is OkHttpImageFetcher && SSLConfig.requiresCustomSSL) {
+      fetcher = oldFetcher.reconfigure(SSLConfig.sslSocketFactory, SSLConfig.trustManager)
+      return
+    }
+    fetcher = build()
+    oldFetcher.drain()
+  }
+
+  private fun build(): ImageFetcher {
+    return if (SSLConfig.requiresCustomSSL) {
+      OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
+    } else {
+      CronetImageFetcher(appContext, cacheDir)
+    }
+  }
 }
 
 private sealed interface ImageFetcher {
@@ -164,10 +150,7 @@ private sealed interface ImageFetcher {
   fun drain()
 }
 
-private class CronetImageFetcher(
-  context: Context,
-  cacheDir: File,
-) : ImageFetcher {
+private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
   private val engine: CronetEngine
   private val executor = Executors.newSingleThreadExecutor()
   private val stateLock = Any()
@@ -256,7 +239,11 @@ private class CronetImageFetcher(
       request.read(buffer!!.wrapRemaining())
     }
 
-    override fun onReadCompleted(request: UrlRequest, info: UrlResponseInfo, byteBuffer: ByteBuffer) {
+    override fun onReadCompleted(
+      request: UrlRequest,
+      info: UrlResponseInfo,
+      byteBuffer: ByteBuffer
+    ) {
       buffer!!.apply {
         advance(byteBuffer.remaining())
         ensureHeadroom()
