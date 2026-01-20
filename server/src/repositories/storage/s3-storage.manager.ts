@@ -154,20 +154,27 @@ export class S3StorageManager {
    */
   private getBackendForLocation(locationType: StorageLocationType): StorageBackend {
     switch (locationType) {
-      case StorageLocationType.Originals:
+      case StorageLocationType.Originals: {
         return this.config.locations.originals;
-      case StorageLocationType.Thumbnails:
+      }
+      case StorageLocationType.Thumbnails: {
         return this.config.locations.thumbnails;
-      case StorageLocationType.Previews:
+      }
+      case StorageLocationType.Previews: {
         return this.config.locations.previews;
-      case StorageLocationType.EncodedVideos:
+      }
+      case StorageLocationType.EncodedVideos: {
         return this.config.locations.encodedVideos;
-      case StorageLocationType.Profile:
+      }
+      case StorageLocationType.Profile: {
         return this.config.locations.profile;
-      case StorageLocationType.Backups:
+      }
+      case StorageLocationType.Backups: {
         return this.config.locations.backups;
-      default:
+      }
+      default: {
         return this.config.backend;
+      }
     }
   }
 
@@ -181,20 +188,27 @@ export class S3StorageManager {
     }
 
     switch (locationType) {
-      case StorageLocationType.Originals:
+      case StorageLocationType.Originals: {
         return buckets.originals;
-      case StorageLocationType.Thumbnails:
+      }
+      case StorageLocationType.Thumbnails: {
         return buckets.thumbnails;
-      case StorageLocationType.Previews:
+      }
+      case StorageLocationType.Previews: {
         return buckets.previews;
-      case StorageLocationType.EncodedVideos:
+      }
+      case StorageLocationType.EncodedVideos: {
         return buckets.encodedVideos;
-      case StorageLocationType.Profile:
+      }
+      case StorageLocationType.Profile: {
         return buckets.profile;
-      case StorageLocationType.Backups:
+      }
+      case StorageLocationType.Backups: {
         return buckets.backups;
-      default:
+      }
+      default: {
         return undefined;
+      }
     }
   }
 
@@ -233,18 +247,23 @@ export class S3StorageManager {
     // Fall back to storageClasses config
     const storageClasses = this.config.s3.storageClasses;
     switch (locationType) {
-      case StorageLocationType.Originals:
+      case StorageLocationType.Originals: {
         return assetType === AssetType.Video
           ? storageClasses.originalsVideos
           : storageClasses.originalsPhotos;
-      case StorageLocationType.Thumbnails:
+      }
+      case StorageLocationType.Thumbnails: {
         return storageClasses.thumbnails;
-      case StorageLocationType.Previews:
+      }
+      case StorageLocationType.Previews: {
         return storageClasses.previews;
-      case StorageLocationType.EncodedVideos:
+      }
+      case StorageLocationType.EncodedVideos: {
         return storageClasses.encodedVideos;
-      default:
+      }
+      default: {
         return undefined;
+      }
     }
   }
 
