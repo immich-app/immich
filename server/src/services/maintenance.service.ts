@@ -1,11 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent } from 'src/decorators';
-import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
-import { SystemMetadataKey } from 'src/enum';
+import {
+  MaintenanceAuthDto,
+  MaintenanceDetectInstallResponseDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { MaintenanceModeState } from 'src/types';
-import { createMaintenanceLoginUrl, generateMaintenanceSecret, signMaintenanceJwt } from 'src/utils/maintenance';
+import {
+  createMaintenanceLoginUrl,
+  detectPriorInstall,
+  generateMaintenanceSecret,
+  signMaintenanceJwt,
+} from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 /**
@@ -19,9 +29,25 @@ export class MaintenanceService extends BaseService {
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 
-  async startMaintenance(username: string): Promise<{ jwt: string }> {
+  getMaintenanceStatus(): MaintenanceStatusResponseDto {
+    return {
+      active: false,
+      action: MaintenanceAction.End,
+    };
+  }
+
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
+    return detectPriorInstall(this.storageRepository);
+  }
+
+  async startMaintenance(action: SetMaintenanceModeDto, username: string): Promise<{ jwt: string }> {
     const secret = generateMaintenanceSecret();
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true, secret });
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret,
+      action,
+    });
+
     await this.eventRepository.emit('AppRestart', { isMaintenanceMode: true });
 
     return {
@@ -29,6 +55,20 @@ export class MaintenanceService extends BaseService {
         username,
       }),
     };
+  }
+
+  async startRestoreFlow(): Promise<{ jwt: string }> {
+    const adminUser = await this.userRepository.getAdmin();
+    if (adminUser) {
+      throw new BadRequestException('The server already has an admin');
+    }
+
+    return this.startMaintenance(
+      {
+        action: MaintenanceAction.SelectDatabaseRestore,
+      },
+      'admin',
+    );
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
