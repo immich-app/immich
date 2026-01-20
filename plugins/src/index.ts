@@ -1,4 +1,4 @@
-const { updateAsset, addAssetToAlbum } = Host.getFunctions();
+const { updateAsset, addAssetToAlbum, getFacesForAsset } = Host.getFunctions();
 
 function parseInput() {
   return JSON.parse(Host.inputString());
@@ -9,17 +9,43 @@ function returnOutput(output: any) {
   return 0;
 }
 
+/**
+ * Filter by person - checks if the recognized person matches the configured person IDs.
+ *
+ * For PersonRecognized trigger:
+ * - data.personId contains the ID of the person that was just recognized
+ * - Checks if personId is in the configured list
+ *
+ * matchMode options:
+ * - 'any': passes if the triggering person is in the list
+ * - 'all': passes if all configured persons are present in the asset
+ * - 'exact': passes if the asset contains exactly the configured persons
+ */
 export function filterPerson() {
   const input = parseInput();
+  const { authToken, data, config } = input;
+  const { personIds, matchMode = 'any' } = config;
 
-  const { data, config } = input;
-  const { personIds, matchMode } = config;
-
-  const faces = data.faces || [];
-
-  if (faces.length === 0) {
-    return returnOutput({ passed: false });
+  if (!personIds || personIds.length === 0) {
+    return returnOutput({ passed: true });
   }
+
+  const triggerPersonId = data.personId;
+
+  if (matchMode === 'any') {
+    const passed = triggerPersonId && personIds.includes(triggerPersonId);
+    return returnOutput({ passed });
+  }
+
+  const payload = Memory.fromJsonObject({
+    authToken,
+    assetId: data.asset.id,
+  });
+
+  const resultPtr = getFacesForAsset(payload.offset);
+  payload.free();
+
+  const faces = JSON.parse(Memory.find(resultPtr).readJsonObject());
 
   const assetPersonIds: string[] = faces
     .filter((face: { personId: string | null }) => face.personId !== null)
@@ -27,11 +53,7 @@ export function filterPerson() {
 
   let passed = false;
 
-  if (!personIds || personIds.length === 0) {
-    passed = true;
-  } else if (matchMode === 'any') {
-    passed = personIds.some((id: string) => assetPersonIds.includes(id));
-  } else if (matchMode === 'all') {
+  if (matchMode === 'all') {
     passed = personIds.every((id: string) => assetPersonIds.includes(id));
   } else if (matchMode === 'exact') {
     const uniquePersonIds = new Set(personIds);
@@ -80,7 +102,7 @@ export function actionAddToAlbum() {
       authToken,
       assetId: data.asset.id,
       albumId: albumId,
-    })
+    }),
   );
 
   addAssetToAlbum(ptr.offset);
@@ -97,7 +119,7 @@ export function actionArchive() {
       authToken,
       id: data.asset.id,
       visibility: 'archive',
-    })
+    }),
   );
 
   updateAsset(ptr.offset);

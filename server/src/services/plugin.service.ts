@@ -17,7 +17,7 @@ import { IWorkflowJob, JobItem, JobOf, WorkflowData } from 'src/types';
 interface WorkflowContext {
   authToken: string;
   asset: Asset;
-  faces?: { faceId: string; personId: string | null }[];
+  personId?: string;
 }
 
 interface PluginInput<T = unknown> {
@@ -25,7 +25,7 @@ interface PluginInput<T = unknown> {
   config: T;
   data: {
     asset: Asset;
-    faces?: { faceId: string; personId: string | null }[];
+    personId?: string;
   };
 }
 
@@ -46,6 +46,7 @@ export class PluginService extends BaseService {
       this.albumRepository,
       this.accessRepository,
       this.cryptoRepository,
+      this.personRepository,
       this.logger,
       this.pluginJwtSecret,
     );
@@ -231,7 +232,7 @@ export class PluginService extends BaseService {
 
           const authToken = this.cryptoRepository.signJwt({ userId: data.userId }, this.pluginJwtSecret);
 
-          const context = {
+          const context: WorkflowContext = {
             authToken,
             asset,
           };
@@ -257,16 +258,10 @@ export class PluginService extends BaseService {
 
           const authToken = this.cryptoRepository.signJwt({ userId: data.userId }, this.pluginJwtSecret);
 
-          const faces = await this.personRepository.getFaces(data.assetId);
-          const facePayload = faces.map((face) => ({
-            faceId: face.id,
-            personId: face.personId,
-          }));
-
-          const context = {
+          const context: WorkflowContext = {
             authToken,
             asset,
-            faces: facePayload,
+            personId: data.personId,
           };
 
           const filtersPassed = await this.executeFilters(workflowFilters, context);
@@ -309,7 +304,7 @@ export class PluginService extends BaseService {
         config: workflowFilter.filterConfig,
         data: {
           asset: context.asset,
-          faces: context.faces,
+          personId: context.personId,
         },
       };
 
@@ -352,6 +347,7 @@ export class PluginService extends BaseService {
         config: workflowAction.actionConfig,
         data: {
           asset: context.asset,
+          personId: context.personId,
         },
       };
 
