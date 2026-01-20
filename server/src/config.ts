@@ -15,7 +15,7 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
-export interface SystemConfig {
+export type SystemConfig = {
   backup: {
     database: {
       enabled: boolean;
@@ -187,7 +187,7 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-}
+};
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
 
