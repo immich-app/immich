@@ -576,6 +576,8 @@ Class | Method | HTTP request | Description
  - [SyncAlbumUserV1](doc//SyncAlbumUserV1.md)
  - [SyncAlbumV1](doc//SyncAlbumV1.md)
  - [SyncAssetDeleteV1](doc//SyncAssetDeleteV1.md)
+ - [SyncAssetEditDeleteV1](doc//SyncAssetEditDeleteV1.md)
+ - [SyncAssetEditV1](doc//SyncAssetEditV1.md)
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
  - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
  - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)

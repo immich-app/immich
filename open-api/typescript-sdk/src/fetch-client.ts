@@ -2959,6 +2959,16 @@ export type SyncAssetDeleteV1 = {
     /** Asset ID */
     assetId: string;
 };
+export type SyncAssetEditDeleteV1 = {
+    assetId: string;
+};
+export type SyncAssetEditV1 = {
+    action: AssetEditAction;
+    assetId: string;
+    id: string;
+    parameters: object;
+    sequence: number;
+};
 export type SyncAssetExifV1 = {
     /** Asset ID */
     assetId: string;
@@ -7202,6 +7212,8 @@ export enum SyncEntityType {
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    AssetEditV1 = "AssetEditV1",
+    AssetEditDeleteV1 = "AssetEditDeleteV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     PartnerV1 = "PartnerV1",
@@ -7252,6 +7264,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AssetEditsV1 = "AssetEditsV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",

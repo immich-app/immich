@@ -78,7 +78,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
     final time = DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
-    return '$date$_kSeparator$time $timezone';
+    return '${exifInfo?.width}x${exifInfo?.height}   $date$_kSeparator$time $timezone';
   }
 
   String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {

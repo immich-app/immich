@@ -39,4 +39,16 @@ export class AssetEditRepository {
       .orderBy('sequence', 'asc')
       .execute() as Promise<AssetEditActionItem[]>;
   }
+
+  @GenerateSql({
+    params: [DummyValue.UUID],
+  })
+  getWithSyncInfo(assetId: string) {
+    return this.db
+      .selectFrom('asset_edit')
+      .select(['id', 'assetId', 'sequence', 'action', 'parameters'])
+      .where('assetId', '=', assetId)
+      .orderBy('sequence', 'asc')
+      .execute();
+  }
 }
