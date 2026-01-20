@@ -1,21 +1,22 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
-  import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, Textarea, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
+  import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -44,10 +45,9 @@
     assetType?: AssetTypeEnum | undefined;
     albumOwnerId: string;
     disabled: boolean;
-    onClose: () => void;
   }
 
-  let { user, assetId = undefined, albumId, assetType = undefined, albumOwnerId, disabled, onClose }: Props = $props();
+  let { user, assetId = undefined, albumId, assetType = undefined, albumOwnerId, disabled }: Props = $props();
 
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
@@ -117,7 +117,7 @@
           shape="round"
           variant="ghost"
           color="secondary"
-          onclick={onClose}
+          onclick={() => assetViewerManager.closeActivityPanel()}
           icon={mdiClose}
           aria-label={$t('close')}
         />
@@ -139,10 +139,7 @@
 
               <div class="w-full leading-4 overflow-hidden self-center wrap-break-word text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <a
-                  class="aspect-square w-19 h-19"
-                  href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
-                >
+                <a class="aspect-square w-19 h-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
                   <img
                     class="rounded-lg w-19 h-19 object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId)}
@@ -194,7 +191,7 @@
                 {#if assetId === undefined && reaction.assetId}
                   <a
                     class="aspect-square w-19 h-19"
-                    href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                    href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}
                   >
                     <img
                       class="rounded-lg w-19 h-19 object-cover"
@@ -243,37 +240,34 @@
         <div>
           <UserAvatar {user} size="md" noTitle />
         </div>
-        <form class="flex w-full max-h-56 gap-1" {onsubmit}>
-          <div class="flex w-full items-center gap-4">
-            <textarea
-              {disabled}
-              bind:value={message}
-              use:autoGrowHeight={{ height: '5px', value: message }}
-              placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              use:shortcut={{
-                shortcut: { key: 'Enter' },
-                onShortcut: () => handleSendComment(),
-              }}
-              class="h-4.5 {disabled
-                ? 'cursor-not-allowed'
-                : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
-            ></textarea>
-          </div>
+        <form class="flex w-full items-center max-h-56 gap-1" {onsubmit}>
+          <Textarea
+            {disabled}
+            bind:value={message}
+            rows={1}
+            grow
+            placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
+            {@attach fromAction(shortcut, () => ({
+              shortcut: { key: 'Enter' },
+              onShortcut: () => handleSendComment(),
+            }))}
+            class="{disabled
+              ? 'cursor-not-allowed'
+              : ''} ring-0! w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200 dark:bg-gray-200"
+          />
           {#if isSendingMessage}
-            <div class="flex items-end place-items-center pb-2 ms-0">
+            <div class="flex place-items-center pb-2 ms-0">
               <div class="flex w-full place-items-center">
-                <LoadingSpinner />
+                <LoadingSpinner size="large" />
               </div>
             </div>
           {:else if message}
-            <div class="flex items-end w-fit ms-0">
+            <div class="flex items-center w-fit ms-0 light">
               <IconButton
                 shape="round"
                 aria-label={$t('send_message')}
-                size="small"
                 variant="ghost"
                 icon={mdiSend}
-                class="dark:text-immich-dark-gray"
                 onclick={() => handleSendComment()}
               />
             </div>

@@ -2,8 +2,8 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import QueueGraph from '$lib/components/QueueGraph.svelte';
-  import { AppRoute } from '$lib/constants';
   import { queueManager } from '$lib/managers/queue-manager.svelte';
+  import { Route } from '$lib/route';
   import { asQueueItem, getQueueActions } from '$lib/services/queue.service';
   import { type QueueResponseDto } from '@immich/sdk';
   import {
@@ -46,7 +46,7 @@
 <OnEvents {onQueueUpdate} />
 
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('admin.queues'), href: AppRoute.ADMIN_QUEUES }, { title: item.title }]}
+  breadcrumbs={[{ title: $t('admin.queues'), href: Route.queues() }, { title: item.title }]}
   actions={[Pause, Resume, Empty, MenuItemType.Divider, RemoveFailedJobs]}
 >
   <div>

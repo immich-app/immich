@@ -5,7 +5,8 @@ import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Readable, Writable } from 'node:stream';
+import { PassThrough, Readable, Writable } from 'node:stream';
+import { createGunzip, createGzip } from 'node:zlib';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -91,6 +92,18 @@ export class StorageRepository {
     const finalize = () => archive.finalize();
 
     return { stream: archive, addFile, finalize };
+  }
+
+  createGzip(): PassThrough {
+    return createGzip();
+  }
+
+  createGunzip(): PassThrough {
+    return createGunzip();
+  }
+
+  createPlainReadStream(filepath: string): Readable {
+    return createReadStream(filepath);
   }
 
   async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {

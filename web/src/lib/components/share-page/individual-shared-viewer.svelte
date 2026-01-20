@@ -4,9 +4,10 @@
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
@@ -32,7 +33,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
+  let assets = $derived(sharedLink.assets);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -68,7 +69,7 @@
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets);
+    assetInteraction.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
   const handleAction = async (action: Action) => {
@@ -76,7 +77,7 @@
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
-        await goto(AppRoute.PHOTOS);
+        await goto(Route.photos());
         break;
       }
     }
@@ -106,7 +107,7 @@
         {/if}
       </AssetSelectControlBar>
     {:else}
-      <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
+      <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
             <Logo variant={mobileDevice.maxMd ? 'icon' : 'inline'} class="min-w-10" />
@@ -144,15 +145,7 @@
   {:else if assets.length === 1}
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
       {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          {asset}
-          showCloseButton={false}
-          onAction={handleAction}
-          onPrevious={() => Promise.resolve(false)}
-          onNext={() => Promise.resolve(false)}
-          onRandom={() => Promise.resolve(undefined)}
-          onClose={() => {}}
-        />
+        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
       {/await}
     {/await}
   {/if}

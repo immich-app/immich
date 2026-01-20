@@ -14,25 +14,41 @@ class SetMaintenanceModeDto {
   /// Returns a new [SetMaintenanceModeDto] instance.
   SetMaintenanceModeDto({
     required this.action,
+    this.restoreBackupFilename,
   });
 
   MaintenanceAction action;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? restoreBackupFilename;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SetMaintenanceModeDto &&
-    other.action == action;
+    other.action == action &&
+    other.restoreBackupFilename == restoreBackupFilename;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (action.hashCode);
+    (action.hashCode) +
+    (restoreBackupFilename == null ? 0 : restoreBackupFilename!.hashCode);
 
   @override
-  String toString() => 'SetMaintenanceModeDto[action=$action]';
+  String toString() => 'SetMaintenanceModeDto[action=$action, restoreBackupFilename=$restoreBackupFilename]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
+    if (this.restoreBackupFilename != null) {
+      json[r'restoreBackupFilename'] = this.restoreBackupFilename;
+    } else {
+    //  json[r'restoreBackupFilename'] = null;
+    }
     return json;
   }
 
@@ -46,6 +62,7 @@ class SetMaintenanceModeDto {
 
       return SetMaintenanceModeDto(
         action: MaintenanceAction.fromJson(json[r'action'])!,
+        restoreBackupFilename: mapValueOfType<String>(json, r'restoreBackupFilename'),
       );
     }
     return null;

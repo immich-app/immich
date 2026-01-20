@@ -35,6 +35,7 @@ from
 where
   "person"."ownerId" = $1
   and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
   "person"."id"
@@ -63,6 +64,7 @@ from
   left join "asset_face" on "asset_face"."personId" = "person"."id"
 where
   "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
 group by
   "person"."id"
 having
@@ -89,6 +91,7 @@ from
 where
   "asset_face"."assetId" = $1
   and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $2
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -230,6 +233,7 @@ from
   and "asset"."deletedAt" is null
 where
   "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -251,6 +255,7 @@ where
     where
       "asset_face"."personId" = "person"."id"
       and "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" = $2
       and exists (
         select
         from
@@ -261,7 +266,7 @@ where
           and "asset"."deletedAt" is null
       )
   )
-  and "person"."ownerId" = $2
+  and "person"."ownerId" = $3
 
 -- PersonRepository.refreshFaces
 with
@@ -322,6 +327,7 @@ from
 where
   "asset_face"."personId" = $1
   and "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" is true
 
 -- PersonRepository.getLatestFaceDate
 select

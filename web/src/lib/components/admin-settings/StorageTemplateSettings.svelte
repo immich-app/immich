@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/SystemConfigButtonRow.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { AppRoute, SettingInputFieldType } from '$lib/constants';
+  import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { Route } from '$lib/route';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
   import { user } from '$lib/stores/user.store';
   import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
@@ -60,6 +60,9 @@
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
       assetIdShort: '56717ccba856',
       album: $t('album_name'),
+      make: 'FUJIFILM',
+      model: 'X-T50',
+      lensModel: 'XF27mm F2.8 R WR',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
@@ -254,9 +257,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={resolve(AppRoute.ADMIN_QUEUES)} class="text-primary">
-                          {message}
-                        </a>
+                        <a href={Route.queues()} class="text-primary">{message}</a>
                       {/snippet}
                     </FormatMessage>
                   </p>

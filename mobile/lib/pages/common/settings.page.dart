@@ -12,6 +12,7 @@ import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewe
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
+import 'package:immich_mobile/widgets/settings/free_up_space_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
@@ -22,6 +23,7 @@ enum SettingSection {
   advanced('advanced', Icons.build_outlined, "advanced_settings_tile_subtitle"),
   assetViewer('asset_viewer_settings_title', Icons.image_outlined, "asset_viewer_settings_subtitle"),
   backup('backup', Icons.cloud_upload_outlined, "backup_settings_subtitle"),
+  freeUpSpace('free_up_space', Icons.cleaning_services_outlined, "free_up_space_settings_subtitle"),
   languages('language', Icons.language, "setting_languages_subtitle"),
   networking('networking_settings', Icons.wifi, "networking_subtitle"),
   notifications('notifications', Icons.notifications_none_rounded, "setting_notifications_subtitle"),
@@ -38,6 +40,7 @@ enum SettingSection {
     SettingSection.assetViewer => const AssetViewerSettings(),
     SettingSection.backup =>
       Store.tryGet(StoreKey.betaTimeline) ?? false ? const DriftBackupSettings() : const BackupSettings(),
+    SettingSection.freeUpSpace => const FreeUpSpaceSettings(),
     SettingSection.languages => const LanguageSettings(),
     SettingSection.networking => const NetworkingSettings(),
     SettingSection.notifications => const NotificationSetting(),
@@ -89,7 +92,7 @@ class _MobileLayout extends StatelessWidget {
                 ],
         )
         .toList();
-    return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 16), children: [...settings]);
+    return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 60), children: [...settings]);
   }
 }
 
@@ -139,7 +142,7 @@ class SettingsSubPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
-      body: section.widget,
+      body: Padding(padding: const EdgeInsets.only(bottom: 60.0), child: section.widget),
     );
   }
 }
