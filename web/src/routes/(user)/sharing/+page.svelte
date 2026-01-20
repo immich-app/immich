@@ -38,7 +38,7 @@
   const { ViewAll: ViewSharedLinks } = $derived(getSharedLinksActions($t));
 </script>
 
-<UserPageLayout title={data.meta.title} actions={[ViewSharedLinks, CreateAlbum]}>
+<UserPageLayout title={data.meta.title} actions={[CreateAlbum, ViewSharedLinks]}>
   <div class="flex flex-col">
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
