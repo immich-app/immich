@@ -243,6 +243,24 @@ from
 order by
   "asset_exif"."city"
 
+-- SearchRepository.getCountries
+select distinct
+  on ("country") "country"
+from
+  "asset_exif"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
+where
+  "ownerId" = any ($1::uuid[])
+  and "visibility" = $2
+  and "deletedAt" is null
+  and "country" is not null
+  and f_unaccent ("country") %> f_unaccent ($3)
+  OR f_unaccent ("country") ILIKE '%' || f_unaccent ($4) || '%'
+order by
+  f_unaccent ("country") <-> f_unaccent ($5)
+limit
+  $6
+
 -- SearchRepository.getStates
 select distinct
   on ("state") "state"
@@ -254,6 +272,13 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "state" is not null
+  and f_unaccent ("state") %> f_unaccent ($3)
+  OR f_unaccent ("state") ILIKE '%' || f_unaccent ($4) || '%'
+  and "country" = $5
+order by
+  f_unaccent ("state") <-> f_unaccent ($6)
+limit
+  $7
 
 -- SearchRepository.getCities
 select distinct
@@ -266,6 +291,14 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "city" is not null
+  and f_unaccent ("city") %> f_unaccent ($3)
+  OR f_unaccent ("city") ILIKE '%' || f_unaccent ($4) || '%'
+  and "country" = $5
+  and "state" = $6
+order by
+  f_unaccent ("city") <-> f_unaccent ($7)
+limit
+  $8
 
 -- SearchRepository.getCameraMakes
 select distinct
@@ -278,6 +311,14 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "make" is not null
+  and f_unaccent ("make") %> f_unaccent ($3)
+  OR f_unaccent ("make") ILIKE '%' || f_unaccent ($4) || '%'
+  and "model" = $5
+  and "lensModel" = $6
+order by
+  f_unaccent ("make") <-> f_unaccent ($7)
+limit
+  $8
 
 -- SearchRepository.getCameraModels
 select distinct
@@ -290,6 +331,14 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "model" is not null
+  and f_unaccent ("model") %> f_unaccent ($3)
+  OR f_unaccent ("model") ILIKE '%' || f_unaccent ($4) || '%'
+  and "make" = $5
+  and "lensModel" = $6
+order by
+  f_unaccent ("model") <-> f_unaccent ($7)
+limit
+  $8
 
 -- SearchRepository.getCameraLensModels
 select distinct
@@ -302,3 +351,11 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "lensModel" is not null
+  and f_unaccent ("lensModel") %> f_unaccent ($3)
+  OR f_unaccent ("lensModel") ILIKE '%' || f_unaccent ($4) || '%'
+  and "make" = $5
+  and "model" = $6
+order by
+  f_unaccent ("lensModel") <-> f_unaccent ($7)
+limit
+  $8

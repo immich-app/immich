@@ -6,8 +6,7 @@ part of 'search_filter.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getSearchSuggestionsHash() =>
-    r'bc30a65e8fcb273cbd07bab876baf67bcc794737';
+String _$getSearchSuggestionsHash() => r'bc30a65e8fcb273cbd07bab876baf67bcc794737';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -46,6 +45,7 @@ class GetSearchSuggestionsFamily extends Family<AsyncValue<List<String>>> {
     String? locationState,
     String? make,
     String? model,
+    String? query,
   }) {
     return GetSearchSuggestionsProvider(
       type,
@@ -53,19 +53,19 @@ class GetSearchSuggestionsFamily extends Family<AsyncValue<List<String>>> {
       locationState: locationState,
       make: make,
       model: model,
+      query: query,
     );
   }
 
   @override
-  GetSearchSuggestionsProvider getProviderOverride(
-    covariant GetSearchSuggestionsProvider provider,
-  ) {
+  GetSearchSuggestionsProvider getProviderOverride(covariant GetSearchSuggestionsProvider provider) {
     return call(
       provider.type,
       locationCountry: provider.locationCountry,
       locationState: provider.locationState,
       make: provider.make,
       model: provider.model,
+      query: provider.query,
     );
   }
 
@@ -77,16 +77,14 @@ class GetSearchSuggestionsFamily extends Family<AsyncValue<List<String>>> {
   static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
 
   @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies => _allTransitiveDependencies;
 
   @override
   String? get name => r'getSearchSuggestionsProvider';
 }
 
 /// See also [getSearchSuggestions].
-class GetSearchSuggestionsProvider
-    extends AutoDisposeFutureProvider<List<String>> {
+class GetSearchSuggestionsProvider extends AutoDisposeFutureProvider<List<String>> {
   /// See also [getSearchSuggestions].
   GetSearchSuggestionsProvider(
     SearchSuggestionType type, {
@@ -94,6 +92,7 @@ class GetSearchSuggestionsProvider
     String? locationState,
     String? make,
     String? model,
+    String? query,
   }) : this._internal(
          (ref) => getSearchSuggestions(
            ref as GetSearchSuggestionsRef,
@@ -102,20 +101,19 @@ class GetSearchSuggestionsProvider
            locationState: locationState,
            make: make,
            model: model,
+           query: query,
          ),
          from: getSearchSuggestionsProvider,
          name: r'getSearchSuggestionsProvider',
-         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-             ? null
-             : _$getSearchSuggestionsHash,
+         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$getSearchSuggestionsHash,
          dependencies: GetSearchSuggestionsFamily._dependencies,
-         allTransitiveDependencies:
-             GetSearchSuggestionsFamily._allTransitiveDependencies,
+         allTransitiveDependencies: GetSearchSuggestionsFamily._allTransitiveDependencies,
          type: type,
          locationCountry: locationCountry,
          locationState: locationState,
          make: make,
          model: model,
+         query: query,
        );
 
   GetSearchSuggestionsProvider._internal(
@@ -130,6 +128,7 @@ class GetSearchSuggestionsProvider
     required this.locationState,
     required this.make,
     required this.model,
+    required this.query,
   }) : super.internal();
 
   final SearchSuggestionType type;
@@ -137,11 +136,10 @@ class GetSearchSuggestionsProvider
   final String? locationState;
   final String? make;
   final String? model;
+  final String? query;
 
   @override
-  Override overrideWith(
-    FutureOr<List<String>> Function(GetSearchSuggestionsRef provider) create,
-  ) {
+  Override overrideWith(FutureOr<List<String>> Function(GetSearchSuggestionsRef provider) create) {
     return ProviderOverride(
       origin: this,
       override: GetSearchSuggestionsProvider._internal(
@@ -156,6 +154,7 @@ class GetSearchSuggestionsProvider
         locationState: locationState,
         make: make,
         model: model,
+        query: query,
       ),
     );
   }
@@ -172,7 +171,8 @@ class GetSearchSuggestionsProvider
         other.locationCountry == locationCountry &&
         other.locationState == locationState &&
         other.make == make &&
-        other.model == model;
+        other.model == model &&
+        other.query == query;
   }
 
   @override
@@ -183,6 +183,7 @@ class GetSearchSuggestionsProvider
     hash = _SystemHash.combine(hash, locationState.hashCode);
     hash = _SystemHash.combine(hash, make.hashCode);
     hash = _SystemHash.combine(hash, model.hashCode);
+    hash = _SystemHash.combine(hash, query.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -205,26 +206,27 @@ mixin GetSearchSuggestionsRef on AutoDisposeFutureProviderRef<List<String>> {
 
   /// The parameter `model` of this provider.
   String? get model;
+
+  /// The parameter `query` of this provider.
+  String? get query;
 }
 
-class _GetSearchSuggestionsProviderElement
-    extends AutoDisposeFutureProviderElement<List<String>>
+class _GetSearchSuggestionsProviderElement extends AutoDisposeFutureProviderElement<List<String>>
     with GetSearchSuggestionsRef {
   _GetSearchSuggestionsProviderElement(super.provider);
 
   @override
-  SearchSuggestionType get type =>
-      (origin as GetSearchSuggestionsProvider).type;
+  SearchSuggestionType get type => (origin as GetSearchSuggestionsProvider).type;
   @override
-  String? get locationCountry =>
-      (origin as GetSearchSuggestionsProvider).locationCountry;
+  String? get locationCountry => (origin as GetSearchSuggestionsProvider).locationCountry;
   @override
-  String? get locationState =>
-      (origin as GetSearchSuggestionsProvider).locationState;
+  String? get locationState => (origin as GetSearchSuggestionsProvider).locationState;
   @override
   String? get make => (origin as GetSearchSuggestionsProvider).make;
   @override
   String? get model => (origin as GetSearchSuggestionsProvider).model;
+  @override
+  String? get query => (origin as GetSearchSuggestionsProvider).query;
 }
 
 // ignore_for_file: type=lint
