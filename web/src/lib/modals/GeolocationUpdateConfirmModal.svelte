@@ -6,9 +6,12 @@
     location: { latitude: number | undefined; longitude: number | undefined };
     assetCount: number;
     onClose: (confirm: boolean) => void;
+    locationName: string | null;
+    hasCityOrCountry: boolean;
+    hasExistingLocations: boolean;
   }
 
-  let { location, assetCount, onClose }: Props = $props();
+  let { location, assetCount, onClose, locationName, hasCityOrCountry, hasExistingLocations }: Props = $props();
 </script>
 
 <ConfirmModal title={$t('confirm')} size="small" confirmColor="primary" {onClose}>
