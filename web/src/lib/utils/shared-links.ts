@@ -1,4 +1,4 @@
-import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
+import { getAssetThumbnailUrl, getSharedLink, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
@@ -30,6 +30,29 @@ export const loadSharedLink = async ({
   const common = { key, slug };
 
   const $t = await getFormatter();
+
+  const cachedSharedLink = getSharedLink();
+  const matchesCachedLink =
+    cachedSharedLink &&
+    ((key && cachedSharedLink.key === key) || (slug && cachedSharedLink.slug === slug));
+  if (matchesCachedLink) {
+    const asset = params.assetId ? await getAssetInfoFromParam(params) : undefined;
+    setSharedLink(cachedSharedLink);
+    const assetCount = cachedSharedLink.assets.length;
+    const assetId = cachedSharedLink.album?.albumThumbnailAssetId || cachedSharedLink.assets[0]?.id;
+    const assetPath = assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png';
+
+    return {
+      ...common,
+      sharedLink: cachedSharedLink,
+      asset,
+      meta: {
+        title: cachedSharedLink.album ? cachedSharedLink.album.albumName : $t('public_share'),
+        description: cachedSharedLink.description || $t('shared_photos_and_videos_count', { values: { assetCount } }),
+        imageUrl: assetPath,
+      },
+    };
+  }
 
   try {
     const [sharedLink, asset] = await Promise.all([getMySharedLink({ key, slug }), getAssetInfoFromParam(params)]);
