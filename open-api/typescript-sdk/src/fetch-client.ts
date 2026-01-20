@@ -5660,6 +5660,7 @@ export enum MirrorAxis {
     Vertical = "vertical"
 }
 export enum AssetMediaSize {
+    Original = "original",
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
