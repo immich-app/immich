@@ -23,10 +23,10 @@ export class S3StorageService extends BaseService {
    */
   private async getS3Manager(): Promise<S3StorageManager> {
     const config = await this.getConfig({ withCache: true });
-    if (!this.s3Manager) {
-      this.s3Manager = new S3StorageManager(config.storage);
-    } else {
+    if (this.s3Manager) {
       this.s3Manager.updateConfig(config.storage);
+    } else {
+      this.s3Manager = new S3StorageManager(config.storage);
     }
     return this.s3Manager;
   }
