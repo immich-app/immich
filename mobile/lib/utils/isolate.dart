@@ -172,6 +172,9 @@ class _IsolateTaskRunner<T> {
 
   void _cleanup() {
     if (_isCleanedUp) return;
+    if (!_completer.isCompleted) {
+      _completer.completeError(Exception("Isolate task cleaned up without completing."));
+    }
     _isCleanedUp = true;
 
     _cleanupTimeoutTimer?.cancel();
@@ -249,9 +252,9 @@ Future<void> _isolateEntryPoint<T>(_IsolateTaskConfig<T> config) async {
   });
 
   final log = Logger("IsolateWorker[${config.debugLabel}]");
-  try {
-    await runZonedGuarded(
-      () async {
+  await runZonedGuarded(
+    () async {
+      try {
         ref = ProviderContainer(
           overrides: [
             dbProvider.overrideWithValue(isar),
@@ -269,27 +272,30 @@ Future<void> _isolateEntryPoint<T>(_IsolateTaskConfig<T> config) async {
         } else {
           log.fine("Task completed but was cancelled - not sending result");
         }
-      },
-      (error, stack) {
-        log.severe("Uncaught error in isolate zone", error, stack);
+      } catch (error, stack) {
+        log.severe("Error in isolate execution", error, stack);
         config.mainSendPort.send(_ErrorMessage(error, stack));
-      },
-    );
-  } catch (error, stack) {
-    log.severe("Error in isolate execution", error, stack);
-    config.mainSendPort.send(_ErrorMessage(error, stack));
-  } finally {
-    try {
+      } finally {
+        try {
+          receivePort.close();
+          unawaited(subscription.cancel());
+          await _cleanupResources(ref, isar, drift, logDb);
+        } catch (error, stack) {
+          dPrint(() => "Error during isolate cleanup: $error with stack: $stack");
+        } finally {
+          unawaited(subscription.cancel());
+          config.mainSendPort.send(const _DoneMessage());
+        }
+      }
+    },
+    (error, stack) async {
+      dPrint(() => "Uncaught error in isolate zone: $error, $stack");
       receivePort.close();
       unawaited(subscription.cancel());
       await _cleanupResources(ref, isar, drift, logDb);
-    } catch (error, stack) {
-      dPrint(() => "Error during isolate cleanup: $error with stack: $stack");
-    } finally {
-      unawaited(subscription.cancel());
-      config.mainSendPort.send(const _DoneMessage());
-    }
-  }
+      config.mainSendPort.send(_ErrorMessage(error, stack));
+    },
+  );
 }
 
 CancellableTask<T> runInIsolateGentle<T>({
