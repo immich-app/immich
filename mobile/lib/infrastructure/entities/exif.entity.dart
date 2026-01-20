@@ -152,6 +152,8 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
     fileSize: fileSize,
     dateTimeOriginal: dateTimeOriginal,
     rating: rating,
+    width: width,
+    height: height,
     timeZone: timeZone,
     make: make,
     model: model,

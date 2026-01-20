@@ -201,6 +201,10 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
+      case SyncEntityType.assetEditV1:
+        return _syncStreamRepository.updateAssetEditsV1(data.cast());
+      case SyncEntityType.assetEditDeleteV1:
+        return _syncStreamRepository.deleteAssetEditsV1(data.cast());
       case SyncEntityType.assetMetadataV1:
         return _syncStreamRepository.updateAssetsMetadataV1(data.cast());
       case SyncEntityType.assetMetadataDeleteV1:
@@ -336,6 +340,7 @@ class SyncStreamService {
     _logger.info('Processing batch of ${batchData.length} AssetEditReadyV1 events');
 
     final List<SyncAssetV1> assets = [];
+    final List<SyncAssetEditV1> assetEdits = [];
 
     try {
       for (final data in batchData) {
@@ -345,6 +350,7 @@ class SyncStreamService {
 
         final payload = data;
         final assetData = payload['asset'];
+        final editData = payload['edit'];
 
         if (assetData == null) {
           continue;
@@ -354,11 +360,28 @@ class SyncStreamService {
 
         if (asset != null) {
           assets.add(asset);
+
+          // Edits are only send on v2.6.0+
+          if (editData != null) {
+            final edits = (editData as List<dynamic>)
+                .map((e) => SyncAssetEditV1.fromJson(e))
+                .whereType<SyncAssetEditV1>()
+                .toList();
+
+            assetEdits.addAll(edits);
+          }
         }
       }
 
       if (assets.isNotEmpty) {
         await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-edit');
+
+        // edits that are sent replace previous edits, so we delete existing ones first
+        await _syncStreamRepository.deleteAssetEditsV1(
+          assets.map((asset) => SyncAssetEditDeleteV1(assetId: asset.id)).toList(),
+          debugLabel: 'websocket-edit',
+        );
+        await _syncStreamRepository.updateAssetEditsV1(assetEdits, debugLabel: 'websocket-edit');
         _logger.info('Successfully processed ${assets.length} edited assets');
       }
     } catch (error, stackTrace) {

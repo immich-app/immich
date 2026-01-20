@@ -56,6 +56,8 @@ sealed class BaseAsset {
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
 
+  bool get isEditable => isImage && !isMotionPhoto && this is RemoteAsset;
+
   // Overridden in subclasses
   AssetState get storage;
   String? get localId;
