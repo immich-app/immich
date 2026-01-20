@@ -190,11 +190,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
 
-      await _drift.close();
-      await _driftLogger.close();
-
       _ref?.dispose();
       _ref = null;
+
+      await _drift.close();
+      await _driftLogger.close();
 
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");

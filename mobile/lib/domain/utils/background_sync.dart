@@ -49,10 +49,10 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
-    _syncTask!.cancel();
-    _syncWebsocketTask!.cancel();
-    _cloudIdSyncTask!.cancel();
-    _linkedAlbumSyncTask!.cancel();
+    _syncTask?.cancel();
+    _syncWebsocketTask?.cancel();
+    _cloudIdSyncTask?.cancel();
+    _linkedAlbumSyncTask?.cancel();
 
     try {
       await Future.wait(
@@ -74,8 +74,8 @@ class BackgroundSyncManager {
   }
 
   Future<void> cancelLocal() async {
-    _hashTask!.cancel();
-    _deviceAlbumSyncTask!.cancel();
+    _hashTask?.cancel();
+    _deviceAlbumSyncTask?.cancel();
 
     try {
       await Future.wait([_hashTask?.future, _deviceAlbumSyncTask?.future].nonNulls);
