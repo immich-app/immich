@@ -185,6 +185,22 @@ export class S3StorageAdapter implements IStorageAdapter {
     return passThrough;
   }
 
+  async writeStreamAsync(key: string, sourceStream: Readable, options?: StorageWriteOptions): Promise<void> {
+    const upload = new Upload({
+      client: this.client,
+      params: {
+        Bucket: this.bucket,
+        Key: this.getKey(key),
+        Body: sourceStream,
+        ContentType: options?.contentType,
+        StorageClass: options?.storageClass as any,
+      },
+      partSize: 100 * 1024 * 1024, // 100MB parts
+      queueSize: 4,
+    });
+    await upload.done();
+  }
+
   async copy(sourceKey: string, targetKey: string): Promise<void> {
     await this.client.send(
       new CopyObjectCommand({

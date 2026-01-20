@@ -664,6 +664,7 @@ export enum JobName {
   S3UploadThumbnailsQueueAll = 'S3UploadThumbnailsQueueAll',
   S3MigrateStorageClass = 'S3MigrateStorageClass',
   S3MigrateStorageClassAll = 'S3MigrateStorageClassAll',
+  S3CleanupOrphanedFiles = 'S3CleanupOrphanedFiles',
 
   TagCleanup = 'TagCleanup',
 
