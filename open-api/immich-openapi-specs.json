@@ -322,27 +322,16 @@
         "x-immich-state": "Stable"
       }
     },
-<<<<<<< HEAD
-    "/admin/integrity/report": {
-      "post": {
-        "description": "Get all flagged items by integrity report type",
-        "operationId": "getIntegrityReport",
-=======
     "/admin/database-backups": {
       "delete": {
         "description": "Delete a backup by its filename",
         "operationId": "deleteDatabaseBackup",
->>>>>>> origin/main
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-<<<<<<< HEAD
-                "$ref": "#/components/schemas/IntegrityGetReportDto"
-=======
                 "$ref": "#/components/schemas/DatabaseBackupDeleteDto"
->>>>>>> origin/main
               }
             }
           },
@@ -350,16 +339,6 @@
         },
         "responses": {
           "200": {
-<<<<<<< HEAD
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IntegrityReportResponseDto"
-                }
-              }
-            },
-=======
->>>>>>> origin/main
             "description": ""
           }
         },
@@ -374,20 +353,251 @@
             "api_key": []
           }
         ],
-<<<<<<< HEAD
-        "summary": "Get integrity report by type",
-        "tags": [
-          "Maintenance (admin)"
-=======
         "summary": "Delete database backup",
         "tags": [
           "Database Backups (admin)"
->>>>>>> origin/main
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-<<<<<<< HEAD
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Get the list of the successful and failed backups",
+        "operationId": "listDatabaseBackups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabaseBackupListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List database backups",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/start-restore": {
+      "post": {
+        "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
+        "operationId": "startDatabaseRestoreFlow",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Start database backup restore flow",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/upload": {
+      "post": {
+        "description": "Uploads .sql/.sql.gz file to restore backup from",
+        "operationId": "uploadDatabaseBackup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DatabaseBackupUploadDto"
+              }
+            }
+          },
+          "description": "Backup Upload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Upload database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.upload",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/{filename}": {
+      "get": {
+        "description": "Downloads the database backup file",
+        "operationId": "downloadDatabaseBackup",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.download",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/integrity/report": {
+      "post": {
+        "description": "Get all flagged items by integrity report type",
+        "operationId": "getIntegrityReport",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntegrityGetReportDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrityReportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get integrity report by type",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
             "version": "v2.6.0",
             "state": "Added"
           },
@@ -569,33 +779,13 @@
       "get": {
         "description": "Get a count of the items flagged in each integrity report",
         "operationId": "getIntegrityReportSummary",
-=======
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "backup.delete",
-        "x-immich-state": "Alpha"
-      },
-      "get": {
-        "description": "Get the list of the successful and failed backups",
-        "operationId": "listDatabaseBackups",
->>>>>>> origin/main
         "parameters": [],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-<<<<<<< HEAD
                   "$ref": "#/components/schemas/IntegrityReportSummaryResponseDto"
-=======
-                  "$ref": "#/components/schemas/DatabaseBackupListResponseDto"
->>>>>>> origin/main
                 }
               }
             },
@@ -613,32 +803,18 @@
             "api_key": []
           }
         ],
-<<<<<<< HEAD
         "summary": "Get integrity report summary",
         "tags": [
           "Maintenance (admin)"
-=======
-        "summary": "List database backups",
-        "tags": [
-          "Database Backups (admin)"
->>>>>>> origin/main
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
           {
-<<<<<<< HEAD
             "version": "v2.6.0",
             "state": "Added"
           },
           {
             "version": "v2.6.0",
-=======
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
->>>>>>> origin/main
             "state": "Alpha"
           }
         ],
@@ -646,145 +822,6 @@
         "x-immich-state": "Alpha"
       }
     },
-<<<<<<< HEAD
-=======
-    "/admin/database-backups/start-restore": {
-      "post": {
-        "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
-        "operationId": "startDatabaseRestoreFlow",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "summary": "Start database backup restore flow",
-        "tags": [
-          "Database Backups (admin)"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-state": "Alpha"
-      }
-    },
-    "/admin/database-backups/upload": {
-      "post": {
-        "description": "Uploads .sql/.sql.gz file to restore backup from",
-        "operationId": "uploadDatabaseBackup",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "$ref": "#/components/schemas/DatabaseBackupUploadDto"
-              }
-            }
-          },
-          "description": "Backup Upload",
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Upload database backup",
-        "tags": [
-          "Database Backups (admin)"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "backup.upload",
-        "x-immich-state": "Alpha"
-      }
-    },
-    "/admin/database-backups/{filename}": {
-      "get": {
-        "description": "Downloads the database backup file",
-        "operationId": "downloadDatabaseBackup",
-        "parameters": [
-          {
-            "name": "filename",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "string",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Download database backup",
-        "tags": [
-          "Database Backups (admin)"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-history": [
-          {
-            "version": "v2.5.0",
-            "state": "Added"
-          },
-          {
-            "version": "v2.5.0",
-            "state": "Alpha"
-          }
-        ],
-        "x-immich-permission": "backup.download",
-        "x-immich-state": "Alpha"
-      }
-    },
->>>>>>> origin/main
     "/admin/maintenance": {
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",

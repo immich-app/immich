@@ -2,7 +2,7 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import IntegrityReportTableItem from '$lib/components/maintenance/integrity/IntegrityReportTableItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getIntegrityReportActions } from '$lib/services/integrity.service';
   import { asyncTimeout } from '$lib/utils';
   import { getIntegrityReport, getQueuesLegacy, IntegrityReportType } from '@immich/sdk';
@@ -72,7 +72,7 @@
 
 <AdminPageLayout
   breadcrumbs={[
-    { title: $t('admin.maintenance_settings'), href: AppRoute.ADMIN_MAINTENANCE_SETTINGS },
+    { title: $t('admin.maintenance_settings'), href: Route.systemMaintenance() },
     { title: $t('admin.maintenance_integrity_report') },
     { title: data.meta.title },
   ]}

@@ -1,5 +1,5 @@
 import { OpenQueryParam, type SharedLinkTab } from '$lib/constants';
-import { QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+import { IntegrityReportType, QueueName, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
 import { omitBy } from 'lodash-es';
 
 const asQueueSlug = (name: QueueName) => {
@@ -121,6 +121,8 @@ export const Route = {
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),
   systemStatistics: () => '/admin/server-status',
   systemMaintenance: (params?: { continue?: string }) => '/admin/maintenance' + asQueryString(params),
+  systemMaintenanceIntegrityReport: ({ reportType }: { reportType: IntegrityReportType }) =>
+    `/admin/maintenance/integrity-report/${reportType}`,
 
   // tags
   tags: (params?: { path?: string }) => '/tags' + asQueryString(params),

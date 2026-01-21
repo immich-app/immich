@@ -40,7 +40,19 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
-<<<<<<< HEAD
+export type DatabaseBackupDeleteDto = {
+    backups: string[];
+};
+export type DatabaseBackupDto = {
+    filename: string;
+    filesize: number;
+};
+export type DatabaseBackupListResponseDto = {
+    backups: DatabaseBackupDto[];
+};
+export type DatabaseBackupUploadDto = {
+    file?: Blob;
+};
 export type IntegrityGetReportDto = {
     cursor?: string;
     limit?: number;
@@ -59,20 +71,6 @@ export type IntegrityReportSummaryResponseDto = {
     checksum_mismatch: number;
     missing_file: number;
     untracked_file: number;
-=======
-export type DatabaseBackupDeleteDto = {
-    backups: string[];
-};
-export type DatabaseBackupDto = {
-    filename: string;
-    filesize: number;
-};
-export type DatabaseBackupListResponseDto = {
-    backups: DatabaseBackupDto[];
-};
-export type DatabaseBackupUploadDto = {
-    file?: Blob;
->>>>>>> origin/main
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
@@ -1990,7 +1988,63 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
-<<<<<<< HEAD
+ * Delete database backup
+ */
+export function deleteDatabaseBackup({ databaseBackupDeleteDto }: {
+    databaseBackupDeleteDto: DatabaseBackupDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: databaseBackupDeleteDto
+    })));
+}
+/**
+ * List database backups
+ */
+export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DatabaseBackupListResponseDto;
+    }>("/admin/database-backups", {
+        ...opts
+    }));
+}
+/**
+ * Start database backup restore flow
+ */
+export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Upload database backup
+ */
+export function uploadDatabaseBackup({ databaseBackupUploadDto }: {
+    databaseBackupUploadDto: DatabaseBackupUploadDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: databaseBackupUploadDto
+    })));
+}
+/**
+ * Download database backup
+ */
+export function downloadDatabaseBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
  * Get integrity report by type
  */
 export function getIntegrityReport({ integrityGetReportDto }: {
@@ -2050,61 +2104,6 @@ export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: IntegrityReportSummaryResponseDto;
     }>("/admin/integrity/summary", {
-=======
- * Delete database backup
- */
-export function deleteDatabaseBackup({ databaseBackupDeleteDto }: {
-    databaseBackupDeleteDto: DatabaseBackupDeleteDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups", oazapfts.json({
-        ...opts,
-        method: "DELETE",
-        body: databaseBackupDeleteDto
-    })));
-}
-/**
- * List database backups
- */
-export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: DatabaseBackupListResponseDto;
-    }>("/admin/database-backups", {
-        ...opts
-    }));
-}
-/**
- * Start database backup restore flow
- */
-export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
-        ...opts,
-        method: "POST"
-    }));
-}
-/**
- * Upload database backup
- */
-export function uploadDatabaseBackup({ databaseBackupUploadDto }: {
-    databaseBackupUploadDto: DatabaseBackupUploadDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
-        ...opts,
-        method: "POST",
-        body: databaseBackupUploadDto
-    })));
-}
-/**
- * Download database backup
- */
-export function downloadDatabaseBackup({ filename }: {
-    filename: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchBlob<{
-        status: 200;
-        data: Blob;
-    }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
->>>>>>> origin/main
         ...opts
     }));
 }
