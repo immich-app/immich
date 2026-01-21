@@ -12,6 +12,7 @@
     ContextMenuButton,
     Icon,
     Link,
+    MenuItemType,
     Table,
     TableBody,
     TableCell,
@@ -50,14 +51,14 @@
 
   const getActionsForUser = (user: UserAdminResponseDto) => {
     const { Detail, Update, Delete, ResetPassword, ResetPinCode } = getUserAdminActions($t, user);
-    return [Detail, Update, ResetPassword, ResetPinCode, Delete];
+    return [Detail, Update, ResetPassword, ResetPinCode, MenuItemType.Divider, Delete];
   };
 
   const classes = {
-    column1: 'w-8/12 sm:w-5/12 lg:w-1/2 xl:w-1/3 2xl:w-4/12',
-    column2: 'hidden sm:block sm:w-2/12 xl:w-4/12',
-    column3: 'hidden xl:block xl:w-2/12',
-    column4: 'w-4/12 xl:w-2/12 flex justify-center',
+    column1: 'w-8/12 md:w-5/12 lg:w-4/12',
+    column2: 'hidden md:block md:w-5/12 lg:w-4/12',
+    column3: 'hidden lg:block lg:w-2/12',
+    column4: 'w-4/12 md:w-2/12 flex justify-end',
   };
 </script>
 
@@ -75,18 +76,18 @@
   <Container center size="large">
     <Table class="mt-4" striped spacing="small" size="small">
       <TableHeader>
-        <TableHeading class={classes.column1}>{$t('email')}</TableHeading>
-        <TableHeading class={classes.column2}>{$t('name')}</TableHeading>
+        <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
+        <TableHeading class={classes.column2}>{$t('email')}</TableHeading>
         <TableHeading class={classes.column3}>{$t('has_quota')}</TableHeading>
       </TableHeader>
 
       <TableBody>
         {#each users as user (user.id)}
           <TableRow color={user.deletedAt ? 'danger' : undefined}>
-            <TableCell class={classes.column1}>{user.email}</TableCell>
-            <TableCell class={classes.column2}>
+            <TableCell class={classes.column1}>
               <Link href={Route.viewUser(user)}>{user.name}</Link>
             </TableCell>
+            <TableCell class={classes.column2}>{user.email}</TableCell>
             <TableCell class={classes.column3}>
               <div class="container mx-auto flex flex-wrap justify-center">
                 {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
