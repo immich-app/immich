@@ -8,7 +8,7 @@ import {
   MapReverseGeocodeDto,
   MapReverseGeocodeResponseDto,
 } from 'src/dtos/map.dto';
-import { ApiTag } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MapService } from 'src/services/map.service';
 
@@ -18,7 +18,7 @@ export class MapController {
   constructor(private service: MapService) {}
 
   @Get('markers')
-  @Authenticated()
+  @Authenticated({ permission: Permission.MapRead })
   @Endpoint({
     summary: 'Retrieve map markers',
     description: 'Retrieve a list of latitude and longitude coordinates for every asset with location data.',
@@ -28,8 +28,8 @@ export class MapController {
     return this.service.getMapMarkers(auth, options);
   }
 
-  @Authenticated()
   @Get('reverse-geocode')
+  @Authenticated({ permission: Permission.MapSearch })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Reverse geocode coordinates',
