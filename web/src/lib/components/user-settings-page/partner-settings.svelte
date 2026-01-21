@@ -12,7 +12,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, Text } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -157,10 +157,12 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="uppercase text-xs font-medium my-4">
+            <Text class="my-4" size="small" fontWeight="medium">
               {$t('shared_with_partner', { values: { partner: partner.user.name } })}
-            </p>
-            <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
+            </Text>
+            <Text size="tiny" fontWeight="medium"
+              >{$t('partner_can_access', { values: { partner: partner.user.name } })}</Text
+            >
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
                 <Icon icon={mdiCheck} />
@@ -176,9 +178,10 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="uppercase text-xs font-medium my-4">
+            <Text class="my-4" size="small" fontWeight="medium">
               {$t('shared_from_partner', { values: { partner: partner.user.name } })}
-            </p>
+            </Text>
+
             <SettingSwitch
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}

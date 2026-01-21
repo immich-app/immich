@@ -315,7 +315,16 @@ class ForegroundUploadService {
         return;
       }
 
-      final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+      String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+
+      /// Handle special file name from DJI or Fusion app
+      /// If the file name has no extension, likely due to special renaming template by specific apps
+      /// we append the original extension from the asset name
+      final hasExtension = p.extension(fileName).isNotEmpty;
+      if (!hasExtension) {
+        fileName = p.setExtension(fileName, p.extension(asset.name));
+      }
+
       final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
 

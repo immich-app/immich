@@ -447,3 +447,17 @@ export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));
 
 export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
+
+export const transformToTitleCase = (text: string) => {
+  if (text.length === 0) {
+    return text;
+  } else if (text.length === 1) {
+    return text.charAt(0).toUpperCase();
+  }
+
+  let result = '';
+  for (const word of text.toLowerCase().split(' ')) {
+    result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+  }
+  return result.trim();
+};
