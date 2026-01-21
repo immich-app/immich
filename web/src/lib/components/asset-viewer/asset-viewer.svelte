@@ -252,7 +252,7 @@
           await handleStopSlideshow();
         }
       }
-    });
+    }, $t('error_while_navigating'));
   };
 
   const showEditor = () => {
