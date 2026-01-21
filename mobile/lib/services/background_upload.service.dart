@@ -285,7 +285,12 @@ class BackgroundUploadService {
       return null;
     }
 
-    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final hasExtension = p.extension(fileName).isNotEmpty;
+    if (!hasExtension) {
+      fileName = p.setExtension(fileName, p.extension(asset.name));
+    }
+
     final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
 
     String metadata = UploadTaskMetadata(
