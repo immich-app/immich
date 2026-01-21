@@ -5,11 +5,13 @@ import Photos
 
 class RemoteImageRequest {
   weak var task: URLSessionDataTask?
+  let id: Int64
   var isCancelled = false
   var data: CFMutableData?
-  let completion: (Result<[String: Int64], any Error>) -> Void
+  let completion: (Result<[String: Int64]?, any Error>) -> Void
   
-  init(task: URLSessionDataTask, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
+  init(id: Int64, task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
+    self.id = id
     self.task = task
     self.data = nil
     self.completion = completion
@@ -26,23 +28,22 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     try! FileManager.default.createDirectory(at: thumbnailPath, withIntermediateDirectories: true)
     config.urlCache = URLCache(
       memoryCapacity: 0,
-      diskCapacity: 1 << 30,
+      diskCapacity: 0,
       directory: thumbnailPath
     )
     config.httpMaximumConnectionsPerHost = 16
     return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }()
   
-  func requestImage(url: String, headers: [String : String], requestId: Int64, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
+  func requestImage(url: String, headers: [String : String], requestId: Int64, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
     for (key, value) in headers {
       urlRequest.setValue(value, forHTTPHeaderField: key)
     }
     let task = Self.session.dataTask(with: urlRequest)
-    task.taskDescription = String(requestId)
     
-    let imageRequest = RemoteImageRequest(task: task, completion: completion)
-    Self.delegate.add(requestId: requestId, request: imageRequest)
+    let imageRequest = RemoteImageRequest(id: requestId, task: task, completion: completion)
+    Self.delegate.add(taskId: task.taskIdentifier, request: imageRequest)
     
     task.resume()
   }
@@ -53,7 +54,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 }
 
 class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
-  private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated)
+  private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated, attributes: .concurrent)
   private static var rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
@@ -61,8 +62,9 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
     renderingIntent: .perceptual
   )!
-  private static var requests = [Int64: RemoteImageRequest]()
-  private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
+  private static var requestByTaskId = [Int: RemoteImageRequest]()
+  private static var taskIdByRequestId = [Int64: Int]()
+  private static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
   private static let decodeOptions = [
     kCGImageSourceShouldCache: false,
     kCGImageSourceShouldCacheImmediately: true,
@@ -74,9 +76,7 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     didReceive response: URLResponse,
     completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
   ) {
-    guard let taskDescription = dataTask.taskDescription,
-          let requestId = Int64(taskDescription),
-          let request = (Self.requestQueue.sync { Self.requests[requestId] })
+    guard let request = get(taskId: dataTask.taskIdentifier)
     else {
       return completionHandler(.cancel)
     }
@@ -89,10 +89,7 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
   
   func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
                   didReceive data: Data) {
-    guard let taskDescription = dataTask.taskDescription,
-          let requestId = Int64(taskDescription),
-          let request = get(requestId: requestId)
-    else { return }
+    guard let request = get(taskId: dataTask.taskIdentifier) else { return }
     
     data.withUnsafeBytes { bytes in
       CFDataAppendBytes(request.data, bytes.bindMemory(to: UInt8.self).baseAddress, data.count)
@@ -101,13 +98,9 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
   
   func urlSession(_ session: URLSession, task: URLSessionTask,
                   didCompleteWithError error: Error?) {
-    guard let taskDescription = task.taskDescription,
-          let requestId = Int64(taskDescription),
-          let request = get(requestId: requestId),
-          let data = request.data
-    else { return }
-    
-    defer { remove(requestId: requestId) }
+    guard let request = get(taskId: task.taskIdentifier) else { return }
+        
+    defer { remove(taskId: task.taskIdentifier, requestId: request.id) }
     
     if let error = error {
       if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
@@ -116,9 +109,13 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
       return request.completion(.failure(error))
     }
     
+    guard let data = request.data else {
+      return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
+    }
+    
     guard let imageSource = CGImageSourceCreateWithData(data, nil),
           let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, Self.decodeOptions) else {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request \(requestId)", details: nil)))
+      return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
     }
     
     if request.isCancelled {
@@ -141,24 +138,33 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
           "rowBytes": Int64(buffer.rowBytes),
         ]))
     } catch {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request \(requestId): \(error)", details: nil)))
+      return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
     }
   }
   
-  func get(requestId: Int64) -> RemoteImageRequest? {
-    Self.requestQueue.sync { Self.requests[requestId] }
+  @inline(__always) func get(taskId: Int) -> RemoteImageRequest? {
+    Self.requestQueue.sync { Self.requestByTaskId[taskId] }
   }
   
-  func add(requestId: Int64, request: RemoteImageRequest) -> Void {
-    Self.requestQueue.sync { Self.requests[requestId] = request }
+  @inline(__always) func add(taskId: Int, request: RemoteImageRequest) -> Void {
+    Self.requestQueue.async(flags: .barrier) {
+      Self.requestByTaskId[taskId] = request
+      Self.taskIdByRequestId[request.id] = taskId
+    }
   }
   
-  func remove(requestId: Int64) -> Void {
-    Self.requestQueue.sync { Self.requests[requestId] = nil }
+  @inline(__always) func remove(taskId: Int, requestId: Int64) -> Void {
+    Self.requestQueue.async(flags: .barrier) {
+      Self.taskIdByRequestId[requestId] = nil
+      Self.requestByTaskId[taskId] = nil
+    }
   }
   
-  func cancel(requestId: Int64) -> Void {
-    guard let request = (Self.requestQueue.sync { Self.requests[requestId] }) else { return }
+  @inline(__always) func cancel(requestId: Int64) -> Void {
+    guard let request: RemoteImageRequest = (Self.requestQueue.sync {
+      guard let taskId = Self.taskIdByRequestId[requestId] else { return nil }
+      return Self.requestByTaskId[taskId]
+    }) else { return }
     request.isCancelled = true
     request.task?.cancel()
   }

@@ -6,9 +6,9 @@ import Photos
 class LocalImageRequest {
   weak var workItem: DispatchWorkItem?
   var isCancelled = false
-  let callback: (Result<[String: Int64], any Error>) -> Void
+  let callback: (Result<[String: Int64]?, any Error>) -> Void
   
-  init(callback: @escaping (Result<[String: Int64], any Error>) -> Void) {
+  init(callback: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     self.callback = callback
   }
 }
@@ -58,7 +58,12 @@ class LocalImageApiImpl: LocalImageApi {
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
       
       let (width, height, pointer) = thumbHashToRGBA(hash: data)
-      completion(.success(["pointer": Int64(Int(bitPattern: pointer.baseAddress)), "width": Int64(width), "height": Int64(height)]))
+      completion(.success([
+        "pointer": Int64(Int(bitPattern: pointer.baseAddress)),
+        "width": Int64(width),
+        "height": Int64(height),
+        "rowBytes": Int64(width * 4)
+      ]))
     }
   }
   
