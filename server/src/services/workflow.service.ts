@@ -16,10 +16,10 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const trigger = this.getTriggerOrFail(dto.triggerType);
+    const context = this.getContextForTrigger(dto.triggerType);
 
-    const filterInserts = await this.validateAndMapFilters(dto.filters, trigger.context);
-    const actionInserts = await this.validateAndMapActions(dto.actions, trigger.context);
+    const filterInserts = await this.validateAndMapFilters(dto.filters, context);
+    const actionInserts = await this.validateAndMapActions(dto.actions, context);
 
     const workflow = await this.workflowRepository.createWorkflow(
       {
@@ -56,11 +56,11 @@ export class WorkflowService extends BaseService {
     }
 
     const workflow = await this.findOrFail(id);
-    const trigger = this.getTriggerOrFail(workflow.triggerType);
+    const context = this.getContextForTrigger(dto.triggerType ?? workflow.triggerType);
 
     const { filters, actions, ...workflowUpdate } = dto;
-    const filterInserts = filters && (await this.validateAndMapFilters(filters, trigger.context));
-    const actionInserts = actions && (await this.validateAndMapActions(actions, trigger.context));
+    const filterInserts = filters && (await this.validateAndMapFilters(filters, context));
+    const actionInserts = actions && (await this.validateAndMapActions(actions, context));
 
     const updatedWorkflow = await this.workflowRepository.updateWorkflow(
       id,
@@ -78,13 +78,13 @@ export class WorkflowService extends BaseService {
   }
 
   private async validateAndMapFilters(
-    filters: Array<{ filterId: string; filterConfig?: any }>,
+    filters: Array<{ pluginFilterId: string; filterConfig?: any }>,
     requiredContext: PluginContext,
   ) {
     for (const dto of filters) {
-      const filter = await this.pluginRepository.getFilter(dto.filterId);
+      const filter = await this.pluginRepository.getFilter(dto.pluginFilterId);
       if (!filter) {
-        throw new BadRequestException(`Invalid filter ID: ${dto.filterId}`);
+        throw new BadRequestException(`Invalid filter ID: ${dto.pluginFilterId}`);
       }
 
       if (!filter.supportedContexts.includes(requiredContext)) {
@@ -95,20 +95,20 @@ export class WorkflowService extends BaseService {
     }
 
     return filters.map((dto, index) => ({
-      filterId: dto.filterId,
+      pluginFilterId: dto.pluginFilterId,
       filterConfig: dto.filterConfig || null,
       order: index,
     }));
   }
 
   private async validateAndMapActions(
-    actions: Array<{ actionId: string; actionConfig?: any }>,
+    actions: Array<{ pluginActionId: string; actionConfig?: any }>,
     requiredContext: PluginContext,
   ) {
     for (const dto of actions) {
-      const action = await this.pluginRepository.getAction(dto.actionId);
+      const action = await this.pluginRepository.getAction(dto.pluginActionId);
       if (!action) {
-        throw new BadRequestException(`Invalid action ID: ${dto.actionId}`);
+        throw new BadRequestException(`Invalid action ID: ${dto.pluginActionId}`);
       }
       if (!action.supportedContexts.includes(requiredContext)) {
         throw new BadRequestException(
@@ -118,18 +118,18 @@ export class WorkflowService extends BaseService {
     }
 
     return actions.map((dto, index) => ({
-      actionId: dto.actionId,
+      pluginActionId: dto.pluginActionId,
       actionConfig: dto.actionConfig || null,
       order: index,
     }));
   }
 
-  private getTriggerOrFail(triggerType: PluginTriggerType) {
-    const trigger = pluginTriggers.find((t) => t.type === triggerType);
+  private getContextForTrigger(type: PluginTriggerType) {
+    const trigger = pluginTriggers.find((t) => t.type === type);
     if (!trigger) {
-      throw new BadRequestException(`Invalid trigger type: ${triggerType}`);
+      throw new BadRequestException(`Invalid trigger type: ${type}`);
     }
-    return trigger;
+    return trigger.contextType;
   }
 
   private async findOrFail(id: string) {

@@ -278,7 +278,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
-      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
+      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
       const response = await sut.handleQueueSyncAssets({ id: library.id });
 
@@ -296,7 +296,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
-      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
+      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
       const response = await sut.handleQueueSyncAssets({ id: library.id });
 
@@ -311,7 +311,7 @@ describe(LibraryService.name, () => {
       mocks.storage.walk.mockImplementation(async function* generator() {});
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.external]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
-      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(0) });
+      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.external]));
 
       const response = await sut.handleQueueSyncAssets({ id: library.id });

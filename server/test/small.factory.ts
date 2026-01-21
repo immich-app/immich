@@ -1,21 +1,31 @@
 import {
   Activity,
   ApiKey,
+  AssetFile,
   AuthApiKey,
   AuthSharedLink,
   AuthUser,
+  Exif,
   Library,
   Memory,
   Partner,
   Session,
-  SidecarWriteAsset,
   User,
   UserAdmin,
 } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  Permission,
+  UserMetadataKey,
+  UserStatus,
+} from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
 import { v4, v7 } from 'uuid';
 
@@ -237,11 +247,13 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   originalFileName: 'IMG_123.jpg',
   originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
-  sidecarPath: null,
   stackId: null,
   thumbhash: null,
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
+  width: null,
+  height: null,
+  isEdited: false,
   ...asset,
 });
 
@@ -312,13 +324,28 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = (asset: Partial<SidecarWriteAsset> = {}) => ({
-  id: newUuid(),
-  sidecarPath: '/path/to/original-path.jpg.xmp',
-  originalPath: '/path/to/original-path.jpg.xmp',
-  tags: [],
-  ...asset,
-});
+const assetSidecarWriteFactory = () => {
+  const id = newUuid();
+  return {
+    id,
+    originalPath: '/path/to/original-path.jpg.xmp',
+    tags: [],
+    files: [
+      {
+        id: newUuid(),
+        path: '/path/to/original-path.jpg.xmp',
+        type: AssetFileType.Sidecar,
+      },
+    ],
+    exifInfo: {
+      assetId: id,
+      description: 'this is a description',
+      latitude: 12,
+      longitude: 12,
+      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
+    } as unknown as Exif,
+  };
+};
 
 const assetOcrFactory = (
   ocr: {
@@ -335,6 +362,7 @@ const assetOcrFactory = (
     boxScore?: number;
     textScore?: number;
     text?: string;
+    isVisible?: boolean;
   } = {},
 ) => ({
   id: newUuid(),
@@ -350,13 +378,22 @@ const assetOcrFactory = (
   boxScore: 0.95,
   textScore: 0.92,
   text: 'Sample Text',
+  isVisible: true,
   ...ocr,
+});
+
+const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
+  id: newUuid(),
+  type: AssetFileType.Preview,
+  path: '/uploads/user-id/thumbs/path.jpg',
+  ...file,
 });
 
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
   asset: assetFactory,
+  assetFile: assetFileFactory,
   assetOcr: assetOcrFactory,
   auth: authFactory,
   authApiKey: authApiKeyFactory,

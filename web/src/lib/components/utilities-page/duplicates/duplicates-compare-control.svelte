@@ -5,6 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
+  import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
@@ -22,7 +23,6 @@
 
   let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
-  const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
@@ -42,24 +42,6 @@
   onDestroy(() => {
     assetViewingStore.showAssetViewer(false);
   });
-
-  const onNext = async () => {
-    const index = getAssetIndex($viewingAsset.id) + 1;
-    if (index >= assets.length) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
-
-  const onPrevious = async () => {
-    const index = getAssetIndex($viewingAsset.id) - 1;
-    if (index < 0) {
-      return false;
-    }
-    await onViewAsset(assets[index]);
-    return true;
-  };
 
   const onRandom = async () => {
     if (assets.length <= 0) {
@@ -102,6 +84,12 @@
   const handleStack = () => {
     onStack(assets);
   };
+
+  const assetCursor = $derived({
+    current: $viewingAsset,
+    nextAsset: getNextAsset(assets, $viewingAsset),
+    previousAsset: getPreviousAsset(assets, $viewingAsset),
+  });
 </script>
 
 <svelte:document
@@ -170,7 +158,7 @@
   </div>
 
   <div class="overflow-x-auto p-2">
-    <div class="flex flex-nowrap gap-1 place-items-center justify-center min-w-full w-fit mx-auto">
+    <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
         <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
       {/each}
@@ -182,10 +170,8 @@
   {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
     <Portal target="body">
       <AssetViewer
-        asset={$viewingAsset}
+        cursor={assetCursor}
         showNavigation={assets.length > 1}
-        {onNext}
-        {onPrevious}
         {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);

@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202511181104@sha256:fd445b91d4db131aae71b143b647d2262818dac80946078ce231c79cb9acecba AS builder
+FROM ghcr.io/immich-app/base-server-dev:202601131104@sha256:8d907eb3fe10dba4a1e034fd0060ea68c01854d92fcc9debc6b868b98f888ba7 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
@@ -50,13 +50,15 @@ RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
 
 FROM builder AS plugins
 
-COPY --from=ghcr.io/jdx/mise:2025.11.3@sha256:ac26f5978c0e2783f3e68e58ce75eddb83e41b89bf8747c503bac2aa9baf22c5 /usr/local/bin/mise /usr/local/bin/mise
+ARG TARGETPLATFORM
+
+COPY --from=ghcr.io/jdx/mise:2026.1.1@sha256:a55c391f7582f34c58bce1a85090cd526596402ba77fc32b06c49b8404ef9c14 /usr/local/bin/mise /usr/local/bin/mise
 
 WORKDIR /usr/src/app
 COPY ./plugins/mise.toml ./plugins/
 ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/plugins/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
-RUN --mount=type=cache,id=mise-tools,target=/buildcache/mise \
+RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise install --cd plugins
 
 COPY ./plugins ./plugins/
@@ -66,10 +68,10 @@ RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
   --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-  --mount=type=cache,id=mise-tools,target=/buildcache/mise \
+  --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   cd plugins && mise run build
 
-FROM ghcr.io/immich-app/base-server-prod:202511181104@sha256:1bc2b7cebc4fd3296dc33a5779411e1c7d854ea713066c1e024d54f45f176f89
+FROM ghcr.io/immich-app/base-server-prod:202601131104@sha256:c649c5838b6348836d27db6d49cadbbc6157feae7a1a237180c3dec03577ba8f
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

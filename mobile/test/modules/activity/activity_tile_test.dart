@@ -91,17 +91,17 @@ void main() {
   group('Like Activity', () {
     final activity = Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin);
 
-    testWidgets('Like contains filled heart as leading', (tester) async {
+    testWidgets('Like contains filled thumbs-up as leading', (tester) async {
       await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       // Leading widget should not be null
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
       expect(listTile.leading, isNotNull);
 
-      // And should have a favorite icon
-      final favoIconFinder = find.widgetWithIcon(listTile.leading!.runtimeType, Icons.favorite_rounded);
+      // And should have a thumb_up icon
+      final thumbUpIconFinder = find.widgetWithIcon(listTile.leading!.runtimeType, Icons.thumb_up);
 
-      expect(favoIconFinder, findsOneWidget);
+      expect(thumbUpIconFinder, findsOneWidget);
     });
 
     testWidgets('Like title is center aligned', (tester) async {

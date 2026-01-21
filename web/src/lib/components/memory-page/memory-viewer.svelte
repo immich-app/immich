@@ -21,18 +21,19 @@
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
+  import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
   import { IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -67,7 +68,7 @@
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
-  let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
+  let currentTimelineAssets = $derived(current?.memory.assets || []);
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
@@ -111,7 +112,7 @@
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
-  const handleEscape = async () => goto(AppRoute.PHOTOS);
+  const handleEscape = async () => goto(Route.photos());
   const handleSelectAll = () =>
     assetInteraction.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 
@@ -238,7 +239,7 @@
 
   const init = (target: Page | NavigationTarget | null) => {
     if (memoryStore.memories.length === 0) {
-      return handlePromiseError(goto(AppRoute.PHOTOS));
+      return handlePromiseError(goto(Route.photos()));
     }
 
     current = loadFromParams(target);
@@ -270,7 +271,7 @@
   };
 
   afterNavigate(({ from, to }) => {
-    memoryStore.initialize().then(
+    memoryStore.ready().then(
       () => {
         let target = null;
         if (to?.params?.assetId) {
@@ -362,7 +363,7 @@
   use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
 >
   {#if current}
-    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
+    <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
       {#snippet leading()}
         {#if current}
           <p class="text-lg">
@@ -396,7 +397,7 @@
           </p>
         </div>
 
-        {#if currentTimelineAssets.some(({ isVideo }) => isVideo)}
+        {#if currentTimelineAssets.some((asset) => asset.type === AssetTypeEnum.Video)}
           <div class="w-12.5 dark">
             <IconButton
               shape="round"
@@ -532,7 +533,7 @@
 
               <div>
                 <IconButton
-                  href="{AppRoute.PHOTOS}?at={current.asset.id}"
+                  href={Route.photos({ at: current.asset.id })}
                   icon={mdiImageSearch}
                   aria-label={$t('view_in_timeline')}
                   color="secondary"
@@ -651,8 +652,6 @@
       bind:this={memoryGallery}
     >
       <GalleryViewer
-        onNext={handleNextAsset}
-        onPrevious={handlePreviousAsset}
         assets={currentTimelineAssets}
         viewport={galleryViewport}
         {assetInteraction}

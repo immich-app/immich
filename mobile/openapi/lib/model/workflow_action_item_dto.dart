@@ -14,7 +14,7 @@ class WorkflowActionItemDto {
   /// Returns a new [WorkflowActionItemDto] instance.
   WorkflowActionItemDto({
     this.actionConfig,
-    required this.actionId,
+    required this.pluginActionId,
   });
 
   ///
@@ -25,21 +25,21 @@ class WorkflowActionItemDto {
   ///
   Object? actionConfig;
 
-  String actionId;
+  String pluginActionId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowActionItemDto &&
     other.actionConfig == actionConfig &&
-    other.actionId == actionId;
+    other.pluginActionId == pluginActionId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (actionConfig == null ? 0 : actionConfig!.hashCode) +
-    (actionId.hashCode);
+    (pluginActionId.hashCode);
 
   @override
-  String toString() => 'WorkflowActionItemDto[actionConfig=$actionConfig, actionId=$actionId]';
+  String toString() => 'WorkflowActionItemDto[actionConfig=$actionConfig, pluginActionId=$pluginActionId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -48,7 +48,7 @@ class WorkflowActionItemDto {
     } else {
     //  json[r'actionConfig'] = null;
     }
-      json[r'actionId'] = this.actionId;
+      json[r'pluginActionId'] = this.pluginActionId;
     return json;
   }
 
@@ -62,7 +62,7 @@ class WorkflowActionItemDto {
 
       return WorkflowActionItemDto(
         actionConfig: mapValueOfType<Object>(json, r'actionConfig'),
-        actionId: mapValueOfType<String>(json, r'actionId')!,
+        pluginActionId: mapValueOfType<String>(json, r'pluginActionId')!,
       );
     }
     return null;
@@ -110,7 +110,7 @@ class WorkflowActionItemDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'actionId',
+    'pluginActionId',
   };
 }
 

@@ -7,7 +7,7 @@ import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class WorkflowFilterItemDto {
   @IsUUID()
-  filterId!: string;
+  pluginFilterId!: string;
 
   @IsObject()
   @Optional()
@@ -16,7 +16,7 @@ export class WorkflowFilterItemDto {
 
 export class WorkflowActionItemDto {
   @IsUUID()
-  actionId!: string;
+  pluginActionId!: string;
 
   @IsObject()
   @Optional()
@@ -48,6 +48,9 @@ export class WorkflowCreateDto {
 }
 
 export class WorkflowUpdateDto {
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', optional: true })
+  triggerType?: PluginTriggerType;
+
   @IsString()
   @IsNotEmpty()
   @Optional()
@@ -74,6 +77,7 @@ export class WorkflowUpdateDto {
 export class WorkflowResponseDto {
   id!: string;
   ownerId!: string;
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
   triggerType!: PluginTriggerType;
   name!: string | null;
   description!: string;
@@ -86,7 +90,7 @@ export class WorkflowResponseDto {
 export class WorkflowFilterResponseDto {
   id!: string;
   workflowId!: string;
-  filterId!: string;
+  pluginFilterId!: string;
   filterConfig!: FilterConfig | null;
   order!: number;
 }
@@ -94,7 +98,7 @@ export class WorkflowFilterResponseDto {
 export class WorkflowActionResponseDto {
   id!: string;
   workflowId!: string;
-  actionId!: string;
+  pluginActionId!: string;
   actionConfig!: ActionConfig | null;
   order!: number;
 }
@@ -103,7 +107,7 @@ export function mapWorkflowFilter(filter: WorkflowFilter): WorkflowFilterRespons
   return {
     id: filter.id,
     workflowId: filter.workflowId,
-    filterId: filter.filterId,
+    pluginFilterId: filter.pluginFilterId,
     filterConfig: filter.filterConfig,
     order: filter.order,
   };
@@ -113,7 +117,7 @@ export function mapWorkflowAction(action: WorkflowAction): WorkflowActionRespons
   return {
     id: action.id,
     workflowId: action.workflowId,
-    actionId: action.actionId,
+    pluginActionId: action.pluginActionId,
     actionConfig: action.actionConfig,
     order: action.order,
   };

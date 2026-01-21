@@ -612,6 +612,43 @@ class ChangePasswordRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [CleanupPreviewPage]
+class CleanupPreviewRoute extends PageRouteInfo<CleanupPreviewRouteArgs> {
+  CleanupPreviewRoute({
+    Key? key,
+    required List<LocalAsset> assets,
+    List<PageRouteInfo>? children,
+  }) : super(
+         CleanupPreviewRoute.name,
+         args: CleanupPreviewRouteArgs(key: key, assets: assets),
+         initialChildren: children,
+       );
+
+  static const String name = 'CleanupPreviewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<CleanupPreviewRouteArgs>();
+      return CleanupPreviewPage(key: args.key, assets: args.assets);
+    },
+  );
+}
+
+class CleanupPreviewRouteArgs {
+  const CleanupPreviewRouteArgs({this.key, required this.assets});
+
+  final Key? key;
+
+  final List<LocalAsset> assets;
+
+  @override
+  String toString() {
+    return 'CleanupPreviewRouteArgs{key: $key, assets: $assets}';
+  }
+}
+
+/// generated route for
 /// [CreateAlbumPage]
 class CreateAlbumRoute extends PageRouteInfo<CreateAlbumRouteArgs> {
   CreateAlbumRoute({
@@ -1649,22 +1686,6 @@ class FavoritesRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [FeatInDevPage]
-class FeatInDevRoute extends PageRouteInfo<void> {
-  const FeatInDevRoute({List<PageRouteInfo>? children})
-    : super(FeatInDevRoute.name, initialChildren: children);
-
-  static const String name = 'FeatInDevRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const FeatInDevPage();
-    },
-  );
-}
-
-/// generated route for
 /// [FilterImagePage]
 class FilterImageRoute extends PageRouteInfo<FilterImageRouteArgs> {
   FilterImageRoute({
@@ -1827,6 +1848,22 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const HeaderSettingsPage();
+    },
+  );
+}
+
+/// generated route for
+/// [ImmichUIShowcasePage]
+class ImmichUIShowcaseRoute extends PageRouteInfo<void> {
+  const ImmichUIShowcaseRoute({List<PageRouteInfo>? children})
+    : super(ImmichUIShowcaseRoute.name, initialChildren: children);
+
+  static const String name = 'ImmichUIShowcaseRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ImmichUIShowcasePage();
     },
   );
 }

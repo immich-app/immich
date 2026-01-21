@@ -105,9 +105,6 @@ export class AssetTable {
   @Column({ index: true })
   originalFileName!: string;
 
-  @Column({ nullable: true })
-  sidecarPath!: string | null;
-
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;
 
@@ -140,4 +137,13 @@ export class AssetTable {
 
   @Column({ enum: asset_visibility_enum, default: AssetVisibility.Timeline })
   visibility!: Generated<AssetVisibility>;
+
+  @Column({ type: 'integer', nullable: true })
+  width!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  height!: number | null;
+
+  @Column({ type: 'boolean', default: false })
+  isEdited!: Generated<boolean>;
 }

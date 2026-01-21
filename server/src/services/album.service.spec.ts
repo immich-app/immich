@@ -669,7 +669,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should not allow a shared user with viewer access to add assets', async () => {
-      mocks.access.album.checkSharedAlbumAccess.mockResolvedValue(new Set([]));
+      mocks.access.album.checkSharedAlbumAccess.mockResolvedValue(new Set());
       mocks.album.getById.mockResolvedValue(_.cloneDeep(albumStub.sharedWithUser));
 
       await expect(

@@ -82,7 +82,11 @@ describe(MetadataService.name, () => {
       process.env.TZ = serverTimeZone ?? undefined;
 
       const { filePath } = await createTestFile(exifData);
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({ id: 'asset-1', originalPath: filePath } as any);
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
+        id: 'asset-1',
+        originalPath: filePath,
+        files: [],
+      } as any);
 
       await sut.handleMetadataExtraction({ id: 'asset-1' });
 
@@ -91,6 +95,7 @@ describe(MetadataService.name, () => {
           dateTimeOriginal: new Date(expected.dateTimeOriginal),
           timeZone: expected.timeZone,
         }),
+        { lockedPropertiesBehavior: 'skip' },
       );
 
       expect(mocks.asset.update).toHaveBeenCalledWith(

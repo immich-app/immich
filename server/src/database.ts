@@ -122,7 +122,6 @@ export type Asset = {
   originalFileName: string;
   originalPath: string;
   ownerId: string;
-  sidecarPath: string | null;
   type: AssetType;
 };
 
@@ -154,13 +153,6 @@ export type StorageAsset = {
   ownerId: string;
   files: AssetFile[];
   encodedVideoPath: string | null;
-};
-
-export type SidecarWriteAsset = {
-  id: string;
-  sidecarPath: string | null;
-  originalPath: string;
-  tags: Array<{ value: string }>;
 };
 
 export type Stack = {
@@ -248,7 +240,7 @@ export type Session = {
   isPendingSyncReset: boolean;
 };
 
-export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId'>;
+export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | 'lockedProperties'>;
 
 export type Person = {
   createdAt: Date;
@@ -280,6 +272,7 @@ export type AssetFace = {
   person?: Person | null;
   updatedAt: Date;
   updateId: string;
+  isVisible: boolean;
 };
 
 export type Plugin = Selectable<PluginTable>;
@@ -309,14 +302,14 @@ export type Workflow = Selectable<WorkflowTable> & {
 
 export type WorkflowFilter = Selectable<WorkflowFilterTable> & {
   workflowId: string;
-  filterId: string;
+  pluginFilterId: string;
   filterConfig: FilterConfig | null;
   order: number;
 };
 
 export type WorkflowAction = Selectable<WorkflowActionTable> & {
   workflowId: string;
-  actionId: string;
+  pluginActionId: string;
   actionConfig: ActionConfig | null;
   order: number;
 };
@@ -347,8 +340,9 @@ export const columns = {
     'asset.originalFileName',
     'asset.originalPath',
     'asset.ownerId',
-    'asset.sidecarPath',
     'asset.type',
+    'asset.width',
+    'asset.height',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
@@ -399,6 +393,9 @@ export const columns = {
     'asset.livePhotoVideoId',
     'asset.stackId',
     'asset.libraryId',
+    'asset.width',
+    'asset.height',
+    'asset.isEdited',
   ],
   syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
@@ -474,3 +471,13 @@ export const columns = {
     'plugin.updatedAt as updatedAt',
   ],
 } as const;
+
+export type LockableProperty = (typeof lockableProperties)[number];
+export const lockableProperties = [
+  'description',
+  'dateTimeOriginal',
+  'latitude',
+  'longitude',
+  'rating',
+  'timeZone',
+] as const;

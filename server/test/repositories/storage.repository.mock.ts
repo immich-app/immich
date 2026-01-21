@@ -38,6 +38,7 @@ export const makeMockWatcher =
       return () => close();
     }
 
+    // eslint-disable-next-line unicorn/consistent-function-scoping
     return () => Promise.resolve();
   };
 
@@ -48,6 +49,9 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
   return {
     createZipStream: vitest.fn(),
     createReadStream: vitest.fn(),
+    createPlainReadStream: vitest.fn(),
+    createGzip: vitest.fn(),
+    createGunzip: vitest.fn(),
     readFile: vitest.fn(),
     readTextFile: vitest.fn(),
     createFile: vitest.fn(),

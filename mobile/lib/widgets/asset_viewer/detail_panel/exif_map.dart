@@ -10,10 +10,20 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ExifMap extends StatelessWidget {
   final ExifInfo exifInfo;
+  // TODO: Pass in a BaseAsset instead of the ID and thumbhash when removing old timeline
+  // This is currently structured this way because of the old timeline implementation
+  // reusing this component
   final String? markerId;
+  final String? markerAssetThumbhash;
   final MapCreatedCallback? onMapCreated;
 
-  const ExifMap({super.key, required this.exifInfo, this.markerId = 'marker', this.onMapCreated});
+  const ExifMap({
+    super.key,
+    required this.exifInfo,
+    this.markerAssetThumbhash,
+    this.markerId = 'marker',
+    this.onMapCreated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +71,7 @@ class ExifMap extends StatelessWidget {
           width: constraints.maxWidth,
           zoom: 12.0,
           assetMarkerRemoteId: markerId,
+          assetThumbhash: markerAssetThumbhash,
           onTap: (tapPosition, latLong) async {
             Uri? uri = await createCoordinatesUri();
 

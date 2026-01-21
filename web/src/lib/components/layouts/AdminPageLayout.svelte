@@ -1,34 +1,47 @@
 <script lang="ts">
-  import PageContent from '$lib/components/layouts/PageContent.svelte';
-  import TitleLayout from '$lib/components/layouts/TitleLayout.svelte';
+  import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import AdminSidebar from '$lib/sidebars/AdminSidebar.svelte';
+  import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { AppShell, AppShellHeader, AppShellSidebar, Scrollable } from '@immich/ui';
+  import type { HeaderButtonActionItem } from '$lib/types';
+  import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   type Props = {
-    title: string;
-    buttons?: Snippet;
+    breadcrumbs: BreadcrumbItem[];
+    actions?: Array<HeaderButtonActionItem | MenuItemType>;
     children?: Snippet;
   };
 
-  let { title, buttons, children }: Props = $props();
+  let { breadcrumbs, actions, children }: Props = $props();
 </script>
 
 <AppShell>
   <AppShellHeader>
-    <NavigationBar showUploadButton={false} noBorder />
+    <NavigationBar noBorder />
   </AppShellHeader>
-  <AppShellSidebar bind:open={sidebarStore.isOpen} class="border-none shadow-none">
-    <AdminSidebar />
+  <AppShellSidebar
+    bind:open={sidebarStore.isOpen}
+    class="border-none shadow-none h-full flex flex-col justify-between gap-2"
+  >
+    <div class="flex flex-col pt-8 pe-4 gap-1">
+      <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
+      <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
+      <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
+      <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />
+      <NavbarItem title={$t('admin.maintenance_settings')} href={Route.systemMaintenance()} icon={mdiWrench} />
+      <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />
+    </div>
+
+    <div class="mb-2 me-4">
+      <BottomInfo />
+    </div>
   </AppShellSidebar>
 
-  <TitleLayout {title} {buttons}>
-    <Scrollable class="grow">
-      <PageContent>
-        {@render children?.()}
-      </PageContent>
-    </Scrollable>
-  </TitleLayout>
+  <BreadcrumbActionPage {breadcrumbs} {actions}>
+    {@render children?.()}
+  </BreadcrumbActionPage>
 </AppShell>

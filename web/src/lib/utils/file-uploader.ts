@@ -1,8 +1,8 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
-import { UploadState } from '$lib/models/upload-asset';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { user } from '$lib/stores/user.store';
+import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
@@ -43,19 +43,23 @@ export const addDummyItems = () => {
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 
+type FilePickerParam = { multiple?: boolean; extensions?: string[] };
 type FileUploadParam = { multiple?: boolean; albumId?: string };
 
-export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
-  const { albumId, multiple = true } = options;
-  const extensions = uploadManager.getExtensions();
+export const openFilePicker = async (options: FilePickerParam = {}) => {
+  const { multiple = true, extensions } = options;
 
-  return new Promise<string[]>((resolve, reject) => {
+  return new Promise<File[]>((resolve, reject) => {
     try {
       const fileSelector = document.createElement('input');
 
       fileSelector.type = 'file';
       fileSelector.multiple = multiple;
-      fileSelector.accept = extensions.join(',');
+
+      if (extensions) {
+        fileSelector.accept = extensions.join(',');
+      }
+
       fileSelector.addEventListener(
         'change',
         (e: Event) => {
@@ -63,9 +67,9 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
           if (!target.files) {
             return;
           }
-          const files = Array.from(target.files);
 
-          resolve(fileUploadHandler({ files, albumId }));
+          const files = Array.from(target.files);
+          resolve(files);
         },
         { passive: true },
       );
@@ -76,6 +80,17 @@ export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
       reject(error);
     }
   });
+};
+
+export const openFileUploadDialog = async (options: FileUploadParam = {}) => {
+  const { albumId, multiple = true } = options;
+  const extensions = uploadManager.getExtensions();
+  const files = await openFilePicker({
+    multiple,
+    extensions,
+  });
+
+  return fileUploadHandler({ files, albumId });
 };
 
 type FileUploadHandlerParams = Omit<FileUploaderParams, 'deviceAssetId' | 'assetFile'> & {
@@ -125,6 +140,7 @@ async function fileUploader({
 }: FileUploaderParams): Promise<string | undefined> {
   const fileCreatedAt = new Date(assetFile.lastModified).toISOString();
   const $t = get(t);
+  const wasInitiallyLoggedIn = !!get(user);
 
   uploadAssetsStore.markStarted(deviceAssetId);
 
@@ -215,8 +231,9 @@ async function fileUploader({
 
     return responseData.id;
   } catch (error) {
-    // ignore errors if the user logs out during uploads
-    if (!get(user)) {
+    // If the user store no longer holds a user, it means they have logged out
+    // In this case don't bother reporting any errors.
+    if (wasInitiallyLoggedIn && !get(user)) {
       return;
     }
 

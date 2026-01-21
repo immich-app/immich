@@ -113,13 +113,13 @@ describe(WorkflowService.name, () => {
         enabled: true,
         filters: [
           {
-            filterId: testFilterId,
+            pluginFilterId: testFilterId,
             filterConfig: { key: 'value' },
           },
         ],
         actions: [
           {
-            actionId: testActionId,
+            pluginActionId: testActionId,
             actionConfig: { action: 'test' },
           },
         ],
@@ -137,7 +137,7 @@ describe(WorkflowService.name, () => {
       expect(workflow.filters[0]).toMatchObject({
         id: expect.any(String),
         workflowId: workflow.id,
-        filterId: testFilterId,
+        pluginFilterId: testFilterId,
         filterConfig: { key: 'value' },
         order: 0,
       });
@@ -146,7 +146,7 @@ describe(WorkflowService.name, () => {
       expect(workflow.actions[0]).toMatchObject({
         id: expect.any(String),
         workflowId: workflow.id,
-        actionId: testActionId,
+        pluginActionId: testActionId,
         actionConfig: { action: 'test' },
         order: 0,
       });
@@ -163,7 +163,7 @@ describe(WorkflowService.name, () => {
           name: 'invalid-workflow',
           description: 'A workflow with invalid filter',
           enabled: true,
-          filters: [{ filterId: factory.uuid(), filterConfig: { key: 'value' } }],
+          filters: [{ pluginFilterId: factory.uuid(), filterConfig: { key: 'value' } }],
           actions: [],
         }),
       ).rejects.toThrow('Invalid filter ID');
@@ -181,7 +181,7 @@ describe(WorkflowService.name, () => {
           description: 'A workflow with invalid action',
           enabled: true,
           filters: [],
-          actions: [{ actionId: factory.uuid(), actionConfig: { action: 'test' } }],
+          actions: [{ pluginActionId: factory.uuid(), actionConfig: { action: 'test' } }],
         }),
       ).rejects.toThrow('Invalid action ID');
     });
@@ -220,7 +220,7 @@ describe(WorkflowService.name, () => {
           name: 'invalid-context-workflow',
           description: 'A workflow with context mismatch',
           enabled: true,
-          filters: [{ filterId: result.filters[0].id }],
+          filters: [{ pluginFilterId: result.filters[0].id }],
           actions: [],
         }),
       ).rejects.toThrow('does not support asset context');
@@ -261,7 +261,7 @@ describe(WorkflowService.name, () => {
           description: 'A workflow with context mismatch',
           enabled: true,
           filters: [],
-          actions: [{ actionId: result.actions[0].id }],
+          actions: [{ pluginActionId: result.actions[0].id }],
         }),
       ).rejects.toThrow('does not support asset context');
     });
@@ -277,13 +277,13 @@ describe(WorkflowService.name, () => {
         description: 'A workflow with multiple filters and actions',
         enabled: true,
         filters: [
-          { filterId: testFilterId, filterConfig: { step: 1 } },
-          { filterId: testFilterId, filterConfig: { step: 2 } },
+          { pluginFilterId: testFilterId, filterConfig: { step: 1 } },
+          { pluginFilterId: testFilterId, filterConfig: { step: 2 } },
         ],
         actions: [
-          { actionId: testActionId, actionConfig: { step: 1 } },
-          { actionId: testActionId, actionConfig: { step: 2 } },
-          { actionId: testActionId, actionConfig: { step: 3 } },
+          { pluginActionId: testActionId, actionConfig: { step: 1 } },
+          { pluginActionId: testActionId, actionConfig: { step: 2 } },
+          { pluginActionId: testActionId, actionConfig: { step: 3 } },
         ],
       });
 
@@ -378,8 +378,8 @@ describe(WorkflowService.name, () => {
         name: 'test-workflow',
         description: 'A test workflow',
         enabled: true,
-        filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
-        actions: [{ actionId: testActionId, actionConfig: { action: 'test' } }],
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { key: 'value' } }],
+        actions: [{ pluginActionId: testActionId, actionConfig: { action: 'test' } }],
       });
 
       const workflow = await sut.get(auth, created.id);
@@ -461,14 +461,14 @@ describe(WorkflowService.name, () => {
         name: 'test-workflow',
         description: 'Test',
         enabled: true,
-        filters: [{ filterId: testFilterId, filterConfig: { old: 'config' } }],
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { old: 'config' } }],
         actions: [],
       });
 
       const updated = await sut.update(auth, created.id, {
         filters: [
-          { filterId: testFilterId, filterConfig: { new: 'config' } },
-          { filterId: testFilterId, filterConfig: { second: 'filter' } },
+          { pluginFilterId: testFilterId, filterConfig: { new: 'config' } },
+          { pluginFilterId: testFilterId, filterConfig: { second: 'filter' } },
         ],
       });
 
@@ -488,13 +488,13 @@ describe(WorkflowService.name, () => {
         description: 'Test',
         enabled: true,
         filters: [],
-        actions: [{ actionId: testActionId, actionConfig: { old: 'config' } }],
+        actions: [{ pluginActionId: testActionId, actionConfig: { old: 'config' } }],
       });
 
       const updated = await sut.update(auth, created.id, {
         actions: [
-          { actionId: testActionId, actionConfig: { new: 'config' } },
-          { actionId: testActionId, actionConfig: { second: 'action' } },
+          { pluginActionId: testActionId, actionConfig: { new: 'config' } },
+          { pluginActionId: testActionId, actionConfig: { second: 'action' } },
         ],
       });
 
@@ -513,7 +513,7 @@ describe(WorkflowService.name, () => {
         name: 'test-workflow',
         description: 'Test',
         enabled: true,
-        filters: [{ filterId: testFilterId, filterConfig: { key: 'value' } }],
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { key: 'value' } }],
         actions: [],
       });
 
@@ -588,7 +588,7 @@ describe(WorkflowService.name, () => {
 
       await expect(
         sut.update(auth, created.id, {
-          filters: [{ filterId: factory.uuid(), filterConfig: {} }],
+          filters: [{ pluginFilterId: factory.uuid(), filterConfig: {} }],
         }),
       ).rejects.toThrow();
     });
@@ -608,8 +608,102 @@ describe(WorkflowService.name, () => {
       });
 
       await expect(
-        sut.update(auth, created.id, { actions: [{ actionId: factory.uuid(), actionConfig: {} }] }),
+        sut.update(auth, created.id, { actions: [{ pluginActionId: factory.uuid(), actionConfig: {} }] }),
       ).rejects.toThrow();
+    });
+
+    it('should update trigger type', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.PersonRecognized,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        triggerType: PluginTriggerType.AssetCreate,
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.triggerType).toBe(PluginTriggerType.AssetCreate);
+    });
+
+    it('should add filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        filters: [
+          { pluginFilterId: testFilterId, filterConfig: { first: true } },
+          { pluginFilterId: testFilterId, filterConfig: { second: true } },
+        ],
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(2);
+      expect(fetched.filters[0].filterConfig).toEqual({ first: true });
+      expect(fetched.filters[1].filterConfig).toEqual({ second: true });
+    });
+
+    it('should replace existing filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { original: true } }],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { replaced: true } }],
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(1);
+      expect(fetched.filters[0].filterConfig).toEqual({ replaced: true });
+    });
+
+    it('should remove existing filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const created = await sut.create(auth, {
+        triggerType: PluginTriggerType.AssetCreate,
+        name: 'test-workflow',
+        description: 'Test',
+        enabled: true,
+        filters: [{ pluginFilterId: testFilterId, filterConfig: { toRemove: true } }],
+        actions: [],
+      });
+
+      await sut.update(auth, created.id, {
+        filters: [],
+      });
+
+      const fetched = await sut.get(auth, created.id);
+      expect(fetched.filters).toHaveLength(0);
     });
   });
 
@@ -643,8 +737,8 @@ describe(WorkflowService.name, () => {
         name: 'test-workflow',
         description: 'Test',
         enabled: true,
-        filters: [{ filterId: testFilterId, filterConfig: {} }],
-        actions: [{ actionId: testActionId, actionConfig: {} }],
+        filters: [{ pluginFilterId: testFilterId, filterConfig: {} }],
+        actions: [{ pluginActionId: testActionId, actionConfig: {} }],
       });
 
       await sut.delete(auth, workflow.id);
