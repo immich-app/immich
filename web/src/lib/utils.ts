@@ -447,11 +447,11 @@ export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
 
 export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
 
-export const transformToFirstLetterUppercase = (text: string) => {
+export const transformToTitleCase = (text: string) => {
   if (text.length === 0) {
     return text;
   } else if (text.length === 1) {
-    return text.charAt(0).toUpperCase() + text.slice(1);
+    return text.charAt(0).toUpperCase();
   }
 
   let result = '';

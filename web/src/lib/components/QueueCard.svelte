@@ -5,9 +5,9 @@
   import { Route } from '$lib/route';
   import { asQueueItem } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
-  import { transformToFirstLetterUppercase } from '$lib/utils';
+  import { transformToTitleCase } from '$lib/utils';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, Link } from '@immich/ui';
+  import { Heading, Icon, IconButton, Link } from '@immich/ui';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
@@ -54,7 +54,7 @@
       <div class="flex items-center gap-2 text-xl font-semibold text-primary">
         <Link class="flex items-center gap-2 hover:underline" href={Route.viewQueue(queue)} underline={false}>
           <Icon {icon} size="1.25em" class="hidden shrink-0 sm:block" />
-          <span>{transformToFirstLetterUppercase(title)}</span>
+          <Heading size="small">{transformToTitleCase(title)}</Heading>
         </Link>
         <IconButton
           color="primary"
