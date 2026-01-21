@@ -54,6 +54,26 @@ interface UpsertFileOptions {
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
 
+const PANORAMA_CONSTANTS = [
+  'UsePanoramaViewer',
+  'ProjectionType',
+  'PoseHeadingDegrees',
+  'PosePitchDegrees',
+  'PoseRollDegrees',
+  'InitialViewHeadingDegrees',
+  'InitialViewPitchDegrees',
+  'InitialViewRollDegrees',
+] as const;
+
+const PANORAMA_SCALABLES = [
+  'CroppedAreaImageWidthPixels',
+  'CroppedAreaImageHeightPixels',
+  'FullPanoWidthPixels',
+  'FullPanoHeightPixels',
+  'CroppedAreaLeftPixels',
+  'CroppedAreaTopPixels',
+] as const;
+
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
@@ -253,7 +273,7 @@ export class MediaService extends BaseService {
 
   private async extractImage(originalPath: string, minSize: number) {
     let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
+    if (extracted && !this.shouldUseExtractedImage(extracted.dimensions, minSize)) {
       extracted = null;
     }
 
@@ -340,6 +360,11 @@ export class MediaService extends BaseService {
     ];
 
     let fullsizePath: string | undefined;
+    let fullsizeSize: number | undefined;
+    const originalSize =
+      asset.exifInfo.exifImageWidth && asset.exifInfo.exifImageHeight
+        ? Math.min(asset.exifInfo.exifImageWidth, asset.exifInfo.exifImageHeight)
+        : undefined;
 
     if (convertFullsize) {
       // convert a new fullsize image from the same source as the thumbnail
@@ -348,6 +373,7 @@ export class MediaService extends BaseService {
         useEdits ? AssetPathType.EditedFullSize : AssetPathType.FullSize,
         image.fullsize.format,
       );
+      fullsizeSize = originalSize;
       const fullsizeOptions = {
         format: image.fullsize.format,
         quality: image.fullsize.quality,
@@ -356,6 +382,7 @@ export class MediaService extends BaseService {
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, extracted.format);
+      fullsizeSize = Math.min(extracted.dimensions.width, extracted.dimensions.height);
       this.storageCore.ensureFolders(fullsizePath);
 
       // Write the buffer to disk with essential EXIF data
@@ -371,20 +398,56 @@ export class MediaService extends BaseService {
 
     const outputs = await Promise.all(promises);
 
-    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
-      const promises = [
-        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewPath),
-        fullsizePath
-          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizePath)
-          : Promise.resolve(),
-      ];
-      await Promise.all(promises);
+    if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR' && originalSize) {
+      await this.copyPanoramaMetadataToThumbnails(
+        asset.originalPath,
+        originalSize,
+        previewPath,
+        image.preview.size,
+        fullsizePath,
+        fullsizeSize,
+      );
     }
 
     const decodedDimensions = { width: info.width, height: info.height };
     const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
 
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer, fullsizeDimensions };
+  }
+
+  private async copyPanoramaMetadataToThumbnails(
+    originalPath: string,
+    originalSize: number,
+    previewPath: string,
+    previewSize: number,
+    fullsizePath?: string,
+    fullsizeSize?: number,
+  ) {
+    const originalTags = await this.metadataRepository.readTags(originalPath);
+
+    const scaleAndWriteData = async (thumbnailPath: string, scaleRatio: number) => {
+      const newTags = {} as Record<string, string | number | boolean>;
+
+      for (const key of PANORAMA_CONSTANTS) {
+        if (key in originalTags && originalTags[key]) {
+          newTags[key] = originalTags[key];
+        }
+      }
+      for (const key of PANORAMA_SCALABLES) {
+        if (key in originalTags && originalTags[key]) {
+          newTags[key] = Math.round(originalTags[key] * scaleRatio);
+        }
+      }
+
+      return this.mediaRepository.writeTags(newTags, thumbnailPath);
+    };
+
+    const promises = [
+      // preview size is min(preview size, original size) so do the same for pano pixel adjustment
+      scaleAndWriteData(previewPath, Math.min(1, previewSize / originalSize)),
+      fullsizePath && fullsizeSize ? scaleAndWriteData(fullsizePath, fullsizeSize / originalSize) : Promise.resolve(),
+    ];
+    await Promise.all(promises);
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
@@ -749,8 +812,8 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
+  private shouldUseExtractedImage(extractedDimensions: ImageDimensions, targetSize: number) {
+    const { width, height } = extractedDimensions;
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
   }
