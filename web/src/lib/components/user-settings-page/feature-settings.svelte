@@ -166,7 +166,7 @@
           </div>
         </SettingAccordion>
 
-        <div class="flex justify-end">
+        <div class="flex justify-end mt-4">
           <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>

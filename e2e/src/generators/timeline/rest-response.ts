@@ -348,6 +348,7 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     checksum: asset.checksum,
     width: exifInfo.exifImageWidth ?? 1,
     height: exifInfo.exifImageHeight ?? 1,
+    isEdited: false,
   };
 }
 

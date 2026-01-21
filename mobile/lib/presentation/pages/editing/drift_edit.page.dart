@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -78,7 +79,7 @@ class DriftEditImagePage extends ConsumerWidget {
         return;
       }
 
-      await ref.read(uploadServiceProvider).manualBackup([localAsset]);
+      await ref.read(foregroundUploadServiceProvider).uploadManual([localAsset], CancellationToken());
     } catch (e) {
       ImmichToast.show(
         durationInSecond: 6,

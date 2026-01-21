@@ -7,8 +7,8 @@
   import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
   import WorkflowSummarySidebar from '$lib/components/workflows/WorkflowSummary.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
-  import { AppRoute } from '$lib/constants';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
+  import { Route } from '$lib/route';
   import {
     buildWorkflowPayload,
     getActionsByContext,
@@ -580,7 +580,7 @@
   <WorkflowSummarySidebar trigger={selectedTrigger} filters={selectedFilters} actions={selectedActions} />
 </main>
 
-<ControlAppBar onClose={() => goto(AppRoute.WORKFLOWS)} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
+<ControlAppBar onClose={() => goto(Route.workflows())} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
   {#snippet leading()}
     <Text>{data.meta.title}</Text>
   {/snippet}

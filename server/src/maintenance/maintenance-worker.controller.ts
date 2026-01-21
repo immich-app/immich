@@ -1,21 +1,112 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
-import { ServerConfigDto } from 'src/dtos/server.dto';
-import { ImmichCookie, MaintenanceAction } from 'src/enum';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Next,
+  Param,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { NextFunction, Request, Response } from 'express';
+import {
+  MaintenanceAuthDto,
+  MaintenanceDetectInstallResponseDto,
+  MaintenanceLoginDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
+import { ServerConfigDto, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { LoginDetails } from 'src/services/auth.service';
+import { sendFile } from 'src/utils/file';
 import { respondWithCookie } from 'src/utils/response';
+import { FilenameParamDto } from 'src/validation';
+
+import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
+import type { ServerController as _ServerController } from 'src/controllers/server.controller';
+import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
 
 @Controller()
 export class MaintenanceWorkerController {
-  constructor(private service: MaintenanceWorkerService) {}
+  constructor(
+    private logger: LoggingRepository,
+    private service: MaintenanceWorkerService,
+  ) {}
 
+  /**
+   * {@link _ServerController.getServerConfig }
+   */
   @Get('server/config')
-  getServerConfig(): Promise<ServerConfigDto> {
+  getServerConfig(): ServerConfigDto {
     return this.service.getSystemConfig();
+  }
+
+  @Get('server/version')
+  getServerVersion(): ServerVersionResponseDto {
+    return this.service.getVersion();
+  }
+
+  /**
+   * {@link _DatabaseBackupController.listDatabaseBackups}
+   */
+  @Get('admin/database-backups')
+  @MaintenanceRoute()
+  listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
+    return this.service.listBackups();
+  }
+
+  /**
+   * {@link _DatabaseBackupController.downloadDatabaseBackup}
+   */
+  @Get('admin/database-backups/:filename')
+  @MaintenanceRoute()
+  async downloadDatabaseBackup(
+    @Param() { filename }: FilenameParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
+  }
+
+  /**
+   * {@link _DatabaseBackupController.deleteDatabaseBackup}
+   */
+  @Delete('admin/database-backups')
+  @MaintenanceRoute()
+  async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
+    return this.service.deleteBackup(dto.backups);
+  }
+
+  /**
+   * {@link _DatabaseBackupController.uploadDatabaseBackup}
+   */
+  @Post('admin/database-backups/upload')
+  @MaintenanceRoute()
+  @UseInterceptors(FileInterceptor('file'))
+  uploadDatabaseBackup(
+    @UploadedFile()
+    file: Express.Multer.File,
+  ): Promise<void> {
+    return this.service.uploadBackup(file);
+  }
+
+  @Get('admin/maintenance/status')
+  maintenanceStatus(@Req() request: Request): Promise<MaintenanceStatusResponseDto> {
+    return this.service.status(request.cookies[ImmichCookie.MaintenanceToken]);
+  }
+
+  @Get('admin/maintenance/detect-install')
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
+    return this.service.detectPriorInstall();
   }
 
   @Post('admin/maintenance/login')
@@ -35,9 +126,7 @@ export class MaintenanceWorkerController {
 
   @Post('admin/maintenance')
   @MaintenanceRoute()
-  async setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): Promise<void> {
-    if (dto.action === MaintenanceAction.End) {
-      await this.service.endMaintenance();
-    }
+  setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): void {
+    void this.service.setAction(dto);
   }
 }

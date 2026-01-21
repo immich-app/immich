@@ -438,7 +438,6 @@ class $RemoteAssetCloudIdEntityTable extends i2.RemoteAssetCloudIdEntity
     true,
     type: i0.DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultConstraints: i0.GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
     'createdAt',

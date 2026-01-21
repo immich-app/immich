@@ -83,6 +83,7 @@ describe(SyncRequestType.AlbumAssetsV1, () => {
           libraryId: asset.libraryId,
           width: asset.width,
           height: asset.height,
+          isEdited: asset.isEdited,
         },
         type: SyncEntityType.AlbumAssetCreateV1,
       },

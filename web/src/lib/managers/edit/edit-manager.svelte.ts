@@ -115,7 +115,7 @@ export class EditManager {
       // Setup the websocket listener before sending the edit request
       const editCompleted = waitForWebsocketEvent(
         'AssetEditReadyV1',
-        (event) => event.assetId === this.currentAsset!.id,
+        (event) => event.asset.id === this.currentAsset!.id,
         10_000,
       );
 

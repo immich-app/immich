@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -164,11 +165,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           children: [
             if (albums.isNotEmpty)
               SheetTile(
-                title: 'appears_in'.t(context: context).toUpperCase(),
-                titleStyle: context.textTheme.labelMedium?.copyWith(
-                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                  fontWeight: FontWeight.w600,
-                ),
+                title: 'appears_in'.t(context: context),
+                titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
             Padding(
               padding: const EdgeInsets.only(left: 24),
@@ -224,9 +222,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                 color: context.textTheme.labelLarge?.color,
               ),
               subtitle: _getFileInfo(asset, exifInfo),
-              subtitleStyle: context.textTheme.labelMedium?.copyWith(
-                color: context.textTheme.labelMedium?.color?.withAlpha(200),
-              ),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             );
           },
         );
@@ -241,9 +237,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             color: context.textTheme.labelLarge?.color,
           ),
           subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-          ),
+          subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         );
       }
     }
@@ -262,11 +256,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         const SheetLocationDetails(),
         // Details header
         SheetTile(
-          title: 'details'.t(context: context).toUpperCase(),
-          titleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            fontWeight: FontWeight.w600,
-          ),
+          title: 'details'.t(context: context),
+          titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         ),
         // File info
         buildFileInfoTile(),
@@ -278,9 +269,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            ),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
         ],
         // Lens info
@@ -291,15 +280,13 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getLensInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            ),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
         ],
         // Appears in (Albums)
         Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
-        const SizedBox(height: 30),
+        const SizedBox(height: 60),
       ],
     );
   }

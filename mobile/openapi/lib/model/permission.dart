@@ -62,6 +62,10 @@ class Permission {
   static const authPeriodChangePassword = Permission._(r'auth.changePassword');
   static const authDevicePeriodDelete = Permission._(r'authDevice.delete');
   static const archivePeriodRead = Permission._(r'archive.read');
+  static const backupPeriodList = Permission._(r'backup.list');
+  static const backupPeriodDownload = Permission._(r'backup.download');
+  static const backupPeriodUpload = Permission._(r'backup.upload');
+  static const backupPeriodDelete = Permission._(r'backup.delete');
   static const duplicatePeriodRead = Permission._(r'duplicate.read');
   static const duplicatePeriodDelete = Permission._(r'duplicate.delete');
   static const facePeriodCreate = Permission._(r'face.create');
@@ -214,6 +218,10 @@ class Permission {
     authPeriodChangePassword,
     authDevicePeriodDelete,
     archivePeriodRead,
+    backupPeriodList,
+    backupPeriodDownload,
+    backupPeriodUpload,
+    backupPeriodDelete,
     duplicatePeriodRead,
     duplicatePeriodDelete,
     facePeriodCreate,
@@ -401,6 +409,10 @@ class PermissionTypeTransformer {
         case r'auth.changePassword': return Permission.authPeriodChangePassword;
         case r'authDevice.delete': return Permission.authDevicePeriodDelete;
         case r'archive.read': return Permission.archivePeriodRead;
+        case r'backup.list': return Permission.backupPeriodList;
+        case r'backup.download': return Permission.backupPeriodDownload;
+        case r'backup.upload': return Permission.backupPeriodUpload;
+        case r'backup.delete': return Permission.backupPeriodDelete;
         case r'duplicate.read': return Permission.duplicatePeriodRead;
         case r'duplicate.delete': return Permission.duplicatePeriodDelete;
         case r'face.create': return Permission.facePeriodCreate;

@@ -121,6 +121,8 @@ export class SyncAssetV1 {
   width!: number | null;
   @ApiProperty({ type: 'integer' })
   height!: number | null;
+  @ApiProperty({ type: 'boolean' })
+  isEdited!: boolean;
 }
 
 @ExtraModel()

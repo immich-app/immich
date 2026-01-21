@@ -86,6 +86,7 @@ export const assetStub = {
     make: 'FUJIFILM',
     model: 'X-T50',
     lensModel: 'XF27mm F2.8 R WR',
+    isEdited: false,
     ...asset,
   }),
   noResizePath: Object.freeze({
@@ -125,6 +126,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   noWebpPath: Object.freeze({
@@ -166,6 +168,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   noThumbhash: Object.freeze({
@@ -204,6 +207,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   primaryImage: Object.freeze({
@@ -252,6 +256,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   image: Object.freeze({
@@ -298,6 +303,7 @@ export const assetStub = {
     width: null,
     visibility: AssetVisibility.Timeline,
     edits: [],
+    isEdited: false,
   }),
 
   trashed: Object.freeze({
@@ -341,6 +347,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   trashedOffline: Object.freeze({
@@ -384,6 +391,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -426,6 +434,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   external: Object.freeze({
@@ -468,6 +477,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   image1: Object.freeze({
@@ -510,6 +520,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   imageFrom2015: Object.freeze({
@@ -551,6 +562,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   video: Object.freeze({
@@ -594,6 +606,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -614,6 +627,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [] as AssetEditActionItem[],
+    isEdited: false,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif; edits: AssetEditActionItem[] }),
 
   livePhotoStillAsset: Object.freeze({
@@ -635,6 +649,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [] as AssetEditActionItem[],
+    isEdited: false,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; edits: AssetEditActionItem[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -658,6 +673,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [] as AssetEditActionItem[],
+    isEdited: false,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; edits: AssetEditActionItem[] }),
 
   withLocation: Object.freeze({
@@ -705,6 +721,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   sidecar: Object.freeze({
@@ -743,6 +760,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -778,6 +796,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -820,6 +839,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   hasFileExtension: Object.freeze({
@@ -859,6 +879,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   imageDng: Object.freeze({
@@ -902,6 +923,7 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
 
   imageHif: Object.freeze({
@@ -945,7 +967,9 @@ export const assetStub = {
     width: null,
     height: null,
     edits: [],
+    isEdited: false,
   }),
+
   panoramaTif: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.Active,
@@ -988,6 +1012,7 @@ export const assetStub = {
     height: null,
     edits: [],
   }),
+
   withCropEdit: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.Active,
@@ -1043,7 +1068,9 @@ export const assetStub = {
         },
       },
     ] as AssetEditActionItem[],
+    isEdited: true,
   }),
+
   withoutEdits: Object.freeze({
     id: 'asset-id',
     status: AssetStatus.Active,
@@ -1089,5 +1116,6 @@ export const assetStub = {
     width: 2160,
     visibility: AssetVisibility.Timeline,
     edits: [],
+    isEdited: false,
   }),
 };

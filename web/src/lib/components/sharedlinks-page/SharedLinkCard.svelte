@@ -1,7 +1,7 @@
 <script lang="ts">
   import ActionButton from '$lib/components/ActionButton.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
@@ -61,7 +61,7 @@
 >
   <svelte:element
     this={isExpired ? 'div' : 'a'}
-    href={isExpired ? undefined : `${AppRoute.SHARE}/${sharedLink.key}`}
+    href={isExpired ? undefined : Route.viewSharedLink(sharedLink)}
     class="flex gap-4 w-full py-4"
   >
     <ShareCover class="transition-all duration-300 hover:shadow-lg" {sharedLink} />

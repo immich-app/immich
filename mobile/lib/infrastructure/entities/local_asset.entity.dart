@@ -47,5 +47,6 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     latitude: latitude,
     longitude: longitude,
     cloudId: iCloudId,
+    isEdited: false,
   );
 }

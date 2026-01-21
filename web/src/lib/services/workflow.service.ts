@@ -1,6 +1,6 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -17,12 +17,13 @@ import {
   type PluginFilterResponseDto,
   type PluginTriggerResponseDto,
   type WorkflowActionItemDto,
+  type WorkflowCreateDto,
   type WorkflowFilterItemDto,
   type WorkflowResponseDto,
   type WorkflowUpdateDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay } from '@mdi/js';
+import { mdiCodeJson, mdiDelete, mdiPause, mdiPencil, mdiPlay, mdiPlus } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export type PickerSubType = 'album-picker' | 'people-picker';
@@ -318,6 +319,23 @@ export const handleUpdateWorkflow = async (
   return updateWorkflow({ id: workflowId, workflowUpdateDto: updateDto });
 };
 
+export const getWorkflowsActions = ($t: MessageFormatter) => {
+  const Create: ActionItem = {
+    title: $t('create_workflow'),
+    icon: mdiPlus,
+    onAction: () =>
+      handleCreateWorkflow({
+        name: $t('untitled_workflow'),
+        triggerType: PluginTriggerType.AssetCreate,
+        filters: [],
+        actions: [],
+        enabled: false,
+      }),
+  };
+
+  return { Create };
+};
+
 export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowResponseDto) => {
   const ToggleEnabled: ActionItem = {
     title: workflow.enabled ? $t('disable') : $t('enable'),
@@ -331,7 +349,7 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
   const Edit: ActionItem = {
     title: $t('edit'),
     icon: mdiPencil,
-    onAction: () => handleNavigateToWorkflow(workflow),
+    onAction: () => goto(Route.viewWorkflow(workflow)),
   };
 
   const Delete: ActionItem = {
@@ -356,22 +374,12 @@ export const getWorkflowShowSchemaAction = (
   onAction: onToggle,
 });
 
-export const handleCreateWorkflow = async (): Promise<WorkflowResponseDto | undefined> => {
+const handleCreateWorkflow = async (dto: WorkflowCreateDto) => {
   const $t = await getFormatter();
 
   try {
-    const workflow = await createWorkflow({
-      workflowCreateDto: {
-        name: $t('untitled_workflow'),
-        triggerType: PluginTriggerType.AssetCreate,
-        filters: [],
-        actions: [],
-        enabled: false,
-      },
-    });
-
-    await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
-    return workflow;
+    const response = await createWorkflow({ workflowCreateDto: dto });
+    eventManager.emit('WorkflowCreate', response);
   } catch (error) {
     handleError(error, $t('errors.unable_to_create'));
   }
@@ -417,10 +425,6 @@ export const handleDeleteWorkflow = async (workflow: WorkflowResponseDto): Promi
     handleError(error, $t('errors.unable_to_delete_workflow'));
     return false;
   }
-};
-
-export const handleNavigateToWorkflow = async (workflow: WorkflowResponseDto): Promise<void> => {
-  await goto(`${AppRoute.WORKFLOWS}/${workflow.id}`);
 };
 
 export const fetchPickerMetadata = async (

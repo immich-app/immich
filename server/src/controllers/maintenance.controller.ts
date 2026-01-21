@@ -1,9 +1,15 @@
-import { BadRequestException, Body, Controller, Post, Res } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MaintenanceAuthDto, MaintenanceLoginDto, SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
+import {
+  MaintenanceAuthDto,
+  MaintenanceDetectInstallResponseDto,
+  MaintenanceLoginDto,
+  MaintenanceStatusResponseDto,
+  SetMaintenanceModeDto,
+} from 'src/dtos/maintenance.dto';
 import { ApiTag, ImmichCookie, MaintenanceAction, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
@@ -14,6 +20,27 @@ import { respondWithCookie } from 'src/utils/response';
 @Controller('admin/maintenance')
 export class MaintenanceController {
   constructor(private service: MaintenanceService) {}
+
+  @Get('status')
+  @Endpoint({
+    summary: 'Get maintenance mode status',
+    description: 'Fetch information about the currently running maintenance action.',
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
+  })
+  getMaintenanceStatus(): MaintenanceStatusResponseDto {
+    return this.service.getMaintenanceStatus();
+  }
+
+  @Get('detect-install')
+  @Endpoint({
+    summary: 'Detect existing install',
+    description: 'Collect integrity checks and other heuristics about local data.',
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
+  })
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  detectPriorInstall(): Promise<MaintenanceDetectInstallResponseDto> {
+    return this.service.detectPriorInstall();
+  }
 
   @Post('login')
   @Endpoint({
@@ -38,8 +65,8 @@ export class MaintenanceController {
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    if (dto.action === MaintenanceAction.Start) {
-      const { jwt } = await this.service.startMaintenance(auth.user.name);
+    if (dto.action !== MaintenanceAction.End) {
+      const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
       return respondWithCookie(res, undefined, {
         isSecure: loginDetails.isSecure,
         values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],

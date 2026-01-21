@@ -66,7 +66,7 @@
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[Create]}>
   <Container center size="large">
-    <Table class="mt-4" striped spacing="large">
+    <Table class="mt-4" striped spacing="small" size="small">
       <TableHeader>
         <TableHeading class={classes.column1}>{$t('email')}</TableHeading>
         <TableHeading class={classes.column2}>{$t('name')}</TableHeading>

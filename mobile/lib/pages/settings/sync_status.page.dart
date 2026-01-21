@@ -18,6 +18,7 @@ class SyncStatusPage extends StatelessWidget {
           splashRadius: 24,
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
+        centerTitle: false,
       ),
       body: const SyncStatusAndActions(),
     );

@@ -6,8 +6,10 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -46,6 +48,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
   Widget build(BuildContext context) {
     final asset = widget.asset;
     final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final isCurrentAsset = ref.watch(assetViewerProvider.select((current) => current.currentAsset == asset));
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -58,9 +61,17 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     final bool storageIndicator =
         ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
 
+    if (!isCurrentAsset) {
+      _hideIndicators = false;
+    }
+
     if (isSelected) {
       _showSelectionContainer = true;
     }
+
+    final uploadProgress = asset is LocalAsset
+        ? ref.watch(assetUploadProgressProvider.select((map) => map[asset.id]))
+        : null;
 
     return Stack(
       children: [
@@ -91,7 +102,11 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                    // This key resets the hero animation when the asset is changed in the asset viewer.
+                    // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
+                    // but other solutions have failed thus far.
+                    key: ValueKey(isCurrentAsset),
+                    tag: '${asset?.heroTag}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
@@ -168,6 +183,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                       ),
                     ),
                   ),
+                if (uploadProgress != null) _UploadProgressOverlay(progress: uploadProgress),
               ],
             ),
           ),
@@ -290,6 +306,49 @@ class _AssetTypeIcons extends StatelessWidget {
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
       ],
+    );
+  }
+}
+
+class _UploadProgressOverlay extends StatelessWidget {
+  final double progress;
+
+  const _UploadProgressOverlay({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final isError = progress < 0;
+    final percentage = isError ? 0 : (progress * 100).toInt();
+
+    return Positioned.fill(
+      child: Container(
+        color: isError ? Colors.red.withValues(alpha: 0.6) : Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isError)
+                const Icon(Icons.error_outline, color: Colors.white, size: 36)
+              else
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 3,
+                    backgroundColor: Colors.white24,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                isError ? 'Error' : '$percentage%',
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

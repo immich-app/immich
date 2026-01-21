@@ -32,6 +32,14 @@ export class ApiKeyService extends BaseService {
       throw new BadRequestException('API Key not found');
     }
 
+    if (
+      auth.apiKey &&
+      dto.permissions &&
+      !isGranted({ requested: dto.permissions, current: auth.apiKey.permissions })
+    ) {
+      throw new BadRequestException('Cannot grant permissions you do not have');
+    }
+
     const key = await this.apiKeyRepository.update(auth.user.id, id, { name: dto.name, permissions: dto.permissions });
 
     return this.map(key);

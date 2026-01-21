@@ -21,9 +21,10 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
-  import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
   import { getTagActions } from '$lib/services/tag.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences, user } from '$lib/stores/user.store';
@@ -50,11 +51,7 @@
 
   const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
 
-  const getLink = (path: string) => {
-    const url = new URL(AppRoute.TAGS, globalThis.location.href);
-    url.searchParams.set(QueryParameter.PATH, path);
-    return url.href;
-  };
+  const getLink = (path: string) => Route.tags({ path });
 
   const navigateToView = (path: string) => goto(getLink(path));
 

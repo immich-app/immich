@@ -3,8 +3,8 @@
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { getLibrariesActions, handleViewLibrary } from '$lib/services/library.service';
+  import { Route } from '$lib/route';
+  import { getLibrariesActions } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
@@ -36,7 +36,7 @@
   let owners = $state(data.owners);
 
   const onLibraryCreate = async (library: LibraryResponseDto) => {
-    await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`);
+    await goto(Route.viewLibrary(library));
   };
 
   const onLibraryUpdate = async (library: LibraryResponseDto) => {
@@ -76,7 +76,7 @@
   <Container size="large" center class="my-4">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
-        <Table striped>
+        <Table striped size="small" spacing="small">
           <TableHeader>
             <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
             <TableHeading class={classes.column2}>{$t('owner')}</TableHeading>
@@ -96,7 +96,7 @@
                 <TableCell class={classes.column4}>{videos.toLocaleString($locale)}</TableCell>
                 <TableCell class={classes.column5}>{diskUsage} {diskUsageUnit}</TableCell>
                 <TableCell class={classes.column6}>
-                  <Button size="small" onclick={() => handleViewLibrary(library)}>{$t('view')}</Button>
+                  <Button size="small" href={Route.viewLibrary(library)}>{$t('view')}</Button>
                 </TableCell>
               </TableRow>
             {/each}
@@ -106,7 +106,7 @@
         <EmptyPlaceholder
           fullWidth
           text={$t('no_libraries_message')}
-          onClick={() => goto(AppRoute.ADMIN_LIBRARIES_NEW)}
+          onClick={() => goto(Route.newLibrary())}
           class="mt-10 mx-auto"
         />
       {/if}

@@ -139,6 +139,16 @@ export class UUIDAssetIDParamDto {
   assetId!: string;
 }
 
+export class FilenameParamDto {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ format: 'string' })
+  @Matches(/^[a-zA-Z0-9_\-.]+$/, {
+    message: 'Filename contains invalid characters',
+  })
+  filename!: string;
+}
+
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
 export const PinCode = (options?: PinCodeOptions & ApiPropertyOptions) => {
   const { optional, nullable, emptyToNull, ...apiPropertyOptions } = {

@@ -8,10 +8,10 @@
   import ActionButton from '$lib/components/ActionButton.svelte';
   import NotificationPanel from '$lib/components/shared-components/navigation-bar/notification-panel.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import { AppRoute } from '$lib/constants';
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
@@ -25,14 +25,13 @@
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
 
-  interface Props {
-    showUploadButton?: boolean;
+  type Props = {
     onUploadClick?: () => void;
     // TODO: remove once this is only used in <AppShellHeader>
     noBorder?: boolean;
-  }
+  };
 
-  let { showUploadButton = true, onUploadClick, noBorder = false }: Props = $props();
+  let { onUploadClick, noBorder = false }: Props = $props();
 
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
@@ -79,7 +78,7 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
+      <a data-sveltekit-preload-data="hover" href={Route.photos()}>
         <Logo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>
@@ -98,14 +97,14 @@
             variant="ghost"
             size="medium"
             icon={mdiMagnify}
-            href={AppRoute.SEARCH}
+            href={Route.search()}
             id="search-button"
             class="sm:hidden"
             aria-label={$t('go_to_search')}
           />
         {/if}
 
-        {#if !page.url.pathname.includes('/admin') && showUploadButton && onUploadClick}
+        {#if !page.url.pathname.includes('/admin') && onUploadClick}
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}

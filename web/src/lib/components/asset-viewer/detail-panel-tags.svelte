@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import { shortcut } from '$lib/actions/shortcut';
-  import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+  import { Route } from '$lib/route';
   import { removeTag } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
@@ -46,7 +45,7 @@
         <div class="flex group transition-all">
           <a
             class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-            href={resolve(`${AppRoute.TAGS}/?path=${encodeURI(tag.value)}`)}
+            href={Route.tags({ path: tag.value })}
           >
             <p class="text-sm">
               {tag.value}

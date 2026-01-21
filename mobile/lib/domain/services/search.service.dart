@@ -77,6 +77,7 @@ extension on AssetResponseDto {
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
+      isEdited: isEdited,
     );
   }
 }

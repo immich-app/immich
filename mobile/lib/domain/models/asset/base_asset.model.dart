@@ -23,6 +23,7 @@ sealed class BaseAsset {
   final int? durationInSeconds;
   final bool isFavorite;
   final String? livePhotoVideoId;
+  final bool isEdited;
 
   const BaseAsset({
     required this.name,
@@ -36,6 +37,7 @@ sealed class BaseAsset {
     this.durationInSeconds,
     this.isFavorite = false,
     this.livePhotoVideoId,
+    required this.isEdited,
   });
 
   bool get isImage => type == AssetType.image;
@@ -74,6 +76,7 @@ sealed class BaseAsset {
   height: ${height ?? "<NA>"},
   durationInSeconds: ${durationInSeconds ?? "<NA>"},
   isFavorite: $isFavorite,
+  isEdited: $isEdited,
 }''';
   }
 
@@ -89,7 +92,8 @@ sealed class BaseAsset {
           width == other.width &&
           height == other.height &&
           durationInSeconds == other.durationInSeconds &&
-          isFavorite == other.isFavorite;
+          isFavorite == other.isFavorite &&
+          isEdited == other.isEdited;
     }
     return false;
   }
@@ -104,6 +108,7 @@ sealed class BaseAsset {
         width.hashCode ^
         height.hashCode ^
         durationInSeconds.hashCode ^
-        isFavorite.hashCode;
+        isFavorite.hashCode ^
+        isEdited.hashCode;
   }
 }

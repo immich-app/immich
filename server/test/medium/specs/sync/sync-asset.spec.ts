@@ -64,6 +64,7 @@ describe(SyncEntityType.AssetV1, () => {
           libraryId: asset.libraryId,
           width: asset.width,
           height: asset.height,
+          isEdited: asset.isEdited,
         },
         type: 'AssetV1',
       },

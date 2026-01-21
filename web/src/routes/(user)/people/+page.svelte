@@ -10,8 +10,9 @@
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { QueryParameter, SessionStorageKey } from '$lib/constants';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
@@ -205,9 +206,7 @@
   };
 
   const handleMergePeople = async (detail: PersonResponseDto) => {
-    await goto(
-      `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
-    );
+    await goto(Route.viewPerson(detail, { previousRoute: Route.people(), action: 'merge' }));
   };
 
   const onResetSearchBar = async () => {
@@ -300,7 +299,7 @@
     [
       scrollMemory,
       {
-        routeStartsWith: AppRoute.PEOPLE,
+        routeStartsWith: Route.people(),
         beforeSave: () => {
           if (currentPage) {
             sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());

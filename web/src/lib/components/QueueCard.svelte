@@ -2,7 +2,8 @@
   import QueueCardBadge from '$lib/components/QueueCardBadge.svelte';
   import QueueCardButton from '$lib/components/QueueCardButton.svelte';
   import Badge from '$lib/elements/Badge.svelte';
-  import { asQueueItem, getQueueDetailUrl } from '$lib/services/queue.service';
+  import { Route } from '$lib/route';
+  import { asQueueItem } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
   import { Icon, IconButton, Link } from '@immich/ui';
@@ -50,7 +51,7 @@
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
       <div class="flex items-center gap-2 text-xl font-semibold text-primary">
-        <Link class="flex items-center gap-2 hover:underline" href={getQueueDetailUrl(queue)} underline={false}>
+        <Link class="flex items-center gap-2 hover:underline" href={Route.viewQueue(queue)} underline={false}>
           <Icon {icon} size="1.25em" class="hidden shrink-0 sm:block" />
           <span class="uppercase">{title}</span>
         </Link>
@@ -60,7 +61,7 @@
           aria-label={$t('view_details')}
           size="small"
           variant="ghost"
-          href={getQueueDetailUrl(queue)}
+          href={Route.viewQueue(queue)}
         />
         <div class="flex gap-2">
           {#if statistics.failed > 0}

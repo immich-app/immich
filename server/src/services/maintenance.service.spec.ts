@@ -1,4 +1,4 @@
-import { SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -36,14 +36,72 @@ describe(MaintenanceService.name, () => {
     });
 
     it('should return true if enabled', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: '' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: '',
+        action: { action: MaintenanceAction.Start },
+      });
 
       await expect(sut.getMaintenanceMode()).resolves.toEqual({
         isMaintenanceMode: true,
         secret: '',
+        action: {
+          action: 'start',
+        },
       });
 
       expect(mocks.systemMetadata.get).toHaveBeenCalled();
+    });
+  });
+
+  describe('integrityCheck', () => {
+    it('generate integrity report', async () => {
+      mocks.storage.readdir.mockResolvedValue(['.immich', 'file1', 'file2']);
+      mocks.storage.readFile.mockResolvedValue(undefined as never);
+      mocks.storage.overwriteFile.mockRejectedValue(undefined as never);
+
+      await expect(sut.detectPriorInstall()).resolves.toMatchInlineSnapshot(`
+        {
+          "storage": [
+            {
+              "files": 2,
+              "folder": "encoded-video",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "library",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "upload",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "profile",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "thumbs",
+              "readable": true,
+              "writable": false,
+            },
+            {
+              "files": 2,
+              "folder": "backups",
+              "readable": true,
+              "writable": false,
+            },
+          ],
+        }
+      `);
     });
   });
 
@@ -51,13 +109,23 @@ describe(MaintenanceService.name, () => {
     it('should set maintenance mode and return a secret', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 
-      await expect(sut.startMaintenance('admin')).resolves.toMatchObject({
+      await expect(
+        sut.startMaintenance(
+          {
+            action: MaintenanceAction.Start,
+          },
+          'admin',
+        ),
+      ).resolves.toMatchObject({
         jwt: expect.any(String),
       });
 
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
         isMaintenanceMode: true,
         secret: expect.stringMatching(/^\w{128}$/),
+        action: {
+          action: 'start',
+        },
       });
 
       expect(mocks.event.emit).toHaveBeenCalledWith('AppRestart', {
@@ -78,7 +146,13 @@ describe(MaintenanceService.name, () => {
     });
 
     it('should generate a login url with JWT', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: true, secret: 'secret' });
+      mocks.systemMetadata.get.mockResolvedValue({
+        isMaintenanceMode: true,
+        secret: 'secret',
+        action: {
+          action: MaintenanceAction.Start,
+        },
+      });
 
       await expect(
         sut.createLoginUrl({

@@ -16,6 +16,102 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
+  /// Detect existing install
+  ///
+  /// Collect integrity checks and other heuristics about local data.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> detectPriorInstallWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/detect-install';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Detect existing install
+  ///
+  /// Collect integrity checks and other heuristics about local data.
+  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall() async {
+    final response = await detectPriorInstallWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceDetectInstallResponseDto',) as MaintenanceDetectInstallResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Get maintenance mode status
+  ///
+  /// Fetch information about the currently running maintenance action.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getMaintenanceStatusWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/maintenance/status';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get maintenance mode status
+  ///
+  /// Fetch information about the currently running maintenance action.
+  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus() async {
+    final response = await getMaintenanceStatusWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MaintenanceStatusResponseDto',) as MaintenanceStatusResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Log into maintenance mode
   ///
   /// Login with maintenance token or cookie to receive current information and perform further actions.
