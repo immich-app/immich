@@ -18,7 +18,6 @@ import { pageRoutePromise, setupTimelineMockApiRoutes, TimelineTestContext } fro
 import { utils } from 'src/utils';
 import {
   assetViewerUtils,
-  cancelAllPollers,
   padYearMonth,
   pageUtils,
   poll,
@@ -64,7 +63,6 @@ test.describe('Timeline', () => {
   });
 
   test.afterEach(() => {
-    cancelAllPollers();
     testContext.slowBucket = false;
     changes.albumAdditions = [];
     changes.assetDeletions = [];
