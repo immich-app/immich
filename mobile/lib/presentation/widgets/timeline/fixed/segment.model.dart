@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
@@ -103,7 +104,7 @@ class _FixedSegmentRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
-    final isDynamicLayout = columnCount <= 3;
+    final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
     if (isScrubbing) {
       return _buildPlaceholder(context);
