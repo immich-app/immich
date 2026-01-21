@@ -4277,7 +4277,7 @@
     },
     "/assets/{id}/thumbnail": {
       "get": {
-        "description": "Retrieve the thumbnail image for the specified asset.",
+        "description": "Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.",
         "operationId": "viewAsset",
         "parameters": [
           {
