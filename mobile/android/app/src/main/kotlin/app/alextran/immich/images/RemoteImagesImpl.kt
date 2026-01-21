@@ -8,7 +8,6 @@ import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.SSLConfig
-import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.ConnectionPool
@@ -20,6 +19,7 @@ import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
+import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -31,7 +31,7 @@ import javax.net.ssl.X509TrustManager
 
 
 private const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
-private const val MAX_REQUESTS_PER_HOST = 16
+private const val MAX_REQUESTS_PER_HOST = 64
 private const val KEEP_ALIVE_CONNECTIONS = 10
 private const val KEEP_ALIVE_DURATION_MINUTES = 5L
 private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
@@ -132,6 +132,7 @@ private object ImageFetcherManager {
   }
 
   private fun build(): ImageFetcher {
+//    return OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
     return if (SSLConfig.requiresCustomSSL) {
       OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
     } else {
@@ -154,7 +155,7 @@ private sealed interface ImageFetcher {
 
 private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
   private val engine: CronetEngine
-  private val executor = Executors.newSingleThreadExecutor()
+  private val executor = Executors.newFixedThreadPool(4)
   private val stateLock = Any()
   private var activeCount = 0
   private var draining = false
@@ -222,8 +223,8 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     private val onFailure: (Exception) -> Unit,
     private val onComplete: () -> Unit,
   ) : UrlRequest.Callback() {
-    private var contentLength: Int = 0
     private var buffer: NativeByteBuffer? = null
+    private var wrapped: ByteBuffer? = null
     private var httpError: IOException? = null
 
     override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newUrl: String) {
@@ -236,11 +237,15 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
         return request.cancel()
       }
 
-      contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
-      // Cronet wants the buffer to always have free space, so increment by 1
-      val capacity = if (contentLength > 0) contentLength + 1 else INITIAL_BUFFER_SIZE
-      buffer = NativeByteBuffer(capacity)
-      request.read(buffer!!.wrapRemaining())
+      val contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
+      if (contentLength > 0) {
+        buffer = NativeByteBuffer(contentLength + 1)
+        wrapped = NativeBuffer.wrap(buffer!!.pointer, contentLength + 1)
+        request.read(wrapped)
+      } else {
+        buffer = NativeByteBuffer(INITIAL_BUFFER_SIZE)
+        request.read(buffer!!.wrapRemaining())
+      }
     }
 
     override fun onReadCompleted(
@@ -248,14 +253,20 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       info: UrlResponseInfo,
       byteBuffer: ByteBuffer
     ) {
-      buffer!!.apply {
-        advance(byteBuffer.position())
-        ensureHeadroom()
+      val buf = if (wrapped == null) {
+        buffer!!.run {
+          advance(byteBuffer.position())
+          ensureHeadroom()
+          wrapRemaining()
+        }
+      } else {
+        wrapped
       }
-      request.read(buffer!!.wrapRemaining())
+      request.read(buf)
     }
 
     override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
+      wrapped?.let { buffer!!.advance(it.position()) }
       onSuccess(buffer!!)
       onComplete()
     }
@@ -376,24 +387,31 @@ private class OkHttpImageFetcher private constructor(
             return onComplete()
           }
 
-          val contentLength = body.contentLength().toInt()
-          val capacity = if (contentLength > 0) contentLength + 1 else INITIAL_BUFFER_SIZE
-          val buffer = NativeByteBuffer(capacity)
           body.source().use { source ->
+            val length = body.contentLength().toInt()
+            val buffer = NativeByteBuffer(if (length > 0) length else INITIAL_BUFFER_SIZE)
             try {
-              while (true) {
-                if (call.isCanceled()) throw OperationCanceledException()
-                val bytesRead = source.read(buffer.wrapRemaining())
-                if (bytesRead == -1) break
-                buffer.ensureHeadroom()
-                buffer.advance(bytesRead)
+              if (length > 0) {
+                val wrapped = NativeBuffer.wrap(buffer.pointer, length)
+                while (wrapped.hasRemaining()) {
+                  if (call.isCanceled()) throw OperationCanceledException()
+                  if (source.read(wrapped) == -1) throw EOFException()
+                }
+                buffer.advance(length)
+              } else {
+                while (true) {
+                  if (call.isCanceled()) throw OperationCanceledException()
+                  val bytesRead = source.read(buffer.wrapRemaining())
+                  if (bytesRead == -1) break
+                  buffer.advance(bytesRead)
+                  buffer.ensureHeadroom()
+                }
               }
               onSuccess(buffer)
             } catch (e: Exception) {
               buffer.free()
               onFailure(e)
             }
-            onComplete()
           }
         }
       }
