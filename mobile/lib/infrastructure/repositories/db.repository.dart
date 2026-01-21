@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
@@ -57,6 +58,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     RemoteAlbumUserEntity,
+    RemoteAssetCloudIdEntity,
     MemoryEntity,
     MemoryAssetEntity,
     StackEntity,
@@ -95,7 +97,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -192,6 +194,15 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from14To15: (m, v15) async {
             await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
+          },
+          from15To16: (m, v16) async {
+            // Add i_cloud_id to local and remote asset tables
+            await m.addColumn(v16.localAssetEntity, v16.localAssetEntity.iCloudId);
+            await m.createIndex(v16.idxLocalAssetCloudId);
+            await m.createTable(v16.remoteAssetCloudIdEntity);
+          },
+          from16To17: (m, v17) async {
+            await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.isEdited);
           },
         ),
       );

@@ -70,6 +70,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   durationInSeconds: row.durationInSeconds,
                   livePhotoVideoId: row.livePhotoVideoId,
                   stackId: row.stackId,
+                  isEdited: row.isEdited,
                 )
               : LocalAsset(
                   id: row.localId!,
@@ -84,6 +85,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   isFavorite: row.isFavorite,
                   durationInSeconds: row.durationInSeconds,
                   orientation: row.orientation,
+                  cloudId: row.iCloudId,
+                  latitude: row.latitude,
+                  longitude: row.longitude,
+                  adjustmentTime: row.adjustmentTime,
+                  isEdited: row.isEdited,
                 ),
         )
         .get();

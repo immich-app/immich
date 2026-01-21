@@ -14,6 +14,7 @@ describe('/admin/maintenance', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
+    await utils.resetBackups(admin.accessToken);
   });
 
   // => outside of maintenance mode
@@ -23,6 +24,17 @@ describe('/admin/maintenance', () => {
       const { status, body } = await request(app).get('/server/config');
       expect(status).toBe(200);
       expect(body.maintenanceMode).toBeFalsy();
+    });
+  });
+
+  describe('GET /status', async () => {
+    it('to always indicate we are not in maintenance mode', async () => {
+      const { status, body } = await request(app).get('/admin/maintenance/status').send({ token: 'token' });
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        active: false,
+        action: 'end',
+      });
     });
   });
 
@@ -39,6 +51,7 @@ describe('/admin/maintenance', () => {
   describe.sequential('POST /', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).post('/admin/maintenance').send({
+        active: false,
         action: 'end',
       });
       expect(status).toBe(401);
@@ -69,6 +82,7 @@ describe('/admin/maintenance', () => {
         .send({
           action: 'start',
         });
+
       expect(status).toBe(201);
 
       cookie = headers['set-cookie'][0].split(';')[0];
@@ -79,12 +93,13 @@ describe('/admin/maintenance', () => {
       await expect
         .poll(
           async () => {
-            const { body } = await request(app).get('/server/config');
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeTruthy();
@@ -99,6 +114,17 @@ describe('/admin/maintenance', () => {
         const { status, body } = await request(app).get('/server/config');
         expect(status).toBe(200);
         expect(body.maintenanceMode).toBeTruthy();
+      });
+    });
+
+    describe('GET /status', async () => {
+      it('to indicate we are in maintenance mode', async () => {
+        const { status, body } = await request(app).get('/admin/maintenance/status').send({ token: 'token' });
+        expect(status).toBe(200);
+        expect(body).toEqual({
+          active: true,
+          action: 'start',
+        });
       });
     });
 
@@ -158,12 +184,13 @@ describe('/admin/maintenance', () => {
       await expect
         .poll(
           async () => {
-            const { body } = await request(app).get('/server/config');
+            const { status, body } = await request(app).get('/server/config');
+            expect(status).toBe(200);
             return body.maintenanceMode;
           },
           {
-            interval: 5e2,
-            timeout: 1e4,
+            interval: 500,
+            timeout: 10_000,
           },
         )
         .toBeFalsy();

@@ -3,6 +3,7 @@ import type { ReleaseEvent } from '$lib/types';
 import type { TreeNode } from '$lib/utils/tree-utils';
 import type {
   AlbumResponseDto,
+  AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
   LibraryResponseDto,
@@ -39,8 +40,14 @@ export type Events = {
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
+  AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
+  AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
+
+  BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
+  BackupDeleted: [{ filename: string }];
+  BackupUpload: [{ progress: number; isComplete: boolean }];
 
   QueueUpdate: [QueueResponseDto];
 
@@ -62,12 +69,15 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
+  SessionLocked: [];
+
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
 
+  WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 

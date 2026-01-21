@@ -50,8 +50,10 @@ String getThumbnailUrlForRemoteId(
   final String id, {
   AssetMediaSize type = AssetMediaSize.thumbnail,
   bool edited = true,
+  String? thumbhash,
 }) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}&edited=$edited';
+  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}&edited=$edited';
+  return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
 String getPlaybackUrlForRemoteId(final String id) {
