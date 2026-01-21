@@ -315,7 +315,6 @@ class ForegroundUploadService {
         return;
       }
 
-      print("assetName: ${asset.name}");
       final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
       final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
@@ -335,7 +334,6 @@ class ForegroundUploadService {
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
 
-        print("livePhotoTitle: $livePhotoTitle");
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
@@ -373,7 +371,6 @@ class ForegroundUploadService {
         ]);
       }
 
-      print("Uploading asset ${asset.localId} - $originalFileName");
       final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
