@@ -8,7 +8,6 @@ import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
-  AssetPathType,
   AssetType,
   AssetVisibility,
   AudioCodec,
@@ -50,6 +49,7 @@ interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
   path: string;
+  isEdited: boolean;
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
@@ -160,9 +160,9 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    await this.storageCore.moveAssetImage(asset, AssetPathType.FullSize, image.fullsize.format);
-    await this.storageCore.moveAssetImage(asset, AssetPathType.Preview, image.preview.format);
-    await this.storageCore.moveAssetImage(asset, AssetPathType.Thumbnail, image.thumbnail.format);
+    await this.storageCore.moveAssetImage(asset, AssetFileType.FullSize, image.fullsize.format);
+    await this.storageCore.moveAssetImage(asset, AssetFileType.Preview, image.preview.format);
+    await this.storageCore.moveAssetImage(asset, AssetFileType.Thumbnail, image.thumbnail.format);
     await this.storageCore.moveAssetVideo(asset);
 
     return JobStatus.Success;
@@ -236,9 +236,9 @@ export class MediaService extends BaseService {
     }
 
     await this.syncFiles(asset, [
-      { type: AssetFileType.Preview, newPath: generated.previewPath },
-      { type: AssetFileType.Thumbnail, newPath: generated.thumbnailPath },
-      { type: AssetFileType.FullSize, newPath: generated.fullsizePath },
+      { type: AssetFileType.Preview, newPath: generated.previewPath, isEdited: false },
+      { type: AssetFileType.Thumbnail, newPath: generated.thumbnailPath, isEdited: false },
+      { type: AssetFileType.FullSize, newPath: generated.fullsizePath, isEdited: false },
     ]);
 
     const editiedGenerated = await this.generateEditedThumbnails(asset);
@@ -307,16 +307,16 @@ export class MediaService extends BaseService {
 
   private async generateImageThumbnails(asset: ThumbnailAsset, useEdits: boolean = false) {
     const { image } = await this.getConfig({ withCache: true });
-    const previewPath = StorageCore.getImagePath(
-      asset,
-      useEdits ? AssetPathType.EditedPreview : AssetPathType.Preview,
-      image.preview.format,
-    );
-    const thumbnailPath = StorageCore.getImagePath(
-      asset,
-      useEdits ? AssetPathType.EditedThumbnail : AssetPathType.Thumbnail,
-      image.thumbnail.format,
-    );
+    const previewPath = StorageCore.getImagePath(asset, {
+      fileType: AssetFileType.Preview,
+      isEdited: useEdits,
+      format: image.preview.format,
+    });
+    const thumbnailPath = StorageCore.getImagePath(asset, {
+      fileType: AssetFileType.Thumbnail,
+      isEdited: useEdits,
+      format: image.thumbnail.format,
+    });
     this.storageCore.ensureFolders(previewPath);
 
     // Handle embedded preview extraction for RAW files
@@ -343,11 +343,11 @@ export class MediaService extends BaseService {
 
     if (convertFullsize) {
       // convert a new fullsize image from the same source as the thumbnail
-      fullsizePath = StorageCore.getImagePath(
-        asset,
-        useEdits ? AssetPathType.EditedFullSize : AssetPathType.FullSize,
-        image.fullsize.format,
-      );
+      fullsizePath = StorageCore.getImagePath(asset, {
+        fileType: AssetFileType.FullSize,
+        isEdited: useEdits,
+        format: image.fullsize.format,
+      });
       const fullsizeOptions = {
         format: image.fullsize.format,
         quality: image.fullsize.quality,
@@ -355,7 +355,11 @@ export class MediaService extends BaseService {
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
-      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, extracted.format);
+      fullsizePath = StorageCore.getImagePath(asset, {
+        fileType: AssetFileType.FullSize,
+        format: extracted.format,
+        isEdited: false,
+      });
       this.storageCore.ensureFolders(fullsizePath);
 
       // Write the buffer to disk with essential EXIF data
@@ -489,8 +493,16 @@ export class MediaService extends BaseService {
 
   private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
     const { image, ffmpeg } = await this.getConfig({ withCache: true });
-    const previewPath = StorageCore.getImagePath(asset, AssetPathType.Preview, image.preview.format);
-    const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
+    const previewPath = StorageCore.getImagePath(asset, {
+      fileType: AssetFileType.Preview,
+      format: image.preview.format,
+      isEdited: false,
+    });
+    const thumbnailPath = StorageCore.getImagePath(asset, {
+      fileType: AssetFileType.Thumbnail,
+      format: image.thumbnail.format,
+      isEdited: false,
+    });
     this.storageCore.ensureFolders(previewPath);
 
     const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
@@ -779,18 +791,18 @@ export class MediaService extends BaseService {
 
   private async syncFiles(
     asset: { id: string; files: AssetFile[] },
-    files: { type: AssetFileType; newPath?: string }[],
+    files: { type: AssetFileType; newPath?: string; isEdited: boolean }[],
   ) {
     const toUpsert: UpsertFileOptions[] = [];
     const pathsToDelete: string[] = [];
     const toDelete: AssetFile[] = [];
 
-    for (const { type, newPath } of files) {
-      const existingFile = asset.files.find((file) => file.type === type);
+    for (const { type, newPath, isEdited } of files) {
+      const existingFile = asset.files.find((file) => file.type === type && file.isEdited === isEdited);
 
       // upsert new file path
       if (newPath && existingFile?.path !== newPath) {
-        toUpsert.push({ assetId: asset.id, path: newPath, type });
+        toUpsert.push({ assetId: asset.id, path: newPath, type, isEdited });
 
         // delete old file from disk
         if (existingFile) {
@@ -829,9 +841,9 @@ export class MediaService extends BaseService {
     const generated = asset.edits.length > 0 ? await this.generateImageThumbnails(asset, true) : undefined;
 
     await this.syncFiles(asset, [
-      { type: AssetFileType.PreviewEdited, newPath: generated?.previewPath },
-      { type: AssetFileType.ThumbnailEdited, newPath: generated?.thumbnailPath },
-      { type: AssetFileType.FullSizeEdited, newPath: generated?.fullsizePath },
+      { type: AssetFileType.Preview, newPath: generated?.previewPath, isEdited: true },
+      { type: AssetFileType.Thumbnail, newPath: generated?.thumbnailPath, isEdited: true },
+      { type: AssetFileType.FullSize, newPath: generated?.fullsizePath, isEdited: true },
     ]);
 
     const crop = asset.edits.find((e) => e.action === AssetEditAction.Crop);

@@ -11,6 +11,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -319,6 +320,11 @@
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
         await handleGetAllAlbums();
+        break;
+      }
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
