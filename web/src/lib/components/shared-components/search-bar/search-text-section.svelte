@@ -40,48 +40,20 @@
   </fieldset>
 
   {#if queryType === 'smart'}
-    <Field label={$t('search_by_context')} for="context-input">
-      <Input
-        type="text"
-        id="context-input"
-        name="context"
-        placeholder={$t('sunrise_on_the_beach')}
-        bind:value={query}
-        aria-labelledby="context-label"
-      />
+    <Field label={$t('search_by_context')}>
+      <Input type="text" placeholder={$t('sunrise_on_the_beach')} bind:value={query} />
     </Field>
   {:else if queryType === 'metadata'}
-    <Field label={$t('search_by_filename')} for="file-name-input">
-      <Input
-        type="text"
-        id="file-name-input"
-        name="context"
-        placeholder={$t('search_by_filename_example')}
-        bind:value={query}
-        aria-labelledby="file-name-label"
-      />
+    <Field label={$t('search_by_filename')}>
+      <Input type="text" placeholder={$t('search_by_filename_example')} bind:value={query} />
     </Field>
   {:else if queryType === 'description'}
-    <Field label={$t('search_by_description')} for="description">
-      <Input
-        type="text"
-        id="description-input"
-        name="description"
-        placeholder={$t('search_by_description_example')}
-        bind:value={query}
-        aria-labelledby="description-label"
-      />
+    <Field label={$t('search_by_description')}>
+      <Input type="text" placeholder={$t('search_by_description_example')} bind:value={query} />
     </Field>
   {:else if queryType === 'ocr'}
-    <Field label={$t('search_by_ocr')} for="ocr-input">
-      <Input
-        type="text"
-        id="ocr-input"
-        name="ocr"
-        placeholder={$t('search_by_ocr_example')}
-        bind:value={query}
-        aria-labelledby="ocr-label"
-      />
+    <Field label={$t('search_by_ocr')}>
+      <Input type="text" placeholder={$t('search_by_ocr_example')} bind:value={query} />
     </Field>
   {/if}
 </section>
