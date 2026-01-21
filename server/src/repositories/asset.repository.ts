@@ -178,6 +178,7 @@ export class AssetRepository {
                 bitsPerSample: ref('bitsPerSample'),
                 rating: ref('rating'),
                 fps: ref('fps'),
+                tags: ref('tags'),
                 lockedProperties:
                   lockedPropertiesBehavior === 'append'
                     ? distinctLocked(eb, exif.lockedProperties ?? null)

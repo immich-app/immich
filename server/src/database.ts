@@ -458,6 +458,7 @@ export const columns = {
     'asset_exif.projectionType',
     'asset_exif.rating',
     'asset_exif.state',
+    'asset_exif.tags',
     'asset_exif.timeZone',
   ],
   plugin: [
@@ -481,4 +482,5 @@ export const lockableProperties = [
   'longitude',
   'rating',
   'timeZone',
+  'tags',
 ] as const;
