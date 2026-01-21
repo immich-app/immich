@@ -306,9 +306,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    // If the gestures are blocked, do not reset the state
+    // Sheet closed during drag - animate to center now that finger is released
     if (blockGestures) {
       blockGestures = false;
+      viewController?.animateMultiple(position: Offset.zero);
       return;
     }
 
@@ -342,7 +343,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     const double openThreshold = 50;
 
     final position = initialPhotoViewState.position + Offset(0, delta.dy);
-    final distanceToOrigin = position.distance;
+    // Only use upward movement (negative Y) for sheet extent - prevents sheet
+    // from growing again when dragging past origin
+    final distanceToOrigin = position.dy < 0 ? position.distance : 0.0;
 
     viewController?.updateMultiple(position: position);
     // Moves the bottom sheet when the asset is being dragged up
@@ -397,17 +400,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _handleDraggableNotification(DraggableScrollableNotification delta) {
+    const double closeThreshold = 0.02;
     final currentExtent = delta.extent;
-    final isDraggingDown = currentExtent < previousExtent;
+    final isDraggingDown = previousExtent - currentExtent > closeThreshold;
     previousExtent = currentExtent;
-    // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.67) {
+
+    // Close if dragging down fast enough OR if sheet dropped below minimum extent
+    final shouldClose =
+        (isDraggingDown && delta.extent < _kBottomSheetSnapExtent) || delta.extent <= _kBottomSheetMinimumExtent;
+
+    if (shouldClose) {
       if (dragInProgress) {
         blockGestures = true;
       }
-      // Jump to a lower position before starting close animation to prevent glitch
-      if (bottomSheetController.isAttached) {
-        bottomSheetController.jumpTo(0.67);
+      // Only jump down if currently above snap extent to prevent glitch
+      if (bottomSheetController.isAttached && bottomSheetController.size > _kBottomSheetSnapExtent) {
+        bottomSheetController.jumpTo(_kBottomSheetSnapExtent);
       }
       sheetCloseController?.close();
     }
@@ -503,7 +511,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _handleSheetClose() {
-    viewController?.animateMultiple(position: Offset.zero);
+    // Only animate if no drag in progress - otherwise defer to _onDragEnd
+    // to prevent animation conflicting with active gesture
+    if (!dragInProgress) {
+      viewController?.animateMultiple(position: Offset.zero);
+    }
     viewController?.updateMultiple(scale: initialScale);
     ref.read(assetViewerProvider.notifier).setBottomSheet(false);
     sheetCloseController = null;
