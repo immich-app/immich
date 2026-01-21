@@ -1538,10 +1538,12 @@ export type SystemConfigFFmpegDto = {
 export type SystemConfigGeneratedFullsizeImageDto = {
     enabled: boolean;
     format: ImageFormat;
+    progressive: boolean;
     quality: number;
 };
 export type SystemConfigGeneratedImageDto = {
     format: ImageFormat;
+    progressive: boolean;
     quality: number;
     size: number;
 };

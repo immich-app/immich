@@ -22624,6 +22624,9 @@
               }
             ]
           },
+          "progressive": {
+            "type": "boolean"
+          },
           "quality": {
             "maximum": 100,
             "minimum": 1,
@@ -22633,6 +22636,7 @@
         "required": [
           "enabled",
           "format",
+          "progressive",
           "quality"
         ],
         "type": "object"
@@ -22646,6 +22650,9 @@
               }
             ]
           },
+          "progressive": {
+            "type": "boolean"
+          },
           "quality": {
             "maximum": 100,
             "minimum": 1,
@@ -22658,6 +22665,7 @@
         },
         "required": [
           "format",
+          "progressive",
           "quality",
           "size"
         ],
