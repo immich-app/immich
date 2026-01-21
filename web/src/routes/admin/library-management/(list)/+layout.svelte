@@ -13,6 +13,7 @@
     Container,
     ContextMenuButton,
     Link,
+    MenuItemType,
     Table,
     TableBody,
     TableCell,
@@ -61,7 +62,7 @@
 
   const getActionsForLibrary = (library: LibraryResponseDto) => {
     const { Detail, Scan, Edit, Delete } = getLibraryActions($t, library);
-    return [Detail, Scan, Edit, Delete];
+    return [Detail, Scan, Edit, MenuItemType.Divider, Delete];
   };
 
   const classes = {
@@ -95,11 +96,14 @@
             {#each libraries as library (library.id + library.name)}
               {@const { photos, usage, videos } = statistics[library.id]}
               {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
+              {@const owner = owners[library.id]}
               <TableRow>
                 <TableCell class={classes.column1}>
                   <Link href={Route.viewLibrary(library)}>{library.name}</Link>
                 </TableCell>
-                <TableCell class={classes.column2}>{owners[library.id].name}</TableCell>
+                <TableCell class={classes.column2}>
+                  <Link href={Route.viewUser(owner)}>{owner.name}</Link>
+                </TableCell>
                 <TableCell class={classes.column3}>{photos.toLocaleString($locale)}</TableCell>
                 <TableCell class={classes.column4}>{videos.toLocaleString($locale)}</TableCell>
                 <TableCell class={classes.column5}>{diskUsage} {diskUsageUnit}</TableCell>
