@@ -28,7 +28,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     try! FileManager.default.createDirectory(at: thumbnailPath, withIntermediateDirectories: true)
     config.urlCache = URLCache(
       memoryCapacity: 0,
-      diskCapacity: 0,
+      diskCapacity: 1 << 30,
       directory: thumbnailPath
     )
     config.httpMaximumConnectionsPerHost = 16

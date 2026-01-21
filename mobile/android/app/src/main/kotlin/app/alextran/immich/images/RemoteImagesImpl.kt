@@ -8,6 +8,7 @@ import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.SSLConfig
+import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.ConnectionPool
@@ -132,7 +133,6 @@ private object ImageFetcherManager {
   }
 
   private fun build(): ImageFetcher {
-//    return OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
     return if (SSLConfig.requiresCustomSSL) {
       OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
     } else {
@@ -168,7 +168,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       .enableBrotli(true)
       .setStoragePath(storageDir.absolutePath)
       .setUserAgent(USER_AGENT)
-//      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
+      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
       .build()
   }
 
@@ -315,7 +315,7 @@ private class OkHttpImageFetcher private constructor(
         }
         .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
         .connectionPool(connectionPool)
-//        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
 
       if (sslSocketFactory != null && trustManager != null) {
         builder.sslSocketFactory(sslSocketFactory, trustManager)
