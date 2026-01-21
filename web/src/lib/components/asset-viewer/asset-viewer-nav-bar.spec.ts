@@ -16,7 +16,7 @@ describe('AssetViewerNavBar component', () => {
     preAction: () => {},
     onZoomImage: () => {},
     onAction: () => {},
-    onRunJob: () => {},
+    onEdit: () => {},
     onPlaySlideshow: () => {},
     onClose: () => {},
     playOriginalVideo: false,

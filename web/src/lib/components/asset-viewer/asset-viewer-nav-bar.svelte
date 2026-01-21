@@ -28,12 +28,11 @@
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, getSharedLink, withoutIcons } from '$lib/utils';
+  import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     AssetVisibility,
     type AlbumResponseDto,
@@ -44,13 +43,9 @@
   import { CommandPaletteDefaultProvider, IconButton, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
-    mdiCogRefreshOutline,
     mdiCompare,
     mdiContentCopy,
-    mdiDatabaseRefreshOutline,
     mdiDotsVertical,
-    mdiHeadSyncOutline,
-    mdiImageRefreshOutline,
     mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
@@ -71,7 +66,6 @@
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
     onEdit: () => void;
     onClose?: () => void;
@@ -90,7 +84,6 @@
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onRunJob,
     onPlaySlideshow,
     onClose,
     onEdit,
@@ -124,6 +117,10 @@
     PlayMotionPhoto,
     StopMotionPhoto,
     Info,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
   } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 
@@ -140,7 +137,24 @@
 
 <CommandPaletteDefaultProvider
   name={$t('assets')}
-  actions={withoutIcons([Close, Share, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info])}
+  actions={withoutIcons([
+    Close,
+    Cast,
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    Info,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
+  ])}
 />
 
 <div
@@ -275,28 +289,10 @@
         {/if}
         {#if isOwner}
           <hr />
-          <MenuOption
-            icon={mdiHeadSyncOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
-            text={$getAssetJobName(AssetJobName.RefreshFaces)}
-          />
-          <MenuOption
-            icon={mdiDatabaseRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
-            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
-          />
-          <MenuOption
-            icon={mdiImageRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
-            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
-          />
-          {#if asset.type === AssetTypeEnum.Video}
-            <MenuOption
-              icon={mdiCogRefreshOutline}
-              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
-              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
-            />
-          {/if}
+          <ActionMenuItem action={RefreshFacesJob} />
+          <ActionMenuItem action={RefreshMetadataJob} />
+          <ActionMenuItem action={RegenerateThumbnailJob} />
+          <ActionMenuItem action={TranscodeVideoJob} />
         {/if}
       </ButtonContextMenu>
     {/if}
