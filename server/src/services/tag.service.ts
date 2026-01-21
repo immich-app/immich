@@ -90,6 +90,7 @@ export class TagService extends BaseService {
 
     const results = await this.tagRepository.upsertAssetIds(items);
     for (const assetId of new Set(results.map((item) => item.assetId))) {
+      await this.updateTags(assetId);
       await this.eventRepository.emit('AssetTag', { assetId });
     }
 
@@ -107,6 +108,7 @@ export class TagService extends BaseService {
 
     for (const { id: assetId, success } of results) {
       if (success) {
+        await this.updateTags(assetId);
         await this.eventRepository.emit('AssetTag', { assetId });
       }
     }
@@ -125,6 +127,7 @@ export class TagService extends BaseService {
 
     for (const { id: assetId, success } of results) {
       if (success) {
+        await this.updateTags(assetId);
         await this.eventRepository.emit('AssetUntag', { assetId });
       }
     }
@@ -144,5 +147,13 @@ export class TagService extends BaseService {
       throw new BadRequestException('Tag not found');
     }
     return tag;
+  }
+
+  private async updateTags(assetId: string) {
+    const asset = await this.assetRepository.getById(assetId, { tags: true });
+    await this.assetRepository.upsertExif(
+      { assetId, tags: asset?.tags?.map(({ value }) => value) ?? [] },
+      { lockedPropertiesBehavior: 'append' },
+    );
   }
 }

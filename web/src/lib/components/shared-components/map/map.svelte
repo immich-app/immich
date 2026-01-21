@@ -10,6 +10,7 @@
 
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { Theme } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
@@ -292,7 +293,13 @@
 
     untrack(() => map?.jumpTo({ center, zoom }));
   });
+
+  const onAssetsDelete = async () => {
+    mapMarkers = await loadMapMarkers();
+  };
 </script>
+
+<OnEvents {onAssetsDelete} />
 
 <!--  We handle style loading ourselves so we set style blank here -->
 <MapLibre

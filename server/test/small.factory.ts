@@ -253,6 +253,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   visibility: AssetVisibility.Timeline,
   width: null,
   height: null,
+  isEdited: false,
   ...asset,
 });
 
@@ -334,6 +335,7 @@ const assetSidecarWriteFactory = () => {
         id: newUuid(),
         path: '/path/to/original-path.jpg.xmp',
         type: AssetFileType.Sidecar,
+        isEdited: false,
       },
     ],
     exifInfo: {
@@ -385,6 +387,7 @@ const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
   id: newUuid(),
   type: AssetFileType.Preview,
   path: '/uploads/user-id/thumbs/path.jpg',
+  isEdited: false,
   ...file,
 });
 

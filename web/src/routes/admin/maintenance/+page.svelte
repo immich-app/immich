@@ -1,8 +1,12 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import MaintenanceBackupsList from '$lib/components/maintenance/MaintenanceBackupsList.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import { AppRoute } from '$lib/constants';
+  import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import { QueryParameter } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleCreateJob } from '$lib/services/job.service';
   import { getMaintenanceAdminActions } from '$lib/services/maintenance.service';
   import { asyncTimeout } from '$lib/utils';
@@ -16,6 +20,7 @@
     type QueuesResponseLegacyDto,
   } from '@immich/sdk';
   import { Button, HStack } from '@immich/ui';
+  import { mdiRefresh } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -86,7 +91,7 @@
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+    <section class="w-full pb-4 sm:w-5/6 md:w-[850px]">
       <HStack>
         <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_integrity_report')}</p>
         <Button
@@ -143,7 +148,9 @@
                   disabled={jobs?.integrityCheck.queueStatus.isActive}>{$t('refresh')}</Button
                 >
                 <Button
-                  href={`${AppRoute.ADMIN_MAINTENANCE_INTEGRITY_REPORT + reportType}`}
+                  href={`${Route.systemMaintenanceIntegrityReport({
+                    reportType,
+                  })}`}
                   size="tiny"
                   class="self-end mt-1">{$t('view')}</Button
                 >
@@ -152,6 +159,23 @@
           </ServerStatisticsCard>
         {/each}
       </div>
+    </section>
+  </section>
+
+  <section id="setting-content" class="flex place-content-center sm:mx-4">
+    <section class="w-full pb-4 sm:w-5/6 md:w-212.5">
+      <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('admin.maintenance_settings')}</p>
+
+      <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+        <SettingAccordion
+          title={$t('admin.maintenance_restore_database_backup')}
+          subtitle={$t('admin.maintenance_restore_database_backup_description')}
+          icon={mdiRefresh}
+          key="backups"
+        >
+          <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
+        </SettingAccordion>
+      </SettingAccordionState>
     </section>
   </section>
 </AdminPageLayout>

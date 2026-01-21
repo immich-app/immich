@@ -45,5 +45,6 @@ extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityD
     height: height,
     width: width,
     orientation: orientation,
+    isEdited: false,
   );
 }

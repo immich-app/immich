@@ -1,10 +1,10 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
 import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
 import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
+import { Route } from '$lib/route';
 import { user as authUser } from '$lib/stores/user.store';
 import type { HeaderButtonActionItem } from '$lib/types';
 import { handleError } from '$lib/utils/handle-error';
@@ -38,7 +38,7 @@ export const getUserAdminsActions = ($t: MessageFormatter) => {
     title: $t('create_user'),
     type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => goto(AppRoute.ADMIN_USERS_NEW),
+    onAction: () => goto(Route.newUser()),
     shortcuts: { shift: true, key: 'n' },
   };
 
@@ -49,7 +49,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
   const Update: ActionItem = {
     icon: mdiPencilOutline,
     title: $t('edit'),
-    onAction: () => goto(`${AppRoute.ADMIN_USERS}/${user.id}/edit`),
+    onAction: () => goto(Route.editUser(user)),
   };
 
   const Delete: ActionItem = {

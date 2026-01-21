@@ -141,6 +141,7 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Assets]: 'An asset is an image or video that has been uploaded to Immich.',
   [ApiTag.Authentication]: 'Endpoints related to user authentication, including OAuth.',
   [ApiTag.AuthenticationAdmin]: 'Administrative endpoints related to authentication.',
+  [ApiTag.DatabaseBackups]: 'Manage backups of the Immich database.',
   [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',

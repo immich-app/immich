@@ -1,11 +1,11 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
@@ -73,7 +73,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
             text: $t('view_album'),
             color: 'primary',
             onClick() {
-              return goto(`${AppRoute.ALBUMS}/${albumId}`);
+              return goto(Route.viewAlbum({ id: albumId }));
             },
           },
         },
