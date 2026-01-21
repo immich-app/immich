@@ -10,30 +10,45 @@ export const previewFile: AssetFile = {
   id: 'file-1',
   type: AssetFileType.Preview,
   path: '/uploads/user-id/thumbs/path.jpg',
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
 };
 
 const thumbnailFile: AssetFile = {
   id: 'file-2',
   type: AssetFileType.Thumbnail,
   path: '/uploads/user-id/webp/path.ext',
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
 };
 
 const fullsizeFile: AssetFile = {
   id: 'file-3',
   type: AssetFileType.FullSize,
   path: '/uploads/user-id/fullsize/path.webp',
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
 };
 
 const sidecarFileWithExt: AssetFile = {
   id: 'sidecar-with-ext',
   type: AssetFileType.Sidecar,
   path: '/original/path.ext.xmp',
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
 };
 
 const sidecarFileWithoutExt: AssetFile = {
   id: 'sidecar-without-ext',
   type: AssetFileType.Sidecar,
   path: '/original/path.xmp',
+  storageBackend: StorageBackend.Local,
+  s3Bucket: null,
+  s3Key: null,
 };
 
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];

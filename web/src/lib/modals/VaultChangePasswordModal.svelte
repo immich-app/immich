@@ -1,17 +1,7 @@
 <script lang="ts">
   import { handleError } from '$lib/utils/handle-error';
   import { changeVaultPassword } from '@immich/sdk';
-  import {
-    Button,
-    Field,
-    HStack,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    PasswordInput,
-    Stack,
-    toastManager,
-  } from '@immich/ui';
+  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, PasswordInput, Stack, toastManager } from '@immich/ui';
   import { mdiKeyChange } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -26,9 +16,7 @@
   let confirmPassword = $state('');
   let isLoading = $state(false);
 
-  let canSubmit = $derived(
-    currentPassword.length > 0 && newPassword.length > 0 && newPassword === confirmPassword,
-  );
+  let canSubmit = $derived(currentPassword.length > 0 && newPassword.length > 0 && newPassword === confirmPassword);
 
   const handleChangePassword = async () => {
     isLoading = true;

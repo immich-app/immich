@@ -390,7 +390,7 @@ describe('/asset', () => {
         utils.createAsset(user1.accessToken),
       ]);
 
-      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+      await utils.waitForQueueFinish(admin.accessToken, 'assetThumbnailGeneration');
     });
 
     it.each(TEN_TIMES)('should return 1 random assets', async () => {

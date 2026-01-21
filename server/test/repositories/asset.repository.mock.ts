@@ -50,5 +50,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     deleteMetadataByKey: vitest.fn(),
     getByStorageBackend: vitest.fn(),
     getWithLocalEncodedVideos: vitest.fn(),
-  };
+    getWithLocalThumbnails: vitest.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any;
 };

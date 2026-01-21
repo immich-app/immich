@@ -77,10 +77,7 @@ export class S3StorageManager {
    * @returns Resolved config with adapter, bucket name, and storage class
    * @throws Error if S3 is not enabled for this location
    */
-  getConfigForLocation(
-    locationType: StorageLocationType,
-    assetType?: AssetType,
-  ): ResolvedS3Config {
+  getConfigForLocation(locationType: StorageLocationType, assetType?: AssetType): ResolvedS3Config {
     if (!this.isS3EnabledForLocation(locationType)) {
       throw new Error(`S3 is not enabled for location type: ${locationType}`);
     }
@@ -119,10 +116,7 @@ export class S3StorageManager {
   /**
    * Get just the storage class for a location.
    */
-  getStorageClassForLocation(
-    locationType: StorageLocationType,
-    assetType?: AssetType,
-  ): string | undefined {
+  getStorageClassForLocation(locationType: StorageLocationType, assetType?: AssetType): string | undefined {
     const bucketOverride = this.getBucketOverride(locationType);
     return this.resolveStorageClass(locationType, bucketOverride, assetType);
   }
@@ -215,10 +209,7 @@ export class S3StorageManager {
   /**
    * Merge default S3 config with bucket-specific overrides.
    */
-  private mergeConfig(
-    defaultConfig: SystemConfig['storage']['s3'],
-    override?: S3BucketOverride,
-  ): S3StorageConfig {
+  private mergeConfig(defaultConfig: SystemConfig['storage']['s3'], override?: S3BucketOverride): S3StorageConfig {
     return {
       endpoint: override?.endpoint ?? (defaultConfig.endpoint || undefined),
       region: override?.region ?? defaultConfig.region,
@@ -248,9 +239,7 @@ export class S3StorageManager {
     const storageClasses = this.config.s3.storageClasses;
     switch (locationType) {
       case StorageLocationType.Originals: {
-        return assetType === AssetType.Video
-          ? storageClasses.originalsVideos
-          : storageClasses.originalsPhotos;
+        return assetType === AssetType.Video ? storageClasses.originalsVideos : storageClasses.originalsPhotos;
       }
       case StorageLocationType.Thumbnails: {
         return storageClasses.thumbnails;

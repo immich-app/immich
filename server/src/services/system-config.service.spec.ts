@@ -195,6 +195,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
         originalsVideos: 'GLACIER_IR',
         encodedVideos: 'STANDARD_IA',
       },
+      buckets: {},
     },
     locations: {
       originals: StorageBackend.Local,

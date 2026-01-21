@@ -245,7 +245,7 @@ importers:
         version: 62.0.0(eslint@9.39.2(jiti@2.6.1))
       exiftool-vendored:
         specifier: ^34.0.0
-        version: 34.1.0
+        version: 34.0.0
       globals:
         specifier: ^16.0.0
         version: 16.5.0
@@ -7406,26 +7406,13 @@ packages:
     resolution: {integrity: sha512-EENHNz86tYY5yHGPtGB2mto3FIGstQvEhrcU34f7fm4RMxBKNfTWYOGkhU1jzvjOi+V4575LQX/FUES1TwgUbQ==}
     os: [win32]
 
-  exiftool-vendored.exe@13.44.0:
-    resolution: {integrity: sha512-PzQrrz9k4YzxtcX1r/hEy+xzj6MKXXiEBCU+FhYlipr4fuKKeXgspB7kliPSfSSFAChYoSH294zd23ZUXgB4TQ==}
-    os: [win32]
-
   exiftool-vendored.pl@13.43.0:
     resolution: {integrity: sha512-0ApWaQ/pxaliPK7HzTxVA0sg/wZ8vl7UtFVhCyWhGQg01WfZkFrKwKmELB0Bnn01WTfgIuMadba8ccmFvpmJag==}
     os: ['!win32']
     hasBin: true
 
-  exiftool-vendored.pl@13.44.0:
-    resolution: {integrity: sha512-KPqyZK5guU/HKJ4x7OdxC0bqwClz34AtQYeirvvGFBjvfpG6Ewt+Kx9TEd/JbvJyLgMS5k5GHvkH5R5iAL+Arg==}
-    os: ['!win32']
-    hasBin: true
-
   exiftool-vendored@34.0.0:
     resolution: {integrity: sha512-rhIe4XGE7kh76nwytwHtq6qK/pc1mpOBHRV++gudFeG2PfAp3XIVQbFWCLK3S4l9I4AWYOe4mxk8mW8l1oHRTw==}
-    engines: {node: '>=20.0.0'}
-
-  exiftool-vendored@34.1.0:
-    resolution: {integrity: sha512-piPUu8oaBT0JQcR0gH/ZLjnTrHu51lMs+GjAQPrtVyvt8bfB1vzTWYbw+9jN4qyO8HwCweJuj7xivmWS0/fa/A==}
     engines: {node: '>=20.0.0'}
 
   expect-type@1.3.0:
@@ -11479,10 +11466,12 @@ packages:
   tar@6.2.1:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   tar@7.5.2:
     resolution: {integrity: sha512-7NyxrTE4Anh8km8iEy7o0QYPs+0JKBTj5ZaqHg6B39erLg0qYXN3BijtShwbsNSvQ+LN75+KV+C4QR/f6Gwnpg==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exhorbitant rates) by contacting i@izs.me
 
   terser-webpack-plugin@5.3.16:
     resolution: {integrity: sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==}
@@ -20707,12 +20696,7 @@ snapshots:
   exiftool-vendored.exe@13.43.0:
     optional: true
 
-  exiftool-vendored.exe@13.44.0:
-    optional: true
-
   exiftool-vendored.pl@13.43.0: {}
-
-  exiftool-vendored.pl@13.44.0: {}
 
   exiftool-vendored@34.0.0:
     dependencies:
@@ -20724,17 +20708,6 @@ snapshots:
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.43.0
-
-  exiftool-vendored@34.1.0:
-    dependencies:
-      '@photostructure/tz-lookup': 11.3.0
-      '@types/luxon': 3.7.1
-      batch-cluster: 16.0.0
-      exiftool-vendored.pl: 13.44.0
-      he: 1.2.0
-      luxon: 3.7.2
-    optionalDependencies:
-      exiftool-vendored.exe: 13.44.0
 
   expect-type@1.3.0: {}
 
