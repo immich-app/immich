@@ -36,7 +36,14 @@ const forSidecarJob = (
   asset: {
     id?: string;
     originalPath?: string;
-    files?: { id: string; type: AssetFileType; path: string; storageBackend: StorageBackend; s3Bucket: string | null; s3Key: string | null }[];
+    files?: {
+      id: string;
+      type: AssetFileType;
+      path: string;
+      storageBackend: StorageBackend;
+      s3Bucket: string | null;
+      s3Key: string | null;
+    }[];
   } = {},
 ) => {
   return {
@@ -1642,7 +1649,16 @@ describe(MetadataService.name, () => {
     it('should unset sidecar path if file no longer exist', async () => {
       const asset = forSidecarJob({
         originalPath: '/path/to/IMG_123.jpg',
-        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar, storageBackend: StorageBackend.Local, s3Bucket: null, s3Key: null }],
+        files: [
+          {
+            id: 'sidecar',
+            path: '/path/to/IMG_123.jpg.xmp',
+            type: AssetFileType.Sidecar,
+            storageBackend: StorageBackend.Local,
+            s3Bucket: null,
+            s3Key: null,
+          },
+        ],
       });
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValue(false);
@@ -1655,7 +1671,16 @@ describe(MetadataService.name, () => {
     it('should do nothing if the sidecar file still exists', async () => {
       const asset = forSidecarJob({
         originalPath: '/path/to/IMG_123.jpg',
-        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar, storageBackend: StorageBackend.Local, s3Bucket: null, s3Key: null }],
+        files: [
+          {
+            id: 'sidecar',
+            path: '/path/to/IMG_123.jpg.xmp',
+            type: AssetFileType.Sidecar,
+            storageBackend: StorageBackend.Local,
+            s3Bucket: null,
+            s3Key: null,
+          },
+        ],
       });
 
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
