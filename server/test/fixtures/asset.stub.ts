@@ -31,18 +31,21 @@ const sidecarFileWithoutExt = factory.assetFile({
 });
 
 const editedPreviewFile = factory.assetFile({
-  type: AssetFileType.PreviewEdited,
+  type: AssetFileType.Preview,
   path: '/uploads/user-id/preview/path_edited.jpg',
+  isEdited: true,
 });
 
 const editedThumbnailFile = factory.assetFile({
-  type: AssetFileType.ThumbnailEdited,
+  type: AssetFileType.Thumbnail,
   path: '/uploads/user-id/thumbnail/path_edited.jpg',
+  isEdited: true,
 });
 
 const editedFullsizeFile = factory.assetFile({
-  type: AssetFileType.FullSizeEdited,
+  type: AssetFileType.FullSize,
   path: '/uploads/user-id/fullsize/path_edited.jpg',
+  isEdited: true,
 });
 
 const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
