@@ -208,9 +208,7 @@
                   <!-- Trigger Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('trigger')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('trigger')}</Text>
                     </div>
                     {@render chipItem(getTriggerLabel(workflow.triggerType))}
                   </div>
@@ -218,9 +216,7 @@
                   <!-- Filters Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('filters')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('filters')}</Text>
                     </div>
                     <div class="flex flex-wrap gap-2">
                       {#if workflow.filters.length === 0}
@@ -238,9 +234,7 @@
                   <!-- Actions Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('actions')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('actions')}</Text>
                     </div>
 
                     <div>
