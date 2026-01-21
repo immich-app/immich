@@ -19,7 +19,7 @@
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -28,18 +28,15 @@
   import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
     getAssetInfo,
     getStack,
-    runAssetJobs,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -262,15 +259,6 @@
     isShowEditor = !isShowEditor;
   };
 
-  const handleRunJob = async (name: AssetJobName) => {
-    try {
-      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      toastManager.success($getAssetJobMessage(name));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
-    }
-  };
-
   /**
    * Slide show mode
    */
@@ -473,7 +461,6 @@
         onAction={handleAction}
         {onUndoDelete}
         onEdit={showEditor}
-        onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
