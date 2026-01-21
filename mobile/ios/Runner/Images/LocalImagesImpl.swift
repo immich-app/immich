@@ -44,7 +44,7 @@ class LocalImageApiImpl: LocalImageApi {
     renderingIntent: .defaultIntent
   )!
   private static var requests = [Int64: LocalImageRequest]()
-  private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
+  private static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
   private static let concurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount * 2)
   private static let assetCache = {
     let assetCache = NSCache<NSString, PHAsset>()
@@ -62,7 +62,7 @@ class LocalImageApiImpl: LocalImageApi {
     }
   }
   
-  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
+  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     let request = LocalImageRequest(callback: completion)
     let item = DispatchWorkItem {
       if request.isCancelled {

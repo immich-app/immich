@@ -12,8 +12,13 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final Map<String, int> info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
-    final frame = await _fromEncodedPlatformImage(info["pointer"]!, info["length"]!);
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
+    final frame = switch (info) {
+      {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
+      {'pointer': int pointer, 'width': int width, 'height': int height, 'rowBytes': int rowBytes} =>
+        await _fromDecodedPlatformImage(pointer, width, height, rowBytes),
+      _ => null,
+    };
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 

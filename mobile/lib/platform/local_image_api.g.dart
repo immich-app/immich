@@ -49,7 +49,7 @@ class LocalImageApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<Map<String, int>> requestImage(
+  Future<Map<String, int>?> requestImage(
     String assetId, {
     required int requestId,
     required int width,
@@ -79,13 +79,8 @@ class LocalImageApi {
         message: pigeonVar_replyList[1] as String?,
         details: pigeonVar_replyList[2],
       );
-    } else if (pigeonVar_replyList[0] == null) {
-      throw PlatformException(
-        code: 'null-error',
-        message: 'Host platform returned null value for non-null return value.',
-      );
     } else {
-      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, int>();
+      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)?.cast<String, int>();
     }
   }
 

@@ -27,7 +27,7 @@ import java.util.concurrent.Future
 data class Request(
   val taskFuture: Future<*>,
   val cancellationSignal: CancellationSignal,
-  val callback: (Result<Map<String, Long>>) -> Unit
+  val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -71,7 +71,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   private val requestMap = ConcurrentHashMap<Long, Request>()
 
   companion object {
-    val CANCELLED = Result.success<Map<String, Long>>(mapOf())
+    val CANCELLED = Result.success<Map<String, Long>?>(null)
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
   }
 
@@ -99,7 +99,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
-    callback: (Result<Map<String, Long>>) -> Unit
+    callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
     val task = threadPool.submit {
@@ -138,7 +138,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
-    callback: (Result<Map<String, Long>>) -> Unit,
+    callback: (Result<Map<String, Long>?>) -> Unit,
     signal: CancellationSignal
   ) {
     signal.throwIfCanceled()

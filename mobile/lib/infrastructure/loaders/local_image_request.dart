@@ -16,13 +16,16 @@ class LocalImageRequest extends ImageRequest {
       return null;
     }
 
-    final Map<String, int> info = await localImageApi.requestImage(
+    final info = await localImageApi.requestImage(
       localId,
       requestId: requestId,
       width: width,
       height: height,
       isVideo: assetType == AssetType.video,
     );
+    if (info == null) {
+      return null;
+    }
 
     final frame = await _fromDecodedPlatformImage(info["pointer"]!, info["width"]!, info["height"]!, info["rowBytes"]!);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);

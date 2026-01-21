@@ -30,20 +30,20 @@ class NativeByteBuffer(initialCapacity: Int) {
   var capacity = initialCapacity
   var offset = 0
 
-  fun ensureHeadroom(needed: Int = INITIAL_BUFFER_SIZE) {
-    if (offset + needed > capacity) {
-      capacity = (capacity * 2).coerceAtLeast(offset + needed)
+  inline fun ensureHeadroom() {
+    if (offset == capacity) {
+      capacity *= 2
       pointer = NativeBuffer.realloc(pointer, capacity)
     }
   }
 
-  fun wrapRemaining() = NativeBuffer.wrap(pointer + offset, capacity - offset)
+  inline fun wrapRemaining() = NativeBuffer.wrap(pointer + offset, capacity - offset)
 
-  fun advance(bytesRead: Int) {
+  inline fun advance(bytesRead: Int) {
     offset += bytesRead
   }
 
-  fun free() {
+  inline fun free() {
     if (pointer != 0L) {
       NativeBuffer.free(pointer)
       pointer = 0L

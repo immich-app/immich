@@ -15,7 +15,7 @@ import 'package:pigeon/pigeon.dart';
 @HostApi()
 abstract class LocalImageApi {
   @async
-  Map<String, int> requestImage(
+  Map<String, int>? requestImage(
     String assetId, {
     required int requestId,
     required int width,

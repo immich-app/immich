@@ -70,7 +70,7 @@ class LocalImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol LocalImageApi {
-  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], Error>) -> Void)
+  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
   func cancelRequest(requestId: Int64) throws
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String: Int64], Error>) -> Void)
 }

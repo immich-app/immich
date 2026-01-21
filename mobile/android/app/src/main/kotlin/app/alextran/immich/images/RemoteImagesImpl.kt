@@ -46,14 +46,14 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   }
 
   companion object {
-    val CANCELLED = Result.success<Map<String, Long>>(emptyMap())
+    val CANCELLED = Result.success<Map<String, Long>?>(null)
   }
 
   override fun requestImage(
     url: String,
     headers: Map<String, String>,
     requestId: Long,
-    callback: (Result<Map<String, Long>>) -> Unit
+    callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
     requestMap[requestId] = RemoteRequest(signal)
@@ -167,7 +167,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       .enableBrotli(true)
       .setStoragePath(storageDir.absolutePath)
       .setUserAgent(USER_AGENT)
-      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
+//      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
       .build()
   }
 
@@ -190,7 +190,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
     headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
     val request = requestBuilder.build()
-    signal.setOnCancelListener { request.cancel() }
+    signal.setOnCancelListener(request::cancel)
     request.start()
   }
 
@@ -222,6 +222,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     private val onFailure: (Exception) -> Unit,
     private val onComplete: () -> Unit,
   ) : UrlRequest.Callback() {
+    private var contentLength: Int = 0
     private var buffer: NativeByteBuffer? = null
     private var httpError: IOException? = null
 
@@ -235,9 +236,9 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
         return request.cancel()
       }
 
-      // Pre-size from Content-Length when available, otherwise use reasonable default
-      val capacity = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull()
-        ?.takeIf { it > 0 } ?: INITIAL_BUFFER_SIZE
+      contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
+      // Cronet wants the buffer to always have free space, so increment by 1
+      val capacity = if (contentLength > 0) contentLength + 1 else INITIAL_BUFFER_SIZE
       buffer = NativeByteBuffer(capacity)
       request.read(buffer!!.wrapRemaining())
     }
@@ -248,7 +249,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       byteBuffer: ByteBuffer
     ) {
       buffer!!.apply {
-        advance(byteBuffer.remaining())
+        advance(byteBuffer.position())
         ensureHeadroom()
       }
       request.read(buffer!!.wrapRemaining())
@@ -303,7 +304,7 @@ private class OkHttpImageFetcher private constructor(
         }
         .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
         .connectionPool(connectionPool)
-        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+//        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
 
       if (sslSocketFactory != null && trustManager != null) {
         builder.sslSocketFactory(sslSocketFactory, trustManager)
@@ -345,8 +346,7 @@ private class OkHttpImageFetcher private constructor(
   ) {
     synchronized(stateLock) {
       if (draining) {
-        onFailure(IllegalStateException("Client is draining"))
-        return
+        return onFailure(IllegalStateException("Client is draining"))
       }
       activeCount++
     }
@@ -354,7 +354,7 @@ private class OkHttpImageFetcher private constructor(
     val requestBuilder = Request.Builder().url(url)
     headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
     val call = client.newCall(requestBuilder.build())
-    signal.setOnCancelListener { call.cancel() }
+    signal.setOnCancelListener(call::cancel)
 
     call.enqueue(object : Callback {
       override fun onFailure(call: Call, e: IOException) {
@@ -363,45 +363,38 @@ private class OkHttpImageFetcher private constructor(
       }
 
       override fun onResponse(call: Call, response: Response) {
-        try {
-          response.use {
-            if (call.isCanceled()) {
-              return onFailure(OperationCanceledException())
-            }
+        response.use {
+          if (!response.isSuccessful) {
+            return onFailure(IOException("HTTP ${response.code}: ${response.message}")).also { onComplete() }
+          }
 
-            if (!response.isSuccessful) {
-              return onFailure(IOException("HTTP ${response.code}: ${response.message}"))
-            }
+          val body = response.body
+            ?: return onFailure(IOException("Empty response body")).also { onComplete() }
 
-            val body = response.body ?: return onFailure(IOException("Empty response body"))
+          if (call.isCanceled()) {
+            onFailure(OperationCanceledException())
+            return onComplete()
+          }
 
-            val contentLength = body.contentLength()
-            val capacity = if (contentLength > 0 && contentLength <= Int.MAX_VALUE) {
-              contentLength.toInt()
-            } else {
-              INITIAL_BUFFER_SIZE
-            }
-            val buffer = NativeByteBuffer(capacity)
-
+          val contentLength = body.contentLength().toInt()
+          val capacity = if (contentLength > 0) contentLength + 1 else INITIAL_BUFFER_SIZE
+          val buffer = NativeByteBuffer(capacity)
+          body.source().use { source ->
             try {
-              body.source().use { source ->
-                while (true) {
-                  signal.throwIfCanceled()
-                  buffer.ensureHeadroom()
-                  val bytesRead = source.read(buffer.wrapRemaining())
-                  if (bytesRead == -1) break
-                  buffer.advance(bytesRead)
-                }
+              while (true) {
+                if (call.isCanceled()) throw OperationCanceledException()
+                val bytesRead = source.read(buffer.wrapRemaining())
+                if (bytesRead == -1) break
+                buffer.ensureHeadroom()
+                buffer.advance(bytesRead)
               }
-
               onSuccess(buffer)
             } catch (e: Exception) {
               buffer.free()
               onFailure(e)
             }
+            onComplete()
           }
-        } finally {
-          onComplete()
         }
       }
     })

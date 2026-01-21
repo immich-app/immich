@@ -15,7 +15,7 @@ import 'package:pigeon/pigeon.dart';
 @HostApi()
 abstract class RemoteImageApi {
   @async
-  Map<String, int> requestImage(
+  Map<String, int>? requestImage(
     String url, {
     required Map<String, String> headers,
     required int requestId,
