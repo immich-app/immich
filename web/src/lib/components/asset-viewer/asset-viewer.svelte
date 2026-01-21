@@ -6,12 +6,14 @@
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -250,15 +252,15 @@
           await handleStopSlideshow();
         }
       }
-    });
+    }, $t('error_while_navigating'));
   };
 
-  // const showEditor = () => {
-  //   if (assetViewerManager.isShowActivityPanel) {
-  //     assetViewerManager.isShowActivityPanel = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
+  const showEditor = () => {
+    if (assetViewerManager.isShowActivityPanel) {
+      assetViewerManager.isShowActivityPanel = false;
+    }
+    isShowEditor = !isShowEditor;
+  };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -318,6 +320,11 @@
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
         await handleGetAllAlbums();
+        break;
+      }
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
@@ -395,7 +402,7 @@
     }
 
     await new Promise((promise) => setTimeout(promise, 500));
-    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+    await goto(Route.viewAsset({ id: newAssetId }));
   };
 
   const onAssetUpdate = (update: AssetResponseDto) => {
@@ -465,6 +472,7 @@
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
+        onEdit={showEditor}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}

@@ -45,9 +45,6 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
-  FullSizeEdited = 'fullsize_edited',
-  PreviewEdited = 'preview_edited',
-  ThumbnailEdited = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -135,6 +132,11 @@ export enum Permission {
   AuthDeviceDelete = 'authDevice.delete',
 
   ArchiveRead = 'archive.read',
+
+  BackupList = 'backup.list',
+  BackupDownload = 'backup.download',
+  BackupUpload = 'backup.upload',
+  BackupDelete = 'backup.delete',
 
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
@@ -364,14 +366,7 @@ export enum ManualJobName {
 
 export enum AssetPathType {
   Original = 'original',
-  FullSize = 'fullsize',
-  Preview = 'preview',
-  EditedFullSize = 'edited_fullsize',
-  EditedPreview = 'edited_preview',
-  EditedThumbnail = 'edited_thumbnail',
-  Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
-  Sidecar = 'sidecar',
 }
 
 export enum PersonPathType {
@@ -382,7 +377,7 @@ export enum UserPathType {
   Profile = 'profile',
 }
 
-export type PathType = AssetPathType | PersonPathType | UserPathType;
+export type PathType = AssetFileType | AssetPathType | PersonPathType | UserPathType;
 
 export enum TranscodePolicy {
   All = 'all',
@@ -697,12 +692,15 @@ export enum DatabaseLock {
   MediaLocation = 700,
   GetSystemConfig = 69,
   BackupDatabase = 42,
+  MaintenanceOperation = 621,
   MemoryCreation = 777,
 }
 
 export enum MaintenanceAction {
   Start = 'start',
   End = 'end',
+  SelectDatabaseRestore = 'select_database_restore',
+  RestoreDatabase = 'restore_database',
 }
 
 export enum ExitCode {
@@ -849,6 +847,7 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
   Duplicates = 'Duplicates',
