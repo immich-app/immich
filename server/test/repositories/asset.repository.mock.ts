@@ -51,6 +51,5 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByStorageBackend: vitest.fn(),
     getWithLocalEncodedVideos: vitest.fn(),
     getWithLocalThumbnails: vitest.fn(),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any;
 };

@@ -372,7 +372,14 @@ describe(NotificationService.name, () => {
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([
-        { id: '1', type: AssetFileType.Thumbnail, path: 'path-to-thumb.jpg', storageBackend: StorageBackend.Local, s3Bucket: null, s3Key: null },
+        {
+          id: '1',
+          type: AssetFileType.Thumbnail,
+          path: 'path-to-thumb.jpg',
+          storageBackend: StorageBackend.Local,
+          s3Bucket: null,
+          s3Key: null,
+        },
       ]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Success);
