@@ -53,6 +53,6 @@ export async function handleErrorAsync<T>(fn: () => Promise<T>, localizedMessage
     return await fn();
   } catch (error: unknown) {
     handleError(error, localizedMessage);
-    return undefined;
+    return;
   }
 }
