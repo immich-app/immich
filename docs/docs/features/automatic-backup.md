@@ -1,37 +1,42 @@
 # Automatic Backup
 
+## Overview
+
 Immich supports uploading photos and videos from your mobile device to the server automatically.
 
----
+By enable the backup button, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background (iOS), or when the a new photos or videos are taken (Android).
 
-You can enable the settings by accessing the upload options from the upload page
+<img
+src={require('./img/enable-backup-button.webp').default}
+width="300px"
+title="Upload button"
+/>
 
-<img src={require('./img/backup-settings-access.webp').default} width="50%" title="Backup option selection" />
+## Platform Specific Features
 
-<img src={require('./img/background-foreground-backup.webp').default} width="50%" title="Foreground&Background Backup" />
+### General
 
-## Foreground backup
+By default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.
 
-If foreground backup is enabled: whenever the app is opened or resumed, it will check if any photos or videos in the selected album(s) have yet to be uploaded to the cloud (the remainder count). If there are any, they will be uploaded.
+<img
+src={require('./img/backup-options.webp').default}
+width="500px"
+title="Upload button"
+/>
 
-## Background backup
+### Android
 
-This feature is intended for everyday use. For initial bulk uploading, please use the foreground upload feature. For more information on why background upload is not working as expected, please refer to the [FAQ](/FAQ#why-does-foreground-backup-stop-when-i-navigate-away-from-the-app-shouldnt-it-transfer-the-job-to-background-backup).
-
-If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the server. If there are, it will upload them to the cloud in the background.
-
-:::info Note
-
-#### General
-
-- The app must be in the background for the backup worker to start running.
-- If you reopen the app and the first page you see is the backup page, the counts will not reflect the background uploaded result. You have to navigate out of the page and come back to see the updated counts.
-
-#### Android
+<img
+src={require('./img/android-backup-options.webp').default}
+width="500px"
+title="Upload button"
+/>
 
 - It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.
+- You can allow the background task to run when the device is charging.
+- You can set the minimum delay from the time a photo is taken to when the background upload task will run.
 
-#### iOS
+### iOS
 
 - You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.
 
@@ -39,4 +44,4 @@ If background backup is enabled. The app will periodically check if there are an
 <img src={require('./img/background-app-refresh.webp').default} width="30%" title="background-app-refresh" />
 </div>
 
-:::
+- iOS automatically manages background tasks, the app cannot control when the background upload task will run. It is known that the more frequently you open the app, the more often the background task will run.
