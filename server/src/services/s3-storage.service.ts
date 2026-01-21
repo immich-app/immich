@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AssetFileType, JobName, JobStatus, QueueName, StorageBackend, StorageLocationType } from 'src/enum';
 import { LocalStorageAdapter, S3StorageManager } from 'src/repositories/storage';
-import { StorageCore } from 'src/cores/storage.core';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -70,10 +70,11 @@ export class S3StorageService extends BaseService {
 
     try {
       // Get the resolved S3 config for originals (includes correct bucket, adapter, storage class)
-      const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
-        StorageLocationType.Originals,
-        asset.type,
-      );
+      const {
+        adapter: s3Adapter,
+        bucket,
+        storageClass,
+      } = s3Manager.getConfigForLocation(StorageLocationType.Originals, asset.type);
       const localAdapter = this.getLocalAdapter();
       const config = await this.getConfig({ withCache: true });
 
@@ -290,9 +291,11 @@ export class S3StorageService extends BaseService {
 
     try {
       // Get the resolved S3 config for encoded videos
-      const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
-        StorageLocationType.EncodedVideos,
-      );
+      const {
+        adapter: s3Adapter,
+        bucket,
+        storageClass,
+      } = s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
       const localAdapter = this.getLocalAdapter();
       const config = await this.getConfig({ withCache: true });
 
@@ -435,9 +438,11 @@ export class S3StorageService extends BaseService {
 
       // Process thumbnails
       if (uploadThumbnails) {
-        const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
-          StorageLocationType.Thumbnails,
-        );
+        const {
+          adapter: s3Adapter,
+          bucket,
+          storageClass,
+        } = s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
 
         const thumbnailFile = asset.files?.find((f: { type: string }) => f.type === 'thumbnail');
         if (thumbnailFile && thumbnailFile.storageBackend !== StorageBackend.S3) {
@@ -479,9 +484,11 @@ export class S3StorageService extends BaseService {
 
       // Process previews
       if (uploadPreviews) {
-        const { adapter: s3Adapter, bucket, storageClass } = s3Manager.getConfigForLocation(
-          StorageLocationType.Previews,
-        );
+        const {
+          adapter: s3Adapter,
+          bucket,
+          storageClass,
+        } = s3Manager.getConfigForLocation(StorageLocationType.Previews);
 
         const previewFile = asset.files?.find((f: { type: string }) => f.type === 'preview');
         if (previewFile && previewFile.storageBackend !== StorageBackend.S3) {

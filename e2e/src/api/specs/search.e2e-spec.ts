@@ -405,7 +405,7 @@ describe('/search', () => {
         utils.createAsset(admin.accessToken),
       ]);
 
-      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+      await utils.waitForQueueFinish(admin.accessToken, 'assetThumbnailGeneration');
     });
 
     it.each(TEN_TIMES)('should return 1 random assets', async () => {

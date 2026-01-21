@@ -9,7 +9,7 @@ import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName, StorageBackend } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadBody } from 'src/types';
@@ -558,6 +558,9 @@ describe(AssetMediaService.name, () => {
             id: '42',
             path: '/path/to/preview',
             type: AssetFileType.Thumbnail,
+            storageBackend: StorageBackend.Local,
+            s3Bucket: null,
+            s3Key: null,
           },
         ],
       });
@@ -575,6 +578,9 @@ describe(AssetMediaService.name, () => {
             id: '42',
             path: '/path/to/preview.jpg',
             type: AssetFileType.Preview,
+            storageBackend: StorageBackend.Local,
+            s3Bucket: null,
+            s3Key: null,
           },
         ],
       });

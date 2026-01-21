@@ -58,10 +58,7 @@ export class StorageAdapterFactory {
    * Get S3 adapter for a specific storage location type.
    * Uses bucket override if configured, otherwise falls back to default.
    */
-  getS3AdapterForLocation(
-    config: SystemConfig['storage'],
-    locationType: StorageLocationType,
-  ): S3StorageAdapter {
+  getS3AdapterForLocation(config: SystemConfig['storage'], locationType: StorageLocationType): S3StorageAdapter {
     const s3Config = config.s3;
 
     if (!s3Config.enabled) {
@@ -160,10 +157,7 @@ export class StorageAdapterFactory {
   /**
    * Merge default S3 config with bucket-specific overrides.
    */
-  private mergeS3Config(
-    defaultConfig: SystemConfig['storage']['s3'],
-    override?: S3BucketOverride,
-  ): S3StorageConfig {
+  private mergeS3Config(defaultConfig: SystemConfig['storage']['s3'], override?: S3BucketOverride): S3StorageConfig {
     return {
       endpoint: override?.endpoint ?? (defaultConfig.endpoint || undefined),
       region: override?.region ?? defaultConfig.region,
