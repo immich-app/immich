@@ -1,19 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -170,6 +174,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isAuthenticated: true,
       name: user.name,
       isAdmin: user.isAdmin,
+    );
+
+    // TODO: Temporarily run cloud Id sync here until we have a better place to do it
+    unawaited(
+      _ref.read(backgroundSyncProvider).syncRemote().then((success) {
+        if (success) {
+          return syncCloudIds(_ref);
+        }
+      }),
     );
 
     return true;

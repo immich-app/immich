@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -156,11 +157,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       ]);
       if (syncSuccess) {
         await Future.wait([
+          _safeRun(syncCloudIds(_ref), "syncCloudIds"),
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
             _resumeBackup();
           }),
           _resumeBackup(),
-          _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
