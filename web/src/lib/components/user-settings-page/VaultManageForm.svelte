@@ -1,8 +1,7 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import VaultChangePasswordModal from '$lib/modals/VaultChangePasswordModal.svelte';
+  import PinCodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
+  import VaultChangePinModal from '$lib/modals/VaultChangePinModal.svelte';
   import VaultDeleteModal from '$lib/modals/VaultDeleteModal.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { lockVault, unlockVault, migrateAssets } from '@immich/sdk';
   import { Button, modalManager, toastManager } from '@immich/ui';
@@ -16,16 +15,16 @@
 
   let { isUnlocked, onStatusChange, onDeleted }: Props = $props();
 
-  let password = $state('');
+  let pin = $state('');
   let isLoading = $state(false);
 
   const handleUnlock = async (event: Event) => {
     event.preventDefault();
     isLoading = true;
     try {
-      await unlockVault({ vaultUnlockDto: { password } });
+      await unlockVault({ vaultUnlockDto: { pin } });
       toastManager.success($t('vault_unlock_success'));
-      password = '';
+      pin = '';
       onStatusChange?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_unlock_vault'));
@@ -47,8 +46,8 @@
     }
   };
 
-  const handleChangePassword = async () => {
-    const success = await modalManager.show(VaultChangePasswordModal, {});
+  const handleChangePin = async () => {
+    const success = await modalManager.show(VaultChangePinModal, {});
     if (success) {
       onStatusChange?.();
     }
@@ -87,8 +86,8 @@
         <Button shape="round" size="small" onclick={handleLock} loading={isLoading}>
           {$t('vault_lock')}
         </Button>
-        <Button shape="round" size="small" color="secondary" onclick={handleChangePassword}>
-          {$t('vault_change_password')}
+        <Button shape="round" size="small" color="secondary" onclick={handleChangePin}>
+          {$t('vault_change_pin')}
         </Button>
         <Button shape="round" size="small" color="secondary" onclick={handleEncryptAssets} loading={isLoading}>
           {$t('vault_encrypt_assets')}
@@ -108,16 +107,10 @@
 
       <form autocomplete="off" onsubmit={handleUnlock}>
         <div class="flex flex-col gap-4">
-          <SettingInputField
-            inputType={SettingInputFieldType.PASSWORD}
-            label={$t('vault_password')}
-            bind:value={password}
-            required={true}
-            passwordAutocomplete="current-password"
-          />
+          <PinCodeInput label={$t('vault_pin')} bind:value={pin} type="password" />
 
           <div class="flex justify-end">
-            <Button shape="round" type="submit" size="small" loading={isLoading} disabled={!password}>
+            <Button shape="round" type="submit" size="small" loading={isLoading} disabled={pin.length !== 6}>
               {$t('vault_unlock')}
             </Button>
           </div>

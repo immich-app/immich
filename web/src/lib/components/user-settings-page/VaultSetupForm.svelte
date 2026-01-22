@@ -1,6 +1,5 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
+  import PinCodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { setupVault } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
@@ -12,10 +11,10 @@
 
   let { onCreated }: Props = $props();
 
-  let password = $state('');
-  let confirmPassword = $state('');
+  let pin = $state('');
+  let confirmPin = $state('');
   let isLoading = $state(false);
-  let canSubmit = $derived(password.length > 0 && password === confirmPassword);
+  let canSubmit = $derived(pin.length === 6 && pin === confirmPin);
 
   const handleSubmit = async (event: Event) => {
     event.preventDefault();
@@ -25,7 +24,7 @@
   const createVault = async () => {
     isLoading = true;
     try {
-      await setupVault({ vaultSetupDto: { password } });
+      await setupVault({ vaultSetupDto: { pin } });
       toastManager.success($t('vault_setup_success'));
       onCreated?.();
       resetForm();
@@ -37,8 +36,8 @@
   };
 
   const resetForm = () => {
-    password = '';
-    confirmPassword = '';
+    pin = '';
+    confirmPin = '';
   };
 </script>
 
@@ -47,21 +46,9 @@
     <div class="ms-4 mt-4 flex flex-col gap-4">
       <p class="text-sm dark:text-immich-dark-fg">{$t('vault_setup_description')}</p>
 
-      <SettingInputField
-        inputType={SettingInputFieldType.PASSWORD}
-        label={$t('vault_password')}
-        bind:value={password}
-        required={true}
-        passwordAutocomplete="new-password"
-      />
+      <PinCodeInput label={$t('vault_pin')} bind:value={pin} type="password" />
 
-      <SettingInputField
-        inputType={SettingInputFieldType.PASSWORD}
-        label={$t('vault_confirm_password')}
-        bind:value={confirmPassword}
-        required={true}
-        passwordAutocomplete="new-password"
-      />
+      <PinCodeInput label={$t('vault_confirm_pin')} bind:value={confirmPin} type="password" />
 
       <div class="flex justify-end gap-2">
         <Button shape="round" color="secondary" type="button" size="small" onclick={resetForm}>
