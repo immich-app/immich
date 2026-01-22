@@ -135,6 +135,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     DateTime cutoffDate, {
     AssetFilterType filterType = AssetFilterType.all,
     bool keepFavorites = true,
+    Set<String> excludedAlbumIds = const {},
   }) async {
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -158,6 +159,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
     // Exclude assets that are in iOS shared albums
     whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
+
+    if (excludedAlbumIds.isNotEmpty) {
+      final excludedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..where(_db.localAlbumAssetEntity.albumId.isIn(excludedAlbumIds));
+      whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(excludedAlbumAssets);
+    }
 
     if (filterType == AssetFilterType.photosOnly) {
       whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);

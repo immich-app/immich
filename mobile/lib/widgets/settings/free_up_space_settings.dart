@@ -3,12 +3,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
@@ -194,6 +196,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       }
       if (state.keepFavorites) {
         parts.add('keep_favorites'.t(context: context));
+      }
+      if (state.excludedAlbumIds.isNotEmpty) {
+        parts.add(
+          'excluded_albums_count'.t(context: context, args: {'count': state.excludedAlbumIds.length.toString()}),
+        );
       }
       return parts.join(' • ');
     }
@@ -393,6 +400,14 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                         value: state.keepFavorites,
                         onChanged: (value) {
                           ref.read(cleanupProvider.notifier).setKeepFavorites(value);
+                          setState(() => _hasScanned = false);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _ExcludedAlbumsSection(
+                        excludedAlbumIds: state.excludedAlbumIds,
+                        onAlbumToggled: (albumId) {
+                          ref.read(cleanupProvider.notifier).toggleExcludedAlbum(albumId);
                           setState(() => _hasScanned = false);
                         },
                       ),
@@ -698,6 +713,115 @@ class _DatePresetCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ExcludedAlbumsSection extends ConsumerWidget {
+  final Set<String> excludedAlbumIds;
+  final ValueChanged<String> onAlbumToggled;
+
+  const _ExcludedAlbumsSection({required this.excludedAlbumIds, required this.onAlbumToggled});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final albumsAsync = ref.watch(localAlbumProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'exclude_albums'.t(context: context),
+          style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'exclude_albums_description'.t(context: context),
+          style: context.textTheme.bodyMedium!.copyWith(color: context.textTheme.bodyMedium!.color!.withAlpha(215)),
+        ),
+        const SizedBox(height: 12),
+        albumsAsync.when(
+          loading: () => const Center(
+            child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          error: (error, stack) => Text(
+            'error_loading_albums'.t(context: context),
+            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+          ),
+          data: (albums) {
+            if (albums.isEmpty) {
+              return Text(
+                'no_albums_found'.t(context: context),
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              );
+            }
+            return Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: context.colorScheme.outlineVariant),
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+              ),
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: albums.length,
+                  itemBuilder: (context, index) {
+                    final album = albums[index];
+                    final isExcluded = excludedAlbumIds.contains(album.id);
+                    return _AlbumExclusionTile(
+                      album: album,
+                      isExcluded: isExcluded,
+                      onToggle: () => onAlbumToggled(album.id),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+        if (excludedAlbumIds.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            'excluded_albums_count'.t(context: context, args: {'count': excludedAlbumIds.length.toString()}),
+            style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.error, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AlbumExclusionTile extends StatelessWidget {
+  final LocalAlbum album;
+  final bool isExcluded;
+  final VoidCallback onToggle;
+
+  const _AlbumExclusionTile({required this.album, required this.isExcluded, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+      leading: Icon(
+        isExcluded ? Icons.remove_circle : Icons.photo_album_outlined,
+        color: isExcluded ? context.colorScheme.error : context.colorScheme.onSurfaceVariant,
+        size: 20,
+      ),
+      title: Text(
+        album.name,
+        style: context.textTheme.bodyMedium?.copyWith(color: isExcluded ? context.colorScheme.error : null),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        album.assetCount.toString(),
+        style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceVariant),
+      ),
+      onTap: onToggle,
     );
   }
 }

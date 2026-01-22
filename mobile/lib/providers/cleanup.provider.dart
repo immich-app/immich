@@ -11,6 +11,7 @@ class CleanupState {
   final bool isDeleting;
   final AssetFilterType filterType;
   final bool keepFavorites;
+  final Set<String> excludedAlbumIds;
 
   const CleanupState({
     this.selectedDate,
@@ -19,6 +20,7 @@ class CleanupState {
     this.isDeleting = false,
     this.filterType = AssetFilterType.all,
     this.keepFavorites = true,
+    this.excludedAlbumIds = const {},
   });
 
   CleanupState copyWith({
@@ -28,6 +30,7 @@ class CleanupState {
     bool? isDeleting,
     AssetFilterType? filterType,
     bool? keepFavorites,
+    Set<String>? excludedAlbumIds,
   }) {
     return CleanupState(
       selectedDate: selectedDate ?? this.selectedDate,
@@ -36,6 +39,7 @@ class CleanupState {
       isDeleting: isDeleting ?? this.isDeleting,
       filterType: filterType ?? this.filterType,
       keepFavorites: keepFavorites ?? this.keepFavorites,
+      excludedAlbumIds: excludedAlbumIds ?? this.excludedAlbumIds,
     );
   }
 }
@@ -62,6 +66,20 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
   }
 
+  void toggleExcludedAlbum(String albumId) {
+    final newExcludedAlbumIds = Set<String>.from(state.excludedAlbumIds);
+    if (newExcludedAlbumIds.contains(albumId)) {
+      newExcludedAlbumIds.remove(albumId);
+    } else {
+      newExcludedAlbumIds.add(albumId);
+    }
+    state = state.copyWith(excludedAlbumIds: newExcludedAlbumIds, assetsToDelete: []);
+  }
+
+  void setExcludedAlbumIds(Set<String> albumIds) {
+    state = state.copyWith(excludedAlbumIds: albumIds, assetsToDelete: []);
+  }
+
   Future<void> scanAssets() async {
     if (_userId == null || state.selectedDate == null) {
       return;
@@ -74,6 +92,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
         state.selectedDate!,
         filterType: state.filterType,
         keepFavorites: state.keepFavorites,
+        excludedAlbumIds: state.excludedAlbumIds,
       );
       state = state.copyWith(assetsToDelete: assets, isScanning: false);
     } catch (e) {
