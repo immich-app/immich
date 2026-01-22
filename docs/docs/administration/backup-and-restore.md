@@ -2,6 +2,8 @@
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { mdiAlertCircle, mdiCheckCircle } from '@mdi/js';
+import Icon from '@mdi/react';
 
 A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)
 
@@ -23,7 +25,7 @@ Database backups do **not** contain photos or videos — only metadata. They mus
 
 You can trigger a database backup manually:
 
-1. Go to **Administration > Queues**
+1. Go to **Administration > Job Queues**
 2. Click **Create job** in the top right
 3. Select **Create Database Backup** and click **Confirm**
 
@@ -33,9 +35,14 @@ The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your reten
 
 Immich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.
 
-### Restore from Settings {#restore-from-settings}
+#### Restore from Settings {#restore-from-settings}
 
 If you have an existing Immich installation:
+
+<img
+src={require('./img/restore-from-settings.webp').default}
+title="Restore from settings"
+/>
 
 1. Go to **Administration > Maintenance**
 2. Expand the **Restore database backup** section
@@ -43,13 +50,18 @@ If you have an existing Immich installation:
 4. Click **Restore** next to the backup you want to restore
 5. Confirm the restore operation
 
-:::warning
+:::info
 Restoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.
 :::
 
-### Restore from Onboarding {#restore-from-onboarding}
+#### Restore from Onboarding {#restore-from-onboarding}
 
 If you're setting up Immich on a fresh installation and want to restore from an existing backup:
+
+<img
+src={require('./img/restore-from-onboarding.webp').default}
+title="Restore from onboarding"
+/>
 
 1. On the welcome screen, click **Restore from backup**
 2. Immich will enter maintenance mode and display integrity checks for your storage folders
@@ -68,16 +80,16 @@ You can upload a database backup file directly:
 
 1. In the **Restore database backup** section, click **Select from computer**
 2. Choose a `.sql.gz` file
-3. The uploaded backup will appear in the list with an "uploaded-" prefix
+3. The uploaded backup will appear in the list with an `uploaded-` prefix
 4. Click **Restore** to restore from the uploaded file
 
 ### Backup Version Compatibility {#backup-compatibility}
 
-When viewing backups, Immich displays compatibility indicators:
+When viewing backups, Immich displays compatibility indicators based on the current version and the information from the filename:
 
-- ✅ **Green checkmark**: Backup version matches current Immich version
-- ⚠️ **Warning**: Backup was created with a different Immich version
-- ❌ **Error**: Could not determine backup version
+- <Icon path={mdiCheckCircle} size={1} color="green"/> Backup version matches current Immich version
+- <Icon path={mdiAlertCircle} size={1} color="#feb001"/> Backup was created with a different Immich version
+- <Icon path={mdiAlertCircle} size={1} color="red"/> Could not determine backup version
 
 :::warning
 Restoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.
@@ -204,16 +216,13 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
 - **Encoded Assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
-
+- **Database Dump Backups:**
+  - Automatic database backups created by Immich for disaster recovery.
+  - Stored in `UPLOAD_LOCATION/backups/`.
 - **Postgres**
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.
-
-  :::danger
-  A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
-  :::
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -250,15 +259,13 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
+- **Database Dump Backups:**
+  - Automatic database backups created by Immich for disaster recovery.
+  - Stored in `UPLOAD_LOCATION/backups/`.
 - **Postgres**
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.
-
-  :::danger
-  A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
-  :::
 
 </TabItem>
 
