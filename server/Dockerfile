@@ -89,6 +89,7 @@ COPY --from=plugins /usr/src/app/plugins/manifest.json /build/corePlugin/manifes
 RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
+COPY deployment/immich-config.yaml /etc/immich/config.yaml
 
 ENV PATH="${PATH}:/usr/src/app/server/bin"
 

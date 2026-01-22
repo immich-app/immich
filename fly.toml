@@ -18,7 +18,8 @@ primary_region = 'ord'
   IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
   IMMICH_LOG_LEVEL = 'log'
   IMMICH_MACHINE_LEARNING_URL = 'http://ml-immich.flycast:3003'
-  IMMICH_MEDIA_LOCATION = '/usr/src/app/upload'
+  IMMICH_MEDIA_LOCATION = '/tmp/upload'
+  IMMICH_CONFIG_FILE = '/etc/immich/config.yaml'
   OAUTH_AUTO_REGISTER = 'false'
   OAUTH_BUTTON_TEXT = 'Sign in with Google'
   OAUTH_ENABLED = 'true'
@@ -32,21 +33,24 @@ primary_region = 'ord'
   STORAGE_S3_PREFIX = 'users/'
   STORAGE_S3_REGION = 'auto'
 
-[[mounts]]
-  source = 'immich_upload'
-  destination = '/usr/src/app/upload'
-
 [http_service]
   internal_port = 2283
   force_https = true
-  auto_stop_machines = 'off'
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 1
 
   [http_service.concurrency]
     type = 'requests'
-    hard_limit = 250
-    soft_limit = 200
+    soft_limit = 100
+    hard_limit = 150
+
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "15s"
+    timeout = "5s"
+    method = "GET"
+    path = "/api/server/ping"
 
 [[vm]]
   memory = '4gb'

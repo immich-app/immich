@@ -88,11 +88,46 @@ export class JobRepository {
     const { bull } = this.configRepository.getEnv();
     for (const queueName of Object.values(QueueName)) {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
+      const workerOptions = this.getWorkerOptions(queueName);
       this.workers[queueName] = new Worker(
         queueName,
         (job) => this.eventRepository.emit('JobRun', queueName, job as JobItem),
-        { ...bull.config, concurrency: 1 },
+        { ...bull.config, concurrency: 1, ...workerOptions },
       );
+    }
+  }
+
+  private getWorkerOptions(queueName: QueueName): { lockDuration?: number; stalledInterval?: number } {
+    // Queues that involve S3 operations or long-running tasks need longer lock durations
+    // to prevent lock expiration when running multiple distributed workers.
+    // Default BullMQ lockDuration is 30s which is too short for S3 uploads with network latency.
+    switch (queueName) {
+      case QueueName.S3Upload:
+        return {
+          lockDuration: 180_000, // 3 minutes - S3 uploads can be slow
+          stalledInterval: 120_000, // Check for stalled jobs every 2 minutes
+        };
+      case QueueName.AssetThumbnailGeneration:
+      case QueueName.PersonThumbnailGeneration:
+        return {
+          lockDuration: 120_000, // 2 minutes - thumbnail generation + potential S3 download
+          stalledInterval: 90_000,
+        };
+      case QueueName.VideoConversion:
+        return {
+          lockDuration: 300_000, // 5 minutes - video transcoding can take a long time
+          stalledInterval: 180_000,
+        };
+      case QueueName.MetadataExtraction:
+        return {
+          lockDuration: 90_000, // 1.5 minutes
+          stalledInterval: 60_000,
+        };
+      default:
+        return {
+          lockDuration: 60_000, // 1 minute default for other queues
+          stalledInterval: 45_000,
+        };
     }
   }
 

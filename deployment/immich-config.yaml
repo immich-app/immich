@@ -1,0 +1,3 @@
+storage:
+  upload:
+    deleteLocalAfterUpload: true

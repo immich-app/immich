@@ -187,21 +187,64 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Handle S3-stored originals: download to temp file first
+    let tempFilePath: string | undefined;
+    let effectiveOriginalPath = asset.originalPath;
+
+    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
+      const { storage } = await this.getConfig({ withCache: true });
+      if (!storage.s3.enabled) {
+        this.logger.error(`Thumbnail generation failed for ${id}: asset is in S3 but S3 is not enabled`);
+        return JobStatus.Failed;
+      }
+
+      try {
+        this.logger.debug(`Downloading asset from S3 for thumbnail generation: ${asset.s3Key}`);
+        const s3Adapter = this.storageAdapterFactory.getS3Adapter(storage.s3);
+        const fileBuffer = await s3Adapter.read(asset.s3Key);
+
+        // Write to temp file
+        const ext = asset.originalFileName.split('.').pop() || 'tmp';
+        tempFilePath = `/tmp/immich-thumb-${id}.${ext}`;
+        await this.storageRepository.createOrOverwriteFile(tempFilePath, fileBuffer);
+        effectiveOriginalPath = tempFilePath;
+        this.logger.debug(`Downloaded S3 asset to temp file: ${tempFilePath}`);
+      } catch (error) {
+        this.logger.error(`Could not download asset from S3 for thumbnail generation ${id}: ${error}`);
+        return JobStatus.Failed;
+      }
+    }
+
     let generated: {
       previewPath: string;
       thumbnailPath: string;
       fullsizePath?: string;
       thumbhash: Buffer;
     };
-    if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
-      generated = await this.generateVideoThumbnails(asset);
-    } else if (asset.type === AssetType.Image) {
-      this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
-      generated = await this.generateImageThumbnails(asset);
-    } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
-      return JobStatus.Skipped;
+
+    try {
+      const assetWithEffectivePath = { ...asset, originalPath: effectiveOriginalPath };
+
+      if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
+        this.logger.verbose(`Thumbnail generation for video ${id} ${effectiveOriginalPath}`);
+        generated = await this.generateVideoThumbnails(assetWithEffectivePath);
+      } else if (asset.type === AssetType.Image) {
+        this.logger.verbose(`Thumbnail generation for image ${id} ${effectiveOriginalPath}`);
+        generated = await this.generateImageThumbnails(assetWithEffectivePath);
+      } else {
+        this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
+        return JobStatus.Skipped;
+      }
+    } finally {
+      // Clean up temp file if created
+      if (tempFilePath) {
+        try {
+          await this.storageRepository.unlink(tempFilePath);
+          this.logger.debug(`Cleaned up temp file: ${tempFilePath}`);
+        } catch {
+          this.logger.warn(`Failed to clean up temp file: ${tempFilePath}`);
+        }
+      }
     }
 
     const { previewFile, thumbnailFile, fullsizeFile } = getAssetFiles(asset.files);

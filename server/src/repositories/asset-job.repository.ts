@@ -111,6 +111,9 @@ export class AssetJobRepository {
         'asset.ownerId',
         'asset.thumbhash',
         'asset.type',
+        'asset.storageBackend',
+        'asset.s3Bucket',
+        'asset.s3Key',
       ])
       .select(withFiles)
       .$call(withExifInner)
