@@ -5524,6 +5524,7 @@ export enum Permission {
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    FolderRead = "folder.read",
     JobCreate = "job.create",
     JobRead = "job.read",
     LibraryCreate = "library.create",
