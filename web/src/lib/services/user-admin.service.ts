@@ -23,6 +23,7 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiDeleteRestore,
+  mdiInformationOutline,
   mdiLockReset,
   mdiLockSmart,
   mdiPencilOutline,
@@ -46,6 +47,12 @@ export const getUserAdminsActions = ($t: MessageFormatter) => {
 };
 
 export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminResponseDto) => {
+  const Detail: ActionItem = {
+    icon: mdiInformationOutline,
+    title: $t('details'),
+    onAction: () => goto(Route.viewUser(user)),
+  };
+
   const Update: ActionItem = {
     icon: mdiPencilOutline,
     title: $t('edit'),
@@ -92,7 +99,7 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     onAction: () => handleResetPinCodeUserAdmin(user),
   };
 
-  return { Update, Delete, Restore, ResetPassword, ResetPinCode };
+  return { Detail, Update, Delete, Restore, ResetPassword, ResetPinCode };
 };
 
 export const handleCreateUserAdmin = async (dto: UserAdminCreateDto) => {

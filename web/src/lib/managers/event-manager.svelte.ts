@@ -46,6 +46,7 @@ export type Events = {
   AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
+  PersonThumbnailReady: [{ id: string }];
 
   BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
   BackupDeleted: [{ filename: string }];

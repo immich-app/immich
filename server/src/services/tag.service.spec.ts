@@ -206,15 +206,15 @@ describe(TagService.name, () => {
         count: 6,
       });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-1', tags: ['tag-1', 'tag-2'] },
+        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
         { lockedPropertiesBehavior: 'append' },
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', tags: ['tag-1', 'tag-2'] },
+        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
         { lockedPropertiesBehavior: 'append' },
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-3', tags: ['tag-1', 'tag-2'] },
+        { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
         { lockedPropertiesBehavior: 'append' },
       );
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
@@ -255,11 +255,11 @@ describe(TagService.name, () => {
       ]);
 
       expect(mocks.asset.upsertExif).not.toHaveBeenCalledWith(
-        { assetId: 'asset-1', tags: ['tag-1'] },
+        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
         { lockedPropertiesBehavior: 'append' },
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', tags: ['tag-1'] },
+        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
         { lockedPropertiesBehavior: 'append' },
       );
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);

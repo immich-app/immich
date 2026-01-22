@@ -6574,6 +6574,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.read",
         "x-immich-state": "Stable"
       }
     },
@@ -6645,6 +6646,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.search",
         "x-immich-state": "Stable"
       }
     },
@@ -19348,6 +19350,8 @@
           "timeline.read",
           "timeline.download",
           "maintenance",
+          "map.read",
+          "map.search",
           "memory.create",
           "memory.read",
           "memory.update",
