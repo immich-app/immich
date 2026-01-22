@@ -82,6 +82,8 @@ class Permission {
   static const timelinePeriodRead = Permission._(r'timeline.read');
   static const timelinePeriodDownload = Permission._(r'timeline.download');
   static const maintenance = Permission._(r'maintenance');
+  static const mapPeriodRead = Permission._(r'map.read');
+  static const mapPeriodSearch = Permission._(r'map.search');
   static const memoryPeriodCreate = Permission._(r'memory.create');
   static const memoryPeriodRead = Permission._(r'memory.read');
   static const memoryPeriodUpdate = Permission._(r'memory.update');
@@ -238,6 +240,8 @@ class Permission {
     timelinePeriodRead,
     timelinePeriodDownload,
     maintenance,
+    mapPeriodRead,
+    mapPeriodSearch,
     memoryPeriodCreate,
     memoryPeriodRead,
     memoryPeriodUpdate,
@@ -429,6 +433,8 @@ class PermissionTypeTransformer {
         case r'timeline.read': return Permission.timelinePeriodRead;
         case r'timeline.download': return Permission.timelinePeriodDownload;
         case r'maintenance': return Permission.maintenance;
+        case r'map.read': return Permission.mapPeriodRead;
+        case r'map.search': return Permission.mapPeriodSearch;
         case r'memory.create': return Permission.memoryPeriodCreate;
         case r'memory.read': return Permission.memoryPeriodRead;
         case r'memory.update': return Permission.memoryPeriodUpdate;
