@@ -31,13 +31,11 @@ The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your reten
 
 ### Restoring a Database Backup
 
-Immich provides two ways to restore a database backup: through the web interface or via the command line.
+Immich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.
 
-#### Restore via Web Interface
+### Restore from Settings {#restore-from-settings}
 
-You can restore a database backup directly from the Immich web interface. This is the recommended method for most users.
-
-##### From Settings (Existing Installation)
+If you have an existing Immich installation:
 
 1. Go to **Administration > Maintenance**
 2. Expand the **Restore database backup** section
@@ -49,7 +47,7 @@ You can restore a database backup directly from the Immich web interface. This i
 Restoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.
 :::
 
-##### From Onboarding (Fresh Installation)
+### Restore from Onboarding {#restore-from-onboarding}
 
 If you're setting up Immich on a fresh installation and want to restore from an existing backup:
 
@@ -64,7 +62,7 @@ If you're setting up Immich on a fresh installation and want to restore from an 
 Before restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.
 :::
 
-##### Uploading a Backup File
+### Uploading a Backup File {#uploading-backup}
 
 You can upload a database backup file directly:
 
@@ -73,7 +71,7 @@ You can upload a database backup file directly:
 3. The uploaded backup will appear in the list with an "uploaded-" prefix
 4. Click **Restore** to restore from the uploaded file
 
-##### Backup Version Compatibility
+### Backup Version Compatibility {#backup-compatibility}
 
 When viewing backups, Immich displays compatibility indicators:
 
@@ -85,7 +83,7 @@ When viewing backups, Immich displays compatibility indicators:
 Restoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.
 :::
 
-##### Restore Process
+### Restore Process {#restore-process}
 
 During restoration, Immich will:
 
@@ -96,7 +94,7 @@ During restoration, Immich will:
 
 If the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.
 
-#### Restore via Command Line
+### Restore via Command Line {#restore-cli}
 
 For advanced users or automated recovery scenarios, you can restore a database backup using the command line.
 
