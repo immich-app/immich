@@ -3,9 +3,9 @@ import { createHash, scrypt, ScryptOptions } from 'node:crypto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { BaseService } from 'src/services/base.service';
 
-function scryptAsync(password: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
+function scryptAsync(secret: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
-    scrypt(password, salt, keylen, options, (err, derivedKey) => {
+    scrypt(secret, salt, keylen, options, (err, derivedKey) => {
       if (err) {
         reject(err);
       } else {
@@ -16,22 +16,22 @@ function scryptAsync(password: string | Buffer, salt: Buffer, keylen: number, op
 }
 
 export interface VaultSetupDto {
-  password: string;
+  pin: string;
 }
 
 export interface VaultUnlockDto {
-  password: string;
+  pin: string;
 }
 
-export interface VaultChangePasswordDto {
-  currentPassword: string;
-  newPassword: string;
+export interface VaultChangePinDto {
+  currentPin: string;
+  newPin: string;
 }
 
 export interface AdminRecoverVaultDto {
   userId: string;
   adminPrivateKey: string;
-  newPassword: string;
+  newPin: string;
 }
 
 export interface AdminRecoveryKeyDto {
@@ -60,8 +60,8 @@ const KDF_PARAMS = {
 @Injectable()
 export class VaultService extends BaseService {
   /**
-   * Set up a new vault for the user with the given password.
-   * Creates a new vault key (KEK) and encrypts it with the password-derived key.
+   * Set up a new vault for the user with the given PIN.
+   * Creates a new vault key (KEK) and encrypts it with the PIN-derived key.
    */
   async setupVault(auth: AuthDto, dto: VaultSetupDto): Promise<void> {
     const userId = auth.user.id;
@@ -75,12 +75,12 @@ export class VaultService extends BaseService {
     // Generate vault key (KEK - Key Encryption Key)
     const vaultKey = this.cryptoRepository.generateEncryptionKey();
 
-    // Generate salt and derive password key
+    // Generate salt and derive PIN key
     const salt = this.cryptoRepository.randomBytes(32);
-    const passwordKey = await this.deriveKey(dto.password, salt);
+    const pinKey = await this.deriveKey(dto.pin, salt);
 
-    // Encrypt vault key with password-derived key
-    const encryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, passwordKey);
+    // Encrypt vault key with PIN-derived key
+    const encryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, pinKey);
 
     // Hash vault key for verification
     const vaultKeyHash = createHash('sha256').update(vaultKey).digest('base64');
@@ -122,7 +122,7 @@ export class VaultService extends BaseService {
   }
 
   /**
-   * Unlock the vault for the current session using the vault password.
+   * Unlock the vault for the current session using the vault PIN.
    * The vault key is cached in the session for subsequent decryption operations.
    */
   async unlockVault(auth: AuthDto, dto: VaultUnlockDto): Promise<void> {
@@ -138,22 +138,22 @@ export class VaultService extends BaseService {
       throw new NotFoundException('Vault not found');
     }
 
-    // Derive key from password
+    // Derive key from PIN
     const salt = Buffer.from(vault.kdfSalt, 'base64');
-    const passwordKey = await this.deriveKey(dto.password, salt);
+    const pinKey = await this.deriveKey(dto.pin, salt);
 
     // Decrypt vault key
     let vaultKey: Buffer;
     try {
-      vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, passwordKey);
+      vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, pinKey);
     } catch {
-      throw new UnauthorizedException('Invalid vault password');
+      throw new UnauthorizedException('Invalid vault PIN');
     }
 
     // Verify vault key
     const keyHash = createHash('sha256').update(vaultKey).digest('base64');
     if (keyHash !== vault.vaultKeyHash) {
-      throw new UnauthorizedException('Invalid vault password');
+      throw new UnauthorizedException('Invalid vault PIN');
     }
 
     // Cache vault key in session
@@ -204,9 +204,9 @@ export class VaultService extends BaseService {
   }
 
   /**
-   * Change the vault password.
+   * Change the vault PIN.
    */
-  async changePassword(auth: AuthDto, dto: VaultChangePasswordDto): Promise<void> {
+  async changePin(auth: AuthDto, dto: VaultChangePinDto): Promise<void> {
     const userId = auth.user.id;
 
     // Get vault
@@ -215,29 +215,29 @@ export class VaultService extends BaseService {
       throw new NotFoundException('Vault not found');
     }
 
-    // Verify current password by deriving key and decrypting vault key
+    // Verify current PIN by deriving key and decrypting vault key
     const currentSalt = Buffer.from(vault.kdfSalt, 'base64');
-    const currentPasswordKey = await this.deriveKey(dto.currentPassword, currentSalt);
+    const currentPinKey = await this.deriveKey(dto.currentPin, currentSalt);
 
     let vaultKey: Buffer;
     try {
-      vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, currentPasswordKey);
+      vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, currentPinKey);
     } catch {
-      throw new UnauthorizedException('Invalid current vault password');
+      throw new UnauthorizedException('Invalid current vault PIN');
     }
 
     // Verify vault key hash
     const keyHash = createHash('sha256').update(vaultKey).digest('base64');
     if (keyHash !== vault.vaultKeyHash) {
-      throw new UnauthorizedException('Invalid current vault password');
+      throw new UnauthorizedException('Invalid current vault PIN');
     }
 
-    // Generate new salt and derive new password key
+    // Generate new salt and derive new PIN key
     const newSalt = this.cryptoRepository.randomBytes(32);
-    const newPasswordKey = await this.deriveKey(dto.newPassword, newSalt);
+    const newPinKey = await this.deriveKey(dto.newPin, newSalt);
 
-    // Re-encrypt vault key with new password-derived key
-    const newEncryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, newPasswordKey);
+    // Re-encrypt vault key with new PIN-derived key
+    const newEncryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, newPinKey);
 
     // Update vault
     await this.vaultRepository.update(userId, {
@@ -255,7 +255,7 @@ export class VaultService extends BaseService {
       });
     }
 
-    this.logger.log(`Vault password changed for user ${userId}`);
+    this.logger.log(`Vault PIN changed for user ${userId}`);
   }
 
   /**
@@ -377,7 +377,7 @@ export class VaultService extends BaseService {
 
   /**
    * Admin: Recover a user's vault using the admin private key.
-   * This allows setting a new vault password for the user.
+   * This allows setting a new vault PIN for the user.
    */
   async adminRecoverVault(auth: AuthDto, dto: AdminRecoverVaultDto): Promise<void> {
     // Verify caller is admin
@@ -410,12 +410,12 @@ export class VaultService extends BaseService {
       throw new UnauthorizedException('Vault key verification failed');
     }
 
-    // Generate new salt and derive new password key
+    // Generate new salt and derive new PIN key
     const newSalt = this.cryptoRepository.randomBytes(32);
-    const newPasswordKey = await this.deriveKey(dto.newPassword, newSalt);
+    const newPinKey = await this.deriveKey(dto.newPin, newSalt);
 
-    // Re-encrypt vault key with new password
-    const newEncryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, newPasswordKey);
+    // Re-encrypt vault key with new PIN
+    const newEncryptedVaultKey = this.cryptoRepository.wrapKey(vaultKey, newPinKey);
 
     // Update vault
     await this.vaultRepository.update(dto.userId, {
@@ -443,10 +443,10 @@ export class VaultService extends BaseService {
   }
 
   /**
-   * Derive a key from password using scrypt.
+   * Derive a key from PIN using scrypt.
    */
-  private async deriveKey(password: string, salt: Buffer): Promise<Buffer> {
-    return (await scryptAsync(password, salt, KDF_PARAMS.keyLen, {
+  private async deriveKey(pin: string, salt: Buffer): Promise<Buffer> {
+    return (await scryptAsync(pin, salt, KDF_PARAMS.keyLen, {
       N: KDF_PARAMS.N,
       r: KDF_PARAMS.r,
       p: KDF_PARAMS.p,

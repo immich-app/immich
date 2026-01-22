@@ -1470,6 +1470,7 @@ export type DatabaseBackupConfig = {
     cronExpression: string;
     enabled: boolean;
     keepLastAmount: number;
+    uploadToS3: boolean;
 };
 export type SystemConfigBackupsDto = {
     database: DatabaseBackupConfig;
@@ -1663,6 +1664,24 @@ export type SystemConfigStorageLocationsDto = {
     profile: StorageBackend;
     thumbnails: StorageBackend;
 };
+export type SystemConfigS3BucketOverrideDto = {
+    accessKeyId?: string;
+    bucket?: string;
+    endpoint?: string;
+    forcePathStyle?: boolean;
+    prefix?: string;
+    region?: string;
+    secretAccessKey?: string;
+    storageClass?: StorageClass;
+};
+export type SystemConfigS3BucketsDto = {
+    backups?: SystemConfigS3BucketOverrideDto;
+    encodedVideos?: SystemConfigS3BucketOverrideDto;
+    originals?: SystemConfigS3BucketOverrideDto;
+    previews?: SystemConfigS3BucketOverrideDto;
+    profile?: SystemConfigS3BucketOverrideDto;
+    thumbnails?: SystemConfigS3BucketOverrideDto;
+};
 export type SystemConfigStorageClassesDto = {
     encodedVideos: EncodedVideos;
     originalsPhotos: OriginalsPhotos;
@@ -1673,6 +1692,7 @@ export type SystemConfigStorageClassesDto = {
 export type SystemConfigStorageS3Dto = {
     accessKeyId: string;
     bucket: string;
+    buckets: SystemConfigS3BucketsDto;
     enabled: boolean;
     endpoint: string;
     forcePathStyle: boolean;
@@ -1840,14 +1860,23 @@ export type CreateProfileImageResponseDto = {
     profileImagePath: string;
     userId: string;
 };
-export type AdminRecoverVaultDto = {};
+export type AdminRecoverVaultDto = {
+    newPin: string;
+};
 export type AdminRecoveryKeyDto = {};
 export type AdminRecoveryKeyResponseDto = {};
 export type AdminRecoveryStatusDto = {};
-export type VaultChangePasswordDto = {};
+export type VaultChangePinDto = {
+    currentPin: string;
+    newPin: string;
+};
 export type VaultMigrationResponseDto = {};
-export type VaultSetupDto = {};
-export type VaultUnlockDto = {};
+export type VaultSetupDto = {
+    pin: string;
+};
+export type VaultUnlockDto = {
+    pin: string;
+};
 export type WorkflowActionResponseDto = {
     actionConfig: object | null;
     id: string;
@@ -5369,15 +5398,15 @@ export function getAdminRecoveryStatus(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
- * Change vault password
+ * Change vault PIN
  */
-export function changeVaultPassword({ vaultChangePasswordDto }: {
-    vaultChangePasswordDto: VaultChangePasswordDto;
+export function changeVaultPin({ vaultChangePinDto }: {
+    vaultChangePinDto: VaultChangePinDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/vault/change-password", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchText("/vault/change-pin", oazapfts.json({
         ...opts,
         method: "POST",
-        body: vaultChangePasswordDto
+        body: vaultChangePinDto
     })));
 }
 /**
@@ -5910,8 +5939,11 @@ export enum JobName {
     S3UploadQueueAll = "S3UploadQueueAll",
     S3UploadEncodedVideo = "S3UploadEncodedVideo",
     S3UploadEncodedVideoQueueAll = "S3UploadEncodedVideoQueueAll",
+    S3UploadThumbnails = "S3UploadThumbnails",
+    S3UploadThumbnailsQueueAll = "S3UploadThumbnailsQueueAll",
     S3MigrateStorageClass = "S3MigrateStorageClass",
     S3MigrateStorageClassAll = "S3MigrateStorageClassAll",
+    S3CleanupOrphanedFiles = "S3CleanupOrphanedFiles",
     TagCleanup = "TagCleanup",
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
@@ -6075,6 +6107,11 @@ export enum OAuthTokenEndpointAuthMethod {
 export enum StorageBackend {
     Local = "local",
     S3 = "s3"
+}
+export enum StorageClass {
+    Standard = "STANDARD",
+    StandardIa = "STANDARD_IA",
+    GlacierIr = "GLACIER_IR"
 }
 export enum EncodedVideos {
     Standard = "STANDARD",

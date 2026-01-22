@@ -6,18 +6,24 @@ import { ApiTag, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetEncryptionService } from 'src/services/asset-encryption.service';
 import { VaultService, VaultStatusResponseDto } from 'src/services/vault.service';
+import { PinCode } from 'src/validation';
 
 class VaultSetupDto {
-  password!: string;
+  @PinCode()
+  pin!: string;
 }
 
 class VaultUnlockDto {
-  password!: string;
+  @PinCode()
+  pin!: string;
 }
 
-class VaultChangePasswordDto {
-  currentPassword!: string;
-  newPassword!: string;
+class VaultChangePinDto {
+  @PinCode()
+  currentPin!: string;
+
+  @PinCode()
+  newPin!: string;
 }
 
 class VaultMigrationResponseDto {
@@ -32,7 +38,9 @@ class AdminRecoveryKeyDto {
 class AdminRecoverVaultDto {
   userId!: string;
   adminPrivateKey!: string;
-  newPassword!: string;
+
+  @PinCode()
+  newPin!: string;
 }
 
 class AdminRecoveryKeyResponseDto {
@@ -58,7 +66,7 @@ export class VaultController {
   @Authenticated()
   @Endpoint({
     summary: 'Set up vault',
-    description: 'Create a new vault with the specified password. This enables encryption for your assets.',
+    description: 'Create a new vault with the specified 6-digit PIN. This enables encryption for your assets.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
   async setupVault(@Auth() auth: AuthDto, @Body() dto: VaultSetupDto): Promise<void> {
@@ -70,7 +78,7 @@ export class VaultController {
   @Authenticated()
   @Endpoint({
     summary: 'Unlock vault',
-    description: 'Unlock the vault with your password to access encrypted assets.',
+    description: 'Unlock the vault with your 6-digit PIN to access encrypted assets.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
   async unlockVault(@Auth() auth: AuthDto, @Body() dto: VaultUnlockDto): Promise<void> {
@@ -100,16 +108,16 @@ export class VaultController {
     return this.vaultService.getVaultStatus(auth);
   }
 
-  @Post('change-password')
+  @Post('change-pin')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated()
   @Endpoint({
-    summary: 'Change vault password',
-    description: 'Change your vault password. This will re-encrypt the vault key.',
+    summary: 'Change vault PIN',
+    description: 'Change your vault 6-digit PIN. This will re-encrypt the vault key.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
-  async changeVaultPassword(@Auth() auth: AuthDto, @Body() dto: VaultChangePasswordDto): Promise<void> {
-    await this.vaultService.changePassword(auth, dto);
+  async changeVaultPin(@Auth() auth: AuthDto, @Body() dto: VaultChangePinDto): Promise<void> {
+    await this.vaultService.changePin(auth, dto);
   }
 
   @Delete()
@@ -189,7 +197,7 @@ export class VaultController {
   @Authenticated({ admin: true })
   @Endpoint({
     summary: 'Recover user vault',
-    description: 'Recover a user vault using the admin private key. Sets a new vault password for the user.',
+    description: 'Recover a user vault using the admin private key. Sets a new 6-digit vault PIN for the user.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
   async adminRecoverVault(@Auth() auth: AuthDto, @Body() dto: AdminRecoverVaultDto): Promise<void> {

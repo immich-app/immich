@@ -14331,7 +14331,7 @@
     },
     "/vault/admin/recover": {
       "post": {
-        "description": "Recover a user vault using the admin private key. Sets a new vault password for the user.",
+        "description": "Recover a user vault using the admin private key. Sets a new 6-digit vault PIN for the user.",
         "operationId": "adminRecoverVault",
         "parameters": [],
         "requestBody": {
@@ -14570,16 +14570,16 @@
         "x-immich-state": "Beta"
       }
     },
-    "/vault/change-password": {
+    "/vault/change-pin": {
       "post": {
-        "description": "Change your vault password. This will re-encrypt the vault key.",
-        "operationId": "changeVaultPassword",
+        "description": "Change your vault 6-digit PIN. This will re-encrypt the vault key.",
+        "operationId": "changeVaultPin",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/VaultChangePasswordDto"
+                "$ref": "#/components/schemas/VaultChangePinDto"
               }
             }
           },
@@ -14601,7 +14601,7 @@
             "api_key": []
           }
         ],
-        "summary": "Change vault password",
+        "summary": "Change vault PIN",
         "tags": [
           "Vault"
         ],
@@ -14703,7 +14703,7 @@
     },
     "/vault/setup": {
       "post": {
-        "description": "Create a new vault with the specified password. This enables encryption for your assets.",
+        "description": "Create a new vault with the specified 6-digit PIN. This enables encryption for your assets.",
         "operationId": "setupVault",
         "parameters": [],
         "requestBody": {
@@ -14796,7 +14796,7 @@
     },
     "/vault/unlock": {
       "post": {
-        "description": "Unlock the vault with your password to access encrypted assets.",
+        "description": "Unlock the vault with your 6-digit PIN to access encrypted assets.",
         "operationId": "unlockVault",
         "parameters": [],
         "requestBody": {
@@ -15597,7 +15597,15 @@
         "type": "object"
       },
       "AdminRecoverVaultDto": {
-        "properties": {},
+        "properties": {
+          "newPin": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPin"
+        ],
         "type": "object"
       },
       "AdminRecoveryKeyDto": {
@@ -17209,12 +17217,16 @@
           "keepLastAmount": {
             "minimum": 1,
             "type": "number"
+          },
+          "uploadToS3": {
+            "type": "boolean"
           }
         },
         "required": [
           "cronExpression",
           "enabled",
-          "keepLastAmount"
+          "keepLastAmount",
+          "uploadToS3"
         ],
         "type": "object"
       },
@@ -17805,8 +17817,11 @@
           "S3UploadQueueAll",
           "S3UploadEncodedVideo",
           "S3UploadEncodedVideoQueueAll",
+          "S3UploadThumbnails",
+          "S3UploadThumbnailsQueueAll",
           "S3MigrateStorageClass",
           "S3MigrateStorageClassAll",
+          "S3CleanupOrphanedFiles",
           "TagCleanup",
           "VersionCheck",
           "OcrQueueAll",
@@ -23181,6 +23196,63 @@
         ],
         "type": "object"
       },
+      "SystemConfigS3BucketOverrideDto": {
+        "properties": {
+          "accessKeyId": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "forcePathStyle": {
+            "type": "boolean"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "secretAccessKey": {
+            "type": "string"
+          },
+          "storageClass": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SystemConfigS3BucketsDto": {
+        "properties": {
+          "backups": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          },
+          "encodedVideos": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          },
+          "originals": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          },
+          "previews": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          },
+          "thumbnails": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
+          }
+        },
+        "type": "object"
+      },
       "SystemConfigServerDto": {
         "properties": {
           "externalDomain": {
@@ -23399,6 +23471,9 @@
           "bucket": {
             "type": "string"
           },
+          "buckets": {
+            "$ref": "#/components/schemas/SystemConfigS3BucketsDto"
+          },
           "enabled": {
             "type": "boolean"
           },
@@ -23424,6 +23499,7 @@
         "required": [
           "accessKeyId",
           "bucket",
+          "buckets",
           "enabled",
           "endpoint",
           "forcePathStyle",
@@ -24616,8 +24692,21 @@
         },
         "type": "object"
       },
-      "VaultChangePasswordDto": {
-        "properties": {},
+      "VaultChangePinDto": {
+        "properties": {
+          "currentPin": {
+            "example": "123456",
+            "type": "string"
+          },
+          "newPin": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPin",
+          "newPin"
+        ],
         "type": "object"
       },
       "VaultMigrationResponseDto": {
@@ -24625,11 +24714,27 @@
         "type": "object"
       },
       "VaultSetupDto": {
-        "properties": {},
+        "properties": {
+          "pin": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pin"
+        ],
         "type": "object"
       },
       "VaultUnlockDto": {
-        "properties": {},
+        "properties": {
+          "pin": {
+            "example": "123456",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pin"
+        ],
         "type": "object"
       },
       "VersionCheckStateResponseDto": {
