@@ -29,12 +29,21 @@
 
   const { data }: Props = $props();
 
-  let queue = $derived(data.queue);
+  const queueName = data.queue.name;
+  let queue = $state(data.queue);
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
 
   onMount(() => queueManager.listen());
+
+  $effect(() => {
+    const updatedQueue = queueManager.queues.find(({ name }) => name === queueName);
+
+    if (updatedQueue) {
+      queue = updatedQueue;
+    }
+  });
 
   const onQueueUpdate = (update: QueueResponseDto) => {
     if (update.name === queue.name) {
