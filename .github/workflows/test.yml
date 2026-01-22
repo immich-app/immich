@@ -502,7 +502,12 @@ jobs:
       - name: Run e2e tests (web)
         env:
           CI: true
-        run: npx playwright test
+        run: npx playwright test --project=chromium
+        if: ${{ !cancelled() }}
+      - name: Run ui tests (web)
+        env:
+          CI: true
+        run: npx playwright test --project=ui
         if: ${{ !cancelled() }}
       - name: Archive test results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
