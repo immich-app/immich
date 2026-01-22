@@ -338,6 +338,9 @@ const assetSidecarWriteFactory = () => {
         id: newUuid(),
         path: '/path/to/original-path.jpg.xmp',
         type: AssetFileType.Sidecar,
+        storageBackend: StorageBackend.Local,
+        s3Bucket: null,
+        s3Key: null,
       },
     ],
     exifInfo: {

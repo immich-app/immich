@@ -705,6 +705,77 @@ class SystemConfigStorageClassesDto {
   encodedVideos!: string;
 }
 
+/**
+ * Per-media-type S3 bucket override configuration.
+ * All fields are optional - unspecified fields inherit from the default S3 config.
+ */
+class SystemConfigS3BucketOverrideDto {
+  @Optional()
+  @IsString()
+  endpoint?: string;
+
+  @Optional()
+  @IsString()
+  bucket?: string;
+
+  @Optional()
+  @IsString()
+  region?: string;
+
+  @Optional()
+  @IsString()
+  accessKeyId?: string;
+
+  @Optional()
+  @IsString()
+  secretAccessKey?: string;
+
+  @Optional()
+  @IsString()
+  prefix?: string;
+
+  @Optional()
+  @ValidateBoolean()
+  forcePathStyle?: boolean;
+
+  @Optional()
+  @IsString()
+  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
+  storageClass?: string;
+}
+
+class SystemConfigS3BucketsDto {
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  originals?: SystemConfigS3BucketOverrideDto;
+
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  thumbnails?: SystemConfigS3BucketOverrideDto;
+
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  previews?: SystemConfigS3BucketOverrideDto;
+
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  encodedVideos?: SystemConfigS3BucketOverrideDto;
+
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  profile?: SystemConfigS3BucketOverrideDto;
+
+  @Optional()
+  @Type(() => SystemConfigS3BucketOverrideDto)
+  @ValidateNested()
+  backups?: SystemConfigS3BucketOverrideDto;
+}
+
 const isS3Enabled = (config: SystemConfigStorageS3Dto) => config.enabled;
 
 class SystemConfigStorageS3Dto {
@@ -744,6 +815,11 @@ class SystemConfigStorageS3Dto {
   @ValidateNested()
   @IsObject()
   storageClasses!: SystemConfigStorageClassesDto;
+
+  @Type(() => SystemConfigS3BucketsDto)
+  @ValidateNested()
+  @IsObject()
+  buckets!: SystemConfigS3BucketsDto;
 }
 
 class SystemConfigStorageLocationsDto {

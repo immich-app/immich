@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import ChangePinCodeSettings from '$lib/components/user-settings-page/PinCodeSettings.svelte';
+  import VaultSettings from '$lib/components/user-settings-page/VaultSettings.svelte';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
   import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
@@ -24,6 +25,7 @@
     mdiKeyOutline,
     mdiLockSmart,
     mdiServerOutline,
+    mdiShieldLock,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -150,6 +152,16 @@
     autoScrollTo={true}
   >
     <ChangePinCodeSettings />
+  </SettingAccordion>
+
+  <SettingAccordion
+    icon={mdiShieldLock}
+    key="vault-encryption"
+    title={$t('vault_encryption')}
+    subtitle={$t('vault_encryption_description')}
+    autoScrollTo={true}
+  >
+    <VaultSettings />
   </SettingAccordion>
 
   <SettingAccordion

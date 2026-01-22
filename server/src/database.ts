@@ -40,9 +40,9 @@ export type AssetFile = {
   id: string;
   type: AssetFileType;
   path: string;
-  storageBackend?: StorageBackend | null;
-  s3Bucket?: string | null;
-  s3Key?: string | null;
+  storageBackend: StorageBackend;
+  s3Bucket: string | null;
+  s3Key: string | null;
 };
 
 export type Library = {

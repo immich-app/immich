@@ -397,6 +397,7 @@ export type JobItem =
   | { name: JobName.S3UploadThumbnailsQueueAll; data?: IBaseJob }
   | { name: JobName.S3MigrateStorageClass; data: IEntityJob }
   | { name: JobName.S3MigrateStorageClassAll; data?: IBaseJob }
+  | { name: JobName.S3CleanupOrphanedFiles; data?: IBaseJob }
 
   // Asset Encryption
   | { name: JobName.AssetEncrypt; data: IEntityJob }
