@@ -9,6 +9,7 @@ import {
   Generated,
   PrimaryGeneratedColumn,
   Table,
+  Unique,
 } from 'src/sql-tools';
 
 @Table('asset_edit')
@@ -19,6 +20,7 @@ import {
   referencingOldTableAs: 'deleted_edit',
   when: 'pg_trigger_depth() = 0',
 })
+@Unique({ columns: ['assetId', 'sequence'] })
 export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
@@ -31,4 +33,7 @@ export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
 
   @Column({ type: 'jsonb' })
   parameters!: AssetEditActionParameter[T];
+
+  @Column({ type: 'integer' })
+  sequence!: number;
 }
