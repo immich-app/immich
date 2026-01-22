@@ -1,4 +1,8 @@
-# Automatic Backup
+---
+sidebar_position: 1
+---
+
+# Mobile Backup
 
 ## Overview
 
@@ -8,28 +12,52 @@ When backup is enabled, Immich will upload new photos and videos from selected a
 
 <img
 src={require('./img/enable-backup-button.webp').default}
-width="300px"
+width="400px"
 title="Upload button"
 />
 
-## Platform Specific Features
+## General Features
 
-### General
+### Backup albums selection
+
+<img
+src={require('./img/backup-album-selection.webp').default}
+width="400px"
+title="Backup album selection"
+/>
+
+You can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tap on an album) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you want to back up all assets except those in the "Videos" album.
+
+### Networking requirements
 
 By default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.
 
 <img
 src={require('./img/backup-options.webp').default}
-width="500px"
+width="400px"
 title="Upload button"
 />
+
+### Backup album synchronization
+
+<img
+src={require('./img/backup-album-sync.webp').default}
+width="400px"
+title="Backup album synchronization option"
+/>
+
+When enabled, Immich automatically creates albums on the server that mirror the albums on your mobile device. Photos and videos are organized into these server-side albums to match your device's album structure, making it easy to find and browse your content the same way you do on your phone.
+
+This is a one-way sync from your device to the server. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.
+
+## Platform Specific Features
 
 ### Android
 
 <img
 src={require('./img/android-backup-options.webp').default}
-width="500px"
-title="Upload button"
+width="400px"
+title="Android backup options"
 />
 
 - It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.

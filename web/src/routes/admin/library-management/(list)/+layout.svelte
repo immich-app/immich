@@ -4,14 +4,16 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { Route } from '$lib/route';
-  import { getLibrariesActions } from '$lib/services/library.service';
+  import { getLibrariesActions, getLibraryActions } from '$lib/services/library.service';
   import { locale } from '$lib/stores/preferences.store';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
   import {
-    Button,
     CommandPaletteDefaultProvider,
     Container,
+    ContextMenuButton,
+    Link,
+    MenuItemType,
     Table,
     TableBody,
     TableCell,
@@ -58,13 +60,18 @@
 
   const { Create, ScanAll } = $derived(getLibrariesActions($t, libraries));
 
+  const getActionsForLibrary = (library: LibraryResponseDto) => {
+    const { Detail, Scan, Edit, Delete } = getLibraryActions($t, library);
+    return [Detail, Scan, Edit, MenuItemType.Divider, Delete];
+  };
+
   const classes = {
     column1: 'w-4/12',
     column2: 'w-4/12',
-    column3: 'w-2/12',
-    column4: 'w-2/12',
-    column5: 'w-2/12',
-    column6: 'w-2/12',
+    column3: 'w-1/12',
+    column4: 'w-1/12',
+    column5: 'w-1/12',
+    column6: 'w-1/12 flex justify-end',
   };
 </script>
 
@@ -89,14 +96,19 @@
             {#each libraries as library (library.id + library.name)}
               {@const { photos, usage, videos } = statistics[library.id]}
               {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
+              {@const owner = owners[library.id]}
               <TableRow>
-                <TableCell class={classes.column1}>{library.name}</TableCell>
-                <TableCell class={classes.column2}>{owners[library.id].name}</TableCell>
+                <TableCell class={classes.column1}>
+                  <Link href={Route.viewLibrary(library)}>{library.name}</Link>
+                </TableCell>
+                <TableCell class={classes.column2}>
+                  <Link href={Route.viewUser(owner)}>{owner.name}</Link>
+                </TableCell>
                 <TableCell class={classes.column3}>{photos.toLocaleString($locale)}</TableCell>
                 <TableCell class={classes.column4}>{videos.toLocaleString($locale)}</TableCell>
                 <TableCell class={classes.column5}>{diskUsage} {diskUsageUnit}</TableCell>
                 <TableCell class={classes.column6}>
-                  <Button size="small" href={Route.viewLibrary(library)}>{$t('view')}</Button>
+                  <ContextMenuButton color="primary" aria-label={$t('open')} items={getActionsForLibrary(library)} />
                 </TableCell>
               </TableRow>
             {/each}

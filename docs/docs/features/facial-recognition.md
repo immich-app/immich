@@ -23,7 +23,7 @@ Additional actions you can do include:
 - Changing the feature photo of the person
 - Hiding the faces of a person from the Explore page and detail view
 - Setting a person's date of birth, so that the age of the person can be shown at the time the photo was taken
-- Merging two or more detected faces into one person
+- Merging two or more detected people into one person
 - Favoriting a person to pin them to the top of the list
 
 It can be found from the app bar when you access the detail view of a person.
