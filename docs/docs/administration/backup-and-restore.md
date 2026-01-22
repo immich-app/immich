@@ -9,7 +9,7 @@ A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strate
 
 ## Database
 
-Immich stores [file paths in the database](https://github.com/immich-app/immich/discussions/3299), users metadata in the database, it does not scan the library folder, so database backups are essential
+Immich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.
 
 ### Automatic Database Backups
 

@@ -26,7 +26,7 @@ width="400px"
 title="Backup album selection"
 />
 
-You can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tap on an album) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you want to back up all assets except those in the "Videos" album.
+You can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tapping on them) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you may want to back up all assets except those in the "Videos" album.
 
 ### Networking requirements
 
@@ -61,7 +61,7 @@ title="Android backup options"
 />
 
 - It is a well-known problem that some Android models are very strict with battery optimization settings, which can cause a problem with the background worker. Please visit [Don't kill my app](https://dontkillmyapp.com/) for a guide on disabling this setting on your phone.
-- You can allow the background task to run when the device is charging.
+- You can allow the background task to run only when the device is charging.
 - You can set the minimum delay from the time a photo is taken to when the background upload task will run.
 
 ### iOS

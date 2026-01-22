@@ -57,15 +57,15 @@ To apply the Storage Label to previously uploaded assets, run the Storage Migrat
 
 <img src={require('./img/user-edit-menu.webp').default} width="80%" title="Customize Delete User" />
 
-To reset a user's password, go to the `Administration > Users`, then click on the context menu button next to the user, then click "Reset Password". The user's password will be reset to random password and they have to change it next time the sign in.
+To reset a user's password, go to `Administration > Users`, then click on the context menu button next to the user, then click "Reset Password". The user's password will be reset to a random password and they have to change it next time they sign in.
 
 ## Delete a User
 
-If you need to remove a user from Immich, go to the `Administration > Users`, then click on the context menu button next to the user. The user account will immediately become disabled and their library and all associated data will be removed after 7 days by default.
+If you need to remove a user from Immich, go to `Administration > Users`, then click on the context menu button next to the user. The user account will immediately become disabled and their library and all associated data will be removed after 7 days by default.
 
 ### Delete Delay
 
-You can customize the time of the deletion of the users from the `Administration -> Settings -> User Settings`.
+You can customize the time of the deletion of the users from `Administration -> Settings -> User Settings`.
 :::info user deletion job
 The user deletion job runs at midnight to check for users that are ready for deletion. Changes to this setting will be evaluated at the next execution.
 :::
