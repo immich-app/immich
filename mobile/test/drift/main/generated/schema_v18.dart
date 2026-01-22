@@ -8513,13 +8513,9 @@ class DatabaseAtV18 extends GeneratedDatabase {
     'idx_trashed_local_asset_album',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
   );
-  late final Index idxTrashSyncChecksum = Index(
-    'idx_trash_sync_checksum',
-    'CREATE INDEX idx_trash_sync_checksum ON trash_sync_entity (checksum)',
-  );
-  late final Index idxTrashSyncStatus = Index(
-    'idx_trash_sync_status',
-    'CREATE INDEX idx_trash_sync_status ON trash_sync_entity (is_sync_approved)',
+  late final Index idxTrashSyncIsSyncApproved = Index(
+    'idx_trash_sync_is_sync_approved',
+    'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
   );
   late final Index idxTrashSyncChecksumStatus = Index(
     'idx_trash_sync_checksum_status',
@@ -8560,8 +8556,7 @@ class DatabaseAtV18 extends GeneratedDatabase {
     idxLatLng,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
-    idxTrashSyncChecksum,
-    idxTrashSyncStatus,
+    idxTrashSyncIsSyncApproved,
     idxTrashSyncChecksumStatus,
   ];
   @override

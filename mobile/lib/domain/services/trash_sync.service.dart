@@ -6,7 +6,8 @@ class TrashSyncService {
   const TrashSyncService({required DriftTrashSyncRepository trashSyncRepository})
     : _trashSyncRepository = trashSyncRepository;
 
-  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
+  Stream<int> watchPendingApprovalAssetCount() => _trashSyncRepository.watchPendingApprovalAssetCount();
 
-  Stream<bool> watchIsApprovalPending(String checksum) => _trashSyncRepository.watchIsApprovalPending(checksum);
+  Stream<bool> watchIsAssetApprovalPending(String checksum) =>
+      _trashSyncRepository.watchIsAssetApprovalPending(checksum);
 }

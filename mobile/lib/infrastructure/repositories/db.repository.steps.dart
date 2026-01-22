@@ -7443,8 +7443,7 @@ final class Schema18 extends i0.VersionedSchema {
     idxLatLng,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
-    idxTrashSyncChecksum,
-    idxTrashSyncStatus,
+    idxTrashSyncIsSyncApproved,
     idxTrashSyncChecksumStatus,
   ];
   late final Shape20 userEntity = Shape20(
@@ -7865,13 +7864,9 @@ final class Schema18 extends i0.VersionedSchema {
     'idx_trashed_local_asset_album',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
   );
-  final i1.Index idxTrashSyncChecksum = i1.Index(
-    'idx_trash_sync_checksum',
-    'CREATE INDEX idx_trash_sync_checksum ON trash_sync_entity (checksum)',
-  );
-  final i1.Index idxTrashSyncStatus = i1.Index(
-    'idx_trash_sync_status',
-    'CREATE INDEX idx_trash_sync_status ON trash_sync_entity (is_sync_approved)',
+  final i1.Index idxTrashSyncIsSyncApproved = i1.Index(
+    'idx_trash_sync_is_sync_approved',
+    'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
   );
   final i1.Index idxTrashSyncChecksumStatus = i1.Index(
     'idx_trash_sync_checksum_status',

@@ -208,8 +208,7 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from17To18: (m, v18) async {
             await m.create(v18.trashSyncEntity);
-            await m.createIndex(v18.idxTrashSyncChecksum);
-            await m.createIndex(v18.idxTrashSyncStatus);
+            await m.createIndex(v18.idxTrashSyncIsSyncApproved);
             await m.createIndex(v18.idxTrashSyncChecksumStatus);
           },
         ),

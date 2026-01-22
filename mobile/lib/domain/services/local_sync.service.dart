@@ -47,8 +47,9 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-          Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+      if (CurrentPlatform.isAndroid &&
+          (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
@@ -387,7 +388,7 @@ class LocalSyncService {
     if (localAssetsToTrash.isNotEmpty) {
       if (reviewMode) {
         final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
-        _log.info(
+        _log.fine(
           "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.id}, name:${e.name}, deletedAt:${e.deletedAt}').join('|')}",
         );
         await _trashSyncRepository.upsertReviewCandidates(itemsToReview);

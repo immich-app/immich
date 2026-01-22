@@ -76,7 +76,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     return deletedMatched + deletedOrphans;
   }
 
-  Stream<int> watchPendingApprovalCount() {
+  Stream<int> watchPendingApprovalAssetCount() {
     final countExpr = _db.trashSyncEntity.checksum.count(distinct: true);
 
     final q = _db.selectOnly(_db.trashSyncEntity)
@@ -86,7 +86,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     return q.watchSingle().map((row) => row.read(countExpr) ?? 0).distinct();
   }
 
-  Stream<bool> watchIsApprovalPending(String checksum) {
+  Stream<bool> watchIsAssetApprovalPending(String checksum) {
     final query = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([_db.trashSyncEntity.checksum])
       ..where((_db.trashSyncEntity.checksum.equals(checksum) & _db.trashSyncEntity.isSyncApproved.isNull()))
