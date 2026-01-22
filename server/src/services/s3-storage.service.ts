@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AssetFileType, JobName, JobStatus, QueueName, StorageBackend, StorageLocationType } from 'src/enum';
 import { LocalStorageAdapter, S3StorageManager } from 'src/repositories/storage';
-import { StorageCore } from 'src/cores/storage.core';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
