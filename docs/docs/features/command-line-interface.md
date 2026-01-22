@@ -192,4 +192,4 @@ The API key can be obtained in the user setting panel on the web interface. You 
 
 ![Obtain Api Key](./img/obtain-api-key.webp)
 
-![Specify permission for the key](./img/obtain-api-key-2.webp)
+![Specify permissions for the key](./img/obtain-api-key-2.webp)

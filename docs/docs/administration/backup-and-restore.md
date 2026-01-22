@@ -16,7 +16,7 @@ Immich automatically creates database backups for disaster-recovery purposes. Th
 You can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).
 
 :::caution
-Database backups do **NOT** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
+Database backups do **not** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
 :::
 
 #### Creating a Backup

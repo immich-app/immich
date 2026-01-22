@@ -4,7 +4,7 @@
 
 Immich supports uploading photos and videos from your mobile device to the server automatically.
 
-By enable the backup button, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background (iOS), or when the a new photos or videos are taken (Android).
+When backup is enabled, Immich will upload new photos and videos from selected albums when you open or resume the app, as well as periodically in the background.
 
 <img
 src={require('./img/enable-backup-button.webp').default}
@@ -44,4 +44,4 @@ title="Upload button"
 <img src={require('./img/background-app-refresh.webp').default} width="30%" title="background-app-refresh" />
 </div>
 
-- iOS automatically manages background tasks, the app cannot control when the background upload task will run. It is known that the more frequently you open the app, the more often the background task will run.
+- iOS automatically manages background tasks; the app cannot control when the background upload task will run. The more frequently you open the app, the more often background tasks will run.
