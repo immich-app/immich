@@ -431,6 +431,7 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
+      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
       !isShowEditor &&
       ocrManager.hasOcrData,
   );

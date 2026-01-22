@@ -12,14 +12,14 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async replaceAll(assetId: string, edits: AssetEditActionItem[]): Promise<AssetEditActionItem[]> {
-    return await this.db.transaction().execute(async (trx) => {
+  replaceAll(assetId: string, edits: AssetEditActionItem[]): Promise<AssetEditActionItem[]> {
+    return this.db.transaction().execute(async (trx) => {
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 
       if (edits.length > 0) {
         return trx
           .insertInto('asset_edit')
-          .values(edits.map((edit) => ({ assetId, ...edit })))
+          .values(edits.map((edit, i) => ({ assetId, sequence: i, ...edit })))
           .returning(['action', 'parameters'])
           .execute() as Promise<AssetEditActionItem[]>;
       }
@@ -31,11 +31,12 @@ export class AssetEditRepository {
   @GenerateSql({
     params: [DummyValue.UUID],
   })
-  async getAll(assetId: string): Promise<AssetEditActionItem[]> {
+  getAll(assetId: string): Promise<AssetEditActionItem[]> {
     return this.db
       .selectFrom('asset_edit')
       .select(['action', 'parameters'])
       .where('assetId', '=', assetId)
+      .orderBy('sequence', 'asc')
       .execute() as Promise<AssetEditActionItem[]>;
   }
 }
