@@ -39,13 +39,13 @@ const config: PlaywrightTestConfig = {
       testMatch: /.*\.e2e-spec\.ts/,
       workers: 1,
     },
-    // {
-    //   name: 'parallel tests',
-    //   use: { ...devices['Desktop Chrome'] },
-    //   testMatch: /.*\.parallel-e2e-spec\.ts/,
-    //   fullyParallel: true,
-    //   workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
-    // },
+    {
+      name: 'ui',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /.*\.ui-spec\.ts/,
+      fullyParallel: true,
+      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
+    },
 
     // {
     //   name: 'firefox',
