@@ -69,7 +69,13 @@ h6 {
   --ifm-color-primary-lighter: #e9f1fe;
   --ifm-color-primary-lightest: #ffffff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --ifm-background-color: #000000;
+  --ifm-navbar-background-color: #0c0c0c;
+  --ifm-footer-background-color: #0c0c0c;
+}
+
+[data-theme='dark'] body,
+[data-theme='dark'] .main-wrapper {
+  background-color: #070707;
 }
 
 div[class^='announcementBar_'] {
