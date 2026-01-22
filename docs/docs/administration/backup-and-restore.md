@@ -5,51 +5,100 @@ import TabItem from '@theme/TabItem';
 
 A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)
 
-The instructions on this page show you how to prepare your Immich instance to be backed up, and which files to take a backup of. _You still need to take care of using an actual backup tool to make a backup yourself._
-
 ## Database
 
+Immich stores [file paths in the database](https://github.com/immich-app/immich/discussions/3299), users metadata in the database, it does not scan the library folder, so database backups are essential
+
+### Automatic Database Backups
+
+Immich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.
+
+You can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).
+
 :::caution
-Immich saves [file paths in the database](https://github.com/immich-app/immich/discussions/3299), it does not scan the library folder to update the database so backups are crucial.
+Database backups do **NOT** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
 :::
 
-:::info
-Refer to the official [postgres documentation](https://www.postgresql.org/docs/current/backup.html) for details about backing up and restoring a postgres database.
-:::
+#### Creating a Backup
 
-:::caution
-It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
-:::
+You can trigger a database backup manually:
 
-### Automatic Database Dumps
+1. Go to **Administration > Queues**
+2. Click **Create job** in the top right
+3. Select **Create Database Backup** and click **Confirm**
+
+The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.
+
+### Restoring a Database Backup
+
+Immich provides two ways to restore a database backup: through the web interface or via the command line.
+
+#### Restore via Web Interface
+
+You can restore a database backup directly from the Immich web interface. This is the recommended method for most users.
+
+##### From Settings (Existing Installation)
+
+1. Go to **Administration > Maintenance**
+2. Expand the **Restore database backup** section
+3. You'll see a list of available backups with their version and creation date
+4. Click **Restore** next to the backup you want to restore
+5. Confirm the restore operation
 
 :::warning
-The automatic database dumps can be used to restore the database in the event of damage to the Postgres database files.
-There is no monitoring for these dumps and you will not be notified if they are unsuccessful.
+Restoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.
 :::
 
-:::caution
-The database dumps do **NOT** contain any pictures or videos, only metadata. They are only usable with a copy of the other files in `UPLOAD_LOCATION` as outlined below.
+##### From Onboarding (Fresh Installation)
+
+If you're setting up Immich on a fresh installation and want to restore from an existing backup:
+
+1. On the welcome screen, click **Restore from backup**
+2. Immich will enter maintenance mode and display integrity checks for your storage folders
+3. Review the folder status to ensure your library files are accessible
+4. Click **Next** to proceed to backup selection
+5. Select a backup from the list or upload a backup file (`.sql.gz`)
+6. Click **Restore** to begin the restoration process
+
+:::tip
+Before restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.
 :::
 
-For disaster-recovery purposes, Immich will automatically create database dumps. The dumps are stored in `UPLOAD_LOCATION/backups`.
-Please be sure to make your own, independent backup of the database together with the asset folders as noted below.
-You can adjust the schedule and amount of kept database dumps in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).
-By default, Immich will keep the last 14 database dumps and create a new dump every day at 2:00 AM.
+##### Uploading a Backup File
 
-#### Trigger Dump
+You can upload a database backup file directly:
 
-You are able to trigger a database dump in the [admin job status page](http://my.immich.app/admin/queues).
-Visit the page, open the "Create job" modal from the top right, select "Create Database Dump" and click "Confirm".
-A job will run and trigger a dump, you can verify this worked correctly by checking the logs or the `backups/` folder.
-This dumps will count towards the last `X` dumps that will be kept based on your settings.
+1. In the **Restore database backup** section, click **Select from computer**
+2. Choose a `.sql.gz` file
+3. The uploaded backup will appear in the list with an "uploaded-" prefix
+4. Click **Restore** to restore from the uploaded file
 
-#### Restoring
+##### Backup Version Compatibility
 
-We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.
-Then please follow the steps in the following section for restoring the database.
+When viewing backups, Immich displays compatibility indicators:
 
-### Manual Backup and Restore
+- ✅ **Green checkmark**: Backup version matches current Immich version
+- ⚠️ **Warning**: Backup was created with a different Immich version
+- ❌ **Error**: Could not determine backup version
+
+:::warning
+Restoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.
+:::
+
+##### Restore Process
+
+During restoration, Immich will:
+
+1. Create a backup of the current database (restore point)
+2. Restore the selected backup
+3. Run database migrations if needed
+4. Perform a health check to verify the restore succeeded
+
+If the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.
+
+#### Restore via Command Line
+
+For advanced users or automated recovery scenarios, you can restore a database backup using the command line.
 
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
@@ -104,10 +153,12 @@ docker compose up -d                              # Start remainder of Immich ap
   </TabItem>
 </Tabs>
 
-Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.), in which case you need to delete the `DB_DATA_LOCATION` folder to reset the database.
+:::note
+For the database restore to proceed properly, it requires a completely fresh install (i.e., the Immich server has never run since creating the Docker containers). If the Immich app has run, you may encounter Postgres conflicts (relation already exists, violated foreign key constraints, etc.). In this case, delete the `DB_DATA_LOCATION` folder to reset the database.
+:::
 
 :::tip
-Some deployment methods make it difficult to start the database without also starting the server. In these cases, you may set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Be sure to remove this variable and restart the services after the database is restored.
+Some deployment methods make it difficult to start the database without also starting the server. In these cases, set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This prevents the server from running migrations that interfere with the restore process. Remove this variable and restart services after the database is restored.
 :::
 
 ## Filesystem
