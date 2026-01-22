@@ -31,7 +31,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       diskCapacity: 1 << 30,
       directory: thumbnailPath
     )
-    config.httpMaximumConnectionsPerHost = 16
+    config.httpMaximumConnectionsPerHost = 64
     return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }()
   
