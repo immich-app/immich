@@ -100,7 +100,29 @@ export class JobService extends BaseService {
         const asset = await this.assetRepository.getById(item.data.id);
 
         if (asset) {
-          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, { assetId: item.data.id });
+          this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
+            asset: {
+              id: asset.id,
+              ownerId: asset.ownerId,
+              originalFileName: asset.originalFileName,
+              thumbhash: asset.thumbhash ? hexOrBufferToBase64(asset.thumbhash) : null,
+              checksum: hexOrBufferToBase64(asset.checksum),
+              fileCreatedAt: asset.fileCreatedAt,
+              fileModifiedAt: asset.fileModifiedAt,
+              localDateTime: asset.localDateTime,
+              duration: asset.duration,
+              type: asset.type,
+              deletedAt: asset.deletedAt,
+              isFavorite: asset.isFavorite,
+              visibility: asset.visibility,
+              livePhotoVideoId: asset.livePhotoVideoId,
+              stackId: asset.stackId,
+              libraryId: asset.libraryId,
+              width: asset.width,
+              height: asset.height,
+              isEdited: asset.isEdited,
+            },
+          });
         }
 
         break;
@@ -153,7 +175,7 @@ export class JobService extends BaseService {
                 libraryId: asset.libraryId,
                 width: asset.width,
                 height: asset.height,
-                editCount: asset.editCount,
+                isEdited: asset.isEdited,
               },
               exif: {
                 assetId: exif.assetId,

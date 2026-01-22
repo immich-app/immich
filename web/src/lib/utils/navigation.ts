@@ -1,8 +1,8 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/stores';
 import type { RouteId } from '$app/types';
-import { AppRoute } from '$lib/constants';
 import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
+import { Route } from '$lib/route';
 import { get } from 'svelte/store';
 
 export type AssetGridRouteSearchParams = {
@@ -33,7 +33,7 @@ function currentUrlWithoutAsset() {
   // This contains special casing for the /photos/:assetId route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
-    ? AppRoute.PHOTOS + $page.url.search
+    ? Route.photos() + $page.url.search
     : $page.url.pathname.replace(/(\/photos.*)$/, '') + $page.url.search;
 }
 
@@ -47,7 +47,7 @@ export function currentUrlReplaceAssetId(assetId: string) {
   // this contains special casing for the /photos/:assetId photos route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
-    ? `${AppRoute.PHOTOS}/${assetId}${searchparams}`
+    ? `${Route.viewAsset({ id: assetId })}${searchparams}`
     : `${$page.url.pathname.replace(/\/photos\/[^/]+$/, '')}/photos/${assetId}${searchparams}`;
 }
 

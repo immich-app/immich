@@ -8,7 +8,7 @@ dotenv.config({ path: resolve(import.meta.dirname, '.env') });
 export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
 export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? '127.0.0.1';
 export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${playwrightHost}:2285`;
-export const playwriteSlowMo = parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
+export const playwriteSlowMo = Number.parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
 export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
 
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
@@ -39,13 +39,13 @@ const config: PlaywrightTestConfig = {
       testMatch: /.*\.e2e-spec\.ts/,
       workers: 1,
     },
-    {
-      name: 'parallel tests',
-      use: { ...devices['Desktop Chrome'] },
-      testMatch: /.*\.parallel-e2e-spec\.ts/,
-      fullyParallel: true,
-      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
-    },
+    // {
+    //   name: 'parallel tests',
+    //   use: { ...devices['Desktop Chrome'] },
+    //   testMatch: /.*\.parallel-e2e-spec\.ts/,
+    //   fullyParallel: true,
+    //   workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
+    // },
 
     // {
     //   name: 'firefox',

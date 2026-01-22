@@ -68,6 +68,56 @@ Now make sure that the local album is selected in the backup screen (steps 1-2 a
   title="Upload button after photos selection"
 />
 
+## Free Up Space
+
+The **Free Up Space** tool allows you to remove local media files from your device that have already been successfully backed up to your Immich server (and are not in the Immich trash). This helps reclaim storage on your mobile device without losing your memories.
+
+### How it works
+
+1.  **Configuration:**
+    - **Cutoff Date:** You can select a cutoff date. The tool will only look for photos and videos **on or before** this date.
+    - **Filter Options:** You can choose to remove **All** assets, or restrict removal to **Photos only** or **Videos only**.
+    - **Keep Favorites:** By default, local assets marked as favorites are preserved on your device, even if they match the cutoff date.
+2.  **Scan & Review:** Before any files are removed, you are presented with a review screen to verify which items will be deleted.
+3.  **Deletion:** Confirmed items are moved to your device's native Trash/Recycle Bin. They will be permanently removed by the OS based on your system settings (usually after 30 days).
+
+:::info Android Permissions
+For the smoothest experience on Android, you should grant Immich special delete privileges. Without this, you may be prompted to confirm deletion for every single image.
+
+Go to **Immich Settings > Advanced** and enable **"Media Management Access"**.
+:::
+
+### iCloud Photos (iOS Users)
+
+If you use **iCloud Photos** alongside Immich, it is vital to understand how deletion affects your data. iCloud utilizes a two-way sync; this means deleting a photo from your iPhone to free up space will **also delete it from iCloud**.
+
+:::warning iCloud & Backups
+If you rely on iCloud as a secondary backup (part of a 3-2-1 backup strategy), using the Free Up Space feature in Immich will remove the file from both your phone and iCloud.
+
+Once deleted, the photo will exist **only** on your Immich server (and your phone's "Recently Deleted" folder for 30 days).
+
+When you use iCloud Photos and delete a photo or video on one device, it's also deleted on all other devices where you're signed in with the same Apple Account.
+
+More information on the [Apple Support](https://support.apple.com/en-us/108922#iCloud_photo_library) website
+
+**Shared Albums**
+Assets that are part of an **iCloud Shared Album** are automatically excluded from the cleanup scan to ensure they remain viewable to others in the shared album.
+:::
+
+### External App Dependencies (WhatsApp, etc.)
+
+:::danger WhatsApp & Local Files
+Android applications like **WhatsApp** rely on local files to display media in chat history.
+
+If Immich backs up your WhatsApp folder and you run **Free Up Space**, the local copies of these images will be deleted. Consequently, **media in your WhatsApp chats will appear blurry or missing.** You will only be able to view these photos inside the Immich app; they will no longer be visible within the WhatsApp interface.
+
+**Recommendation:** If keeping chat history intact is important, please ensure you review the deletion list carefully or consider excluding WhatsApp folders from the backup if you intend to use this feature frequently.
+:::
+
+:::info reclaim storage
+You must empty the system/gallery trash manually to reclaim storage.
+:::
+
 ## Album Sync
 
 You can sync or mirror an album from your phone to the Immich server on your account. For example, if you select Recents, Camera and Videos album for backup, the corresponding album with the same name will be created on the server. Once the assets from those albums are uploaded, they will be put into the target albums automatically.

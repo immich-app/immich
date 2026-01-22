@@ -144,6 +144,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           socket.on('on_asset_hidden', _handleOnAssetHidden);
         } else {
           socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+          socket.on('AssetEditReadyV1', _handleSyncAssetEditReady);
         }
 
         socket.on('on_config_update', _handleOnConfigUpdate);
@@ -192,10 +193,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void stopListeningToBetaEvents() {
     state.socket?.off('AssetUploadReadyV1');
+    state.socket?.off('AssetEditReadyV1');
   }
 
   void startListeningToBetaEvents() {
     state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+    state.socket?.on('AssetEditReadyV1', _handleSyncAssetEditReady);
   }
 
   void listenUploadEvent() {
@@ -313,6 +316,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   void _handleSyncAssetUploadReady(dynamic data) {
     _batchedAssetUploadReady.add(data);
     _batchDebouncer.run(_processBatchedAssetUploadReady);
+  }
+
+  void _handleSyncAssetEditReady(dynamic data) {
+    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditBatch([data]));
   }
 
   void _processBatchedAssetUploadReady() {

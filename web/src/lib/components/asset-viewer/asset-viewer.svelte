@@ -6,18 +6,20 @@
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -26,18 +28,15 @@
   import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
     getAssetInfo,
     getStack,
-    runAssetJobs,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -250,23 +249,14 @@
           await handleStopSlideshow();
         }
       }
-    });
+    }, $t('error_while_navigating'));
   };
 
-  // const showEditor = () => {
-  //   if (assetViewerManager.isShowActivityPanel) {
-  //     assetViewerManager.isShowActivityPanel = false;
-  //   }
-  //   isShowEditor = !isShowEditor;
-  // };
-
-  const handleRunJob = async (name: AssetJobName) => {
-    try {
-      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      toastManager.success($getAssetJobMessage(name));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
+  const showEditor = () => {
+    if (assetViewerManager.isShowActivityPanel) {
+      assetViewerManager.isShowActivityPanel = false;
     }
+    isShowEditor = !isShowEditor;
   };
 
   /**
@@ -318,6 +308,11 @@
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
         await handleGetAllAlbums();
+        break;
+      }
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
@@ -395,7 +390,7 @@
     }
 
     await new Promise((promise) => setTimeout(promise, 500));
-    await goto(`${AppRoute.PHOTOS}/${newAssetId}`);
+    await goto(Route.viewAsset({ id: newAssetId }));
   };
 
   const onAssetUpdate = (update: AssetResponseDto) => {
@@ -436,6 +431,7 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
+      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
       !isShowEditor &&
       ocrManager.hasOcrData,
   );
@@ -465,7 +461,7 @@
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onRunJob={handleRunJob}
+        onEdit={showEditor}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}

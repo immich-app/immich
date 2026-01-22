@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleCreateLibrary } from '$lib/services/library.service';
   import { user } from '$lib/stores/user.store';
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
@@ -18,13 +18,13 @@
   const users = $state(data.allUsers);
 
   const onClose = async () => {
-    await goto(AppRoute.ADMIN_LIBRARIES);
+    await goto(Route.libraries());
   };
 
   const onSubmit = async () => {
     const library = await handleCreateLibrary({ ownerId });
     if (library) {
-      await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`, { replaceState: true });
+      await goto(Route.viewLibrary(library), { replaceState: true });
     }
   };
 </script>

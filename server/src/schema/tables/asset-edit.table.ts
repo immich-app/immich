@@ -12,11 +12,11 @@ import {
 } from 'src/sql-tools';
 
 @Table('asset_edit')
-@AfterInsertTrigger({ scope: 'row', function: asset_edit_insert })
+@AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert, referencingNewTableAs: 'inserted_edit' })
 @AfterDeleteTrigger({
-  scope: 'row',
+  scope: 'statement',
   function: asset_edit_delete,
-  referencingOldTableAs: 'old',
+  referencingOldTableAs: 'deleted_edit',
   when: 'pg_trigger_depth() = 0',
 })
 export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {

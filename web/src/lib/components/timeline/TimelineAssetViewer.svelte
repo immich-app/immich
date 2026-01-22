@@ -11,10 +11,12 @@
   import { handlePromiseError } from '$lib/utils';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
+  import { handleErrorAsync } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
   import { onDestroy, onMount, untrack } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   let { asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
@@ -38,28 +40,27 @@
     person,
   }: Props = $props();
 
-  const getNextAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
-    const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
-    if (earlierTimelineAsset) {
-      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: earlierTimelineAsset.id });
-      if (preload) {
-        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
-        void getNextAsset(asset, false);
-      }
-      return asset;
-    }
+  const getAsset = (id: string) => {
+    return handleErrorAsync(
+      () => assetCacheManager.getAsset({ ...authManager.params, id }),
+      $t('error_retrieving_asset_information'),
+    );
   };
 
-  const getPreviousAsset = async (currentAsset: AssetResponseDto, preload: boolean = true) => {
-    const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
-    if (laterTimelineAsset) {
-      const asset = await assetCacheManager.getAsset({ ...authManager.params, id: laterTimelineAsset.id });
-      if (preload) {
-        // also pre-cache an extra one, to pre-cache these assetInfos for the next nav after this one is complete
-        void getPreviousAsset(asset, false);
-      }
-      return asset;
+  const getNextAsset = async (currentAsset: AssetResponseDto) => {
+    const earlierTimelineAsset = await timelineManager.getEarlierAsset(currentAsset);
+    if (!earlierTimelineAsset) {
+      return;
     }
+    return getAsset(earlierTimelineAsset.id);
+  };
+
+  const getPreviousAsset = async (currentAsset: AssetResponseDto) => {
+    const laterTimelineAsset = await timelineManager.getLaterAsset(currentAsset);
+    if (!laterTimelineAsset) {
+      return;
+    }
+    return getAsset(laterTimelineAsset.id);
   };
 
   let assetCursor = $state<AssetCursor>({
@@ -87,10 +88,12 @@
 
   const handleRandom = async () => {
     const randomAsset = await timelineManager.getRandomAsset();
-    if (randomAsset) {
-      await navigate({ targetRoute: 'current', assetId: randomAsset.id });
-      return { id: randomAsset.id };
+    if (!randomAsset) {
+      return;
     }
+
+    await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+    return { id: randomAsset.id };
   };
 
   const handleClose = async (asset: { id: string }) => {
@@ -180,12 +183,14 @@
   };
   const handleUndoDelete = async (assets: TimelineAsset[]) => {
     timelineManager.upsertAssets(assets);
-    if (assets.length > 0) {
-      const restoredAsset = assets[0];
-      const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
-      assetViewingStore.setAsset(asset);
-      await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+    if (assets.length === 0) {
+      return;
     }
+
+    const restoredAsset = assets[0];
+    const asset = await getAssetInfo({ ...authManager.params, id: restoredAsset.id });
+    assetViewingStore.setAsset(asset);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
   const handleUpdateOrUpload = (asset: AssetResponseDto) => {

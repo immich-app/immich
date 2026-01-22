@@ -1,4 +1,4 @@
-import { AppRoute } from '$lib/constants';
+import { Route } from '$lib/route';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAuthStatus } from '@immich/sdk';
@@ -10,7 +10,7 @@ export const load = (async ({ url }) => {
 
   const { isElevated, pinCode } = await getAuthStatus();
   if (!isElevated || !pinCode) {
-    redirect(307, `${AppRoute.AUTH_PIN_PROMPT}?continue=${encodeURIComponent(url.pathname + url.search)}`);
+    redirect(307, Route.pinPrompt({ continue: url.pathname + url.search }));
   }
 
   const $t = await getFormatter();

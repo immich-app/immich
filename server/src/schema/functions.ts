@@ -263,8 +263,9 @@ export const asset_edit_insert = registerFunction({
   body: `
     BEGIN
       UPDATE asset
-      SET "editCount" = "editCount" + 1
-      WHERE "id" = NEW."assetId";
+      SET "isEdited" = true
+      FROM inserted_edit
+      WHERE asset.id = inserted_edit."assetId" AND NOT asset."isEdited";
       RETURN NULL;
     END
   `,
@@ -277,8 +278,10 @@ export const asset_edit_delete = registerFunction({
   body: `
     BEGIN
       UPDATE asset
-      SET "editCount" = "editCount" - 1
-      WHERE "id" = OLD."assetId";
+      SET "isEdited" = false
+      FROM deleted_edit
+      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited" 
+        AND NOT EXISTS (SELECT FROM asset_edit edit WHERE edit."assetId" = asset.id);
       RETURN NULL;
     END
   `,

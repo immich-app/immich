@@ -14,7 +14,7 @@ import {
 } from 'src/sql-tools';
 
 @Table('asset_file')
-@Unique({ columns: ['assetId', 'type'] })
+@Unique({ columns: ['assetId', 'type', 'isEdited'] })
 @UpdatedAtTrigger('asset_file_updatedAt')
 export class AssetFileTable {
   @PrimaryGeneratedColumn()
@@ -37,4 +37,7 @@ export class AssetFileTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'boolean', default: false })
+  isEdited!: Generated<boolean>;
 }

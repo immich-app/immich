@@ -69,6 +69,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
           : AssetType.other,
       createdAt: asset.fileCreatedAt,
       updatedAt: asset.updatedAt,
+      isEdited: false,
     );
 
     _gCastService.loadMedia(remoteAsset, reload);

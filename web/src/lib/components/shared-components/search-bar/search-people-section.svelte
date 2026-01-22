@@ -5,7 +5,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner } from '@immich/ui';
+  import { Button, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
@@ -63,12 +63,12 @@
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="uppercase immich-form-label py-3">{$t('people')}</p>
+        <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar space-between"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}

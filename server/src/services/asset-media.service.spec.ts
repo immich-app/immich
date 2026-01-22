@@ -529,9 +529,10 @@ describe(AssetMediaService.name, () => {
           ...assetStub.withCropEdit.files,
           {
             id: 'edited-file',
-            type: AssetFileType.FullSizeEdited,
+            type: AssetFileType.FullSize,
             path: '/uploads/user-id/fullsize/edited.jpg',
-          } as AssetFile,
+            isEdited: true,
+          },
         ],
       };
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
@@ -554,9 +555,10 @@ describe(AssetMediaService.name, () => {
           ...assetStub.withCropEdit.files,
           {
             id: 'edited-file',
-            type: AssetFileType.FullSizeEdited,
+            type: AssetFileType.FullSize,
             path: '/uploads/user-id/fullsize/edited.jpg',
-          } as AssetFile,
+            isEdited: true,
+          },
         ],
       };
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
@@ -579,9 +581,10 @@ describe(AssetMediaService.name, () => {
           ...assetStub.withCropEdit.files,
           {
             id: 'edited-file',
-            type: AssetFileType.FullSizeEdited,
+            type: AssetFileType.FullSize,
             path: '/uploads/user-id/fullsize/edited.jpg',
-          } as AssetFile,
+            isEdited: true,
+          },
         ],
       };
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
@@ -656,6 +659,7 @@ describe(AssetMediaService.name, () => {
             id: '42',
             path: '/path/to/preview',
             type: AssetFileType.Thumbnail,
+            isEdited: false,
           },
         ],
       });
@@ -673,6 +677,7 @@ describe(AssetMediaService.name, () => {
             id: '42',
             path: '/path/to/preview.jpg',
             type: AssetFileType.Preview,
+            isEdited: false,
           },
         ],
       });

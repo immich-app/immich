@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -47,6 +48,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
   Widget build(BuildContext context) {
     final asset = widget.asset;
     final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final isCurrentAsset = ref.watch(assetViewerProvider.select((current) => current.currentAsset == asset));
 
     final assetContainerColor = context.isDarkTheme
         ? context.primaryColor.darken(amount: 0.4)
@@ -58,6 +60,10 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
 
     final bool storageIndicator =
         ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
+
+    if (!isCurrentAsset) {
+      _hideIndicators = false;
+    }
 
     if (isSelected) {
       _showSelectionContainer = true;
@@ -96,7 +102,11 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                    // This key resets the hero animation when the asset is changed in the asset viewer.
+                    // It doesn't seem like the best solution, and only works to reset the hero, not prime the hero of the new active asset for animation,
+                    // but other solutions have failed thus far.
+                    key: ValueKey(isCurrentAsset),
+                    tag: '${asset?.heroTag}_$heroIndex',
                     child: Thumbnail.fromAsset(asset: asset, size: widget.size),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {

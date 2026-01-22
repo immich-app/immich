@@ -49,7 +49,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
       }
     case 'SyncAssetV1':
       if (value is Map) {
-        addDefault(value, 'editCount', 0);
+        addDefault(value, 'isEdited', false);
       }
     case 'ServerFeaturesDto':
       if (value is Map) {

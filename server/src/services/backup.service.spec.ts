@@ -5,7 +5,7 @@ import { StorageCore } from 'src/cores/storage.core';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
 import { BackupService } from 'src/services/backup.service';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
-import { mockSpawn, newTestService, ServiceMocks } from 'test/utils';
+import { mockDuplex, mockSpawn, newTestService, ServiceMocks } from 'test/utils';
 import { describe } from 'vitest';
 
 describe(BackupService.name, () => {
@@ -147,6 +147,7 @@ describe(BackupService.name, () => {
     beforeEach(() => {
       mocks.storage.readdir.mockResolvedValue([]);
       mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
@@ -165,7 +166,7 @@ describe(BackupService.name, () => {
       ({ sut, mocks } = newTestService(BackupService, { config: configMock }));
 
       mocks.storage.readdir.mockResolvedValue([]);
-      mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
@@ -174,14 +175,16 @@ describe(BackupService.name, () => {
 
       await sut.handleBackupDatabase();
 
-      expect(mocks.process.spawn).toHaveBeenCalled();
-      const call = mocks.process.spawn.mock.calls[0];
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalled();
+      const call = mocks.process.spawnDuplexStream.mock.calls[0];
       const args = call[1] as string[];
-      // ['--dbname', '<url>', '--clean', '--if-exists']
-      expect(args[0]).toBe('--dbname');
-      const passedUrl = args[1];
-      expect(passedUrl).not.toContain('uselibpqcompat');
-      expect(passedUrl).toContain('sslmode=require');
+      expect(args).toMatchInlineSnapshot(`
+        [
+          "postgresql://postgres:pwd@host:5432/immich?sslmode=require",
+          "--clean",
+          "--if-exists",
+        ]
+      `);
     });
 
     it('should run a database backup successfully', async () => {
@@ -196,21 +199,21 @@ describe(BackupService.name, () => {
       expect(mocks.storage.rename).toHaveBeenCalled();
     });
 
-    it('should fail if pg_dumpall fails', async () => {
-      mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
+    it('should fail if pg_dump fails', async () => {
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
     });
 
     it('should not rename file if pgdump fails and gzip succeeds', async () => {
-      mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
       expect(mocks.storage.rename).not.toHaveBeenCalled();
     });
 
     it('should fail if gzip fails', async () => {
-      mocks.process.spawn.mockReturnValueOnce(mockSpawn(0, 'data', ''));
-      mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
-      await expect(sut.handleBackupDatabase()).rejects.toThrow('Gzip failed with code 1');
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('gzip', 1, '', 'error'));
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('gzip non-zero exit code (1)');
     });
 
     it('should fail if write stream fails', async () => {
@@ -226,9 +229,9 @@ describe(BackupService.name, () => {
     });
 
     it('should ignore unlink failing and still return failed job status', async () => {
-      mocks.process.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
       mocks.storage.unlink.mockRejectedValue(new Error('error'));
-      await expect(sut.handleBackupDatabase()).rejects.toThrow('Backup failed with code 1');
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
       expect(mocks.storage.unlink).toHaveBeenCalled();
     });
 
@@ -242,12 +245,12 @@ describe(BackupService.name, () => {
       ${'17.15.1'}                          | ${17}
       ${'18.0.0'}                           | ${18}
     `(
-      `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
+      `should use pg_dump $expectedVersion with postgres version $postgresVersion`,
       async ({ postgresVersion, expectedVersion }) => {
         mocks.database.getPostgresVersion.mockResolvedValue(postgresVersion);
         await sut.handleBackupDatabase();
-        expect(mocks.process.spawn).toHaveBeenCalledWith(
-          `/usr/lib/postgresql/${expectedVersion}/bin/pg_dumpall`,
+        expect(mocks.process.spawnDuplexStream).toHaveBeenCalledWith(
+          `/usr/lib/postgresql/${expectedVersion}/bin/pg_dump`,
           expect.any(Array),
           expect.any(Object),
         );

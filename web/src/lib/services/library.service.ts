@@ -1,10 +1,10 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import LibraryExclusionPatternAddModal from '$lib/modals/LibraryExclusionPatternAddModal.svelte';
 import LibraryExclusionPatternEditModal from '$lib/modals/LibraryExclusionPatternEditModal.svelte';
 import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
 import LibraryFolderEditModal from '$lib/modals/LibraryFolderEditModal.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -20,7 +20,7 @@ import {
   type UpdateLibraryDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResponseDto[]) => {
@@ -37,7 +37,7 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
     title: $t('create_library'),
     type: $t('command'),
     icon: mdiPlusBoxOutline,
-    onAction: () => goto(AppRoute.ADMIN_LIBRARIES_NEW),
+    onAction: () => goto(Route.newLibrary()),
     shortcuts: { shift: true, key: 'n' },
   };
 
@@ -45,11 +45,18 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
 };
 
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
+  const Detail: ActionItem = {
+    icon: mdiInformationOutline,
+    type: $t('command'),
+    title: $t('details'),
+    onAction: () => goto(Route.viewLibrary(library)),
+  };
+
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
     type: $t('command'),
     title: $t('edit'),
-    onAction: () => goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}/edit`),
+    onAction: () => goto(Route.editLibrary(library)),
     shortcuts: { key: 'r' },
   };
 
@@ -84,7 +91,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     shortcuts: { shift: true, key: 'r' },
   };
 
-  return { Edit, Delete, AddFolder, AddExclusionPattern, Scan };
+  return { Detail, Edit, Delete, AddFolder, AddExclusionPattern, Scan };
 };
 
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {
@@ -146,10 +153,6 @@ const handleScanLibrary = async (library: LibraryResponseDto) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_scan_library'));
   }
-};
-
-export const handleViewLibrary = async (library: LibraryResponseDto) => {
-  await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`);
 };
 
 export const handleCreateLibrary = async (dto: CreateLibraryDto) => {

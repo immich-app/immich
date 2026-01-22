@@ -247,6 +247,42 @@ class SyncStreamService {
     }
   }
 
+  Future<void> handleWsAssetEditReadyV1Batch(List<dynamic> batchData) async {
+    if (batchData.isEmpty) return;
+
+    _logger.info('Processing batch of ${batchData.length} AssetEditReadyV1 events');
+
+    final List<SyncAssetV1> assets = [];
+
+    try {
+      for (final data in batchData) {
+        if (data is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final payload = data;
+        final assetData = payload['asset'];
+
+        if (assetData == null) {
+          continue;
+        }
+
+        final asset = SyncAssetV1.fromJson(assetData);
+
+        if (asset != null) {
+          assets.add(asset);
+        }
+      }
+
+      if (assets.isNotEmpty) {
+        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-edit');
+        _logger.info('Successfully processed ${assets.length} edited assets');
+      }
+    } catch (error, stackTrace) {
+      _logger.severe("Error processing AssetEditReadyV1 websocket batch events", error, stackTrace);
+    }
+  }
+
   Future<void> _handleRemoteTrashed(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return Future.value();

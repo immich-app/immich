@@ -1,7 +1,7 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { AppRoute } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { isSharedLinkRoute } from '$lib/utils/navigation';
 import { logout } from '@immich/sdk';
 
@@ -21,7 +21,7 @@ class AuthManager {
       console.log('Error logging out:', error);
     }
 
-    redirectUri = redirectUri ?? AppRoute.AUTH_LOGIN;
+    redirectUri = redirectUri ?? Route.login();
 
     try {
       if (redirectUri.startsWith('/')) {

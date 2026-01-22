@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -42,15 +41,6 @@ export class AssetJobRepository {
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('tag')
-            .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-            .whereRef('asset.id', '=', 'tag_asset.assetId'),
-        ).as('tags'),
-      )
       .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();

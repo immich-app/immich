@@ -1,15 +1,17 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import emptyWorkflows from '$lib/assets/empty-workflows.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import { Route } from '$lib/route';
   import {
     getWorkflowActions,
+    getWorkflowsActions,
     getWorkflowShowSchemaAction,
-    handleCreateWorkflow,
     type WorkflowPayload,
   } from '$lib/services/workflow.service';
-  import type { PluginFilterResponseDto, WorkflowResponseDto } from '@immich/sdk';
+  import { type PluginFilterResponseDto, type WorkflowResponseDto } from '@immich/sdk';
   import {
     Button,
     Card,
@@ -18,15 +20,13 @@
     CardHeader,
     CardTitle,
     CodeBlock,
-    HStack,
-    Icon,
     IconButton,
     MenuItemType,
     menuManager,
     Text,
     VStack,
   } from '@immich/ui';
-  import { mdiClose, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiClose, mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import type { PageData } from './$types';
@@ -40,7 +40,6 @@
   let workflows = $state<WorkflowResponseDto[]>(data.workflows);
 
   const expandedWorkflows = new SvelteSet<string>();
-
   const pluginFilterLookup = new SvelteMap<string, PluginFilterResponseDto>();
   const pluginActionLookup = new SvelteMap<string, PluginFilterResponseDto>();
 
@@ -90,16 +89,6 @@
 
   const getJson = (workflow: WorkflowResponseDto) => JSON.stringify(constructPayload(workflow), null, 2);
 
-  const onWorkflowUpdate = (updatedWorkflow: WorkflowResponseDto) => {
-    workflows = workflows.map((currentWorkflow) =>
-      currentWorkflow.id === updatedWorkflow.id ? updatedWorkflow : currentWorkflow,
-    );
-  };
-
-  const onWorkflowDelete = (deletedWorkflow: WorkflowResponseDto) => {
-    workflows = workflows.filter((currentWorkflow) => currentWorkflow.id !== deletedWorkflow.id);
-  };
-
   const getFilterLabel = (filterId: string) => {
     const meta = pluginFilterLookup.get(filterId);
     return meta?.title ?? $t('filter');
@@ -138,9 +127,23 @@
       ],
     });
   };
+
+  const { Create } = $derived(getWorkflowsActions($t));
+
+  const onWorkflowCreate = async (response: WorkflowResponseDto) => {
+    await goto(Route.viewWorkflow(response));
+  };
+
+  const onWorkflowUpdate = (response: WorkflowResponseDto) => {
+    workflows = workflows.map((workflow) => (workflow.id === response.id ? response : workflow));
+  };
+
+  const onWorkflowDelete = (response: WorkflowResponseDto) => {
+    workflows = workflows.filter(({ id }) => id !== response.id);
+  };
 </script>
 
-<OnEvents {onWorkflowUpdate} {onWorkflowDelete} />
+<OnEvents {onWorkflowCreate} {onWorkflowUpdate} {onWorkflowDelete} />
 
 {#snippet chipItem(title: string)}
   <span class="rounded-xl border border-gray-200/80 px-3 py-1.5 text-sm dark:border-gray-600 bg-light">
@@ -148,23 +151,14 @@
   </span>
 {/snippet}
 
-<UserPageLayout title={data.meta.title} scrollbar={false}>
-  {#snippet buttons()}
-    <HStack gap={1}>
-      <Button size="small" variant="ghost" color="secondary" onclick={handleCreateWorkflow}>
-        <Icon icon={mdiPlus} size="18" />
-        {$t('create_workflow')}
-      </Button>
-    </HStack>
-  {/snippet}
-
+<UserPageLayout title={data.meta.title} actions={[Create]} scrollbar={false}>
   <section class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
       {#if workflows.length === 0}
         <EmptyPlaceholder
           title={$t('create_first_workflow')}
           text={$t('workflows_help_text')}
-          onClick={handleCreateWorkflow}
+          onClick={() => Create.onAction(Create)}
           src={emptyWorkflows}
           class="mt-10 mx-auto"
         />
@@ -214,9 +208,7 @@
                   <!-- Trigger Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('trigger')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('trigger')}</Text>
                     </div>
                     {@render chipItem(getTriggerLabel(workflow.triggerType))}
                   </div>
@@ -224,9 +216,7 @@
                   <!-- Filters Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('filters')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('filters')}</Text>
                     </div>
                     <div class="flex flex-wrap gap-2">
                       {#if workflow.filters.length === 0}
@@ -244,9 +234,7 @@
                   <!-- Actions Section -->
                   <div class="rounded-2xl border p-4 bg-light-50 border-light-200">
                     <div class="mb-3">
-                      <Text class="text-xs uppercase tracking-widest" color="muted" fontWeight="semi-bold"
-                        >{$t('actions')}</Text
-                      >
+                      <Text size="tiny" color="muted" fontWeight="medium">{$t('actions')}</Text>
                     </div>
 
                     <div>

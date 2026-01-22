@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -53,11 +54,8 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
-                  "people".t(context: context).toUpperCase(),
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  "people".t(context: context),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
               SizedBox(

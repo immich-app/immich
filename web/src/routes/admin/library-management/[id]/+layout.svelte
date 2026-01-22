@@ -7,8 +7,8 @@
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import TableButton from '$lib/components/TableButton.svelte';
-  import { AppRoute } from '$lib/constants';
   import LibraryFolderAddModal from '$lib/modals/LibraryFolderAddModal.svelte';
+  import { Route } from '$lib/route';
   import {
     getLibraryActions,
     getLibraryExclusionPatternActions,
@@ -42,7 +42,7 @@
 
   const onLibraryDelete = async ({ id }: { id: string }) => {
     if (id === library.id) {
-      await goto(AppRoute.ADMIN_LIBRARIES);
+      await goto(Route.libraries());
     }
   };
 
@@ -54,7 +54,7 @@
 <CommandPaletteDefaultProvider name={$t('library')} actions={[Edit, Delete, AddFolder, AddExclusionPattern, Scan]} />
 
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('external_libraries'), href: AppRoute.ADMIN_LIBRARIES }, { title: library.name }]}
+  breadcrumbs={[{ title: $t('external_libraries'), href: Route.libraries() }, { title: library.name }]}
   actions={[Scan, Edit, Delete]}
 >
   <Container size="large" center>

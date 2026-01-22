@@ -1,11 +1,18 @@
 import { page } from '$app/state';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
+import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import type { ReleaseEvent } from '$lib/types';
 import { createEventEmitter } from '$lib/utils/eventemitter';
-import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
+import {
+  MaintenanceAction,
+  type AssetResponseDto,
+  type MaintenanceStatusResponseDto,
+  type NotificationDto,
+  type ServerVersionResponseDto,
+} from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { user } from './user.store';
@@ -31,7 +38,9 @@ export interface Events {
   on_notification: (notification: NotificationDto) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
-  AssetEditReadyV1: (data: { assetId: string }) => void;
+
+  MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
+  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -55,15 +64,25 @@ websocket
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
+  .on('MaintenanceStatusV1', (status) => {
+    maintenanceStore.status.set(status);
+
+    if (status.action === MaintenanceAction.End) {
+      websocketStore.serverRestarting.set({
+        isMaintenanceMode: false,
+      });
+    }
+  })
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => authManager.logout())
   .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
   .on('on_notification', () => notificationManager.refresh())
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {
   try {
-    if (get(user) || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if (get(user) || get(websocketStore.serverRestarting) || page.url.pathname.startsWith(Route.maintenanceMode())) {
       websocket.connect();
     }
   } catch (error) {

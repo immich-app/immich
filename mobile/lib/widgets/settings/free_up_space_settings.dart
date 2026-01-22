@@ -142,7 +142,9 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     final state = ref.watch(cleanupProvider);
     final hasDate = state.selectedDate != null;
     final hasAssets = _hasScanned && state.assetsToDelete.isNotEmpty;
-
+    final subtitleStyle = context.textTheme.bodyMedium!.copyWith(
+      color: context.textTheme.bodyMedium!.color!.withAlpha(215),
+    );
     StepStyle styleForState(StepState stepState, {bool isDestructive = false}) {
       switch (stepState) {
         case StepState.complete:
@@ -214,10 +216,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   border: Border.all(color: context.primaryColor.withValues(alpha: 0.25)),
                 ),
-                child: Text(
-                  'free_up_space_description'.t(context: context),
-                  style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
-                ),
+                child: Text('free_up_space_description'.t(context: context), style: context.textTheme.bodyMedium),
               ),
             ),
 
@@ -256,7 +255,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('cutoff_date_description'.t(context: context), style: context.textTheme.labelLarge),
+                      Text('cutoff_date_description'.t(context: context), style: subtitleStyle),
                       const SizedBox(height: 16),
                       GridView.count(
                         shrinkWrap: true,
@@ -352,7 +351,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('cleanup_filter_description'.t(context: context), style: context.textTheme.labelLarge),
+                      Text('cleanup_filter_description'.t(context: context), style: subtitleStyle),
                       const SizedBox(height: 16),
                       SegmentedButton<AssetFilterType>(
                         segments: [
@@ -381,10 +380,15 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       const SizedBox(height: 16),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text('keep_favorites'.t(context: context), style: context.textTheme.titleSmall),
+                        title: Text(
+                          'keep_favorites'.t(context: context),
+                          style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+                        ),
                         subtitle: Text(
                           'keep_favorites_description'.t(context: context),
-                          style: context.textTheme.labelLarge,
+                          style: context.textTheme.bodyMedium!.copyWith(
+                            color: context.textTheme.bodyMedium!.color!.withAlpha(215),
+                          ),
                         ),
                         value: state.keepFavorites,
                         onChanged: (value) {
@@ -435,10 +439,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                       : null,
                   content: Column(
                     children: [
-                      Text(
-                        'cleanup_step3_description'.t(context: context),
-                        style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
-                      ),
+                      Text('cleanup_step3_description'.t(context: context), style: subtitleStyle),
                       if (CurrentPlatform.isIOS) ...[
                         const SizedBox(height: 12),
                         Container(

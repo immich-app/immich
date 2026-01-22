@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { AppRoute, OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import { OpenQueryParam } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { Route } from '$lib/route';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -9,10 +10,7 @@
   values={{ template: $t('admin.storage_template_settings') }}
 >
   {#snippet children({ message })}
-    <a
-      href="{AppRoute.ADMIN_SETTINGS}?{QueryParameter.IS_OPEN}={OpenSettingQueryParameterValue.STORAGE_TEMPLATE}"
-      class="text-primary"
-    >
+    <a href={Route.systemSettings({ isOpen: OpenQueryParam.STORAGE_TEMPLATE })} class="text-primary">
       {message}
     </a>
   {/snippet}

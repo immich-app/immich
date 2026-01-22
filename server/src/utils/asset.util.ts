@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import { AssetFile, Exif } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
@@ -14,19 +14,19 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
-  return files.find((file) => file.type === type);
+export const getAssetFile = (files: AssetFile[], type: AssetFileType, { isEdited }: { isEdited: boolean }) => {
+  return files.find((file) => file.type === type && file.isEdited === isEdited);
 };
 
 export const getAssetFiles = (files: AssetFile[]) => ({
-  fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
-  previewFile: getAssetFile(files, AssetFileType.Preview),
-  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),
-  sidecarFile: getAssetFile(files, AssetFileType.Sidecar),
+  fullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: false }),
+  previewFile: getAssetFile(files, AssetFileType.Preview, { isEdited: false }),
+  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, { isEdited: false }),
+  sidecarFile: getAssetFile(files, AssetFileType.Sidecar, { isEdited: false }),
 
-  editedFullsizeFile: getAssetFile(files, AssetFileType.FullSizeEdited),
-  editedPreviewFile: getAssetFile(files, AssetFileType.PreviewEdited),
-  editedThumbnailFile: getAssetFile(files, AssetFileType.ThumbnailEdited),
+  editedFullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: true }),
+  editedPreviewFile: getAssetFile(files, AssetFileType.Preview, { isEdited: true }),
+  editedThumbnailFile: getAssetFile(files, AssetFileType.Preview, { isEdited: true }),
 });
 
 export const addAssets = async (

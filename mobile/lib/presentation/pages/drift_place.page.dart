@@ -167,7 +167,7 @@ class _PlaceTile extends StatelessWidget {
         child: SizedBox(
           width: 80,
           height: 80,
-          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover),
+          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover, thumbhash: ""),
         ),
       ),
     );

@@ -17,12 +17,17 @@ Hardware and software requirements for Immich:
   - Immich runs well in a virtualized environment when running in a full virtual machine.
     The use of Docker in LXC containers is [not recommended](https://pve.proxmox.com/wiki/Linux_Container), but may be possible for advanced users.
     If you have issues, we recommend that you switch to a supported VM deployment.
-- **RAM**: Minimum 4GB, recommended 6GB.
+- **RAM**: Minimum 6GB, recommended 8GB.
 - **CPU**: Minimum 2 cores, recommended 4 cores.
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
   - The generation of thumbnails and transcoded video can increase the size of the photo library by 10-20% on average.
 
-:::tip
+:::note RAM requirements
+For a smooth experience, especially during asset upload, Immich requires at least 6GB of RAM.
+For systems with only 4GB of RAM, Immich can be run with machine learning features disabled.
+:::
+
+:::tip Postgres setup
 Good performance and a stable connection to the Postgres database is critical to a smooth Immich experience.
 The Postgres database files are typically between 1-3 GB in size.
 For this reason, the Postgres database (`DB_DATA_LOCATION`) should ideally use local SSD storage, and never a network share of any kind.

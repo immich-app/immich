@@ -16,11 +16,11 @@ class SyncAssetV1 {
     required this.checksum,
     required this.deletedAt,
     required this.duration,
-    required this.editCount,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.height,
     required this.id,
+    required this.isEdited,
     required this.isFavorite,
     required this.libraryId,
     required this.livePhotoVideoId,
@@ -40,8 +40,6 @@ class SyncAssetV1 {
 
   String? duration;
 
-  int editCount;
-
   DateTime? fileCreatedAt;
 
   DateTime? fileModifiedAt;
@@ -49,6 +47,8 @@ class SyncAssetV1 {
   int? height;
 
   String id;
+
+  bool isEdited;
 
   bool isFavorite;
 
@@ -77,11 +77,11 @@ class SyncAssetV1 {
     other.checksum == checksum &&
     other.deletedAt == deletedAt &&
     other.duration == duration &&
-    other.editCount == editCount &&
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.height == height &&
     other.id == id &&
+    other.isEdited == isEdited &&
     other.isFavorite == isFavorite &&
     other.libraryId == libraryId &&
     other.livePhotoVideoId == livePhotoVideoId &&
@@ -100,11 +100,11 @@ class SyncAssetV1 {
     (checksum.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (duration == null ? 0 : duration!.hashCode) +
-    (editCount.hashCode) +
     (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
     (height == null ? 0 : height!.hashCode) +
     (id.hashCode) +
+    (isEdited.hashCode) +
     (isFavorite.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
@@ -118,7 +118,7 @@ class SyncAssetV1 {
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, editCount=$editCount, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -133,7 +133,6 @@ class SyncAssetV1 {
     } else {
     //  json[r'duration'] = null;
     }
-      json[r'editCount'] = this.editCount;
     if (this.fileCreatedAt != null) {
       json[r'fileCreatedAt'] = this.fileCreatedAt!.toUtc().toIso8601String();
     } else {
@@ -150,6 +149,7 @@ class SyncAssetV1 {
     //  json[r'height'] = null;
     }
       json[r'id'] = this.id;
+      json[r'isEdited'] = this.isEdited;
       json[r'isFavorite'] = this.isFavorite;
     if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
@@ -200,11 +200,11 @@ class SyncAssetV1 {
         checksum: mapValueOfType<String>(json, r'checksum')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         duration: mapValueOfType<String>(json, r'duration'),
-        editCount: mapValueOfType<int>(json, r'editCount')!,
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r''),
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
         height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
+        isEdited: mapValueOfType<bool>(json, r'isEdited')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
@@ -266,11 +266,11 @@ class SyncAssetV1 {
     'checksum',
     'deletedAt',
     'duration',
-    'editCount',
     'fileCreatedAt',
     'fileModifiedAt',
     'height',
     'id',
+    'isEdited',
     'isFavorite',
     'libraryId',
     'livePhotoVideoId',

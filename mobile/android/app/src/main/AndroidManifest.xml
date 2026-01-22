@@ -119,6 +119,9 @@
           android:pathPrefix="/memories/" />
         <data
           android:host="my.immich.app"
+          android:path="/memory" />
+        <data
+          android:host="my.immich.app"
           android:pathPrefix="/photos/" />
       </intent-filter>
     </activity>

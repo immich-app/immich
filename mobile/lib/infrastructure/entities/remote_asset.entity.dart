@@ -44,6 +44,8 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get libraryId => text().nullable()();
 
+  BoolColumn get isEdited => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -66,5 +68,6 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     livePhotoVideoId: livePhotoVideoId,
     localId: localId,
     stackId: stackId,
+    isEdited: isEdited,
   );
 }

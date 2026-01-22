@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { Route } from '$lib/route';
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
@@ -31,7 +31,7 @@
   const valid = $derived(!passwordMismatch && !isCreatingUser);
 
   const onClose = async () => {
-    await goto(AppRoute.ADMIN_USERS);
+    await goto(Route.users());
   };
 
   const onSubmit = async (event: Event) => {
@@ -54,7 +54,7 @@
     });
 
     if (user) {
-      await goto(`${AppRoute.ADMIN_USERS}/${user.id}`, { replaceState: true });
+      await goto(Route.viewUser(user), { replaceState: true });
     }
 
     isCreatingUser = false;

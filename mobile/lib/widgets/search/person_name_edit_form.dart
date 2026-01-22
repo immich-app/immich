@@ -33,7 +33,7 @@ class PersonNameEditForm extends HookConsumerWidget {
           decoration: InputDecoration(
             hintText: 'name'.tr(),
             border: const OutlineInputBorder(),
-            errorText: isError.value ? 'Error occured' : null,
+            errorText: isError.value ? 'Error occurred' : null,
           ),
         ),
       ),

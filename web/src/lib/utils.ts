@@ -28,7 +28,7 @@ import {
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { init, register, t } from 'svelte-i18n';
+import { init, register, t, type MessageFormatter } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -259,31 +259,16 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
-export const getAssetJobName = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const names: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refresh_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
-    };
-
-    return names[job];
+export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
   };
-});
 
-export const getAssetJobMessage = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const messages: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-    };
-
-    return messages[job];
-  };
-});
+  return messages[job];
+};
 
 export const getAssetJobIcon = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
@@ -446,3 +431,17 @@ export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));
 
 export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
+
+export const transformToTitleCase = (text: string) => {
+  if (text.length === 0) {
+    return text;
+  } else if (text.length === 1) {
+    return text.charAt(0).toUpperCase();
+  }
+
+  let result = '';
+  for (const word of text.toLowerCase().split(' ')) {
+    result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+  }
+  return result.trim();
+};

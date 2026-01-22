@@ -107,6 +107,78 @@ describe(ApiKeyService.name, () => {
         permissions: newPermissions,
       });
     });
+
+    describe('api key auth', () => {
+      it('should prevent adding Permission.all', async () => {
+        const permissions = [Permission.ApiKeyCreate, Permission.ApiKeyUpdate, Permission.AssetRead];
+        const auth = factory.auth({ apiKey: { permissions } });
+        const apiKey = factory.apiKey({ userId: auth.user.id, permissions });
+
+        mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+        await expect(sut.update(auth, apiKey.id, { permissions: [Permission.All] })).rejects.toThrow(
+          'Cannot grant permissions you do not have',
+        );
+
+        expect(mocks.apiKey.update).not.toHaveBeenCalled();
+      });
+
+      it('should prevent adding a new permission', async () => {
+        const permissions = [Permission.ApiKeyCreate, Permission.ApiKeyUpdate, Permission.AssetRead];
+        const auth = factory.auth({ apiKey: { permissions } });
+        const apiKey = factory.apiKey({ userId: auth.user.id, permissions });
+
+        mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+        await expect(sut.update(auth, apiKey.id, { permissions: [Permission.AssetCopy] })).rejects.toThrow(
+          'Cannot grant permissions you do not have',
+        );
+
+        expect(mocks.apiKey.update).not.toHaveBeenCalled();
+      });
+
+      it('should allow removing permissions', async () => {
+        const auth = factory.auth({ apiKey: { permissions: [Permission.ApiKeyUpdate, Permission.AssetRead] } });
+        const apiKey = factory.apiKey({
+          userId: auth.user.id,
+          permissions: [Permission.AssetRead, Permission.AssetDelete],
+        });
+
+        mocks.apiKey.getById.mockResolvedValue(apiKey);
+        mocks.apiKey.update.mockResolvedValue(apiKey);
+
+        // remove Permission.AssetDelete
+        await sut.update(auth, apiKey.id, { permissions: [Permission.AssetRead] });
+
+        expect(mocks.apiKey.update).toHaveBeenCalledWith(
+          auth.user.id,
+          apiKey.id,
+          expect.objectContaining({ permissions: [Permission.AssetRead] }),
+        );
+      });
+
+      it('should allow adding new permissions', async () => {
+        const auth = factory.auth({
+          apiKey: { permissions: [Permission.ApiKeyUpdate, Permission.AssetRead, Permission.AssetUpdate] },
+        });
+        const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.AssetRead] });
+
+        mocks.apiKey.getById.mockResolvedValue(apiKey);
+        mocks.apiKey.update.mockResolvedValue(apiKey);
+
+        // add Permission.AssetUpdate
+        await sut.update(auth, apiKey.id, {
+          name: apiKey.name,
+          permissions: [Permission.AssetRead, Permission.AssetUpdate],
+        });
+
+        expect(mocks.apiKey.update).toHaveBeenCalledWith(
+          auth.user.id,
+          apiKey.id,
+          expect.objectContaining({ permissions: [Permission.AssetRead, Permission.AssetUpdate] }),
+        );
+      });
+    });
   });
 
   describe('delete', () => {

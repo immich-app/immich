@@ -8,10 +8,10 @@
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { Route } from '$lib/route';
   import { getTrashActions } from '$lib/services/trash.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -30,7 +30,7 @@
   const assetInteraction = new AssetInteraction();
 
   if (!featureFlagsManager.value.trash) {
-    handlePromiseError(goto(AppRoute.PHOTOS));
+    handlePromiseError(goto(Route.photos()));
   }
 
   const handleEscape = () => {

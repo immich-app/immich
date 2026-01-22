@@ -7,16 +7,23 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { MaintenanceAuthDto, MaintenanceStatusResponseDto } from 'src/dtos/maintenance.dto';
 import { AppRepository } from 'src/repositories/app.repository';
 import { AppRestartEvent, ArgsOf } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-export const serverEvents = ['AppRestart'] as const;
-export type ServerEvents = (typeof serverEvents)[number];
-
-export interface ClientEventMap {
-  AppRestartV1: [AppRestartEvent];
+interface ServerEventMap {
+  AppRestart: [AppRestartEvent];
+  MaintenanceStatus: [MaintenanceStatusResponseDto];
 }
+
+interface ClientEventMap {
+  AppRestartV1: [AppRestartEvent];
+  MaintenanceStatusV1: [MaintenanceStatusResponseDto];
+}
+
+type AuthFn = (client: Socket) => Promise<MaintenanceAuthDto>;
+type StatusUpdateFn = (status: MaintenanceStatusResponseDto) => void;
 
 @WebSocketGateway({
   cors: true,
@@ -25,8 +32,11 @@ export interface ClientEventMap {
 })
 @Injectable()
 export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+  private authFn?: AuthFn;
+  private statusUpdateFn?: StatusUpdateFn;
+
   @WebSocketServer()
-  private websocketServer?: Server;
+  private server?: Server;
 
   constructor(
     private logger: LoggingRepository,
@@ -35,10 +45,10 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
     this.logger.setContext(MaintenanceWebsocketRepository.name);
   }
 
-  afterInit(websocketServer: Server) {
+  afterInit(server: Server) {
     this.logger.log('Initialized websocket server');
-
-    websocketServer.on('AppRestart', (event: ArgsOf<'AppRestart'>, ack?: (ok: 'ok') => void) => {
+    server.on('MaintenanceStatus', (status) => this.statusUpdateFn?.(status));
+    server.on('AppRestart', (event: ArgsOf<'AppRestart'>, ack?: (ok: 'ok') => void) => {
       this.logger.log(`Restarting due to event... ${JSON.stringify(event)}`);
 
       ack?.('ok');
@@ -46,20 +56,40 @@ export class MaintenanceWebsocketRepository implements OnGatewayConnection, OnGa
     });
   }
 
+  clientSend<T extends keyof ClientEventMap>(event: T, room: string, ...data: ClientEventMap[T]) {
+    this.server?.to(room).emit(event, ...data);
+  }
+
   clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
-    this.websocketServer?.emit(event, ...data);
+    this.server?.emit(event, ...data);
   }
 
-  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {
+  serverSend<T extends keyof ServerEventMap>(event: T, ...args: ServerEventMap[T]): void {
     this.logger.debug(`Server event: ${event} (send)`);
-    this.websocketServer?.serverSideEmit(event, ...args);
+    this.server?.serverSideEmit(event, ...args);
   }
 
-  handleConnection(client: Socket) {
-    this.logger.log(`Websocket Connect:    ${client.id}`);
+  async handleConnection(client: Socket) {
+    try {
+      await this.authFn!(client);
+      await client.join('private');
+      this.logger.log(`Websocket Connect:    ${client.id} (private)`);
+    } catch {
+      await client.join('public');
+      this.logger.log(`Websocket Connect:    ${client.id} (public)`);
+    }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     this.logger.log(`Websocket Disconnect: ${client.id}`);
+    await Promise.allSettled([client.leave('private'), client.leave('public')]);
+  }
+
+  setAuthFn(fn: (client: Socket) => Promise<MaintenanceAuthDto>) {
+    this.authFn = fn;
+  }
+
+  setStatusUpdateFn(fn: (status: MaintenanceStatusResponseDto) => void) {
+    this.statusUpdateFn = fn;
   }
 }

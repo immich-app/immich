@@ -240,11 +240,11 @@ export class StorageTemplateService extends BaseService {
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
 
-        const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar)?.path;
+        const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar, { isEdited: false })?.path;
         if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,
-            pathType: AssetPathType.Sidecar,
+            pathType: AssetFileType.Sidecar,
             oldPath: sidecarPath,
             newPath: `${newPath}.xmp`,
           });

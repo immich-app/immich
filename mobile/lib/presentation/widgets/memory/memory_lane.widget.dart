@@ -60,7 +60,11 @@ class DriftMemoryCard extends ConsumerWidget {
             child: SizedBox(
               width: 205,
               height: 200,
-              child: Thumbnail.remote(remoteId: memory.assets[0].id, fit: BoxFit.cover),
+              child: Thumbnail.remote(
+                remoteId: memory.assets[0].id,
+                thumbhash: memory.assets[0].thumbHash ?? "",
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Positioned(
