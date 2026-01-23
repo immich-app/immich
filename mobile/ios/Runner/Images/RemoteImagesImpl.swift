@@ -119,6 +119,10 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
       return request.completion(.failure(error))
     }
     
+    if request.isCancelled {
+      return request.completion(Self.cancelledResult)
+    }
+    
     guard let data = request.data else {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
