@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -102,11 +103,23 @@ class AssetMediaRepository {
   }
 
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {CancellationToken? cancelToken}) async {
     final downloadedXFiles = <XFile>[];
     final tempFiles = <File>[];
 
     for (var asset in assets) {
+      if (cancelToken != null && cancelToken.isCancelled) {
+        // if cancelled, delete any temp files created so far
+        for (var file in tempFiles) {
+          try {
+            await file.delete();
+          } catch (e) {
+            _log.warning("Failed to delete temporary file: ${file.path}", e);
+          }
+        }
+        return 0;
+      }
+
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
@@ -143,6 +156,17 @@ class AssetMediaRepository {
 
     if (downloadedXFiles.isEmpty) {
       _log.warning("No asset can be retrieved for share");
+      return 0;
+    }
+
+    if (cancelToken != null && cancelToken.isCancelled) {
+      for (var file in tempFiles) {
+        try {
+          await file.delete();
+        } catch (e) {
+          _log.warning("Failed to delete temporary file: ${file.path}", e);
+        }
+      }
       return 0;
     }
 
