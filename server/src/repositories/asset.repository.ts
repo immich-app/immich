@@ -1009,4 +1009,47 @@ export class AssetRepository {
 
     return count;
   }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  async getForOriginal(id: string, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select('originalFileName')
+      .where('asset.id', '=', id)
+      .$if(isEdited, (qb) =>
+        qb
+          .leftJoin('asset_file', (join) =>
+            join
+              .onRef('asset.id', '=', 'asset_file.assetId')
+              .on('asset_file.isEdited', '=', true)
+              .on('asset_file.type', '=', AssetFileType.FullSize),
+          )
+          .select('asset_file.path as editedPath'),
+      )
+      .select('originalPath')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview] })
+  async getForThumbnail(id: string, type: AssetFileType) {
+    return this.db
+      .selectFrom('asset_file')
+      .select('asset_file.path')
+      .where('asset_file.assetId', '=', id)
+      .where('asset_file.type', '=', type)
+      .rightJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_file.assetId'))
+      .select(['asset.originalPath', 'asset.originalFileName'])
+      .orderBy('asset_file.isEdited', 'desc')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForVideo(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', AssetType.Video)
+      .executeTakeFirst();
+  }
 }
