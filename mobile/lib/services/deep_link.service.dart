@@ -99,6 +99,7 @@ class DeepLinkService {
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
+    final memoryQueryRegex = RegExp('^/memory$');
 
     PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
@@ -107,6 +108,11 @@ class DeepLinkService {
     } else if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
+    } else if (memoryQueryRegex.hasMatch(path)) {
+      final memoryId = link.uri.queryParameters['id'] ?? '';
+      if (RegExp('^$uuidRegex\$').hasMatch(memoryId)) {
+        deepLinkRoute = await _buildMemoryDeepLink(memoryId);
+      }
     }
 
     // Deep link resolution failed, safely handle it based on the app state
