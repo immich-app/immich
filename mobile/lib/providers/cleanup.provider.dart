@@ -137,11 +137,8 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
         keepFavorites: state.keepFavorites,
         keepAlbumIds: state.keepAlbumIds,
       );
-      state = state.copyWith(
-        assetsToDelete: result.assets,
-        totalBytes: result.totalBytes,
-        isScanning: false,
-      );
+
+      state = state.copyWith(assetsToDelete: result.assets, totalBytes: result.totalBytes, isScanning: false);
     } catch (e) {
       state = state.copyWith(isScanning: false);
       rethrow;

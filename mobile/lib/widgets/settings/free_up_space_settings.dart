@@ -240,7 +240,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
             // Keep on device settings card
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
