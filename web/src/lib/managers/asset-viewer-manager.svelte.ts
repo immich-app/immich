@@ -5,6 +5,7 @@ const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state
 export class AssetViewerManager {
   isShowActivityPanel = $state(false);
   isPlayingMotionPhoto = $state(false);
+  isShowEditor = $state(false);
 
   get isShowDetailPanel() {
     return isShowDetailPanel.current;
@@ -30,6 +31,15 @@ export class AssetViewerManager {
 
   closeDetailPanel() {
     this.isShowDetailPanel = false;
+  }
+
+  openEditor() {
+    this.closeActivityPanel();
+    this.isShowEditor = true;
+  }
+
+  closeEditor() {
+    this.isShowEditor = false;
   }
 }
 
