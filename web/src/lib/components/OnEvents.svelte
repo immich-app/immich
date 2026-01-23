@@ -7,9 +7,10 @@
   };
 
   const props: Props = $props();
-  const unsubscribes: Array<() => void> = [];
 
   onMount(() => {
+    const unsubscribes: Array<() => void> = [];
+
     for (const name of Object.keys(props)) {
       const event = name.slice(2) as keyof Events;
       const listener = props[name as keyof Props];
@@ -20,8 +21,7 @@
 
       const args = [event, listener as (...args: Events[typeof event]) => void] as const;
 
-      eventManager.on(...args);
-      unsubscribes.push(() => eventManager.off(...args));
+      unsubscribes.push(eventManager.on(...args));
     }
 
     return () => {

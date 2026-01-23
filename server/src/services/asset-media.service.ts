@@ -201,10 +201,6 @@ export class AssetMediaService extends BaseService {
       dto.edited ?? false,
     );
 
-    if (dto.edited && !editedPath) {
-      throw new NotFoundException('Edited asset media not found');
-    }
-
     const path = editedPath ?? originalPath!;
 
     return new ImmichFileResponse({
@@ -238,6 +234,10 @@ export class AssetMediaService extends BaseService {
       // downgrade to preview if fullsize is not available.
       // e.g. disabled or not yet (re)generated
       return { targetSize: AssetMediaSize.PREVIEW };
+    }
+
+    if (!path) {
+      throw new NotFoundException('Asset media not found');
     }
 
     const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;

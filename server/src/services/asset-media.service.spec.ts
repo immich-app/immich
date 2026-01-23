@@ -597,15 +597,6 @@ describe(AssetMediaService.name, () => {
         }),
       );
     });
-
-    it('should throw a not found when edits exist but no edited file available', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.asset.getForOriginal.mockResolvedValue({ ...assetStub.withCropEdit, editedPath: null });
-
-      await expect(sut.downloadOriginal(authStub.admin, 'asset-1', { edited: true })).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
-    });
   });
 
   describe('viewThumbnail', () => {
