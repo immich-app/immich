@@ -335,6 +335,17 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                                 _onKeepSettingsChanged();
                               },
                             ),
+                            if (state.keepMediaType != AssetKeepType.none) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                state.keepMediaType == AssetKeepType.photosOnly
+                                    ? 'always_keep_photos_hint'.t(context: context)
+                                    : 'always_keep_videos_hint'.t(context: context),
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

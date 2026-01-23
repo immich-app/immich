@@ -521,6 +521,8 @@
   "allowed": "Allowed",
   "alt_text_qr_code": "QR code image",
   "always_keep": "Always keep",
+  "always_keep_photos_hint": "Free Up Space will keep an extra copy of all photos on this device.",
+  "always_keep_videos_hint": "Free Up Space will keep an extra copy of all videos on this device.",
   "anti_clockwise": "Anti-clockwise",
   "api_key": "API Key",
   "api_key_description": "This value will only be shown once. Please be sure to copy it before closing the window.",
