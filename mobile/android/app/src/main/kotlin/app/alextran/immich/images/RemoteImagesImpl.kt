@@ -281,7 +281,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
   ) : UrlRequest.Callback() {
     private var buffer: NativeByteBuffer? = null
     private var wrapped: ByteBuffer? = null
-    private var httpError: IOException? = null
+    private var error: Exception? = null
 
     override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newUrl: String) {
       request.followRedirect()
@@ -289,18 +289,23 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
 
     override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
       if (info.httpStatusCode !in 200..299) {
-        httpError = IOException("HTTP ${info.httpStatusCode}: ${info.httpStatusText}")
+        error = IOException("HTTP ${info.httpStatusCode}: ${info.httpStatusText}")
         return request.cancel()
       }
 
-      val contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
-      if (contentLength > 0) {
-        buffer = NativeByteBuffer(contentLength + 1)
-        wrapped = NativeBuffer.wrap(buffer!!.pointer, contentLength + 1)
-        request.read(wrapped)
-      } else {
-        buffer = NativeByteBuffer(INITIAL_BUFFER_SIZE)
-        request.read(buffer!!.wrapRemaining())
+      try {
+        val contentLength = info.allHeaders["content-length"]?.firstOrNull()?.toIntOrNull() ?: 0
+        if (contentLength > 0) {
+          buffer = NativeByteBuffer(contentLength + 1)
+          wrapped = NativeBuffer.wrap(buffer!!.pointer, contentLength + 1)
+          request.read(wrapped)
+        } else {
+          buffer = NativeByteBuffer(INITIAL_BUFFER_SIZE)
+          request.read(buffer!!.wrapRemaining())
+        }
+      } catch (e: Exception) {
+        error = e
+        return request.cancel()
       }
     }
 
@@ -309,16 +314,21 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       info: UrlResponseInfo,
       byteBuffer: ByteBuffer
     ) {
-      val buf = if (wrapped == null) {
-        buffer!!.run {
-          advance(byteBuffer.position())
-          ensureHeadroom()
-          wrapRemaining()
+      try {
+        val buf = if (wrapped == null) {
+          buffer!!.run {
+            advance(byteBuffer.position())
+            ensureHeadroom()
+            wrapRemaining()
+          }
+        } else {
+          wrapped
         }
-      } else {
-        wrapped
+        request.read(buf)
+      } catch (e: Exception) {
+        error = e
+        return request.cancel()
       }
-      request.read(buf)
     }
 
     override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
@@ -335,7 +345,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
 
     override fun onCanceled(request: UrlRequest, info: UrlResponseInfo?) {
       buffer?.free()
-      onFailure(httpError ?: OperationCanceledException())
+      onFailure(error ?: OperationCanceledException())
       onComplete()
     }
   }
