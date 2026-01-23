@@ -11,7 +11,7 @@ Contextual CLIP search is powered by the [VectorChord](https://github.com/tensor
 
 In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
 
-You can mix and match to search the following types of content:
+You can search the following types of content:
 
 | Type                                | Description                                           |
 | ----------------------------------- | ----------------------------------------------------- |

@@ -7,6 +7,10 @@ import Icon from '@mdi/react';
 
 A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)
 
+:::danger
+The instructions on this page show you how to prepare your Immich instance to be backed up, and which files to take a backup of. You still need to take care of using an actual backup tool to make a backup yourself.
+:::
+
 ## Database
 
 Immich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.
@@ -58,17 +62,38 @@ Restoring a backup will wipe the current database and replace it with the backup
 
 If you're setting up Immich on a fresh installation and want to restore from an existing backup:
 
+1. Download and populate `.env` and `docker-compose.yml` as per the [installation instructions](/install/docker-compose).
+2. Move the previous's instance data directories containing `backups`, `encoded-video`, `library`, `profile`, `thumbs` and `upload` into the new `UPLOAD_LOCATION`
+3. **(For external libraries)** If you used external library feature in your previous instance, make sure that the mount settings in your new `docker-compose.yml` reflect the same structure. You may need to move files accordingly.
+
+:::info Example
+
+Assuming your previous `UPLOAD_LOCATION` was `UPLOAD_LOCATION=/my-broken-instance/media` and your new one is `UPLOAD_LOCATION=/a-brand-new-instance/data`, you will need to perform the following file moves:
+
+```
+/my-broken-instance/media/backups          ->    /a-brand-new-instance/data/backups
+/my-broken-instance/media/encoded-video    ->    /a-brand-new-instance/data/encoded-video
+/my-broken-instance/media/library          ->    /a-brand-new-instance/data/library
+/my-broken-instance/media/profile          ->    /a-brand-new-instance/data/profile
+/my-broken-instance/media/thumbs           ->    /a-brand-new-instance/data/thumbs
+/my-broken-instance/media/upload           ->    /a-brand-new-instance/data/upload
+```
+
+:::
+
+4. Start the Immich services with `docker compose up -d`
+
 <img
 src={require('./img/restore-from-onboarding.webp').default}
 title="Restore from onboarding"
 />
 
-1. On the welcome screen, click **Restore from backup**
-2. Immich will enter maintenance mode and display integrity checks for your storage folders
-3. Review the folder status to ensure your library files are accessible
-4. Click **Next** to proceed to backup selection
-5. Select a backup from the list or upload a backup file (`.sql.gz`)
-6. Click **Restore** to begin the restoration process
+5. On the welcome screen, click **Restore from backup**
+6. Immich will enter maintenance mode and display integrity checks for your storage folders
+7. Review the folder status to ensure your library files are accessible
+8. Click **Next** to proceed to backup selection
+9. Select a backup from the list or upload a backup file (`.sql.gz`)
+10. Click **Restore** to begin the restoration process
 
 :::tip
 Before restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.
