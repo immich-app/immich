@@ -9,6 +9,7 @@ import 'package:immich_mobile/services/cleanup.service.dart';
 class CleanupState {
   final DateTime? selectedDate;
   final List<LocalAsset> assetsToDelete;
+  final int totalBytes;
   final bool isScanning;
   final bool isDeleting;
   final AssetKeepType keepMediaType;
@@ -18,6 +19,7 @@ class CleanupState {
   const CleanupState({
     this.selectedDate,
     this.assetsToDelete = const [],
+    this.totalBytes = 0,
     this.isScanning = false,
     this.isDeleting = false,
     this.keepMediaType = AssetKeepType.none,
@@ -28,6 +30,7 @@ class CleanupState {
   CleanupState copyWith({
     DateTime? selectedDate,
     List<LocalAsset>? assetsToDelete,
+    int? totalBytes,
     bool? isScanning,
     bool? isDeleting,
     AssetKeepType? keepMediaType,
@@ -37,6 +40,7 @@ class CleanupState {
     return CleanupState(
       selectedDate: selectedDate ?? this.selectedDate,
       assetsToDelete: assetsToDelete ?? this.assetsToDelete,
+      totalBytes: totalBytes ?? this.totalBytes,
       isScanning: isScanning ?? this.isScanning,
       isDeleting: isDeleting ?? this.isDeleting,
       keepMediaType: keepMediaType ?? this.keepMediaType,
@@ -126,14 +130,18 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
 
     state = state.copyWith(isScanning: true);
     try {
-      final assets = await _cleanupService.getRemovalCandidates(
+      final result = await _cleanupService.getRemovalCandidates(
         _userId,
         state.selectedDate!,
         keepMediaType: state.keepMediaType,
         keepFavorites: state.keepFavorites,
         keepAlbumIds: state.keepAlbumIds,
       );
-      state = state.copyWith(assetsToDelete: assets, isScanning: false);
+      state = state.copyWith(
+        assetsToDelete: result.assets,
+        totalBytes: result.totalBytes,
+        isScanning: false,
+      );
     } catch (e) {
       state = state.copyWith(isScanning: false);
       rethrow;

@@ -11,6 +11,13 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
+class RemovalCandidatesResult {
+  final List<LocalAsset> assets;
+  final int totalBytes;
+
+  const RemovalCandidatesResult({required this.assets, required this.totalBytes});
+}
+
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
 
@@ -130,7 +137,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return result;
   }
 
-  Future<List<LocalAsset>> getRemovalCandidates(
+  Future<RemovalCandidatesResult> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
     AssetKeepType keepMediaType = AssetKeepType.none,
@@ -150,6 +157,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
     final query = _db.localAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
+      leftOuterJoin(_db.remoteExifEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteExifEntity.assetId)),
     ]);
 
     Expression<bool> whereClause =
@@ -182,7 +190,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     query.where(whereClause);
 
     final rows = await query.get();
-    return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final assets = rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final totalBytes = rows.fold<int>(0, (sum, row) {
+      final fileSize = row.readTableOrNull(_db.remoteExifEntity)?.fileSize;
+      return sum + (fileSize ?? 0);
+    });
+
+    return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
 
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {

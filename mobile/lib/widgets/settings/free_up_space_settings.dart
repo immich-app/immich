@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/cleanup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
   const FreeUpSpaceSettings({super.key});
@@ -477,10 +478,18 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   ),
                   subtitle: _hasScanned
                       ? Text(
-                          'cleanup_found_assets'.t(
-                            context: context,
-                            args: {'count': state.assetsToDelete.length.toString()},
-                          ),
+                          state.totalBytes > 0
+                              ? 'cleanup_found_assets_with_size'.t(
+                                  context: context,
+                                  args: {
+                                    'count': state.assetsToDelete.length.toString(),
+                                    'size': formatBytes(state.totalBytes),
+                                  },
+                                )
+                              : 'cleanup_found_assets'.t(
+                                  context: context,
+                                  args: {'count': state.assetsToDelete.length.toString()},
+                                ),
                           style: context.textTheme.bodyMedium?.copyWith(
                             color: state.assetsToDelete.isNotEmpty
                                 ? context.colorScheme.primary
@@ -581,18 +590,33 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                           border: Border.all(color: context.colorScheme.error.withValues(alpha: 0.3)),
                         ),
                         child: hasAssets
-                            ? Text(
-                                'cleanup_step4_summary'.t(
-                                  context: context,
-                                  args: {
-                                    'count': state.assetsToDelete.length.toString(),
-                                    'date': DateFormat.yMMMd().format(state.selectedDate!),
-                                  },
-                                ),
-                                style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'cleanup_step4_summary'.t(
+                                      context: context,
+                                      args: {
+                                        'count': state.assetsToDelete.length.toString(),
+                                        'date': DateFormat.yMMMd().format(state.selectedDate!),
+                                      },
+                                    ),
+                                    style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                                  ),
+                                ],
                               )
                             : null,
                       ),
+                      if (state.totalBytes > 0) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'cleanup_storage_savings'.t(context: context, args: {'size': formatBytes(state.totalBytes)}),
+                          style: context.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: context.colorScheme.primary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () => _showAssetsPreview(state.assetsToDelete),

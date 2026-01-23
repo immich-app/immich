@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -15,7 +14,7 @@ class CleanupService {
 
   const CleanupService(this._localAssetRepository, this._assetMediaRepository);
 
-  Future<List<LocalAsset>> getRemovalCandidates(
+  Future<RemovalCandidatesResult> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
     AssetKeepType keepMediaType = AssetKeepType.none,
