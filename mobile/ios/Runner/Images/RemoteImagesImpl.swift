@@ -20,9 +20,8 @@ class RemoteImageRequest {
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let delegate = RemoteImageApiDelegate()
-  static let cacheDir = FileManager.default.temporaryDirectory.appendingPathComponent(
-    "thumbnails", isDirectory: true)
   static let session = {
+    let cacheDir = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails", isDirectory: true)
     let config = URLSessionConfiguration.default
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     config.httpAdditionalHeaders = ["User-Agent": "Immich_iOS_\(version)"]
@@ -32,7 +31,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       diskCapacity: 1 << 30,
       directory: cacheDir
     )
-    config.httpMaximumConnectionsPerHost = 16
+    config.httpMaximumConnectionsPerHost = 64
     return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }()
   

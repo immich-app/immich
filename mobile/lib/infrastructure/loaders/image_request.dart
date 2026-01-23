@@ -54,21 +54,21 @@ abstract class ImageRequest {
     }
 
     final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    buffer.dispose();
     if (_isCancelled) {
-      buffer.dispose();
       descriptor.dispose();
       return null;
     }
 
     final codec = await descriptor.instantiateCodec();
-    buffer.dispose();
-    descriptor.dispose();
     if (_isCancelled) {
+      descriptor.dispose();
       codec.dispose();
       return null;
     }
 
     final frame = await codec.getNextFrame();
+    descriptor.dispose();
     codec.dispose();
     if (_isCancelled) {
       frame.image.dispose();
@@ -105,16 +105,17 @@ abstract class ImageRequest {
       rowBytes: rowBytes,
       pixelFormat: ui.PixelFormat.rgba8888,
     );
-    final codec = await descriptor.instantiateCodec();
-
     buffer.dispose();
-    descriptor.dispose();
+
+    final codec = await descriptor.instantiateCodec();
     if (_isCancelled) {
+      descriptor.dispose();
       codec.dispose();
       return null;
     }
 
     final frame = await codec.getNextFrame();
+    descriptor.dispose();
     codec.dispose();
     if (_isCancelled) {
       frame.image.dispose();
