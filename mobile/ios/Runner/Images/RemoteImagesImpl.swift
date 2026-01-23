@@ -20,18 +20,19 @@ class RemoteImageRequest {
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static let delegate = RemoteImageApiDelegate()
+  static let cacheDir = FileManager.default.temporaryDirectory.appendingPathComponent(
+    "thumbnails", isDirectory: true)
   static let session = {
     let config = URLSessionConfiguration.default
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     config.httpAdditionalHeaders = ["User-Agent": "Immich_iOS_\(version)"]
-    let thumbnailPath = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails", isDirectory: true)
-    try! FileManager.default.createDirectory(at: thumbnailPath, withIntermediateDirectories: true)
+    try! FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
     config.urlCache = URLCache(
       memoryCapacity: 0,
       diskCapacity: 1 << 30,
-      directory: thumbnailPath
+      directory: cacheDir
     )
-    config.httpMaximumConnectionsPerHost = 64
+    config.httpMaximumConnectionsPerHost = 16
     return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }()
   
@@ -50,6 +51,15 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
   
   func cancelRequest(requestId: Int64) {
     Self.delegate.cancel(requestId: requestId)
+  }
+  
+  func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
+    Task {
+      let cache = Self.session.configuration.urlCache!
+      let cacheSize = Int64(cache.currentDiskUsage)
+      cache.removeAllCachedResponses()
+      completion(.success(cacheSize))
+    }
   }
 }
 

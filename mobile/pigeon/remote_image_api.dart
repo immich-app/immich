@@ -22,4 +22,7 @@ abstract class RemoteImageApi {
   });
 
   void cancelRequest(int requestId);
+
+  @async
+  int clearCache();
 }

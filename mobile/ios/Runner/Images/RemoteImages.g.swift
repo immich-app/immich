@@ -72,6 +72,7 @@ class RemoteImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable 
 protocol RemoteImageApi {
   func requestImage(url: String, headers: [String: String], requestId: Int64, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
   func cancelRequest(requestId: Int64) throws
+  func clearCache(completion: @escaping (Result<Int64, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -113,6 +114,21 @@ class RemoteImageApiSetup {
       }
     } else {
       cancelRequestChannel.setMessageHandler(nil)
+    }
+    let clearCacheChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      clearCacheChannel.setMessageHandler { _, reply in
+        api.clearCache { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      clearCacheChannel.setMessageHandler(nil)
     }
   }
 }

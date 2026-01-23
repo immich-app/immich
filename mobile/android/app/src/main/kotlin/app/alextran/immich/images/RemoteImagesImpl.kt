@@ -8,6 +8,7 @@ import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
 import app.alextran.immich.core.SSLConfig
+import kotlinx.coroutines.*
 import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
@@ -24,6 +25,11 @@ import java.io.EOFException
 import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -90,6 +96,16 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   override fun cancelRequest(requestId: Long) {
     requestMap.remove(requestId)?.cancellationSignal?.cancel()
   }
+
+  override fun clearCache(callback: (Result<Long>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        ImageFetcherManager.clearCache(callback)
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
+  }
 }
 
 private object ImageFetcherManager {
@@ -118,6 +134,10 @@ private object ImageFetcherManager {
     onFailure: (Exception) -> Unit,
   ) {
     fetcher.fetch(url, headers, signal, onSuccess, onFailure)
+  }
+
+  fun clearCache(onCleared: (Result<Long>) -> Unit) {
+    fetcher.clearCache(onCleared)
   }
 
   private fun invalidate() {
@@ -151,25 +171,22 @@ private sealed interface ImageFetcher {
   )
 
   fun drain()
+
+  fun clearCache(onCleared: (Result<Long>) -> Unit)
 }
 
 private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
-  private val engine: CronetEngine
+  private val ctx = context
+  private var engine: CronetEngine
   private val executor = Executors.newFixedThreadPool(4)
   private val stateLock = Any()
   private var activeCount = 0
   private var draining = false
+  private var onCacheCleared: ((Result<Long>) -> Unit)? = null
+  private val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
 
   init {
-    val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
-    engine = CronetEngine.Builder(context)
-      .enableHttp2(true)
-      .enableQuic(true)
-      .enableBrotli(true)
-      .setStoragePath(storageDir.absolutePath)
-      .setUserAgent(USER_AGENT)
-      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
-      .build()
+    engine = build(context)
   }
 
   override fun fetch(
@@ -195,27 +212,66 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     request.start()
   }
 
+  private fun build(ctx: Context): CronetEngine {
+    return CronetEngine.Builder(ctx)
+      .enableHttp2(true)
+      .enableQuic(true)
+      .enableBrotli(true)
+      .setStoragePath(storageDir.absolutePath)
+      .setUserAgent(USER_AGENT)
+      .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, CACHE_SIZE_BYTES)
+      .build()
+  }
+
   private fun onComplete() {
-    val shouldShutdown = synchronized(stateLock) {
+    val didDrain = synchronized(stateLock) {
       activeCount--
       draining && activeCount == 0
     }
-    if (shouldShutdown) {
-      engine.shutdown()
-      executor.shutdown()
+    if (didDrain) {
+      onDrained()
     }
   }
 
   override fun drain() {
-    val shouldShutdown = synchronized(stateLock) {
+    val didDrain = synchronized(stateLock) {
       if (draining) return
       draining = true
       activeCount == 0
     }
-    if (shouldShutdown) {
-      engine.shutdown()
-      executor.shutdown()
+    if (didDrain) {
+      onDrained()
     }
+  }
+
+  private fun onDrained() {
+    engine.shutdown()
+    val onCacheCleared = synchronized(stateLock) {
+      val onCacheCleared = onCacheCleared
+      this.onCacheCleared = null
+      onCacheCleared
+    }
+    if (onCacheCleared == null) {
+      executor.shutdown()
+    } else {
+      CoroutineScope(Dispatchers.IO).launch {
+        val result = runCatching { deleteFolderAndGetSize(storageDir.toPath()) }
+        // Cronet is very good at self-repair, so it shouldn't fail here regardless of clear result
+        engine = build(ctx)
+        synchronized(stateLock) { draining = false }
+        onCacheCleared(result)
+      }
+    }
+  }
+
+  override fun clearCache(onCleared: (Result<Long>) -> Unit) {
+    synchronized(stateLock) {
+      if (onCacheCleared != null) {
+        return onCleared(Result.success(-1))
+      }
+      onCacheCleared = onCleared
+    }
+    drain()
   }
 
   private class FetchCallback(
@@ -282,6 +338,27 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       onFailure(httpError ?: OperationCanceledException())
       onComplete()
     }
+  }
+
+  suspend fun deleteFolderAndGetSize(root: Path): Long = withContext(Dispatchers.IO) {
+    var totalSize = 0L
+
+    Files.walkFileTree(root, object : SimpleFileVisitor<Path>() {
+      override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+        totalSize += attrs.size()
+        Files.delete(file)
+        return FileVisitResult.CONTINUE
+      }
+
+      override fun postVisitDirectory(dir: Path, exc: IOException?): FileVisitResult {
+        if (dir != root) {
+          Files.delete(dir)
+        }
+        return FileVisitResult.CONTINUE
+      }
+    })
+
+    totalSize
   }
 }
 
@@ -412,6 +489,7 @@ private class OkHttpImageFetcher private constructor(
               buffer.free()
               onFailure(e)
             }
+            onComplete()
           }
         }
       }
@@ -427,6 +505,16 @@ private class OkHttpImageFetcher private constructor(
     client.connectionPool.evictAll()
     if (shouldClose) {
       client.cache?.close()
+    }
+  }
+
+  override fun clearCache(onCleared: (Result<Long>) -> Unit) {
+    try {
+      val size = client.cache!!.size()
+      client.cache!!.evictAll()
+      onCleared(Result.success(size))
+    } catch (e: Exception) {
+      onCleared(Result.failure(e))
     }
   }
 }

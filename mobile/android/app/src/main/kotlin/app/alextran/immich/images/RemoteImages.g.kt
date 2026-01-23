@@ -49,6 +49,7 @@ private open class RemoteImagesPigeonCodec : StandardMessageCodec() {
 interface RemoteImageApi {
   fun requestImage(url: String, headers: Map<String, String>, requestId: Long, callback: (Result<Map<String, Long>?>) -> Unit)
   fun cancelRequest(requestId: Long)
+  fun clearCache(callback: (Result<Long>) -> Unit)
 
   companion object {
     /** The codec used by RemoteImageApi. */
@@ -94,6 +95,24 @@ interface RemoteImageApi {
               RemoteImagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.clearCache{ result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)
