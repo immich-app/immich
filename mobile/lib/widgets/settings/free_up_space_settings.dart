@@ -66,6 +66,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   void _goToScanStep() {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     setState(() => _currentStep = CleanupStep.scan);
+    _scanAssets();
   }
 
   void _setPresetDate(int daysAgo) {
@@ -152,6 +153,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
         context: context,
         builder: (ctx) => _DeleteSuccessDialog(deletedCount: deletedCount),
       );
+
+      if (mounted) {
+        context.router.popUntilRoot();
+      }
+      return;
     }
 
     setState(() => _currentStep = CleanupStep.selectDate);
@@ -335,6 +341,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                             ),
                             const SizedBox(height: 4),
                             SegmentedButton<AssetKeepType>(
+                              showSelectedIcon: false,
                               segments: [
                                 const ButtonSegment(value: AssetKeepType.none, label: Text('—')),
                                 ButtonSegment(
