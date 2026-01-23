@@ -607,16 +607,6 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                               )
                             : null,
                       ),
-                      if (state.totalBytes > 0) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'cleanup_storage_savings'.t(context: context, args: {'size': formatBytes(state.totalBytes)}),
-                          style: context.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: context.colorScheme.primary,
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () => _showAssetsPreview(state.assetsToDelete),
@@ -653,6 +643,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                 ),
               ],
             ),
+            const SizedBox(height: 60),
           ],
         ),
       ),

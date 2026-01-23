@@ -762,7 +762,6 @@
   "cleanup_preview_title": "Assets to remove ({count})",
   "cleanup_step3_description": "Scan for backed up assets matching your date and keep settings.",
   "cleanup_step4_summary": "{count} assets created before {date} are queued for removal from your device.",
-  "cleanup_storage_savings": "Free up {size} of storage",
   "cleanup_trash_hint": "To fully reclaim storage space, open the system gallery app and empty the trash",
   "clear": "Clear",
   "clear_all": "Clear all",
