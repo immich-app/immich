@@ -8,6 +8,8 @@ enum SortUserBy { id }
 
 enum ActionSource { timeline, viewer }
 
+enum ButtonPosition { bottomBar, kebabMenu, other }
+
 enum CleanupStep { selectDate, filterOptions, scan, delete }
 
 enum AssetFilterType { all, photosOnly, videosOnly }
