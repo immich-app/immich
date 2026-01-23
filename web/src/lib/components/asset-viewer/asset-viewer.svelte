@@ -12,20 +12,19 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -133,9 +132,7 @@
     }
 
     untrack(() => {
-      if (stack && stack?.assets.length > 1) {
-        preloadImageUrl(getAssetUrl({ asset: stack.assets[1] }));
-      }
+      imageManager.preload(stack?.assets[1]);
     });
   };
 
@@ -220,7 +217,7 @@
     }
 
     e?.stopPropagation();
-    preloadManager.cancel(asset);
+    imageManager.cancel(asset);
     if (tracker.isActive()) {
       return;
     }
@@ -380,8 +377,8 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset;
     untrack(() => handlePromiseError(refresh()));
-    preloadManager.preload(cursor.nextAsset);
-    preloadManager.preload(cursor.previousAsset);
+    imageManager.preload(cursor.nextAsset);
+    imageManager.preload(cursor.previousAsset);
   });
 
   const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
@@ -503,7 +500,7 @@
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
-        assetId={previewStackedAsset!.id}
+        asset={previewStackedAsset!}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
@@ -516,6 +513,7 @@
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
+        {asset}
         assetId={asset.livePhotoVideoId!}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
@@ -541,7 +539,7 @@
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
-        assetId={asset.id}
+        {asset}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}

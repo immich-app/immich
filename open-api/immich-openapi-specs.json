@@ -16301,6 +16301,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "original",
           "fullsize",
           "preview",
           "thumbnail"
