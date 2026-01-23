@@ -27,6 +27,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
   mdiCogRefreshOutline,
+  mdiContentCopy,
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
@@ -35,6 +36,8 @@ import {
   mdiHeartOutline,
   mdiImageRefreshOutline,
   mdiInformationOutline,
+  mdiMagnifyMinusOutline,
+  mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiShareVariantOutline,
@@ -125,6 +128,27 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => assetViewerManager.toggleDetailPanel(),
   };
 
+  const ZoomIn: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyPlusOutline,
+    $if: () => assetViewerManager.canZoomIn(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const ZoomOut: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyMinusOutline,
+    $if: () => assetViewerManager.canZoomOut(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const Copy: ActionItem = {
+    title: $t('copy_image'),
+    icon: mdiContentCopy,
+    $if: () => assetViewerManager.canCopyImage(),
+    onAction: () => assetViewerManager.emit('Copy'),
+  };
+
   const Info: ActionItem = {
     title: $t('info'),
     icon: mdiInformationOutline,
@@ -185,6 +209,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
     Edit,
     RefreshFacesJob,
     RefreshMetadataJob,

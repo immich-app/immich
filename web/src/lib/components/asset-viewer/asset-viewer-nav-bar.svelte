@@ -23,12 +23,9 @@
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -38,15 +35,12 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { CommandPaletteDefaultProvider, IconButton, type ActionItem } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCompare,
-    mdiContentCopy,
     mdiDotsVertical,
     mdiImageSearch,
-    mdiMagnifyMinusOutline,
-    mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
     mdiVideoOutline,
@@ -59,8 +53,6 @@
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showSlideshow?: boolean;
-    onZoomImage: () => void;
-    onCopyImage?: () => Promise<void>;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -76,8 +68,6 @@
     person = null,
     stack = null,
     showSlideshow = false,
-    onZoomImage,
-    onCopyImage,
     preAction,
     onAction,
     onUndoDelete = undefined,
@@ -89,35 +79,18 @@
 
   const isOwner = $derived($user && asset.ownerId === $user?.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
-  const isImage = $derived(asset.type === AssetTypeEnum.Image);
   const smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
   const { Cast } = $derived(getGlobalActions($t));
 
-  const { Close, ZoomIn, ZoomOut } = $derived({
-    Close: {
-      title: $t('go_back'),
-      type: $t('assets'),
-      icon: mdiArrowLeft,
-      $if: () => !!onClose,
-      onAction: () => onClose?.(),
-      shortcuts: [{ key: 'Escape' }],
-    },
-
-    ZoomIn: {
-      title: $t('zoom_image'),
-      icon: mdiMagnifyPlusOutline,
-      $if: () => isImage && $photoZoomState && $photoZoomState.currentZoom <= 1,
-      onAction: () => onZoomImage(),
-    },
-
-    ZoomOut: {
-      title: $t('zoom_image'),
-      icon: mdiMagnifyMinusOutline,
-      $if: () => $photoZoomState && $photoZoomState.currentZoom > 1,
-      onAction: () => onZoomImage(),
-    },
-  } satisfies Record<string, ActionItem>);
+  const Close: ActionItem = $derived({
+    title: $t('go_back'),
+    type: $t('assets'),
+    icon: mdiArrowLeft,
+    $if: () => !!onClose,
+    onAction: () => onClose?.(),
+    shortcuts: [{ key: 'Escape' }],
+  });
 
   const {
     Share,
@@ -129,6 +102,9 @@
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
     Info,
     Edit,
     RefreshFacesJob,
@@ -153,6 +129,9 @@
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
     Info,
     Edit,
     RefreshFacesJob,
@@ -177,18 +156,7 @@
     <ActionButton action={StopMotionPhoto} />
     <ActionButton action={ZoomIn} />
     <ActionButton action={ZoomOut} />
-
-    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image && $photoViewerImgElement}
-      <IconButton
-        color="secondary"
-        variant="ghost"
-        shape="round"
-        icon={mdiContentCopy}
-        aria-label={$t('copy_image')}
-        onclick={() => onCopyImage?.()}
-      />
-    {/if}
-
+    <ActionButton action={Copy} />
     <ActionButton action={SharedLinkDownload} />
     <ActionButton action={Info} />
     <ActionButton action={Favorite} />
