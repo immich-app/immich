@@ -1,12 +1,11 @@
-type BaseEvents = Record<string, unknown[]>;
+type EventMap = Record<string, unknown[]>;
+type PromiseLike<T> = Promise<T> | T;
 
-export type EventCallback<Events extends BaseEvents, T extends keyof Events> = (
-  ...args: Events[T]
-) => Promise<void> | void;
-export type EventItem<Events extends BaseEvents, T extends keyof Events = keyof Events> = {
+export type EventCallback<E extends EventMap, T extends keyof E> = (...args: E[T]) => PromiseLike<unknown>;
+export type EventItem<E extends EventMap, T extends keyof E = keyof E> = {
   id: number;
   event: T;
-  callback: EventCallback<Events, T>;
+  callback: EventCallback<E, T>;
 };
 
 let count = 1;
@@ -14,7 +13,7 @@ const nextId = () => count++;
 
 const noop = () => {};
 
-export class BaseEventManager<Events extends BaseEvents> {
+export class BaseEventManager<Events extends EventMap> {
   #callbacks: EventItem<Events>[] = $state([]);
 
   on<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {

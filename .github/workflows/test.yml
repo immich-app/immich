@@ -504,16 +504,22 @@ jobs:
           CI: true
         run: npx playwright test --project=chromium
         if: ${{ !cancelled() }}
+      - name: Archive web results
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: success() || failure()
+        with:
+          name: e2e-web-test-results-${{ matrix.runner }}
+          path: e2e/playwright-report/
       - name: Run ui tests (web)
         env:
           CI: true
         run: npx playwright test --project=ui
         if: ${{ !cancelled() }}
-      - name: Archive test results
+      - name: Archive ui results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: success() || failure()
         with:
-          name: e2e-web-test-results-${{ matrix.runner }}
+          name: e2e-ui-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
   success-check-e2e:
     name: End-to-End Tests Success

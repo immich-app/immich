@@ -8,9 +8,10 @@
   };
 
   const props: Props = $props();
-  const unsubscribes: Array<() => void> = [];
 
   onMount(() => {
+    const unsubscribes: Array<() => void> = [];
+
     for (const name of Object.keys(props)) {
       const event = name.slice(2) as keyof Events;
       const listener = props[name as keyof Props] as EventCallback<Events, typeof event> | undefined;
