@@ -1,3 +1,4 @@
+import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -37,6 +38,7 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiShareVariantOutline,
+  mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -132,6 +134,21 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     shortcuts: [{ key: 'i' }],
   };
 
+  const Edit: ActionItem = {
+    title: $t('editor'),
+    icon: mdiTune,
+    $if: () =>
+      !sharedLink &&
+      isOwner &&
+      asset.type === AssetTypeEnum.Image &&
+      !asset.livePhotoVideoId &&
+      asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
+      !asset.originalPath.toLowerCase().endsWith('.insp') &&
+      !asset.originalPath.toLowerCase().endsWith('.gif') &&
+      !asset.originalPath.toLowerCase().endsWith('.svg'),
+    onAction: () => assetViewerManager.openEditor(),
+  };
+
   const RefreshFacesJob: ActionItem = {
     title: getAssetJobName($t, AssetJobName.RefreshFaces),
     icon: mdiHeadSyncOutline,
@@ -168,6 +185,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    Edit,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,
