@@ -150,6 +150,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     final subtitleStyle = context.textTheme.bodyMedium!.copyWith(
       color: context.textTheme.bodyMedium!.color!.withAlpha(215),
     );
+
     StepStyle styleForState(StepState stepState, {bool isDestructive = false}) {
       switch (stepState) {
         case StepState.complete:
@@ -187,7 +188,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     final step3State = hasAssets ? StepState.indexed : StepState.disabled;
 
     final hasKeepSettings =
-        state.keepFavorites || state.excludedAlbumIds.isNotEmpty || state.keepMediaType != AssetKeepType.none;
+        state.keepFavorites || state.keepAlbumIds.isNotEmpty || state.keepMediaType != AssetKeepType.none;
 
     String getKeepSettingsSummary() {
       final parts = <String>[];
@@ -202,10 +203,8 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
         parts.add('favorites'.t(context: context).toLowerCase());
       }
 
-      if (state.excludedAlbumIds.isNotEmpty) {
-        parts.add(
-          'excluded_albums_count'.t(context: context, args: {'count': state.excludedAlbumIds.length.toString()}),
-        );
+      if (state.keepAlbumIds.isNotEmpty) {
+        parts.add('keep_albums_count'.t(context: context, args: {'count': state.keepAlbumIds.length.toString()}));
       }
 
       if (parts.isEmpty) {
@@ -286,20 +285,15 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('cleanup_filter_description'.t(context: context), style: subtitleStyle),
-                            const SizedBox(height: 16),
+                            Text('keep_description'.t(context: context), style: subtitleStyle),
+                            const SizedBox(height: 4),
                             SwitchListTile(
                               contentPadding: EdgeInsets.zero,
                               title: Text(
                                 'keep_favorites'.t(context: context),
                                 style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                               ),
-                              subtitle: Text(
-                                'keep_favorites_description'.t(context: context),
-                                style: context.textTheme.bodyMedium!.copyWith(
-                                  color: context.textTheme.bodyMedium!.color!.withAlpha(215),
-                                ),
-                              ),
+
                               value: state.keepFavorites,
                               onChanged: (value) {
                                 ref.read(cleanupProvider.notifier).setKeepFavorites(value);
@@ -307,16 +301,16 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                               },
                             ),
                             const SizedBox(height: 8),
-                            _ExcludedAlbumsSection(
-                              excludedAlbumIds: state.excludedAlbumIds,
+                            _KeepAlbumsSection(
+                              albumIds: state.keepAlbumIds,
                               onAlbumToggled: (albumId) {
-                                ref.read(cleanupProvider.notifier).toggleExcludedAlbum(albumId);
+                                ref.read(cleanupProvider.notifier).toggleKeepAlbum(albumId);
                                 _onKeepSettingsChanged();
                               },
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'cleanup_keep_all_media_type'.t(context: context),
+                              'always_keep'.t(context: context),
                               style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                             ),
                             const SizedBox(height: 4),
@@ -748,11 +742,11 @@ class _DatePresetCard extends StatelessWidget {
   }
 }
 
-class _ExcludedAlbumsSection extends ConsumerWidget {
-  final Set<String> excludedAlbumIds;
+class _KeepAlbumsSection extends ConsumerWidget {
+  final Set<String> albumIds;
   final ValueChanged<String> onAlbumToggled;
 
-  const _ExcludedAlbumsSection({required this.excludedAlbumIds, required this.onAlbumToggled});
+  const _KeepAlbumsSection({required this.albumIds, required this.onAlbumToggled});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -762,15 +756,11 @@ class _ExcludedAlbumsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'exclude_albums'.t(context: context),
+          'keep_albums'.t(context: context),
           style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'exclude_albums_description'.t(context: context),
-          style: context.textTheme.bodyMedium!.copyWith(color: context.textTheme.bodyMedium!.color!.withAlpha(215)),
-        ),
-        const SizedBox(height: 12),
+
+        const SizedBox(height: 8),
         albumsAsync.when(
           loading: () => const Center(
             child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 2)),
@@ -801,22 +791,18 @@ class _ExcludedAlbumsSection extends ConsumerWidget {
                   itemCount: albums.length,
                   itemBuilder: (context, index) {
                     final album = albums[index];
-                    final isExcluded = excludedAlbumIds.contains(album.id);
-                    return _AlbumExclusionTile(
-                      album: album,
-                      isExcluded: isExcluded,
-                      onToggle: () => onAlbumToggled(album.id),
-                    );
+                    final isSelected = albumIds.contains(album.id);
+                    return _AlbumTile(album: album, isSelected: isSelected, onToggle: () => onAlbumToggled(album.id));
                   },
                 ),
               ),
             );
           },
         ),
-        if (excludedAlbumIds.isNotEmpty) ...[
+        if (albumIds.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            'excluded_albums_count'.t(context: context, args: {'count': excludedAlbumIds.length.toString()}),
+            'keep_albums_count'.t(context: context, args: {'count': albumIds.length.toString()}),
             style: context.textTheme.bodySmall?.copyWith(
               color: context.colorScheme.primary,
               fontWeight: FontWeight.w500,
@@ -828,12 +814,12 @@ class _ExcludedAlbumsSection extends ConsumerWidget {
   }
 }
 
-class _AlbumExclusionTile extends StatelessWidget {
+class _AlbumTile extends StatelessWidget {
   final LocalAlbum album;
-  final bool isExcluded;
+  final bool isSelected;
   final VoidCallback onToggle;
 
-  const _AlbumExclusionTile({required this.album, required this.isExcluded, required this.onToggle});
+  const _AlbumTile({required this.album, required this.isSelected, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -841,13 +827,13 @@ class _AlbumExclusionTile extends StatelessWidget {
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
       leading: Icon(
-        isExcluded ? Icons.check_circle : Icons.circle_outlined,
-        color: isExcluded ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
+        isSelected ? Icons.check_circle : Icons.circle_outlined,
+        color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
         size: 20,
       ),
       title: Text(
         album.name,
-        style: context.textTheme.bodyMedium?.copyWith(color: isExcluded ? context.colorScheme.primary : null),
+        style: context.textTheme.bodyMedium?.copyWith(color: isSelected ? context.colorScheme.primary : null),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

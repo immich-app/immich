@@ -87,7 +87,7 @@ enum StoreKey<T> {
   // Free up space
   cleanupKeepFavorites<bool>._(1008),
   cleanupKeepMediaType<int>._(1009),
-  cleanupExcludedAlbumIds<String>._(1010),
+  cleanupKeepAlbumIds<String>._(1010),
   cleanupCutoffDaysAgo<int>._(1011);
 
   const StoreKey._(this.id);

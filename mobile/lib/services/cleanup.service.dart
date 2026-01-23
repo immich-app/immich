@@ -20,14 +20,14 @@ class CleanupService {
     DateTime cutoffDate, {
     AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
-    Set<String> excludedAlbumIds = const {},
+    Set<String> keepAlbumIds = const {},
   }) {
     return _localAssetRepository.getRemovalCandidates(
       userId,
       cutoffDate,
       keepMediaType: keepMediaType,
       keepFavorites: keepFavorites,
-      excludedAlbumIds: excludedAlbumIds,
+      keepAlbumIds: keepAlbumIds,
     );
   }
 

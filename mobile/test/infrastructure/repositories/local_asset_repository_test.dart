@@ -462,7 +462,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-excluded', checksum: 'checksum-excluded', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-exclude', assetId: 'local-in-excluded');
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, excludedAlbumIds: {'album-exclude'});
+      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-exclude'});
 
       expect(candidates.length, 1);
       expect(candidates[0].id, 'local-in-included');
@@ -510,7 +510,7 @@ void main() {
       final candidates = await repository.getRemovalCandidates(
         userId,
         cutoffDate,
-        excludedAlbumIds: {'album-1', 'album-2'},
+        keepAlbumIds: {'album-1', 'album-2'},
       );
 
       expect(candidates.length, 1);
@@ -533,11 +533,7 @@ void main() {
       await insertLocalAlbumAsset(albumId: 'album-included', assetId: 'local-both');
       await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-both');
 
-      final candidates = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        excludedAlbumIds: {'album-excluded'},
-      );
+      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-excluded'});
 
       expect(candidates, isEmpty);
     });
@@ -565,7 +561,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-2', checksum: 'checksum-2', ownerId: userId);
 
       // Empty excludedAlbumIds should include all eligible assets
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, excludedAlbumIds: {});
+      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {});
 
       expect(candidates.length, 2);
     });
@@ -594,11 +590,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-in-excluded', checksum: 'checksum-in-excluded', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-in-excluded');
 
-      final candidates = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        excludedAlbumIds: {'album-excluded'},
-      );
+      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-excluded'});
 
       expect(candidates.length, 1);
       expect(candidates[0].id, 'local-no-album');
@@ -645,7 +637,7 @@ void main() {
         userId,
         cutoffDate,
         keepMediaType: AssetKeepType.photosOnly,
-        excludedAlbumIds: {'album-excluded'},
+        keepAlbumIds: {'album-excluded'},
       );
 
       expect(candidates.length, 1);

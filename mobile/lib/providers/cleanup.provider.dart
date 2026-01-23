@@ -13,7 +13,7 @@ class CleanupState {
   final bool isDeleting;
   final AssetKeepType keepMediaType;
   final bool keepFavorites;
-  final Set<String> excludedAlbumIds;
+  final Set<String> keepAlbumIds;
 
   const CleanupState({
     this.selectedDate,
@@ -22,7 +22,7 @@ class CleanupState {
     this.isDeleting = false,
     this.keepMediaType = AssetKeepType.none,
     this.keepFavorites = true,
-    this.excludedAlbumIds = const {},
+    this.keepAlbumIds = const {},
   });
 
   CleanupState copyWith({
@@ -32,7 +32,7 @@ class CleanupState {
     bool? isDeleting,
     AssetKeepType? keepMediaType,
     bool? keepFavorites,
-    Set<String>? excludedAlbumIds,
+    Set<String>? keepAlbumIds,
   }) {
     return CleanupState(
       selectedDate: selectedDate ?? this.selectedDate,
@@ -41,7 +41,7 @@ class CleanupState {
       isDeleting: isDeleting ?? this.isDeleting,
       keepMediaType: keepMediaType ?? this.keepMediaType,
       keepFavorites: keepFavorites ?? this.keepFavorites,
-      excludedAlbumIds: excludedAlbumIds ?? this.excludedAlbumIds,
+      keepAlbumIds: keepAlbumIds ?? this.keepAlbumIds,
     );
   }
 }
@@ -66,17 +66,17 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   void _loadPersistedSettings() {
     final keepFavorites = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepFavorites);
     final keepMediaTypeIndex = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepMediaType);
-    final excludedAlbumIdsString = _appSettingsService.getSetting(AppSettingsEnum.cleanupExcludedAlbumIds);
+    final keepAlbumIdsString = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepAlbumIds);
     final cutoffDaysAgo = _appSettingsService.getSetting(AppSettingsEnum.cleanupCutoffDaysAgo);
 
     final keepMediaType = AssetKeepType.values[keepMediaTypeIndex.clamp(0, AssetKeepType.values.length - 1)];
-    final excludedAlbumIds = excludedAlbumIdsString.isEmpty ? <String>{} : excludedAlbumIdsString.split(',').toSet();
+    final keepAlbumIds = keepAlbumIdsString.isEmpty ? <String>{} : keepAlbumIdsString.split(',').toSet();
     final selectedDate = cutoffDaysAgo > 0 ? DateTime.now().subtract(Duration(days: cutoffDaysAgo)) : null;
 
     state = state.copyWith(
       keepFavorites: keepFavorites,
       keepMediaType: keepMediaType,
-      excludedAlbumIds: excludedAlbumIds,
+      keepAlbumIds: keepAlbumIds,
       selectedDate: selectedDate,
     );
   }
@@ -99,24 +99,24 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepFavorites, keepFavorites);
   }
 
-  void toggleExcludedAlbum(String albumId) {
-    final newExcludedAlbumIds = Set<String>.from(state.excludedAlbumIds);
-    if (newExcludedAlbumIds.contains(albumId)) {
-      newExcludedAlbumIds.remove(albumId);
+  void toggleKeepAlbum(String albumId) {
+    final newKeepAlbumIds = Set<String>.from(state.keepAlbumIds);
+    if (newKeepAlbumIds.contains(albumId)) {
+      newKeepAlbumIds.remove(albumId);
     } else {
-      newExcludedAlbumIds.add(albumId);
+      newKeepAlbumIds.add(albumId);
     }
-    state = state.copyWith(excludedAlbumIds: newExcludedAlbumIds, assetsToDelete: []);
-    _persistExcludedAlbumIds(newExcludedAlbumIds);
+    state = state.copyWith(keepAlbumIds: newKeepAlbumIds, assetsToDelete: []);
+    _persistExcludedAlbumIds(newKeepAlbumIds);
   }
 
   void setExcludedAlbumIds(Set<String> albumIds) {
-    state = state.copyWith(excludedAlbumIds: albumIds, assetsToDelete: []);
+    state = state.copyWith(keepAlbumIds: albumIds, assetsToDelete: []);
     _persistExcludedAlbumIds(albumIds);
   }
 
   void _persistExcludedAlbumIds(Set<String> albumIds) {
-    _appSettingsService.setSetting(AppSettingsEnum.cleanupExcludedAlbumIds, albumIds.join(','));
+    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepAlbumIds, albumIds.join(','));
   }
 
   Future<void> scanAssets() async {
@@ -131,7 +131,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
         state.selectedDate!,
         keepMediaType: state.keepMediaType,
         keepFavorites: state.keepFavorites,
-        excludedAlbumIds: state.excludedAlbumIds,
+        keepAlbumIds: state.keepAlbumIds,
       );
       state = state.copyWith(assetsToDelete: assets, isScanning: false);
     } catch (e) {

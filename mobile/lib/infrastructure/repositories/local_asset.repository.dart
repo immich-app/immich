@@ -135,7 +135,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     DateTime cutoffDate, {
     AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
-    Set<String> excludedAlbumIds = const {},
+    Set<String> keepAlbumIds = const {},
   }) async {
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -160,14 +160,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     // Exclude assets that are in iOS shared albums
     whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
 
-    if (excludedAlbumIds.isNotEmpty) {
-      final excludedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
+    if (keepAlbumIds.isNotEmpty) {
+      final keepAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
         ..addColumns([_db.localAlbumAssetEntity.assetId])
-        ..where(_db.localAlbumAssetEntity.albumId.isIn(excludedAlbumIds));
-      whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(excludedAlbumAssets);
+        ..where(_db.localAlbumAssetEntity.albumId.isIn(keepAlbumIds));
+      whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(keepAlbumAssets);
     }
 
-    // keepMediaType specifies what to KEEP, so we filter to DELETE the opposite
     if (keepMediaType == AssetKeepType.photosOnly) {
       // Keep photos = delete only videos
       whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
