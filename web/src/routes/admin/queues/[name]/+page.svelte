@@ -29,13 +29,11 @@
 
   const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
 
-
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
   const item = $derived(asQueueItem($t, queue));
 
   onMount(() => queueManager.listen());
 </script>
-
 
 <AdminPageLayout
   breadcrumbs={[{ title: $t('admin.queues'), href: Route.queues() }, { title: item.title }]}
