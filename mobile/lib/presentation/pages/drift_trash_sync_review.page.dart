@@ -43,7 +43,7 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
             height: 72.0,
             child: Consumer(
               builder: (context, ref, _) {
-                final outOfSyncCount = ref.watch(outOfSyncCountProvider).maybeWhen(data: (v) => v, orElse: () => 0);
+                final outOfSyncCount = ref.watch(outOfSyncAssetsCountProvider).maybeWhen(data: (v) => v, orElse: () => 0);
                 return outOfSyncCount > 0
                     ? const Text('asset_out_of_sync_trash_subtitle').tr()
                     : Center(

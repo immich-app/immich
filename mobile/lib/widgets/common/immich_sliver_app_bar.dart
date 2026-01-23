@@ -128,7 +128,7 @@ class _ProfileIndicator extends ConsumerWidget {
     final serverInfoState = ref.watch(serverInfoProvider);
 
     const widgetSize = 30.0;
-    final outOfSyncCount = ref.watch(outOfSyncCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
+    final outOfSyncCount = ref.watch(outOfSyncAssetsCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
 
     void toggleReadonlyMode() {
       final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);

@@ -44,7 +44,7 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
-    final isWaitingForSyncApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum!)).value == true;
+    final isWaitingForSyncApproval = ref.watch(isWaitingForTrashApprovalProvider(asset.checksum!)).value == true;
 
     if (!showControls) {
       opacity = 0;

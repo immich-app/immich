@@ -97,7 +97,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     Widget buildOutOfSyncButton() {
       return Consumer(
         builder: (context, ref, _) {
-          final count = ref.watch(outOfSyncCountProvider).value ?? 0;
+          final count = ref.watch(outOfSyncAssetsCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
           if (count == 0) {
             return const SizedBox.shrink();
           }
