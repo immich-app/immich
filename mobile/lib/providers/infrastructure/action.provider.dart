@@ -359,6 +359,22 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> updateRating(ActionSource source, int rating) async {
+    final ids = _getRemoteIdsForSource(source);
+    if (ids.length != 1) {
+      _logger.warning('updateRating called with multiple assets, expected single asset');
+      return ActionResult(count: ids.length, success: false, error: 'Expected single asset for rating update');
+    }
+
+    try {
+      final isUpdated = await _service.updateRating(ids.first, rating);
+      return ActionResult(count: 1, success: isUpdated);
+    } catch (error, stack) {
+      _logger.severe('Failed to update rating for asset', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> stack(String userId, ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
