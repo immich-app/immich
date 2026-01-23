@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
@@ -86,7 +84,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* initialImageStream();
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -98,7 +96,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* loadRequest(request, decode);
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 

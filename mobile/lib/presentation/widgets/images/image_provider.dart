@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -53,14 +51,14 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
     if (isCancelled) {
       this.request = null;
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
       if (image == null || isCancelled) {
-        unawaited(evict());
+        PaintingBinding.instance.imageCache.evict(this);
         return;
       }
       yield image;
