@@ -70,7 +70,6 @@
     onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
-    copyImage?: () => Promise<void>;
   }
 
   let {
@@ -86,7 +85,6 @@
     onUndoDelete,
     onClose,
     onRandom,
-    copyImage = $bindable(),
   }: Props = $props();
 
   const { setAssetId } = assetViewingStore;
@@ -110,7 +108,6 @@
   let unsubscribes: (() => void)[] = [];
   let stack: StackResponseDto | null = $state(null);
 
-  let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
 
   const setPlayOriginalVideo = (value: boolean) => {
@@ -445,8 +442,6 @@
         {person}
         {stack}
         showSlideshow={true}
-        onZoomImage={zoomToggle}
-        onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
@@ -481,8 +476,6 @@
   <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
     {#if viewerKind === 'StackPhotoViewer'}
       <PhotoViewer
-        bind:zoomToggle
-        bind:copyImage
         cursor={{ ...cursor, current: previewStackedAsset! }}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
@@ -515,13 +508,11 @@
         {playOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
-      <ImagePanoramaViewer bind:zoomToggle {asset} />
+      <ImagePanoramaViewer {asset} />
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
       <PhotoViewer
-        bind:zoomToggle
-        bind:copyImage
         {cursor}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
