@@ -27,7 +27,7 @@
 
   const { data }: Props = $props();
 
-  let queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) || data.queue);
+  const queue = $derived(queueManager.queues.find((q) => q.name === data.queue.name) ?? data.queue);
 
 
   const { Pause, Resume, Empty, RemoveFailedJobs } = $derived(getQueueActions($t, queue));
