@@ -43,4 +43,18 @@ class CleanupService {
 
     return 0;
   }
+
+  /// Returns album IDs that should be kept by default (e.g., messaging app albums)
+  Set<String> getDefaultKeepAlbumIds(List<(String id, String name)> albums) {
+    const messagingApps = ['whatsapp', 'telegram', 'signal', 'messenger', 'viber', 'wechat', 'line'];
+
+    final toKeep = <String>{};
+    for (final (id, name) in albums) {
+      final albumName = name.toLowerCase();
+      if (messagingApps.any((app) => albumName.contains(app))) {
+        toKeep.add(id);
+      }
+    }
+    return toKeep;
+  }
 }

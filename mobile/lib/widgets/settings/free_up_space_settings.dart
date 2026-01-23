@@ -26,6 +26,24 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   bool _hasScanned = false;
   bool _isKeepSettingsExpanded = false;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAlbumDefaults();
+    });
+  }
+
+  Future<void> _initializeAlbumDefaults() async {
+    final albums = await ref.read(localAlbumProvider.future);
+    final existingAlbumIds = albums.map((a) => a.id).toSet();
+    final albumsWithNames = albums.map((a) => (a.id, a.name)).toList();
+
+    final notifier = ref.read(cleanupProvider.notifier);
+    notifier.applyDefaultAlbumSelections(albumsWithNames);
+    notifier.cleanupStaleAlbumIds(existingAlbumIds);
+  }
+
   void _resetState() {
     ref.read(cleanupProvider.notifier).reset();
     _hasScanned = false;
@@ -778,15 +796,6 @@ class _KeepAlbumsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final albumsAsync = ref.watch(localAlbumProvider);
-
-    // Clean up stale album IDs when albums are loaded
-    albumsAsync.whenData((albums) {
-      final existingAlbumIds = albums.map((a) => a.id).toSet();
-      // Use Future.microtask to avoid modifying state during build
-      Future.microtask(() {
-        ref.read(cleanupProvider.notifier).cleanupStaleAlbumIds(existingAlbumIds);
-      });
-    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

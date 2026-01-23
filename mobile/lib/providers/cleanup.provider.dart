@@ -123,7 +123,6 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepAlbumIds, albumIds.join(','));
   }
 
-  /// Remove album IDs that no longer exist on the device
   void cleanupStaleAlbumIds(Set<String> existingAlbumIds) {
     final staleIds = state.keepAlbumIds.difference(existingAlbumIds);
     if (staleIds.isNotEmpty) {
@@ -131,6 +130,21 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       state = state.copyWith(keepAlbumIds: cleanedIds);
       _persistExcludedAlbumIds(cleanedIds);
     }
+  }
+
+  void applyDefaultAlbumSelections(List<(String id, String name)> albums) {
+    final isInitialized = _appSettingsService.getSetting(AppSettingsEnum.cleanupDefaultsInitialized);
+    if (isInitialized) return;
+
+    final toKeep = _cleanupService.getDefaultKeepAlbumIds(albums);
+
+    if (toKeep.isNotEmpty) {
+      final keepAlbumIds = {...state.keepAlbumIds, ...toKeep};
+      state = state.copyWith(keepAlbumIds: keepAlbumIds);
+      _persistExcludedAlbumIds(keepAlbumIds);
+    }
+
+    _appSettingsService.setSetting(AppSettingsEnum.cleanupDefaultsInitialized, true);
   }
 
   Future<void> scanAssets() async {
