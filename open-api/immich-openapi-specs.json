@@ -3173,6 +3173,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "asset.upload",
         "x-immich-state": "Stable"
       }
     },
@@ -3225,6 +3226,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "job.create",
         "x-immich-state": "Stable"
       }
     },
@@ -14618,6 +14620,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -14670,6 +14673,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -18959,6 +18963,7 @@
           "face.read",
           "face.update",
           "face.delete",
+          "folder.read",
           "job.create",
           "job.read",
           "library.create",
