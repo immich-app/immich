@@ -107,7 +107,7 @@
       <Switch bind:checked={tempSlideshowTransition} />
     </Field>
 
-    <Field label={$t('slideshow_repeat')} desc={$t('slideshow_repeat_description')}>
+    <Field label={$t('slideshow_repeat')} description={$t('slideshow_repeat_description')}>
       <Switch bind:checked={tempSlideshowRepeat} />
     </Field>
 
