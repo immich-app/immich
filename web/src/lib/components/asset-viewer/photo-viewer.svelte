@@ -6,7 +6,7 @@
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -164,7 +164,7 @@
     imageError = imageLoaded = true;
   };
 
-  onDestroy(() => preloadManager.cancelPreloadUrl(imageLoaderUrl));
+  onDestroy(() => imageManager.cancelPreloadUrl(imageLoaderUrl));
 
   let imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || $photoZoomState.currentZoom > 1 }),

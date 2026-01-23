@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Route } from '$lib/route';
   import { userInteraction } from '$lib/stores/user.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
@@ -34,7 +34,7 @@
       <div
         class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"
         style={album.albumThumbnailAssetId
-          ? `background-image:url('${getAssetThumbnailUrl({ id: album.albumThumbnailAssetId })}')`
+          ? `background-image:url('${getAssetMediaUrl({ id: album.albumThumbnailAssetId })}')`
           : ''}
       ></div>
     </div>

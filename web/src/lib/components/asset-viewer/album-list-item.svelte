@@ -1,7 +1,7 @@
 <script lang="ts">
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -134,7 +134,7 @@
     <span class="h-16 w-16 shrink-0 rounded-xl bg-slate-300">
       {#if album.albumThumbnailAssetId}
         <img
-          src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
+          src={getAssetMediaUrl({ id: album.albumThumbnailAssetId })}
           alt={album.albumName}
           class={['h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg']}
           data-testid="album-image"

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
@@ -335,7 +335,7 @@
       <ImageThumbnail
         class={imageClass}
         {brokenAssetClass}
-        url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+        url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
@@ -371,7 +371,7 @@
           <ImageThumbnail
             class={imageClass}
             {brokenAssetClass}
-            url={getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Original, cacheKey: asset.thumbhash })}
             altText={$getAltText(asset)}
             widthStyle="{width}px"
             heightStyle="{height}px"
