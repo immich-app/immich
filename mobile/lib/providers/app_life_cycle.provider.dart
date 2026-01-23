@@ -218,7 +218,14 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     try {
       if (Store.isBetaTimelineEnabled) {
-        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+        unawaited(
+          Future.wait([
+            _ref.read(backgroundWorkerLockServiceProvider).unlock(),
+            _ref.read(nativeSyncApiProvider).cancelHashing(),
+            _ref.read(backgroundSyncProvider).cancel(),
+            _ref.read(backgroundSyncProvider).cancelLocal(),
+          ]),
+        );
       }
       await _performPause();
     } catch (e, stackTrace) {

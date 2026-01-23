@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
@@ -41,7 +40,6 @@ import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
-import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -53,8 +51,6 @@ void main() async {
   final (isar, drift, logDb) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
-  // Warm-up isolate pool for worker manager
-  await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 

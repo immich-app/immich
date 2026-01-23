@@ -21,7 +21,13 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
         backupProvider.updateError(isSuccess == true ? BackupError.none : BackupError.syncFailed);
       }
     },
-    onRemoteSyncError: syncStatusNotifier.errorRemoteSync,
+    onRemoteSyncError: (error) {
+      syncStatusNotifier.errorRemoteSync(error);
+      final backupProvider = ref.read(driftBackupProvider.notifier);
+      if (backupProvider.mounted) {
+        backupProvider.updateError(BackupError.syncFailed);
+      }
+    },
     onLocalSyncStart: syncStatusNotifier.startLocalSync,
     onLocalSyncComplete: syncStatusNotifier.completeLocalSync,
     onLocalSyncError: syncStatusNotifier.errorLocalSync,
