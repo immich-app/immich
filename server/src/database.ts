@@ -39,6 +39,7 @@ export type AssetFile = {
   id: string;
   type: AssetFileType;
   path: string;
+  isEdited: boolean;
 };
 
 export type Library = {
@@ -344,7 +345,7 @@ export const columns = {
     'asset.width',
     'asset.height',
   ],
-  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
+  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.isEdited'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
@@ -395,7 +396,7 @@ export const columns = {
     'asset.libraryId',
     'asset.width',
     'asset.height',
-    'asset.editCount',
+    'asset.isEdited',
   ],
   syncAlbumUser: ['album_user.albumId as albumId', 'album_user.userId as userId', 'album_user.role'],
   syncStack: ['stack.id', 'stack.createdAt', 'stack.updatedAt', 'stack.primaryAssetId', 'stack.ownerId'],
@@ -457,6 +458,7 @@ export const columns = {
     'asset_exif.projectionType',
     'asset_exif.rating',
     'asset_exif.state',
+    'asset_exif.tags',
     'asset_exif.timeZone',
   ],
   plugin: [
@@ -480,4 +482,5 @@ export const lockableProperties = [
   'longitude',
   'rating',
   'timeZone',
+  'tags',
 ] as const;

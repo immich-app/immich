@@ -44,6 +44,11 @@ export type Events = {
   AlbumUserDelete: [{ albumId: string; userId: string }];
 
   PersonUpdate: [PersonResponseDto];
+  PersonThumbnailReady: [{ id: string }];
+
+  BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
+  BackupDeleted: [{ filename: string }];
+  BackupUpload: [{ progress: number; isComplete: boolean }];
 
   QueueUpdate: [QueueResponseDto];
 
@@ -65,12 +70,15 @@ export type Events = {
   // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
+  SessionLocked: [];
+
   SystemConfigUpdate: [SystemConfigDto];
 
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
 
+  WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 

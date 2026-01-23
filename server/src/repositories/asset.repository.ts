@@ -178,6 +178,7 @@ export class AssetRepository {
                 bitsPerSample: ref('bitsPerSample'),
                 rating: ref('rating'),
                 fps: ref('fps'),
+                tags: ref('tags'),
                 lockedProperties:
                   lockedPropertiesBehavior === 'append'
                     ? distinctLocked(eb, exif.lockedProperties ?? null)
@@ -903,20 +904,22 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
       .insertInto('asset_file')
       .values(value)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
         })),
       )
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+  ): Promise<void> {
     if (files.length === 0) {
       return;
     }
@@ -926,7 +929,7 @@ export class AssetRepository {
       .insertInto('asset_file')
       .values(values)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
         })),
       )

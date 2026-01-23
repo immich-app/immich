@@ -139,7 +139,7 @@ export type MapAsset = {
   type: AssetType;
   width: number | null;
   height: number | null;
-  editCount: number;
+  isEdited: boolean;
 };
 
 export class AssetStackResponseDto {
@@ -248,6 +248,6 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     resized: true,
     width: entity.width,
     height: entity.height,
-    isEdited: entity.editCount > 0,
+    isEdited: entity.isEdited,
   };
 }

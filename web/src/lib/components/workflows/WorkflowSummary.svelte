@@ -113,7 +113,7 @@
         <div class="rounded-lg bg-light-100 border p-3">
           <div class="flex items-center gap-2 mb-1">
             <Icon icon={mdiFlashOutline} size="18" class="text-primary" />
-            <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('trigger')}</span>
+            <Text size="tiny" fontWeight="semi-bold">{$t('trigger')}</Text>
           </div>
           <p class="text-sm truncate pl-5">{getTriggerName(trigger.type)}</p>
         </div>
@@ -128,7 +128,7 @@
           <div class="rounded-lg bg-light-100 border p-3">
             <div class="flex items-center gap-2 mb-2">
               <Icon icon={mdiFilterOutline} size="18" class="text-warning" />
-              <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('filters')}</span>
+              <Text size="tiny" fontWeight="semi-bold">{$t('filters')}</Text>
             </div>
             <div class="space-y-1 pl-5">
               {#each filters as filter, index (index)}
@@ -154,7 +154,7 @@
           <div class="rounded-lg bg-light-100 border p-3">
             <div class="flex items-center gap-2 mb-2">
               <Icon icon={mdiPlayCircleOutline} size="18" class="text-success" />
-              <span class="text-[10px] font-semibold uppercase tracking-wide">{$t('actions')}</span>
+              <Text size="tiny" fontWeight="semi-bold">{$t('actions')}</Text>
             </div>
             <div class="space-y-1 pl-5">
               {#each actions as action, index (index)}

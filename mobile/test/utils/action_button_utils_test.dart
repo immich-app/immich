@@ -23,6 +23,7 @@ LocalAsset createLocalAsset({
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
     isFavorite: isFavorite,
+    isEdited: false,
   );
 }
 
@@ -45,6 +46,7 @@ RemoteAsset createRemoteAsset({
     createdAt: createdAt ?? DateTime.now(),
     updatedAt: updatedAt ?? DateTime.now(),
     isFavorite: isFavorite,
+    isEdited: false,
   );
 }
 

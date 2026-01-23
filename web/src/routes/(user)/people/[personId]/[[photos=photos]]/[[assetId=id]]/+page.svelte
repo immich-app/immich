@@ -4,7 +4,6 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
@@ -27,7 +26,7 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -42,16 +41,12 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, modalManager, toastManager } from '@immich/ui';
+  import { ContextMenuButton, LoadingSpinner, modalManager, toastManager, type ActionItem } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
     mdiArrowLeft,
     mdiDotsVertical,
-    mdiEyeOffOutline,
-    mdiEyeOutline,
-    mdiHeartMinusOutline,
-    mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -144,37 +139,6 @@
     viewMode = PersonPageViewMode.UNASSIGN_ASSETS;
   };
 
-  const toggleHidePerson = async () => {
-    try {
-      await updatePerson({
-        id: person.id,
-        personUpdateDto: { isHidden: !person.isHidden },
-      });
-
-      toastManager.success($t('changed_visibility_successfully'));
-
-      await goto(previousRoute);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_hide_person'));
-    }
-  };
-
-  const handleToggleFavorite = async () => {
-    try {
-      const updatedPerson = await updatePerson({
-        id: person.id,
-        personUpdateDto: { isFavorite: !person.isFavorite },
-      });
-
-      // Invalidate to reload the page data and have the favorite status updated
-      await invalidateAll();
-
-      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: person.isFavorite } }));
-    }
-  };
-
   const handleMerge = async (person: PersonResponseDto) => {
     await updateAssetCount();
     await handleGoBack();
@@ -219,7 +183,7 @@
       await updateAssetCount();
       return { merged: true };
     }
-    await goto(`${AppRoute.PEOPLE}/${personToBeMergedInto.id}`, { replaceState: true });
+    await goto(Route.viewPerson(personToBeMergedInto), { replaceState: true });
     return { merged: true };
   };
 
@@ -325,13 +289,35 @@
     assetInteraction.clearMultiselect();
   };
 
-  const onPersonUpdate = (response: PersonResponseDto) => {
-    if (person.id === response.id) {
-      return (person = response);
+  const onPersonUpdate = async (response: PersonResponseDto) => {
+    if (response.id !== person.id) {
+      return;
     }
+
+    if (response.isHidden) {
+      await goto(previousRoute);
+      return;
+    }
+
+    person = response;
   };
 
-  const { SetDateOfBirth } = $derived(getPersonActions($t, person));
+  const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
+  const SelectFeaturePhoto: ActionItem = {
+    title: $t('select_featured_photo'),
+    icon: mdiAccountBoxOutline,
+    onAction: () => {
+      viewMode = PersonPageViewMode.SELECT_PERSON;
+    },
+  };
+
+  const Merge: ActionItem = {
+    title: $t('merge_people'),
+    icon: mdiAccountMultipleCheckOutline,
+    onAction: () => {
+      viewMode = PersonPageViewMode.MERGE_PEOPLE;
+    },
+  };
 </script>
 
 <OnEvents {onPersonUpdate} onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
@@ -339,7 +325,7 @@
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
   use:scrollMemoryClearer={{
-    routeStartsWith: AppRoute.PEOPLE,
+    routeStartsWith: Route.people(),
     beforeClear: () => {
       sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
     },
@@ -507,29 +493,10 @@
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
-          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-            <MenuOption
-              text={$t('select_featured_photo')}
-              icon={mdiAccountBoxOutline}
-              onClick={() => (viewMode = PersonPageViewMode.SELECT_PERSON)}
-            />
-            <MenuOption
-              text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
-              icon={person.isHidden ? mdiEyeOutline : mdiEyeOffOutline}
-              onClick={() => toggleHidePerson()}
-            />
-            <ActionMenuItem action={SetDateOfBirth} />
-            <MenuOption
-              text={$t('merge_people')}
-              icon={mdiAccountMultipleCheckOutline}
-              onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
-            />
-            <MenuOption
-              icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
-              text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-              onClick={handleToggleFavorite}
-            />
-          </ButtonContextMenu>
+          <ContextMenuButton
+            items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}
+            aria-label={$t('open')}
+          />
         {/snippet}
       </ControlAppBar>
     {/if}

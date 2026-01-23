@@ -8,7 +8,6 @@
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import { AppRoute } from '$lib/constants';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
@@ -88,15 +87,15 @@
     showNavigationLoadingBar = false;
   });
 
+  const { serverRestarting } = websocketStore;
+
   $effect.pre(() => {
-    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if ($user || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
-
-  const { serverRestarting } = websocketStore;
 
   const onReleaseEvent = async (release: ReleaseEvent) => {
     if (!release.isAvailable || !$user.isAdmin) {

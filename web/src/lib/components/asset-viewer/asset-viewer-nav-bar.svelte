@@ -7,6 +7,7 @@
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
+  import EditAction from '$lib/components/asset-viewer/actions/edit-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/rating-action.svelte';
   import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
@@ -19,6 +20,7 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { ProjectionType } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
@@ -26,12 +28,11 @@
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, getSharedLink, withoutIcons } from '$lib/utils';
+  import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     AssetVisibility,
     type AlbumResponseDto,
@@ -42,13 +43,9 @@
   import { CommandPaletteDefaultProvider, IconButton, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
-    mdiCogRefreshOutline,
     mdiCompare,
     mdiContentCopy,
-    mdiDatabaseRefreshOutline,
     mdiDotsVertical,
-    mdiHeadSyncOutline,
-    mdiImageRefreshOutline,
     mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
@@ -69,9 +66,8 @@
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    // onEdit: () => void;
+    onEdit: () => void;
     onClose?: () => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -88,10 +84,9 @@
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onRunJob,
     onPlaySlideshow,
     onClose,
-    // onEdit,
+    onEdit,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
@@ -122,26 +117,44 @@
     PlayMotionPhoto,
     StopMotionPhoto,
     Info,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
   } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 
-  // TODO: Enable when edits are ready for release
-  // let showEditorButton = $derived(
-  //   isOwner &&
-  //     asset.type === AssetTypeEnum.Image &&
-  //     !(
-  //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-  //       (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-  //     ) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
-  //     !asset.livePhotoVideoId,
-  // );
+  const editorDisabled = $derived(
+    !isOwner ||
+      asset.type !== AssetTypeEnum.Image ||
+      asset.livePhotoVideoId ||
+      (asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR &&
+        asset.originalPath.toLowerCase().endsWith('.insp')) ||
+      asset.originalPath.toLowerCase().endsWith('.gif') ||
+      asset.originalPath.toLowerCase().endsWith('.svg'),
+  );
 </script>
 
 <CommandPaletteDefaultProvider
   name={$t('assets')}
-  actions={withoutIcons([Close, Share, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info])}
+  actions={withoutIcons([
+    Close,
+    Cast,
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    Info,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
+  ])}
 />
 
 <div
@@ -189,9 +202,9 @@
       <RatingAction {asset} {onAction} />
     {/if}
 
-    <!-- {#if showEditorButton}
+    {#if !editorDisabled}
       <EditAction onAction={onEdit} />
-    {/if} -->
+    {/if}
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
@@ -276,28 +289,10 @@
         {/if}
         {#if isOwner}
           <hr />
-          <MenuOption
-            icon={mdiHeadSyncOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
-            text={$getAssetJobName(AssetJobName.RefreshFaces)}
-          />
-          <MenuOption
-            icon={mdiDatabaseRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
-            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
-          />
-          <MenuOption
-            icon={mdiImageRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
-            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
-          />
-          {#if asset.type === AssetTypeEnum.Video}
-            <MenuOption
-              icon={mdiCogRefreshOutline}
-              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
-              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
-            />
-          {/if}
+          <ActionMenuItem action={RefreshFacesJob} />
+          <ActionMenuItem action={RefreshMetadataJob} />
+          <ActionMenuItem action={RegenerateThumbnailJob} />
+          <ActionMenuItem action={TranscodeVideoJob} />
         {/if}
       </ButtonContextMenu>
     {/if}
