@@ -779,6 +779,15 @@ class _KeepAlbumsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final albumsAsync = ref.watch(localAlbumProvider);
 
+    // Clean up stale album IDs when albums are loaded
+    albumsAsync.whenData((albums) {
+      final existingAlbumIds = albums.map((a) => a.id).toSet();
+      // Use Future.microtask to avoid modifying state during build
+      Future.microtask(() {
+        ref.read(cleanupProvider.notifier).cleanupStaleAlbumIds(existingAlbumIds);
+      });
+    });
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

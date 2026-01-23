@@ -123,6 +123,16 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepAlbumIds, albumIds.join(','));
   }
 
+  /// Remove album IDs that no longer exist on the device
+  void cleanupStaleAlbumIds(Set<String> existingAlbumIds) {
+    final staleIds = state.keepAlbumIds.difference(existingAlbumIds);
+    if (staleIds.isNotEmpty) {
+      final cleanedIds = state.keepAlbumIds.intersection(existingAlbumIds);
+      state = state.copyWith(keepAlbumIds: cleanedIds);
+      _persistExcludedAlbumIds(cleanedIds);
+    }
+  }
+
   Future<void> scanAssets() async {
     if (_userId == null || state.selectedDate == null) {
       return;
