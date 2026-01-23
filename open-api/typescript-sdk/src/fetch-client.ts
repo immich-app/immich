@@ -1875,6 +1875,210 @@ export type WorkflowUpdateDto = {
     name?: string;
     triggerType?: PluginTriggerType;
 };
+export type SyncAckV1 = {};
+export type SyncAlbumDeleteV1 = {
+    albumId: string;
+};
+export type SyncAlbumToAssetDeleteV1 = {
+    albumId: string;
+    assetId: string;
+};
+export type SyncAlbumToAssetV1 = {
+    albumId: string;
+    assetId: string;
+};
+export type SyncAlbumUserDeleteV1 = {
+    albumId: string;
+    userId: string;
+};
+export type SyncAlbumUserV1 = {
+    albumId: string;
+    role: AlbumUserRole;
+    userId: string;
+};
+export type SyncAlbumV1 = {
+    createdAt: string;
+    description: string;
+    id: string;
+    isActivityEnabled: boolean;
+    name: string;
+    order: AssetOrder;
+    ownerId: string;
+    thumbnailAssetId: string | null;
+    updatedAt: string;
+};
+export type SyncAssetDeleteV1 = {
+    assetId: string;
+};
+export type SyncAssetExifV1 = {
+    assetId: string;
+    city: string | null;
+    country: string | null;
+    dateTimeOriginal: string | null;
+    description: string | null;
+    exifImageHeight: number | null;
+    exifImageWidth: number | null;
+    exposureTime: string | null;
+    fNumber: number | null;
+    fileSizeInByte: number | null;
+    focalLength: number | null;
+    fps: number | null;
+    iso: number | null;
+    latitude: number | null;
+    lensModel: string | null;
+    longitude: number | null;
+    make: string | null;
+    model: string | null;
+    modifyDate: string | null;
+    orientation: string | null;
+    profileDescription: string | null;
+    projectionType: string | null;
+    rating: number | null;
+    state: string | null;
+    timeZone: string | null;
+};
+export type SyncAssetFaceDeleteV1 = {
+    assetFaceId: string;
+};
+export type SyncAssetFaceV1 = {
+    assetId: string;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    id: string;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string | null;
+    sourceType: string;
+};
+export type SyncAssetMetadataDeleteV1 = {
+    assetId: string;
+    key: string;
+};
+export type SyncAssetMetadataV1 = {
+    assetId: string;
+    key: string;
+    value: object;
+};
+export type SyncAssetV1 = {
+    checksum: string;
+    deletedAt: string | null;
+    duration: string | null;
+    fileCreatedAt: string | null;
+    fileModifiedAt: string | null;
+    height: number | null;
+    id: string;
+    isEdited: boolean;
+    isFavorite: boolean;
+    libraryId: string | null;
+    livePhotoVideoId: string | null;
+    localDateTime: string | null;
+    originalFileName: string;
+    ownerId: string;
+    stackId: string | null;
+    thumbhash: string | null;
+    "type": AssetTypeEnum;
+    visibility: AssetVisibility;
+    width: number | null;
+};
+export type SyncAuthUserV1 = {
+    avatarColor: (UserAvatarColor) | null;
+    deletedAt: string | null;
+    email: string;
+    hasProfileImage: boolean;
+    id: string;
+    isAdmin: boolean;
+    name: string;
+    oauthId: string;
+    pinCode: string | null;
+    profileChangedAt: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number;
+    storageLabel: string | null;
+};
+export type SyncCompleteV1 = {};
+export type SyncMemoryAssetDeleteV1 = {
+    assetId: string;
+    memoryId: string;
+};
+export type SyncMemoryAssetV1 = {
+    assetId: string;
+    memoryId: string;
+};
+export type SyncMemoryDeleteV1 = {
+    memoryId: string;
+};
+export type SyncMemoryV1 = {
+    createdAt: string;
+    data: object;
+    deletedAt: string | null;
+    hideAt: string | null;
+    id: string;
+    isSaved: boolean;
+    memoryAt: string;
+    ownerId: string;
+    seenAt: string | null;
+    showAt: string | null;
+    "type": MemoryType;
+    updatedAt: string;
+};
+export type SyncPartnerDeleteV1 = {
+    sharedById: string;
+    sharedWithId: string;
+};
+export type SyncPartnerV1 = {
+    inTimeline: boolean;
+    sharedById: string;
+    sharedWithId: string;
+};
+export type SyncPersonDeleteV1 = {
+    personId: string;
+};
+export type SyncPersonV1 = {
+    birthDate: string | null;
+    color: string | null;
+    createdAt: string;
+    faceAssetId: string | null;
+    id: string;
+    isFavorite: boolean;
+    isHidden: boolean;
+    name: string;
+    ownerId: string;
+    updatedAt: string;
+};
+export type SyncResetV1 = {};
+export type SyncStackDeleteV1 = {
+    stackId: string;
+};
+export type SyncStackV1 = {
+    createdAt: string;
+    id: string;
+    ownerId: string;
+    primaryAssetId: string;
+    updatedAt: string;
+};
+export type SyncUserDeleteV1 = {
+    userId: string;
+};
+export type SyncUserMetadataDeleteV1 = {
+    key: UserMetadataKey;
+    userId: string;
+};
+export type SyncUserMetadataV1 = {
+    key: UserMetadataKey;
+    userId: string;
+    value: object;
+};
+export type SyncUserV1 = {
+    avatarColor: (UserAvatarColor) | null;
+    deletedAt: string | null;
+    email: string;
+    hasProfileImage: boolean;
+    id: string;
+    name: string;
+    profileChangedAt: string;
+};
 /**
  * List all activities
  */
@@ -5938,4 +6142,9 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum UserMetadataKey {
+    Preferences = "preferences",
+    License = "license",
+    Onboarding = "onboarding"
 }
