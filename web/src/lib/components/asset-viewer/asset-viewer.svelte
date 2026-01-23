@@ -107,7 +107,6 @@
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
   let stack: StackResponseDto | null = $state(null);
@@ -204,7 +203,7 @@
       onAssetChange?.(refreshedAsset);
       assetViewingStore.setAsset(refreshedAsset);
     }
-    isShowEditor = false;
+    assetViewerManager.closeEditor();
   };
 
   const tracker = new InvocationTracker();
@@ -253,13 +252,6 @@
         }
       }
     }, $t('error_while_navigating'));
-  };
-
-  const showEditor = () => {
-    if (assetViewerManager.isShowActivityPanel) {
-      assetViewerManager.isShowActivityPanel = false;
-    }
-    isShowEditor = !isShowEditor;
   };
 
   /**
@@ -419,7 +411,7 @@
     ) {
       return 'ImagePanaramaViewer';
     }
-    if (isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
+    if (assetViewerManager.isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
       return 'CropArea';
     }
     return 'PhotoViewer';
@@ -436,7 +428,7 @@
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
       !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
-      !isShowEditor &&
+      !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );
 </script>
@@ -452,7 +444,7 @@
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None && !isShowEditor}
+  {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
     <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
@@ -465,7 +457,6 @@
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onEdit={showEditor}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
@@ -487,7 +478,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && previousAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && previousAsset}
     <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -578,13 +569,13 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && nextAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && nextAsset}
     <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
-  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !isShowEditor}
+  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
@@ -595,7 +586,7 @@
     </div>
   {/if}
 
-  {#if isShowEditor}
+  {#if assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="editor-panel"

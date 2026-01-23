@@ -585,3 +585,40 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.getForOriginal
+select
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" = $3
+
+-- AssetRepository.getForThumbnail
+select
+  "asset_file"."path",
+  "asset"."originalPath",
+  "asset"."originalFileName"
+from
+  "asset_file"
+  right join "asset" on "asset"."id" = "asset_file"."assetId"
+where
+  "asset_file"."assetId" = $1
+  and "asset_file"."type" = $2
+order by
+  "asset_file"."isEdited" desc
+
+-- AssetRepository.getForVideo
+select
+  "asset"."encodedVideoPath",
+  "asset"."originalPath"
+from
+  "asset"
+where
+  "asset"."id" = $1
+  and "asset"."type" = $2
