@@ -1,7 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 
 class CleanupState {
@@ -9,7 +11,7 @@ class CleanupState {
   final List<LocalAsset> assetsToDelete;
   final bool isScanning;
   final bool isDeleting;
-  final AssetFilterType filterType;
+  final AssetKeepType keepMediaType;
   final bool keepFavorites;
   final Set<String> excludedAlbumIds;
 
@@ -18,7 +20,7 @@ class CleanupState {
     this.assetsToDelete = const [],
     this.isScanning = false,
     this.isDeleting = false,
-    this.filterType = AssetFilterType.all,
+    this.keepMediaType = AssetKeepType.none,
     this.keepFavorites = true,
     this.excludedAlbumIds = const {},
   });
@@ -28,7 +30,7 @@ class CleanupState {
     List<LocalAsset>? assetsToDelete,
     bool? isScanning,
     bool? isDeleting,
-    AssetFilterType? filterType,
+    AssetKeepType? keepMediaType,
     bool? keepFavorites,
     Set<String>? excludedAlbumIds,
   }) {
@@ -37,7 +39,7 @@ class CleanupState {
       assetsToDelete: assetsToDelete ?? this.assetsToDelete,
       isScanning: isScanning ?? this.isScanning,
       isDeleting: isDeleting ?? this.isDeleting,
-      filterType: filterType ?? this.filterType,
+      keepMediaType: keepMediaType ?? this.keepMediaType,
       keepFavorites: keepFavorites ?? this.keepFavorites,
       excludedAlbumIds: excludedAlbumIds ?? this.excludedAlbumIds,
     );
@@ -45,25 +47,56 @@ class CleanupState {
 }
 
 final cleanupProvider = StateNotifierProvider<CleanupNotifier, CleanupState>((ref) {
-  return CleanupNotifier(ref.watch(cleanupServiceProvider), ref.watch(currentUserProvider)?.id);
+  return CleanupNotifier(
+    ref.watch(cleanupServiceProvider),
+    ref.watch(currentUserProvider)?.id,
+    ref.watch(appSettingsServiceProvider),
+  );
 });
 
 class CleanupNotifier extends StateNotifier<CleanupState> {
   final CleanupService _cleanupService;
   final String? _userId;
+  final AppSettingsService _appSettingsService;
 
-  CleanupNotifier(this._cleanupService, this._userId) : super(const CleanupState());
+  CleanupNotifier(this._cleanupService, this._userId, this._appSettingsService) : super(const CleanupState()) {
+    _loadPersistedSettings();
+  }
+
+  void _loadPersistedSettings() {
+    final keepFavorites = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepFavorites);
+    final keepMediaTypeIndex = _appSettingsService.getSetting(AppSettingsEnum.cleanupKeepMediaType);
+    final excludedAlbumIdsString = _appSettingsService.getSetting(AppSettingsEnum.cleanupExcludedAlbumIds);
+    final cutoffDaysAgo = _appSettingsService.getSetting(AppSettingsEnum.cleanupCutoffDaysAgo);
+
+    final keepMediaType = AssetKeepType.values[keepMediaTypeIndex.clamp(0, AssetKeepType.values.length - 1)];
+    final excludedAlbumIds = excludedAlbumIdsString.isEmpty ? <String>{} : excludedAlbumIdsString.split(',').toSet();
+    final selectedDate = cutoffDaysAgo > 0 ? DateTime.now().subtract(Duration(days: cutoffDaysAgo)) : null;
+
+    state = state.copyWith(
+      keepFavorites: keepFavorites,
+      keepMediaType: keepMediaType,
+      excludedAlbumIds: excludedAlbumIds,
+      selectedDate: selectedDate,
+    );
+  }
 
   void setSelectedDate(DateTime? date) {
     state = state.copyWith(selectedDate: date, assetsToDelete: []);
+    if (date != null) {
+      final daysAgo = DateTime.now().difference(date).inDays;
+      _appSettingsService.setSetting(AppSettingsEnum.cleanupCutoffDaysAgo, daysAgo);
+    }
   }
 
-  void setFilterType(AssetFilterType filterType) {
-    state = state.copyWith(filterType: filterType, assetsToDelete: []);
+  void setKeepMediaType(AssetKeepType keepMediaType) {
+    state = state.copyWith(keepMediaType: keepMediaType, assetsToDelete: []);
+    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepMediaType, keepMediaType.index);
   }
 
   void setKeepFavorites(bool keepFavorites) {
     state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
+    _appSettingsService.setSetting(AppSettingsEnum.cleanupKeepFavorites, keepFavorites);
   }
 
   void toggleExcludedAlbum(String albumId) {
@@ -74,10 +107,16 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       newExcludedAlbumIds.add(albumId);
     }
     state = state.copyWith(excludedAlbumIds: newExcludedAlbumIds, assetsToDelete: []);
+    _persistExcludedAlbumIds(newExcludedAlbumIds);
   }
 
   void setExcludedAlbumIds(Set<String> albumIds) {
     state = state.copyWith(excludedAlbumIds: albumIds, assetsToDelete: []);
+    _persistExcludedAlbumIds(albumIds);
+  }
+
+  void _persistExcludedAlbumIds(Set<String> albumIds) {
+    _appSettingsService.setSetting(AppSettingsEnum.cleanupExcludedAlbumIds, albumIds.join(','));
   }
 
   Future<void> scanAssets() async {
@@ -90,7 +129,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       final assets = await _cleanupService.getRemovalCandidates(
         _userId,
         state.selectedDate!,
-        filterType: state.filterType,
+        keepMediaType: state.keepMediaType,
         keepFavorites: state.keepFavorites,
         excludedAlbumIds: state.excludedAlbumIds,
       );
@@ -120,6 +159,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void reset() {
-    state = const CleanupState();
+    // Only reset transient state, keep the persisted filter settings
+    state = state.copyWith(selectedDate: null, assetsToDelete: [], isScanning: false, isDeleting: false);
   }
 }

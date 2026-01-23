@@ -18,14 +18,14 @@ class CleanupService {
   Future<List<LocalAsset>> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
-    AssetFilterType filterType = AssetFilterType.all,
+    AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
     Set<String> excludedAlbumIds = const {},
   }) {
     return _localAssetRepository.getRemovalCandidates(
       userId,
       cutoffDate,
-      filterType: filterType,
+      keepMediaType: keepMediaType,
       keepFavorites: keepFavorites,
       excludedAlbumIds: excludedAlbumIds,
     );

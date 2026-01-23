@@ -190,8 +190,8 @@ void main() {
       expect(candidates[0].isFavorite, true);
     });
 
-    test('filters by photos only', () async {
-      // Photo
+    test('keepMediaType photosOnly returns only videos for deletion', () async {
+      // Photo - should be kept
       await insertLocalAsset(
         id: 'local-photo',
         checksum: 'checksum-photo',
@@ -201,7 +201,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-photo', checksum: 'checksum-photo', ownerId: userId);
 
-      // Video
+      // Video - should be deleted
       await insertLocalAsset(
         id: 'local-video',
         checksum: 'checksum-video',
@@ -214,39 +214,7 @@ void main() {
       final candidates = await repository.getRemovalCandidates(
         userId,
         cutoffDate,
-        filterType: AssetFilterType.photosOnly,
-      );
-
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-photo');
-      expect(candidates[0].type, AssetType.image);
-    });
-
-    test('filters by videos only', () async {
-      // Photo
-      await insertLocalAsset(
-        id: 'local-photo',
-        checksum: 'checksum-photo',
-        createdAt: beforeCutoff,
-        type: AssetType.image,
-        isFavorite: false,
-      );
-      await insertRemoteAsset(id: 'remote-photo', checksum: 'checksum-photo', ownerId: userId);
-
-      // Video
-      await insertLocalAsset(
-        id: 'local-video',
-        checksum: 'checksum-video',
-        createdAt: beforeCutoff,
-        type: AssetType.video,
-        isFavorite: false,
-      );
-      await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
-
-      final candidates = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        filterType: AssetFilterType.videosOnly,
+        keepMediaType: AssetKeepType.photosOnly,
       );
 
       expect(candidates.length, 1);
@@ -254,7 +222,39 @@ void main() {
       expect(candidates[0].type, AssetType.video);
     });
 
-    test('returns both photos and videos with filterType.all', () async {
+    test('keepMediaType videosOnly returns only photos for deletion', () async {
+      // Photo - should be deleted
+      await insertLocalAsset(
+        id: 'local-photo',
+        checksum: 'checksum-photo',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-photo', checksum: 'checksum-photo', ownerId: userId);
+
+      // Video - should be kept
+      await insertLocalAsset(
+        id: 'local-video',
+        checksum: 'checksum-video',
+        createdAt: beforeCutoff,
+        type: AssetType.video,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
+
+      final candidates = await repository.getRemovalCandidates(
+        userId,
+        cutoffDate,
+        keepMediaType: AssetKeepType.videosOnly,
+      );
+
+      expect(candidates.length, 1);
+      expect(candidates[0].id, 'local-photo');
+      expect(candidates[0].type, AssetType.image);
+    });
+
+    test('returns both photos and videos with keepMediaType.all', () async {
       // Photo
       await insertLocalAsset(
         id: 'local-photo',
@@ -275,7 +275,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, filterType: AssetFilterType.all);
+      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepMediaType: AssetKeepType.none);
 
       expect(candidates.length, 2);
       final ids = candidates.map((a) => a.id).toSet();
@@ -604,11 +604,11 @@ void main() {
       expect(candidates[0].id, 'local-no-album');
     });
 
-    test('combines excludedAlbumIds with other filters correctly', () async {
+    test('combines excludedAlbumIds with keepMediaType correctly', () async {
       await insertLocalAlbum(id: 'album-excluded', name: 'Excluded Album', isIosSharedAlbum: false);
       await insertLocalAlbum(id: 'album-regular', name: 'Regular Album', isIosSharedAlbum: false);
 
-      // Photo in excluded album - should NOT be included
+      // Photo in excluded album - should NOT be included (album excluded)
       await insertLocalAsset(
         id: 'local-photo-excluded',
         checksum: 'checksum-photo-excluded',
@@ -619,7 +619,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-photo-excluded', checksum: 'checksum-photo-excluded', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-photo-excluded');
 
-      // Video in regular album - should NOT be included (filtering photos only)
+      // Video in regular album - should be included (keepMediaType photosOnly = delete videos)
       await insertLocalAsset(
         id: 'local-video',
         checksum: 'checksum-video',
@@ -630,7 +630,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-regular', assetId: 'local-video');
 
-      // Photo in regular album - should be included
+      // Photo in regular album - should NOT be included (keepMediaType photosOnly = keep photos)
       await insertLocalAsset(
         id: 'local-photo-regular',
         checksum: 'checksum-photo-regular',
@@ -644,12 +644,12 @@ void main() {
       final candidates = await repository.getRemovalCandidates(
         userId,
         cutoffDate,
-        filterType: AssetFilterType.photosOnly,
+        keepMediaType: AssetKeepType.photosOnly,
         excludedAlbumIds: {'album-excluded'},
       );
 
       expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-photo-regular');
+      expect(candidates[0].id, 'local-video');
     });
   });
 }

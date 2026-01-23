@@ -133,7 +133,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Future<List<LocalAsset>> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
-    AssetFilterType filterType = AssetFilterType.all,
+    AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
     Set<String> excludedAlbumIds = const {},
   }) async {
@@ -167,10 +167,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(excludedAlbumAssets);
     }
 
-    if (filterType == AssetFilterType.photosOnly) {
-      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
-    } else if (filterType == AssetFilterType.videosOnly) {
+    // keepMediaType specifies what to KEEP, so we filter to DELETE the opposite
+    if (keepMediaType == AssetKeepType.photosOnly) {
+      // Keep photos = delete only videos
       whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
+    } else if (keepMediaType == AssetKeepType.videosOnly) {
+      // Keep videos = delete only photos
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
     }
 
     if (keepFavorites) {
