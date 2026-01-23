@@ -61,13 +61,21 @@ abstract class ImageRequest {
     }
 
     final codec = await descriptor.instantiateCodec();
+    buffer.dispose();
+    descriptor.dispose();
     if (_isCancelled) {
-      buffer.dispose();
-      descriptor.dispose();
       codec.dispose();
       return null;
     }
-    return await codec.getNextFrame();
+
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    if (_isCancelled) {
+      frame.image.dispose();
+      return null;
+    }
+
+    return frame;
   }
 
   Future<ui.FrameInfo?> _fromDecodedPlatformImage(int address, int width, int height, int rowBytes) async {
@@ -98,13 +106,21 @@ abstract class ImageRequest {
       pixelFormat: ui.PixelFormat.rgba8888,
     );
     final codec = await descriptor.instantiateCodec();
+
+    buffer.dispose();
+    descriptor.dispose();
     if (_isCancelled) {
-      buffer.dispose();
-      descriptor.dispose();
       codec.dispose();
       return null;
     }
 
-    return await codec.getNextFrame();
+    final frame = await codec.getNextFrame();
+    codec.dispose();
+    if (_isCancelled) {
+      frame.image.dispose();
+      return null;
+    }
+
+    return frame;
   }
 }
