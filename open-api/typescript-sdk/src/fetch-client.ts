@@ -55,28 +55,39 @@ export type DatabaseBackupUploadDto = {
 };
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
+    /** The filename of the backup to restore */
     restoreBackupFilename?: string;
 };
 export type MaintenanceDetectInstallStorageFolderDto = {
+    /** The number of files in the folder */
     files: number;
     folder: StorageFolder;
+    /** Whether the folder is readable */
     readable: boolean;
+    /** Whether the folder is writable */
     writable: boolean;
 };
 export type MaintenanceDetectInstallResponseDto = {
+    /** The storage folders to check */
     storage: MaintenanceDetectInstallStorageFolderDto[];
 };
 export type MaintenanceLoginDto = {
+    /** The maintenance token */
     token?: string;
 };
 export type MaintenanceAuthDto = {
+    /** The username to login with */
     username: string;
 };
 export type MaintenanceStatusResponseDto = {
     action: MaintenanceAction;
+    /** Whether maintenance mode is active */
     active: boolean;
+    /** The error message */
     error?: string;
+    /** The progress of the current task */
     progress?: number;
+    /** The current task */
     task?: string;
 };
 export type NotificationCreateDto = {

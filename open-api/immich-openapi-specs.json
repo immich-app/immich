@@ -17900,6 +17900,7 @@
       "MaintenanceAuthDto": {
         "properties": {
           "username": {
+            "description": "The username to login with",
             "type": "string"
           }
         },
@@ -17911,6 +17912,7 @@
       "MaintenanceDetectInstallResponseDto": {
         "properties": {
           "storage": {
+            "description": "The storage folders to check",
             "items": {
               "$ref": "#/components/schemas/MaintenanceDetectInstallStorageFolderDto"
             },
@@ -17925,6 +17927,7 @@
       "MaintenanceDetectInstallStorageFolderDto": {
         "properties": {
           "files": {
+            "description": "The number of files in the folder",
             "type": "number"
           },
           "folder": {
@@ -17935,9 +17938,11 @@
             ]
           },
           "readable": {
+            "description": "Whether the folder is readable",
             "type": "boolean"
           },
           "writable": {
+            "description": "Whether the folder is writable",
             "type": "boolean"
           }
         },
@@ -17952,6 +17957,7 @@
       "MaintenanceLoginDto": {
         "properties": {
           "token": {
+            "description": "The maintenance token",
             "type": "string"
           }
         },
@@ -17967,15 +17973,19 @@
             ]
           },
           "active": {
+            "description": "Whether maintenance mode is active",
             "type": "boolean"
           },
           "error": {
+            "description": "The error message",
             "type": "string"
           },
           "progress": {
+            "description": "The progress of the current task",
             "type": "number"
           },
           "task": {
+            "description": "The current task",
             "type": "string"
           }
         },
@@ -20740,6 +20750,7 @@
             ]
           },
           "restoreBackupFilename": {
+            "description": "The filename of the backup to restore",
             "type": "string"
           }
         },
