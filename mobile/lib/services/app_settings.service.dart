@@ -58,7 +58,7 @@ enum AppSettingsEnum<T> {
   cleanupKeepFavorites<bool>(StoreKey.cleanupKeepFavorites, null, true),
   cleanupKeepMediaType<int>(StoreKey.cleanupKeepMediaType, null, 0),
   cleanupKeepAlbumIds<String>(StoreKey.cleanupKeepAlbumIds, null, ""),
-  cleanupCutoffDaysAgo<int>(StoreKey.cleanupCutoffDaysAgo, null, 60);
+  cleanupCutoffDaysAgo<int>(StoreKey.cleanupCutoffDaysAgo, null, -1);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

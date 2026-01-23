@@ -81,6 +81,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
     if (picked != null) {
       ref.read(cleanupProvider.notifier).setSelectedDate(picked);
+      setState(() => _hasScanned = false);
     }
   }
 

@@ -71,7 +71,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
 
     final keepMediaType = AssetKeepType.values[keepMediaTypeIndex.clamp(0, AssetKeepType.values.length - 1)];
     final keepAlbumIds = keepAlbumIdsString.isEmpty ? <String>{} : keepAlbumIdsString.split(',').toSet();
-    final selectedDate = cutoffDaysAgo > 0 ? DateTime.now().subtract(Duration(days: cutoffDaysAgo)) : null;
+    final selectedDate = cutoffDaysAgo >= 0 ? DateTime.now().subtract(Duration(days: cutoffDaysAgo)) : null;
 
     state = state.copyWith(
       keepFavorites: keepFavorites,
