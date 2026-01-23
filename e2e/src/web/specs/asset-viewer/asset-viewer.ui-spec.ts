@@ -12,7 +12,7 @@ import {
 import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
 import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
 import { utils } from 'src/utils';
-import { assetViewerUtils, cancelAllPollers } from 'src/web/specs/timeline/utils';
+import { assetViewerUtils } from 'src/web/specs/timeline/utils';
 
 test.describe.configure({ mode: 'parallel' });
 test.describe('asset-viewer', () => {
@@ -49,7 +49,6 @@ test.describe('asset-viewer', () => {
   });
 
   test.afterEach(() => {
-    cancelAllPollers();
     testContext.slowBucket = false;
     changes.albumAdditions = [];
     changes.assetDeletions = [];

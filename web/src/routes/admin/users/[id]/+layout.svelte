@@ -198,8 +198,8 @@
               })}
             >
               <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-              <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
+              <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-1.75 rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
               </div>
             </div>
           {/if}

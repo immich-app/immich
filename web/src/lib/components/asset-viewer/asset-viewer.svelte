@@ -11,34 +11,31 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
     getAssetInfo,
     getStack,
-    runAssetJobs,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -135,9 +132,7 @@
     }
 
     untrack(() => {
-      if (stack && stack?.assets.length > 1) {
-        preloadImageUrl(getAssetUrl({ asset: stack.assets[1] }));
-      }
+      imageManager.preload(stack?.assets[1]);
     });
   };
 
@@ -222,7 +217,7 @@
     }
 
     e?.stopPropagation();
-    preloadManager.cancel(asset);
+    imageManager.cancel(asset);
     if (tracker.isActive()) {
       return;
     }
@@ -251,7 +246,7 @@
           await handleStopSlideshow();
         }
       }
-    });
+    }, $t('error_while_navigating'));
   };
 
   const showEditor = () => {
@@ -259,15 +254,6 @@
       assetViewerManager.isShowActivityPanel = false;
     }
     isShowEditor = !isShowEditor;
-  };
-
-  const handleRunJob = async (name: AssetJobName) => {
-    try {
-      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      toastManager.success($getAssetJobMessage(name));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
-    }
   };
 
   /**
@@ -319,6 +305,11 @@
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
         await handleGetAllAlbums();
+        break;
+      }
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
@@ -386,8 +377,8 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset;
     untrack(() => handlePromiseError(refresh()));
-    preloadManager.preload(cursor.nextAsset);
-    preloadManager.preload(cursor.previousAsset);
+    imageManager.preload(cursor.nextAsset);
+    imageManager.preload(cursor.previousAsset);
   });
 
   const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
@@ -437,6 +428,7 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
+      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
       !isShowEditor &&
       ocrManager.hasOcrData,
   );
@@ -467,7 +459,6 @@
         onAction={handleAction}
         {onUndoDelete}
         onEdit={showEditor}
-        onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
@@ -509,7 +500,7 @@
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
-        assetId={previewStackedAsset!.id}
+        asset={previewStackedAsset!}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
@@ -522,6 +513,7 @@
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
+        {asset}
         assetId={asset.livePhotoVideoId!}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
@@ -547,7 +539,7 @@
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
-        assetId={asset.id}
+        {asset}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}

@@ -3173,6 +3173,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "asset.upload",
         "x-immich-state": "Stable"
       }
     },
@@ -3225,6 +3226,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "job.create",
         "x-immich-state": "Stable"
       }
     },
@@ -6305,6 +6307,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.read",
         "x-immich-state": "Stable"
       }
     },
@@ -6376,6 +6379,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.search",
         "x-immich-state": "Stable"
       }
     },
@@ -14616,6 +14620,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -14668,6 +14673,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -16299,6 +16305,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "original",
           "fullsize",
           "preview",
           "thumbnail"
@@ -18956,6 +18963,7 @@
           "face.read",
           "face.update",
           "face.delete",
+          "folder.read",
           "job.create",
           "job.read",
           "library.create",
@@ -18966,6 +18974,8 @@
           "timeline.read",
           "timeline.download",
           "maintenance",
+          "map.read",
+          "map.search",
           "memory.create",
           "memory.read",
           "memory.update",

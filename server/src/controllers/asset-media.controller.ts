@@ -202,7 +202,7 @@ export class AssetMediaController {
   }
 
   @Post('exist')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpload })
   @Endpoint({
     summary: 'Check existing assets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',

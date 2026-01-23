@@ -76,6 +76,7 @@ websocket
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => authManager.logout())
   .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
   .on('on_notification', () => notificationManager.refresh())
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 

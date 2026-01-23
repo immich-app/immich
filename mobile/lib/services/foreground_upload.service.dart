@@ -16,6 +16,7 @@ import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -40,6 +41,7 @@ final foregroundUploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(connectivityApiProvider),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   );
 });
 
@@ -55,6 +57,7 @@ class ForegroundUploadService {
     this._backupRepository,
     this._connectivityApi,
     this._appSettingsService,
+    this._assetMediaRepository,
   );
 
   final UploadRepository _uploadRepository;
@@ -62,6 +65,7 @@ class ForegroundUploadService {
   final DriftBackupRepository _backupRepository;
   final ConnectivityApi _connectivityApi;
   final AppSettingsService _appSettingsService;
+  final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('ForegroundUploadService');
 
   bool shouldAbortUpload = false;
@@ -311,7 +315,17 @@ class ForegroundUploadService {
         return;
       }
 
-      final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+      String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+
+      /// Handle special file name from DJI or Fusion app
+      /// If the file name has no extension, likely due to special renaming template by specific apps
+      /// we append the original extension from the asset name
+      final hasExtension = p.extension(fileName).isNotEmpty;
+      if (!hasExtension) {
+        fileName = p.setExtension(fileName, p.extension(asset.name));
+      }
+
+      final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();
@@ -322,19 +336,6 @@ class ForegroundUploadService {
         'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
         'isFavorite': asset.isFavorite.toString(),
         'duration': asset.duration.toString(),
-        if (CurrentPlatform.isIOS && asset.cloudId != null)
-          'metadata': jsonEncode([
-            RemoteAssetMetadataItem(
-              key: RemoteAssetMetadataKey.mobileApp,
-              value: RemoteAssetMobileAppMetadata(
-                cloudId: asset.cloudId,
-                createdAt: asset.createdAt.toIso8601String(),
-                adjustmentTime: asset.adjustmentTime?.toIso8601String(),
-                latitude: asset.latitude?.toString(),
-                longitude: asset.longitude?.toString(),
-              ),
-            ),
-          ]),
       };
 
       // Upload live photo video first if available
@@ -361,6 +362,22 @@ class ForegroundUploadService {
 
       if (livePhotoVideoId != null) {
         fields['livePhotoVideoId'] = livePhotoVideoId;
+      }
+
+      // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.
+      if (CurrentPlatform.isIOS && asset.cloudId != null) {
+        fields['metadata'] = jsonEncode([
+          RemoteAssetMetadataItem(
+            key: RemoteAssetMetadataKey.mobileApp,
+            value: RemoteAssetMobileAppMetadata(
+              cloudId: asset.cloudId,
+              createdAt: asset.createdAt.toIso8601String(),
+              adjustmentTime: asset.adjustmentTime?.toIso8601String(),
+              latitude: asset.latitude?.toString(),
+              longitude: asset.longitude?.toString(),
+            ),
+          ),
+        ]);
       }
 
       final result = await _uploadRepository.uploadFile(

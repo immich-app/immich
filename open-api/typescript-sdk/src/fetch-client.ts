@@ -5524,6 +5524,7 @@ export enum Permission {
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    FolderRead = "folder.read",
     JobCreate = "job.create",
     JobRead = "job.read",
     LibraryCreate = "library.create",
@@ -5534,6 +5535,8 @@ export enum Permission {
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
     Maintenance = "maintenance",
+    MapRead = "map.read",
+    MapSearch = "map.search",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
@@ -5658,6 +5661,7 @@ export enum MirrorAxis {
     Vertical = "vertical"
 }
 export enum AssetMediaSize {
+    Original = "original",
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
