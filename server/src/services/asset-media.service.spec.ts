@@ -652,9 +652,65 @@ describe(AssetMediaService.name, () => {
           fileName: 'asset-id_thumbnail.ext',
         }),
       );
+      expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
     });
 
-    // TODO: Edited asset tests
+    it('should get original thumbnail by default', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...assetStub.image,
+        path: '/uploads/user-id/thumbs/original-thumbnail.jpg',
+      });
+      await expect(
+        sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
+      ).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/uploads/user-id/thumbs/original-thumbnail.jpg',
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: 'asset-id_thumbnail.jpg',
+        }),
+      );
+      expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
+    });
+
+    it('should get edited thumbnail when edited=true', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...assetStub.image,
+        path: '/uploads/user-id/thumbs/edited-thumbnail.jpg',
+      });
+      await expect(
+        sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL, edited: true }),
+      ).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/uploads/user-id/thumbs/edited-thumbnail.jpg',
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: 'asset-id_thumbnail.jpg',
+        }),
+      );
+      expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, true);
+    });
+
+    it('should get original thumbnail when edited=false', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({
+        ...assetStub.image,
+        path: '/uploads/user-id/thumbs/original-thumbnail.jpg',
+      });
+      await expect(
+        sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL, edited: false }),
+      ).resolves.toEqual(
+        new ImmichFileResponse({
+          path: '/uploads/user-id/thumbs/original-thumbnail.jpg',
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: 'asset-id_thumbnail.jpg',
+        }),
+      );
+      expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
+    });
   });
 
   describe('playbackVideo', () => {
