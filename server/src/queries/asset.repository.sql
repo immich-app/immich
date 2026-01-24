@@ -601,15 +601,15 @@ where
 
 -- AssetRepository.getForThumbnail
 select
-  "asset_file"."path",
   "asset"."originalPath",
-  "asset"."originalFileName"
+  "asset"."originalFileName",
+  "asset_file"."path" as "path"
 from
-  "asset_file"
-  right join "asset" on "asset"."id" = "asset_file"."assetId"
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
 where
-  "asset_file"."assetId" = $1
-  and "asset_file"."type" = $2
+  "asset"."id" = $2
 order by
   "asset_file"."isEdited" desc
 

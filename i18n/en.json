@@ -104,6 +104,8 @@
     "image_preview_description": "Medium-size image with stripped metadata, used when viewing a single asset and for machine learning",
     "image_preview_quality_description": "Preview quality from 1-100. Higher is better, but produces larger files and can reduce app responsiveness. Setting a low value may affect machine learning quality.",
     "image_preview_title": "Preview Settings",
+    "image_progressive": "Progressive",
+    "image_progressive_description": "Encode JPEG images progressively for gradual loading display. This has no effect on WebP images.",
     "image_quality": "Quality",
     "image_resolution": "Resolution",
     "image_resolution_description": "Higher resolutions can preserve more detail but take longer to encode, have larger file sizes and can reduce app responsiveness.",

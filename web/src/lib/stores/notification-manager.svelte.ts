@@ -1,5 +1,4 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { handlePromiseError } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getNotifications, updateNotification, updateNotifications, type NotificationDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
@@ -9,7 +8,7 @@ class NotificationStore {
   notifications = $state<NotificationDto[]>([]);
 
   constructor() {
-    eventManager.on('AuthLogin', () => handlePromiseError(this.refresh()));
+    eventManager.on('AuthLogin', () => this.refresh());
     eventManager.on('AuthLogout', () => this.clear());
   }
 

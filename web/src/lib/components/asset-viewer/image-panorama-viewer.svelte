@@ -8,10 +8,9 @@
 
   type Props = {
     asset: AssetResponseDto;
-    zoomToggle?: (() => void) | null;
   };
 
-  let { asset, zoomToggle = $bindable() }: Props = $props();
+  let { asset }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
@@ -23,7 +22,7 @@
   {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
-    <PhotoSphereViewer bind:zoomToggle panorama={data} originalPanorama={getAssetUrl({ asset, forceOriginal: true })} />
+    <PhotoSphereViewer panorama={data} originalPanorama={getAssetUrl({ asset, forceOriginal: true })} />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}

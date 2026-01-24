@@ -36,12 +36,14 @@ export type FullsizeImageOptions = {
   format: ImageFormat;
   quality: number;
   enabled: boolean;
+  progressive: boolean;
 };
 
 export type ImageOptions = {
   format: ImageFormat;
   quality: number;
   size: number;
+  progressive: boolean;
 };
 
 export type RawImageInfo = {
@@ -62,7 +64,7 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 

@@ -1033,12 +1033,12 @@ export class AssetRepository {
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview] })
   async getForThumbnail(id: string, type: AssetFileType) {
     return this.db
-      .selectFrom('asset_file')
-      .select('asset_file.path')
-      .where('asset_file.assetId', '=', id)
-      .where('asset_file.type', '=', type)
-      .rightJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_file.assetId'))
-      .select(['asset.originalPath', 'asset.originalFileName'])
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
+      )
+      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
       .orderBy('asset_file.isEdited', 'desc')
       .executeTakeFirstOrThrow();
   }
