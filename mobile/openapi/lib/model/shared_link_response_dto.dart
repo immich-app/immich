@@ -30,7 +30,6 @@ class SharedLinkResponseDto {
     required this.userId,
   });
 
-  /// Shared album
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -45,7 +44,6 @@ class SharedLinkResponseDto {
   /// Allow uploads
   bool allowUpload;
 
-  /// Shared assets
   List<AssetResponseDto> assets;
 
   /// Creation date

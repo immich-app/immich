@@ -40,16 +40,13 @@ class AlbumResponseDto {
   /// Thumbnail asset ID
   String? albumThumbnailAssetId;
 
-  /// Album users
   List<AlbumUserResponseDto> albumUsers;
 
   /// Number of assets
   int assetCount;
 
-  /// Album assets
   List<AssetResponseDto> assets;
 
-  /// Per-user contribution counts (shared albums only)
   List<ContributorCountResponseDto> contributorCounts;
 
   /// Creation date
@@ -94,7 +91,6 @@ class AlbumResponseDto {
   ///
   AssetOrder? order;
 
-  /// Album owner
   UserResponseDto owner;
 
   /// Owner user ID

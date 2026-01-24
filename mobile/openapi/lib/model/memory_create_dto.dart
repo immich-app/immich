@@ -24,7 +24,6 @@ class MemoryCreateDto {
   /// Asset IDs to associate with memory
   List<String> assetIds;
 
-  /// Memory data (type-specific)
   OnThisDayDto data;
 
   /// Is memory saved

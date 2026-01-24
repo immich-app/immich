@@ -518,7 +518,8 @@ export class SystemConfigSmtpDto {
   @IsString()
   replyTo!: string;
 
-  @ApiProperty({ description: 'SMTP transport configuration', type: SystemConfigSmtpTransportDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @ValidateIf(isEmailNotificationEnabled)
   @Type(() => SystemConfigSmtpTransportDto)
   @ValidateNested()
@@ -670,127 +671,148 @@ class SystemConfigUserDto {
 }
 
 export class SystemConfigDto implements SystemConfig {
-  @ApiProperty({ description: 'Backup configuration', type: SystemConfigBackupsDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigBackupsDto)
   @ValidateNested()
   @IsObject()
   backup!: SystemConfigBackupsDto;
 
-  @ApiProperty({ description: 'FFmpeg configuration', type: SystemConfigFFmpegDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
   @IsObject()
   ffmpeg!: SystemConfigFFmpegDto;
 
-  @ApiProperty({ description: 'Logging configuration', type: SystemConfigLoggingDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigLoggingDto)
   @ValidateNested()
   @IsObject()
   logging!: SystemConfigLoggingDto;
 
-  @ApiProperty({ description: 'Machine learning configuration', type: SystemConfigMachineLearningDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigMachineLearningDto)
   @ValidateNested()
   @IsObject()
   machineLearning!: SystemConfigMachineLearningDto;
 
-  @ApiProperty({ description: 'Map configuration', type: SystemConfigMapDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigMapDto)
   @ValidateNested()
   @IsObject()
   map!: SystemConfigMapDto;
 
-  @ApiProperty({ description: 'New version check configuration', type: SystemConfigNewVersionCheckDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigNewVersionCheckDto)
   @ValidateNested()
   @IsObject()
   newVersionCheck!: SystemConfigNewVersionCheckDto;
 
-  @ApiProperty({ description: 'Nightly tasks configuration', type: SystemConfigNightlyTasksDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigNightlyTasksDto)
   @ValidateNested()
   @IsObject()
   nightlyTasks!: SystemConfigNightlyTasksDto;
 
-  @ApiProperty({ description: 'OAuth configuration', type: SystemConfigOAuthDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigOAuthDto)
   @ValidateNested()
   @IsObject()
   oauth!: SystemConfigOAuthDto;
 
-  @ApiProperty({ description: 'Password login configuration', type: SystemConfigPasswordLoginDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigPasswordLoginDto)
   @ValidateNested()
   @IsObject()
   passwordLogin!: SystemConfigPasswordLoginDto;
 
-  @ApiProperty({ description: 'Reverse geocoding configuration', type: SystemConfigReverseGeocodingDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigReverseGeocodingDto)
   @ValidateNested()
   @IsObject()
   reverseGeocoding!: SystemConfigReverseGeocodingDto;
 
-  @ApiProperty({ description: 'Metadata configuration', type: SystemConfigMetadataDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigMetadataDto)
   @ValidateNested()
   @IsObject()
   metadata!: SystemConfigMetadataDto;
 
-  @ApiProperty({ description: 'Storage template configuration', type: SystemConfigStorageTemplateDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigStorageTemplateDto)
   @ValidateNested()
   @IsObject()
   storageTemplate!: SystemConfigStorageTemplateDto;
 
-  @ApiProperty({ description: 'Job queue configuration', type: SystemConfigJobDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigJobDto)
   @ValidateNested()
   @IsObject()
   job!: SystemConfigJobDto;
 
-  @ApiProperty({ description: 'Image processing configuration', type: SystemConfigImageDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigImageDto)
   @ValidateNested()
   @IsObject()
   image!: SystemConfigImageDto;
 
-  @ApiProperty({ description: 'Trash configuration', type: SystemConfigTrashDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigTrashDto)
   @ValidateNested()
   @IsObject()
   trash!: SystemConfigTrashDto;
 
-  @ApiProperty({ description: 'Theme configuration', type: SystemConfigThemeDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigThemeDto)
   @ValidateNested()
   @IsObject()
   theme!: SystemConfigThemeDto;
 
-  @ApiProperty({ description: 'Library configuration', type: SystemConfigLibraryDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigLibraryDto)
   @ValidateNested()
   @IsObject()
   library!: SystemConfigLibraryDto;
 
-  @ApiProperty({ description: 'Notification configuration', type: SystemConfigNotificationsDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigNotificationsDto)
   @ValidateNested()
   @IsObject()
   notifications!: SystemConfigNotificationsDto;
 
-  @ApiProperty({ description: 'Template configuration', type: SystemConfigTemplatesDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigTemplatesDto)
   @ValidateNested()
   @IsObject()
   templates!: SystemConfigTemplatesDto;
 
-  @ApiProperty({ description: 'Server configuration', type: SystemConfigServerDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigServerDto)
   @ValidateNested()
   @IsObject()
   server!: SystemConfigServerDto;
 
-  @ApiProperty({ description: 'User configuration', type: SystemConfigUserDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @Type(() => SystemConfigUserDto)
   @ValidateNested()
   @IsObject()

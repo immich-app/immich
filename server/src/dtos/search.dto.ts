@@ -369,9 +369,11 @@ class SearchAlbumResponseDto {
   total!: number;
   @ApiProperty({ type: 'integer', description: 'Number of albums in this page' })
   count!: number;
-  @ApiProperty({ description: 'Album items', type: () => [AlbumResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   items!: AlbumResponseDto[];
-  @ApiProperty({ description: 'Search facets', type: () => [SearchFacetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   facets!: SearchFacetResponseDto[];
 }
 
@@ -380,18 +382,22 @@ class SearchAssetResponseDto {
   total!: number;
   @ApiProperty({ type: 'integer', description: 'Number of assets in this page' })
   count!: number;
-  @ApiProperty({ description: 'Asset items', type: () => [AssetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   items!: AssetResponseDto[];
-  @ApiProperty({ description: 'Search facets', type: () => [SearchFacetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   facets!: SearchFacetResponseDto[];
   @ApiPropertyOptional({ description: 'Next page token', nullable: true })
   nextPage!: string | null;
 }
 
 export class SearchResponseDto {
-  @ApiProperty({ description: 'Album search results', type: () => SearchAlbumResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   albums!: SearchAlbumResponseDto;
-  @ApiProperty({ description: 'Asset search results', type: () => SearchAssetResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   assets!: SearchAssetResponseDto;
 }
 
@@ -403,14 +409,16 @@ export class SearchStatisticsResponseDto {
 class SearchExploreItem {
   @ApiProperty({ description: 'Explore value' })
   value!: string;
-  @ApiProperty({ description: 'Representative asset', type: () => AssetResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   data!: AssetResponseDto;
 }
 
 export class SearchExploreResponseDto {
   @ApiProperty({ description: 'Explore field name' })
   fieldName!: string;
-  @ApiProperty({ description: 'Explore items', type: () => [SearchExploreItem] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   items!: SearchExploreItem[];
 }
 

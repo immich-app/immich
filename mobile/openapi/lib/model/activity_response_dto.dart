@@ -36,7 +36,6 @@ class ActivityResponseDto {
   /// Activity type
   ReactionType type;
 
-  /// User who created the activity
   UserResponseDto user;
 
   @override

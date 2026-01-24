@@ -17,10 +17,8 @@ class SearchResponseDto {
     required this.assets,
   });
 
-  /// Album search results
   SearchAlbumResponseDto albums;
 
-  /// Asset search results
   SearchAssetResponseDto assets;
 
   @override

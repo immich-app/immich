@@ -28,13 +28,11 @@ class MemoryResponseDto {
     required this.updatedAt,
   });
 
-  /// Associated assets
   List<AssetResponseDto> assets;
 
   /// Creation date
   DateTime createdAt;
 
-  /// Memory data (type-specific)
   OnThisDayDto data;
 
   /// Deletion date

@@ -20,7 +20,6 @@ class SearchExploreResponseDto {
   /// Explore field name
   String fieldName;
 
-  /// Explore items
   List<SearchExploreItem> items;
 
   @override

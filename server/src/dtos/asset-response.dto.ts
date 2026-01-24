@@ -64,7 +64,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   deviceId!: string;
   @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
-  @ApiPropertyOptional({ description: 'Owner user details', type: () => UserResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   owner?: UserResponseDto;
   @ApiPropertyOptional({ description: 'Library ID (deprecated)', nullable: true })
   @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
@@ -108,17 +109,22 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   @ApiProperty({ description: 'Asset visibility', enum: AssetVisibility })
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
-  @ApiPropertyOptional({ description: 'EXIF metadata', type: () => ExifResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   exifInfo?: ExifResponseDto;
-  @ApiPropertyOptional({ description: 'Associated tags', type: () => [TagResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   tags?: TagResponseDto[];
-  @ApiPropertyOptional({ description: 'Associated people with faces', type: () => [PersonWithFacesResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   people?: PersonWithFacesResponseDto[];
-  @ApiPropertyOptional({ description: 'Unassigned faces', type: () => [AssetFaceWithoutPersonResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   @ApiProperty({ description: 'Base64 encoded SHA1 hash' })
   checksum!: string;
-  @ApiPropertyOptional({ description: 'Stack information', type: () => AssetStackResponseDto, nullable: true })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   stack?: AssetStackResponseDto | null;
   @ApiPropertyOptional({ description: 'Duplicate group ID', nullable: true })
   duplicateId?: string | null;

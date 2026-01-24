@@ -15258,12 +15258,7 @@
       "APIKeyCreateResponseDto": {
         "properties": {
           "apiKey": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/APIKeyResponseDto"
-              }
-            ],
-            "description": "API key details"
+            "$ref": "#/components/schemas/APIKeyResponseDto"
           },
           "secret": {
             "description": "API key secret (only shown once)",
@@ -15391,12 +15386,7 @@
             "description": "Activity type"
           },
           "user": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserResponseDto"
-              }
-            ],
-            "description": "User who created the activity"
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
@@ -15464,7 +15454,6 @@
             "type": "string"
           },
           "albumUsers": {
-            "description": "Album users",
             "items": {
               "$ref": "#/components/schemas/AlbumUserResponseDto"
             },
@@ -15475,14 +15464,12 @@
             "type": "integer"
           },
           "assets": {
-            "description": "Album assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
             "type": "array"
           },
           "contributorCounts": {
-            "description": "Per-user contribution counts (shared albums only)",
             "items": {
               "$ref": "#/components/schemas/ContributorCountResponseDto"
             },
@@ -15528,12 +15515,7 @@
             "description": "Asset sort order"
           },
           "owner": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserResponseDto"
-              }
-            ],
-            "description": "Album owner"
+            "$ref": "#/components/schemas/UserResponseDto"
           },
           "ownerId": {
             "description": "Owner user ID",
@@ -15649,12 +15631,7 @@
             "description": "Album user role"
           },
           "user": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserResponseDto"
-              }
-            ],
-            "description": "User details"
+            "$ref": "#/components/schemas/UserResponseDto"
           }
         },
         "required": [
@@ -15734,6 +15711,7 @@
         "type": "object"
       },
       "AlbumsUpdate": {
+        "description": "Album preferences",
         "properties": {
           "defaultAssetOrder": {
             "allOf": [
@@ -16027,12 +16005,7 @@
             "description": "Type of edit action to perform"
           },
           "parameters": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CropParameters"
-              }
-            ],
-            "description": "Crop parameters (x, y, width, height)"
+            "$ref": "#/components/schemas/CropParameters"
           }
         },
         "required": [
@@ -16078,12 +16051,7 @@
             "description": "Type of edit action to perform"
           },
           "parameters": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MirrorParameters"
-              }
-            ],
-            "description": "Mirror parameters (axis: horizontal or vertical)"
+            "$ref": "#/components/schemas/MirrorParameters"
           }
         },
         "required": [
@@ -16103,12 +16071,7 @@
             "description": "Type of edit action to perform"
           },
           "parameters": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RotateParameters"
-              }
-            ],
-            "description": "Rotation parameters (angle in degrees)"
+            "$ref": "#/components/schemas/RotateParameters"
           }
         },
         "required": [
@@ -16890,12 +16853,7 @@
             "type": "string"
           },
           "exifInfo": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ExifResponseDto"
-              }
-            ],
-            "description": "EXIF metadata"
+            "$ref": "#/components/schemas/ExifResponseDto"
           },
           "fileCreatedAt": {
             "description": "The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.",
@@ -16993,19 +16951,13 @@
             "type": "string"
           },
           "owner": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserResponseDto"
-              }
-            ],
-            "description": "Owner user details"
+            "$ref": "#/components/schemas/UserResponseDto"
           },
           "ownerId": {
             "description": "Owner user ID",
             "type": "string"
           },
           "people": {
-            "description": "Associated people with faces",
             "items": {
               "$ref": "#/components/schemas/PersonWithFacesResponseDto"
             },
@@ -17033,11 +16985,9 @@
                 "$ref": "#/components/schemas/AssetStackResponseDto"
               }
             ],
-            "description": "Stack information",
             "nullable": true
           },
           "tags": {
-            "description": "Associated tags",
             "items": {
               "$ref": "#/components/schemas/TagResponseDto"
             },
@@ -17057,7 +17007,6 @@
             "description": "Asset type"
           },
           "unassignedFaces": {
-            "description": "Unassigned faces",
             "items": {
               "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
             },
@@ -18589,12 +18538,7 @@
             "type": "array"
           },
           "data": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OnThisDayDto"
-              }
-            ],
-            "description": "Memory data (type-specific)"
+            "$ref": "#/components/schemas/OnThisDayDto"
           },
           "isSaved": {
             "description": "Is memory saved",
@@ -18629,7 +18573,6 @@
       "MemoryResponseDto": {
         "properties": {
           "assets": {
-            "description": "Associated assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -18641,12 +18584,7 @@
             "type": "string"
           },
           "data": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/OnThisDayDto"
-              }
-            ],
-            "description": "Memory data (type-specific)"
+            "$ref": "#/components/schemas/OnThisDayDto"
           },
           "deletedAt": {
             "description": "Deletion date",
@@ -20376,12 +20314,7 @@
             "description": "Queue name"
           },
           "statistics": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/QueueStatisticsDto"
-              }
-            ],
-            "description": "Queue statistics"
+            "$ref": "#/components/schemas/QueueStatisticsDto"
           }
         },
         "required": [
@@ -20394,20 +20327,10 @@
       "QueueResponseLegacyDto": {
         "properties": {
           "jobCounts": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/QueueStatisticsDto"
-              }
-            ],
-            "description": "Job count statistics for the queue"
+            "$ref": "#/components/schemas/QueueStatisticsDto"
           },
           "queueStatus": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/QueueStatusLegacyDto"
-              }
-            ],
-            "description": "Current status of the queue"
+            "$ref": "#/components/schemas/QueueStatusLegacyDto"
           }
         },
         "required": [
@@ -20809,14 +20732,12 @@
             "type": "integer"
           },
           "facets": {
-            "description": "Search facets",
             "items": {
               "$ref": "#/components/schemas/SearchFacetResponseDto"
             },
             "type": "array"
           },
           "items": {
-            "description": "Album items",
             "items": {
               "$ref": "#/components/schemas/AlbumResponseDto"
             },
@@ -20842,14 +20763,12 @@
             "type": "integer"
           },
           "facets": {
-            "description": "Search facets",
             "items": {
               "$ref": "#/components/schemas/SearchFacetResponseDto"
             },
             "type": "array"
           },
           "items": {
-            "description": "Asset items",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -20876,12 +20795,7 @@
       "SearchExploreItem": {
         "properties": {
           "data": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetResponseDto"
-              }
-            ],
-            "description": "Representative asset"
+            "$ref": "#/components/schemas/AssetResponseDto"
           },
           "value": {
             "description": "Explore value",
@@ -20901,7 +20815,6 @@
             "type": "string"
           },
           "items": {
-            "description": "Explore items",
             "items": {
               "$ref": "#/components/schemas/SearchExploreItem"
             },
@@ -20954,20 +20867,10 @@
       "SearchResponseDto": {
         "properties": {
           "albums": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SearchAlbumResponseDto"
-              }
-            ],
-            "description": "Album search results"
+            "$ref": "#/components/schemas/SearchAlbumResponseDto"
           },
           "assets": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SearchAssetResponseDto"
-              }
-            ],
-            "description": "Asset search results"
+            "$ref": "#/components/schemas/SearchAssetResponseDto"
           }
         },
         "required": [
@@ -21749,12 +21652,7 @@
       "SharedLinkResponseDto": {
         "properties": {
           "album": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AlbumResponseDto"
-              }
-            ],
-            "description": "Shared album"
+            "$ref": "#/components/schemas/AlbumResponseDto"
           },
           "allowDownload": {
             "description": "Allow downloads",
@@ -21765,7 +21663,6 @@
             "type": "boolean"
           },
           "assets": {
-            "description": "Shared assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -23393,172 +23290,67 @@
       "SystemConfigDto": {
         "properties": {
           "backup": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigBackupsDto"
-              }
-            ],
-            "description": "Backup configuration"
+            "$ref": "#/components/schemas/SystemConfigBackupsDto"
           },
           "ffmpeg": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigFFmpegDto"
-              }
-            ],
-            "description": "FFmpeg configuration"
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
           "image": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigImageDto"
-              }
-            ],
-            "description": "Image processing configuration"
+            "$ref": "#/components/schemas/SystemConfigImageDto"
           },
           "job": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigJobDto"
-              }
-            ],
-            "description": "Job queue configuration"
+            "$ref": "#/components/schemas/SystemConfigJobDto"
           },
           "library": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigLibraryDto"
-              }
-            ],
-            "description": "Library configuration"
+            "$ref": "#/components/schemas/SystemConfigLibraryDto"
           },
           "logging": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigLoggingDto"
-              }
-            ],
-            "description": "Logging configuration"
+            "$ref": "#/components/schemas/SystemConfigLoggingDto"
           },
           "machineLearning": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
-              }
-            ],
-            "description": "Machine learning configuration"
+            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
           "map": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigMapDto"
-              }
-            ],
-            "description": "Map configuration"
+            "$ref": "#/components/schemas/SystemConfigMapDto"
           },
           "metadata": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigMetadataDto"
-              }
-            ],
-            "description": "Metadata configuration"
+            "$ref": "#/components/schemas/SystemConfigMetadataDto"
           },
           "newVersionCheck": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
-              }
-            ],
-            "description": "New version check configuration"
+            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
           },
           "nightlyTasks": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
-              }
-            ],
-            "description": "Nightly tasks configuration"
+            "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
           },
           "notifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigNotificationsDto"
-              }
-            ],
-            "description": "Notification configuration"
+            "$ref": "#/components/schemas/SystemConfigNotificationsDto"
           },
           "oauth": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigOAuthDto"
-              }
-            ],
-            "description": "OAuth configuration"
+            "$ref": "#/components/schemas/SystemConfigOAuthDto"
           },
           "passwordLogin": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
-              }
-            ],
-            "description": "Password login configuration"
+            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
           },
           "reverseGeocoding": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
-              }
-            ],
-            "description": "Reverse geocoding configuration"
+            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
           },
           "server": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigServerDto"
-              }
-            ],
-            "description": "Server configuration"
+            "$ref": "#/components/schemas/SystemConfigServerDto"
           },
           "storageTemplate": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
-              }
-            ],
-            "description": "Storage template configuration"
+            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
           "templates": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigTemplatesDto"
-              }
-            ],
-            "description": "Template configuration"
+            "$ref": "#/components/schemas/SystemConfigTemplatesDto"
           },
           "theme": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigThemeDto"
-              }
-            ],
-            "description": "Theme configuration"
+            "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
           "trash": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigTrashDto"
-              }
-            ],
-            "description": "Trash configuration"
+            "$ref": "#/components/schemas/SystemConfigTrashDto"
           },
           "user": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigUserDto"
-              }
-            ],
-            "description": "User configuration"
+            "$ref": "#/components/schemas/SystemConfigUserDto"
           }
         },
         "required": [
@@ -24213,12 +24005,7 @@
             "type": "string"
           },
           "transport": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
-              }
-            ],
-            "description": "SMTP transport configuration"
+            "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
           }
         },
         "required": [
@@ -25303,92 +25090,37 @@
       "UserPreferencesResponseDto": {
         "properties": {
           "albums": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AlbumsResponse"
-              }
-            ],
-            "description": "Album preferences"
+            "$ref": "#/components/schemas/AlbumsResponse"
           },
           "cast": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CastResponse"
-              }
-            ],
-            "description": "Cast preferences"
+            "$ref": "#/components/schemas/CastResponse"
           },
           "download": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DownloadResponse"
-              }
-            ],
-            "description": "Download preferences"
+            "$ref": "#/components/schemas/DownloadResponse"
           },
           "emailNotifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EmailNotificationsResponse"
-              }
-            ],
-            "description": "Email notification preferences"
+            "$ref": "#/components/schemas/EmailNotificationsResponse"
           },
           "folders": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FoldersResponse"
-              }
-            ],
-            "description": "Folder preferences"
+            "$ref": "#/components/schemas/FoldersResponse"
           },
           "memories": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MemoriesResponse"
-              }
-            ],
-            "description": "Memory preferences"
+            "$ref": "#/components/schemas/MemoriesResponse"
           },
           "people": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PeopleResponse"
-              }
-            ],
-            "description": "People preferences"
+            "$ref": "#/components/schemas/PeopleResponse"
           },
           "purchase": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PurchaseResponse"
-              }
-            ],
-            "description": "Purchase preferences"
+            "$ref": "#/components/schemas/PurchaseResponse"
           },
           "ratings": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RatingsResponse"
-              }
-            ],
-            "description": "Rating preferences"
+            "$ref": "#/components/schemas/RatingsResponse"
           },
           "sharedLinks": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SharedLinksResponse"
-              }
-            ],
-            "description": "Shared link preferences"
+            "$ref": "#/components/schemas/SharedLinksResponse"
           },
           "tags": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TagsResponse"
-              }
-            ],
-            "description": "Tag preferences"
+            "$ref": "#/components/schemas/TagsResponse"
           }
         },
         "required": [
@@ -25409,100 +25141,40 @@
       "UserPreferencesUpdateDto": {
         "properties": {
           "albums": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AlbumsUpdate"
-              }
-            ],
-            "description": "Album preferences"
+            "$ref": "#/components/schemas/AlbumsUpdate"
           },
           "avatar": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AvatarUpdate"
-              }
-            ],
-            "description": "Avatar preferences"
+            "$ref": "#/components/schemas/AvatarUpdate"
           },
           "cast": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CastUpdate"
-              }
-            ],
-            "description": "Cast preferences"
+            "$ref": "#/components/schemas/CastUpdate"
           },
           "download": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DownloadUpdate"
-              }
-            ],
-            "description": "Download preferences"
+            "$ref": "#/components/schemas/DownloadUpdate"
           },
           "emailNotifications": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/EmailNotificationsUpdate"
-              }
-            ],
-            "description": "Email notification preferences"
+            "$ref": "#/components/schemas/EmailNotificationsUpdate"
           },
           "folders": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/FoldersUpdate"
-              }
-            ],
-            "description": "Folder preferences"
+            "$ref": "#/components/schemas/FoldersUpdate"
           },
           "memories": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MemoriesUpdate"
-              }
-            ],
-            "description": "Memory preferences"
+            "$ref": "#/components/schemas/MemoriesUpdate"
           },
           "people": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PeopleUpdate"
-              }
-            ],
-            "description": "People preferences"
+            "$ref": "#/components/schemas/PeopleUpdate"
           },
           "purchase": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PurchaseUpdate"
-              }
-            ],
-            "description": "Purchase preferences"
+            "$ref": "#/components/schemas/PurchaseUpdate"
           },
           "ratings": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/RatingsUpdate"
-              }
-            ],
-            "description": "Rating preferences"
+            "$ref": "#/components/schemas/RatingsUpdate"
           },
           "sharedLinks": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SharedLinksUpdate"
-              }
-            ],
-            "description": "Shared link preferences"
+            "$ref": "#/components/schemas/SharedLinksUpdate"
           },
           "tags": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/TagsUpdate"
-              }
-            ],
-            "description": "Tag preferences"
+            "$ref": "#/components/schemas/TagsUpdate"
           }
         },
         "type": "object"

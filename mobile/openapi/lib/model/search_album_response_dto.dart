@@ -22,10 +22,8 @@ class SearchAlbumResponseDto {
   /// Number of albums in this page
   int count;
 
-  /// Search facets
   List<SearchFacetResponseDto> facets;
 
-  /// Album items
   List<AlbumResponseDto> items;
 
   /// Total number of matching albums

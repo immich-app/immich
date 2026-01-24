@@ -46,6 +46,7 @@ export class APIKeyResponseDto {
 export class APIKeyCreateResponseDto {
   @ApiProperty({ description: 'API key secret (only shown once)' })
   secret!: string;
-  @ApiProperty({ description: 'API key details' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   apiKey!: APIKeyResponseDto;
 }

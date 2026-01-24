@@ -78,6 +78,7 @@ export class QueueResponseDto {
   @ValidateBoolean()
   isPaused!: boolean;
 
-  @ApiProperty({ description: 'Queue statistics', type: QueueStatisticsDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   statistics!: QueueStatisticsDto;
 }

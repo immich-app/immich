@@ -23,10 +23,8 @@ class SearchAssetResponseDto {
   /// Number of assets in this page
   int count;
 
-  /// Search facets
   List<SearchFacetResponseDto> facets;
 
-  /// Asset items
   List<AssetResponseDto> items;
 
   /// Next page token

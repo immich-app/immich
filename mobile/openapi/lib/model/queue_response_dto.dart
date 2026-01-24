@@ -24,7 +24,6 @@ class QueueResponseDto {
   /// Queue name
   QueueName name;
 
-  /// Queue statistics
   QueueStatisticsDto statistics;
 
   @override

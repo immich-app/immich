@@ -20,7 +20,6 @@ class AssetEditActionMirror {
   /// Type of edit action to perform
   AssetEditAction action;
 
-  /// Mirror parameters (axis: horizontal or vertical)
   MirrorParameters parameters;
 
   @override

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { AssetOrder, UserAvatarColor } from 'src/enum';
@@ -29,6 +29,7 @@ class RatingsUpdate {
   enabled?: boolean;
 }
 
+@ApiSchema({ description: 'Album preferences' })
 class AlbumsUpdate {
   @ApiPropertyOptional({ description: 'Default asset order for albums', enum: AssetOrder })
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
@@ -119,73 +120,85 @@ class CastUpdate {
 }
 
 export class UserPreferencesUpdateDto {
-  @ApiPropertyOptional({ description: 'Album preferences', type: AlbumsUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => AlbumsUpdate)
   albums?: AlbumsUpdate;
 
-  @ApiPropertyOptional({ description: 'Folder preferences', type: FoldersUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => FoldersUpdate)
   folders?: FoldersUpdate;
 
-  @ApiPropertyOptional({ description: 'Memory preferences', type: MemoriesUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => MemoriesUpdate)
   memories?: MemoriesUpdate;
 
-  @ApiPropertyOptional({ description: 'People preferences', type: PeopleUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => PeopleUpdate)
   people?: PeopleUpdate;
 
-  @ApiPropertyOptional({ description: 'Rating preferences', type: RatingsUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => RatingsUpdate)
   ratings?: RatingsUpdate;
 
-  @ApiPropertyOptional({ description: 'Shared link preferences', type: SharedLinksUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined, required: false })
   @Optional()
   @ValidateNested()
   @Type(() => SharedLinksUpdate)
   sharedLinks?: SharedLinksUpdate;
 
-  @ApiPropertyOptional({ description: 'Tag preferences', type: TagsUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => TagsUpdate)
   tags?: TagsUpdate;
 
-  @ApiPropertyOptional({ description: 'Avatar preferences', type: AvatarUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => AvatarUpdate)
   avatar?: AvatarUpdate;
 
-  @ApiPropertyOptional({ description: 'Email notification preferences', type: EmailNotificationsUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => EmailNotificationsUpdate)
   emailNotifications?: EmailNotificationsUpdate;
 
-  @ApiPropertyOptional({ description: 'Download preferences', type: DownloadUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => DownloadUpdate)
   download?: DownloadUpdate;
 
-  @ApiPropertyOptional({ description: 'Purchase preferences', type: PurchaseUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => PurchaseUpdate)
   purchase?: PurchaseUpdate;
 
-  @ApiPropertyOptional({ description: 'Cast preferences', type: CastUpdate })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Optional()
   @ValidateNested()
   @Type(() => CastUpdate)
@@ -269,27 +282,38 @@ class CastResponse {
 }
 
 export class UserPreferencesResponseDto implements UserPreferences {
-  @ApiProperty({ description: 'Album preferences', type: AlbumsResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   albums!: AlbumsResponse;
-  @ApiProperty({ description: 'Folder preferences', type: FoldersResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   folders!: FoldersResponse;
-  @ApiProperty({ description: 'Memory preferences', type: MemoriesResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   memories!: MemoriesResponse;
-  @ApiProperty({ description: 'People preferences', type: PeopleResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   people!: PeopleResponse;
-  @ApiProperty({ description: 'Rating preferences', type: RatingsResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   ratings!: RatingsResponse;
-  @ApiProperty({ description: 'Shared link preferences', type: SharedLinksResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   sharedLinks!: SharedLinksResponse;
-  @ApiProperty({ description: 'Tag preferences', type: TagsResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   tags!: TagsResponse;
-  @ApiProperty({ description: 'Email notification preferences', type: EmailNotificationsResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   emailNotifications!: EmailNotificationsResponse;
-  @ApiProperty({ description: 'Download preferences', type: DownloadResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   download!: DownloadResponse;
-  @ApiProperty({ description: 'Purchase preferences', type: PurchaseResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   purchase!: PurchaseResponse;
-  @ApiProperty({ description: 'Cast preferences', type: CastResponse })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   cast!: CastResponse;
 }
 

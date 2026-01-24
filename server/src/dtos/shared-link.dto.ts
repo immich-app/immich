@@ -137,9 +137,11 @@ export class SharedLinkResponseDto {
   createdAt!: Date;
   @ApiProperty({ description: 'Expiration date', nullable: true })
   expiresAt!: Date | null;
-  @ApiProperty({ description: 'Shared assets', type: () => [AssetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   assets!: AssetResponseDto[];
-  @ApiPropertyOptional({ description: 'Shared album', type: AlbumResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   album?: AlbumResponseDto;
   @ApiProperty({ description: 'Allow uploads' })
   allowUpload!: boolean;

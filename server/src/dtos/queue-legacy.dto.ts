@@ -10,10 +10,12 @@ export class QueueStatusLegacyDto {
 }
 
 export class QueueResponseLegacyDto {
-  @ApiProperty({ type: QueueStatusLegacyDto, description: 'Current status of the queue' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   queueStatus!: QueueStatusLegacyDto;
 
-  @ApiProperty({ type: QueueStatisticsDto, description: 'Job count statistics for the queue' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   jobCounts!: QueueStatisticsDto;
 }
 

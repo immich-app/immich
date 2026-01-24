@@ -136,7 +136,8 @@ export class UpdateAlbumUserDto {
 }
 
 export class AlbumUserResponseDto {
-  @ApiProperty({ description: 'User details', type: UserResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   user!: UserResponseDto;
   @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
@@ -168,13 +169,16 @@ export class AlbumResponseDto {
   albumThumbnailAssetId!: string | null;
   @ApiProperty({ description: 'Is shared album' })
   shared!: boolean;
-  @ApiProperty({ description: 'Album users', type: () => [AlbumUserResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   albumUsers!: AlbumUserResponseDto[];
   @ApiProperty({ description: 'Has shared link' })
   hasSharedLink!: boolean;
-  @ApiProperty({ description: 'Album assets', type: () => [AssetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   assets!: AssetResponseDto[];
-  @ApiProperty({ description: 'Album owner', type: UserResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   owner!: UserResponseDto;
   @ApiProperty({ type: 'integer', description: 'Number of assets' })
   assetCount!: number;
@@ -190,10 +194,8 @@ export class AlbumResponseDto {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
   order?: AssetOrder;
 
-  @ApiPropertyOptional({
-    description: 'Per-user contribution counts (shared albums only)',
-    type: () => [ContributorCountResponseDto],
-  })
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   @Type(() => ContributorCountResponseDto)
   contributorCounts?: ContributorCountResponseDto[];
 }

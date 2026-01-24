@@ -28,7 +28,6 @@ class SystemConfigSmtpDto {
   /// Email address for replies
   String replyTo;
 
-  /// SMTP transport configuration
   SystemConfigSmtpTransportDto transport;
 
   @override

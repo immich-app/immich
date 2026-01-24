@@ -24,7 +24,8 @@ export class ActivityResponseDto {
   @ApiProperty({ description: 'Activity type', enum: ReactionType })
   @ValidateEnum({ enum: ReactionType, name: 'ReactionType' })
   type!: ReactionType;
-  @ApiProperty({ description: 'User who created the activity', type: () => UserResponseDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   user!: UserResponseDto;
   @ApiPropertyOptional({ description: 'Asset ID (if activity is for an asset)', nullable: true })
   assetId!: string | null;

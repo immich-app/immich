@@ -39,7 +39,6 @@ export type ActivityResponseDto = {
     id: string;
     /** Activity type */
     "type": ReactionType;
-    /** User who created the activity */
     user: UserResponseDto;
 };
 export type ActivityCreateDto = {
@@ -165,7 +164,6 @@ export type SystemConfigSmtpDto = {
     "from": string;
     /** Email address for replies */
     replyTo: string;
-    /** SMTP transport configuration */
     transport: SystemConfigSmtpTransportDto;
 };
 export type TestEmailResponseDto = {
@@ -323,27 +321,16 @@ export type TagsResponse = {
     sidebarWeb: boolean;
 };
 export type UserPreferencesResponseDto = {
-    /** Album preferences */
     albums: AlbumsResponse;
-    /** Cast preferences */
     cast: CastResponse;
-    /** Download preferences */
     download: DownloadResponse;
-    /** Email notification preferences */
     emailNotifications: EmailNotificationsResponse;
-    /** Folder preferences */
     folders: FoldersResponse;
-    /** Memory preferences */
     memories: MemoriesResponse;
-    /** People preferences */
     people: PeopleResponse;
-    /** Purchase preferences */
     purchase: PurchaseResponse;
-    /** Rating preferences */
     ratings: RatingsResponse;
-    /** Shared link preferences */
     sharedLinks: SharedLinksResponse;
-    /** Tag preferences */
     tags: TagsResponse;
 };
 export type AlbumsUpdate = {
@@ -413,29 +400,17 @@ export type TagsUpdate = {
     sidebarWeb?: boolean;
 };
 export type UserPreferencesUpdateDto = {
-    /** Album preferences */
     albums?: AlbumsUpdate;
-    /** Avatar preferences */
     avatar?: AvatarUpdate;
-    /** Cast preferences */
     cast?: CastUpdate;
-    /** Download preferences */
     download?: DownloadUpdate;
-    /** Email notification preferences */
     emailNotifications?: EmailNotificationsUpdate;
-    /** Folder preferences */
     folders?: FoldersUpdate;
-    /** Memory preferences */
     memories?: MemoriesUpdate;
-    /** People preferences */
     people?: PeopleUpdate;
-    /** Purchase preferences */
     purchase?: PurchaseUpdate;
-    /** Rating preferences */
     ratings?: RatingsUpdate;
-    /** Shared link preferences */
     sharedLinks?: SharedLinksUpdate;
-    /** Tag preferences */
     tags?: TagsUpdate;
 };
 export type SessionResponseDto = {
@@ -469,7 +444,6 @@ export type AssetStatsResponseDto = {
 export type AlbumUserResponseDto = {
     /** Album user role */
     role: AlbumUserRole;
-    /** User details */
     user: UserResponseDto;
 };
 export type ExifResponseDto = {
@@ -593,7 +567,6 @@ export type AssetResponseDto = {
     duplicateId?: string | null;
     /** Video duration (for videos) */
     duration: string;
-    /** EXIF metadata */
     exifInfo?: ExifResponseDto;
     /** The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken. */
     fileCreatedAt: string;
@@ -626,23 +599,18 @@ export type AssetResponseDto = {
     originalMimeType?: string;
     /** Original file path */
     originalPath: string;
-    /** Owner user details */
     owner?: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
-    /** Associated people with faces */
     people?: PersonWithFacesResponseDto[];
     /** Is resized (deprecated) */
     resized?: boolean;
-    /** Stack information */
     stack?: (AssetStackResponseDto) | null;
-    /** Associated tags */
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation */
     thumbhash: string | null;
     /** Asset type */
     "type": AssetTypeEnum;
-    /** Unassigned faces */
     unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
@@ -662,13 +630,10 @@ export type AlbumResponseDto = {
     albumName: string;
     /** Thumbnail asset ID */
     albumThumbnailAssetId: string | null;
-    /** Album users */
     albumUsers: AlbumUserResponseDto[];
     /** Number of assets */
     assetCount: number;
-    /** Album assets */
     assets: AssetResponseDto[];
-    /** Per-user contribution counts (shared albums only) */
     contributorCounts?: ContributorCountResponseDto[];
     /** Creation date */
     createdAt: string;
@@ -686,7 +651,6 @@ export type AlbumResponseDto = {
     lastModifiedAssetTimestamp?: string;
     /** Asset sort order */
     order?: AssetOrder;
-    /** Album owner */
     owner: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
@@ -790,7 +754,6 @@ export type ApiKeyCreateDto = {
     permissions: Permission[];
 };
 export type ApiKeyCreateResponseDto = {
-    /** API key details */
     apiKey: ApiKeyResponseDto;
     /** API key secret (only shown once) */
     secret: string;
@@ -990,7 +953,6 @@ export type CropParameters = {
 export type AssetEditActionCrop = {
     /** Type of edit action to perform */
     action: AssetEditAction;
-    /** Crop parameters (x, y, width, height) */
     parameters: CropParameters;
 };
 export type RotateParameters = {
@@ -1000,7 +962,6 @@ export type RotateParameters = {
 export type AssetEditActionRotate = {
     /** Type of edit action to perform */
     action: AssetEditAction;
-    /** Rotation parameters (angle in degrees) */
     parameters: RotateParameters;
 };
 export type MirrorParameters = {
@@ -1010,7 +971,6 @@ export type MirrorParameters = {
 export type AssetEditActionMirror = {
     /** Type of edit action to perform */
     action: AssetEditAction;
-    /** Mirror parameters (axis: horizontal or vertical) */
     parameters: MirrorParameters;
 };
 export type AssetEditsDto = {
@@ -1280,9 +1240,7 @@ export type QueueStatusLegacyDto = {
     isPaused: boolean;
 };
 export type QueueResponseLegacyDto = {
-    /** Job count statistics for the queue */
     jobCounts: QueueStatisticsDto;
-    /** Current status of the queue */
     queueStatus: QueueStatusLegacyDto;
 };
 export type QueuesResponseLegacyDto = {
@@ -1408,11 +1366,9 @@ export type OnThisDayDto = {
     year: number;
 };
 export type MemoryResponseDto = {
-    /** Associated assets */
     assets: AssetResponseDto[];
     /** Creation date */
     createdAt: string;
-    /** Memory data (type-specific) */
     data: OnThisDayDto;
     /** Deletion date */
     deletedAt?: string;
@@ -1438,7 +1394,6 @@ export type MemoryResponseDto = {
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
-    /** Memory data (type-specific) */
     data: OnThisDayDto;
     /** Is memory saved */
     isSaved?: boolean;
@@ -1658,7 +1613,6 @@ export type QueueResponseDto = {
     isPaused: boolean;
     /** Queue name */
     name: QueueName;
-    /** Queue statistics */
     statistics: QueueStatisticsDto;
 };
 export type QueueUpdateDto = {
@@ -1680,7 +1634,6 @@ export type QueueJobResponseDto = {
     timestamp: number;
 };
 export type SearchExploreItem = {
-    /** Representative asset */
     data: AssetResponseDto;
     /** Explore value */
     value: string;
@@ -1688,7 +1641,6 @@ export type SearchExploreItem = {
 export type SearchExploreResponseDto = {
     /** Explore field name */
     fieldName: string;
-    /** Explore items */
     items: SearchExploreItem[];
 };
 export type MetadataSearchDto = {
@@ -1796,9 +1748,7 @@ export type SearchFacetResponseDto = {
 export type SearchAlbumResponseDto = {
     /** Number of albums in this page */
     count: number;
-    /** Search facets */
     facets: SearchFacetResponseDto[];
-    /** Album items */
     items: AlbumResponseDto[];
     /** Total number of matching albums */
     total: number;
@@ -1806,9 +1756,7 @@ export type SearchAlbumResponseDto = {
 export type SearchAssetResponseDto = {
     /** Number of assets in this page */
     count: number;
-    /** Search facets */
     facets: SearchFacetResponseDto[];
-    /** Asset items */
     items: AssetResponseDto[];
     /** Next page token */
     nextPage?: string | null;
@@ -1816,9 +1764,7 @@ export type SearchAssetResponseDto = {
     total: number;
 };
 export type SearchResponseDto = {
-    /** Album search results */
     albums: SearchAlbumResponseDto;
-    /** Asset search results */
     assets: SearchAssetResponseDto;
 };
 export type PlacesResponseDto = {
@@ -2281,13 +2227,11 @@ export type SessionUpdateDto = {
     isPendingSyncReset?: boolean;
 };
 export type SharedLinkResponseDto = {
-    /** Shared album */
     album?: AlbumResponseDto;
     /** Allow downloads */
     allowDownload: boolean;
     /** Allow uploads */
     allowUpload: boolean;
-    /** Shared assets */
     assets: AssetResponseDto[];
     /** Creation date */
     createdAt: string;
@@ -2635,47 +2579,26 @@ export type SystemConfigUserDto = {
     deleteDelay: number;
 };
 export type SystemConfigDto = {
-    /** Backup configuration */
     backup: SystemConfigBackupsDto;
-    /** FFmpeg configuration */
     ffmpeg: SystemConfigFFmpegDto;
-    /** Image processing configuration */
     image: SystemConfigImageDto;
-    /** Job queue configuration */
     job: SystemConfigJobDto;
-    /** Library configuration */
     library: SystemConfigLibraryDto;
-    /** Logging configuration */
     logging: SystemConfigLoggingDto;
-    /** Machine learning configuration */
     machineLearning: SystemConfigMachineLearningDto;
-    /** Map configuration */
     map: SystemConfigMapDto;
-    /** Metadata configuration */
     metadata: SystemConfigMetadataDto;
-    /** New version check configuration */
     newVersionCheck: SystemConfigNewVersionCheckDto;
-    /** Nightly tasks configuration */
     nightlyTasks: SystemConfigNightlyTasksDto;
-    /** Notification configuration */
     notifications: SystemConfigNotificationsDto;
-    /** OAuth configuration */
     oauth: SystemConfigOAuthDto;
-    /** Password login configuration */
     passwordLogin: SystemConfigPasswordLoginDto;
-    /** Reverse geocoding configuration */
     reverseGeocoding: SystemConfigReverseGeocodingDto;
-    /** Server configuration */
     server: SystemConfigServerDto;
-    /** Storage template configuration */
     storageTemplate: SystemConfigStorageTemplateDto;
-    /** Template configuration */
     templates: SystemConfigTemplatesDto;
-    /** Theme configuration */
     theme: SystemConfigThemeDto;
-    /** Trash configuration */
     trash: SystemConfigTrashDto;
-    /** User configuration */
     user: SystemConfigUserDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {

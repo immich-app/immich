@@ -68,7 +68,6 @@ class AssetResponseDto {
   /// Video duration (for videos)
   String duration;
 
-  /// EXIF metadata
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -130,7 +129,6 @@ class AssetResponseDto {
   /// Original file path
   String originalPath;
 
-  /// Owner user details
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -142,7 +140,6 @@ class AssetResponseDto {
   /// Owner user ID
   String ownerId;
 
-  /// Associated people with faces
   List<PersonWithFacesResponseDto> people;
 
   /// Is resized (deprecated)
@@ -154,10 +151,8 @@ class AssetResponseDto {
   ///
   bool? resized;
 
-  /// Stack information
   AssetStackResponseDto? stack;
 
-  /// Associated tags
   List<TagResponseDto> tags;
 
   /// Thumbhash for thumbnail generation
@@ -166,7 +161,6 @@ class AssetResponseDto {
   /// Asset type
   AssetTypeEnum type;
 
-  /// Unassigned faces
   List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
   /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.

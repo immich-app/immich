@@ -17,7 +17,6 @@ class APIKeyCreateResponseDto {
     required this.secret,
   });
 
-  /// API key details
   APIKeyResponseDto apiKey;
 
   /// API key secret (only shown once)

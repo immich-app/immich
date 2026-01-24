@@ -66,7 +66,8 @@ export class MemoryCreateDto extends MemoryBaseDto {
   @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
   type!: MemoryType;
 
-  @ApiProperty({ description: 'Memory data (type-specific)', type: () => OnThisDayDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   @IsObject()
   @ValidateNested()
   @Type((options) => {
@@ -118,11 +119,13 @@ export class MemoryResponseDto {
   @ApiProperty({ description: 'Memory type', enum: MemoryType })
   @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
   type!: MemoryType;
-  @ApiProperty({ description: 'Memory data (type-specific)', type: () => OnThisDayDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   data!: MemoryData;
   @ApiProperty({ description: 'Is memory saved' })
   isSaved!: boolean;
-  @ApiProperty({ description: 'Associated assets', type: () => [AssetResponseDto] })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   assets!: AssetResponseDto[];
 }
 

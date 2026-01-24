@@ -57,21 +57,24 @@ class AssetEditActionBase {
 export class AssetEditActionCrop extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => CropParameters)
-  @ApiProperty({ type: CropParameters, description: 'Crop parameters (x, y, width, height)' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: CropParameters;
 }
 
 export class AssetEditActionRotate extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => RotateParameters)
-  @ApiProperty({ type: RotateParameters, description: 'Rotation parameters (angle in degrees)' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: RotateParameters;
 }
 
 export class AssetEditActionMirror extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => MirrorParameters)
-  @ApiProperty({ type: MirrorParameters, description: 'Mirror parameters (axis: horizontal or vertical)' })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: MirrorParameters;
 }
 
