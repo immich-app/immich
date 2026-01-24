@@ -40,14 +40,44 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
+export type DatabaseBackupDeleteDto = {
+    backups: string[];
+};
+export type DatabaseBackupDto = {
+    filename: string;
+    filesize: number;
+};
+export type DatabaseBackupListResponseDto = {
+    backups: DatabaseBackupDto[];
+};
+export type DatabaseBackupUploadDto = {
+    file?: Blob;
+};
 export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
+    restoreBackupFilename?: string;
+};
+export type MaintenanceDetectInstallStorageFolderDto = {
+    files: number;
+    folder: StorageFolder;
+    readable: boolean;
+    writable: boolean;
+};
+export type MaintenanceDetectInstallResponseDto = {
+    storage: MaintenanceDetectInstallStorageFolderDto[];
 };
 export type MaintenanceLoginDto = {
     token?: string;
 };
 export type MaintenanceAuthDto = {
     username: string;
+};
+export type MaintenanceStatusResponseDto = {
+    action: MaintenanceAction;
+    active: boolean;
+    error?: string;
+    progress?: number;
+    task?: string;
 };
 export type NotificationCreateDto = {
     data?: object;
@@ -352,6 +382,7 @@ export type AssetResponseDto = {
     height: number | null;
     id: string;
     isArchived: boolean;
+    isEdited: boolean;
     isFavorite: boolean;
     isOffline: boolean;
     isTrashed: boolean;
@@ -1507,10 +1538,12 @@ export type SystemConfigFFmpegDto = {
 export type SystemConfigGeneratedFullsizeImageDto = {
     enabled: boolean;
     format: ImageFormat;
+    progressive?: boolean;
     quality: number;
 };
 export type SystemConfigGeneratedImageDto = {
     format: ImageFormat;
+    progressive?: boolean;
     quality: number;
     size: number;
 };
@@ -1844,6 +1877,210 @@ export type WorkflowUpdateDto = {
     name?: string;
     triggerType?: PluginTriggerType;
 };
+export type SyncAckV1 = {};
+export type SyncAlbumDeleteV1 = {
+    albumId: string;
+};
+export type SyncAlbumToAssetDeleteV1 = {
+    albumId: string;
+    assetId: string;
+};
+export type SyncAlbumToAssetV1 = {
+    albumId: string;
+    assetId: string;
+};
+export type SyncAlbumUserDeleteV1 = {
+    albumId: string;
+    userId: string;
+};
+export type SyncAlbumUserV1 = {
+    albumId: string;
+    role: AlbumUserRole;
+    userId: string;
+};
+export type SyncAlbumV1 = {
+    createdAt: string;
+    description: string;
+    id: string;
+    isActivityEnabled: boolean;
+    name: string;
+    order: AssetOrder;
+    ownerId: string;
+    thumbnailAssetId: string | null;
+    updatedAt: string;
+};
+export type SyncAssetDeleteV1 = {
+    assetId: string;
+};
+export type SyncAssetExifV1 = {
+    assetId: string;
+    city: string | null;
+    country: string | null;
+    dateTimeOriginal: string | null;
+    description: string | null;
+    exifImageHeight: number | null;
+    exifImageWidth: number | null;
+    exposureTime: string | null;
+    fNumber: number | null;
+    fileSizeInByte: number | null;
+    focalLength: number | null;
+    fps: number | null;
+    iso: number | null;
+    latitude: number | null;
+    lensModel: string | null;
+    longitude: number | null;
+    make: string | null;
+    model: string | null;
+    modifyDate: string | null;
+    orientation: string | null;
+    profileDescription: string | null;
+    projectionType: string | null;
+    rating: number | null;
+    state: string | null;
+    timeZone: string | null;
+};
+export type SyncAssetFaceDeleteV1 = {
+    assetFaceId: string;
+};
+export type SyncAssetFaceV1 = {
+    assetId: string;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    id: string;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string | null;
+    sourceType: string;
+};
+export type SyncAssetMetadataDeleteV1 = {
+    assetId: string;
+    key: string;
+};
+export type SyncAssetMetadataV1 = {
+    assetId: string;
+    key: string;
+    value: object;
+};
+export type SyncAssetV1 = {
+    checksum: string;
+    deletedAt: string | null;
+    duration: string | null;
+    fileCreatedAt: string | null;
+    fileModifiedAt: string | null;
+    height: number | null;
+    id: string;
+    isEdited: boolean;
+    isFavorite: boolean;
+    libraryId: string | null;
+    livePhotoVideoId: string | null;
+    localDateTime: string | null;
+    originalFileName: string;
+    ownerId: string;
+    stackId: string | null;
+    thumbhash: string | null;
+    "type": AssetTypeEnum;
+    visibility: AssetVisibility;
+    width: number | null;
+};
+export type SyncAuthUserV1 = {
+    avatarColor: (UserAvatarColor) | null;
+    deletedAt: string | null;
+    email: string;
+    hasProfileImage: boolean;
+    id: string;
+    isAdmin: boolean;
+    name: string;
+    oauthId: string;
+    pinCode: string | null;
+    profileChangedAt: string;
+    quotaSizeInBytes: number | null;
+    quotaUsageInBytes: number;
+    storageLabel: string | null;
+};
+export type SyncCompleteV1 = {};
+export type SyncMemoryAssetDeleteV1 = {
+    assetId: string;
+    memoryId: string;
+};
+export type SyncMemoryAssetV1 = {
+    assetId: string;
+    memoryId: string;
+};
+export type SyncMemoryDeleteV1 = {
+    memoryId: string;
+};
+export type SyncMemoryV1 = {
+    createdAt: string;
+    data: object;
+    deletedAt: string | null;
+    hideAt: string | null;
+    id: string;
+    isSaved: boolean;
+    memoryAt: string;
+    ownerId: string;
+    seenAt: string | null;
+    showAt: string | null;
+    "type": MemoryType;
+    updatedAt: string;
+};
+export type SyncPartnerDeleteV1 = {
+    sharedById: string;
+    sharedWithId: string;
+};
+export type SyncPartnerV1 = {
+    inTimeline: boolean;
+    sharedById: string;
+    sharedWithId: string;
+};
+export type SyncPersonDeleteV1 = {
+    personId: string;
+};
+export type SyncPersonV1 = {
+    birthDate: string | null;
+    color: string | null;
+    createdAt: string;
+    faceAssetId: string | null;
+    id: string;
+    isFavorite: boolean;
+    isHidden: boolean;
+    name: string;
+    ownerId: string;
+    updatedAt: string;
+};
+export type SyncResetV1 = {};
+export type SyncStackDeleteV1 = {
+    stackId: string;
+};
+export type SyncStackV1 = {
+    createdAt: string;
+    id: string;
+    ownerId: string;
+    primaryAssetId: string;
+    updatedAt: string;
+};
+export type SyncUserDeleteV1 = {
+    userId: string;
+};
+export type SyncUserMetadataDeleteV1 = {
+    key: UserMetadataKey;
+    userId: string;
+};
+export type SyncUserMetadataV1 = {
+    key: UserMetadataKey;
+    userId: string;
+    value: object;
+};
+export type SyncUserV1 = {
+    avatarColor: (UserAvatarColor) | null;
+    deletedAt: string | null;
+    email: string;
+    hasProfileImage: boolean;
+    id: string;
+    name: string;
+    profileChangedAt: string;
+};
 /**
  * List all activities
  */
@@ -1920,6 +2157,63 @@ export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Delete database backup
+ */
+export function deleteDatabaseBackup({ databaseBackupDeleteDto }: {
+    databaseBackupDeleteDto: DatabaseBackupDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: databaseBackupDeleteDto
+    })));
+}
+/**
+ * List database backups
+ */
+export function listDatabaseBackups(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DatabaseBackupListResponseDto;
+    }>("/admin/database-backups", {
+        ...opts
+    }));
+}
+/**
+ * Start database backup restore flow
+ */
+export function startDatabaseRestoreFlow(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/start-restore", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Upload database backup
+ */
+export function uploadDatabaseBackup({ databaseBackupUploadDto }: {
+    databaseBackupUploadDto: DatabaseBackupUploadDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/database-backups/upload", oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: databaseBackupUploadDto
+    })));
+}
+/**
+ * Download database backup
+ */
+export function downloadDatabaseBackup({ filename }: {
+    filename: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
  * Set maintenance mode
  */
 export function setMaintenanceMode({ setMaintenanceModeDto }: {
@@ -1930,6 +2224,17 @@ export function setMaintenanceMode({ setMaintenanceModeDto }: {
         method: "POST",
         body: setMaintenanceModeDto
     })));
+}
+/**
+ * Detect existing install
+ */
+export function detectPriorInstall(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceDetectInstallResponseDto;
+    }>("/admin/maintenance/detect-install", {
+        ...opts
+    }));
 }
 /**
  * Log into maintenance mode
@@ -1945,6 +2250,17 @@ export function maintenanceLogin({ maintenanceLoginDto }: {
         method: "POST",
         body: maintenanceLoginDto
     })));
+}
+/**
+ * Get maintenance mode status
+ */
+export function getMaintenanceStatus(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceStatusResponseDto;
+    }>("/admin/maintenance/status", {
+        ...opts
+    }));
 }
 /**
  * Create a notification
@@ -5296,7 +5612,17 @@ export enum UserAvatarColor {
 }
 export enum MaintenanceAction {
     Start = "start",
-    End = "end"
+    End = "end",
+    SelectDatabaseRestore = "select_database_restore",
+    RestoreDatabase = "restore_database"
+}
+export enum StorageFolder {
+    EncodedVideo = "encoded-video",
+    Library = "library",
+    Upload = "upload",
+    Profile = "profile",
+    Thumbs = "thumbs",
+    Backups = "backups"
 }
 export enum NotificationLevel {
     Success = "success",
@@ -5394,12 +5720,17 @@ export enum Permission {
     AuthChangePassword = "auth.changePassword",
     AuthDeviceDelete = "authDevice.delete",
     ArchiveRead = "archive.read",
+    BackupList = "backup.list",
+    BackupDownload = "backup.download",
+    BackupUpload = "backup.upload",
+    BackupDelete = "backup.delete",
     DuplicateRead = "duplicate.read",
     DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",
     FaceRead = "face.read",
     FaceUpdate = "face.update",
     FaceDelete = "face.delete",
+    FolderRead = "folder.read",
     JobCreate = "job.create",
     JobRead = "job.read",
     LibraryCreate = "library.create",
@@ -5410,6 +5741,8 @@ export enum Permission {
     TimelineRead = "timeline.read",
     TimelineDownload = "timeline.download",
     Maintenance = "maintenance",
+    MapRead = "map.read",
+    MapSearch = "map.search",
     MemoryCreate = "memory.create",
     MemoryRead = "memory.read",
     MemoryUpdate = "memory.update",
@@ -5534,6 +5867,7 @@ export enum MirrorAxis {
     Vertical = "vertical"
 }
 export enum AssetMediaSize {
+    Original = "original",
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
@@ -5810,4 +6144,9 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum UserMetadataKey {
+    Preferences = "preferences",
+    License = "license",
+    Onboarding = "onboarding"
 }

@@ -23,13 +23,6 @@ export async function throttlePage(context: BrowserContext, page: Page) {
   await session.send('Emulation.setCPUThrottlingRate', { rate: 10 });
 }
 
-let activePollsAbortController = new AbortController();
-
-export const cancelAllPollers = () => {
-  activePollsAbortController.abort();
-  activePollsAbortController = new AbortController();
-};
-
 export const poll = async <T>(
   page: Page,
   query: () => Promise<T>,
@@ -37,20 +30,13 @@ export const poll = async <T>(
 ) => {
   let result;
   const timeout = Date.now() + 10_000;
-  const signal = activePollsAbortController.signal;
 
   const terminate = callback || ((result: Awaited<T> | undefined) => !!result);
   while (!terminate(result) && Date.now() < timeout) {
-    if (signal.aborted) {
-      return;
-    }
     try {
       result = await query();
     } catch {
       // ignore
-    }
-    if (signal.aborted) {
-      return;
     }
     if (page.isClosed()) {
       return;

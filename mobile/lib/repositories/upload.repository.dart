@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -20,6 +21,7 @@ class UploadTaskWithFile {
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
 class UploadRepository {
+  final Logger logger = Logger('UploadRepository');
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -92,52 +94,114 @@ class UploadRepository {
     );
   }
 
-  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
-    final httpClient = Client();
+  Future<UploadResult> uploadFile({
+    required File file,
+    required String originalFileName,
+    required Map<String, String> headers,
+    required Map<String, String> fields,
+    required Client httpClient,
+    required CancellationToken cancelToken,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required String logContext,
+  }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
 
-    Logger logger = Logger('UploadRepository');
-    for (final candidate in tasks) {
-      if (cancelToken.isCancelled) {
-        logger.warning("Backup was cancelled by the user");
-        break;
+    try {
+      final fileStream = file.openRead();
+      final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
+
+      final baseRequest = _CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
+
+      baseRequest.headers.addAll(headers);
+      baseRequest.fields.addAll(fields);
+      baseRequest.files.add(assetRawUploadData);
+
+      final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+      final responseBodyString = await response.stream.bytesToString();
+
+      if (![200, 201].contains(response.statusCode)) {
+        String? errorMessage;
+
+        if (response.statusCode == 413) {
+          errorMessage = 'Error(413) File is too large to upload';
+          return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
+        }
+
+        try {
+          final error = jsonDecode(responseBodyString);
+          errorMessage = error['message'] ?? error['error'];
+        } catch (_) {
+          errorMessage = responseBodyString.isNotEmpty
+              ? responseBodyString
+              : 'Upload failed with status ${response.statusCode}';
+        }
+
+        return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
       }
 
       try {
-        final fileStream = candidate.file.openRead();
-        final assetRawUploadData = MultipartFile(
-          "assetData",
-          fileStream,
-          candidate.file.lengthSync(),
-          filename: candidate.task.filename,
-        );
-
-        final baseRequest = MultipartRequest('POST', Uri.parse('$savedEndpoint/assets'));
-
-        baseRequest.headers.addAll(candidate.task.headers);
-        baseRequest.fields.addAll(candidate.task.fields);
-        baseRequest.files.add(assetRawUploadData);
-
-        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
-
-        final responseBody = jsonDecode(await response.stream.bytesToString());
-
-        if (![200, 201].contains(response.statusCode)) {
-          final error = responseBody;
-
-          logger.warning(
-            "Error(${error['statusCode']}) uploading ${candidate.task.filename} | Created on ${candidate.task.fields["fileCreatedAt"]} | ${error['error']}",
-          );
-
-          continue;
-        }
-      } on CancelledException {
-        logger.warning("Backup was cancelled by the user");
-        break;
-      } catch (error, stackTrace) {
-        logger.warning("Error backup asset: ${error.toString()}: $stackTrace");
-        continue;
+        final responseBody = jsonDecode(responseBodyString);
+        return UploadResult.success(remoteAssetId: responseBody['id'] as String);
+      } catch (e) {
+        return UploadResult.error(errorMessage: 'Failed to parse server response');
       }
+    } on CancelledException {
+      logger.warning("Upload $logContext was cancelled");
+      return UploadResult.cancelled();
+    } catch (error, stackTrace) {
+      logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
+      return UploadResult.error(errorMessage: error.toString());
     }
+  }
+}
+
+class UploadResult {
+  final bool isSuccess;
+  final bool isCancelled;
+  final String? remoteAssetId;
+  final String? errorMessage;
+  final int? statusCode;
+
+  const UploadResult({
+    required this.isSuccess,
+    required this.isCancelled,
+    this.remoteAssetId,
+    this.errorMessage,
+    this.statusCode,
+  });
+
+  factory UploadResult.success({required String remoteAssetId}) {
+    return UploadResult(isSuccess: true, isCancelled: false, remoteAssetId: remoteAssetId);
+  }
+
+  factory UploadResult.error({String? errorMessage, int? statusCode}) {
+    return UploadResult(isSuccess: false, isCancelled: false, errorMessage: errorMessage, statusCode: statusCode);
+  }
+
+  factory UploadResult.cancelled() {
+    return const UploadResult(isSuccess: false, isCancelled: true);
+  }
+}
+
+class _CustomMultipartRequest extends MultipartRequest {
+  _CustomMultipartRequest(super.method, super.url, {required this.onProgress});
+
+  final void Function(int bytes, int totalBytes) onProgress;
+
+  @override
+  ByteStream finalize() {
+    final byteStream = super.finalize();
+    final total = contentLength;
+    var bytes = 0;
+
+    final t = StreamTransformer.fromHandlers(
+      handleData: (List<int> data, EventSink<List<int>> sink) {
+        bytes += data.length;
+        onProgress.call(bytes, total);
+        sink.add(data);
+      },
+    );
+    final stream = byteStream.transform(t);
+    return ByteStream(stream);
   }
 }

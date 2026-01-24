@@ -128,6 +128,7 @@ abstract final class SyncStreamStub {
         visibility: AssetVisibility.timeline,
         width: null,
         height: null,
+        isEdited: false,
       ),
       ack: ack,
     );

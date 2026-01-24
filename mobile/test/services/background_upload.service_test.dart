@@ -12,13 +12,8 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/models/server_info/server_config.model.dart';
-import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
-import 'package:immich_mobile/models/server_info/server_features.model.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
-import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../domain/service.mock.dart';
@@ -27,33 +22,12 @@ import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
 import '../repository.mocks.dart';
 
-// Test ServerInfo stub
-const _serverInfo = ServerInfo(
-  serverVersion: ServerVersion(major: 2, minor: 4, patch: 0),
-  latestVersion: ServerVersion(major: 2, minor: 4, patch: 0),
-  serverFeatures: ServerFeatures(trash: true, map: true, oauthEnabled: false, passwordLogin: true, ocr: false),
-  serverConfig: ServerConfig(
-    trashDays: 30,
-    oauthButtonText: 'Login with OAuth',
-    externalDomain: '',
-    mapDarkStyleUrl: '',
-    mapLightStyleUrl: '',
-  ),
-  serverDiskInfo: ServerDiskInfo(
-    diskAvailable: '100GB',
-    diskSize: '500GB',
-    diskUse: '400GB',
-    diskUsagePercentage: 80.0,
-  ),
-  versionStatus: VersionStatus.upToDate,
-);
-
 void main() {
-  late UploadService sut;
+  late BackgroundUploadService sut;
   late MockUploadRepository mockUploadRepository;
-  late MockDriftBackupRepository mockBackupRepository;
   late MockStorageRepository mockStorageRepository;
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
+  late MockDriftBackupRepository mockBackupRepository;
   late MockAppSettingsService mockAppSettingsService;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
@@ -75,23 +49,22 @@ void main() {
 
   setUp(() {
     mockUploadRepository = MockUploadRepository();
-    mockBackupRepository = MockDriftBackupRepository();
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
+    mockBackupRepository = MockDriftBackupRepository();
     mockAppSettingsService = MockAppSettingsService();
     mockAssetMediaRepository = MockAssetMediaRepository();
 
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)).thenReturn(false);
     when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)).thenReturn(false);
 
-    sut = UploadService(
+    sut = BackgroundUploadService(
       mockUploadRepository,
-      mockBackupRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
+      mockBackupRepository,
       mockAppSettingsService,
       mockAssetMediaRepository,
-      _serverInfo,
     );
 
     mockUploadRepository.onUploadStatus = (_) {};
@@ -201,14 +174,13 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -222,6 +194,7 @@ void main() {
         latitude: 37.7749,
         longitude: -122.4194,
         adjustmentTime: DateTime(2026, 1, 2),
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -247,61 +220,17 @@ void main() {
       expect(metadata[0]['value']['longitude'], isNotNull);
     });
 
-    test('should NOT include metadata on iOS when server version is below 2.4', () async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      addTearDown(() => debugDefaultTargetPlatformOverride = null);
-
-      final sutWithV23 = UploadService(
-        mockUploadRepository,
-        mockBackupRepository,
-        mockStorageRepository,
-        mockLocalAssetRepository,
-        mockAppSettingsService,
-        mockAssetMediaRepository,
-        _serverInfo.copyWith(
-          serverVersion: const ServerVersion(major: 2, minor: 3, patch: 0),
-          latestVersion: const ServerVersion(major: 2, minor: 3, patch: 0),
-        ),
-      );
-      addTearDown(() => sutWithV23.dispose());
-
-      final assetWithCloudId = LocalAsset(
-        id: 'test-asset-id',
-        name: 'test.jpg',
-        type: AssetType.image,
-        createdAt: DateTime(2025, 1, 1),
-        updatedAt: DateTime(2025, 1, 2),
-        cloudId: 'cloud-id-123',
-        latitude: 37.7749,
-        longitude: -122.4194,
-      );
-
-      final mockEntity = MockAssetEntity();
-      final mockFile = File('/path/to/test.jpg');
-
-      when(() => mockEntity.isLivePhoto).thenReturn(false);
-      when(() => mockStorageRepository.getAssetEntityForAsset(assetWithCloudId)).thenAnswer((_) async => mockEntity);
-      when(() => mockStorageRepository.getFileForAsset(assetWithCloudId.id)).thenAnswer((_) async => mockFile);
-      when(() => mockAssetMediaRepository.getOriginalFilename(assetWithCloudId.id)).thenAnswer((_) async => 'test.jpg');
-
-      final task = await sutWithV23.getUploadTask(assetWithCloudId);
-
-      expect(task, isNotNull);
-      expect(task!.fields.containsKey('metadata'), isFalse);
-    });
-
     test('should NOT include metadata on Android regardless of server version', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutAndroid = UploadService(
+      final sutAndroid = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutAndroid.dispose());
 
@@ -314,6 +243,7 @@ void main() {
         cloudId: 'cloud-id-123',
         latitude: 37.7749,
         longitude: -122.4194,
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -334,14 +264,13 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -352,6 +281,7 @@ void main() {
         createdAt: DateTime(2025, 1, 1),
         updatedAt: DateTime(2025, 1, 2),
         cloudId: null, // No cloudId
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();
@@ -374,14 +304,13 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
-      final sutWithV24 = UploadService(
+      final sutWithV24 = BackgroundUploadService(
         mockUploadRepository,
-        mockBackupRepository,
         mockStorageRepository,
         mockLocalAssetRepository,
+        mockBackupRepository,
         mockAppSettingsService,
         mockAssetMediaRepository,
-        _serverInfo,
       );
       addTearDown(() => sutWithV24.dispose());
 
@@ -394,6 +323,7 @@ void main() {
         cloudId: 'cloud-id-livephoto',
         latitude: 37.7749,
         longitude: -122.4194,
+        isEdited: false,
       );
 
       final mockEntity = MockAssetEntity();

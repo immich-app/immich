@@ -6,6 +6,7 @@ import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetController } from 'src/controllers/asset.controller';
 import { AuthAdminController } from 'src/controllers/auth-admin.controller';
 import { AuthController } from 'src/controllers/auth.controller';
+import { DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
 import { FaceController } from 'src/controllers/face.controller';
@@ -46,6 +47,7 @@ export const controllers = [
   AssetMediaController,
   AuthController,
   AuthAdminController,
+  DatabaseBackupController,
   DownloadController,
   DuplicateController,
   FaceController,

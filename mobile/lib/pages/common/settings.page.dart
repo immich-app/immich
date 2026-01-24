@@ -92,7 +92,7 @@ class _MobileLayout extends StatelessWidget {
                 ],
         )
         .toList();
-    return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 16), children: [...settings]);
+    return ListView(padding: const EdgeInsets.only(top: 10.0, bottom: 60), children: [...settings]);
   }
 }
 
