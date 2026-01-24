@@ -1739,6 +1739,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -1747,6 +1748,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -1926,6 +1928,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -1934,6 +1937,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -2150,6 +2154,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -2158,6 +2163,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -2820,6 +2826,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -2828,6 +2835,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -3510,6 +3518,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -3518,6 +3527,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -4159,6 +4169,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4167,6 +4178,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -4235,6 +4247,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4243,6 +4256,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -4329,6 +4343,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4346,6 +4361,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -4415,6 +4431,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -4423,6 +4440,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -5020,6 +5038,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -5028,6 +5047,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -5098,6 +5118,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -5106,6 +5127,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -5332,7 +5354,7 @@
             "name": "id",
             "required": true,
             "in": "query",
-            "description": "Face ID",
+            "description": "Asset ID to retrieve faces for",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -9044,7 +9066,7 @@
             "name": "status",
             "required": false,
             "in": "query",
-            "description": "Filter jobs by status",
+            "description": "Filter by job status",
             "schema": {
               "type": "array",
               "items": {
@@ -11233,6 +11255,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -11251,6 +11274,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -11506,6 +11530,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -11514,6 +11539,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -11592,6 +11618,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -11600,6 +11627,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -13410,6 +13438,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -13437,6 +13466,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -13586,6 +13616,7 @@
             "name": "key",
             "required": false,
             "in": "query",
+            "description": "Access key for shared links",
             "schema": {
               "type": "string"
             }
@@ -13613,6 +13644,7 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "description": "Access slug for shared links",
             "schema": {
               "type": "string"
             }
@@ -14677,6 +14709,7 @@
             "name": "path",
             "required": true,
             "in": "query",
+            "description": "The original path of the folder",
             "schema": {
               "type": "string"
             }
