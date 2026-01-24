@@ -22625,6 +22625,7 @@
             ]
           },
           "progressive": {
+            "default": false,
             "type": "boolean"
           },
           "quality": {
@@ -22636,7 +22637,6 @@
         "required": [
           "enabled",
           "format",
-          "progressive",
           "quality"
         ],
         "type": "object"
@@ -22651,6 +22651,7 @@
             ]
           },
           "progressive": {
+            "default": false,
             "type": "boolean"
           },
           "quality": {
@@ -22665,7 +22666,6 @@
         },
         "required": [
           "format",
-          "progressive",
           "quality",
           "size"
         ],
