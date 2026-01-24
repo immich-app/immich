@@ -9,24 +9,7 @@ export function normalizeTransformEdits(edits: EditActions): {
 } {
   // construct an affine matrix from the edits
   // this is the same approach used in the backend to combine multiple transforms
-  const matrix = compose(
-    ...edits.map((edit) => {
-      switch (edit.action) {
-        case 'rotate': {
-          const parameters = edit.parameters as RotateParameters;
-          const angleInRadians = (-parameters.angle * Math.PI) / 180;
-          return rotate(angleInRadians);
-        }
-        case 'mirror': {
-          const parameters = edit.parameters as MirrorParameters;
-          return parameters.axis === 'horizontal' ? flipY() : flipX();
-        }
-        default: {
-          return identity();
-        }
-      }
-    }),
-  );
+  const matrix = buildAffineFromEdits(edits);
 
   let rotation = 0;
   let mirrorH = false;
@@ -56,4 +39,26 @@ export function normalizeTransformEdits(edits: EditActions): {
     mirrorHorizontal: mirrorH,
     mirrorVertical: mirrorV,
   };
+}
+
+export function buildAffineFromEdits(edits: EditActions) {
+  return compose(
+    identity(),
+    ...edits.map((edit) => {
+      switch (edit.action) {
+        case 'rotate': {
+          const parameters = edit.parameters as RotateParameters;
+          const angleInRadians = (-parameters.angle * Math.PI) / 180;
+          return rotate(angleInRadians);
+        }
+        case 'mirror': {
+          const parameters = edit.parameters as MirrorParameters;
+          return parameters.axis === 'horizontal' ? flipY() : flipX();
+        }
+        default: {
+          return identity();
+        }
+      }
+    }),
+  );
 }
