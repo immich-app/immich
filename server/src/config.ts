@@ -15,7 +15,7 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
-export interface SystemConfig {
+export type SystemConfig = {
   backup: {
     database: {
       enabled: boolean;
@@ -187,7 +187,7 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-}
+};
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
 
@@ -319,11 +319,13 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       size: 250,
       quality: 80,
+      progressive: false,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
+      progressive: false,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -331,6 +333,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       format: ImageFormat.Jpeg,
       quality: 80,
+      progressive: false,
     },
   },
   newVersionCheck: {

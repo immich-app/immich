@@ -352,6 +352,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -365,6 +366,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -575,6 +577,7 @@ describe(MediaService.name, () => {
           format,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -588,6 +591,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -622,6 +626,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -635,11 +640,64 @@ describe(MediaService.name, () => {
           format,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
         },
         thumbnailPath,
+      );
+    });
+
+    it('should generate progressive JPEG for preview when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: true }, thumbnail: { progressive: false } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+          progressive: false,
+        }),
+        expect.stringContaining('thumbnail.webp'),
+      );
+    });
+
+    it('should generate progressive JPEG for thumbnail when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: false }, thumbnail: { format: ImageFormat.Jpeg, progressive: true } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: false,
+        }),
+        expect.stringContaining('preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('thumbnail.jpeg'),
       );
     });
 
@@ -776,6 +834,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -807,6 +866,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -820,6 +880,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -849,6 +910,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -861,6 +923,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           size: 1440,
           processInvalidImages: false,
           raw: rawInfo,
@@ -892,6 +955,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -948,6 +1012,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -987,11 +1052,33 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 90,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
         },
         expect.any(String),
+      );
+    });
+
+    it('should generate progressive JPEG for fullsize when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.Jpeg, progressive: true } },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('fullsize.jpeg'),
       );
     });
   });
@@ -1198,6 +1285,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1242,6 +1330,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1284,6 +1373,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1326,6 +1416,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1368,6 +1459,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1410,6 +1502,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1457,6 +1550,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',

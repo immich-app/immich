@@ -2,7 +2,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { handleAddUsersToAlbum } from '$lib/services/album.service';
   import { searchUsers, type AlbumResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { FormModal, ListButton, Stack, Text } from '@immich/ui';
+  import { FormModal, ListButton, LoadingSpinner, Stack, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteMap } from 'svelte/reactivity';
@@ -18,6 +18,7 @@
   const excludedUserIds = $derived([album.ownerId, ...album.albumUsers.map(({ user: { id } }) => id)]);
   const filteredUsers = $derived(users.filter(({ id }) => !excludedUserIds.includes(id)));
   const selectedUsers = new SvelteMap<string, UserResponseDto>();
+  let loading = $state(true);
 
   const handleToggle = (user: UserResponseDto) => {
     if (selectedUsers.has(user.id)) {
@@ -36,6 +37,7 @@
 
   onMount(async () => {
     users = await searchUsers();
+    loading = false;
   });
 </script>
 
@@ -47,17 +49,23 @@
   disabled={selectedUsers.size === 0}
   {onClose}
 >
-  <Stack>
-    {#each filteredUsers as user (user.id)}
-      <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>
-        <UserAvatar {user} size="md" />
-        <div class="text-start grow">
-          <Text fontWeight="medium">{user.name}</Text>
-          <Text size="tiny" color="muted">{user.email}</Text>
-        </div>
-      </ListButton>
-    {:else}
-      <Text class="py-6">{$t('album_share_no_users')}</Text>
-    {/each}
-  </Stack>
+  {#if loading}
+    <div class="w-full flex place-items-center place-content-center">
+      <LoadingSpinner />
+    </div>
+  {:else}
+    <Stack>
+      {#each filteredUsers as user (user.id)}
+        <ListButton selected={selectedUsers.has(user.id)} onclick={() => handleToggle(user)}>
+          <UserAvatar {user} size="md" />
+          <div class="text-start grow">
+            <Text fontWeight="medium">{user.name}</Text>
+            <Text size="tiny" color="muted">{user.email}</Text>
+          </div>
+        </ListButton>
+      {:else}
+        <Text class="py-6">{$t('album_share_no_users')}</Text>
+      {/each}
+    </Stack>
+  {/if}
 </FormModal>

@@ -126,6 +126,41 @@ class SearchDateFilter {
   int get hashCode => takenBefore.hashCode ^ takenAfter.hashCode;
 }
 
+class SearchRatingFilter {
+  int? rating;
+  SearchRatingFilter({this.rating});
+
+  SearchRatingFilter copyWith({int? rating}) {
+    return SearchRatingFilter(rating: rating ?? this.rating);
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{'rating': rating};
+  }
+
+  factory SearchRatingFilter.fromMap(Map<String, dynamic> map) {
+    return SearchRatingFilter(rating: map['rating'] != null ? map['rating'] as int : null);
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory SearchRatingFilter.fromJson(String source) =>
+      SearchRatingFilter.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() => 'SearchRatingFilter(rating: $rating)';
+
+  @override
+  bool operator ==(covariant SearchRatingFilter other) {
+    if (identical(this, other)) return true;
+
+    return other.rating == rating;
+  }
+
+  @override
+  int get hashCode => rating.hashCode;
+}
+
 class SearchDisplayFilters {
   bool isNotInAlbum = false;
   bool isArchive = false;
@@ -183,6 +218,7 @@ class SearchFilter {
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
+  SearchRatingFilter rating;
   SearchDisplayFilters display;
 
   // Enum
@@ -200,6 +236,7 @@ class SearchFilter {
     required this.camera,
     required this.date,
     required this.display,
+    required this.rating,
     required this.mediaType,
   });
 
@@ -220,6 +257,7 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
+        rating.rating == null &&
         mediaType == AssetType.other;
   }
 
@@ -235,6 +273,7 @@ class SearchFilter {
     SearchCameraFilter? camera,
     SearchDateFilter? date,
     SearchDisplayFilters? display,
+    SearchRatingFilter? rating,
     AssetType? mediaType,
   }) {
     return SearchFilter(
@@ -249,13 +288,14 @@ class SearchFilter {
       camera: camera ?? this.camera,
       date: date ?? this.date,
       display: display ?? this.display,
+      rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -273,6 +313,7 @@ class SearchFilter {
         other.camera == camera &&
         other.date == date &&
         other.display == display &&
+        other.rating == rating &&
         other.mediaType == mediaType;
   }
 
@@ -289,6 +330,7 @@ class SearchFilter {
         camera.hashCode ^
         date.hashCode ^
         display.hashCode ^
+        rating.hashCode ^
         mediaType.hashCode;
   }
 }

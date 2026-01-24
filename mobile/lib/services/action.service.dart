@@ -214,6 +214,14 @@ class ActionService {
     return true;
   }
 
+  Future<bool> updateRating(String assetId, int rating) async {
+    // update remote first, then local to ensure consistency
+    await _assetApiRepository.updateRating(assetId, rating);
+    await _remoteAssetRepository.updateRating(assetId, rating);
+
+    return true;
+  }
+
   Future<void> stack(String userId, List<String> remoteIds) async {
     final stack = await _assetApiRepository.stack(remoteIds);
     await _remoteAssetRepository.stack(userId, stack);
