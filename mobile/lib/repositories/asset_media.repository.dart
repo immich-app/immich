@@ -128,7 +128,7 @@ class AssetMediaRepository {
         final tempDir = await getTemporaryDirectory();
         final name = asset.name;
         final tempFile = await File('${tempDir.path}/$name').create();
-        final res = await _assetApiRepository.downloadAsset(remoteId);
+        final res = await _assetApiRepository.downloadAsset(remoteId, edited: true);
 
         if (res.statusCode != 200) {
           _log.severe("Download for $name failed", res.toLoggerString());
