@@ -153,6 +153,7 @@ class AdvancedSettings extends HookConsumerWidget {
             );
           },
         ),
+      const SizedBox(height: 60),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
