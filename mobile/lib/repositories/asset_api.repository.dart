@@ -81,7 +81,8 @@ class AssetApiRepository extends ApiRepository {
   }
 
   Future<Response> downloadAsset(String id) {
-    return _api.downloadAssetWithHttpInfo(id);
+    // TODO: add option to download original in the future
+    return _api.downloadAssetWithHttpInfo(id, edited: true);
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
