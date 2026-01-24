@@ -29,6 +29,7 @@ export const handleFetch = (request: URL | Request): Promise<Response> => {
   const pendingRequest: PendingRequest = {
     controller: new AbortController(),
     promise: undefined as unknown as Promise<Response>,
+    cleanupTimeout: undefined,
   };
   pendingRequests.set(requestKey, pendingRequest);
 

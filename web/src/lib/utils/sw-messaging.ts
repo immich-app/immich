@@ -1,15 +1,12 @@
 import { ServiceWorkerMessenger } from './sw-messenger';
 
-const messenger = new ServiceWorkerMessenger();
 const hasServiceWorker = globalThis.isSecureContext && 'serviceWorker' in navigator;
-
-const isValidSwContext = (url: string | undefined | null): url is string => {
-  return hasServiceWorker && !!url;
-};
+// eslint-disable-next-line compat/compat
+const messenger = hasServiceWorker ? new ServiceWorkerMessenger(navigator.serviceWorker) : undefined;
 
 export function cancelImageUrl(url: string | undefined | null) {
-  if (!isValidSwContext(url)) {
+  if (!url || !messenger) {
     return;
   }
-  void messenger.send('cancel', { url });
+  messenger.send('cancel', { url });
 }
