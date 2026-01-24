@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -35,7 +35,6 @@ export class UserAdminController {
 
   @Post()
   @Authenticated({ permission: Permission.AdminUserCreate, admin: true })
-  @ApiBody({ description: 'User creation data', type: UserAdminCreateDto })
   @Endpoint({
     summary: 'Create a user',
     description: 'Create a new user.',
@@ -60,7 +59,6 @@ export class UserAdminController {
   @Put(':id')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'User update data', type: UserAdminUpdateDto })
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
@@ -77,7 +75,6 @@ export class UserAdminController {
   @Delete(':id')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'User deletion options', type: UserAdminDeleteDto })
   @Endpoint({
     summary: 'Delete a user',
     description: 'Delete a user.',
@@ -134,7 +131,6 @@ export class UserAdminController {
   @Put(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'User preferences update data', type: UserPreferencesUpdateDto })
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',

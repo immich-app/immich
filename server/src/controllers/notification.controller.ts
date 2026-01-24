@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -33,7 +33,6 @@ export class NotificationController {
   @Put()
   @Authenticated({ permission: Permission.NotificationUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ description: 'Bulk notification update data', type: NotificationUpdateAllDto })
   @Endpoint({
     summary: 'Update notifications',
     description: 'Update a list of notifications. Allows to bulk-set the read status of notifications.',
@@ -46,7 +45,6 @@ export class NotificationController {
   @Delete()
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ description: 'Notification IDs to delete', type: NotificationDeleteAllDto })
   @Endpoint({
     summary: 'Delete notifications',
     description: 'Delete a list of notifications at once.',
@@ -71,7 +69,6 @@ export class NotificationController {
   @Put(':id')
   @Authenticated({ permission: Permission.NotificationUpdate })
   @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Notification update data', type: NotificationUpdateDto })
   @Endpoint({
     summary: 'Update a notification',
     description: 'Update a specific notification to set its read status.',

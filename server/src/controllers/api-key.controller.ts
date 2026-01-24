@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -15,7 +15,6 @@ export class ApiKeyController {
 
   @Post()
   @Authenticated({ permission: Permission.ApiKeyCreate })
-  @ApiBody({ description: 'API key creation data with name and permissions', type: APIKeyCreateDto })
   @Endpoint({
     summary: 'Create an API key',
     description: 'Creates a new API key. It will be limited to the permissions specified.',
@@ -62,7 +61,6 @@ export class ApiKeyController {
   @Put(':id')
   @Authenticated({ permission: Permission.ApiKeyUpdate })
   @ApiParam({ name: 'id', description: 'API key ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Updated API key name and permissions', type: APIKeyUpdateDto })
   @Endpoint({
     summary: 'Update an API key',
     description: 'Updates the name and permissions of an API key by its ID. The current user must own this API key.',

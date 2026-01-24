@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -34,7 +34,6 @@ export class ActivityController {
 
   @Post()
   @Authenticated({ permission: Permission.ActivityCreate })
-  @ApiBody({ description: 'Activity data (like or comment)', type: ActivityCreateDto })
   @Endpoint({
     summary: 'Create an activity',
     description: 'Create a like or a comment for an album, or an asset in an album.',

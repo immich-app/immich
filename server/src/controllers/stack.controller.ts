@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -27,7 +27,6 @@ export class StackController {
 
   @Post()
   @Authenticated({ permission: Permission.StackCreate })
-  @ApiBody({ description: 'Stack creation data with name and asset IDs', type: StackCreateDto })
   @Endpoint({
     summary: 'Create a stack',
     description:
@@ -41,7 +40,6 @@ export class StackController {
   @Delete()
   @Authenticated({ permission: Permission.StackDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ description: 'Stack IDs to delete', type: BulkIdsDto })
   @Endpoint({
     summary: 'Delete stacks',
     description: 'Delete multiple stacks by providing a list of stack IDs.',
@@ -66,7 +64,6 @@ export class StackController {
   @Put(':id')
   @Authenticated({ permission: Permission.StackUpdate })
   @ApiParam({ name: 'id', description: 'Stack ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Stack update data', type: StackUpdateDto })
   @Endpoint({
     summary: 'Update a stack',
     description: 'Update an existing stack by its ID.',

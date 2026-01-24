@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   CreateLibraryDto,
@@ -32,7 +32,6 @@ export class LibraryController {
 
   @Post()
   @Authenticated({ permission: Permission.LibraryCreate, admin: true })
-  @ApiBody({ description: 'Library creation data', type: CreateLibraryDto })
   @Endpoint({
     summary: 'Create a library',
     description: 'Create a new external library.',
@@ -57,7 +56,6 @@ export class LibraryController {
   @Put(':id')
   @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Library update data', type: UpdateLibraryDto })
   @Endpoint({
     summary: 'Update a library',
     description: 'Update an existing external library.',
@@ -84,7 +82,6 @@ export class LibraryController {
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'id', description: 'Library ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Library settings to validate', type: ValidateLibraryDto })
   @Endpoint({
     summary: 'Validate library settings',
     description: 'Validate the settings of an external library.',

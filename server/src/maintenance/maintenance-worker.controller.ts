@@ -34,7 +34,7 @@ import { FilenameParamDto } from 'src/validation';
 import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import type { ServerController as _ServerController } from 'src/controllers/server.controller';
 import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags(ApiTag.Maintenance)
 @Controller()
@@ -112,7 +112,6 @@ export class MaintenanceWorkerController {
   }
 
   @Post('admin/maintenance/login')
-  @ApiBody({ description: 'Maintenance token for login', type: MaintenanceLoginDto })
   async maintenanceLogin(
     @Req() request: Request,
     @Body() dto: MaintenanceLoginDto,

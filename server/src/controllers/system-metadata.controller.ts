@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AdminOnboardingUpdateDto,
@@ -29,7 +29,6 @@ export class SystemMetadataController {
   @Post('admin-onboarding')
   @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiBody({ description: 'Admin onboarding update data', type: AdminOnboardingUpdateDto })
   @Endpoint({
     summary: 'Update admin onboarding',
     description: 'Update the admin onboarding status.',

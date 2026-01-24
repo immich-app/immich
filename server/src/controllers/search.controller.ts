@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -30,7 +30,6 @@ export class SearchController {
   @Post('metadata')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ description: 'Metadata search criteria', type: MetadataSearchDto })
   @Endpoint({
     summary: 'Search assets by metadata',
     description: 'Search for assets based on various metadata criteria.',
@@ -43,7 +42,6 @@ export class SearchController {
   @Post('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ description: 'Statistics search criteria', type: StatisticsSearchDto })
   @Endpoint({
     summary: 'Search asset statistics',
     description: 'Retrieve statistical data about assets based on search criteria, such as the total matching count.',
@@ -56,7 +54,6 @@ export class SearchController {
   @Post('random')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ description: 'Random search criteria', type: RandomSearchDto })
   @Endpoint({
     summary: 'Search random assets',
     description: 'Retrieve a random selection of assets based on the provided criteria.',
@@ -81,7 +78,6 @@ export class SearchController {
   @Post('smart')
   @Authenticated({ permission: Permission.AssetRead })
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ description: 'Smart search query and filters', type: SmartSearchDto })
   @Endpoint({
     summary: 'Smart asset search',
     description: 'Perform a smart search for assets by using machine learning vectors to determine relevance.',

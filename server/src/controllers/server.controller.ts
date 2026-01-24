@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
-import { ApiBody, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
@@ -159,7 +159,6 @@ export class ServerController {
 
   @Put('license')
   @Authenticated({ permission: Permission.ServerLicenseUpdate, admin: true })
-  @ApiBody({ description: 'Product key to register', type: LicenseKeyDto })
   @Endpoint({
     summary: 'Set server product key',
     description: 'Validate and set the server product key if successful.',

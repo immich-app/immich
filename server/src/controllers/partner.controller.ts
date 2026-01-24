@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto';
@@ -26,7 +26,6 @@ export class PartnerController {
 
   @Post()
   @Authenticated({ permission: Permission.PartnerCreate })
-  @ApiBody({ description: 'Partner creation data', type: PartnerCreateDto })
   @Endpoint({
     summary: 'Create a partner',
     description: 'Create a new partner to share assets with.',
@@ -51,7 +50,6 @@ export class PartnerController {
   @Put(':id')
   @Authenticated({ permission: Permission.PartnerUpdate })
   @ApiParam({ name: 'id', description: 'Partner ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Partner update data', type: PartnerUpdateDto })
   @Endpoint({
     summary: 'Update a partner',
     description: "Specify whether a partner's assets should appear in the user's timeline.",

@@ -13,7 +13,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -88,7 +88,6 @@ export class SharedLinkController {
 
   @Post()
   @Authenticated({ permission: Permission.SharedLinkCreate })
-  @ApiBody({ description: 'Shared link creation data', type: SharedLinkCreateDto })
   @Endpoint({
     summary: 'Create a shared link',
     description: 'Create a new shared link.',
@@ -101,7 +100,6 @@ export class SharedLinkController {
   @Patch(':id')
   @Authenticated({ permission: Permission.SharedLinkUpdate })
   @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Shared link update data', type: SharedLinkEditDto })
   @Endpoint({
     summary: 'Update a shared link',
     description: 'Update an existing shared link by its ID.',
@@ -131,7 +129,6 @@ export class SharedLinkController {
   @Put(':id/assets')
   @Authenticated({ sharedLink: true })
   @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Asset IDs to add', type: AssetIdsDto })
   @Endpoint({
     summary: 'Add assets to a shared link',
     description:
@@ -149,7 +146,6 @@ export class SharedLinkController {
   @Delete(':id/assets')
   @Authenticated({ sharedLink: true })
   @ApiParam({ name: 'id', description: 'Shared link ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Asset IDs to remove', type: AssetIdsDto })
   @Endpoint({
     summary: 'Remove assets from a shared link',
     description:

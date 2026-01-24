@@ -117,7 +117,6 @@ export class AssetMediaController {
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
-  @ApiBody({ description: 'Asset replacement data', type: AssetMediaReplaceDto })
   @ApiResponse({
     status: 200,
     description: 'Asset replaced successfully',
@@ -224,7 +223,6 @@ export class AssetMediaController {
 
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
-  @ApiBody({ description: 'SHA1 checksums to check', type: AssetBulkUploadCheckDto })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Check bulk upload',
