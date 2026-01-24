@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
@@ -59,8 +60,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     with CancellableImageProviderMixin<RemoteFullImageProvider> {
   final String assetId;
   final String thumbhash;
+  final AssetType assetType;
 
-  RemoteFullImageProvider({required this.assetId, required this.thumbhash});
+  RemoteFullImageProvider({required this.assetId, required this.thumbhash, required this.assetType});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -89,21 +91,23 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final headers = ApiService.getRequestHeaders();
-    final request = this.request = RemoteImageRequest(
+    final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
       headers: headers,
     );
-    yield* loadRequest(request, decode);
+    yield* loadRequest(previewRequest, decode);
+
+    if (assetType != AssetType.image || !AppSetting.get(Setting.loadOriginal)) {
+      return;
+    }
 
     if (isCancelled) {
       PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
-    if (AppSetting.get(Setting.loadOriginal)) {
-      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
-      yield* loadRequest(request, decode);
-    }
+    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+    yield* loadRequest(originalRequest, decode);
   }
 
   @override
