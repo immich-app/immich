@@ -28,6 +28,10 @@ title="Backup album selection"
 
 You can select which albums on your mobile device to back up to the server. You can also exclude specific albums (by double-tapping on them) from being backed up. This is useful for iOS users since assets can belong to multiple albums. For example, you may want to back up all assets except those in the "Videos" album.
 
+### Deduplication
+
+When albums are selected for backup for the first time, Immich performs a hashing step to calculate the checksum of the file content in the albums. This value is used to match with the remote assets that have already been uploaded to the server by other means (CLI import or uploaded via the web interface or uploaded from a different device), identifying files that do not need to be uploaded again. This process helps avoid duplicate uploads and saves bandwidth.
+
 ### Networking requirements
 
 By default, Immich will only upload photos and videos when connected to Wi-Fi. You can change this behavior in the backup settings page.
@@ -73,3 +77,9 @@ title="Android backup options"
 </div>
 
 - iOS automatically manages background tasks; the app cannot control when the background upload task will run. The more frequently you open the app, the more often background tasks will run.
+
+#### iCloud Backup
+
+Local albums containing assets from iCloud and marked for backup in Immich will be pulled from iCloud and temporarily stored in the app's cache folder. Once the hashing and uploading process is completed, the temporary files will be emptied.
+
+This process may consume additional data and storage space on your device, especially if you have a large number of iCloud photos and videos. Please ensure you have sufficient storage space and monitor your data usage if you are not connected to Wi-Fi.
