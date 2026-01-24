@@ -91,21 +91,23 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final headers = ApiService.getRequestHeaders();
-    final request = this.request = RemoteImageRequest(
+    final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
       headers: headers,
     );
-    yield* loadRequest(request, decode);
+    yield* loadRequest(previewRequest, decode);
 
-    if (assetType == AssetType.image && AppSetting.get(Setting.loadOriginal)) {
-      if (isCancelled) {
-        PaintingBinding.instance.imageCache.evict(this);
-        return;
-      }
-
-      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
-      yield* loadRequest(request, decode);
+    if (assetType != AssetType.image || !AppSetting.get(Setting.loadOriginal)) {
+      return;
     }
+
+    if (isCancelled) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return;
+    }
+
+    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+    yield* loadRequest(originalRequest, decode);
   }
 
   @override
