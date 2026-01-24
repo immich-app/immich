@@ -389,8 +389,10 @@ class DeprecatedApi {
   ///   File modification date
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] duration:
   ///   Duration (for videos)
@@ -488,8 +490,10 @@ class DeprecatedApi {
   ///   File modification date
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] duration:
   ///   Duration (for videos)

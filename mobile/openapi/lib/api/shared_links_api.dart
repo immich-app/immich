@@ -29,8 +29,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -75,8 +77,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -234,11 +238,13 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] password:
   ///   Link password
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] token:
   ///   Access token
@@ -287,11 +293,13 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] password:
   ///   Link password
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   ///
   /// * [String] token:
   ///   Access token
@@ -429,8 +437,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -475,8 +485,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -142,7 +142,7 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
-  ///   Filter jobs by status
+  ///   Filter by job status
   Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}/jobs'
@@ -183,7 +183,7 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
-  ///   Filter jobs by status
+  ///   Filter by job status
   Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, }) async {
     final response = await getQueueJobsWithHttpInfo(name,  status: status, );
     if (response.statusCode >= HttpStatus.badRequest) {

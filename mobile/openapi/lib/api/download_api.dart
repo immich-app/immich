@@ -27,8 +27,10 @@ class DownloadApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/archive';
@@ -70,8 +72,10 @@ class DownloadApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<MultipartFile?> downloadArchive(AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await downloadArchiveWithHttpInfo(assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -98,8 +102,10 @@ class DownloadApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/info';
@@ -141,8 +147,10 @@ class DownloadApi {
   /// * [DownloadInfoDto] downloadInfoDto (required):
   ///
   /// * [String] key:
+  ///   Access key for shared links
   ///
   /// * [String] slug:
+  ///   Access slug for shared links
   Future<DownloadResponseDto?> getDownloadInfo(DownloadInfoDto downloadInfoDto, { String? key, String? slug, }) async {
     final response = await getDownloadInfoWithHttpInfo(downloadInfoDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
