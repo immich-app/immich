@@ -405,11 +405,11 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> shareAssets(ActionSource source, BuildContext context) async {
+  Future<ActionResult> shareAssets(ActionSource source, BuildContext context, {CancellationToken? cancelToken}) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids, context);
+      await _service.shareAssets(ids, context, cancelToken: cancelToken);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-
+import 'package:cancellation_token_http/http.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -23,7 +23,6 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
-
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
@@ -58,6 +57,7 @@ class AssetMediaRepository {
 
   static asset_entity.Asset? toAsset(AssetEntity? local) {
     if (local == null) return null;
+
     final asset_entity.Asset asset = asset_entity.Asset(
       checksum: "",
       localId: local.id,
@@ -72,19 +72,21 @@ class AssetMediaRepository {
       height: local.height,
       isFavorite: local.isFavorite,
     );
+
     if (asset.fileCreatedAt.year == 1970) {
       asset.fileCreatedAt = asset.fileModifiedAt;
     }
+
     if (local.latitude != null) {
       asset.exifInfo = ExifInfo(latitude: local.latitude, longitude: local.longitude);
     }
+
     asset.local = local;
     return asset;
   }
 
   Future<String?> getOriginalFilename(String id) async {
     final entity = await AssetEntity.fromId(id);
-
     if (entity == null) {
       return null;
     }
@@ -101,17 +103,37 @@ class AssetMediaRepository {
     }
   }
 
+  /// Deletes temporary files in parallel
+  Future<void> _cleanupTempFiles(List<File> tempFiles) async {
+    await Future.wait(
+      tempFiles.map((file) async {
+        try {
+          await file.delete();
+        } catch (e) {
+          _log.warning("Failed to delete temporary file: ${file.path}", e);
+        }
+      }),
+    );
+  }
+
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {CancellationToken? cancelToken}) async {
     final downloadedXFiles = <XFile>[];
     final tempFiles = <File>[];
 
     for (var asset in assets) {
+      if (cancelToken != null && cancelToken.isCancelled) {
+        // if cancelled, delete any temp files created so far
+        await _cleanupTempFiles(tempFiles);
+        return 0;
+      }
+
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
           ? asset.localId
           : null;
+
       if (localId != null) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
@@ -143,6 +165,11 @@ class AssetMediaRepository {
       return 0;
     }
 
+    if (cancelToken != null && cancelToken.isCancelled) {
+      await _cleanupTempFiles(tempFiles);
+      return 0;
+    }
+
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
     final size = context.sizeData;
@@ -151,13 +178,7 @@ class AssetMediaRepository {
         downloadedXFiles,
         sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
       ).then((result) async {
-        for (var file in tempFiles) {
-          try {
-            await file.delete();
-          } catch (e) {
-            _log.warning("Failed to delete temporary file: ${file.path}", e);
-          }
-        }
+        await _cleanupTempFiles(tempFiles);
       }),
     );
 

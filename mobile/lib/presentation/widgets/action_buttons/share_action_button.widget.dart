@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -41,15 +42,19 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
+    final cancelToken = CancellationToken();
+
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref.read(actionProvider.notifier).shareAssets(source, context).then((ActionResult result) {
-          ref.read(multiSelectProvider.notifier).reset();
-
-          if (!context.mounted) {
+        ref.read(actionProvider.notifier).shareAssets(source, context, cancelToken: cancelToken).then((
+          ActionResult result,
+        ) {
+          if (cancelToken.isCancelled || !context.mounted) {
             return;
           }
+
+          ref.read(multiSelectProvider.notifier).reset();
 
           if (!result.success) {
             ImmichToast.show(
@@ -68,7 +73,9 @@ class ShareActionButton extends ConsumerWidget {
       },
       barrierDismissible: false,
       useRootNavigator: false,
-    );
+    ).then((_) {
+      cancelToken.cancel();
+    });
   }
 
   @override
