@@ -1,14 +1,13 @@
 import {
   CanActivate,
   ExecutionContext,
-  HttpStatus,
   Injectable,
   SetMetadata,
   applyDecorators,
   createParamDecorator,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiBearerAuth, ApiCookieAuth, ApiExtension, ApiQuery, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiExtension, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum';
@@ -51,9 +50,7 @@ export const Auth = createParamDecorator((data, context: ExecutionContext): Auth
 });
 
 export const FileResponse = () =>
-  ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Successfully downloaded file',
+  ApiOkResponse({
     content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
   });
 
