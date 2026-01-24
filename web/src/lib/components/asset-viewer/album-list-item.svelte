@@ -1,6 +1,6 @@
 <script lang="ts">
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { getAssetMediaUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
@@ -54,7 +54,7 @@
     onMultiSelect();
   };
 
-  let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
   let mouseOver = $state(false);
   const onMouseEnter = () => {
     if (usingMobileDevice) {
