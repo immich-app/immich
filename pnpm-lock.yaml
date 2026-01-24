@@ -842,6 +842,9 @@ importers:
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
+      transformation-matrix:
+        specifier: ^3.1.0
+        version: 3.1.0
       uplot:
         specifier: ^1.6.32
         version: 1.6.32
