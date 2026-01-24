@@ -244,7 +244,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [StatisticsSearchDto] statisticsSearchDto (required):
-  ///   Statistics search criteria
   Future<Response> searchAssetStatisticsWithHttpInfo(StatisticsSearchDto statisticsSearchDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/statistics';
@@ -277,7 +276,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [StatisticsSearchDto] statisticsSearchDto (required):
-  ///   Statistics search criteria
   Future<SearchStatisticsResponseDto?> searchAssetStatistics(StatisticsSearchDto statisticsSearchDto,) async {
     final response = await searchAssetStatisticsWithHttpInfo(statisticsSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -302,7 +300,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
-  ///   Metadata search criteria
   Future<Response> searchAssetsWithHttpInfo(MetadataSearchDto metadataSearchDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/metadata';
@@ -335,7 +332,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
-  ///   Metadata search criteria
   Future<SearchResponseDto?> searchAssets(MetadataSearchDto metadataSearchDto,) async {
     final response = await searchAssetsWithHttpInfo(metadataSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -839,7 +835,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [RandomSearchDto] randomSearchDto (required):
-  ///   Random search criteria
   Future<Response> searchRandomWithHttpInfo(RandomSearchDto randomSearchDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/random';
@@ -872,7 +867,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [RandomSearchDto] randomSearchDto (required):
-  ///   Random search criteria
   Future<List<AssetResponseDto>?> searchRandom(RandomSearchDto randomSearchDto,) async {
     final response = await searchRandomWithHttpInfo(randomSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -900,7 +894,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [SmartSearchDto] smartSearchDto (required):
-  ///   Smart search query and filters
   Future<Response> searchSmartWithHttpInfo(SmartSearchDto smartSearchDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/smart';
@@ -933,7 +926,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [SmartSearchDto] smartSearchDto (required):
-  ///   Smart search query and filters
   Future<SearchResponseDto?> searchSmart(SmartSearchDto smartSearchDto,) async {
     final response = await searchSmartWithHttpInfo(smartSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

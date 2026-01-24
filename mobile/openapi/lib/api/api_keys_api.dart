@@ -25,7 +25,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  ///   API key creation data with name and permissions
   Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys';
@@ -58,7 +57,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
-  ///   API key creation data with name and permissions
   Future<APIKeyCreateResponseDto?> createApiKey(APIKeyCreateDto aPIKeyCreateDto,) async {
     final response = await createApiKeyWithHttpInfo(aPIKeyCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -83,7 +81,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
@@ -117,7 +114,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   Future<void> deleteApiKey(String id,) async {
     final response = await deleteApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -134,7 +130,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   Future<Response> getApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
@@ -168,7 +163,6 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   Future<APIKeyResponseDto?> getApiKey(String id,) async {
     final response = await getApiKeyWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -292,10 +286,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  ///   Updated API key name and permissions
   Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys/{id}'
@@ -329,10 +321,8 @@ class APIKeysApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   API key ID
   ///
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
-  ///   Updated API key name and permissions
   Future<APIKeyResponseDto?> updateApiKey(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     final response = await updateApiKeyWithHttpInfo(id, aPIKeyUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

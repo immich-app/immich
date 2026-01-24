@@ -117,7 +117,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   @ApiPropertyOptional({ description: 'Unassigned faces', type: () => [AssetFaceWithoutPersonResponseDto] })
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
   @ApiProperty({ description: 'Base64 encoded SHA1 hash' })
-  /**base64 encoded sha1 hash */
   checksum!: string;
   @ApiPropertyOptional({ description: 'Stack information', type: () => AssetStackResponseDto, nullable: true })
   stack?: AssetStackResponseDto | null;

@@ -169,7 +169,6 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [SystemConfigDto] systemConfigDto (required):
-  ///   System configuration update data
   Future<Response> updateConfigWithHttpInfo(SystemConfigDto systemConfigDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/system-config';
@@ -202,7 +201,6 @@ class SystemConfigApi {
   /// Parameters:
   ///
   /// * [SystemConfigDto] systemConfigDto (required):
-  ///   System configuration update data
   Future<SystemConfigDto?> updateConfig(SystemConfigDto systemConfigDto,) async {
     final response = await updateConfigWithHttpInfo(systemConfigDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

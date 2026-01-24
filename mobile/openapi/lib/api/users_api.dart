@@ -309,7 +309,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/{id}/profile-image'
@@ -343,7 +342,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<MultipartFile?> getProfileImage(String id,) async {
     final response = await getProfileImageWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -368,7 +366,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> getUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/{id}'
@@ -402,7 +399,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<UserResponseDto?> getUser(String id,) async {
     final response = await getUserWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -574,7 +570,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  ///   Product key to register
   Future<Response> setUserLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/me/license';
@@ -607,7 +602,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  ///   Product key to register
   Future<LicenseResponseDto?> setUserLicense(LicenseKeyDto licenseKeyDto,) async {
     final response = await setUserLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -632,7 +626,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [OnboardingDto] onboardingDto (required):
-  ///   Onboarding status update
   Future<Response> setUserOnboardingWithHttpInfo(OnboardingDto onboardingDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/me/onboarding';
@@ -665,7 +658,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [OnboardingDto] onboardingDto (required):
-  ///   Onboarding status update
   Future<OnboardingResponseDto?> setUserOnboarding(OnboardingDto onboardingDto,) async {
     final response = await setUserOnboardingWithHttpInfo(onboardingDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -690,7 +682,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  ///   User preferences update data
   Future<Response> updateMyPreferencesWithHttpInfo(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/me/preferences';
@@ -723,7 +714,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  ///   User preferences update data
   Future<UserPreferencesResponseDto?> updateMyPreferences(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     final response = await updateMyPreferencesWithHttpInfo(userPreferencesUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -748,7 +738,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserUpdateMeDto] userUpdateMeDto (required):
-  ///   User update data
   Future<Response> updateMyUserWithHttpInfo(UserUpdateMeDto userUpdateMeDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/me';
@@ -781,7 +770,6 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [UserUpdateMeDto] userUpdateMeDto (required):
-  ///   User update data
   Future<UserAdminResponseDto?> updateMyUser(UserUpdateMeDto userUpdateMeDto,) async {
     final response = await updateMyUserWithHttpInfo(userUpdateMeDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

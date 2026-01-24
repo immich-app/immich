@@ -50,20 +50,25 @@ class AssetResponseDto {
     required this.width,
   });
 
-  /// base64 encoded sha1 hash
+  /// Base64 encoded SHA1 hash
   String checksum;
 
   /// The UTC timestamp when the asset was originally uploaded to Immich.
   DateTime createdAt;
 
+  /// Device asset ID
   String deviceAssetId;
 
+  /// Device ID
   String deviceId;
 
+  /// Duplicate group ID
   String? duplicateId;
 
+  /// Video duration (for videos)
   String duration;
 
+  /// EXIF metadata
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -78,31 +83,42 @@ class AssetResponseDto {
   /// The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.
   DateTime fileModifiedAt;
 
+  /// Whether asset has metadata
   bool hasMetadata;
 
+  /// Asset height
   num? height;
 
+  /// Asset ID
   String id;
 
+  /// Is archived
   bool isArchived;
 
   bool isEdited;
 
+  /// Is favorite
   bool isFavorite;
 
+  /// Is offline
   bool isOffline;
 
+  /// Is trashed
   bool isTrashed;
 
+  /// Library ID (deprecated)
   String? libraryId;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
   /// The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.
   DateTime localDateTime;
 
+  /// Original file name
   String originalFileName;
 
+  /// Original MIME type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -111,8 +127,10 @@ class AssetResponseDto {
   ///
   String? originalMimeType;
 
+  /// Original file path
   String originalPath;
 
+  /// Owner user details
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -121,10 +139,13 @@ class AssetResponseDto {
   ///
   UserResponseDto? owner;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Associated people with faces
   List<PersonWithFacesResponseDto> people;
 
+  /// Is resized (deprecated)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -133,21 +154,28 @@ class AssetResponseDto {
   ///
   bool? resized;
 
+  /// Stack information
   AssetStackResponseDto? stack;
 
+  /// Associated tags
   List<TagResponseDto> tags;
 
+  /// Thumbhash for thumbnail generation
   String? thumbhash;
 
+  /// Asset type
   AssetTypeEnum type;
 
+  /// Unassigned faces
   List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
   /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.
   DateTime updatedAt;
 
+  /// Asset visibility
   AssetVisibility visibility;
 
+  /// Asset width
   num? width;
 
   @override

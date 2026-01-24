@@ -25,7 +25,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   Future<Response> deleteNotificationWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications/{id}'
@@ -59,7 +58,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   Future<void> deleteNotification(String id,) async {
     final response = await deleteNotificationWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -76,7 +74,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationDeleteAllDto] notificationDeleteAllDto (required):
-  ///   Notification IDs to delete
   Future<Response> deleteNotificationsWithHttpInfo(NotificationDeleteAllDto notificationDeleteAllDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications';
@@ -109,7 +106,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationDeleteAllDto] notificationDeleteAllDto (required):
-  ///   Notification IDs to delete
   Future<void> deleteNotifications(NotificationDeleteAllDto notificationDeleteAllDto,) async {
     final response = await deleteNotificationsWithHttpInfo(notificationDeleteAllDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -126,7 +122,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   Future<Response> getNotificationWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications/{id}'
@@ -160,7 +155,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   Future<NotificationDto?> getNotification(String id,) async {
     final response = await getNotificationWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -277,10 +271,8 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   ///
   /// * [NotificationUpdateDto] notificationUpdateDto (required):
-  ///   Notification update data
   Future<Response> updateNotificationWithHttpInfo(String id, NotificationUpdateDto notificationUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications/{id}'
@@ -314,10 +306,8 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Notification ID
   ///
   /// * [NotificationUpdateDto] notificationUpdateDto (required):
-  ///   Notification update data
   Future<NotificationDto?> updateNotification(String id, NotificationUpdateDto notificationUpdateDto,) async {
     final response = await updateNotificationWithHttpInfo(id, notificationUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -342,7 +332,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationUpdateAllDto] notificationUpdateAllDto (required):
-  ///   Bulk notification update data
   Future<Response> updateNotificationsWithHttpInfo(NotificationUpdateAllDto notificationUpdateAllDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications';
@@ -375,7 +364,6 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [NotificationUpdateAllDto] notificationUpdateAllDto (required):
-  ///   Bulk notification update data
   Future<void> updateNotifications(NotificationUpdateAllDto notificationUpdateAllDto,) async {
     final response = await updateNotificationsWithHttpInfo(notificationUpdateAllDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

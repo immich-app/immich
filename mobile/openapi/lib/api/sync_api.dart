@@ -25,7 +25,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  ///   Acknowledgement IDs to delete
   Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
@@ -58,7 +57,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  ///   Acknowledgement IDs to delete
   Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto,) async {
     final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -75,7 +73,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  ///   Delta sync request data
   Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/delta-sync';
@@ -108,7 +105,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  ///   Delta sync request data
   Future<AssetDeltaSyncResponseDto?> getDeltaSync(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     final response = await getDeltaSyncWithHttpInfo(assetDeltaSyncDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -133,7 +129,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  ///   Full sync request data
   Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/full-sync';
@@ -166,7 +161,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  ///   Full sync request data
   Future<List<AssetResponseDto>?> getFullSyncForUser(AssetFullSyncDto assetFullSyncDto,) async {
     final response = await getFullSyncForUserWithHttpInfo(assetFullSyncDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -245,7 +239,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  ///   Sync stream request data
   Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/stream';
@@ -278,7 +271,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  ///   Sync stream request data
   Future<void> getSyncStream(SyncStreamDto syncStreamDto,) async {
     final response = await getSyncStreamWithHttpInfo(syncStreamDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -295,7 +287,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  ///   Synchronization acknowledgements
   Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
@@ -328,7 +319,6 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  ///   Synchronization acknowledgements
   Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto,) async {
     final response = await sendSyncAckWithHttpInfo(syncAckSetDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

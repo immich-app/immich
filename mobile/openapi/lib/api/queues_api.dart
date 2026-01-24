@@ -28,7 +28,6 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
-  ///   Queue deletion options
   Future<Response> emptyQueueWithHttpInfo(QueueName name, QueueDeleteDto queueDeleteDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}/jobs'
@@ -65,7 +64,6 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [QueueDeleteDto] queueDeleteDto (required):
-  ///   Queue deletion options
   Future<void> emptyQueue(QueueName name, QueueDeleteDto queueDeleteDto,) async {
     final response = await emptyQueueWithHttpInfo(name, queueDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -144,7 +142,7 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
-  ///   Filter by job status
+  ///   Filter jobs by status
   Future<Response> getQueueJobsWithHttpInfo(QueueName name, { List<QueueJobStatus>? status, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}/jobs'
@@ -185,7 +183,7 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [List<QueueJobStatus>] status:
-  ///   Filter by job status
+  ///   Filter jobs by status
   Future<List<QueueJobResponseDto>?> getQueueJobs(QueueName name, { List<QueueJobStatus>? status, }) async {
     final response = await getQueueJobsWithHttpInfo(name,  status: status, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -267,7 +265,6 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
-  ///   Queue update data
   Future<Response> updateQueueWithHttpInfo(QueueName name, QueueUpdateDto queueUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/queues/{name}'
@@ -304,7 +301,6 @@ class QueuesApi {
   ///   Queue name
   ///
   /// * [QueueUpdateDto] queueUpdateDto (required):
-  ///   Queue update data
   Future<QueueResponseDto?> updateQueue(QueueName name, QueueUpdateDto queueUpdateDto,) async {
     final response = await updateQueueWithHttpInfo(name, queueUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

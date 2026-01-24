@@ -25,7 +25,6 @@ class JobsApi {
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
-  ///   Job creation data
   Future<Response> createJobWithHttpInfo(JobCreateDto jobCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs';
@@ -58,7 +57,6 @@ class JobsApi {
   /// Parameters:
   ///
   /// * [JobCreateDto] jobCreateDto (required):
-  ///   Job creation data
   Future<void> createJob(JobCreateDto jobCreateDto,) async {
     final response = await createJobWithHttpInfo(jobCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -126,7 +124,6 @@ class JobsApi {
   ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  ///   Queue command options
   Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs/{name}'
@@ -163,7 +160,6 @@ class JobsApi {
   ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  ///   Queue command options
   Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
     final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

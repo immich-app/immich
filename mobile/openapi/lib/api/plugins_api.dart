@@ -25,7 +25,6 @@ class PluginsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Plugin ID
   Future<Response> getPluginWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins/{id}'
@@ -59,7 +58,6 @@ class PluginsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Plugin ID
   Future<PluginResponseDto?> getPlugin(String id,) async {
     final response = await getPluginWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {

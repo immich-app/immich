@@ -25,7 +25,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [CreateLibraryDto] createLibraryDto (required):
-  ///   Library creation data
   Future<Response> createLibraryWithHttpInfo(CreateLibraryDto createLibraryDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries';
@@ -58,7 +57,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [CreateLibraryDto] createLibraryDto (required):
-  ///   Library creation data
   Future<LibraryResponseDto?> createLibrary(CreateLibraryDto createLibraryDto,) async {
     final response = await createLibraryWithHttpInfo(createLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -83,7 +81,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<Response> deleteLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}'
@@ -117,7 +114,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<void> deleteLibrary(String id,) async {
     final response = await deleteLibraryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -185,7 +181,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<Response> getLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}'
@@ -219,7 +214,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<LibraryResponseDto?> getLibrary(String id,) async {
     final response = await getLibraryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -244,7 +238,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<Response> getLibraryStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}/statistics'
@@ -278,7 +271,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<LibraryStatsResponseDto?> getLibraryStatistics(String id,) async {
     final response = await getLibraryStatisticsWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -303,7 +295,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<Response> scanLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}/scan'
@@ -337,7 +328,6 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   Future<void> scanLibrary(String id,) async {
     final response = await scanLibraryWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -354,10 +344,8 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   ///
   /// * [UpdateLibraryDto] updateLibraryDto (required):
-  ///   Library update data
   Future<Response> updateLibraryWithHttpInfo(String id, UpdateLibraryDto updateLibraryDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}'
@@ -391,10 +379,8 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   ///
   /// * [UpdateLibraryDto] updateLibraryDto (required):
-  ///   Library update data
   Future<LibraryResponseDto?> updateLibrary(String id, UpdateLibraryDto updateLibraryDto,) async {
     final response = await updateLibraryWithHttpInfo(id, updateLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -419,10 +405,8 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   ///
   /// * [ValidateLibraryDto] validateLibraryDto (required):
-  ///   Library settings to validate
   Future<Response> validateWithHttpInfo(String id, ValidateLibraryDto validateLibraryDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries/{id}/validate'
@@ -456,10 +440,8 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Library ID
   ///
   /// * [ValidateLibraryDto] validateLibraryDto (required):
-  ///   Library settings to validate
   Future<ValidateLibraryResponseDto?> validate(String id, ValidateLibraryDto validateLibraryDto,) async {
     final response = await validateWithHttpInfo(id, validateLibraryDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

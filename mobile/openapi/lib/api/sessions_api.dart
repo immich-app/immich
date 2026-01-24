@@ -25,7 +25,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  ///   Session creation data
   Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions';
@@ -58,7 +57,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  ///   Session creation data
   Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto,) async {
     final response = await createSessionWithHttpInfo(sessionCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -123,7 +121,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   Future<Response> deleteSessionWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}'
@@ -157,7 +154,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   Future<void> deleteSession(String id,) async {
     final response = await deleteSessionWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -225,7 +221,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   Future<Response> lockSessionWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}/lock'
@@ -259,7 +254,6 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   Future<void> lockSession(String id,) async {
     final response = await lockSessionWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -276,10 +270,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  ///   Session update data
   Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}'
@@ -313,10 +305,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Session ID
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  ///   Session update data
   Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto,) async {
     final response = await updateSessionWithHttpInfo(id, sessionUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

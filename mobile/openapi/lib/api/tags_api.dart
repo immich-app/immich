@@ -25,7 +25,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
-  ///   Tag and asset IDs mapping
   Future<Response> bulkTagAssetsWithHttpInfo(TagBulkAssetsDto tagBulkAssetsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/assets';
@@ -58,7 +57,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
-  ///   Tag and asset IDs mapping
   Future<TagBulkAssetsResponseDto?> bulkTagAssets(TagBulkAssetsDto tagBulkAssetsDto,) async {
     final response = await bulkTagAssetsWithHttpInfo(tagBulkAssetsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -83,7 +81,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagCreateDto] tagCreateDto (required):
-  ///   Tag creation data with name and optional color
   Future<Response> createTagWithHttpInfo(TagCreateDto tagCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags';
@@ -116,7 +113,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagCreateDto] tagCreateDto (required):
-  ///   Tag creation data with name and optional color
   Future<TagResponseDto?> createTag(TagCreateDto tagCreateDto,) async {
     final response = await createTagWithHttpInfo(tagCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -141,7 +137,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   Future<Response> deleteTagWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/{id}'
@@ -175,7 +170,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   Future<void> deleteTag(String id,) async {
     final response = await deleteTagWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -243,7 +237,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   Future<Response> getTagByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/{id}'
@@ -277,7 +270,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   Future<TagResponseDto?> getTagById(String id,) async {
     final response = await getTagByIdWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -302,10 +294,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to tag
   Future<Response> tagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/{id}/assets'
@@ -339,10 +329,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to tag
   Future<List<BulkIdResponseDto>?> tagAssets(String id, BulkIdsDto bulkIdsDto,) async {
     final response = await tagAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -370,10 +358,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to untag
   Future<Response> untagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/{id}/assets'
@@ -407,10 +393,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to untag
   Future<List<BulkIdResponseDto>?> untagAssets(String id, BulkIdsDto bulkIdsDto,) async {
     final response = await untagAssetsWithHttpInfo(id, bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -438,10 +422,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [TagUpdateDto] tagUpdateDto (required):
-  ///   Tag update data
   Future<Response> updateTagWithHttpInfo(String id, TagUpdateDto tagUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags/{id}'
@@ -475,10 +457,8 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Tag ID
   ///
   /// * [TagUpdateDto] tagUpdateDto (required):
-  ///   Tag update data
   Future<TagResponseDto?> updateTag(String id, TagUpdateDto tagUpdateDto,) async {
     final response = await updateTagWithHttpInfo(id, tagUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -503,7 +483,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagUpsertDto] tagUpsertDto (required):
-  ///   Tags to create or update
   Future<Response> upsertTagsWithHttpInfo(TagUpsertDto tagUpsertDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags';
@@ -536,7 +515,6 @@ class TagsApi {
   /// Parameters:
   ///
   /// * [TagUpsertDto] tagUpsertDto (required):
-  ///   Tags to create or update
   Future<List<TagResponseDto>?> upsertTags(TagUpsertDto tagUpsertDto,) async {
     final response = await upsertTagsWithHttpInfo(tagUpsertDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

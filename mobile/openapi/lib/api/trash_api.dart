@@ -73,7 +73,6 @@ class TrashApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to restore
   Future<Response> restoreAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/trash/restore/assets';
@@ -106,7 +105,6 @@ class TrashApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Asset IDs to restore
   Future<TrashResponseDto?> restoreAssets(BulkIdsDto bulkIdsDto,) async {
     final response = await restoreAssetsWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

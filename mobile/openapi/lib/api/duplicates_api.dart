@@ -25,7 +25,6 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Duplicate asset ID
   Future<Response> deleteDuplicateWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates/{id}'
@@ -59,7 +58,6 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Duplicate asset ID
   Future<void> deleteDuplicate(String id,) async {
     final response = await deleteDuplicateWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -76,7 +74,6 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Duplicate asset IDs to delete
   Future<Response> deleteDuplicatesWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
@@ -109,7 +106,6 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  ///   Duplicate asset IDs to delete
   Future<void> deleteDuplicates(BulkIdsDto bulkIdsDto,) async {
     final response = await deleteDuplicatesWithHttpInfo(bulkIdsDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

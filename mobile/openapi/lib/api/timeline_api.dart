@@ -37,7 +37,6 @@ class TimelineApi {
   ///   Filter by trash status (true for trashed assets only, false for non-trashed only)
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
@@ -46,7 +45,6 @@ class TimelineApi {
   ///   Filter assets containing a specific person (face recognition)
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
@@ -150,7 +148,6 @@ class TimelineApi {
   ///   Filter by trash status (true for trashed assets only, false for non-trashed only)
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
@@ -159,7 +156,6 @@ class TimelineApi {
   ///   Filter assets containing a specific person (face recognition)
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
@@ -211,7 +207,6 @@ class TimelineApi {
   ///   Filter by trash status (true for trashed assets only, false for non-trashed only)
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
@@ -220,7 +215,6 @@ class TimelineApi {
   ///   Filter assets containing a specific person (face recognition)
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag
@@ -320,7 +314,6 @@ class TimelineApi {
   ///   Filter by trash status (true for trashed assets only, false for non-trashed only)
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [AssetOrder] order:
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
@@ -329,7 +322,6 @@ class TimelineApi {
   ///   Filter assets containing a specific person (face recognition)
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] tagId:
   ///   Filter assets with a specific tag

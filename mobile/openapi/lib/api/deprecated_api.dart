@@ -25,7 +25,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID to share with
   Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners/{id}'
@@ -59,7 +58,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID to share with
   Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
     final response = await createPartnerDeprecatedWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -146,7 +144,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  ///   Delta sync request data
   Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/delta-sync';
@@ -179,7 +176,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  ///   Delta sync request data
   Future<AssetDeltaSyncResponseDto?> getDeltaSync(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     final response = await getDeltaSyncWithHttpInfo(assetDeltaSyncDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -204,7 +200,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  ///   Full sync request data
   Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/full-sync';
@@ -237,7 +232,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  ///   Full sync request data
   Future<List<AssetResponseDto>?> getFullSyncForUser(AssetFullSyncDto assetFullSyncDto,) async {
     final response = await getFullSyncForUserWithHttpInfo(assetFullSyncDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -378,7 +372,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Asset ID
   ///
   /// * [MultipartFile] assetData (required):
   ///   Asset file data
@@ -396,10 +389,8 @@ class DeprecatedApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] duration:
   ///   Duration (for videos)
@@ -480,7 +471,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Asset ID
   ///
   /// * [MultipartFile] assetData (required):
   ///   Asset file data
@@ -498,10 +488,8 @@ class DeprecatedApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
   ///
   /// * [String] duration:
   ///   Duration (for videos)
@@ -535,7 +523,6 @@ class DeprecatedApi {
   ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  ///   Queue command options
   Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/jobs/{name}'
@@ -572,7 +559,6 @@ class DeprecatedApi {
   ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
-  ///   Queue command options
   Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {
     final response = await runQueueCommandLegacyWithHttpInfo(name, queueCommandDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

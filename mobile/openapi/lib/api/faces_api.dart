@@ -25,7 +25,6 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
-  ///   Face creation data including asset ID, person ID, image dimensions, and bounding box coordinates
   Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/faces';
@@ -58,7 +57,6 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
-  ///   Face creation data including asset ID, person ID, image dimensions, and bounding box coordinates
   Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
     final response = await createFaceWithHttpInfo(assetFaceCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -75,10 +73,8 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Face ID to delete
   ///
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
-  ///   Delete options including force flag
   Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/faces/{id}'
@@ -112,10 +108,8 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Face ID to delete
   ///
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
-  ///   Delete options including force flag
   Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -132,7 +126,7 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Asset ID to retrieve faces for
+  ///   Face ID
   Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/faces';
@@ -167,7 +161,7 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Asset ID to retrieve faces for
+  ///   Face ID
   Future<List<AssetFaceResponseDto>?> getFaces(String id,) async {
     final response = await getFacesWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -195,10 +189,8 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Person ID to assign the face to
   ///
   /// * [FaceDto] faceDto (required):
-  ///   Face ID to be reassigned to the person
   Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/faces/{id}'
@@ -232,10 +224,8 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   Person ID to assign the face to
   ///
   /// * [FaceDto] faceDto (required):
-  ///   Face ID to be reassigned to the person
   Future<PersonResponseDto?> reassignFacesById(String id, FaceDto faceDto,) async {
     final response = await reassignFacesByIdWithHttpInfo(id, faceDto,);
     if (response.statusCode >= HttpStatus.badRequest) {

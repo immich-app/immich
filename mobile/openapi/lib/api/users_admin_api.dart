@@ -25,7 +25,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  ///   User creation data
   Future<Response> createUserAdminWithHttpInfo(UserAdminCreateDto userAdminCreateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users';
@@ -58,7 +57,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
-  ///   User creation data
   Future<UserAdminResponseDto?> createUserAdmin(UserAdminCreateDto userAdminCreateDto,) async {
     final response = await createUserAdminWithHttpInfo(userAdminCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -83,10 +81,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  ///   User deletion options
   Future<Response> deleteUserAdminWithHttpInfo(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}'
@@ -120,10 +116,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
-  ///   User deletion options
   Future<UserAdminResponseDto?> deleteUserAdmin(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
     final response = await deleteUserAdminWithHttpInfo(id, userAdminDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -148,7 +142,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> getUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}'
@@ -182,7 +175,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<UserAdminResponseDto?> getUserAdmin(String id,) async {
     final response = await getUserAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -207,7 +199,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> getUserPreferencesAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/preferences'
@@ -241,7 +232,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<UserPreferencesResponseDto?> getUserPreferencesAdmin(String id,) async {
     final response = await getUserPreferencesAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -266,7 +256,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> getUserSessionsAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/sessions'
@@ -300,7 +289,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<List<SessionResponseDto>?> getUserSessionsAdmin(String id,) async {
     final response = await getUserSessionsAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -328,7 +316,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status
@@ -381,7 +368,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status
@@ -415,7 +401,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<Response> restoreUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/restore'
@@ -449,7 +434,6 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   Future<UserAdminResponseDto?> restoreUserAdmin(String id,) async {
     final response = await restoreUserAdminWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -548,10 +532,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  ///   User update data
   Future<Response> updateUserAdminWithHttpInfo(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}'
@@ -585,10 +567,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
-  ///   User update data
   Future<UserAdminResponseDto?> updateUserAdmin(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
     final response = await updateUserAdminWithHttpInfo(id, userAdminUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -613,10 +593,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  ///   User preferences update data
   Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/preferences'
@@ -650,10 +628,8 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  ///   User ID
   ///
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
-  ///   User preferences update data
   Future<UserPreferencesResponseDto?> updateUserPreferencesAdmin(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     final response = await updateUserPreferencesAdminWithHttpInfo(id, userPreferencesUpdateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
