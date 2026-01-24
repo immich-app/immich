@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 import { Activity } from 'src/database';
 import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
@@ -16,7 +16,6 @@ export enum ReactionLevel {
 
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
-@ApiSchema({ description: 'Activity response containing like or comment information' })
 export class ActivityResponseDto {
   @ApiProperty({ description: 'Activity ID' })
   id!: string;
@@ -33,7 +32,6 @@ export class ActivityResponseDto {
   comment?: string | null;
 }
 
-@ApiSchema({ description: 'Activity statistics with comment and like counts' })
 export class ActivityStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of comments' })
   comments!: number;
@@ -42,7 +40,6 @@ export class ActivityStatisticsResponseDto {
   likes!: number;
 }
 
-@ApiSchema({ description: 'Activity base DTO with album and optional asset ID' })
 export class ActivityDto {
   @ApiProperty({ description: 'Album ID' })
   @ValidateUUID()
@@ -53,7 +50,6 @@ export class ActivityDto {
   assetId?: string;
 }
 
-@ApiSchema({ description: 'Activity search parameters with filters' })
 export class ActivitySearchDto extends ActivityDto {
   @ApiPropertyOptional({ description: 'Filter by activity type', enum: ReactionType })
   @ValidateEnum({ enum: ReactionType, name: 'ReactionType', optional: true })
@@ -70,7 +66,6 @@ export class ActivitySearchDto extends ActivityDto {
 
 const isComment = (dto: ActivityCreateDto) => dto.type === ReactionType.COMMENT;
 
-@ApiSchema({ description: 'Activity creation request with type and optional comment' })
 export class ActivityCreateDto extends ActivityDto {
   @ApiProperty({ description: 'Activity type (like or comment)', enum: ReactionType })
   @ValidateEnum({ enum: ReactionType, name: 'ReactionType' })

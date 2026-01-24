@@ -1,4 +1,4 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -39,7 +39,6 @@ const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOv
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
 
-@ApiSchema({ description: 'Database backup configuration with enabled flag, cron expression, and retention count' })
 export class DatabaseBackupConfig {
   @ValidateBoolean()
   enabled!: boolean;
@@ -56,7 +55,6 @@ export class DatabaseBackupConfig {
   keepLastAmount!: number;
 }
 
-@ApiSchema({ description: 'System backup configuration with database settings' })
 export class SystemConfigBackupsDto {
   @Type(() => DatabaseBackupConfig)
   @ValidateNested()
@@ -64,9 +62,6 @@ export class SystemConfigBackupsDto {
   database!: DatabaseBackupConfig;
 }
 
-@ApiSchema({
-  description: 'FFmpeg configuration with video/audio codecs, encoding settings, and hardware acceleration',
-})
 export class SystemConfigFFmpegDto {
   @IsInt()
   @Min(0)
@@ -331,7 +326,6 @@ enum MapTheme {
   DARK = 'dark',
 }
 
-@ApiSchema({ description: 'Map theme configuration with theme selection' })
 export class MapThemeDto {
   @ValidateEnum({ enum: MapTheme, name: 'MapTheme' })
   theme!: MapTheme;
@@ -508,9 +502,6 @@ class SystemConfigSmtpTransportDto {
   password!: string;
 }
 
-@ApiSchema({
-  description: 'SMTP email configuration with enabled flag, from/reply-to addresses, and transport settings',
-})
 export class SystemConfigSmtpDto {
   @ApiProperty({ description: 'Whether SMTP email notifications are enabled', type: Boolean })
   @ValidateBoolean()
@@ -572,7 +563,6 @@ class SystemConfigStorageTemplateDto {
   template!: string;
 }
 
-@ApiSchema({ description: 'Storage template format options for date/time components' })
 export class SystemConfigTemplateStorageOptionDto {
   @ApiProperty({ description: 'Available year format options for storage template', type: [String] })
   yearOptions!: string[];
@@ -592,7 +582,6 @@ export class SystemConfigTemplateStorageOptionDto {
   presetOptions!: string[];
 }
 
-@ApiSchema({ description: 'Theme configuration with custom CSS' })
 export class SystemConfigThemeDto {
   @ApiProperty({ description: 'Custom CSS for theming', type: String })
   @IsString()
@@ -638,10 +627,6 @@ class SystemConfigGeneratedFullsizeImageDto {
   progressive?: boolean;
 }
 
-@ApiSchema({
-  description:
-    'Image processing configuration with thumbnail, preview, fullsize settings, colorspace, and embedded extraction',
-})
 export class SystemConfigImageDto {
   @Type(() => SystemConfigGeneratedImageDto)
   @ValidateNested()
@@ -684,7 +669,6 @@ class SystemConfigUserDto {
   deleteDelay!: number;
 }
 
-@ApiSchema({ description: 'System configuration response' })
 export class SystemConfigDto implements SystemConfig {
   @ApiProperty({ description: 'Backup configuration', type: SystemConfigBackupsDto })
   @Type(() => SystemConfigBackupsDto)

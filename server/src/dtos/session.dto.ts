@@ -1,9 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
 import { Optional, ValidateBoolean } from 'src/validation';
 
-@ApiSchema({ description: 'Session creation request with optional duration and device information' })
 export class SessionCreateDto {
   @ApiPropertyOptional({ type: 'number', description: 'Session duration in seconds' })
   @IsInt()
@@ -22,7 +21,6 @@ export class SessionCreateDto {
   deviceOS?: string;
 }
 
-@ApiSchema({ description: 'Session update request with optional pending sync reset flag' })
 export class SessionUpdateDto {
   @ApiPropertyOptional({ description: 'Reset pending sync state' })
   @ValidateBoolean({ optional: true })
@@ -30,7 +28,6 @@ export class SessionUpdateDto {
   isPendingSyncReset?: true;
 }
 
-@ApiSchema({ description: 'Session response with device information' })
 export class SessionResponseDto {
   @ApiProperty({ description: 'Session ID' })
   id!: string;
@@ -52,7 +49,6 @@ export class SessionResponseDto {
   isPendingSyncReset!: boolean;
 }
 
-@ApiSchema({ description: 'Session creation response with token' })
 export class SessionCreateResponseDto extends SessionResponseDto {
   @ApiProperty({ description: 'Session token' })
   token!: string;

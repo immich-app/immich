@@ -1,7 +1,6 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 
-@ApiSchema({ description: 'Duplicate assets response' })
 export class DuplicateResponseDto {
   @ApiProperty({ description: 'Duplicate group ID' })
   duplicateId!: string;

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -20,7 +20,6 @@ import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum } from 'src/validation';
 
-@ApiSchema({ description: 'Sanitized asset response without metadata' })
 export class SanitizedAssetResponseDto {
   @ApiProperty({ description: 'Asset ID' })
   id!: string;
@@ -51,7 +50,6 @@ export class SanitizedAssetResponseDto {
   height!: number | null;
 }
 
-@ApiSchema({ description: 'Asset response with metadata and details' })
 export class AssetResponseDto extends SanitizedAssetResponseDto {
   @ApiProperty({
     type: 'string',
@@ -173,7 +171,6 @@ export type MapAsset = {
   isEdited: boolean;
 };
 
-@ApiSchema({ description: 'Asset stack response with primary asset' })
 export class AssetStackResponseDto {
   @ApiProperty({ description: 'Stack ID' })
   id!: string;

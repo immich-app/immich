@@ -1,10 +1,9 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { IsString } from 'class-validator';
 import { AssetOrder, AssetVisibility } from 'src/enum';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
-@ApiSchema({ description: 'Time bucket query parameters with filters' })
 export class TimeBucketDto {
   @ValidateUUID({ optional: true, description: 'Filter assets by specific user ID' })
   userId?: string;
@@ -62,7 +61,6 @@ export class TimeBucketDto {
   withCoordinates?: boolean;
 }
 
-@ApiSchema({ description: 'Time bucket asset query with time bucket identifier' })
 export class TimeBucketAssetDto extends TimeBucketDto {
   @ApiProperty({
     type: 'string',
@@ -73,7 +71,6 @@ export class TimeBucketAssetDto extends TimeBucketDto {
   timeBucket!: string;
 }
 
-@ApiSchema({ description: 'Time bucket asset response with IDs' })
 export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
@@ -212,7 +209,6 @@ export class TimeBucketAssetResponseDto {
   longitude!: number[];
 }
 
-@ApiSchema({ description: 'Time buckets response with counts' })
 export class TimeBucketsResponseDto {
   @ApiProperty({
     type: 'string',

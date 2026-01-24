@@ -1,9 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsLatitude, IsLongitude } from 'class-validator';
 import { ValidateBoolean, ValidateDate } from 'src/validation';
 
-@ApiSchema({ description: 'Reverse geocoding query with latitude and longitude' })
 export class MapReverseGeocodeDto {
   @ApiProperty({ format: 'double', description: 'Latitude (-90 to 90)' })
   @Type(() => Number)
@@ -16,7 +15,6 @@ export class MapReverseGeocodeDto {
   lon!: number;
 }
 
-@ApiSchema({ description: 'Reverse geocoding response with location' })
 export class MapReverseGeocodeResponseDto {
   @ApiProperty({ description: 'City name', nullable: true })
   city!: string | null;
@@ -28,7 +26,6 @@ export class MapReverseGeocodeResponseDto {
   country!: string | null;
 }
 
-@ApiSchema({ description: 'Map marker query parameters with filters' })
 export class MapMarkerDto {
   @ApiPropertyOptional({ description: 'Filter by archived status' })
   @ValidateBoolean({ optional: true })
@@ -55,7 +52,6 @@ export class MapMarkerDto {
   withSharedAlbums?: boolean;
 }
 
-@ApiSchema({ description: 'Map marker response with coordinates' })
 export class MapMarkerResponseDto {
   @ApiProperty({ description: 'Asset ID' })
   id!: string;

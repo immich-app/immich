@@ -1,14 +1,12 @@
-import { ApiProperty, ApiPropertyOptional, ApiResponseProperty, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, ApiResponseProperty } from '@nestjs/swagger';
 import { SemVer } from 'semver';
 import { SystemConfigThemeDto } from 'src/dtos/system-config.dto';
 
-@ApiSchema({ description: 'Server ping response' })
 export class ServerPingResponse {
   @ApiResponseProperty({ type: String, example: 'pong' })
   res!: string;
 }
 
-@ApiSchema({ description: 'Server information and version details' })
 export class ServerAboutResponseDto {
   @ApiProperty({ description: 'Server version', type: String })
   version!: string;
@@ -60,7 +58,6 @@ export class ServerAboutResponseDto {
   thirdPartySupportUrl?: string;
 }
 
-@ApiSchema({ description: 'Server APK download links response' })
 export class ServerApkLinksDto {
   @ApiProperty({ description: 'APK download link for ARM64 v8a architecture', type: String })
   arm64v8a!: string;
@@ -72,7 +69,6 @@ export class ServerApkLinksDto {
   x86_64!: string;
 }
 
-@ApiSchema({ description: 'Server storage response with usage' })
 export class ServerStorageResponseDto {
   @ApiProperty({ description: 'Total disk size (human-readable format)', type: String })
   diskSize!: string;
@@ -94,7 +90,6 @@ export class ServerStorageResponseDto {
   diskUsagePercentage!: number;
 }
 
-@ApiSchema({ description: 'Server version response with numbers' })
 export class ServerVersionResponseDto {
   @ApiProperty({ type: 'integer', description: 'Major version number' })
   major!: number;
@@ -108,7 +103,6 @@ export class ServerVersionResponseDto {
   }
 }
 
-@ApiSchema({ description: 'Server version history response' })
 export class ServerVersionHistoryResponseDto {
   @ApiProperty({ description: 'Version history entry ID', type: String })
   id!: string;
@@ -118,7 +112,6 @@ export class ServerVersionHistoryResponseDto {
   version!: string;
 }
 
-@ApiSchema({ description: 'Storage usage by user response' })
 export class UsageByUserDto {
   @ApiProperty({ type: 'string', description: 'User ID' })
   userId!: string;
@@ -143,7 +136,6 @@ export class UsageByUserDto {
   quotaSizeInBytes!: number | null;
 }
 
-@ApiSchema({ description: 'Server statistics response with usage' })
 export class ServerStatsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of photos' })
   photos = 0;
@@ -177,7 +169,6 @@ export class ServerStatsResponseDto {
   usageByUser: UsageByUserDto[] = [];
 }
 
-@ApiSchema({ description: 'Server supported media types response' })
 export class ServerMediaTypesResponseDto {
   @ApiProperty({ description: 'Supported video MIME types', type: [String] })
   video!: string[];
@@ -187,10 +178,8 @@ export class ServerMediaTypesResponseDto {
   sidecar!: string[];
 }
 
-@ApiSchema({ description: 'Server theme configuration' })
 export class ServerThemeDto extends SystemConfigThemeDto {}
 
-@ApiSchema({ description: 'Server configuration response' })
 export class ServerConfigDto {
   @ApiProperty({ description: 'OAuth button text', type: String })
   oauthButtonText!: string;
@@ -216,7 +205,6 @@ export class ServerConfigDto {
   maintenanceMode!: boolean;
 }
 
-@ApiSchema({ description: 'Server features response with flags' })
 export class ServerFeaturesDto {
   @ApiProperty({ description: 'Whether smart search is enabled', type: Boolean })
   smartSearch!: boolean;

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
@@ -8,7 +8,6 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
-@ApiSchema({ description: 'Base search parameters with common filters' })
 class BaseSearchDto {
   @ApiPropertyOptional({ description: 'Library ID to filter by', nullable: true })
   @ValidateUUID({ optional: true, nullable: true })
@@ -137,7 +136,6 @@ class BaseSearchDto {
   ocr?: string;
 }
 
-@ApiSchema({ description: 'Base search with results parameters including pagination and EXIF options' })
 class BaseSearchWithResultsDto extends BaseSearchDto {
   @ApiPropertyOptional({ description: 'Include deleted assets' })
   @ValidateBoolean({ optional: true })
@@ -156,7 +154,6 @@ class BaseSearchWithResultsDto extends BaseSearchDto {
   size?: number;
 }
 
-@ApiSchema({ description: 'Random search query with optional stacked and people filters' })
 export class RandomSearchDto extends BaseSearchWithResultsDto {
   @ApiPropertyOptional({ description: 'Include stacked assets' })
   @ValidateBoolean({ optional: true })
@@ -167,7 +164,6 @@ export class RandomSearchDto extends BaseSearchWithResultsDto {
   withPeople?: boolean;
 }
 
-@ApiSchema({ description: 'Large asset search query with minimum file size filter' })
 export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
   @ApiPropertyOptional({ type: 'integer', description: 'Minimum file size in bytes', minimum: 0 })
   @Optional()
@@ -177,7 +173,6 @@ export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
   minFileSize?: number;
 }
 
-@ApiSchema({ description: 'Metadata search query with asset and file filters' })
 export class MetadataSearchDto extends RandomSearchDto {
   @ApiPropertyOptional({ description: 'Filter by asset ID' })
   @ValidateUUID({ optional: true })
@@ -239,14 +234,12 @@ export class MetadataSearchDto extends RandomSearchDto {
   page?: number;
 }
 
-@ApiSchema({ description: 'Statistics search query with optional description filter' })
 export class StatisticsSearchDto extends BaseSearchDto {
   @ApiPropertyOptional({ description: 'Filter by description text' })
   @ValidateString({ optional: true, trim: true })
   description?: string;
 }
 
-@ApiSchema({ description: 'Smart search query with natural language or asset reference' })
 export class SmartSearchDto extends BaseSearchWithResultsDto {
   @ApiPropertyOptional({ description: 'Natural language search query' })
   @ValidateString({ optional: true, trim: true })
@@ -271,7 +264,6 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   page?: number;
 }
 
-@ApiSchema({ description: 'Search places query with place name' })
 export class SearchPlacesDto {
   @ApiProperty({ description: 'Place name to search for' })
   @IsString()
@@ -279,7 +271,6 @@ export class SearchPlacesDto {
   name!: string;
 }
 
-@ApiSchema({ description: 'Search people query with person name and optional hidden filter' })
 export class SearchPeopleDto {
   @ApiProperty({ description: 'Person name to search for' })
   @IsString()
@@ -291,7 +282,6 @@ export class SearchPeopleDto {
   withHidden?: boolean;
 }
 
-@ApiSchema({ description: 'Place response with coordinates' })
 export class PlacesResponseDto {
   @ApiProperty({ description: 'Place name' })
   name!: string;
@@ -324,7 +314,6 @@ export enum SearchSuggestionType {
   CAMERA_LENS_MODEL = 'camera-lens-model',
 }
 
-@ApiSchema({ description: 'Search suggestion request with type and optional filters' })
 export class SearchSuggestionRequestDto {
   @ApiProperty({ description: 'Suggestion type', enum: SearchSuggestionType })
   @ValidateEnum({ enum: SearchSuggestionType, name: 'SearchSuggestionType' })
@@ -361,7 +350,6 @@ export class SearchSuggestionRequestDto {
   includeNull?: boolean;
 }
 
-@ApiSchema({ description: 'Search facet count response' })
 class SearchFacetCountResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of assets with this facet value' })
   count!: number;
@@ -369,7 +357,6 @@ class SearchFacetCountResponseDto {
   value!: string;
 }
 
-@ApiSchema({ description: 'Search facet response with counts' })
 class SearchFacetResponseDto {
   @ApiProperty({ description: 'Facet field name' })
   fieldName!: string;
@@ -377,7 +364,6 @@ class SearchFacetResponseDto {
   counts!: SearchFacetCountResponseDto[];
 }
 
-@ApiSchema({ description: 'Album search results response' })
 class SearchAlbumResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of matching albums' })
   total!: number;
@@ -389,7 +375,6 @@ class SearchAlbumResponseDto {
   facets!: SearchFacetResponseDto[];
 }
 
-@ApiSchema({ description: 'Asset search results response' })
 class SearchAssetResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of matching assets' })
   total!: number;
@@ -403,7 +388,6 @@ class SearchAssetResponseDto {
   nextPage!: string | null;
 }
 
-@ApiSchema({ description: 'Search response with albums and assets' })
 export class SearchResponseDto {
   @ApiProperty({ description: 'Album search results', type: () => SearchAlbumResponseDto })
   albums!: SearchAlbumResponseDto;
@@ -411,13 +395,11 @@ export class SearchResponseDto {
   assets!: SearchAssetResponseDto;
 }
 
-@ApiSchema({ description: 'Search statistics response with total' })
 export class SearchStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of matching assets' })
   total!: number;
 }
 
-@ApiSchema({ description: 'Search explore item with asset' })
 class SearchExploreItem {
   @ApiProperty({ description: 'Explore value' })
   value!: string;
@@ -425,7 +407,6 @@ class SearchExploreItem {
   data!: AssetResponseDto;
 }
 
-@ApiSchema({ description: 'Search explore response with items' })
 export class SearchExploreResponseDto {
   @ApiProperty({ description: 'Explore field name' })
   fieldName!: string;
@@ -433,7 +414,6 @@ export class SearchExploreResponseDto {
   items!: SearchExploreItem[];
 }
 
-@ApiSchema({ description: 'Memory lane query with day and month' })
 export class MemoryLaneDto {
   @ApiProperty({ type: 'integer', description: 'Day of month (1-31)', minimum: 1, maximum: 31 })
   @IsInt()

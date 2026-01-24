@@ -1,9 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArrayMinSize, IsNotEmpty, IsString } from 'class-validator';
 import { Permission } from 'src/enum';
 import { Optional, ValidateEnum } from 'src/validation';
 
-@ApiSchema({ description: 'API key creation request with name and permissions' })
 export class APIKeyCreateDto {
   @ApiPropertyOptional({ description: 'API key name' })
   @IsString()
@@ -17,7 +16,6 @@ export class APIKeyCreateDto {
   permissions!: Permission[];
 }
 
-@ApiSchema({ description: 'API key update request with optional name and permissions' })
 export class APIKeyUpdateDto {
   @ApiPropertyOptional({ description: 'API key name' })
   @Optional()
@@ -31,7 +29,6 @@ export class APIKeyUpdateDto {
   permissions?: Permission[];
 }
 
-@ApiSchema({ description: 'API key response with permissions' })
 export class APIKeyResponseDto {
   @ApiProperty({ description: 'API key ID' })
   id!: string;
@@ -46,7 +43,6 @@ export class APIKeyResponseDto {
   permissions!: Permission[];
 }
 
-@ApiSchema({ description: 'API key creation response with secret' })
 export class APIKeyCreateResponseDto {
   @ApiProperty({ description: 'API key secret (only shown once)' })
   secret!: string;

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
@@ -6,7 +6,6 @@ import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
 import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
 
-@ApiSchema({ description: 'Update current user profile request' })
 export class UserUpdateMeDto {
   @ApiPropertyOptional({ description: 'User email' })
   @Optional()
@@ -32,7 +31,6 @@ export class UserUpdateMeDto {
   avatarColor?: UserAvatarColor | null;
 }
 
-@ApiSchema({ description: 'User response with profile information' })
 export class UserResponseDto {
   @ApiProperty({ description: 'User ID' })
   id!: string;
@@ -49,7 +47,6 @@ export class UserResponseDto {
   profileChangedAt!: Date;
 }
 
-@ApiSchema({ description: 'User license information with license key, activation key, and activation date' })
 export class UserLicense {
   @ApiProperty({ description: 'License key' })
   licenseKey!: string;
@@ -78,7 +75,6 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
   };
 };
 
-@ApiSchema({ description: 'User admin search query parameters' })
 export class UserAdminSearchDto {
   @ApiPropertyOptional({ description: 'Include deleted users' })
   @ValidateBoolean({ optional: true })
@@ -89,7 +85,6 @@ export class UserAdminSearchDto {
   id?: string;
 }
 
-@ApiSchema({ description: 'User admin creation request' })
 export class UserAdminCreateDto {
   @ApiProperty({ description: 'User email' })
   @IsEmail({ require_tld: false })
@@ -134,7 +129,6 @@ export class UserAdminCreateDto {
   isAdmin?: boolean;
 }
 
-@ApiSchema({ description: 'User admin update request with optional fields' })
 export class UserAdminUpdateDto {
   @ApiPropertyOptional({ description: 'User email' })
   @Optional()
@@ -183,14 +177,12 @@ export class UserAdminUpdateDto {
   isAdmin?: boolean;
 }
 
-@ApiSchema({ description: 'User admin delete request with optional force flag' })
 export class UserAdminDeleteDto {
   @ApiPropertyOptional({ description: 'Force delete even if user has assets' })
   @ValidateBoolean({ optional: true })
   force?: boolean;
 }
 
-@ApiSchema({ description: 'Admin user response with extended details' })
 export class UserAdminResponseDto extends UserResponseDto {
   @ApiProperty({ description: 'Storage label', nullable: true })
   storageLabel!: string | null;
