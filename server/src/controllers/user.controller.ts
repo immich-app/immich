@@ -13,7 +13,7 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -166,7 +166,6 @@ export class UserController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.UserRead })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve a specific user by their ID.',
@@ -208,7 +207,6 @@ export class UserController {
   @Get(':id/profile-image')
   @FileResponse()
   @Authenticated({ permission: Permission.UserProfileImageRead })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user profile image',
     description: 'Retrieve the profile image file for a user.',

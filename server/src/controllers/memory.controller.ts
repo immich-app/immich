@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -57,7 +57,6 @@ export class MemoryController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.MemoryRead })
-  @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a memory',
     description: 'Retrieve a specific memory by its ID.',
@@ -69,7 +68,6 @@ export class MemoryController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.MemoryUpdate })
-  @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update a memory',
     description: 'Update an existing memory by its ID.',
@@ -86,7 +84,6 @@ export class MemoryController {
   @Delete(':id')
   @Authenticated({ permission: Permission.MemoryDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a memory',
     description: 'Delete a specific memory by its ID.',
@@ -98,7 +95,6 @@ export class MemoryController {
 
   @Put(':id/assets')
   @Authenticated({ permission: Permission.MemoryAssetCreate })
-  @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Add assets to a memory',
     description: 'Add a list of asset IDs to a specific memory.',
@@ -115,7 +111,6 @@ export class MemoryController {
   @Delete(':id/assets')
   @Authenticated({ permission: Permission.MemoryAssetDelete })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({ name: 'id', description: 'Memory ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Remove assets from a memory',
     description: 'Remove a list of asset IDs from a specific memory.',

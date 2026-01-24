@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -65,7 +65,6 @@ export class ActivityController {
   @Delete(':id')
   @Authenticated({ permission: Permission.ActivityDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Activity ID to delete', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete an activity',
     description: 'Removes a like or comment from a given album or asset in an album.',

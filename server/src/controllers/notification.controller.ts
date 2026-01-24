@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -56,7 +56,6 @@ export class NotificationController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.NotificationRead })
-  @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get a notification',
     description: 'Retrieve a specific notification identified by id.',
@@ -68,7 +67,6 @@ export class NotificationController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.NotificationUpdate })
-  @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update a notification',
     description: 'Update a specific notification to set its read status.',
@@ -85,7 +83,6 @@ export class NotificationController {
   @Delete(':id')
   @Authenticated({ permission: Permission.NotificationDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Notification ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a notification',
     description: 'Delete a specific notification.',

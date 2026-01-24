@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -32,7 +32,6 @@ export class QueueController {
 
   @Get(':name')
   @Authenticated({ permission: Permission.QueueRead, admin: true })
-  @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @Endpoint({
     summary: 'Retrieve a queue',
     description: 'Retrieves a specific queue by its name.',
@@ -44,7 +43,6 @@ export class QueueController {
 
   @Put(':name')
   @Authenticated({ permission: Permission.QueueUpdate, admin: true })
-  @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @Endpoint({
     summary: 'Update a queue',
     description: 'Change the paused status of a specific queue.',
@@ -60,7 +58,6 @@ export class QueueController {
 
   @Get(':name/jobs')
   @Authenticated({ permission: Permission.QueueJobRead, admin: true })
-  @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @ApiQuery({ name: 'status', description: 'Filter by job status', type: String, required: false })
   @Endpoint({
     summary: 'Retrieve queue jobs',
@@ -78,7 +75,6 @@ export class QueueController {
   @Delete(':name/jobs')
   @Authenticated({ permission: Permission.QueueJobDelete, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'name', description: 'Queue name', type: String })
   @Endpoint({
     summary: 'Empty a queue',
     description: 'Removes all jobs from the specified queue.',

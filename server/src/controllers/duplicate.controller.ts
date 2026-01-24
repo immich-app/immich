@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -40,7 +40,6 @@ export class DuplicateController {
   @Delete(':id')
   @Authenticated({ permission: Permission.DuplicateDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Duplicate asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a duplicate',
     description: 'Delete a single duplicate asset specified by its ID.',

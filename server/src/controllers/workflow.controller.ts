@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { WorkflowCreateDto, WorkflowResponseDto, WorkflowUpdateDto } from 'src/dtos/workflow.dto';
@@ -37,7 +37,6 @@ export class WorkflowController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.WorkflowRead })
-  @ApiParam({ name: 'id', description: 'Workflow ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a workflow',
     description: 'Retrieve information about a specific workflow by its ID.',
@@ -49,7 +48,6 @@ export class WorkflowController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.WorkflowUpdate })
-  @ApiParam({ name: 'id', description: 'Workflow ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update a workflow',
     description:
@@ -67,7 +65,6 @@ export class WorkflowController {
   @Delete(':id')
   @Authenticated({ permission: Permission.WorkflowDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Workflow ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a workflow',
     description: 'Delete a workflow by its ID.',

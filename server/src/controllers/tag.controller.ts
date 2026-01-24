@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -67,7 +67,6 @@ export class TagController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.TagRead })
-  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a tag',
     description: 'Retrieve a specific tag by its ID.',
@@ -79,7 +78,6 @@ export class TagController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.TagUpdate })
-  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update a tag',
     description: 'Update an existing tag identified by its ID.',
@@ -92,7 +90,6 @@ export class TagController {
   @Delete(':id')
   @Authenticated({ permission: Permission.TagDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a tag',
     description: 'Delete a specific tag by its ID.',
@@ -104,7 +101,6 @@ export class TagController {
 
   @Put(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
-  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Tag assets',
     description: 'Add a tag to all the specified assets.',
@@ -120,7 +116,6 @@ export class TagController {
 
   @Delete(':id/assets')
   @Authenticated({ permission: Permission.TagAsset })
-  @ApiParam({ name: 'id', description: 'Tag ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Untag assets',
     description: 'Remove a tag from all the specified assets.',

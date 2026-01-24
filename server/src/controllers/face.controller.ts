@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -51,12 +51,6 @@ export class FaceController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.FaceUpdate })
-  @ApiParam({
-    name: 'id',
-    description: 'Person ID to assign the face to',
-    type: String,
-    format: 'uuid',
-  })
   @Endpoint({
     summary: 'Re-assign a face to another person',
     description: 'Re-assign the face provided in the body to the person identified by the id in the path parameter.',
@@ -73,12 +67,6 @@ export class FaceController {
   @Delete(':id')
   @Authenticated({ permission: Permission.FaceDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({
-    name: 'id',
-    description: 'Face ID to delete',
-    type: String,
-    format: 'uuid',
-  })
   @Endpoint({
     summary: 'Delete a face',
     description: 'Delete a face identified by the id. Optionally can be force deleted.',

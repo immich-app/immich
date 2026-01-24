@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -46,7 +46,6 @@ export class NotificationAdminController {
   @Post('templates/:name')
   @Authenticated({ admin: true })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({ name: 'name', description: 'Email template name', type: String })
   @Endpoint({
     summary: 'Render email template',
     description: 'Retrieve a preview of the provided email template.',

@@ -12,7 +12,7 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -92,7 +92,6 @@ export class PersonController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get a person',
     description: 'Retrieve a person by id.',
@@ -104,7 +103,6 @@ export class PersonController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.PersonUpdate })
-  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
@@ -121,7 +119,6 @@ export class PersonController {
   @Delete(':id')
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete person',
     description: 'Delete an individual person.',
@@ -133,7 +130,6 @@ export class PersonController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PersonStatistics })
-  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get person statistics',
     description: 'Retrieve statistics about a specific person.',
@@ -146,7 +142,6 @@ export class PersonController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Get person thumbnail',
     description: 'Retrieve the thumbnail file for a person.',
@@ -163,7 +158,6 @@ export class PersonController {
 
   @Put(':id/reassign')
   @Authenticated({ permission: Permission.PersonReassign })
-  @ApiParam({ name: 'id', description: 'Target person ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Reassign faces',
     description: 'Bulk reassign a list of faces to a different person.',
@@ -180,7 +174,6 @@ export class PersonController {
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({ name: 'id', description: 'Target person ID to merge into', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Merge people',
     description: 'Merge a list of people into the person specified in the path parameter.',

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -48,7 +48,6 @@ export class ApiKeyController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.ApiKeyRead })
-  @ApiParam({ name: 'id', description: 'API key ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve an API key',
     description: 'Retrieve an API key by its ID. The current user must own this API key.',
@@ -60,7 +59,6 @@ export class ApiKeyController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.ApiKeyUpdate })
-  @ApiParam({ name: 'id', description: 'API key ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update an API key',
     description: 'Updates the name and permissions of an API key by its ID. The current user must own this API key.',
@@ -77,7 +75,6 @@ export class ApiKeyController {
   @Delete(':id')
   @Authenticated({ permission: Permission.ApiKeyDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'API key ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete an API key',
     description: 'Deletes an API key identified by its ID. The current user must own this API key.',

@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -97,7 +97,6 @@ export class AssetMediaController {
   @Get(':id/original')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
-  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Download original asset',
     description: 'Downloads the original file of the specified asset.',
@@ -116,7 +115,6 @@ export class AssetMediaController {
   @Put(':id/original')
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiResponse({
     status: 200,
     description: 'Asset replaced successfully',
@@ -147,7 +145,6 @@ export class AssetMediaController {
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
-  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @ApiQuery({ name: 'size', description: 'Asset media size', type: String, required: false })
   @Endpoint({
     summary: 'View asset thumbnail',
@@ -192,7 +189,6 @@ export class AssetMediaController {
   @Get(':id/video/playback')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
-  @ApiParam({ name: 'id', description: 'Asset ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Play asset video',
     description: 'Streams the video file for the specified asset. This endpoint also supports byte range requests.',

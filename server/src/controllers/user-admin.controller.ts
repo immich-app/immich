@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetStatsDto, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -46,7 +46,6 @@ export class UserAdminController {
 
   @Get(':id')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve a user',
     description: 'Retrieve  a specific user by their ID.',
@@ -58,7 +57,6 @@ export class UserAdminController {
 
   @Put(':id')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update a user',
     description: 'Update an existing user.',
@@ -74,7 +72,6 @@ export class UserAdminController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Delete a user',
     description: 'Delete a user.',
@@ -90,7 +87,6 @@ export class UserAdminController {
 
   @Get(':id/sessions')
   @Authenticated({ permission: Permission.AdminSessionRead, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user sessions',
     description: 'Retrieve all sessions for a specific user.',
@@ -102,7 +98,6 @@ export class UserAdminController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user statistics',
     description: 'Retrieve asset statistics for a specific user.',
@@ -118,7 +113,6 @@ export class UserAdminController {
 
   @Get(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserRead, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Retrieve user preferences',
     description: 'Retrieve the preferences of a specific user.',
@@ -130,7 +124,6 @@ export class UserAdminController {
 
   @Put(':id/preferences')
   @Authenticated({ permission: Permission.AdminUserUpdate, admin: true })
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Update user preferences',
     description: 'Update the preferences of a specific user.',
@@ -147,7 +140,6 @@ export class UserAdminController {
   @Post(':id/restore')
   @Authenticated({ permission: Permission.AdminUserDelete, admin: true })
   @HttpCode(HttpStatus.OK)
-  @ApiParam({ name: 'id', description: 'User ID', type: String, format: 'uuid' })
   @Endpoint({
     summary: 'Restore a deleted user',
     description: 'Restore a previously deleted user.',
