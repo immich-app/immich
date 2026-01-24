@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -33,13 +33,6 @@ export class FaceController {
 
   @Get()
   @Authenticated({ permission: Permission.FaceRead })
-  @ApiQuery({
-    name: 'id',
-    description: 'Asset ID to retrieve faces for',
-    type: String,
-    format: 'uuid',
-    required: true,
-  })
   @Endpoint({
     summary: 'Retrieve faces for asset',
     description: 'Retrieve all faces belonging to an asset.',
