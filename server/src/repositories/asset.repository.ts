@@ -1030,8 +1030,8 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview] })
-  async getForThumbnail(id: string, type: AssetFileType) {
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
+  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', id)
@@ -1039,7 +1039,7 @@ export class AssetRepository {
         join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
       )
       .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
-      .orderBy('asset_file.isEdited', 'desc')
+      .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
       .executeTakeFirstOrThrow();
   }
 
