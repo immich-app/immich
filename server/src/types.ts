@@ -36,14 +36,14 @@ export type FullsizeImageOptions = {
   format: ImageFormat;
   quality: number;
   enabled: boolean;
-  progressive: boolean;
+  progressive?: boolean;
 };
 
 export type ImageOptions = {
   format: ImageFormat;
   quality: number;
   size: number;
-  progressive: boolean;
+  progressive?: boolean;
 };
 
 export type RawImageInfo = {

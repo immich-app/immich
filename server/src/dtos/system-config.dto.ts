@@ -586,8 +586,8 @@ class SystemConfigGeneratedImageDto {
   @ApiProperty({ type: 'integer' })
   size!: number;
 
-  @ValidateBoolean()
-  progressive!: boolean;
+  @ValidateBoolean({ optional: true, default: false })
+  progressive?: boolean;
 }
 
 class SystemConfigGeneratedFullsizeImageDto {
@@ -604,8 +604,8 @@ class SystemConfigGeneratedFullsizeImageDto {
   @ApiProperty({ type: 'integer' })
   quality!: number;
 
-  @ValidateBoolean()
-  progressive!: boolean;
+  @ValidateBoolean({ optional: true, default: false })
+  progressive?: boolean;
 }
 
 export class SystemConfigImageDto {
