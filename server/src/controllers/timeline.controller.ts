@@ -19,13 +19,13 @@ export class TimelineController {
     description: 'Retrieve a list of all minimal time buckets.',
     history: new HistoryBuilder().added('v1').internal('v1'),
   })
-  @ApiOkResponse({ type: TimeBucketAssetResponseDto })
   getTimeBuckets(@Auth() auth: AuthDto, @Query() dto: TimeBucketDto) {
     return this.service.getTimeBuckets(auth, dto);
   }
 
   @Get('bucket')
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  @ApiOkResponse({ type: TimeBucketAssetResponseDto })
   @Header('Content-Type', 'application/json')
   @Endpoint({
     summary: 'Get time bucket',
