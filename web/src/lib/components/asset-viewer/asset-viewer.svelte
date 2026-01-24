@@ -94,6 +94,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowTransition,
+    slideshowRepeat,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -109,6 +110,7 @@
   let stack: StackResponseDto | null = $state(null);
 
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
@@ -238,6 +240,10 @@
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         if (hasNext) {
           $restartSlideshowProgress = true;
+        } else if ($slideshowRepeat && slideshowStartAssetId) {
+          // Loop back to starting asset
+          await setAssetId(slideshowStartAssetId);
+          $restartSlideshowProgress = true;
         } else {
           await handleStopSlideshow();
         }
@@ -262,6 +268,7 @@
   };
 
   const handlePlaySlideshow = async () => {
+    slideshowStartAssetId = asset.id;
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
