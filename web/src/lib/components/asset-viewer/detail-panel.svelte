@@ -96,7 +96,7 @@
     }
   };
 
-  onMount(() => eventManager.on('AlbumAddAssets', () => void refreshAlbums()));
+  onMount(() => eventManager.on({ AlbumAddAssets: () => void refreshAlbums() }));
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
