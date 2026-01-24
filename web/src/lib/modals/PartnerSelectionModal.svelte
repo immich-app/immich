@@ -1,7 +1,7 @@
 <script lang="ts">
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,7 +14,7 @@
   let availableUsers: UserResponseDto[] = $state([]);
   let selectedUsers: UserResponseDto[] = $state([]);
 
-  const getAvailableUsers = async () => {
+  const loadUsers = async () => {
     let users = await searchUsers();
 
     // remove current user
@@ -35,37 +35,21 @@
 
 <Modal title={$t('add_partner')} {onClose} size="small">
   <ModalBody>
-    {#await getAvailableUsers()}
+    {#await loadUsers()}
       <div class="w-full flex place-items-center place-content-center">
         <LoadingSpinner />
       </div>
     {:then _}
       {#if availableUsers.length > 0}
-        <div class="immich-scrollbar max-h-75 overflow-y-auto">
+        <div class="immich-scrollbar max-h-75 overflow-y-auto gap-2 flex flex-col">
           {#each availableUsers as user (user.id)}
-            <button
-              type="button"
-              onclick={() => selectUser(user)}
-              class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
-            >
-              {#if selectedUsers.includes(user)}
-                <span
-                  class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
-                  >✓</span
-                >
-              {:else}
-                <UserAvatar {user} size="lg" />
-              {/if}
-
-              <div class="text-start">
-                <p class="text-immich-fg dark:text-immich-dark-fg">
-                  {user.name}
-                </p>
-                <p class="text-xs">
-                  {user.email}
-                </p>
+            <ListButton onclick={() => selectUser(user)} selected={selectedUsers.includes(user)}>
+              <UserAvatar {user} size="md" />
+              <div class="text-start grow">
+                <Text fontWeight="medium">{user.name}</Text>
+                <Text size="tiny" color="muted">{user.email}</Text>
               </div>
-            </button>
+            </ListButton>
           {/each}
 
           <ModalFooter>
