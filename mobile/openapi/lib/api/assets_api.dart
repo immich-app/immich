@@ -344,10 +344,10 @@ class AssetsApi {
   ///   Return edited asset if available
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> downloadAssetWithHttpInfo(String id, { bool? edited, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
@@ -396,10 +396,10 @@ class AssetsApi {
   ///   Return edited asset if available
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<MultipartFile?> downloadAsset(String id, { bool? edited, String? key, String? slug, }) async {
     final response = await downloadAssetWithHttpInfo(id,  edited: edited, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -606,10 +606,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> getAssetInfoWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}'
@@ -652,10 +652,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<AssetResponseDto?> getAssetInfo(String id, { String? key, String? slug, }) async {
     final response = await getAssetInfoWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1013,10 +1013,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> playAssetVideoWithHttpInfo(String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/video/playback'
@@ -1059,10 +1059,10 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<MultipartFile?> playAssetVideo(String id, { String? key, String? slug, }) async {
     final response = await playAssetVideoWithHttpInfo(id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1153,10 +1153,10 @@ class AssetsApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] duration:
   ///   Duration (for videos)
@@ -1254,10 +1254,10 @@ class AssetsApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] duration:
   ///   Duration (for videos)
@@ -1583,10 +1583,10 @@ class AssetsApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
@@ -1724,10 +1724,10 @@ class AssetsApi {
   ///   File modification date
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] xImmichChecksum:
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
@@ -1781,13 +1781,13 @@ class AssetsApi {
   ///   Return edited asset if available
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [AssetMediaSize] size:
   ///   Asset media size
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> viewAssetWithHttpInfo(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
@@ -1839,13 +1839,13 @@ class AssetsApi {
   ///   Return edited asset if available
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [AssetMediaSize] size:
   ///   Asset media size
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<MultipartFile?> viewAsset(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
     final response = await viewAssetWithHttpInfo(id,  edited: edited, key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {

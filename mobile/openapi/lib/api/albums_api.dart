@@ -29,10 +29,10 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/assets'
@@ -77,10 +77,10 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
     final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -110,10 +110,10 @@ class AlbumsApi {
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/assets';
@@ -155,10 +155,10 @@ class AlbumsApi {
   /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
     final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -351,10 +351,10 @@ class AlbumsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [bool] withoutAssets:
   ///   Exclude assets from response
@@ -403,10 +403,10 @@ class AlbumsApi {
   /// * [String] id (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [bool] withoutAssets:
   ///   Exclude assets from response

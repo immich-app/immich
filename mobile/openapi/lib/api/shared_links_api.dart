@@ -29,10 +29,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -77,10 +77,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -238,13 +238,13 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] password:
   ///   Link password
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] token:
   ///   Access token
@@ -293,13 +293,13 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] password:
   ///   Link password
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   ///
   /// * [String] token:
   ///   Access token
@@ -437,10 +437,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
@@ -485,10 +485,10 @@ class SharedLinksApi {
   /// * [AssetIdsDto] assetIdsDto (required):
   ///
   /// * [String] key:
-  ///   Access key for shared links
+  ///   Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.
   ///
   /// * [String] slug:
-  ///   Access slug for shared links
+  ///   Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.
   Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { String? key, String? slug, }) async {
     final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
