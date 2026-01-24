@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
@@ -7,14 +5,12 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
-import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     with CancellableImageProviderMixin<RemoteThumbProvider> {
-  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
   final String thumbhash;
 
@@ -41,7 +37,6 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     final request = this.request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, thumbhash: key.thumbhash),
       headers: ApiService.getRequestHeaders(),
-      cacheManager: cacheManager,
     );
     return loadRequest(request, decode);
   }
@@ -62,7 +57,6 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
     with CancellableImageProviderMixin<RemoteFullImageProvider> {
-  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
   final String thumbhash;
 
@@ -90,7 +84,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* initialImageStream();
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -98,12 +92,11 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     final request = this.request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
       headers: headers,
-      cacheManager: cacheManager,
     );
     yield* loadRequest(request, decode);
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 

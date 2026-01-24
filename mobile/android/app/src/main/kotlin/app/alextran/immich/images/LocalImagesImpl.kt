@@ -11,7 +11,8 @@ import android.os.OperationCanceledException
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
-import java.nio.ByteBuffer
+import androidx.annotation.RequiresApi
+import app.alextran.immich.NativeBuffer
 import kotlin.math.*
 import java.util.concurrent.Executors
 import com.bumptech.glide.Glide
@@ -26,10 +27,42 @@ import java.util.concurrent.Future
 data class Request(
   val taskFuture: Future<*>,
   val cancellationSignal: CancellationSignal,
-  val callback: (Result<Map<String, Long>>) -> Unit
+  val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
-class ThumbnailsImpl(context: Context) : ThumbnailApi {
+@RequiresApi(Build.VERSION_CODES.Q)
+inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
+  return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
+    if (target.width > 0 && target.height > 0) {
+      val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
+      decoder.setTargetSampleSize(sample)
+    }
+    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+    decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
+  }
+}
+
+fun Bitmap.toNativeBuffer(): Map<String, Long>  {
+  val size = width * height * 4
+  val pointer = NativeBuffer.allocate(size)
+  try {
+    val buffer = NativeBuffer.wrap(pointer, size)
+    copyPixelsToBuffer(buffer)
+    recycle()
+    return mapOf(
+      "pointer" to pointer,
+      "width" to width.toLong(),
+      "height" to height.toLong(),
+      "rowBytes" to (width * 4).toLong()
+    )
+  } catch (e: Exception) {
+    NativeBuffer.free(pointer)
+    recycle()
+    throw e
+  }
+}
+
+class LocalImagesImpl(context: Context) : LocalImageApi {
   private val ctx: Context = context.applicationContext
   private val resolver: ContentResolver = ctx.contentResolver
   private val requestThread = Executors.newSingleThreadExecutor()
@@ -38,21 +71,8 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
   private val requestMap = ConcurrentHashMap<Long, Request>()
 
   companion object {
-    val CANCELLED = Result.success<Map<String, Long>>(mapOf())
+    val CANCELLED = Result.success<Map<String, Long>?>(null)
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
-
-    init {
-      System.loadLibrary("native_buffer")
-    }
-
-    @JvmStatic
-    external fun allocateNative(size: Int): Long
-
-    @JvmStatic
-    external fun freeNative(pointer: Long)
-
-    @JvmStatic
-    external fun wrapAsBuffer(address: Long, capacity: Int): ByteBuffer
   }
 
   override fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit) {
@@ -63,7 +83,8 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         val res = mapOf(
           "pointer" to image.pointer,
           "width" to image.width.toLong(),
-          "height" to image.height.toLong()
+          "height" to image.height.toLong(),
+          "rowBytes" to (image.width * 4).toLong()
         )
         callback(Result.success(res))
       } catch (e: Exception) {
@@ -78,7 +99,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
-    callback: (Result<Map<String, Long>>) -> Unit
+    callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
     val task = threadPool.submit {
@@ -98,7 +119,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     requestMap[requestId] = request
   }
 
-  override fun cancelImageRequest(requestId: Long) {
+  override fun cancelRequest(requestId: Long) {
     val request = requestMap.remove(requestId) ?: return
     request.taskFuture.cancel(false)
     request.cancellationSignal.cancel()
@@ -117,7 +138,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
-    callback: (Result<Map<String, Long>>) -> Unit,
+    callback: (Result<Map<String, Long>?>) -> Unit,
     signal: CancellationSignal
   ) {
     signal.throwIfCanceled()
@@ -131,31 +152,12 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       decodeImage(id, size, signal)
     }
 
-    processBitmap(bitmap, callback, signal)
-  }
-
-  private fun processBitmap(
-    bitmap: Bitmap, callback: (Result<Map<String, Long>>) -> Unit, signal: CancellationSignal
-  ) {
-    signal.throwIfCanceled()
-    val actualWidth = bitmap.width
-    val actualHeight = bitmap.height
-
-    val size = actualWidth * actualHeight * 4
-    val pointer = allocateNative(size)
-
     try {
       signal.throwIfCanceled()
-      val buffer = wrapAsBuffer(pointer, size)
-      bitmap.copyPixelsToBuffer(buffer)
-      bitmap.recycle()
+      val res = bitmap.toNativeBuffer()
       signal.throwIfCanceled()
-      val res = mapOf(
-        "pointer" to pointer, "width" to actualWidth.toLong(), "height" to actualHeight.toLong()
-      )
       callback(Result.success(res))
     } catch (e: Exception) {
-      freeNative(pointer)
       callback(if (e is OperationCanceledException) CANCELLED else Result.failure(e))
     }
   }
@@ -191,16 +193,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
   private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      val source = ImageDecoder.createSource(resolver, uri)
-      signal.throwIfCanceled()
-      ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-        if (target.width > 0 && target.height > 0) {
-          val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
-          decoder.setTargetSampleSize(sample)
-        }
-        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
-      }
+      ImageDecoder.createSource(resolver, uri).decodeBitmap(target)
     } else {
       val ref =
         Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()

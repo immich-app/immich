@@ -13,7 +13,7 @@ import io.flutter.plugin.common.StandardMethodCodec
 import io.flutter.plugin.common.StandardMessageCodec
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-private object ThumbnailsPigeonUtils {
+private object RemoteImagesPigeonUtils {
 
   fun wrapResult(result: Any?): List<Any?> {
     return listOf(result)
@@ -35,19 +35,7 @@ private object ThumbnailsPigeonUtils {
     }
   }
 }
-
-/**
- * Error class for passing custom error details to Flutter via a thrown PlatformException.
- * @property code The error code.
- * @property message The error message.
- * @property details The error details. Must be a datatype supported by the api codec.
- */
-class FlutterError (
-  val code: String,
-  override val message: String? = null,
-  val details: Any? = null
-) : Throwable()
-private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
+private open class RemoteImagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return     super.readValueOfType(type, buffer)
   }
@@ -58,37 +46,35 @@ private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
 
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
-interface ThumbnailApi {
-  fun requestImage(assetId: String, requestId: Long, width: Long, height: Long, isVideo: Boolean, callback: (Result<Map<String, Long>>) -> Unit)
-  fun cancelImageRequest(requestId: Long)
-  fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit)
+interface RemoteImageApi {
+  fun requestImage(url: String, headers: Map<String, String>, requestId: Long, callback: (Result<Map<String, Long>?>) -> Unit)
+  fun cancelRequest(requestId: Long)
+  fun clearCache(callback: (Result<Long>) -> Unit)
 
   companion object {
-    /** The codec used by ThumbnailApi. */
+    /** The codec used by RemoteImageApi. */
     val codec: MessageCodec<Any?> by lazy {
-      ThumbnailsPigeonCodec()
+      RemoteImagesPigeonCodec()
     }
-    /** Sets up an instance of `ThumbnailApi` to handle messages through the `binaryMessenger`. */
+    /** Sets up an instance of `RemoteImageApi` to handle messages through the `binaryMessenger`. */
     @JvmOverloads
-    fun setUp(binaryMessenger: BinaryMessenger, api: ThumbnailApi?, messageChannelSuffix: String = "") {
+    fun setUp(binaryMessenger: BinaryMessenger, api: RemoteImageApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.requestImage$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val assetIdArg = args[0] as String
-            val requestIdArg = args[1] as Long
-            val widthArg = args[2] as Long
-            val heightArg = args[3] as Long
-            val isVideoArg = args[4] as Boolean
-            api.requestImage(assetIdArg, requestIdArg, widthArg, heightArg, isVideoArg) { result: Result<Map<String, Long>> ->
+            val urlArg = args[0] as String
+            val headersArg = args[1] as Map<String, String>
+            val requestIdArg = args[2] as Long
+            api.requestImage(urlArg, headersArg, requestIdArg) { result: Result<Map<String, Long>?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
-                reply.reply(ThumbnailsPigeonUtils.wrapError(error))
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
               } else {
                 val data = result.getOrNull()
-                reply.reply(ThumbnailsPigeonUtils.wrapResult(data))
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
               }
             }
           }
@@ -97,16 +83,16 @@ interface ThumbnailApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.cancelImageRequest$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.cancelRequest$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val requestIdArg = args[0] as Long
             val wrapped: List<Any?> = try {
-              api.cancelImageRequest(requestIdArg)
+              api.cancelRequest(requestIdArg)
               listOf(null)
             } catch (exception: Throwable) {
-              ThumbnailsPigeonUtils.wrapError(exception)
+              RemoteImagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
           }
@@ -115,18 +101,16 @@ interface ThumbnailApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbhash$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val thumbhashArg = args[0] as String
-            api.getThumbhash(thumbhashArg) { result: Result<Map<String, Long>> ->
+          channel.setMessageHandler { _, reply ->
+            api.clearCache{ result: Result<Long> ->
               val error = result.exceptionOrNull()
               if (error != null) {
-                reply.reply(ThumbnailsPigeonUtils.wrapError(error))
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
               } else {
                 val data = result.getOrNull()
-                reply.reply(ThumbnailsPigeonUtils.wrapResult(data))
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
               }
             }
           }
