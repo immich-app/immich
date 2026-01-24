@@ -14,7 +14,7 @@ const nextId = () => count++;
 const noop = () => {};
 
 export class BaseEventManager<Events extends EventMap> {
-  #callbacks: EventItem<Events>[] = $state([]);
+  #callbacks: EventItem<Events>[] = [];
 
   on<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {
     if (!callback) {
