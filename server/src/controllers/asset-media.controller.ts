@@ -209,6 +209,7 @@ export class AssetMediaController {
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
@@ -218,12 +219,12 @@ export class AssetMediaController {
 
   @Post('bulk-upload-check')
   @Authenticated({ permission: Permission.AssetUpload })
-  @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Check bulk upload',
     description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @HttpCode(HttpStatus.OK)
   checkBulkUpload(
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,

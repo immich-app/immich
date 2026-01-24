@@ -60,13 +60,13 @@ export class AuthController {
   }
 
   @Post('validateToken')
-  @Authenticated({ permission: false })
-  @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Validate access token',
     description: 'Validate the current authorization method is still valid.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @Authenticated({ permission: false })
+  @HttpCode(HttpStatus.OK)
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
@@ -167,12 +167,12 @@ export class AuthController {
 
   @Post('session/lock')
   @Authenticated()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Lock auth session',
     description: 'Remove elevated access to locked assets from the current session.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async lockAuthSession(@Auth() auth: AuthDto): Promise<void> {
     return this.service.lockSession(auth);
   }
