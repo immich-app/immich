@@ -1,3 +1,4 @@
+import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -26,6 +27,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
   mdiCogRefreshOutline,
+  mdiContentCopy,
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
@@ -34,9 +36,12 @@ import {
   mdiHeartOutline,
   mdiImageRefreshOutline,
   mdiInformationOutline,
+  mdiMagnifyMinusOutline,
+  mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiShareVariantOutline,
+  mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -123,6 +128,27 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => assetViewerManager.toggleDetailPanel(),
   };
 
+  const ZoomIn: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyPlusOutline,
+    $if: () => assetViewerManager.canZoomIn(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const ZoomOut: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyMinusOutline,
+    $if: () => assetViewerManager.canZoomOut(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const Copy: ActionItem = {
+    title: $t('copy_image'),
+    icon: mdiContentCopy,
+    $if: () => assetViewerManager.canCopyImage(),
+    onAction: () => assetViewerManager.emit('Copy'),
+  };
+
   const Info: ActionItem = {
     title: $t('info'),
     icon: mdiInformationOutline,
@@ -130,6 +156,21 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     $if: () => asset.hasMetadata,
     onAction: () => assetViewerManager.toggleDetailPanel(),
     shortcuts: [{ key: 'i' }],
+  };
+
+  const Edit: ActionItem = {
+    title: $t('editor'),
+    icon: mdiTune,
+    $if: () =>
+      !sharedLink &&
+      isOwner &&
+      asset.type === AssetTypeEnum.Image &&
+      !asset.livePhotoVideoId &&
+      asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
+      !asset.originalPath.toLowerCase().endsWith('.insp') &&
+      !asset.originalPath.toLowerCase().endsWith('.gif') &&
+      !asset.originalPath.toLowerCase().endsWith('.svg'),
+    onAction: () => assetViewerManager.openEditor(),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -168,6 +209,10 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
+    Edit,
     RefreshFacesJob,
     RefreshMetadataJob,
     RegenerateThumbnailJob,

@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { eventManager, type Events } from '$lib/managers/event-manager.svelte';
+  import { assetViewerManager, type Events } from '$lib/managers/asset-viewer-manager.svelte';
+  import type { EventCallback } from '$lib/utils/base-event-manager.svelte';
   import { onMount } from 'svelte';
 
   type Props = {
-    [K in keyof Events as `on${K}`]?: (...args: Events[K]) => void;
+    [K in keyof Events as `on${K}`]?: EventCallback<Events, K>;
   };
 
   const props: Props = $props();
@@ -13,15 +14,12 @@
 
     for (const name of Object.keys(props)) {
       const event = name.slice(2) as keyof Events;
-      const listener = props[name as keyof Props];
-
+      const listener = props[name as keyof Props] as EventCallback<Events, typeof event> | undefined;
       if (!listener) {
         continue;
       }
 
-      const args = [event, listener as (...args: Events[typeof event]) => void] as const;
-
-      unsubscribes.push(eventManager.on(...args));
+      unsubscribes.push(assetViewerManager.on(event, listener));
     }
 
     return () => {

@@ -1,5 +1,5 @@
 import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
@@ -185,7 +185,7 @@ class TransformManager implements EditToolManager {
 
     this.imgElement = new Image();
 
-    const imageURL = getAssetThumbnailUrl({
+    const imageURL = getAssetMediaUrl({
       id: asset.id,
       cacheKey: asset.thumbhash,
       edited: false,

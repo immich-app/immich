@@ -167,10 +167,10 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-6', checksum: 'checksum-6', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepFavorites: true);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepFavorites: true);
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-1');
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-1');
     });
 
     test('includes favorites when keepFavorites is false', () async {
@@ -183,15 +183,15 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-favorite', checksum: 'checksum-fav', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, keepFavorites: false);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepFavorites: false);
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-favorite');
-      expect(candidates[0].isFavorite, true);
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-favorite');
+      expect(result.assets[0].isFavorite, true);
     });
 
-    test('filters by photos only', () async {
-      // Photo
+    test('keepMediaType photosOnly returns only videos for deletion', () async {
+      // Photo - should be kept
       await insertLocalAsset(
         id: 'local-photo',
         checksum: 'checksum-photo',
@@ -201,7 +201,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-photo', checksum: 'checksum-photo', ownerId: userId);
 
-      // Video
+      // Video - should be deleted
       await insertLocalAsset(
         id: 'local-video',
         checksum: 'checksum-video',
@@ -211,19 +211,19 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(
+      final result = await repository.getRemovalCandidates(
         userId,
         cutoffDate,
-        filterType: AssetFilterType.photosOnly,
+        keepMediaType: AssetKeepType.photosOnly,
       );
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-photo');
-      expect(candidates[0].type, AssetType.image);
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-video');
+      expect(result.assets[0].type, AssetType.video);
     });
 
-    test('filters by videos only', () async {
-      // Photo
+    test('keepMediaType videosOnly returns only photos for deletion', () async {
+      // Photo - should be deleted
       await insertLocalAsset(
         id: 'local-photo',
         checksum: 'checksum-photo',
@@ -233,7 +233,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-photo', checksum: 'checksum-photo', ownerId: userId);
 
-      // Video
+      // Video - should be kept
       await insertLocalAsset(
         id: 'local-video',
         checksum: 'checksum-video',
@@ -243,18 +243,18 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(
+      final result = await repository.getRemovalCandidates(
         userId,
         cutoffDate,
-        filterType: AssetFilterType.videosOnly,
+        keepMediaType: AssetKeepType.videosOnly,
       );
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-video');
-      expect(candidates[0].type, AssetType.video);
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-photo');
+      expect(result.assets[0].type, AssetType.image);
     });
 
-    test('returns both photos and videos with filterType.all', () async {
+    test('returns both photos and videos with keepMediaType.all', () async {
       // Photo
       await insertLocalAsset(
         id: 'local-photo',
@@ -275,10 +275,10 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate, filterType: AssetFilterType.all);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepMediaType: AssetKeepType.none);
 
-      expect(candidates.length, 2);
-      final ids = candidates.map((a) => a.id).toSet();
+      expect(result.assets.length, 2);
+      final ids = result.assets.map((a) => a.id).toSet();
       expect(ids, containsAll(['local-photo', 'local-video']));
     });
 
@@ -311,10 +311,10 @@ void main() {
       await insertRemoteAsset(id: 'remote-shared', checksum: 'checksum-shared', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-shared', assetId: 'local-shared');
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-regular');
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-regular');
     });
 
     test('includes assets at exact cutoff date', () async {
@@ -327,10 +327,10 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-exact', checksum: 'checksum-exact', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-exact');
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-exact');
     });
 
     test('returns empty list when no assets match criteria', () async {
@@ -344,9 +344,9 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-after', checksum: 'checksum-after', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates, isEmpty);
+      expect(result.assets, isEmpty);
     });
 
     test('handles multiple assets with same checksum', () async {
@@ -367,10 +367,10 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-dup', checksum: 'checksum-dup', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates.length, 2);
-      expect(candidates.map((a) => a.checksum).toSet(), equals({'checksum-dup'}));
+      expect(result.assets.length, 2);
+      expect(result.assets.map((a) => a.checksum).toSet(), equals({'checksum-dup'}));
     });
 
     test('includes assets not in any album', () async {
@@ -384,10 +384,10 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-no-album', checksum: 'checksum-no-album', ownerId: userId);
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates.length, 1);
-      expect(candidates[0].id, 'local-no-album');
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-no-album');
     });
 
     test('excludes asset that is in both regular and iOS shared album', () async {
@@ -409,9 +409,9 @@ void main() {
       await insertLocalAlbumAsset(albumId: 'album-regular', assetId: 'local-both');
       await insertLocalAlbumAsset(albumId: 'album-shared', assetId: 'local-both');
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates, isEmpty);
+      expect(result.assets, isEmpty);
     });
 
     test('excludes assets with null checksum (not backed up)', () async {
@@ -430,9 +430,218 @@ void main() {
             ),
           );
 
-      final candidates = await repository.getRemovalCandidates(userId, cutoffDate);
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
 
-      expect(candidates, isEmpty);
+      expect(result.assets, isEmpty);
+    });
+
+    test('excludes assets in user-excluded albums', () async {
+      // Create two regular albums
+      await insertLocalAlbum(id: 'album-include', name: 'Include Album', isIosSharedAlbum: false);
+      await insertLocalAlbum(id: 'album-exclude', name: 'Exclude Album', isIosSharedAlbum: false);
+
+      // Asset in included album - should be included
+      await insertLocalAsset(
+        id: 'local-in-included',
+        checksum: 'checksum-included',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-included', checksum: 'checksum-included', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-include', assetId: 'local-in-included');
+
+      // Asset in excluded album - should NOT be included
+      await insertLocalAsset(
+        id: 'local-in-excluded',
+        checksum: 'checksum-excluded',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-excluded', checksum: 'checksum-excluded', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-exclude', assetId: 'local-in-excluded');
+
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-exclude'});
+
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-in-included');
+    });
+
+    test('excludes assets that are in any of multiple excluded albums', () async {
+      // Create multiple albums
+      await insertLocalAlbum(id: 'album-1', name: 'Album 1', isIosSharedAlbum: false);
+      await insertLocalAlbum(id: 'album-2', name: 'Album 2', isIosSharedAlbum: false);
+      await insertLocalAlbum(id: 'album-3', name: 'Album 3', isIosSharedAlbum: false);
+
+      // Asset in album-1 (excluded) - should NOT be included
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: 'checksum-1',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-1', checksum: 'checksum-1', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-1', assetId: 'local-1');
+
+      // Asset in album-2 (excluded) - should NOT be included
+      await insertLocalAsset(
+        id: 'local-2',
+        checksum: 'checksum-2',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-2', checksum: 'checksum-2', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-2', assetId: 'local-2');
+
+      // Asset in album-3 (not excluded) - should be included
+      await insertLocalAsset(
+        id: 'local-3',
+        checksum: 'checksum-3',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-3', checksum: 'checksum-3', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-3', assetId: 'local-3');
+
+      final result = await repository.getRemovalCandidates(
+        userId,
+        cutoffDate,
+        keepAlbumIds: {'album-1', 'album-2'},
+      );
+
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-3');
+    });
+
+    test('excludes asset that is in both excluded and non-excluded album', () async {
+      await insertLocalAlbum(id: 'album-included', name: 'Included Album', isIosSharedAlbum: false);
+      await insertLocalAlbum(id: 'album-excluded', name: 'Excluded Album', isIosSharedAlbum: false);
+
+      // Asset in BOTH albums - should be excluded because it's in an excluded album
+      await insertLocalAsset(
+        id: 'local-both',
+        checksum: 'checksum-both',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-both', checksum: 'checksum-both', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-included', assetId: 'local-both');
+      await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-both');
+
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-excluded'});
+
+      expect(result.assets, isEmpty);
+    });
+
+    test('includes all assets when excludedAlbumIds is empty', () async {
+      await insertLocalAlbum(id: 'album-1', name: 'Album 1', isIosSharedAlbum: false);
+
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: 'checksum-1',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-1', checksum: 'checksum-1', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-1', assetId: 'local-1');
+
+      await insertLocalAsset(
+        id: 'local-2',
+        checksum: 'checksum-2',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-2', checksum: 'checksum-2', ownerId: userId);
+
+      // Empty excludedAlbumIds should include all eligible assets
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {});
+
+      expect(result.assets.length, 2);
+    });
+
+    test('excludes asset not in any album when album is excluded', () async {
+      await insertLocalAlbum(id: 'album-excluded', name: 'Excluded Album', isIosSharedAlbum: false);
+
+      // Asset NOT in any album - should be included
+      await insertLocalAsset(
+        id: 'local-no-album',
+        checksum: 'checksum-no-album',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-no-album', checksum: 'checksum-no-album', ownerId: userId);
+
+      // Asset in excluded album - should NOT be included
+      await insertLocalAsset(
+        id: 'local-in-excluded',
+        checksum: 'checksum-in-excluded',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-in-excluded', checksum: 'checksum-in-excluded', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-in-excluded');
+
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-excluded'});
+
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-no-album');
+    });
+
+    test('combines excludedAlbumIds with keepMediaType correctly', () async {
+      await insertLocalAlbum(id: 'album-excluded', name: 'Excluded Album', isIosSharedAlbum: false);
+      await insertLocalAlbum(id: 'album-regular', name: 'Regular Album', isIosSharedAlbum: false);
+
+      // Photo in excluded album - should NOT be included (album excluded)
+      await insertLocalAsset(
+        id: 'local-photo-excluded',
+        checksum: 'checksum-photo-excluded',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-photo-excluded', checksum: 'checksum-photo-excluded', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-excluded', assetId: 'local-photo-excluded');
+
+      // Video in regular album - should be included (keepMediaType photosOnly = delete videos)
+      await insertLocalAsset(
+        id: 'local-video',
+        checksum: 'checksum-video',
+        createdAt: beforeCutoff,
+        type: AssetType.video,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-regular', assetId: 'local-video');
+
+      // Photo in regular album - should NOT be included (keepMediaType photosOnly = keep photos)
+      await insertLocalAsset(
+        id: 'local-photo-regular',
+        checksum: 'checksum-photo-regular',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-photo-regular', checksum: 'checksum-photo-regular', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-regular', assetId: 'local-photo-regular');
+
+      final result = await repository.getRemovalCandidates(
+        userId,
+        cutoffDate,
+        keepMediaType: AssetKeepType.photosOnly,
+        keepAlbumIds: {'album-excluded'},
+      );
+
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-video');
     });
   });
 }

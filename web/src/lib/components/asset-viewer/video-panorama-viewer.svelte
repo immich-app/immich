@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { getAssetOriginalUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetUrl } from '$lib/utils';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
   interface Props {
-    assetId: string;
+    asset: AssetResponseDto;
   }
 
-  const { assetId }: Props = $props();
+  const { asset }: Props = $props();
 
   const modules = Promise.all([
     import('./photo-sphere-viewer-adapter.svelte').then((module) => module.default),
@@ -23,8 +24,8 @@
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
     <PhotoSphereViewer
-      panorama={{ source: getAssetPlaybackUrl(assetId) }}
-      originalPanorama={{ source: getAssetOriginalUrl(assetId) }}
+      panorama={{ source: getAssetPlaybackUrl({ id: asset.id }) }}
+      originalPanorama={{ source: getAssetUrl({ asset, forceOriginal: true })! }}
       plugins={[videoPlugin]}
       {adapter}
       navbar
