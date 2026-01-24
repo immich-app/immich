@@ -48,23 +48,24 @@
     loaded = true;
     onComplete?.(false);
   };
+
   const setErrored = () => {
     errored = true;
     onComplete?.(true);
   };
 
-  let optionalClasses = $derived(
+  let optionalClasses = $derived([
     [
       curve && 'rounded-xl',
       circle && 'rounded-full',
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
       border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
-      brokenAssetClass,
     ]
       .filter(Boolean)
       .join(' '),
-  );
+    brokenAssetClass,
+  ]);
 
   let style = $derived(
     `width: ${widthStyle}; height: ${heightStyle ?? ''}; filter: ${hidden ? 'grayscale(50%)' : 'none'}; opacity: ${hidden ? '0.5' : '1'};`,
@@ -79,7 +80,7 @@
       src: url,
       onLoad: setLoaded,
       onError: setErrored,
-      imgClass: ['object-cover', optionalClasses, imageClass],
+      imgClass: ['object-cover', imageClass],
       style,
       alt: loaded || errored ? altText : '',
       draggable: false,
