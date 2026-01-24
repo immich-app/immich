@@ -80,8 +80,8 @@ class AssetApiRepository extends ApiRepository {
     return _stacksApi.deleteStacks(BulkIdsDto(ids: ids));
   }
 
-  Future<Response> downloadAsset(String id) {
-    return _api.downloadAssetWithHttpInfo(id);
+  Future<Response> downloadAsset(String id, {required bool edited}) {
+    return _api.downloadAssetWithHttpInfo(id, edited: edited);
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
