@@ -100,9 +100,34 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
+    // If loading originals is enabled, attempt to load the original
+    // and fall back to the fullsize preview when that fails.
     if (AppSetting.get(Setting.loadOriginal)) {
-      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
-      yield* loadRequest(request, decode);
+      try {
+        final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+        yield* loadRequest(request, decode);
+      } catch (e) {
+        if (isCancelled) {
+          unawaited(evict());
+          return;
+        }
+
+        // Fallback to fullsize preview when original fails
+        final fullResRequest = this.request = RemoteImageRequest(
+          uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.fullsize),
+          headers: headers,
+          cacheManager: cacheManager,
+        );
+        yield* loadRequest(fullResRequest, decode);
+      }
+    } else {
+      // When load original is disabled, always load the fullsize preview after the preview.
+      final fullResRequest = this.request = RemoteImageRequest(
+        uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.fullsize),
+        headers: headers,
+        cacheManager: cacheManager,
+      );
+      yield* loadRequest(fullResRequest, decode);
     }
   }
 
