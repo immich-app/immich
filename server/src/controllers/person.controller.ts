@@ -12,7 +12,7 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -47,7 +47,6 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PersonRead })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved people', type: PeopleResponseDto })
   @Endpoint({
     summary: 'Get all people',
     description: 'Retrieve a list of all people.',
@@ -60,7 +59,6 @@ export class PersonController {
   @Post()
   @Authenticated({ permission: Permission.PersonCreate })
   @ApiBody({ description: 'Person creation data', type: PersonCreateDto })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Person created successfully', type: PersonResponseDto })
   @Endpoint({
     summary: 'Create a person',
     description: 'Create a new person that can have multiple faces assigned to them.',
@@ -73,7 +71,6 @@ export class PersonController {
   @Put()
   @Authenticated({ permission: Permission.PersonUpdate })
   @ApiBody({ description: 'Bulk person update data', type: PeopleUpdateDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'People updated successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Update people',
     description: 'Bulk update multiple people at once.',
@@ -87,7 +84,6 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Person IDs to delete', type: BulkIdsDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'People deleted successfully' })
   @Endpoint({
     summary: 'Delete people',
     description: 'Bulk delete a list of people at once.',
@@ -100,7 +96,6 @@ export class PersonController {
   @Get(':id')
   @Authenticated({ permission: Permission.PersonRead })
   @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved person', type: PersonResponseDto })
   @Endpoint({
     summary: 'Get a person',
     description: 'Retrieve a person by id.',
@@ -114,7 +109,6 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonUpdate })
   @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Person update data', type: PersonUpdateDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Person updated successfully', type: PersonResponseDto })
   @Endpoint({
     summary: 'Update person',
     description: 'Update an individual person.',
@@ -132,7 +126,6 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Person deleted successfully' })
   @Endpoint({
     summary: 'Delete person',
     description: 'Delete an individual person.',
@@ -145,11 +138,6 @@ export class PersonController {
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.PersonStatistics })
   @ApiParam({ name: 'id', description: 'Person ID', type: String, format: 'uuid' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Successfully retrieved person statistics',
-    type: PersonStatisticsResponseDto,
-  })
   @Endpoint({
     summary: 'Get person statistics',
     description: 'Retrieve statistics about a specific person.',
@@ -181,7 +169,6 @@ export class PersonController {
   @Authenticated({ permission: Permission.PersonReassign })
   @ApiParam({ name: 'id', description: 'Target person ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Faces to reassign', type: AssetFaceUpdateDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Faces reassigned successfully', type: [PersonResponseDto] })
   @Endpoint({
     summary: 'Reassign faces',
     description: 'Bulk reassign a list of faces to a different person.',
@@ -200,7 +187,6 @@ export class PersonController {
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'id', description: 'Target person ID to merge into', type: String, format: 'uuid' })
   @ApiBody({ description: 'Person IDs to merge', type: MergePersonDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'People merged successfully', type: [BulkIdResponseDto] })
   @Endpoint({
     summary: 'Merge people',
     description: 'Merge a list of people into the person specified in the path parameter.',

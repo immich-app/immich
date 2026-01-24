@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -16,7 +16,6 @@ export class StackController {
 
   @Get()
   @Authenticated({ permission: Permission.StackRead })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved stacks', type: [StackResponseDto] })
   @Endpoint({
     summary: 'Retrieve stacks',
     description: 'Retrieve a list of stacks.',
@@ -29,7 +28,6 @@ export class StackController {
   @Post()
   @Authenticated({ permission: Permission.StackCreate })
   @ApiBody({ description: 'Stack creation data with name and asset IDs', type: StackCreateDto })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Stack created successfully', type: StackResponseDto })
   @Endpoint({
     summary: 'Create a stack',
     description:
@@ -44,7 +42,6 @@ export class StackController {
   @Authenticated({ permission: Permission.StackDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Stack IDs to delete', type: BulkIdsDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Stacks deleted successfully' })
   @Endpoint({
     summary: 'Delete stacks',
     description: 'Delete multiple stacks by providing a list of stack IDs.',
@@ -57,7 +54,6 @@ export class StackController {
   @Get(':id')
   @Authenticated({ permission: Permission.StackRead })
   @ApiParam({ name: 'id', description: 'Stack ID', type: String, format: 'uuid' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully retrieved stack', type: StackResponseDto })
   @Endpoint({
     summary: 'Retrieve a stack',
     description: 'Retrieve a specific stack by its ID.',
@@ -71,7 +67,6 @@ export class StackController {
   @Authenticated({ permission: Permission.StackUpdate })
   @ApiParam({ name: 'id', description: 'Stack ID', type: String, format: 'uuid' })
   @ApiBody({ description: 'Stack update data', type: StackUpdateDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Stack updated successfully', type: StackResponseDto })
   @Endpoint({
     summary: 'Update a stack',
     description: 'Update an existing stack by its ID.',
@@ -89,7 +84,6 @@ export class StackController {
   @Authenticated({ permission: Permission.StackDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Stack ID', type: String, format: 'uuid' })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Stack deleted successfully' })
   @Endpoint({
     summary: 'Delete a stack',
     description: 'Delete a specific stack by its ID.',
@@ -104,7 +98,6 @@ export class StackController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiParam({ name: 'id', description: 'Stack ID', type: String, format: 'uuid' })
   @ApiParam({ name: 'assetId', description: 'Asset ID to remove', type: String, format: 'uuid' })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Asset removed from stack successfully' })
   @Endpoint({
     summary: 'Remove an asset from a stack',
     description: 'Remove a specific asset from a stack by providing the stack ID and asset ID.',

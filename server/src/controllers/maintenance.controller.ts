@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -44,11 +44,6 @@ export class MaintenanceController {
 
   @Post('login')
   @ApiBody({ description: 'Maintenance token for login', type: MaintenanceLoginDto })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Maintenance mode login created successfully',
-    type: MaintenanceAuthDto,
-  })
   @Endpoint({
     summary: 'Log into maintenance mode',
     description: 'Login with maintenance token or cookie to receive current information and perform further actions.',
@@ -60,7 +55,6 @@ export class MaintenanceController {
 
   @Post()
   @ApiBody({ description: 'Maintenance mode action', type: SetMaintenanceModeDto })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Maintenance mode updated successfully' })
   @Endpoint({
     summary: 'Set maintenance mode',
     description: 'Put Immich into or take it out of maintenance mode',

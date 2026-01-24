@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
-import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -29,7 +29,6 @@ export class AuthController {
 
   @Post('login')
   @ApiBody({ description: 'Login credentials', type: LoginCredentialDto })
-  @ApiResponse({ status: HttpStatus.CREATED, description: 'Successfully logged in', type: LoginResponseDto })
   @Endpoint({
     summary: 'Login',
     description: 'Login with username and password and receive a session token.',
@@ -53,11 +52,6 @@ export class AuthController {
 
   @Post('admin-sign-up')
   @ApiBody({ description: 'Admin registration data', type: SignUpDto })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Admin user created successfully',
-    type: UserAdminResponseDto,
-  })
   @Endpoint({
     summary: 'Register admin',
     description: 'Create the first admin user in the system.',
@@ -70,11 +64,6 @@ export class AuthController {
   @Post('validateToken')
   @Authenticated({ permission: false })
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Access token validated successfully',
-    type: ValidateAccessTokenResponseDto,
-  })
   @Endpoint({
     summary: 'Validate access token',
     description: 'Validate the current authorization method is still valid.',
@@ -88,7 +77,6 @@ export class AuthController {
   @Authenticated({ permission: Permission.AuthChangePassword })
   @HttpCode(HttpStatus.OK)
   @ApiBody({ description: 'Current and new password', type: ChangePasswordDto })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Password changed successfully', type: UserAdminResponseDto })
   @Endpoint({
     summary: 'Change password',
     description: 'Change the password of the current user.',
@@ -101,7 +89,6 @@ export class AuthController {
   @Post('logout')
   @Authenticated()
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ status: HttpStatus.OK, description: 'Successfully logged out', type: LogoutResponseDto })
   @Endpoint({
     summary: 'Logout',
     description: 'Logout the current user and invalidate the session token.',
@@ -124,11 +111,6 @@ export class AuthController {
 
   @Get('status')
   @Authenticated()
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Successfully retrieved auth status',
-    type: AuthStatusResponseDto,
-  })
   @Endpoint({
     summary: 'Retrieve auth status',
     description:
@@ -142,7 +124,6 @@ export class AuthController {
   @Authenticated({ permission: Permission.PinCodeCreate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'PIN code setup data', type: PinCodeSetupDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'PIN code setup successfully' })
   @Endpoint({
     summary: 'Setup pin code',
     description: 'Setup a new pin code for the current user.',
@@ -156,7 +137,6 @@ export class AuthController {
   @Authenticated({ permission: Permission.PinCodeUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Old and new PIN code', type: PinCodeChangeDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'PIN code changed successfully' })
   @Endpoint({
     summary: 'Change pin code',
     description: 'Change the pin code for the current user.',
@@ -170,7 +150,6 @@ export class AuthController {
   @Authenticated({ permission: Permission.PinCodeDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'Account password to reset PIN', type: PinCodeResetDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'PIN code reset successfully' })
   @Endpoint({
     summary: 'Reset pin code',
     description: 'Reset the pin code for the current user by providing the account password',
@@ -184,7 +163,6 @@ export class AuthController {
   @Authenticated()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBody({ description: 'PIN code to unlock session', type: SessionUnlockDto })
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Auth session unlocked successfully' })
   @Endpoint({
     summary: 'Unlock auth session',
     description: 'Temporarily grant the session elevated access to locked assets by providing the correct PIN code.',
@@ -197,7 +175,6 @@ export class AuthController {
   @Post('session/lock')
   @Authenticated()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Auth session locked successfully' })
   @Endpoint({
     summary: 'Lock auth session',
     description: 'Remove elevated access to locked assets from the current session.',
