@@ -20,14 +20,6 @@ Below are the SHA-256 fingerprints for the certificates signing the android appl
 
 :::
 
-:::info Beta Program
-The beta release channel allows users to test upcoming changes before they are officially released. To join the channel use the links below.
-
-- Android: Invitation link from [web](https://play.google.com/store/apps/details?id=app.alextran.immich) or from [mobile](https://play.google.com/store/apps/details?id=app.alextran.immich)
-- iOS: [TestFlight invitation link](https://testflight.apple.com/join/1vYsAa8P)
-
-:::
-
 ## Login
 
 <MobileAppLogin />
@@ -36,15 +28,11 @@ The beta release channel allows users to test upcoming changes before they are o
 
 <MobileAppBackup />
 
-:::info
-You can enable automatic backup on supported devices. For more information see [Automatic Backup](/features/automatic-backup.md).
-:::
-
 ## Sync only selected photos
 
 If you have a large number of photos on the device, and you would prefer not to backup all the photos, then it might be prudent to only backup selected photos from device to the Immich server.
 
-First, you need to enable the Storage Indicator in your app's settings. Navigate to **<ins>Settings -> Photo Grid</ins>** and enable **"Show Storage indicator on asset tiles"**; this makes it easy to distinguish local-only assets and synced assets.
+First, you need to enable the Storage Indicator in your app's settings. Navigate to **<ins>Settings -> Photo Grid</ins>** and enable **`Show Storage indicator on asset tiles`**; this makes it easy to distinguish local-only assets and synced assets.
 
 :::note
 
@@ -55,13 +43,8 @@ This will enable a small cloud icon on the bottom right corner of the asset tile
 
 :::
 
-Now make sure that the local album is selected in the backup screen (steps 1-2 above). You can find these albums listed in **<ins>Library -> On this device</ins>**. To selectively upload photos from these albums, simply select the local-only photos and tap on "Upload" button in the dynamic bottom menu.
+Now make sure that the local album is selected in the backup screen (steps 1-2 above). You can find these albums listed in **<ins>Library -> On this device</ins>**. To selectively upload photos from these albums, simply select the local-only photos and tap on the `Upload` button in the dynamic bottom menu.
 
-<img
-  src={require('./img/mobile-upload-open-photo.webp').default}
-  width="50%"
-  title="Upload button on local asset preview"
-/>
 <img
   src={require('./img/mobile-upload-selected-photos.webp').default}
   width="40%"
@@ -70,53 +53,46 @@ Now make sure that the local album is selected in the backup screen (steps 1-2 a
 
 ## Free Up Space
 
-The **Free Up Space** tool allows you to remove local media files from your device that have already been successfully backed up to your Immich server (and are not in the Immich trash). This helps reclaim storage on your mobile device without losing your memories.
+**Free Up Space** allows you to remove local media files from your device that have already been successfully backed up to your Immich server (and are not in Immich trash). This helps reclaim storage on your mobile device without losing your memories.
 
 ### How it works
 
+<img src={require('./img/free-up-space.webp').default} title="Free up space" />
+
 1.  **Configuration:**
-    - **Cutoff Date:** You can select a cutoff date. The tool will only look for photos and videos **on or before** this date.
-    - **Filter Options:** You can choose to remove **All** assets, or restrict removal to **Photos only** or **Videos only**.
-    - **Keep Favorites:** By default, local assets marked as favorites are preserved on your device, even if they match the cutoff date.
-2.  **Scan & Review:** Before any files are removed, you are presented with a review screen to verify which items will be deleted.
-3.  **Deletion:** Confirmed items are moved to your device's native Trash/Recycle Bin. They will be permanently removed by the OS based on your system settings (usually after 30 days).
+    - **Cutoff date:** Free Up Space will only look for photos and videos **on or before** this date. Photos removed from the device don't show up in other (messaging) apps and have to be shared from Immich in order to send them.
+    - **Keep favorites:** This works the same way `Keep albums` does. By default, favorited assets are preserved on your device.
+    - **Keep albums:** Hold all photos and videos in the selected albums on your device, regardless of other settings. By default, `WhatsApp` [related albums](#external-app-dependencies) are selected to be kept on the device. Assets not already on the device will not be re-downloaded.
+    - **Keep on device:** You can choose to restrict removal to `Always keep` **All photos** or **All videos**, regardless of other settings. This setting can hamper freeing up space significantly — with 80 GB of videos and 40 GB photos, selecting `Always keep photos` retains thousands of photos on your device.
 
-:::info Android Permissions
-For the smoothest experience on Android, you should grant Immich special delete privileges. Without this, you may be prompted to confirm deletion for every single image.
+2.  **Scan & Review:** Before any files are removed, you are presented with a review screen to verify which items will be deleted and how much storage is reclamable.
+3.  **Deletion:** Confirmed items are moved to your device's native Trash/Recycle Bin.
 
-Go to **Immich Settings > Advanced** and enable **"Media Management Access"**.
+:::info reclaim storage
+To use the reclaimed space right away, you must empty the system/gallery trash manually outside of Immich.
 :::
 
-### iCloud Photos (iOS Users)
+Provided the server is healthy and [backed up](/administration/backup-and-restore.md), assets removed by Free Up Space can always be accessed in the Immich app.
 
-If you use **iCloud Photos** alongside Immich, it is vital to understand how deletion affects your data. iCloud utilizes a two-way sync; this means deleting a photo from your iPhone to free up space will **also delete it from iCloud**.
+### iCloud Photos
+
+If you use **iCloud Photos** alongside Immich, it is vital to understand how deletion affects your data. After using **Free Up Space**, the photo will be stored **only** on your Immich server (and your phone's "Recently Deleted" folder for 30 days).
+
+Assets that are part of an **iCloud Shared Album** are automatically excluded from the cleanup scan because iCloud does not allow removing the items in Shared Album from the device.
 
 :::warning iCloud & Backups
-If you rely on iCloud as a secondary backup (part of a 3-2-1 backup strategy), using the Free Up Space feature in Immich will remove the file from both your phone and iCloud.
+If, in addition to Immich, you rely on iCloud as a secondary backup (as part of your [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup strategy), you should instead use `Optimize iPhone Storage` in [iCloud Photos](https://support.apple.com/en-us/105061).
 
-Once deleted, the photo will exist **only** on your Immich server (and your phone's "Recently Deleted" folder for 30 days).
-
-When you use iCloud Photos and delete a photo or video on one device, it's also deleted on all other devices where you're signed in with the same Apple Account.
-
-More information on the [Apple Support](https://support.apple.com/en-us/108922#iCloud_photo_library) website
-
-**Shared Albums**
-Assets that are part of an **iCloud Shared Album** are automatically excluded from the cleanup scan to ensure they remain viewable to others in the shared album.
+iCloud utilizes a two-way sync; this means deleting a photo, or using Free Up Space from your iPhone will **also delete it from iCloud** and all other devices (Mac, iPad) where you're signed in with the same Apple Account. See [Apple Support](https://support.apple.com/en-us/108922#iCloud_photo_library) for more info.
 :::
 
-### External App Dependencies (WhatsApp, etc.)
+### External App Dependencies (WhatsApp, etc.) \{#external-app-dependencies\}
 
-:::danger WhatsApp & Local Files
 Android applications like **WhatsApp** rely on local files to display media in chat history.
 
 If Immich backs up your WhatsApp folder and you run **Free Up Space**, the local copies of these images will be deleted. Consequently, **media in your WhatsApp chats will appear blurry or missing.** You will only be able to view these photos inside the Immich app; they will no longer be visible within the WhatsApp interface.
 
-**Recommendation:** If keeping chat history intact is important, please ensure you review the deletion list carefully or consider excluding WhatsApp folders from the backup if you intend to use this feature frequently.
-:::
-
-:::info reclaim storage
-You must empty the system/gallery trash manually to reclaim storage.
-:::
+**Recommendation:** If keeping chat history intact is important, exclude WhatsApp with `Keep albums` in Free Up Space and review the deletion list carefully. You have to enable [Album Sync](#album-sync) for WhatsApp to show up in the list. Alternatively, don't [back up](#backup) WhatsApp with Immich.
 
 ## Album Sync
 
@@ -138,10 +114,19 @@ You can sync or mirror an album from your phone to the Immich server on your acc
 
 ### Synchronizing albums from the past
 
-Albums can be synchronized to the server even if they did not exist on the server before. In order to apply this setting you have to:  
-Enter the cloud on the top right -> cog wheel on the top right -> select the sync option under Sync albums.
+<img src={require('./img/backup-album-sync.webp').default} width="400px" title="Backup album synchronization option" />
+
+Albums can be synchronized to the server even if they did not exist on the server before. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.
 
 :::info Sync albums delete/move photos
 If you delete/move photos in the local album on your device, it will not be reflected in the album on the server **even if** you click Sync albums
 It will only reflect files you add.
 :::
+
+## Read-only/kid Mode
+
+You can set the app to read-only mode to prevent accidental deletion of photos from your device, and only allow viewing photos on the timeline.
+
+To toggle this feature, long-press the profile icon or go to `Settings > Advanced > Read-only Mode`.
+
+<img src={require('./img/read-only-mode.webp').default} width="800px" title="Read-only mode" />
