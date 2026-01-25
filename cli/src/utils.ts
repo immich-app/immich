@@ -146,7 +146,12 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   }
 
   const searchPatterns = patterns.map((pattern) => {
-    let escapedPattern = pattern.replaceAll("'", "[']").replaceAll('"', '["]').replaceAll('`', '[`]');
+    let escapedPattern = pattern
+      .replaceAll("'", "[']")
+      .replaceAll('"', '["]')
+      .replaceAll('`', '[`]')
+      .replaceAll('(', '[(]')
+      .replaceAll(')', '[)]');
     if (recursive) {
       escapedPattern = escapedPattern + '/**';
     }
