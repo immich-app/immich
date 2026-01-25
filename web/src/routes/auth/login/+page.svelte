@@ -29,7 +29,6 @@
   const serverConfig = $derived(serverConfigManager.value);
 
   const onSuccess = async (user: LoginResponseDto) => {
-    console.log('data.continueUrl:', data.continueUrl);
     await goto(data.continueUrl, { invalidateAll: true });
     eventManager.emit('AuthLogin', user);
   };
