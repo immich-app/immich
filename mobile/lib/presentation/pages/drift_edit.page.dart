@@ -49,7 +49,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
   int _rotationAngle = 0;
   bool _flipHorizontal = false;
   bool _flipVertical = false;
-  ColorFilter? _colorFilter;
+  EditFilter? _filter;
   double? _aspectRatio;
 
   late final originalWidth = widget.exifInfo.isFlipped ? widget.exifInfo.height : widget.exifInfo.width;
@@ -73,6 +73,12 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     cropController = CropController(defaultCrop: crop);
 
     final (rotationAngle, flipHorizontal, flipVertical) = normalizeTransformEdits(widget.edits);
+
+    final existingFilter = widget.edits.firstWhereOrNull((edit) => edit.action == AssetEditAction.filter);
+    if (existingFilter != null) {
+      final parsedFilter = EditFilter.fromDtoParams(existingFilter.parameters, 'Custom');
+      _filter = filters.firstWhereOrNull((filter) => filter == parsedFilter);
+    }
 
     // dont animate to initial rotation
     _rotationAnimationDuration = const Duration(milliseconds: 0);
@@ -120,6 +126,10 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
           parameters: RotateParameters(angle: normalizedRotation).toJson(),
         ),
       );
+    }
+
+    if (_filter != null && !_filter!.isIdentity) {
+      edits.add(AssetEdit(action: AssetEditAction.filter, parameters: _filter!.dtoParameters));
     }
 
     try {
@@ -208,9 +218,9 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     });
   }
 
-  void _applyFilter(ColorFilter? filter) {
+  void _applyFilter(EditFilter? filter) {
     setState(() {
-      _colorFilter = filter;
+      _filter = filter;
     });
   }
 
@@ -222,7 +232,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
       _rotationAngle = 0;
       _flipHorizontal = false;
       _flipVertical = false;
-      _colorFilter = null;
+      _filter = null;
       _aspectRatio = null;
     });
   }
@@ -231,7 +241,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     final isCropped = cropController.crop != const Rect.fromLTRB(0, 0, 1, 1);
     final isRotated = (_rotationAngle % 360 + 360) % 360 != 0;
     final isFlipped = _flipHorizontal || _flipVertical;
-    final isFiltered = _colorFilter != null;
+    final isFiltered = _filter != null && !_filter!.isIdentity;
 
     return isCropped || isRotated || isFlipped || isFiltered;
   }
@@ -292,7 +302,10 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                                   controller: cropController,
                                   image: widget.image,
                                   gridColor: Colors.white,
-                                  overlayPainter: MatrixAdjustmentPainter(image: data.data!, filter: _colorFilter),
+                                  overlayPainter: MatrixAdjustmentPainter(
+                                    image: data.data!,
+                                    filter: _filter?.colorFilter,
+                                  ),
                                 );
                               },
                             ),
@@ -334,7 +347,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                           aspectRatio: _aspectRatio,
                         ),
                         secondChild: _FilterControls(
-                          currentFilter: _colorFilter,
+                          currentFilter: _filter,
                           previewImage: widget.image,
                           onApplyFilter: _applyFilter,
                         ),
@@ -540,9 +553,9 @@ class _TransformControls extends StatelessWidget {
 }
 
 class _FilterControls extends StatelessWidget {
-  final ColorFilter? currentFilter;
+  final EditFilter? currentFilter;
   final Image previewImage;
-  final void Function(ColorFilter?) onApplyFilter;
+  final void Function(EditFilter?) onApplyFilter;
 
   const _FilterControls({required this.currentFilter, required this.previewImage, required this.onApplyFilter});
 
@@ -555,14 +568,13 @@ class _FilterControls extends StatelessWidget {
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: filters.mapIndexed((i, filter) {
+            children: filters.map((filter) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: _FilterButton(
                   image: previewImage,
-                  label: filterNames[i],
                   filter: filter,
-                  isSelected: currentFilter == filters[i],
+                  isSelected: currentFilter == filter,
                   onTap: () => onApplyFilter(filter),
                 ),
               );
@@ -576,18 +588,11 @@ class _FilterControls extends StatelessWidget {
 
 class _FilterButton extends StatelessWidget {
   final Image image;
-  final String label;
-  final ColorFilter filter;
+  final EditFilter filter;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _FilterButton({
-    required this.image,
-    required this.label,
-    required this.filter,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _FilterButton({required this.image, required this.filter, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -605,14 +610,14 @@ class _FilterButton extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.all(isSelected ? const Radius.circular(9) : const Radius.circular(12)),
               child: ColorFiltered(
-                colorFilter: filter,
+                colorFilter: filter.colorFilter,
                 child: Image(image: image.image, fit: BoxFit.cover),
               ),
             ),
           ),
         ),
         const SizedBox(height: 10),
-        Text(label, style: context.themeData.textTheme.bodyMedium),
+        Text(filter.name, style: context.themeData.textTheme.bodyMedium),
       ],
     );
   }

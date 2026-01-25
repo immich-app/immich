@@ -810,6 +810,7 @@ extension on api.AssetEditAction {
     api.AssetEditAction.crop => AssetEditAction.crop,
     api.AssetEditAction.rotate => AssetEditAction.rotate,
     api.AssetEditAction.mirror => AssetEditAction.mirror,
+    api.AssetEditAction.filter => AssetEditAction.filter,
     _ => AssetEditAction.other,
   };
 }
