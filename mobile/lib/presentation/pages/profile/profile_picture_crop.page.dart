@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
@@ -48,6 +49,24 @@ class ProfilePictureCropPage extends HookConsumerWidget {
     // Create Image widget from asset
     final image = Image(image: getFullImageProvider(asset));
 
+    Future<Uint8List> _imageToUint8List(Image image) async {
+      final Completer<Uint8List> completer = Completer();
+      image.image
+          .resolve(const ImageConfiguration())
+          .addListener(
+            ImageStreamListener((ImageInfo info, bool _) {
+              info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
+                if (byteData != null) {
+                  completer.complete(byteData.buffer.asUint8List());
+                } else {
+                  completer.completeError('Failed to convert image to bytes');
+                }
+              });
+            }, onError: (exception, stackTrace) => completer.completeError(exception)),
+          );
+      return completer.future;
+    }
+
     Future<void> handleDone() async {
       if (isLoading.value) return;
 
@@ -57,25 +76,12 @@ class ProfilePictureCropPage extends HookConsumerWidget {
         // Get cropped image widget
         final croppedImage = await cropController.croppedImage();
 
-        // Convert Image widget to ui.Image
-        final completer = Completer<ui.Image>();
-        croppedImage.image.resolve(ImageConfiguration.empty).addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            completer.complete(info.image);
-          }),
-        );
-        final uiImage = await completer.future;
-
-        // Convert ui.Image to Uint8List
-        final byteData = await uiImage.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData == null) {
-          throw Exception('Failed to convert image to bytes');
-        }
-        final pngBytes = byteData.buffer.asUint8List();
+        // Convert Image widget to Uint8List
+        final pngBytes = await _imageToUint8List(croppedImage);
 
         // Create XFile and upload
-        final xFile = XFile.fromData(pngBytes, mimeType: 'image/png', name: 'profile-picture.png');
-        final success = await ref.read(uploadProfileImageProvider.notifier).upload(xFile);
+        final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
+        final success = await ref.read(uploadProfileImageProvider.notifier).upload(xFile, fileName: 'profile-picture.png');
 
         if (!context.mounted) return;
 
