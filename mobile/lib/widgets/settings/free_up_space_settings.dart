@@ -226,7 +226,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       }
 
       if (state.keepFavorites) {
-        parts.add('favorites'.t(context: context).toLowerCase());
+        parts.add('favorites'.t(context: context));
       }
 
       if (state.keepAlbumIds.isNotEmpty) {

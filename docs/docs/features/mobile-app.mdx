@@ -60,9 +60,9 @@ Now make sure that the local album is selected in the backup screen (steps 1-2 a
 <img src={require('./img/free-up-space.webp').default} title="Free up space" />
 
 1.  **Configuration:**
-    - **Cutoff date:** **Free Up Space** will only look for photos and videos **on or before** this date. Photos removed from the device don't show up in other (messaging) apps and have to be shared from Immich in order to send them.
+    - **Cutoff date:** Free Up Space will only look for photos and videos **on or before** this date. Photos removed from the device don't show up in other (messaging) apps and have to be shared from Immich in order to send them.
     - **Keep favorites:** This works the same way `Keep albums` does. By default, favorited assets are preserved on your device.
-    - **Keep albums:** Hold all photos and videos in the selected albums on your device, regardless of other settings. By default, `WhatsApp` [related albums](#external-app-dependencies) are selected to be kept on the device.
+    - **Keep albums:** Hold all photos and videos in the selected albums on your device, regardless of other settings. By default, `WhatsApp` [related albums](#external-app-dependencies) are selected to be kept on the device. Assets not already on the device will not be re-downloaded.
     - **Keep on device:** You can choose to restrict removal to `Always keep` **All photos** or **All videos**, regardless of other settings. This setting can hamper freeing up space significantly — with 80 GB of videos and 40 GB photos, selecting `Always keep photos` retains thousands of photos on your device.
 
 2.  **Scan & Review:** Before any files are removed, you are presented with a review screen to verify which items will be deleted and how much storage is reclamable.
@@ -72,13 +72,13 @@ Now make sure that the local album is selected in the backup screen (steps 1-2 a
 To use the reclaimed space right away, you must empty the system/gallery trash manually outside of Immich.
 :::
 
-Provided the server is healthy and [backed up](/administration/backup-and-restore.md), assets removed by **Free Up Space** can always be accessed in the Immich app.
+Provided the server is healthy and [backed up](/administration/backup-and-restore.md), assets removed by Free Up Space can always be accessed in the Immich app.
 
 ### iCloud Photos
 
 If you use **iCloud Photos** alongside Immich, it is vital to understand how deletion affects your data. After using **Free Up Space**, the photo will be stored **only** on your Immich server (and your phone's "Recently Deleted" folder for 30 days).
 
-Assets that are part of an **iCloud Shared Album** are automatically excluded from the cleanup scan because iCloud does not allow removing the items from the device.
+Assets that are part of an **iCloud Shared Album** are automatically excluded from the cleanup scan because iCloud does not allow removing the items in Shared Album from the device.
 
 :::warning iCloud & Backups
 If, in addition to Immich, you rely on iCloud as a secondary backup (as part of your [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup strategy), you should instead use `Optimize iPhone Storage` in [iCloud Photos](https://support.apple.com/en-us/105061).

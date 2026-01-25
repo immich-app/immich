@@ -30,7 +30,7 @@ You can select which albums on your mobile device to back up to the server. You 
 
 ### Deduplication
 
-When albums are selected for backup for the first time, Immich performs a hashing step to calculate the checksum of the file content in the albums. This value is used to match with the remote assets that have already been uploaded to the server by other means (CLI import or uploaded via the web interface or uploaded from a different device), identifying files that do not need to be uploaded again. This process helps avoid duplicate uploads and saves bandwidth.
+When you first select albums for backup, Immich calculates a checksum for each file's content. This checksum identifies assets already on the server—whether uploaded via CLI, web interface, or another device. Files matching existing assets are skipped, preventing duplicate uploads and saving bandwidth.
 
 ### Networking requirements
 
