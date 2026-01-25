@@ -64,59 +64,60 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
       _isLoading = true;
     });
 
-      try {
-        final croppedImage = await _cropController.croppedImage();
-        final pngBytes = await imageToUint8List(croppedImage);
-        final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
-        final success =
-            await ref.read(uploadProfileImageProvider.notifier).upload(xFile, fileName: 'profile-picture.png');
+    try {
+      final croppedImage = await _cropController.croppedImage();
+      final pngBytes = await imageToUint8List(croppedImage);
+      final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
+      final success = await ref
+          .read(uploadProfileImageProvider.notifier)
+          .upload(xFile, fileName: 'profile-picture.png');
 
-        if (!context.mounted) return;
+      if (!context.mounted) return;
 
-        if (success) {
-          final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
-          final user = ref.read(currentUserProvider);
-          if (user != null) {
-            unawaited(ref.read(currentUserProvider.notifier).refresh());
-          }
-          unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
-
-          ImmichToast.show(
-            context: context,
-            msg: 'profile_picture_set'.tr(),
-            gravity: ToastGravity.BOTTOM,
-            toastType: ToastType.success,
-          );
-
-          if (context.mounted) {
-            unawaited(context.maybePop());
-          }
-        } else {
-          ImmichToast.show(
-            context: context,
-            msg: 'errors.unable_to_set_profile_picture'.tr(),
-            toastType: ToastType.error,
-            gravity: ToastGravity.BOTTOM,
-          );
+      if (success) {
+        final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
+        ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
+        final user = ref.read(currentUserProvider);
+        if (user != null) {
+          unawaited(ref.read(currentUserProvider.notifier).refresh());
         }
-      } catch (e) {
-        if (!context.mounted) return;
+        unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
 
+        ImmichToast.show(
+          context: context,
+          msg: 'profile_picture_set'.tr(),
+          gravity: ToastGravity.BOTTOM,
+          toastType: ToastType.success,
+        );
+
+        if (context.mounted) {
+          unawaited(context.maybePop());
+        }
+      } else {
         ImmichToast.show(
           context: context,
           msg: 'errors.unable_to_set_profile_picture'.tr(),
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ImmichToast.show(
+        context: context,
+        msg: 'errors.unable_to_set_profile_picture'.tr(),
+        toastType: ToastType.error,
+        gravity: ToastGravity.BOTTOM,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
+  }
 
   @override
   Widget build(BuildContext context) {
