@@ -114,7 +114,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         ],
         if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
         if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
-        if (ownsAlbum && multiselect.selectedAssets.length == 1) SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum && multiselect.selectedAssets.length == 1)
+          SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
       ],
       slivers: ownsAlbum
           ? [
