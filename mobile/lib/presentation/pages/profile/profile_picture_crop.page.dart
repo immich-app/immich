@@ -162,58 +162,26 @@ class ProfilePictureCropPage extends HookConsumerWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-            return Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(top: 20),
-                  width: constraints.maxWidth * 0.9,
-                  height: constraints.maxHeight * 0.6,
-                  child: CropImage(controller: cropController, image: image, gridColor: Colors.white),
-                ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: context.scaffoldBackgroundColor,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: context.height * 0.7, maxWidth: context.width * 0.9),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(7)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        spreadRadius: 2,
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ImmichIconButton(
-                                  icon: Icons.rotate_left,
-                                  variant: ImmichVariant.ghost,
-                                  color: ImmichColor.secondary,
-                                  onPressed: isLoading.value
-                                      ? () {}
-                                      : () => cropController.rotateLeft(),
-                                ),
-                                ImmichIconButton(
-                                  icon: Icons.rotate_right,
-                                  variant: ImmichVariant.ghost,
-                                  color: ImmichColor.secondary,
-                                  onPressed: isLoading.value
-                                      ? () {}
-                                      : () => cropController.rotateRight(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    child: CropImage(controller: cropController, image: image, gridColor: Colors.white),
                   ),
                 ),
-              ],
+              ),
             );
           },
         ),
