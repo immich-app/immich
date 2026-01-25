@@ -4,7 +4,7 @@
  
    AssetEditAction action;
  
--  MirrorParameters parameters;
+-  FilterParameters parameters;
 +  Map<String, dynamic> parameters;
  
    @override
@@ -13,7 +13,7 @@
  
        return AssetEditActionListDtoEditsInner(
          action: AssetEditAction.fromJson(json[r'action'])!,
--        parameters: MirrorParameters.fromJson(json[r'parameters'])!,
+-        parameters: FilterParameters.fromJson(json[r'parameters'])!,
 +        parameters: json[r'parameters'],
        );
      }
