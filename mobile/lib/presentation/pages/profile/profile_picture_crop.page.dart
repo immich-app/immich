@@ -74,7 +74,12 @@ class ProfilePictureCropPage extends HookConsumerWidget {
           }
           unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
 
-          ImmichToast.show(context: context, msg: 'profile_picture_set'.tr(), gravity: ToastGravity.BOTTOM, toastType: ToastType.success);
+          ImmichToast.show(
+            context: context,
+            msg: 'profile_picture_set'.tr(),
+            gravity: ToastGravity.BOTTOM,
+            toastType: ToastType.success,
+          );
 
           if (context.mounted) {
             unawaited(context.maybePop());

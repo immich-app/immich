@@ -11,12 +11,7 @@ class SetProfilePictureActionButton extends ConsumerWidget {
   final bool iconOnly;
   final bool menuItem;
 
-  const SetProfilePictureActionButton({
-    super.key,
-    required this.asset,
-    this.iconOnly = false,
-    this.menuItem = false,
-  });
+  const SetProfilePictureActionButton({super.key, required this.asset, this.iconOnly = false, this.menuItem = false});
 
   void _onTap(BuildContext context) {
     if (!context.mounted) {
