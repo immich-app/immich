@@ -11,20 +11,29 @@ class SetProfilePictureActionButton extends ConsumerWidget {
   final bool iconOnly;
   final bool menuItem;
 
-  const SetProfilePictureActionButton({super.key, required this.asset, this.iconOnly = false, this.menuItem = false});
+  const SetProfilePictureActionButton({
+    super.key,
+    required this.asset,
+    this.iconOnly = false,
+    this.menuItem = false,
+  });
+
+  void _onTap(BuildContext context) {
+    if (!context.mounted) {
+      return;
+    }
+
+    context.pushRoute(ProfilePictureCropRoute(asset: asset));
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    onTap() {
-      context.pushRoute(ProfilePictureCropRoute(asset: asset));
-    }
-
     return BaseActionButton(
       iconData: Icons.account_circle_outlined,
       label: "set_as_profile_picture".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: onTap,
+      onPressed: () => _onTap(context),
       maxWidth: 100,
     );
   }
