@@ -351,12 +351,12 @@ class ActionNotifier extends Notifier<void> {
 
     final asset = assets.first;
     if (asset is! RemoteAsset) {
-      return ActionResult(count: 1, success: false, error: 'Asset must be remote');
+      return const ActionResult(count: 1, success: false, error: 'Asset must be remote');
     }
 
     try {
       await _service.setAlbumCover(albumId, asset.id);
-      return ActionResult(count: 1, success: true);
+      return const ActionResult(count: 1, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to set album cover', error, stack);
       return ActionResult(count: 1, success: false, error: error.toString());
