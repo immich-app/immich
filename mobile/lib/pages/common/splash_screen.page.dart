@@ -75,6 +75,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                       _resumeBackup(backupProvider);
                     }),
                     _resumeBackup(backupProvider),
+                    backgroundManager.syncCloudIds(),
                   ]);
                 } else {
                   await backgroundManager.hashAssets();
@@ -132,7 +133,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
-        unawaited(notifier.handleBackupResume(currentUser.id));
+        unawaited(notifier.startForegroundBackup(currentUser.id));
       }
     }
   }

@@ -1,12 +1,22 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+
+class RemovalCandidatesResult {
+  final List<LocalAsset> assets;
+  final int totalBytes;
+
+  const RemovalCandidatesResult({required this.assets, required this.totalBytes});
+}
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -125,5 +135,103 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       }
     }
     return result;
+  }
+
+  Future<RemovalCandidatesResult> getRemovalCandidates(
+    String userId,
+    DateTime cutoffDate, {
+    AssetKeepType keepMediaType = AssetKeepType.none,
+    bool keepFavorites = true,
+    Set<String> keepAlbumIds = const {},
+  }) async {
+    final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(_db.localAlbumEntity.isIosSharedAlbum.equals(true));
+
+    final query = _db.localAssetEntity.select().join([
+      innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
+      leftOuterJoin(_db.remoteExifEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteExifEntity.assetId)),
+    ]);
+
+    Expression<bool> whereClause =
+        _db.localAssetEntity.createdAt.isSmallerOrEqualValue(cutoffDate) &
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+        _db.remoteAssetEntity.deletedAt.isNull();
+
+    // Exclude assets that are in iOS shared albums
+    whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
+
+    if (keepAlbumIds.isNotEmpty) {
+      final keepAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..where(_db.localAlbumAssetEntity.albumId.isIn(keepAlbumIds));
+      whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(keepAlbumAssets);
+    }
+
+    if (keepMediaType == AssetKeepType.photosOnly) {
+      // Keep photos = delete only videos
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
+    } else if (keepMediaType == AssetKeepType.videosOnly) {
+      // Keep videos = delete only photos
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
+    }
+
+    if (keepFavorites) {
+      whereClause = whereClause & _db.localAssetEntity.isFavorite.equals(false);
+    }
+
+    query.where(whereClause);
+
+    final rows = await query.get();
+    final assets = rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final totalBytes = rows.fold<int>(0, (sum, row) {
+      final fileSize = row.readTableOrNull(_db.remoteExifEntity)?.fileSize;
+      return sum + (fileSize ?? 0);
+    });
+
+    return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
+  }
+
+  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
+    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Future<Map<String, String>> getHashMappingFromCloudId() async {
+    final query =
+        _db.localAssetEntity.selectOnly().join([
+            leftOuterJoin(
+              _db.remoteAssetCloudIdEntity,
+              _db.localAssetEntity.iCloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
+          ..where(
+            _db.remoteAssetCloudIdEntity.cloudId.isNotNull() &
+                _db.localAssetEntity.checksum.isNull() &
+                ((_db.remoteAssetCloudIdEntity.adjustmentTime.isExp(_db.localAssetEntity.adjustmentTime)) &
+                    (_db.remoteAssetCloudIdEntity.latitude.isExp(_db.localAssetEntity.latitude)) &
+                    (_db.remoteAssetCloudIdEntity.longitude.isExp(_db.localAssetEntity.longitude)) &
+                    (_db.remoteAssetCloudIdEntity.createdAt.isExp(_db.localAssetEntity.createdAt))),
+          );
+    final mapping = await query
+        .map(
+          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
+        )
+        .get();
+    return {for (final entry in mapping) entry.assetId: entry.checksum};
   }
 }

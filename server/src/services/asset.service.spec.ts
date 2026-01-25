@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -225,7 +225,10 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-1', description: 'Test description', lockedProperties: ['description'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
     });
 
     it('should update the exif rating', async () => {
@@ -235,7 +238,14 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { rating: 3 });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        {
+          assetId: 'asset-1',
+          rating: 3,
+          lockedProperties: ['rating'],
+        },
+        { lockedPropertiesBehavior: 'append' },
+      );
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
@@ -427,9 +437,7 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update exif table if latitude field is provided', async () => {
@@ -450,9 +458,7 @@ describe(AssetService.name, () => {
         latitude: 30,
         longitude: 50,
       });
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SidecarWrite, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
 
     it('should update Assets table if duplicateId is provided as null', async () => {
@@ -482,18 +488,7 @@ describe(AssetService.name, () => {
         timeZone,
       });
       expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.SidecarWrite,
-          data: {
-            id: 'asset-1',
-            dateTimeOriginal: '2020-02-25T06:41:00.000+02:00',
-            description: undefined,
-            latitude: undefined,
-            longitude: undefined,
-          },
-        },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: 'asset-1' } }]);
     });
   });
 
@@ -709,6 +704,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
 
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
 
@@ -723,7 +719,7 @@ describe(AssetService.name, () => {
     it('should return empty array when no OCR data exists', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.ocr.getByAssetId.mockResolvedValue([]);
-
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
       await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
 
       expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
@@ -779,6 +775,42 @@ describe(AssetService.name, () => {
 
       expect(result.length).toEqual(2);
       expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
+    });
+  });
+
+  describe('upsertMetadata', () => {
+    it('should throw a bad request exception if duplicate keys are sent', async () => {
+      const asset = factory.asset();
+      const items = [
+        { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+      ];
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await expect(sut.upsertMetadata(authStub.admin, asset.id, { items })).rejects.toThrowError(
+        'Duplicate items are not allowed:',
+      );
+
+      expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('upsertBulkMetadata', () => {
+    it('should throw a bad request exception if duplicate keys are sent', async () => {
+      const asset = factory.asset();
+      const items = [
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+      ];
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+
+      await expect(sut.upsertBulkMetadata(authStub.admin, { items })).rejects.toThrowError(
+        'Duplicate items are not allowed:',
+      );
+
+      expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
     });
   });
 });

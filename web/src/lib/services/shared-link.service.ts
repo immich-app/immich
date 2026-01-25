@@ -1,14 +1,15 @@
 import { goto } from '$app/navigation';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
 import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
+import { Route } from '$lib/route';
 import { copyToClipboard } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
   createSharedLink,
+  getSharedLinkById,
   removeSharedLink,
   removeSharedLinkAssets,
   updateSharedLink,
@@ -17,14 +18,24 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
+import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+
+export const getSharedLinksActions = ($t: MessageFormatter) => {
+  const ViewAll: ActionItem = {
+    title: $t('shared_links'),
+    icon: mdiLink,
+    onAction: () => goto(Route.sharedLinks()),
+  };
+
+  return { ViewAll };
+};
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
   const Edit: ActionItem = {
     title: $t('edit_link'),
     icon: mdiPencilOutline,
-    onAction: () => goto(`${AppRoute.SHARED_LINKS}/${sharedLink.id}`),
+    onAction: () => goto(Route.editSharedLink(sharedLink)),
   };
 
   const Delete: ActionItem = {
@@ -58,7 +69,11 @@ export const handleCreateSharedLink = async (dto: SharedLinkCreateDto) => {
   const $t = await getFormatter();
 
   try {
-    const sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    let sharedLink = await createSharedLink({ sharedLinkCreateDto: dto });
+    if (dto.albumId) {
+      // fetch album details, for event
+      sharedLink = await getSharedLinkById({ id: sharedLink.id });
+    }
 
     eventManager.emit('SharedLinkCreate', sharedLink);
 

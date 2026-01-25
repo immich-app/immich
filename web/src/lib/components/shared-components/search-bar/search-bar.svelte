@@ -2,12 +2,11 @@
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { AppRoute } from '$lib/constants';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
+  import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -42,11 +41,9 @@
   });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
-    const params = getMetadataSearchQuery(payload);
-
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    await goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(Route.search(payload));
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -111,6 +108,7 @@
     if (close) {
       await close();
       close = undefined;
+      searchStore.isSearchEnabled = false;
       return;
     }
 
@@ -120,6 +118,7 @@
 
     const searchResult = await result.onClose;
     close = undefined;
+    searchStore.isSearchEnabled = false;
 
     // Refresh search type after modal closes
     getSearchType();
@@ -254,7 +253,7 @@
     draggable="false"
     autocomplete="off"
     class="select-text text-sm"
-    action={AppRoute.SEARCH}
+    action={Route.search()}
     onreset={() => (value = '')}
     {onsubmit}
     onfocusin={onFocusIn}
@@ -308,18 +307,6 @@
       />
     </div>
 
-    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
-      <IconButton
-        aria-label={$t('show_search_options')}
-        shape="round"
-        icon={mdiTune}
-        onclick={onFilterClick}
-        size="medium"
-        color="secondary"
-        variant="ghost"
-      />
-    </div>
-
     {#if searchStore.isSearchEnabled}
       <div
         id={searchTypeId}
@@ -327,7 +314,7 @@
         class:max-md:hidden={value}
         class:end-28={value.length > 0}
       >
-        <div class="relative">
+        <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
           <Button
             class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs hover:opacity-80 transition-opacity cursor-pointer"
             onclick={toggleSearchTypeDropdown}
@@ -340,11 +327,11 @@
           {#if showSearchTypeDropdown}
             <div
               class="absolute top-full right-0 mt-1 bg-white dark:bg-immich-dark-gray border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg py-1 min-w-32 z-9999"
-              use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}
             >
               {#each searchTypes as searchType (searchType.value)}
                 <button
                   type="button"
+                  tabindex="0"
                   class="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
                          {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
                   onclick={() => selectSearchType(searchType.value)}
@@ -384,4 +371,16 @@
       />
     </div>
   </form>
+
+  <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
+    <IconButton
+      aria-label={$t('show_search_options')}
+      shape="round"
+      icon={mdiTune}
+      onclick={onFilterClick}
+      size="medium"
+      color="secondary"
+      variant="ghost"
+    />
+  </div>
 </div>

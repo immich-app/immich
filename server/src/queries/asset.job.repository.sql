@@ -29,7 +29,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -37,22 +38,10 @@ select
           and "asset_file"."type" = $1
       ) as agg
   ) as "files",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "tag"."value"
-        from
-          "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
-        where
-          "asset"."id" = "tag_asset"."assetId"
-      ) as agg
-  ) as "tags"
+  to_json("asset_exif") as "exifInfo"
 from
   "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."id" = $2::uuid
 limit
@@ -70,7 +59,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -97,13 +87,28 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
       ) as agg
-  ) as "files"
+  ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
 from
   "asset"
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
@@ -129,7 +134,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -158,13 +164,28 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
       ) as agg
   ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits",
   to_json("asset_exif") as "exifInfo"
 from
   "asset"
@@ -189,6 +210,8 @@ select
   "asset"."originalPath",
   "asset"."ownerId",
   "asset"."type",
+  "asset"."width",
+  "asset"."height",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -201,6 +224,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" = $1
       ) as agg
   ) as "faces",
   (
@@ -211,24 +235,34 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
+          and "asset_file"."type" = $2
       ) as agg
   ) as "files"
 from
   "asset"
 where
-  "asset"."id" = $2
+  "asset"."id" = $3
+
+-- AssetJobRepository.getLockedPropertiesForMetadataExtraction
+select
+  "asset_exif"."lockedProperties"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
 
 -- AssetJobRepository.getAlbumThumbnailFiles
 select
   "asset_file"."id",
   "asset_file"."path",
-  "asset_file"."type"
+  "asset_file"."type",
+  "asset_file"."isEdited"
 from
   "asset_file"
 where
@@ -277,7 +311,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -316,7 +351,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -392,6 +428,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
       ) as agg
   ) as "faces",
   (
@@ -402,7 +439,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -483,6 +521,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -491,7 +532,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -519,6 +561,9 @@ select
   "asset"."fileCreatedAt",
   "asset_exif"."timeZone",
   "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -527,7 +572,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where

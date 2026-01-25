@@ -10,11 +10,11 @@
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
-  import { OnboardingRole } from '$lib/models/onboarding-role';
+  import { Route } from '$lib/route';
   import { user } from '$lib/stores/user.store';
+  import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
     mdiCellphoneArrowDownVariant,
@@ -137,11 +137,9 @@
         onboardingDto: { isOnboarded: true },
       });
 
-      await goto(AppRoute.PHOTOS);
+      await goto(Route.photos());
     } else {
-      await goto(
-        `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[nextStepIndex].name}`,
-      );
+      await goto(Route.onboarding({ step: onboardingSteps[nextStepIndex].name }));
     }
   };
 
@@ -150,9 +148,7 @@
       return;
     }
 
-    await goto(
-      `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[previousStepIndex].name}`,
-    );
+    await goto(Route.onboarding({ step: onboardingSteps[previousStepIndex].name }));
   };
 
   const OnboardingStep = $derived(onboardingSteps[index].component);

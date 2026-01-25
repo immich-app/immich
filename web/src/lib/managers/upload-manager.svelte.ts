@@ -6,7 +6,8 @@ class UploadManager {
   mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [] });
 
   constructor() {
-    eventManager.on('AppInit', () => void this.#loadExtensions()).on('AuthLogout', () => void this.reset());
+    eventManager.on('AppInit', () => this.#loadExtensions());
+    eventManager.on('AuthLogout', () => this.reset());
   }
 
   reset() {

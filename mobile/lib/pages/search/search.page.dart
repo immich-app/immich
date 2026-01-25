@@ -43,6 +43,7 @@ class SearchPage extends HookConsumerWidget {
         date: prefilter?.date ?? SearchDateFilter(),
         display: prefilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: prefilter?.mediaType ?? AssetType.other,
+        rating: prefilter?.rating ?? SearchRatingFilter(),
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
       ),
     );
