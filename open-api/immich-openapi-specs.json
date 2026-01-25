@@ -16078,7 +16078,8 @@
         "enum": [
           "crop",
           "rotate",
-          "mirror"
+          "mirror",
+          "filter"
         ],
         "type": "string"
       },
@@ -16102,6 +16103,26 @@
         ],
         "type": "object"
       },
+      "AssetEditActionFilter": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/FilterParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
       "AssetEditActionListDto": {
         "properties": {
           "edits": {
@@ -16116,6 +16137,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionFilter"
                 }
               ]
             },
@@ -16187,6 +16211,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionFilter"
                 }
               ]
             },
@@ -18050,6 +18077,79 @@
           "minFaces",
           "minScore",
           "modelName"
+        ],
+        "type": "object"
+      },
+      "FilterParameters": {
+        "properties": {
+          "bOffset": {
+            "description": "B Offset (-255 -> 255)",
+            "maximum": 255,
+            "minimum": -255,
+            "type": "number"
+          },
+          "bbBias": {
+            "description": "BB Bias",
+            "type": "number"
+          },
+          "bgBias": {
+            "description": "BG Bias",
+            "type": "number"
+          },
+          "brBias": {
+            "description": "BR Bias",
+            "type": "number"
+          },
+          "gOffset": {
+            "description": "G Offset (-255 -> 255)",
+            "maximum": 255,
+            "minimum": -255,
+            "type": "number"
+          },
+          "gbBias": {
+            "description": "GB Bias",
+            "type": "number"
+          },
+          "ggBias": {
+            "description": "GG Bias",
+            "type": "number"
+          },
+          "grBias": {
+            "description": "GR Bias",
+            "type": "number"
+          },
+          "rOffset": {
+            "description": "R Offset (-255 -> 255)",
+            "maximum": 255,
+            "minimum": -255,
+            "type": "number"
+          },
+          "rbBias": {
+            "description": "RB Bias",
+            "type": "number"
+          },
+          "rgBias": {
+            "description": "RG Bias",
+            "type": "number"
+          },
+          "rrBias": {
+            "description": "RR Bias",
+            "type": "number"
+          }
+        },
+        "required": [
+          "bOffset",
+          "bbBias",
+          "bgBias",
+          "brBias",
+          "gOffset",
+          "gbBias",
+          "ggBias",
+          "grBias",
+          "rOffset",
+          "rbBias",
+          "rgBias",
+          "rrBias"
         ],
         "type": "object"
       },

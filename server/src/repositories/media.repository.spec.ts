@@ -165,6 +165,38 @@ describe(MediaRepository.name, () => {
       // bottom-right should now be top-right (blue)
       expect(await getPixelColor(bufferVertical, 990, 990)).toEqual({ r: 0, g: 255, b: 0 });
     });
+
+    it('should apply filter edit correctly', async () => {
+      const resultHorizontal = await sut['applyEdits'](sharp(await buildTestQuadImage()), [
+        {
+          action: AssetEditAction.Filter,
+          parameters: {
+            rrBias: 1,
+            rgBias: 0.5,
+            rbBias: 0.5,
+            grBias: 0.5,
+            ggBias: 1,
+            gbBias: 0.5,
+            brBias: 0.5,
+            bgBias: 0.5,
+            bbBias: 1,
+            rOffset: 5,
+            gOffset: 10,
+            bOffset: 15,
+          },
+        },
+      ]);
+
+      const bufferHorizontal = await resultHorizontal.toBuffer();
+      const metadataHorizontal = await resultHorizontal.metadata();
+      expect(metadataHorizontal.width).toBe(1000);
+      expect(metadataHorizontal.height).toBe(1000);
+
+      expect(await getPixelColor(bufferHorizontal, 10, 10)).toEqual({ r: 255, g: 137, b: 142 });
+      expect(await getPixelColor(bufferHorizontal, 990, 10)).toEqual({ r: 132, g: 255, b: 142 });
+      expect(await getPixelColor(bufferHorizontal, 10, 990)).toEqual({ r: 132, g: 137, b: 255 });
+      expect(await getPixelColor(bufferHorizontal, 990, 990)).toEqual({ r: 255, g: 255, b: 255 });
+    });
   });
 
   describe('applyEdits (multiple sequential edits)', () => {
@@ -307,12 +339,29 @@ describe(MediaRepository.name, () => {
       expect(await getPixelColor(buffer, 490, 490)).toEqual({ r: 255, g: 0, b: 0 });
     });
 
-    it('should apply all operations: crop, rotate, mirror', async () => {
+    it('should apply all operations: crop, rotate, mirror, filter', async () => {
       const imageBuffer = await buildTestQuadImage();
       const result = await sut['applyEdits'](sharp(imageBuffer), [
         { action: AssetEditAction.Crop, parameters: { x: 0, y: 0, width: 500, height: 1000 } },
         { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
         { action: AssetEditAction.Mirror, parameters: { axis: MirrorAxis.Horizontal } },
+        {
+          action: AssetEditAction.Filter,
+          parameters: {
+            rrBias: 1,
+            rgBias: 0,
+            rbBias: 0,
+            grBias: 0,
+            ggBias: 1,
+            gbBias: 0,
+            brBias: 0,
+            bgBias: 0,
+            bbBias: 1,
+            rOffset: -10,
+            gOffset: 20,
+            bOffset: -30,
+          },
+        },
       ]);
 
       const buffer = await result.png().toBuffer();
@@ -320,8 +369,8 @@ describe(MediaRepository.name, () => {
       expect(metadata.width).toBe(1000);
       expect(metadata.height).toBe(500);
 
-      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
-      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
+      expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 245, g: 20, b: 0 });
+      expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 20, b: 225 });
     });
   });
 

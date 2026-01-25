@@ -10,7 +10,7 @@
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
+  import { editManager } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
@@ -409,7 +409,7 @@
     ) {
       return 'ImagePanaramaViewer';
     }
-    if (assetViewerManager.isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
+    if (assetViewerManager.isShowEditor) {
       return 'CropArea';
     }
     return 'PhotoViewer';
