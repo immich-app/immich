@@ -254,3 +254,14 @@ For more information, refer to the [Environment Variables](/install/environment-
 :::tip
 YAML-formatted config files are also supported.
 :::
+
+:::info Docker Compose
+In your `.env` file, the variables `UPLOAD_LOCATION` and `DB_DATA_LOCATION` concern the location on the host. However, the variable `IMMICH_CONFIG_FILE` concerns the location inside the container, and informs the `immich-server` container that a configuration file is present.
+
+It is recommended to reuse this variable in your `docker-compose.yml`:
+```
+volumes:
+...
+  - ./configuration.yml:${IMMICH_CONFIG_FILE}
+```
+::
