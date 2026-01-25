@@ -6,25 +6,19 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-
 class SetProfilePictureActionButton extends ConsumerWidget {
   final BaseAsset asset;
   final bool iconOnly;
   final bool menuItem;
 
-  const SetProfilePictureActionButton({
-    super.key,
-    required this.asset,
-    this.iconOnly = false,
-    this.menuItem = false,
-  });
-
+  const SetProfilePictureActionButton({super.key, required this.asset, this.iconOnly = false, this.menuItem = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     onTap() {
       context.pushRoute(ProfilePictureCropRoute(asset: asset));
     }
+
     return BaseActionButton(
       iconData: Icons.account_circle_outlined,
       label: "set_as_profile_picture".t(context: context),

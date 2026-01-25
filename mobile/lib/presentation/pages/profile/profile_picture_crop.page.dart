@@ -59,7 +59,9 @@ class ProfilePictureCropPage extends HookConsumerWidget {
         final croppedImage = await cropController.croppedImage();
         final pngBytes = await imageToUint8List(croppedImage);
         final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
-        final success = await ref.read(uploadProfileImageProvider.notifier).upload(xFile, fileName: 'profile-picture.png');
+        final success = await ref
+            .read(uploadProfileImageProvider.notifier)
+            .upload(xFile, fileName: 'profile-picture.png');
 
         if (!context.mounted) return;
 
@@ -78,12 +80,22 @@ class ProfilePictureCropPage extends HookConsumerWidget {
             unawaited(context.maybePop());
           }
         } else {
-          ImmichToast.show(context: context, msg: 'errors.unable_to_set_profile_picture'.tr(), toastType: ToastType.error, gravity: ToastGravity.BOTTOM);
+          ImmichToast.show(
+            context: context,
+            msg: 'errors.unable_to_set_profile_picture'.tr(),
+            toastType: ToastType.error,
+            gravity: ToastGravity.BOTTOM,
+          );
         }
       } catch (e) {
         if (!context.mounted) return;
 
-        ImmichToast.show(context: context, msg: 'errors.unable_to_set_profile_picture'.tr(), toastType: ToastType.error, gravity: ToastGravity.BOTTOM);
+        ImmichToast.show(
+          context: context,
+          msg: 'errors.unable_to_set_profile_picture'.tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+        );
       } finally {
         isLoading.value = false;
       }
@@ -93,18 +105,12 @@ class ProfilePictureCropPage extends HookConsumerWidget {
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
         title: Text("set_profile_picture".tr()),
-        leading: isLoading.value
-            ? null
-            : const ImmichCloseButton(),
+        leading: isLoading.value ? null : const ImmichCloseButton(),
         actions: [
           if (isLoading.value)
             const Padding(
               padding: EdgeInsets.all(16.0),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             )
           else
             ImmichIconButton(
