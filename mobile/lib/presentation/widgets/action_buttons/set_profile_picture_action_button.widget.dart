@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 
 class SetProfilePictureActionButton extends ConsumerWidget {
@@ -18,22 +19,18 @@ class SetProfilePictureActionButton extends ConsumerWidget {
     this.menuItem = false,
   });
 
-  void _onTap(BuildContext context) {
-    if (!context.mounted) {
-      return;
-    }
-
-    context.pushRoute(ProfilePictureCropPage(asset: asset));
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    onTap() {
+      context.pushRoute(ProfilePictureCropRoute(asset: asset));
+    }
     return BaseActionButton(
       iconData: Icons.account_circle_outlined,
       label: "set_as_profile_picture".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: () => _onTap(context),
+      onPressed: onTap,
       maxWidth: 100,
     );
   }

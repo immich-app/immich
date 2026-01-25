@@ -200,6 +200,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditImageRoute.page),
     AutoRoute(page: CropImageRoute.page),
     AutoRoute(page: FilterImageRoute.page),
+    AutoRoute(page: ProfilePictureCropRoute.page),
     CustomRoute(
       page: FavoritesRoute.page,
       guards: [_authGuard, _duplicateGuard],
