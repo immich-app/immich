@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
@@ -17,6 +15,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
+import 'package:immich_mobile/utils/image_converter.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
@@ -49,24 +48,6 @@ class ProfilePictureCropPage extends HookConsumerWidget {
     // Create Image widget from asset
     final image = Image(image: getFullImageProvider(asset));
 
-    Future<Uint8List> _imageToUint8List(Image image) async {
-      final Completer<Uint8List> completer = Completer();
-      image.image
-          .resolve(const ImageConfiguration())
-          .addListener(
-            ImageStreamListener((ImageInfo info, bool _) {
-              info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
-                if (byteData != null) {
-                  completer.complete(byteData.buffer.asUint8List());
-                } else {
-                  completer.completeError('Failed to convert image to bytes');
-                }
-              });
-            }, onError: (exception, stackTrace) => completer.completeError(exception)),
-          );
-      return completer.future;
-    }
-
     Future<void> handleDone() async {
       if (isLoading.value) return;
 
@@ -77,7 +58,7 @@ class ProfilePictureCropPage extends HookConsumerWidget {
         final croppedImage = await cropController.croppedImage();
 
         // Convert Image widget to Uint8List
-        final pngBytes = await _imageToUint8List(croppedImage);
+        final pngBytes = await imageToUint8List(croppedImage);
 
         // Create XFile and upload
         final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
