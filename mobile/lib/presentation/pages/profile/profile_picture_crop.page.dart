@@ -28,13 +28,22 @@ class ProfilePictureCropPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cropController = useCropController();
     final isLoading = useState<bool>(false);
+    final didInitCropController = useRef(false);
 
     // Lock aspect ratio to 1:1 for circular/square crop
     useEffect(() {
-      cropController.aspectRatio = 1.0;
-      cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
+      // CropController depends on CropImage initializing its bitmap size.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (didInitCropController.value) {
+          return;
+        }
+        didInitCropController.value = true;
+
+        cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
+        cropController.aspectRatio = 1.0;
+      });
       return null;
-    }, []);
+    }, [cropController]);
 
     // Create Image widget from asset
     final image = Image(image: getFullImageProvider(asset));
