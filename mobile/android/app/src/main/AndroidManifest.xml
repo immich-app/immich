@@ -123,6 +123,9 @@
         <data
           android:host="my.immich.app"
           android:pathPrefix="/photos/" />
+        <data
+          android:host="my.immich.app"
+          android:pathPrefix="/share/" />
       </intent-filter>
     </activity>
 

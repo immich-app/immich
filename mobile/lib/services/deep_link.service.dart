@@ -20,6 +20,7 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/memory.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final deepLinkServiceProvider = Provider(
   (ref) => DeepLinkService(
@@ -102,10 +103,13 @@ class DeepLinkService {
 
   Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     final path = link.uri.path;
+    final queryParams = link.uri.queryParameters;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
+    // Share links can use UUID keys or custom slugs
+    final shareRegex = RegExp(r'/share/([^/?]+)');
 
     PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
@@ -116,6 +120,19 @@ class DeepLinkService {
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
     } else if (path == "/memory") {
       deepLinkRoute = await _buildMemoryDeepLink(null);
+    } else if (shareRegex.hasMatch(path)) {
+      // Handle shared links by opening them in the browser
+      // The mobile app doesn't have a native viewer for external shared links yet
+      final serverUrl = queryParams['server'];
+      final shareKey = shareRegex.firstMatch(path)?.group(1);
+      if (serverUrl != null && shareKey != null) {
+        final decodedServerUrl = Uri.decodeComponent(serverUrl);
+        final shareUrl = Uri.parse('$decodedServerUrl/share/$shareKey');
+        await launchUrl(shareUrl, mode: LaunchMode.externalApplication);
+      }
+      // Return appropriate deep link based on app state
+      if (isColdStart) return DeepLink.defaultPath;
+      return DeepLink.none;
     }
 
     // Deep link resolution failed, safely handle it based on the app state

@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import OpenInAppBanner from '$lib/components/shared-components/open-in-app-banner.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { user } from '$lib/stores/user.store';
@@ -65,6 +67,14 @@
 <svelte:head>
   <title>{title}</title>
   <meta name="description" content={description} />
+  {#if key}
+    <meta
+      name="apple-itunes-app"
+      content="app-id=1613945652, app-argument=https://my.immich.app/share/{key}?server={encodeURIComponent(
+        globalThis.location?.origin ?? ''
+      )}"
+    />
+  {/if}
 </svelte:head>
 {#if passwordRequired}
   <main
@@ -105,4 +115,8 @@
   <div class="immich-scrollbar">
     <IndividualSharedViewer {sharedLink} {isOwned} />
   </div>
+{/if}
+
+{#if key && browser}
+  <OpenInAppBanner shareKey={key} serverUrl={globalThis.location?.origin ?? ''} />
 {/if}
