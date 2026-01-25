@@ -270,6 +270,7 @@ enum ActionButtonType {
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
     ActionButtonType.removeFromLockFolder => 10,
+    ActionButtonType.setAlbumCover => 10,
     ActionButtonType.removeFromAlbum => 10,
     ActionButtonType.unstack => 10,
     ActionButtonType.archive => 10,
