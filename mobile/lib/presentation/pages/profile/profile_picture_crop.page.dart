@@ -5,6 +5,7 @@ import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
 import 'package:immich_mobile/utils/image_converter.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
@@ -54,66 +56,34 @@ class ProfilePictureCropPage extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
-        // Get cropped image widget
         final croppedImage = await cropController.croppedImage();
-
-        // Convert Image widget to Uint8List
         final pngBytes = await imageToUint8List(croppedImage);
-
-        // Create XFile and upload
         final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
         final success = await ref.read(uploadProfileImageProvider.notifier).upload(xFile, fileName: 'profile-picture.png');
 
         if (!context.mounted) return;
 
         if (success) {
-          // Update user state
           final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
+          ref.watch(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
           final user = ref.read(currentUserProvider);
           if (user != null) {
             unawaited(ref.read(currentUserProvider.notifier).refresh());
           }
           unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
 
-          // Show success message and navigate back
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              duration: const Duration(seconds: 2),
-              content: Text(
-                "profile_picture_set".tr(),
-                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-              ),
-            ),
-          );
+          ImmichToast.show(context: context, msg: 'profile_picture_set'.tr(), gravity: ToastGravity.BOTTOM);
 
           if (context.mounted) {
             unawaited(context.maybePop());
           }
         } else {
-          // Show error message
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              duration: const Duration(seconds: 2),
-              content: Text(
-                "errors.unable_to_set_profile_picture".tr(),
-                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-              ),
-            ),
-          );
+          ImmichToast.show(context: context, msg: 'errors.unable_to_set_profile_picture'.tr(), toastType: ToastType.error, gravity: ToastGravity.BOTTOM);
         }
       } catch (e) {
         if (!context.mounted) return;
 
-        context.scaffoldMessenger.showSnackBar(
-          SnackBar(
-            duration: const Duration(seconds: 2),
-            content: Text(
-              "errors.unable_to_set_profile_picture".tr(),
-              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
-            ),
-          ),
-        );
+        ImmichToast.show(context: context, msg: 'errors.unable_to_set_profile_picture'.tr(), toastType: ToastType.error, gravity: ToastGravity.BOTTOM);
       } finally {
         isLoading.value = false;
       }
