@@ -17,11 +17,13 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
@@ -77,6 +79,7 @@ class MultiselectGrid extends HookConsumerWidget {
 
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
+    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final processing = useProcessingOverlay();
 
     useEffect(() {
@@ -400,6 +403,37 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     };
 
+    Future<bool> setAsAlbumCover() async {
+      final album = currentAlbum;
+      if (album == null) {
+        return false;
+      }
+
+      if (currentUser?.id != album.ownerId) {
+        return false;
+      }
+
+      if (selection.value.length != 1) {
+        return false;
+      }
+
+      final asset = selection.value.first;
+      final assetId = asset.remoteId;
+      if (assetId == null) {
+        ImmichToast.show(context: context, msg: 'errors.unable_to_update_album_cover'.tr(), toastType: ToastType.error);
+        return false;
+      }
+
+      try {
+        await ref.read(actionServiceProvider).setAlbumCover(album.id, assetId);
+        ImmichToast.show(context: context, msg: 'album_cover_updated'.tr(), toastType: ToastType.success);
+        return true;
+      } catch (_) {
+        ImmichToast.show(context: context, msg: 'errors.unable_to_update_album_cover'.tr(), toastType: ToastType.error);
+        return false;
+      }
+    }
+
     return SafeArea(
       top: true,
       bottom: false,
@@ -447,6 +481,9 @@ class MultiselectGrid extends HookConsumerWidget {
               unfavorite: unfavorite,
               unarchive: unarchive,
               onToggleLocked: onToggleLockedVisibility,
+              onSetAlbumCover: (currentAlbum != null && currentUser?.id == currentAlbum.ownerId)
+                  ? wrapLongRunningFun(setAsAlbumCover)
+                  : null,
               onRemoveFromAlbum: onRemoveFromAlbum != null
                   ? wrapLongRunningFun(() => onRemoveFromAlbum!(selection.value))
                   : null,
