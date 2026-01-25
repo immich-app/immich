@@ -343,6 +343,26 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> setAlbumCover(ActionSource source, String albumId) async {
+    final assets = _getAssets(source);
+    if (assets.length != 1) {
+      return ActionResult(count: assets.length, success: false, error: 'Expected single asset for album cover');
+    }
+
+    final asset = assets.first;
+    if (asset is! RemoteAsset) {
+      return ActionResult(count: 1, success: false, error: 'Asset must be remote');
+    }
+
+    try {
+      await _service.setAlbumCover(albumId, asset.id);
+      return ActionResult(count: 1, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to set album cover', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> updateDescription(ActionSource source, String description) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {

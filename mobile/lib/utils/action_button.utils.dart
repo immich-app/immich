@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
@@ -42,6 +43,7 @@ class ActionButtonContext {
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
   final ThemeData? originalTheme;
+  final int selectedCount;
 
   const ActionButtonContext({
     required this.asset,
@@ -56,6 +58,7 @@ class ActionButtonContext {
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
     this.originalTheme,
+    this.selectedCount = 1,
   });
 }
 
@@ -75,6 +78,7 @@ enum ActionButtonType {
   moveToLockFolder,
   removeFromLockFolder,
   removeFromAlbum,
+  setAlbumCover,
   trash,
   deleteLocal,
   deletePermanent,
@@ -134,6 +138,11 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.currentAlbum != null,
+      ActionButtonType.setAlbumCover =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.currentAlbum != null && //
+            context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -208,6 +217,12 @@ enum ActionButtonType {
       ),
       ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.removeFromAlbum => RemoveFromAlbumActionButton(
+        albumId: context.currentAlbum!.id,
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
+      ActionButtonType.setAlbumCover => SetAlbumCoverActionButton(
         albumId: context.currentAlbum!.id,
         source: context.source,
         iconOnly: iconOnly,
