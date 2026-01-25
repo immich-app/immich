@@ -334,7 +334,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                           aspectRatio: _aspectRatio,
                         ),
                         secondChild: _FilterControls(
-                          filter: _colorFilter,
+                          currentFilter: _colorFilter,
                           previewImage: widget.image,
                           onApplyFilter: _applyFilter,
                         ),
@@ -540,11 +540,11 @@ class _TransformControls extends StatelessWidget {
 }
 
 class _FilterControls extends StatelessWidget {
-  final ColorFilter? filter;
+  final ColorFilter? currentFilter;
   final Image previewImage;
   final void Function(ColorFilter?) onApplyFilter;
 
-  const _FilterControls({required this.filter, required this.previewImage, required this.onApplyFilter});
+  const _FilterControls({required this.currentFilter, required this.previewImage, required this.onApplyFilter});
 
   @override
   Widget build(BuildContext context) {
@@ -562,7 +562,7 @@ class _FilterControls extends StatelessWidget {
                   image: previewImage,
                   label: filterNames[i],
                   filter: filter,
-                  isSelected: filter == filters[i],
+                  isSelected: currentFilter == filters[i],
                   onTap: () => onApplyFilter(filter),
                 ),
               );
@@ -599,11 +599,11 @@ class _FilterButton extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
               border: isSelected ? Border.all(color: context.primaryColor, width: 3) : null,
             ),
             child: ClipRRect(
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              borderRadius: BorderRadius.all(isSelected ? const Radius.circular(9) : const Radius.circular(12)),
               child: ColorFiltered(
                 colorFilter: filter,
                 child: Image(image: image.image, fit: BoxFit.cover),
