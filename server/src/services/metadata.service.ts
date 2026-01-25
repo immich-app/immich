@@ -196,6 +196,15 @@ export class MetadataService extends BaseService {
     await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
+  private isOrientationSidewards(orientation: ExifOrientation | number): boolean {
+    return [
+      ExifOrientation.MirrorHorizontalRotate270CW,
+      ExifOrientation.Rotate90CW,
+      ExifOrientation.MirrorHorizontalRotate90CW,
+      ExifOrientation.Rotate270CW,
+    ].includes(orientation);
+  }
+
   @OnJob({ name: JobName.AssetExtractMetadataQueueAll, queue: QueueName.MetadataExtraction })
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
@@ -245,6 +254,8 @@ export class MetadataService extends BaseService {
       }
     }
 
+    const tags = this.getTagList(exifTags);
+
     const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
 
@@ -287,7 +298,13 @@ export class MetadataService extends BaseService {
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
       autoStackId: this.getAutoStackId(exifTags),
+
+      tags: tags.length > 0 ? tags : null,
     };
+
+    const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
+    const assetWidth = isSidewards ? validate(height) : validate(width);
+    const assetHeight = isSidewards ? validate(width) : validate(height);
 
     const promises: Promise<unknown>[] = [
       this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
@@ -297,9 +314,15 @@ export class MetadataService extends BaseService {
         localDateTime: dates.localDateTime,
         fileCreatedAt: dates.dateTimeOriginal ?? undefined,
         fileModifiedAt: stats.mtime,
+
+        // only update the dimensions if they don't already exist
+        // we don't want to overwrite width/height that are modified by edits
+        width: asset.width == null ? assetWidth : undefined,
+        height: asset.height == null ? assetHeight : undefined,
       }),
-      this.applyTagList(asset, exifTags),
     ];
+
+    await this.applyTagList(asset);
 
     if (this.isMotionPhoto(asset, exifTags)) {
       promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
@@ -387,35 +410,35 @@ export class MetadataService extends BaseService {
 
   @OnEvent({ name: 'AssetTag' })
   async handleTagAsset({ assetId }: ArgOf<'AssetTag'>) {
-    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId, tags: true } });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId } });
   }
 
   @OnEvent({ name: 'AssetUntag' })
   async handleUntagAsset({ assetId }: ArgOf<'AssetUntag'>) {
-    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId, tags: true } });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId } });
   }
 
   @OnJob({ name: JobName.SidecarWrite, queue: QueueName.Sidecar })
   async handleSidecarWrite(job: JobOf<JobName.SidecarWrite>): Promise<JobStatus> {
-    const { id, tags } = job;
+    const { id } = job;
     const asset = await this.assetJobRepository.getForSidecarWriteJob(id);
     if (!asset) {
       return JobStatus.Failed;
     }
 
     const lockedProperties = await this.assetJobRepository.getLockedPropertiesForMetadataExtraction(id);
-    const tagsList = (asset.tags || []).map((tag) => tag.value);
 
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags } = _.pick(
       {
         description: asset.exifInfo.description,
         dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
         rating: asset.exifInfo.rating,
+        tags: asset.exifInfo.tags,
       },
       lockedProperties,
     );
@@ -428,7 +451,7 @@ export class MetadataService extends BaseService {
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
-        TagsList: tags ? tagsList : undefined,
+        TagsList: tags?.length ? tags : undefined,
       },
       _.isUndefined,
     );
@@ -442,6 +465,8 @@ export class MetadataService extends BaseService {
     if (asset.files.length === 0) {
       await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
     }
+
+    await this.assetRepository.unlockProperties(asset.id, lockedProperties);
 
     return JobStatus.Success;
   }
@@ -540,11 +565,14 @@ export class MetadataService extends BaseService {
     return tags;
   }
 
-  private async applyTagList(asset: { id: string; ownerId: string }, exifTags: ImmichTags) {
-    const tags = this.getTagList(exifTags);
-    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
+  private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const results = await upsertTags(this.tagRepository, {
+      userId: ownerId,
+      tags: asset?.exifInfo?.tags ?? [],
+    });
     await this.tagRepository.replaceAssetTags(
-      asset.id,
+      id,
       results.map((tag) => tag.id),
     );
   }
@@ -716,12 +744,7 @@ export class MetadataService extends BaseService {
       return regionInfo;
     }
 
-    const isSidewards = [
-      ExifOrientation.MirrorHorizontalRotate270CW,
-      ExifOrientation.Rotate90CW,
-      ExifOrientation.MirrorHorizontalRotate90CW,
-      ExifOrientation.Rotate270CW,
-    ].includes(orientation);
+    const isSidewards = this.isOrientationSidewards(orientation);
 
     // swap image dimensions in AppliedToDimensions if orientation is sidewards
     const adjustedAppliedToDimensions = isSidewards
@@ -971,9 +994,17 @@ export class MetadataService extends BaseService {
   private async getVideoTags(originalPath: string) {
     const { videoStreams, format } = await this.mediaRepository.probe(originalPath);
 
-    const tags: Pick<ImmichTags, 'Duration' | 'Orientation'> = {};
+    const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
     if (videoStreams[0]) {
+      // Set video dimensions
+      if (videoStreams[0].width) {
+        tags.ImageWidth = videoStreams[0].width;
+      }
+      if (videoStreams[0].height) {
+        tags.ImageHeight = videoStreams[0].height;
+      }
+
       switch (videoStreams[0].rotation) {
         case -90: {
           tags.Orientation = ExifOrientation.Rotate90CW;

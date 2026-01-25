@@ -26,6 +26,12 @@ const config = {
     locales: ['en'],
   },
 
+  // Mermaid diagrams
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   plugins: [
     async function myPlugin(context, options) {
       return {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleUpdateSharedLink } from '$lib/services/shared-link.service';
   import { SharedLinkType } from '@immich/sdk';
   import { Field, FormModal, Input, PasswordInput, Switch, Text } from '@immich/ui';
@@ -27,7 +27,7 @@
   let expiresAt = $state(sharedLink.expiresAt);
 
   const onClose = async () => {
-    await goto(`${AppRoute.SHARED_LINKS}`);
+    await goto(Route.sharedLinks());
   };
 
   const onSubmit = async () => {

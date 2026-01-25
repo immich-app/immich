@@ -21,7 +21,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
@@ -46,7 +46,6 @@
     album?: AlbumResponseDto;
     albumUsers?: UserResponseDto[];
     person?: PersonResponseDto;
-    isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -79,7 +78,6 @@
     album,
     albumUsers = [],
     person,
-    isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -108,8 +106,8 @@
   let scrubberWidth = $state(0);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  const maxMd = $derived(mobileDevice.maxMd);
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const maxMd = $derived(mediaQueryManager.maxMd);
+  const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   $effect(() => {
     const layoutOptions = maxMd
@@ -600,7 +598,6 @@
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
   {timelineManager}
   {assetInteraction}
-  bind:isShowDeleteConfirmation
   {onEscape}
 />
 

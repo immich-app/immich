@@ -8,15 +8,8 @@ import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 
 describe('AssetViewerNavBar component', () => {
   const additionalProps = {
-    showCopyButton: false,
-    showZoomButton: false,
-    showDownloadButton: false,
-    showMotionPlayButton: false,
-    showShareButton: false,
     preAction: () => {},
-    onZoomImage: () => {},
     onAction: () => {},
-    onRunJob: () => {},
     onPlaySlideshow: () => {},
     onClose: () => {},
     playOriginalVideo: false,
@@ -32,8 +25,14 @@ describe('AssetViewerNavBar component', () => {
       vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
     );
     vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return { featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: { smartSearch: true } } as any };
+      return {
+        featureFlagsManager: {
+          init: vi.fn(),
+          loadFeatureFlags: vi.fn(),
+          value: { trash: true, smartSearch: true },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+      };
     });
   });
 

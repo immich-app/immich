@@ -2,12 +2,11 @@
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { AppRoute } from '$lib/constants';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
+  import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -42,11 +41,9 @@
   });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
-    const params = getMetadataSearchQuery(payload);
-
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    await goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(Route.search(payload));
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -256,7 +253,7 @@
     draggable="false"
     autocomplete="off"
     class="select-text text-sm"
-    action={AppRoute.SEARCH}
+    action={Route.search()}
     onreset={() => (value = '')}
     {onsubmit}
     onfocusin={onFocusIn}

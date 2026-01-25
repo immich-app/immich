@@ -19,7 +19,7 @@ class SyncAssetMetadataDeleteV1 {
 
   String assetId;
 
-  AssetMetadataKey key;
+  String key;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetMetadataDeleteV1 &&
@@ -52,7 +52,7 @@ class SyncAssetMetadataDeleteV1 {
 
       return SyncAssetMetadataDeleteV1(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        key: AssetMetadataKey.fromJson(json[r'key'])!,
+        key: mapValueOfType<String>(json, r'key')!,
       );
     }
     return null;

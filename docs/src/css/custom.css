@@ -8,19 +8,19 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Overpass';
-  src: url('/fonts/overpass/Overpass.ttf') format('truetype-variations');
-  font-weight: 1 999;
+  font-family: 'GoogleSans';
+  src: url('/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+  font-weight: 410 900;
   font-style: normal;
   ascent-override: 106.25%;
   size-adjust: 106.25%;
 }
 
 @font-face {
-  font-family: 'Overpass Mono';
-  src: url('/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
-  font-weight: 1 999;
-  font-style: normal;
+  font-family: 'GoogleSansCode';
+  src: url('/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+  font-weight: 1 900;
+  font-style: monospace;
   ascent-override: 106.25%;
   size-adjust: 106.25%;
 }
@@ -37,7 +37,8 @@ img {
 
 /* You can override the default Infima variables here. */
 :root {
-  font-family: 'Overpass', sans-serif;
+  font-family: 'GoogleSans', sans-serif;
+  letter-spacing: 0.1px;
   --ifm-color-primary: #4250af;
   --ifm-color-primary-dark: #4250af;
   --ifm-color-primary-darker: #4250af;
@@ -46,6 +47,16 @@ img {
   --ifm-color-primary-lighter: #4250af;
   --ifm-color-primary-lightest: #4250af;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'GoogleSans', sans-serif;
+  letter-spacing: 0.1px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -71,15 +82,22 @@ div[class^='announcementBar_'] {
   padding: 10px 10px 10px 16px;
   border-radius: 24px;
   margin-right: 16px;
+  font-weight: 500;
 }
 
 .menu__list-item-collapsible {
   margin-right: 16px;
   border-radius: 24px;
+  font-weight: 500;
 }
 
 .menu__link--active {
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.table-of-contents__link {
+  font-size: 14px;
+  font-weight: 450;
 }
 
 /* workaround for version switcher PR 15894 */
@@ -88,13 +106,14 @@ div[class*='navbar__items'] > li:has(a[class*='version-switcher-34ab39']) {
 }
 
 code {
-  font-weight: 600;
+  font-weight: 500;
+  font-family: 'GoogleSansCode';
 }
 
 .buy-button {
   padding: 8px 14px;
   border: 1px solid transparent;
-  font-family: 'Overpass', sans-serif;
+  font-family: 'GoogleSans', sans-serif;
   font-weight: 500;
   cursor: pointer;
   box-shadow: 0 0 5px 2px rgba(181, 206, 254, 0.4);

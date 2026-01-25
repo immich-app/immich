@@ -5,11 +5,12 @@ import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   anyUuid,
@@ -19,6 +20,7 @@ import {
   truncatedDate,
   unnest,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withFaces,
   withFacesAndPeople,
@@ -111,6 +113,7 @@ interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  edits?: boolean;
 }
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
@@ -175,6 +178,7 @@ export class AssetRepository {
                 bitsPerSample: ref('bitsPerSample'),
                 rating: ref('rating'),
                 fps: ref('fps'),
+                tags: ref('tags'),
                 lockedProperties:
                   lockedPropertiesBehavior === 'append'
                     ? distinctLocked(eb, exif.lockedProperties ?? null)
@@ -220,6 +224,17 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, ['description']] })
+  unlockProperties(assetId: string, properties: LockableProperty[]) {
+    return this.db
+      .updateTable('asset_exif')
+      .where('assetId', '=', assetId)
+      .set((eb) => ({
+        lockedProperties: sql`nullif(array(select distinct property from unnest(${eb.ref('asset_exif.lockedProperties')}) property where not property = any(${properties})), '{}')`,
+      }))
+      .execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
@@ -256,7 +271,11 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
+  upsertMetadata(id: string, items: Array<{ key: string; value: object }>) {
+    if (items.length === 0) {
+      return [];
+    }
+
     return this.db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
@@ -269,8 +288,21 @@ export class AssetRepository {
       .execute();
   }
 
+  upsertBulkMetadata(items: Insertable<AssetMetadataTable>[]) {
+    return this.db
+      .insertInto('asset_metadata')
+      .values(items)
+      .onConflict((oc) =>
+        oc
+          .columns(['assetId', 'key'])
+          .doUpdateSet((eb) => ({ key: eb.ref('excluded.key'), value: eb.ref('excluded.value') })),
+      )
+      .returning(['assetId', 'key', 'value', 'updatedAt'])
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  getMetadataByKey(assetId: string, key: AssetMetadataKey) {
+  getMetadataByKey(assetId: string, key: string) {
     return this.db
       .selectFrom('asset_metadata')
       .select(['key', 'value', 'updatedAt'])
@@ -280,8 +312,21 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async deleteMetadataByKey(id: string, key: AssetMetadataKey) {
+  async deleteMetadataByKey(id: string, key: string) {
     await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
+  }
+
+  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, key: DummyValue.STRING }]] })
+  async deleteBulkMetadata(items: Array<{ assetId: string; key: string }>) {
+    if (items.length === 0) {
+      return;
+    }
+
+    await this.db.transaction().execute(async (tx) => {
+      for (const { assetId, key } of items) {
+        await tx.deleteFrom('asset_metadata').where('assetId', '=', assetId).where('key', '=', key).execute();
+      }
+    });
   }
 
   create(asset: Insertable<AssetTable>) {
@@ -441,7 +486,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getById(id: string, { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {}) {
+  getById(
+    id: string,
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+  ) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -478,6 +526,7 @@ export class AssetRepository {
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
+      .$if(!!edits, (qb) => qb.select(withEdits))
       .limit(1)
       .executeTakeFirst();
   }
@@ -505,10 +554,11 @@ export class AssetRepository {
         .selectAll('asset')
         .$call(withExif)
         .$call((qb) => qb.select(withFacesAndPeople))
+        .$call((qb) => qb.select(withEdits))
         .executeTakeFirst();
     }
 
-    return this.getById(asset.id, { exifInfo: true, faces: { person: true } });
+    return this.getById(asset.id, { exifInfo: true, faces: { person: true }, edits: true });
   }
 
   async remove(asset: { id: string }): Promise<void> {
@@ -665,11 +715,9 @@ export class AssetRepository {
               .coalesce(
                 eb
                   .case()
-                  .when(sql`asset_exif."exifImageHeight" = 0 or asset_exif."exifImageWidth" = 0`)
+                  .when(sql`asset."height" = 0 or asset."width" = 0`)
                   .then(eb.lit(1))
-                  .when('asset_exif.orientation', 'in', sql<string>`('5', '6', '7', '8', '-90', '90')`)
-                  .then(sql`round(asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric, 3)`)
-                  .else(sql`round(asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric, 3)`)
+                  .else(sql`round(asset."width"::numeric / asset."height"::numeric, 3)`)
                   .end(),
                 eb.lit(1),
               )
@@ -856,20 +904,22 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
       .insertInto('asset_file')
       .values(value)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
         })),
       )
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+  ): Promise<void> {
     if (files.length === 0) {
       return;
     }
@@ -879,7 +929,7 @@ export class AssetRepository {
       .insertInto('asset_file')
       .values(values)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
         })),
       )
@@ -958,5 +1008,48 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
 
     return count;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  async getForOriginal(id: string, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select('originalFileName')
+      .where('asset.id', '=', id)
+      .$if(isEdited, (qb) =>
+        qb
+          .leftJoin('asset_file', (join) =>
+            join
+              .onRef('asset.id', '=', 'asset_file.assetId')
+              .on('asset_file.isEdited', '=', true)
+              .on('asset_file.type', '=', AssetFileType.FullSize),
+          )
+          .select('asset_file.path as editedPath'),
+      )
+      .select('originalPath')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
+  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
+      )
+      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForVideo(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', AssetType.Video)
+      .executeTakeFirst();
   }
 }

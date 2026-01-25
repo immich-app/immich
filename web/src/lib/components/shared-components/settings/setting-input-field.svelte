@@ -81,7 +81,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="font-medium text-primary text-sm min-h-6 uppercase" for={label}>{label}</label>
+    <label class="font-medium text-primary text-sm min-h-6" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -128,7 +128,7 @@
 
       <input
         bind:this={input}
-        class="immich-form-input w-full pb-2"
+        class="immich-form-input w-full pb-2 min-w-[50px]"
         class:color-picker={inputType === SettingInputFieldType.COLOR}
         aria-describedby={description ? `${label}-desc` : undefined}
         aria-labelledby="{label}-label"

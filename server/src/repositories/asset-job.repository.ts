@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -11,6 +10,7 @@ import {
   asUuid,
   toJson,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withExifInner,
   withFaces,
@@ -41,15 +41,6 @@ export class AssetJobRepository {
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('tag')
-            .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-            .whereRef('asset.id', '=', 'tag_asset.assetId'),
-        ).as('tags'),
-      )
       .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();
@@ -72,6 +63,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
+      .select(withEdits)
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
@@ -113,6 +105,7 @@ export class AssetJobRepository {
         'asset.type',
       ])
       .select(withFiles)
+      .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -200,7 +193,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
       .$call(withExifInner)
-      .select((eb) => withFaces(eb, true))
+      .select((eb) => withFaces(eb, true, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
