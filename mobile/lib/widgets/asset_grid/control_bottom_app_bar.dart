@@ -208,7 +208,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
               label: "control_bottom_app_bar_delete_from_local".tr(),
               onPressed: enabled
                   ? () {
-                      if (!selectionAssetState.hasLocal) {
+                      if (!hasLocal) {
                         return onDeleteLocal?.call(true);
                       }
 
