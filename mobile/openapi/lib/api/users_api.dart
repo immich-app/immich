@@ -36,13 +36,12 @@ class UsersApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['multipart/form-data'];
+    const contentTypes = <String>[];
 
     bool hasFields = false;
     final mp = MultipartRequest('POST', Uri.parse(apiPath));
     if (file != null) {
       hasFields = true;
-      mp.fields[r'file'] = file.field;
       mp.files.add(file);
     }
     if (hasFields) {
