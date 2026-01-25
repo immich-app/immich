@@ -129,6 +129,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
+  DateTime? _pendingScrollDate;
 
   // Drag selection state
   bool _dragging = false;
@@ -167,6 +168,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
 
       case ScrollToDateEvent scrollToDateEvent:
+        _pendingScrollDate = scrollToDateEvent.date;
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
         setState(() {});
@@ -210,6 +212,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   void _scrollToDate(DateTime date) {
     final asyncSegments = ref.read(timelineSegmentProvider);
+    bool scrolled = false;
+
     asyncSegments.whenData((segments) {
       // Find the segment that contains assets from the target date
       final targetSegment = segments.firstWhereOrNull((segment) {
@@ -243,10 +247,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               curve: Curves.easeInOut,
             )
             .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
+        scrolled = true;
       } else {
         ref.read(timelineStateProvider.notifier).setScrubbing(false);
       }
     });
+
+    _pendingScrollDate = scrolled ? null : date;
   }
 
   // Drag selection methods
@@ -321,6 +328,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+
+    if (_pendingScrollDate != null && asyncSegments.hasValue) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pendingScrollDate != null) _scrollToDate(_pendingScrollDate!);
+      });
+    }
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
