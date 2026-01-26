@@ -67,25 +67,27 @@ export class AssetJobRepository {
   }
 
   private missingThumbnailQuery() {
-    return this.db
-      .selectFrom('asset')
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
-      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-      .leftJoin('asset_file as thumb_file', (join) =>
-        join.onRef('thumb_file.assetId', '=', 'asset.id').on('thumb_file.type', '=', AssetFileType.Thumbnail),
-      )
-      .where((eb) =>
-        eb.or([
-          // Standard missing thumbnail checks
-          eb('asset_job_status.previewAt', 'is', null),
-          eb('asset_job_status.thumbnailAt', 'is', null),
-          eb('asset.thumbhash', 'is', null),
-          // Also regenerate if thumbnail exists but isn't in S3 (needs re-upload)
-          eb.and([eb('thumb_file.id', 'is not', null), eb('thumb_file.storageBackend', '!=', StorageBackend.S3)]),
-        ]),
-      );
+    return (
+      this.db
+        .selectFrom('asset')
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.visibility', '!=', AssetVisibility.Hidden)
+        // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
+        .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+        .leftJoin('asset_file as thumb_file', (join) =>
+          join.onRef('thumb_file.assetId', '=', 'asset.id').on('thumb_file.type', '=', AssetFileType.Thumbnail),
+        )
+        .where((eb) =>
+          eb.or([
+            // Standard missing thumbnail checks
+            eb('asset_job_status.previewAt', 'is', null),
+            eb('asset_job_status.thumbnailAt', 'is', null),
+            eb('asset.thumbhash', 'is', null),
+            // Also regenerate if thumbnail exists but isn't in S3 (needs re-upload)
+            eb.and([eb('thumb_file.id', 'is not', null), eb('thumb_file.storageBackend', '!=', StorageBackend.S3)]),
+          ]),
+        )
+    );
   }
 
   @GenerateSql({ params: [false], stream: true })

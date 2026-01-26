@@ -15,9 +15,7 @@ interface MockS3Adapter {
   >;
   delete: Mock<(key: string) => Promise<void>>;
   getPresignedDownloadUrl: Mock<(key: string, options?: { expiresIn?: number }) => Promise<string>>;
-  getPresignedUploadUrl: Mock<
-    (key: string, options?: { expiresIn?: number; contentType?: string }) => Promise<string>
-  >;
+  getPresignedUploadUrl: Mock<(key: string, options?: { expiresIn?: number; contentType?: string }) => Promise<string>>;
   copyWithStorageClass: Mock<(key: string, storageClass: string) => Promise<void>>;
   listObjects: Mock<(prefix: string) => Promise<Array<{ key: string; size: number }>>>;
 }

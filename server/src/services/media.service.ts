@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { createReadStream } from 'node:fs';
 import { Readable } from 'node:stream';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
-import { IStorageAdapter, StorageWriteOptions } from 'src/repositories/storage/storage-adapter.interface';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -31,6 +30,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { IStorageAdapter, StorageWriteOptions } from 'src/repositories/storage/storage-adapter.interface';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,

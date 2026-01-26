@@ -15,9 +15,7 @@ interface MockS3Adapter {
   >;
   delete: Mock<(key: string) => Promise<void>>;
   getPresignedDownloadUrl: Mock<(key: string, options?: { expiresIn?: number }) => Promise<string>>;
-  getPresignedUploadUrl: Mock<
-    (key: string, options?: { expiresIn?: number; contentType?: string }) => Promise<string>
-  >;
+  getPresignedUploadUrl: Mock<(key: string, options?: { expiresIn?: number; contentType?: string }) => Promise<string>>;
   copyWithStorageClass: Mock<(key: string, storageClass: string) => Promise<void>>;
   listObjects: Mock<(prefix: string) => Promise<Array<{ key: string; size: number }>>>;
 }
@@ -853,9 +851,7 @@ describe(S3StorageService.name, () => {
       });
 
       const asset = factory.asset({ originalPath: '/data/photo.jpg' });
-      mocks.asset.getS3AssetsWithLocalPaths.mockImplementation(() =>
-        makeStream([asset]),
-      );
+      mocks.asset.getS3AssetsWithLocalPaths.mockImplementation(() => makeStream([asset]));
       mockLocalAdapter.exists.mockResolvedValue(true);
 
       const result = await sut.handleS3CleanupOrphanedFiles();
@@ -871,9 +867,7 @@ describe(S3StorageService.name, () => {
       });
 
       const asset = factory.asset({ originalPath: '/data/photo.jpg' });
-      mocks.asset.getS3AssetsWithLocalPaths.mockImplementation(() =>
-        makeStream([asset]),
-      );
+      mocks.asset.getS3AssetsWithLocalPaths.mockImplementation(() => makeStream([asset]));
       mockLocalAdapter.exists.mockResolvedValue(true);
       mockLocalAdapter.delete.mockRejectedValue(new Error('Delete failed'));
 
@@ -931,5 +925,4 @@ describe(S3StorageService.name, () => {
       expect(result).toBe(JobStatus.Failed);
     });
   });
-
 });
