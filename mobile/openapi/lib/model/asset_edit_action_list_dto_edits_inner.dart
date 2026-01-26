@@ -19,7 +19,7 @@ class AssetEditActionListDtoEditsInner {
 
   AssetEditAction action;
 
-  MirrorParameters parameters;
+  Map<String, dynamic> parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionListDtoEditsInner &&
@@ -52,7 +52,7 @@ class AssetEditActionListDtoEditsInner {
 
       return AssetEditActionListDtoEditsInner(
         action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: MirrorParameters.fromJson(json[r'parameters'])!,
+        parameters: json[r'parameters'],
       );
     }
     return null;
