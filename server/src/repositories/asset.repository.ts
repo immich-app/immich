@@ -904,11 +904,12 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
+  async upsertFile(
+    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>,
+  ): Promise<void> {
     await this.db
       .insertInto('asset_file')
-      .values(value)
+      .values(file)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
@@ -918,19 +919,19 @@ export class AssetRepository {
   }
 
   async upsertFiles(
-    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>[],
   ): Promise<void> {
     if (files.length === 0) {
       return;
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
     await this.db
       .insertInto('asset_file')
-      .values(values)
+      .values(files)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
+          isProgressive: eb.ref('excluded.isProgressive'),
         })),
       )
       .execute();
