@@ -171,6 +171,7 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" in ($1, $2, $3)
       ) as agg
   ) as "files",
   (
@@ -192,7 +193,7 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = $1
+  "asset"."id" = $4
 
 -- AssetJobRepository.getForMetadataExtraction
 select

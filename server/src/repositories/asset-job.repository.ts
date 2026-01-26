@@ -110,7 +110,8 @@ export class AssetJobRepository {
           eb
             .selectFrom('asset_file')
             .select(columns.assetFilesForThumbnail)
-            .whereRef('asset_file.assetId', '=', 'asset.id'),
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize]),
         ).as('files'),
       )
       .select(withEdits)
