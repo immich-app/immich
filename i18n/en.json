@@ -1004,6 +1004,7 @@
   "editor_discard_edits_title": "Discard edits?",
   "editor_edits_applied_error": "Failed to apply edits",
   "editor_edits_applied_success": "Edits applied successfully",
+  "editor_filters": "Filters",
   "editor_flip_horizontal": "Flip horizontal",
   "editor_flip_vertical": "Flip vertical",
   "editor_orientation": "Orientation",

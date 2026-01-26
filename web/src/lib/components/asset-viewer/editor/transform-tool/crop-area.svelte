@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { filterManager } from '$lib/managers/edit/filter-manager.svelte';
   import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -78,6 +79,14 @@
       bind:this={transformManager.overlayEl}
     ></div>
   </button>
+
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute">
+    <defs>
+      <filter id="currentFilter" color-interpolation-filters="sRGB">
+        <feColorMatrix type="matrix" values={filterManager.selectedFilter.svgFilter} />
+      </filter>
+    </defs>
+  </svg>
 </div>
 
 <style>
@@ -150,6 +159,7 @@
     height: 100%;
     user-select: none;
     transition: transform 0.15s ease;
+    filter: url(#currentFilter);
   }
 
   .crop-frame {
