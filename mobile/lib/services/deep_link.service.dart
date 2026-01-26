@@ -33,7 +33,7 @@ final deepLinkServiceProvider = Provider(
     ref.watch(beta_asset_provider.assetServiceProvider),
     ref.watch(remoteAlbumServiceProvider),
     ref.watch(driftMemoryServiceProvider),
-    ref.watch(currentUserProvider.select((user) => user!)),
+    ref.watch(currentUserProvider),
   ),
 );
 
@@ -51,7 +51,7 @@ class DeepLinkService {
   final RemoteAlbumService _betaRemoteAlbumService;
   final DriftMemoryService _betaMemoryServiceProvider;
 
-  final UserDto _currentUser;
+  final UserDto? _currentUser;
 
   const DeepLinkService(
     this._memoryService,
@@ -131,9 +131,18 @@ class DeepLinkService {
     if (Store.isBetaTimelineEnabled) {
       List<DriftMemory> memories = [];
 
-      memories = memoryId == null
-          ? await _betaMemoryServiceProvider.getMemoryLane(_currentUser.id)
-          : [await _betaMemoryServiceProvider.get(memoryId)].whereType<DriftMemory>().toList();
+      if (memoryId == null) {
+        if (_currentUser == null) {
+          return null;
+        }
+
+        memories = await _betaMemoryServiceProvider.getMemoryLane(_currentUser.id);
+      } else {
+        final memory = await _betaMemoryServiceProvider.get(memoryId);
+        if (memory != null) {
+          memories = [memory];
+        }
+      }
 
       if (memories.isEmpty) {
         return null;
