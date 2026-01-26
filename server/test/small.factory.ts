@@ -90,10 +90,11 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
     showExif = true,
     allowUpload = false,
     allowDownload = true,
+    allowShare = false,
     password = null,
   } = sharedLink;
 
-  return { id, expiresAt, userId, showExif, allowUpload, allowDownload, password };
+  return { id, expiresAt, userId, showExif, allowUpload, allowDownload, allowShare, password };
 };
 
 const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
@@ -257,6 +258,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   s3Bucket: null,
   s3Key: null,
   s3KeyEncodedVideo: null,
+  s3BucketEncodedVideo: null,
   ...asset,
 });
 

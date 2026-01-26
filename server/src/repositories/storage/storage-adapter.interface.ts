@@ -21,7 +21,7 @@ export interface StorageWriteOptions {
 }
 
 export interface PresignedUrlOptions {
-  expiresIn?: number; // seconds, default 3600
+  expiresIn?: number; // seconds, default 86400 (24h to match cache-control)
   contentType?: string; // for PUT operations
 }
 

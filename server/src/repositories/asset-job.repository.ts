@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, StorageBackend } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -66,27 +66,85 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  private missingThumbnailQuery() {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .leftJoin('asset_file as thumb_file', (join) =>
+        join.onRef('thumb_file.assetId', '=', 'asset.id').on('thumb_file.type', '=', AssetFileType.Thumbnail),
+      )
+      .where((eb) =>
+        eb.or([
+          // Standard missing thumbnail checks
+          eb('asset_job_status.previewAt', 'is', null),
+          eb('asset_job_status.thumbnailAt', 'is', null),
+          eb('asset.thumbhash', 'is', null),
+          // Also regenerate if thumbnail exists but isn't in S3 (needs re-upload)
+          eb.and([eb('thumb_file.id', 'is not', null), eb('thumb_file.storageBackend', '!=', StorageBackend.S3)]),
+        ]),
+      );
+  }
+
   @GenerateSql({ params: [false], stream: true })
   streamForThumbnailJob(force: boolean) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.thumbhash'])
-      .select(withFiles)
+      .select(['asset.id'])
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
-          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .leftJoin('asset_file as thumb_file', (join) =>
+            join.onRef('thumb_file.assetId', '=', 'asset.id').on('thumb_file.type', '=', AssetFileType.Thumbnail),
+          )
           .where((eb) =>
             eb.or([
+              // Standard missing thumbnail checks
               eb('asset_job_status.previewAt', 'is', null),
               eb('asset_job_status.thumbnailAt', 'is', null),
               eb('asset.thumbhash', 'is', null),
+              // Also regenerate if thumbnail exists but isn't in S3 (needs re-upload)
+              eb.and([eb('thumb_file.id', 'is not', null), eb('thumb_file.storageBackend', '!=', StorageBackend.S3)]),
             ]),
           ),
       )
       .stream();
+  }
+
+  @GenerateSql({ params: [] })
+  async countMissingThumbnails(): Promise<number> {
+    const result = await this.missingThumbnailQuery()
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
+  }
+
+  @GenerateSql({ params: [] })
+  async countMissingFaceDetection(): Promise<number> {
+    const result = await this.assetsWithPreviews()
+      .where('job_status.facesRecognizedAt', 'is', null)
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
+  }
+
+  @GenerateSql({ params: [] })
+  async countMissingMetadata(): Promise<number> {
+    const result = await this.db
+      .selectFrom('asset')
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .where((eb) =>
+        eb.or([eb('asset_job_status.metadataExtractedAt', 'is', null), eb('asset_job_status.assetId', 'is', null)]),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -247,6 +305,12 @@ export class AssetJobRepository {
         'asset.encodedVideoPath',
         'asset.originalPath',
         'asset.isOffline',
+        // S3 storage columns
+        'asset.storageBackend',
+        'asset.s3Bucket',
+        'asset.s3Key',
+        'asset.s3KeyEncodedVideo',
+        'asset.s3BucketEncodedVideo',
       ])
       .$call(withExif)
       .select(withFacesAndPeople)
@@ -289,7 +353,16 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset.encodedVideoPath',
+        'asset.storageBackend',
+        'asset.s3Bucket',
+        'asset.s3Key',
+      ])
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();

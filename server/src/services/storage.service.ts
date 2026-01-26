@@ -44,6 +44,18 @@ const FOLDER_TO_LOCATION: Partial<Record<StorageFolder, StorageLocationType>> = 
   // StorageFolder.Upload is intentionally omitted - always local
 };
 
+/**
+ * StorageService - System/Infrastructure Layer
+ *
+ * Responsibilities:
+ * - Application bootstrap and mount verification
+ * - S3 connectivity checks at startup
+ * - Media location detection
+ * - Local filesystem operations (FileDelete job)
+ *
+ * When to use: System-level storage concerns, startup validation,
+ * local file operations.
+ */
 @Injectable()
 export class StorageService extends BaseService {
   private detectMediaLocation(): string {
@@ -187,20 +199,26 @@ export class StorageService extends BaseService {
   async handleDeleteFiles(job: JobOf<JobName.FileDelete>): Promise<JobStatus> {
     const { files } = job;
 
+    let failures = 0;
+    let attempted = 0;
+
     // TODO: one job per file
     for (const file of files) {
       if (!file) {
         continue;
       }
 
+      attempted++;
       try {
         await this.storageRepository.unlink(file);
-      } catch (error: any) {
-        this.logger.warn('Unable to remove file from disk', error);
+      } catch (error: unknown) {
+        this.logger.warn(`Unable to remove file from disk: ${file}`, error);
+        failures++;
       }
     }
 
-    return JobStatus.Success;
+    // Return Failed only if all attempted deletions failed
+    return failures === attempted && attempted > 0 ? JobStatus.Failed : JobStatus.Success;
   }
 
   private async verifyReadAccess(folder: StorageFolder) {
@@ -317,40 +335,66 @@ export class StorageService extends BaseService {
   /**
    * Verify S3 connectivity using HeadBucket API.
    * This is a fatal check - no ignore flag.
+   * Checks both archive and hot buckets if configured.
    */
   private async verifyS3Connectivity(config: {
     storage: {
       s3: {
         enabled: boolean;
         endpoint: string;
-        bucket: string;
         region: string;
         accessKeyId: string;
         secretAccessKey: string;
-        prefix: string;
         forcePathStyle: boolean;
+        archiveBucket: {
+          bucket: string;
+          endpoint?: string;
+          region?: string;
+          accessKeyId?: string;
+          secretAccessKey?: string;
+          prefix?: string;
+          forcePathStyle?: boolean;
+        };
+        hotBucket: {
+          bucket: string;
+          endpoint?: string;
+          region?: string;
+          accessKeyId?: string;
+          secretAccessKey?: string;
+          prefix?: string;
+          forcePathStyle?: boolean;
+        };
       };
     };
   }): Promise<void> {
     this.logger.log('Verifying S3 connectivity...');
-    try {
-      const s3Adapter = new S3StorageAdapter({
-        endpoint: config.storage.s3.endpoint || undefined,
-        region: config.storage.s3.region,
-        bucket: config.storage.s3.bucket,
-        accessKeyId: config.storage.s3.accessKeyId,
-        secretAccessKey: config.storage.s3.secretAccessKey,
-        prefix: config.storage.s3.prefix,
-        forcePathStyle: config.storage.s3.forcePathStyle,
-      });
-      await s3Adapter.healthCheck();
-      this.logger.log('S3 connectivity verified successfully');
-    } catch (error) {
-      this.logger.error(`S3 connectivity check failed: ${error}`);
-      throw new S3ConnectivityError(
-        `Failed to connect to S3 bucket "${config.storage.s3.bucket}": ${error}. ` +
-          `Please verify your S3 configuration (endpoint, bucket, credentials).`,
-      );
+
+    const s3Config = config.storage.s3;
+    const bucketsToCheck = [
+      { name: 'archive', config: s3Config.archiveBucket },
+      { name: 'hot', config: s3Config.hotBucket },
+    ].filter((b) => b.config.bucket);
+
+    for (const { name, config: bucketConfig } of bucketsToCheck) {
+      try {
+        const s3Adapter = new S3StorageAdapter({
+          endpoint: bucketConfig.endpoint ?? (s3Config.endpoint || undefined),
+          region: bucketConfig.region ?? s3Config.region,
+          bucket: bucketConfig.bucket,
+          accessKeyId: bucketConfig.accessKeyId ?? s3Config.accessKeyId,
+          secretAccessKey: bucketConfig.secretAccessKey ?? s3Config.secretAccessKey,
+          prefix: bucketConfig.prefix ?? '',
+          forcePathStyle: bucketConfig.forcePathStyle ?? s3Config.forcePathStyle,
+        });
+        await s3Adapter.healthCheck();
+        this.logger.log(`S3 ${name} bucket "${bucketConfig.bucket}" connectivity verified successfully`);
+      } catch (error) {
+        this.logger.error(`S3 ${name} bucket connectivity check failed: ${error}`);
+        throw new S3ConnectivityError(
+          `Failed to connect to S3 ${name} bucket "${bucketConfig.bucket}": ${error}. ` +
+            `Please verify your S3 configuration (endpoint, bucket, credentials).`,
+        );
+      }
     }
   }
 }

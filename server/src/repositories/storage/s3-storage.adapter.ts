@@ -23,9 +23,11 @@ import {
   StorageReadStream,
   StorageWriteOptions,
 } from 'src/repositories/storage/storage-adapter.interface';
+import { classifyS3Error, S3ErrorType } from 'src/utils/s3-error';
 
 export interface S3StorageConfig {
   endpoint?: string;
+  publicEndpoint?: string; // Custom domain for presigned URLs (e.g., https://media.example.com)
   region: string;
   bucket: string;
   accessKeyId: string;
@@ -43,10 +45,21 @@ export class S3StorageAdapter implements IStorageAdapter {
   private readonly client: S3Client;
   private readonly bucket: string;
   private readonly prefix: string;
+  private readonly publicEndpoint?: string;
+  private readonly internalEndpoint?: string;
+
+  /** Maximum file size (50MB) that can be safely read into memory */
+  private static readonly MAX_READ_SIZE = 50 * 1024 * 1024;
+
+  /** Default retry configuration */
+  private static readonly DEFAULT_MAX_RETRIES = 3;
+  private static readonly DEFAULT_BASE_DELAY_MS = 1000;
 
   constructor(private readonly config: S3StorageConfig) {
     this.bucket = config.bucket;
     this.prefix = config.prefix || '';
+    this.publicEndpoint = config.publicEndpoint;
+    this.internalEndpoint = config.endpoint;
 
     this.client = new S3Client({
       endpoint: config.endpoint,
@@ -60,6 +73,74 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   /**
+   * Rewrite presigned URL to use custom public endpoint if configured.
+   * Handles path-style URLs: https://endpoint/bucket/key -> https://publicEndpoint/key
+   */
+  private rewritePresignedUrl(url: string): string {
+    if (!this.publicEndpoint) {
+      return url;
+    }
+
+    try {
+      const parsed = new URL(url);
+      const publicParsed = new URL(this.publicEndpoint);
+
+      // Remove bucket name from path if present (path-style URL)
+      let newPath = parsed.pathname;
+      if (newPath.startsWith(`/${this.bucket}/`)) {
+        newPath = newPath.slice(this.bucket.length + 1); // Remove /bucket prefix
+      }
+
+      parsed.hostname = publicParsed.hostname;
+      parsed.protocol = publicParsed.protocol;
+      parsed.port = publicParsed.port;
+      parsed.pathname = newPath;
+
+      return parsed.toString();
+    } catch {
+      return url;
+    }
+  }
+
+  /**
+   * Retry wrapper with exponential backoff for transient S3 errors.
+   * Retries on transient errors (503, timeouts, network issues) but fails immediately on permanent errors.
+   */
+  private async withRetry<T>(
+    operation: () => Promise<T>,
+    maxRetries = S3StorageAdapter.DEFAULT_MAX_RETRIES,
+    baseDelayMs = S3StorageAdapter.DEFAULT_BASE_DELAY_MS,
+  ): Promise<T> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: unknown) {
+        lastError = error;
+        const errorType = classifyS3Error(error);
+
+        // Don't retry permanent errors
+        if (errorType === S3ErrorType.Permanent) {
+          throw error;
+        }
+
+        // Don't retry on last attempt
+        if (attempt === maxRetries) {
+          throw error;
+        }
+
+        // Exponential backoff with jitter
+        const delay = baseDelayMs * Math.pow(2, attempt) * (0.5 + Math.random() * 0.5);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+
+    // Should never reach here, but TypeScript needs this
+    throw lastError;
+  }
+
+  /**
    * Health check to verify S3 connectivity and bucket access.
    * Uses HeadBucket API to verify credentials are valid and bucket exists.
    */
@@ -68,12 +149,21 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   private getKey(key: string): string {
-    // If key starts with prefix, use as-is
-    if (this.prefix && key.startsWith(this.prefix)) {
+    // If no prefix configured, use key as-is
+    if (!this.prefix) {
       return key;
     }
-    // Otherwise, prepend prefix
-    return this.prefix ? `${this.prefix}${key}` : key;
+
+    // Normalize prefix to always end with '/' for consistent path handling
+    const normalizedPrefix = this.prefix.endsWith('/') ? this.prefix : this.prefix + '/';
+
+    // If key already starts with the normalized prefix, use as-is to avoid double-prefixing
+    if (key.startsWith(normalizedPrefix)) {
+      return key;
+    }
+
+    // Prepend the normalized prefix
+    return `${normalizedPrefix}${key}`;
   }
 
   async exists(key: string): Promise<boolean> {
@@ -110,6 +200,15 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   async read(key: string): Promise<Buffer> {
+    // Check file size first to prevent OOM for large files
+    const stat = await this.stat(key);
+    if (stat.size > S3StorageAdapter.MAX_READ_SIZE) {
+      throw new Error(
+        `File too large to read into memory (${stat.size} bytes, max ${S3StorageAdapter.MAX_READ_SIZE} bytes). ` +
+          `Use readStream() for large files.`,
+      );
+    }
+
     const response = await this.client.send(
       new GetObjectCommand({
         Bucket: this.bucket,
@@ -149,16 +248,18 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   async write(key: string, data: Buffer, options?: StorageWriteOptions): Promise<void> {
-    await this.client.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: this.getKey(key),
-        Body: data,
-        ContentType: options?.contentType,
-        CacheControl: options?.cacheControl,
-        Metadata: options?.metadata,
-        StorageClass: options?.storageClass as any,
-      }),
+    await this.withRetry(() =>
+      this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: this.getKey(key),
+          Body: data,
+          ContentType: options?.contentType,
+          CacheControl: options?.cacheControl,
+          Metadata: options?.metadata,
+          StorageClass: options?.storageClass as any,
+        }),
+      ),
     );
   }
 
@@ -233,11 +334,13 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   async delete(key: string): Promise<void> {
-    await this.client.send(
-      new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: this.getKey(key),
-      }),
+    await this.withRetry(() =>
+      this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: this.getKey(key),
+        }),
+      ),
     );
   }
 
@@ -286,9 +389,11 @@ export class S3StorageAdapter implements IStorageAdapter {
       Key: this.getKey(key),
     });
 
-    return getSignedUrl(this.client, command, {
-      expiresIn: options?.expiresIn ?? 3600,
+    const url = await getSignedUrl(this.client, command, {
+      expiresIn: options?.expiresIn ?? 86_400,
     });
+
+    return this.rewritePresignedUrl(url);
   }
 
   async getPresignedUploadUrl(key: string, options?: PresignedUrlOptions): Promise<string> {
@@ -298,9 +403,11 @@ export class S3StorageAdapter implements IStorageAdapter {
       ContentType: options?.contentType,
     });
 
-    return getSignedUrl(this.client, command, {
-      expiresIn: options?.expiresIn ?? 3600,
+    const url = await getSignedUrl(this.client, command, {
+      expiresIn: options?.expiresIn ?? 86_400,
     });
+
+    return this.rewritePresignedUrl(url);
   }
 
   async createMultipartUpload(key: string, options?: StorageWriteOptions): Promise<string> {
@@ -323,14 +430,16 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   async uploadPart(key: string, uploadId: string, partNumber: number, data: Buffer): Promise<MultipartUploadPart> {
-    const response = await this.client.send(
-      new UploadPartCommand({
-        Bucket: this.bucket,
-        Key: this.getKey(key),
-        UploadId: uploadId,
-        PartNumber: partNumber,
-        Body: data,
-      }),
+    const response = await this.withRetry(() =>
+      this.client.send(
+        new UploadPartCommand({
+          Bucket: this.bucket,
+          Key: this.getKey(key),
+          UploadId: uploadId,
+          PartNumber: partNumber,
+          Body: data,
+        }),
+      ),
     );
 
     if (!response.ETag) {
@@ -344,18 +453,20 @@ export class S3StorageAdapter implements IStorageAdapter {
   }
 
   async completeMultipartUpload(key: string, uploadId: string, parts: MultipartUploadPart[]): Promise<void> {
-    await this.client.send(
-      new CompleteMultipartUploadCommand({
-        Bucket: this.bucket,
-        Key: this.getKey(key),
-        UploadId: uploadId,
-        MultipartUpload: {
-          Parts: parts.map((part) => ({
-            PartNumber: part.partNumber,
-            ETag: part.etag,
-          })),
-        },
-      }),
+    await this.withRetry(() =>
+      this.client.send(
+        new CompleteMultipartUploadCommand({
+          Bucket: this.bucket,
+          Key: this.getKey(key),
+          UploadId: uploadId,
+          MultipartUpload: {
+            Parts: parts.map((part) => ({
+              PartNumber: part.partNumber,
+              ETag: part.etag,
+            })),
+          },
+        }),
+      ),
     );
   }
 

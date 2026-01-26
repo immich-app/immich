@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
+import { FileMigrationProvider, Kysely, Transaction as KyselyTransaction, Migrator, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -272,7 +272,7 @@ export class DatabaseRepository {
     this.logger.log(`Reindexed ${indexName}`);
   }
 
-  private async setSearchPath(tx: Transaction<DB>): Promise<void> {
+  private async setSearchPath(tx: KyselyTransaction<DB>): Promise<void> {
     await sql`SET search_path TO "$user", public, vectors`.execute(tx);
   }
 
@@ -437,6 +437,14 @@ export class DatabaseRepository {
     });
 
     return res as R;
+  }
+
+  /**
+   * Execute a callback within a database transaction.
+   * If the callback throws, the transaction is rolled back.
+   */
+  async withTransaction<R>(callback: (tx: KyselyTransaction<DB>) => Promise<R>): Promise<R> {
+    return this.db.transaction().execute(callback);
   }
 
   tryLock(lock: DatabaseLock): Promise<boolean> {

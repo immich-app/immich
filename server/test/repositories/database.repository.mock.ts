@@ -21,6 +21,7 @@ export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<Database
     runMigrations: vitest.fn(),
     revertLastMigration: vitest.fn(),
     withLock: vitest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
+    withTransaction: vitest.fn().mockImplementation((function_: <R>(tx: unknown) => Promise<R>) => function_({})),
     tryLock: vitest.fn(),
     isBusy: vitest.fn(),
     wait: vitest.fn(),

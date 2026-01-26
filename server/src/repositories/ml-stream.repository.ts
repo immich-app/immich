@@ -1,8 +1,22 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { defaults } from 'src/config';
+import { StorageCore } from 'src/cores/storage.core';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MlStreamTask, MlWorkRequest, MlWorkResult } from 'src/types';
+
+/**
+ * S3 configuration for ML stream mode.
+ * When enabled, local file paths are converted to S3 URLs so the ML service
+ * can fetch images directly from S3 instead of requiring shared filesystem access.
+ */
+interface MlStreamS3Config {
+  enabled: boolean;
+  bucket: string;
+  endpoint?: string;
+  prefix: string;
+}
 
 const STREAM_KEYS = {
   requests: {
@@ -31,6 +45,7 @@ export class MlStreamRepository implements OnModuleDestroy {
   private subscriber?: Redis;
   private resultConsumerRunning = false;
   private consumerName: string;
+  private s3Config: MlStreamS3Config = { enabled: false, bucket: '', prefix: '' };
 
   constructor(
     private configRepository: ConfigRepository,
@@ -38,6 +53,30 @@ export class MlStreamRepository implements OnModuleDestroy {
   ) {
     this.logger.setContext(MlStreamRepository.name);
     this.consumerName = `server-${process.pid}-${Date.now()}`;
+    this.initS3Config();
+  }
+
+  /**
+   * Initialize S3 configuration from existing config structure.
+   * Uses the hot bucket for ML operations (thumbnails/previews).
+   */
+  private initS3Config(): void {
+    const s3Config = defaults.storage.s3;
+
+    if (!s3Config.enabled) {
+      return;
+    }
+
+    const hotBucket = s3Config.hotBucket;
+    if (hotBucket.bucket) {
+      this.s3Config = {
+        enabled: true,
+        bucket: hotBucket.bucket,
+        endpoint: hotBucket.endpoint || s3Config.endpoint,
+        prefix: hotBucket.prefix || '',
+      };
+      this.logger.log(`ML stream S3 mode enabled: bucket=${hotBucket.bucket}`);
+    }
   }
 
   onModuleDestroy() {
@@ -251,6 +290,9 @@ export class MlStreamRepository implements OnModuleDestroy {
   }
 
   private serializeRequest(request: MlWorkRequest): string[] {
+    // Convert local path to S3 URL if S3 is enabled
+    const imagePath = this.toS3Path(request.imagePath);
+
     return [
       'correlationId',
       request.correlationId,
@@ -259,7 +301,7 @@ export class MlStreamRepository implements OnModuleDestroy {
       'taskType',
       request.taskType,
       'imagePath',
-      request.imagePath,
+      imagePath,
       'config',
       JSON.stringify(request.config),
       'timestamp',
@@ -267,6 +309,43 @@ export class MlStreamRepository implements OnModuleDestroy {
       'attempt',
       String(request.attempt),
     ];
+  }
+
+  /**
+   * Convert a local filesystem path to an S3 URL.
+   * Example: /usr/src/app/upload/users/abc/preview/xyz.jpeg
+   *       -> s3://bucket/users/abc/preview/xyz.jpeg
+   *
+   * The relative path after stripping the media location is used directly as the S3 key,
+   * since Immich's S3 storage uses the same path structure.
+   */
+  private toS3Path(localPath: string): string {
+    if (!this.s3Config.enabled) {
+      return localPath;
+    }
+
+    try {
+      // Get the base media location (e.g., /usr/src/app/upload)
+      const mediaLocation = StorageCore.getMediaLocation();
+
+      // Strip the media location prefix to get the relative path
+      if (!localPath.startsWith(mediaLocation)) {
+        this.logger.warn(`Path ${localPath} does not start with media location ${mediaLocation}`);
+        return localPath;
+      }
+
+      // Get relative path (e.g., users/abc/preview/xyz.jpeg)
+      let s3Key = localPath.slice(mediaLocation.length);
+      // Remove leading slash if present
+      if (s3Key.startsWith('/')) {
+        s3Key = s3Key.slice(1);
+      }
+
+      return `s3://${this.s3Config.bucket}/${s3Key}`;
+    } catch {
+      // If StorageCore is not initialized, return original path
+      return localPath;
+    }
   }
 
   private deserializeRequest(fields: string[]): MlWorkRequest {

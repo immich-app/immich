@@ -665,6 +665,8 @@ export enum JobName {
   S3MigrateStorageClass = 'S3MigrateStorageClass',
   S3MigrateStorageClassAll = 'S3MigrateStorageClassAll',
   S3CleanupOrphanedFiles = 'S3CleanupOrphanedFiles',
+  S3FileDelete = 'S3FileDelete',
+  S3OrphanScanner = 'S3OrphanScanner',
 
   TagCleanup = 'TagCleanup',
 
@@ -722,6 +724,7 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
   MemoryCreation = 777,
+  TrashEmpty = 113,
 }
 
 export enum MaintenanceAction {

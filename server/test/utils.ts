@@ -56,6 +56,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { S3StorageManager } from 'src/repositories/storage';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -248,6 +249,7 @@ export type ServiceOverrides = {
   person: PersonRepository;
   plugin: PluginRepository;
   process: ProcessRepository;
+  s3Manager: S3StorageManager;
   search: SearchRepository;
   serverInfo: ServerInfoRepository;
   session: SessionRepository;
@@ -325,6 +327,7 @@ export const getMocks = () => {
     person: automock(PersonRepository, { strict: false }),
     plugin: automock(PluginRepository, { strict: true }),
     process: automock(ProcessRepository),
+    s3Manager: automock(S3StorageManager, { strict: false }),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
@@ -396,6 +399,7 @@ export const newTestService = <T extends BaseService>(
     overrides.person || (mocks.person as As<PersonRepository>),
     overrides.plugin || (mocks.plugin as As<PluginRepository>),
     overrides.process || (mocks.process as As<ProcessRepository>),
+    overrides.s3Manager || (mocks.s3Manager as As<S3StorageManager>),
     overrides.search || (mocks.search as As<SearchRepository>),
     overrides.serverInfo || (mocks.serverInfo as As<ServerInfoRepository>),
     overrides.session || (mocks.session as As<SessionRepository>),

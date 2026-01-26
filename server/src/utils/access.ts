@@ -80,8 +80,12 @@ const checkSharedLinkAccess = async (
     }
 
     case Permission.AssetShare: {
-      // TODO: fix this to not use sharedLink.userId for access control
-      return await access.asset.checkOwnerAccess(sharedLink.userId, ids, false);
+      // Check if sharing is allowed for this shared link
+      if (!sharedLink.allowShare) {
+        return new Set();
+      }
+      // Verify assets are part of this shared link's scope (not owner-based access)
+      return await access.asset.checkSharedLinkAccess(sharedLinkId, ids);
     }
 
     case Permission.AlbumRead: {

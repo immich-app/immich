@@ -7,14 +7,14 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
-import { StorageAdapterFactory } from 'src/repositories/storage';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
 
 @Injectable()
 export class BackupService extends BaseService {
   private backupLock = false;
-  private storageAdapterFactory = new StorageAdapterFactory();
+  private s3CleanupConsecutiveFailures = 0;
+  private static readonly S3_CLEANUP_FAILURE_THRESHOLD = 3;
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
@@ -82,13 +82,15 @@ export class BackupService extends BaseService {
 
   /**
    * Clean up old database backups from S3.
+   * Tracks consecutive failures and logs warnings when they exceed threshold.
    */
   private async cleanupS3DatabaseBackups(
-    config: Awaited<ReturnType<typeof this.getConfig>>,
+    _config: Awaited<ReturnType<typeof this.getConfig>>,
     keepLastAmount: number,
   ): Promise<void> {
     try {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const s3Manager = this.s3Manager;
+      const s3Adapter = await s3Manager.getDefaultAdapter();
       const s3Objects = await s3Adapter.listObjects('backups/database/');
 
       // Filter for backup files and sort by last modified (newest first)
@@ -108,9 +110,19 @@ export class BackupService extends BaseService {
         this.logger.debug(`Deleted S3 backup: ${obj.key}`);
       }
 
+      // Reset failure counter on success
+      this.s3CleanupConsecutiveFailures = 0;
       this.logger.debug(`S3 Database Backup Cleanup Finished, deleted ${s3ToDelete.length} backups`);
     } catch (error) {
+      this.s3CleanupConsecutiveFailures++;
       this.logger.error(`Failed to cleanup S3 database backups: ${error}`);
+
+      if (this.s3CleanupConsecutiveFailures >= BackupService.S3_CLEANUP_FAILURE_THRESHOLD) {
+        this.logger.warn(
+          `S3 backup cleanup has failed ${this.s3CleanupConsecutiveFailures} consecutive times. ` +
+            `Old backups may be accumulating in S3 bucket. Please check S3 connectivity and permissions.`,
+        );
+      }
       // Don't throw - cleanup failure shouldn't fail the backup job
     }
   }
@@ -249,10 +261,11 @@ export class BackupService extends BaseService {
    */
   private async uploadBackupToS3(
     localBackupPath: string,
-    config: Awaited<ReturnType<typeof this.getConfig>>,
+    _config: Awaited<ReturnType<typeof this.getConfig>>,
   ): Promise<void> {
     try {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
+      const s3Manager = this.s3Manager;
+      const s3Adapter = await s3Manager.getDefaultAdapter();
       const filename = path.basename(localBackupPath);
       const s3Key = `backups/database/${filename}`;
 

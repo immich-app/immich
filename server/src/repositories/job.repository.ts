@@ -1,5 +1,5 @@
 import { getQueueToken } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
@@ -21,9 +21,10 @@ type JobMapItem = {
 };
 
 @Injectable()
-export class JobRepository {
+export class JobRepository implements OnModuleDestroy {
   private workers: Partial<Record<QueueName, Worker>> = {};
   private handlers: Partial<Record<JobName, JobMapItem>> = {};
+  private isShuttingDown = false;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -32,6 +33,35 @@ export class JobRepository {
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(JobRepository.name);
+  }
+
+  /**
+   * Gracefully shutdown all BullMQ workers on SIGTERM.
+   * This stops workers from picking up new jobs and waits for current jobs to complete.
+   */
+  async onModuleDestroy(): Promise<void> {
+    if (this.isShuttingDown) {
+      return;
+    }
+    this.isShuttingDown = true;
+
+    this.logger.log('Gracefully shutting down job workers...');
+
+    const closePromises = Object.entries(this.workers).map(async ([queueName, worker]) => {
+      if (worker) {
+        this.logger.log(`Closing worker for queue: ${queueName}`);
+        try {
+          // close(true) = force close without waiting, close() = wait for current job
+          await worker.close();
+          this.logger.log(`Worker for queue ${queueName} closed successfully`);
+        } catch (error) {
+          this.logger.error(`Error closing worker for queue ${queueName}: ${error}`);
+        }
+      }
+    });
+
+    await Promise.all(closePromises);
+    this.logger.log('All job workers shut down');
   }
 
   setup(services: ClassConstructor<unknown>[]) {
@@ -111,8 +141,8 @@ export class JobRepository {
       case QueueName.AssetThumbnailGeneration:
       case QueueName.PersonThumbnailGeneration: {
         return {
-          lockDuration: 120_000, // 2 minutes - thumbnail generation + potential S3 download
-          stalledInterval: 90_000,
+          lockDuration: 600_000, // 10 minutes - large videos (100-300MB+) need time for S3 download + FFmpeg processing + S3 upload
+          stalledInterval: 300_000, // Check for stalled jobs every 5 minutes
         };
       }
       case QueueName.VideoConversion: {

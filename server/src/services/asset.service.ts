@@ -28,6 +28,7 @@ import {
   JobStatus,
   Permission,
   QueueName,
+  StorageBackend,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -346,13 +347,62 @@ export class AssetService extends BaseService {
     }
 
     const { fullsizeFile, previewFile, thumbnailFile, sidecarFile } = getAssetFiles(asset.files ?? []);
-    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
-    if (deleteOnDisk && !asset.isOffline) {
-      files.push(sidecarFile?.path, asset.originalPath);
+    // Collect local files to delete
+    const localFiles: Array<string | null | undefined> = [];
+    // Collect S3 files to delete
+    const s3Files: Array<{ bucket: string; key: string }> = [];
+
+    // Handle thumbnails and previews - check storage backend for each
+    for (const file of [thumbnailFile, previewFile, fullsizeFile]) {
+      if (!file) {
+        continue;
+      }
+      if (file.storageBackend === StorageBackend.S3 && file.s3Bucket && file.s3Key) {
+        s3Files.push({ bucket: file.s3Bucket, key: file.s3Key });
+      } else if (file.path) {
+        localFiles.push(file.path);
+      }
     }
 
-    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: files.filter(Boolean) } });
+    // Handle encoded video
+    if (asset.encodedVideoPath) {
+      localFiles.push(asset.encodedVideoPath);
+    }
+    if (asset.s3KeyEncodedVideo) {
+      // Use stored bucket if available, otherwise resolve from config for backwards compatibility
+      let encodedVideoBucket = asset.s3BucketEncodedVideo;
+      if (!encodedVideoBucket) {
+        const config = await this.getConfig({ withCache: true });
+        encodedVideoBucket = config.storage.s3.hotBucket.bucket;
+      }
+      if (encodedVideoBucket) {
+        s3Files.push({ bucket: encodedVideoBucket, key: asset.s3KeyEncodedVideo });
+      }
+    }
+
+    // Handle original file and sidecar
+    if (deleteOnDisk && !asset.isOffline) {
+      localFiles.push(sidecarFile?.path);
+
+      // Check if original is in S3 or local
+      if (asset.storageBackend === StorageBackend.S3 && asset.s3Bucket && asset.s3Key) {
+        s3Files.push({ bucket: asset.s3Bucket, key: asset.s3Key });
+      } else if (asset.originalPath) {
+        localFiles.push(asset.originalPath);
+      }
+    }
+
+    // Queue local file deletion
+    const filteredLocalFiles = localFiles.filter(Boolean);
+    if (filteredLocalFiles.length > 0) {
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: filteredLocalFiles } });
+    }
+
+    // Queue S3 file deletion
+    if (s3Files.length > 0) {
+      await this.jobRepository.queue({ name: JobName.S3FileDelete, data: { files: s3Files } });
+    }
 
     return JobStatus.Success;
   }

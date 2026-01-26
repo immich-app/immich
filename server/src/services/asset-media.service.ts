@@ -37,9 +37,9 @@ import {
   Permission,
   StorageBackend,
   StorageFolder,
+  StorageLocationType,
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
-import { StorageAdapterFactory } from 'src/repositories/storage';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
@@ -201,8 +201,6 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  private storageAdapterFactory = new StorageAdapterFactory();
-
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
@@ -212,11 +210,12 @@ export class AssetMediaService extends BaseService {
     const encryption = await this.getEncryptionInfo(auth, id);
 
     // Handle S3 storage - redirect to presigned URL
-    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
-      const config = await this.getConfig({ withCache: true });
-      if (config.storage.s3.enabled) {
-        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
+    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key && asset.s3Bucket) {
+      const s3Manager = this.s3Manager;
+      if (await s3Manager.isS3Enabled()) {
+        // Use the bucket stored in the database, not the default config
+        const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 86_400 });
         if (presignedUrl) {
           return new ImmichFileResponse({
             path: asset.originalPath, // Not used for redirect, but required by type
@@ -276,11 +275,12 @@ export class AssetMediaService extends BaseService {
     fileName += getFilenameExtension(filepath);
 
     // Check if thumbnail is in S3 and redirect to presigned URL
-    if (selectedFile?.storageBackend === StorageBackend.S3 && selectedFile?.s3Key) {
-      const config = await this.getConfig({ withCache: true });
-      if (config.storage.s3.enabled) {
-        const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(selectedFile.s3Key, { expiresIn: 3600 });
+    if (selectedFile?.storageBackend === StorageBackend.S3 && selectedFile?.s3Key && selectedFile?.s3Bucket) {
+      const s3Manager = this.s3Manager;
+      if (await s3Manager.isS3Enabled()) {
+        // Use the bucket stored in the database, not the default config
+        const s3Adapter = await s3Manager.getAdapterForBucket(selectedFile.s3Bucket);
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(selectedFile.s3Key, { expiresIn: 86_400 });
         if (presignedUrl) {
           return new ImmichFileResponse({
             path: filepath,
@@ -319,32 +319,45 @@ export class AssetMediaService extends BaseService {
     // Check if asset is encrypted and get decryption key
     const encryption = await this.getEncryptionInfo(auth, id);
 
-    const config = await this.getConfig({ withCache: true });
+    const s3Manager = this.s3Manager;
 
     // Handle S3 storage for encoded videos
-    if (asset.s3KeyEncodedVideo && config.storage.s3.enabled) {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn: 3600 });
-      if (presignedUrl) {
-        return new ImmichFileResponse({
-          path: filepath,
-          fileName: asset.originalFileName,
-          contentType: 'video/mp4',
-          cacheControl: CacheControl.PrivateWithCache,
-          redirectUrl: presignedUrl,
-        });
+    // Use the stored bucket if available, otherwise fall back to location config
+    if (asset.s3KeyEncodedVideo && (await s3Manager.isS3Enabled())) {
+      try {
+        let s3Adapter;
+        if (asset.s3BucketEncodedVideo) {
+          s3Adapter = await s3Manager.getAdapterForBucket(asset.s3BucketEncodedVideo);
+        } else {
+          const config = await s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
+          s3Adapter = config.adapter;
+        }
+        const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn: 86_400 });
+        if (presignedUrl) {
+          return new ImmichFileResponse({
+            path: filepath,
+            fileName: asset.originalFileName,
+            contentType: 'video/mp4',
+            cacheControl: CacheControl.PrivateWithCache,
+            redirectUrl: presignedUrl,
+          });
+        }
+      } catch {
+        // S3 not enabled for encoded videos location, fall through
       }
     }
 
     // Handle S3 storage for original video (when no encoded video exists)
+    // Use the bucket stored in the database
     if (
       !asset.encodedVideoPath &&
       asset.storageBackend === StorageBackend.S3 &&
       asset.s3Key &&
-      config.storage.s3.enabled
+      asset.s3Bucket &&
+      (await s3Manager.isS3Enabled())
     ) {
-      const s3Adapter = this.storageAdapterFactory.getS3Adapter(config.storage.s3);
-      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 3600 });
+      const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
+      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn: 86_400 });
       if (presignedUrl) {
         return new ImmichFileResponse({
           path: filepath,
@@ -509,48 +522,66 @@ export class AssetMediaService extends BaseService {
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
-    const asset = await this.assetRepository.create({
-      ownerId,
-      libraryId: null,
+    // All DB operations are wrapped in a transaction for atomicity.
+    // If any operation fails, all changes are rolled back.
+    const asset = await this.databaseRepository.withTransaction(async (tx) => {
+      const newAsset = await this.assetRepository.create(
+        {
+          ownerId,
+          libraryId: null,
 
-      checksum: file.checksum,
-      originalPath: file.originalPath,
+          checksum: file.checksum,
+          originalPath: file.originalPath,
 
-      deviceAssetId: dto.deviceAssetId,
-      deviceId: dto.deviceId,
+          deviceAssetId: dto.deviceAssetId,
+          deviceId: dto.deviceId,
 
-      fileCreatedAt: dto.fileCreatedAt,
-      fileModifiedAt: dto.fileModifiedAt,
-      localDateTime: dto.fileCreatedAt,
+          fileCreatedAt: dto.fileCreatedAt,
+          fileModifiedAt: dto.fileModifiedAt,
+          localDateTime: dto.fileCreatedAt,
 
-      type: mimeTypes.assetType(file.originalPath),
-      isFavorite: dto.isFavorite,
-      duration: dto.duration || null,
-      visibility: dto.visibility ?? AssetVisibility.Timeline,
-      livePhotoVideoId: dto.livePhotoVideoId,
-      originalFileName: dto.filename || file.originalName,
+          type: mimeTypes.assetType(file.originalPath),
+          isFavorite: dto.isFavorite,
+          duration: dto.duration || null,
+          visibility: dto.visibility ?? AssetVisibility.Timeline,
+          livePhotoVideoId: dto.livePhotoVideoId,
+          originalFileName: dto.filename || file.originalName,
+        },
+        tx,
+      );
+
+      if (dto.metadata) {
+        await this.assetRepository.upsertMetadata(newAsset.id, dto.metadata, tx);
+      }
+
+      if (sidecarFile) {
+        await this.assetRepository.upsertFile(
+          {
+            assetId: newAsset.id,
+            path: sidecarFile.originalPath,
+            type: AssetFileType.Sidecar,
+          },
+          tx,
+        );
+      }
+
+      await this.assetRepository.upsertExif(
+        { assetId: newAsset.id, fileSizeInByte: file.size },
+        { lockedPropertiesBehavior: 'override' },
+        tx,
+      );
+
+      return newAsset;
     });
 
-    if (dto.metadata) {
-      await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
-    }
-
+    // FS operations happen AFTER the transaction commits successfully
     if (sidecarFile) {
-      await this.assetRepository.upsertFile({
-        assetId: asset.id,
-        path: sidecarFile.originalPath,
-        type: AssetFileType.Sidecar,
-      });
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif(
-      { assetId: asset.id, fileSizeInByte: file.size },
-      { lockedPropertiesBehavior: 'override' },
-    );
 
+    // Events and jobs are queued AFTER the transaction commits
     await this.eventRepository.emit('AssetCreate', { asset });
-
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;

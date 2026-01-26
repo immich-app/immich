@@ -20,6 +20,12 @@ const PERMANENT_ERROR_NAMES = new Set([
   'AccessDenied',
   'InvalidBucketName',
   'NoSuchKey',
+  'InvalidToken',
+  'ExpiredToken',
+  'InvalidSecurity',
+  'MalformedXML',
+  'AccountProblem',
+  'InvalidPayer',
 ]);
 
 const TRANSIENT_HTTP_CODES = new Set([500, 502, 503, 504, 429]);

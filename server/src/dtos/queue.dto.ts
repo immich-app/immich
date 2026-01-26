@@ -57,6 +57,9 @@ export class QueueResponseDto {
 
   @ApiProperty({ type: 'string', format: 'date-time', required: false })
   lastTriggeredAt?: string;
+
+  @ApiProperty({ type: 'integer', required: false, description: 'Number of items missing processing for this queue' })
+  missingCount?: number;
 }
 
 export class QueueStatisticsDto {

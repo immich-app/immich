@@ -41,6 +41,7 @@ import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.re
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { S3StorageManager } from 'src/repositories/storage/s3-storage.manager';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -91,6 +92,7 @@ export const repositories = [
   PersonRepository,
   PluginRepository,
   ProcessRepository,
+  S3StorageManager,
   SearchRepository,
   SessionRepository,
   ServerInfoRepository,

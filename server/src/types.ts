@@ -221,6 +221,13 @@ export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
 }
 
+export interface IS3DeleteFilesJob extends IBaseJob {
+  files: Array<{
+    bucket: string;
+    key: string;
+  }>;
+}
+
 export interface ISidecarWriteJob extends IEntityJob {
   tags?: true;
 }
@@ -398,6 +405,8 @@ export type JobItem =
   | { name: JobName.S3MigrateStorageClass; data: IEntityJob }
   | { name: JobName.S3MigrateStorageClassAll; data?: IBaseJob }
   | { name: JobName.S3CleanupOrphanedFiles; data?: IBaseJob }
+  | { name: JobName.S3FileDelete; data: IS3DeleteFilesJob }
+  | { name: JobName.S3OrphanScanner; data?: IBaseJob }
 
   // Asset Encryption
   | { name: JobName.AssetEncrypt; data: IEntityJob }

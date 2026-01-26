@@ -150,4 +150,7 @@ export class AssetTable {
 
   @Column({ type: 'character varying', nullable: true })
   s3KeyEncodedVideo!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3BucketEncodedVideo!: string | null;
 }

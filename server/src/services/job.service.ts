@@ -82,6 +82,17 @@ export class JobService extends BaseService {
 
       case JobName.StorageTemplateMigrationSingle: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
+          // Upload to S3 first so distributed workers can access the file for thumbnail generation
+          // S3UploadAsset will queue AssetGenerateThumbnails after upload completes
+          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+        }
+        break;
+      }
+
+      case JobName.S3UploadAsset: {
+        // After S3 upload completes, queue thumbnail generation
+        // The file is now in S3 and workers can download it
+        if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
         }
         break;
@@ -179,12 +190,8 @@ export class JobService extends BaseService {
       case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
-          // For non-video assets, queue S3 upload after SmartSearch
-          // For videos, S3 upload is queued after video encoding to prevent deleting local file before encoding
-          const asset = await this.assetRepository.getById(item.data.id);
-          if (asset && asset.type !== AssetType.Video) {
-            await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
-          }
+          // S3 upload is now done before thumbnail generation (in StorageTemplateMigrationSingle handler)
+          // so distributed workers can access the file
         }
         break;
       }
@@ -199,11 +206,10 @@ export class JobService extends BaseService {
         break;
       }
 
-      // Video encoding complete - queue S3 upload for videos
+      // Video encoding complete
+      // S3 upload for the original is now done before thumbnail generation
+      // The encoded video still needs its own upload (handled separately)
       case JobName.AssetEncodeVideo: {
-        if (item.data.source === 'upload') {
-          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
-        }
         break;
       }
     }

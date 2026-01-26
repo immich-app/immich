@@ -4,7 +4,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { DatabaseLock, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -33,11 +33,13 @@ export class TrashService extends BaseService {
   }
 
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
-    const count = await this.trashRepository.empty(auth.user.id);
-    if (count > 0) {
-      await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
-    }
-    return { count };
+    return this.databaseRepository.withLock(DatabaseLock.TrashEmpty, async () => {
+      const count = await this.trashRepository.empty(auth.user.id);
+      if (count > 0) {
+        await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
+      }
+      return { count };
+    });
   }
 
   @OnEvent({ name: 'AssetDeleteAll' })

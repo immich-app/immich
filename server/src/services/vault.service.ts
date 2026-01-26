@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import Redis from 'ioredis';
 import { createHash, scrypt, ScryptOptions } from 'node:crypto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { BaseService } from 'src/services/base.service';
@@ -57,8 +58,75 @@ const KDF_PARAMS = {
   keyLen: 32, // Output key length (256 bits)
 };
 
+// Rate limiting constants for vault PIN brute force protection
+const MAX_ATTEMPTS_BEFORE_LOCKOUT = 5;
+const LOCKOUT_DURATIONS_MS = [
+  1 * 60 * 1000, // 1 minute
+  5 * 60 * 1000, // 5 minutes
+  15 * 60 * 1000, // 15 minutes
+  60 * 60 * 1000, // 1 hour
+  4 * 60 * 60 * 1000, // 4 hours (max)
+];
+const ATTEMPT_TTL_SECONDS = 24 * 60 * 60; // 24 hours
+const VAULT_ATTEMPT_KEY_PREFIX = 'vault:attempts:';
+
+interface VaultAttemptInfo {
+  count: number;
+  lockUntil?: number; // timestamp ms
+}
+
 @Injectable()
 export class VaultService extends BaseService {
+  private redis?: Redis;
+
+  private async getRedis(): Promise<Redis> {
+    if (!this.redis) {
+      const { redis } = this.configRepository.getEnv();
+      this.redis = new Redis({ ...redis, lazyConnect: true });
+      await this.redis.connect();
+    }
+    return this.redis;
+  }
+
+  private async checkLockout(userId: string): Promise<void> {
+    const redis = await this.getRedis();
+    const data = await redis.get(`${VAULT_ATTEMPT_KEY_PREFIX}${userId}`);
+    if (!data) {
+      return;
+    }
+
+    const attempts: VaultAttemptInfo = JSON.parse(data);
+    if (attempts.lockUntil && attempts.lockUntil > Date.now()) {
+      const remainingMs = attempts.lockUntil - Date.now();
+      const minutes = Math.floor(remainingMs / 60_000);
+      const seconds = Math.ceil((remainingMs % 60_000) / 1000);
+      const timeMsg = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+      throw new UnauthorizedException(`Vault temporarily locked. Try again in ${timeMsg}.`);
+    }
+  }
+
+  private async recordFailedAttempt(userId: string): Promise<void> {
+    const redis = await this.getRedis();
+    const key = `${VAULT_ATTEMPT_KEY_PREFIX}${userId}`;
+    const data = await redis.get(key);
+
+    const attempts: VaultAttemptInfo = data ? JSON.parse(data) : { count: 0 };
+    attempts.count++;
+
+    if (attempts.count >= MAX_ATTEMPTS_BEFORE_LOCKOUT) {
+      const lockoutIndex = Math.min(attempts.count - MAX_ATTEMPTS_BEFORE_LOCKOUT, LOCKOUT_DURATIONS_MS.length - 1);
+      attempts.lockUntil = Date.now() + LOCKOUT_DURATIONS_MS[lockoutIndex];
+      this.logger.warn(`Vault locked for user ${userId} after ${attempts.count} failed attempts`);
+    }
+
+    await redis.set(key, JSON.stringify(attempts), 'EX', ATTEMPT_TTL_SECONDS);
+  }
+
+  private async resetAttempts(userId: string): Promise<void> {
+    const redis = await this.getRedis();
+    await redis.del(`${VAULT_ATTEMPT_KEY_PREFIX}${userId}`);
+  }
+
   /**
    * Set up a new vault for the user with the given PIN.
    * Creates a new vault key (KEK) and encrypts it with the PIN-derived key.
@@ -128,6 +196,8 @@ export class VaultService extends BaseService {
   async unlockVault(auth: AuthDto, dto: VaultUnlockDto): Promise<void> {
     const userId = auth.user.id;
 
+    await this.checkLockout(userId);
+
     if (!auth.session) {
       throw new BadRequestException('Session required to unlock vault');
     }
@@ -147,14 +217,18 @@ export class VaultService extends BaseService {
     try {
       vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, pinKey);
     } catch {
+      await this.recordFailedAttempt(userId);
       throw new UnauthorizedException('Invalid vault PIN');
     }
 
     // Verify vault key
     const keyHash = createHash('sha256').update(vaultKey).digest('base64');
     if (keyHash !== vault.vaultKeyHash) {
+      await this.recordFailedAttempt(userId);
       throw new UnauthorizedException('Invalid vault PIN');
     }
+
+    await this.resetAttempts(userId);
 
     // Cache vault key in session
     await this.cacheVaultKey(auth, vaultKey);
@@ -209,6 +283,8 @@ export class VaultService extends BaseService {
   async changePin(auth: AuthDto, dto: VaultChangePinDto): Promise<void> {
     const userId = auth.user.id;
 
+    await this.checkLockout(userId);
+
     // Get vault
     const vault = await this.vaultRepository.getByUserId(userId);
     if (!vault) {
@@ -223,14 +299,18 @@ export class VaultService extends BaseService {
     try {
       vaultKey = this.cryptoRepository.unwrapKey(vault.encryptedVaultKey, currentPinKey);
     } catch {
+      await this.recordFailedAttempt(userId);
       throw new UnauthorizedException('Invalid current vault PIN');
     }
 
     // Verify vault key hash
     const keyHash = createHash('sha256').update(vaultKey).digest('base64');
     if (keyHash !== vault.vaultKeyHash) {
+      await this.recordFailedAttempt(userId);
       throw new UnauthorizedException('Invalid current vault PIN');
     }
+
+    await this.resetAttempts(userId);
 
     // Generate new salt and derive new PIN key
     const newSalt = this.cryptoRepository.randomBytes(32);

@@ -1,11 +1,18 @@
+import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import { S3BucketOverride, SystemConfig } from 'src/config';
-import { AssetType, StorageBackend, StorageLocationType } from 'src/enum';
+import { S3BucketConfig, SystemConfig } from 'src/config';
+import { StorageCore } from 'src/cores/storage.core';
+import { StorageBackend, StorageLocationType } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { LocalStorageAdapter } from 'src/repositories/storage/local-storage.adapter';
 import { S3StorageAdapter, S3StorageConfig } from 'src/repositories/storage/s3-storage.adapter';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { getConfig } from 'src/utils/config';
 
 /**
  * Resolved S3 configuration for a specific storage location.
- * Contains the merged config (default + override) and derived values.
+ * Contains the merged config (default + bucket) and derived values.
  */
 export interface ResolvedS3Config {
   adapter: S3StorageAdapter;
@@ -15,56 +22,91 @@ export interface ResolvedS3Config {
 }
 
 /**
- * S3 Storage Manager - centralizes multi-bucket S3 configuration logic.
+ * S3 Storage Manager - centralizes two-bucket S3 configuration logic.
  *
  * This manager handles:
  * - Selecting the correct S3 adapter for each storage location type
- * - Resolving bucket names (default vs override)
- * - Resolving storage classes (bucket override > storageClasses config)
+ * - Resolving bucket names (archive vs hot)
+ * - Resolving storage classes (from bucket config)
  * - Caching adapters for reuse when configs match
  *
- * Usage:
+ * Two-bucket architecture:
+ * - Archive bucket: For originals (Glacier IR)
+ * - Hot bucket: For thumbnails, previews, encoded videos, profile, backups (STANDARD)
+ *
+ * Usage (via DI):
  * ```typescript
- * const manager = new S3StorageManager(config.storage);
- * const { adapter, bucket, storageClass } = manager.getConfigForLocation(
- *   StorageLocationType.Originals,
- *   'video'
- * );
+ * constructor(private s3Manager: S3StorageManager) {}
+ *
+ * async someMethod() {
+ *   const { adapter, bucket, storageClass } = await this.s3Manager.getConfigForLocation(
+ *     StorageLocationType.Originals
+ *   );
+ * }
  * ```
  */
 @Injectable()
 export class S3StorageManager {
   // Cache adapters by unique config key to avoid creating duplicates
   private adapters: Map<string, S3StorageAdapter> = new Map();
+  private localAdapter: LocalStorageAdapter | null = null;
+  private cachedConfig: SystemConfig['storage'] | null = null;
 
-  constructor(private config: SystemConfig['storage']) {}
+  constructor(
+    private configRepository: ConfigRepository,
+    private systemMetadataRepository: SystemMetadataRepository,
+    private logger: LoggingRepository,
+  ) {
+    this.logger.setContext(S3StorageManager.name);
+  }
 
   /**
-   * Update the storage configuration.
-   * Call this when system config changes.
+   * Get the storage config, using cache when available.
    */
-  updateConfig(config: SystemConfig['storage']): void {
-    this.config = config;
-    // Clear adapter cache on config change
-    this.adapters.clear();
+  private async getStorageConfig(): Promise<SystemConfig['storage']> {
+    // Always fetch fresh config to ensure we have latest settings
+    const config = await getConfig(
+      { configRepo: this.configRepository, metadataRepo: this.systemMetadataRepository, logger: this.logger },
+      { withCache: true },
+    );
+
+    // Clear adapter cache if config changed
+    if (this.cachedConfig && JSON.stringify(this.cachedConfig) !== JSON.stringify(config.storage)) {
+      this.adapters.clear();
+    }
+
+    this.cachedConfig = config.storage;
+    return config.storage;
+  }
+
+  /**
+   * Get the local filesystem adapter.
+   */
+  getLocalAdapter(): LocalStorageAdapter {
+    if (!this.localAdapter) {
+      this.localAdapter = new LocalStorageAdapter(StorageCore.getMediaLocation());
+    }
+    return this.localAdapter;
   }
 
   /**
    * Check if S3 is enabled globally.
    */
-  isS3Enabled(): boolean {
-    return this.config.s3.enabled;
+  async isS3Enabled(): Promise<boolean> {
+    const config = await this.getStorageConfig();
+    return config.s3.enabled;
   }
 
   /**
    * Check if S3 is enabled for a specific storage location.
    */
-  isS3EnabledForLocation(locationType: StorageLocationType): boolean {
-    if (!this.config.s3.enabled) {
+  async isS3EnabledForLocation(locationType: StorageLocationType): Promise<boolean> {
+    const config = await this.getStorageConfig();
+    if (!config.s3.enabled) {
       return false;
     }
 
-    const locationBackend = this.getBackendForLocation(locationType);
+    const locationBackend = this.getBackendForLocation(config, locationType);
     return locationBackend === StorageBackend.S3;
   }
 
@@ -73,187 +115,170 @@ export class S3StorageManager {
    * This is the main API for services to use.
    *
    * @param locationType - The type of storage location (originals, thumbnails, etc.)
-   * @param assetType - Optional asset type for storage class selection (photo/video)
    * @returns Resolved config with adapter, bucket name, and storage class
    * @throws Error if S3 is not enabled for this location
    */
-  getConfigForLocation(locationType: StorageLocationType, assetType?: AssetType): ResolvedS3Config {
-    if (!this.isS3EnabledForLocation(locationType)) {
+  async getConfigForLocation(locationType: StorageLocationType): Promise<ResolvedS3Config> {
+    const config = await this.getStorageConfig();
+
+    if (!config.s3.enabled) {
+      throw new Error(`S3 is not enabled`);
+    }
+
+    const locationBackend = this.getBackendForLocation(config, locationType);
+    if (locationBackend !== StorageBackend.S3) {
       throw new Error(`S3 is not enabled for location type: ${locationType}`);
     }
 
-    const s3Config = this.config.s3;
-    const bucketOverride = this.getBucketOverride(locationType);
-    const mergedConfig = this.mergeConfig(s3Config, bucketOverride);
+    const bucketConfig = this.getBucketConfig(config, locationType);
+    const mergedConfig = this.mergeWithDefaults(config, bucketConfig);
 
     return {
       adapter: this.getOrCreateAdapter(mergedConfig),
       bucket: mergedConfig.bucket,
-      storageClass: this.resolveStorageClass(locationType, bucketOverride, assetType),
-      prefix: mergedConfig.prefix || '',
+      storageClass: bucketConfig.storageClass,
+      prefix: bucketConfig.prefix || '',
     };
   }
 
   /**
    * Get just the S3 adapter for a location (convenience method).
    */
-  getAdapterForLocation(locationType: StorageLocationType): S3StorageAdapter {
-    return this.getConfigForLocation(locationType).adapter;
+  async getAdapterForLocation(locationType: StorageLocationType): Promise<S3StorageAdapter> {
+    const resolved = await this.getConfigForLocation(locationType);
+    return resolved.adapter;
   }
 
   /**
    * Get just the bucket name for a location (for database records).
    */
-  getBucketNameForLocation(locationType: StorageLocationType): string {
-    if (!this.isS3EnabledForLocation(locationType)) {
+  async getBucketNameForLocation(locationType: StorageLocationType): Promise<string> {
+    const config = await this.getStorageConfig();
+
+    if (!config.s3.enabled) {
+      throw new Error(`S3 is not enabled`);
+    }
+
+    const locationBackend = this.getBackendForLocation(config, locationType);
+    if (locationBackend !== StorageBackend.S3) {
       throw new Error(`S3 is not enabled for location type: ${locationType}`);
     }
 
-    const bucketOverride = this.getBucketOverride(locationType);
-    return bucketOverride?.bucket ?? this.config.s3.bucket;
+    const bucketConfig = this.getBucketConfig(config, locationType);
+    return bucketConfig.bucket;
   }
 
   /**
    * Get just the storage class for a location.
    */
-  getStorageClassForLocation(locationType: StorageLocationType, assetType?: AssetType): string | undefined {
-    const bucketOverride = this.getBucketOverride(locationType);
-    return this.resolveStorageClass(locationType, bucketOverride, assetType);
+  async getStorageClassForLocation(locationType: StorageLocationType): Promise<string | undefined> {
+    const config = await this.getStorageConfig();
+    const bucketConfig = this.getBucketConfig(config, locationType);
+    return bucketConfig.storageClass;
   }
 
   /**
-   * Get the default S3 adapter (uses base config, no overrides).
+   * Get the default S3 adapter (uses archive bucket config).
    * Useful for operations that don't have a specific location type.
    */
-  getDefaultAdapter(): S3StorageAdapter {
-    if (!this.config.s3.enabled) {
+  async getDefaultAdapter(): Promise<S3StorageAdapter> {
+    const config = await this.getStorageConfig();
+
+    if (!config.s3.enabled) {
       throw new Error('S3 storage is not enabled');
     }
 
-    const config: S3StorageConfig = {
-      endpoint: this.config.s3.endpoint || undefined,
-      region: this.config.s3.region,
-      bucket: this.config.s3.bucket,
-      accessKeyId: this.config.s3.accessKeyId,
-      secretAccessKey: this.config.s3.secretAccessKey,
-      prefix: this.config.s3.prefix,
-      forcePathStyle: this.config.s3.forcePathStyle,
+    const mergedConfig = this.mergeWithDefaults(config, config.s3.archiveBucket);
+    return this.getOrCreateAdapter(mergedConfig);
+  }
+
+  /**
+   * Get an S3 adapter for a specific bucket.
+   * Uses the default S3 credentials but with the specified bucket.
+   * Useful for deleting files from buckets that may differ from the default.
+   */
+  async getAdapterForBucket(bucket: string): Promise<S3StorageAdapter> {
+    const config = await this.getStorageConfig();
+
+    if (!config.s3.enabled) {
+      throw new Error('S3 storage is not enabled');
+    }
+
+    const adapterConfig: S3StorageConfig = {
+      endpoint: config.s3.endpoint || undefined,
+      publicEndpoint: config.s3.publicEndpoint || undefined,
+      region: config.s3.region,
+      bucket,
+      accessKeyId: config.s3.accessKeyId,
+      secretAccessKey: config.s3.secretAccessKey,
+      prefix: '', // No prefix for direct bucket access
+      forcePathStyle: config.s3.forcePathStyle,
     };
 
-    return this.getOrCreateAdapter(config);
+    return this.getOrCreateAdapter(adapterConfig);
   }
 
   /**
    * Get the backend type for a storage location.
    */
-  private getBackendForLocation(locationType: StorageLocationType): StorageBackend {
+  private getBackendForLocation(config: SystemConfig['storage'], locationType: StorageLocationType): StorageBackend {
     switch (locationType) {
       case StorageLocationType.Originals: {
-        return this.config.locations.originals;
+        return config.locations.originals;
       }
       case StorageLocationType.Thumbnails: {
-        return this.config.locations.thumbnails;
+        return config.locations.thumbnails;
       }
       case StorageLocationType.Previews: {
-        return this.config.locations.previews;
+        return config.locations.previews;
       }
       case StorageLocationType.EncodedVideos: {
-        return this.config.locations.encodedVideos;
+        return config.locations.encodedVideos;
       }
       case StorageLocationType.Profile: {
-        return this.config.locations.profile;
+        return config.locations.profile;
       }
       case StorageLocationType.Backups: {
-        return this.config.locations.backups;
+        return config.locations.backups;
       }
       default: {
-        return this.config.backend;
+        return config.backend;
       }
     }
   }
 
   /**
-   * Get the bucket override for a storage location (if configured).
+   * Get the bucket config for a storage location.
+   * Uses two-bucket architecture:
+   * - Archive bucket: For originals
+   * - Hot bucket: For everything else (thumbnails, previews, encoded videos, profile, backups)
    */
-  private getBucketOverride(locationType: StorageLocationType): S3BucketOverride | undefined {
-    const buckets = this.config.s3.buckets;
-    if (!buckets) {
-      return undefined;
-    }
-
+  private getBucketConfig(config: SystemConfig['storage'], locationType: StorageLocationType): S3BucketConfig {
     switch (locationType) {
       case StorageLocationType.Originals: {
-        return buckets.originals;
-      }
-      case StorageLocationType.Thumbnails: {
-        return buckets.thumbnails;
-      }
-      case StorageLocationType.Previews: {
-        return buckets.previews;
-      }
-      case StorageLocationType.EncodedVideos: {
-        return buckets.encodedVideos;
-      }
-      case StorageLocationType.Profile: {
-        return buckets.profile;
-      }
-      case StorageLocationType.Backups: {
-        return buckets.backups;
+        return config.s3.archiveBucket;
       }
       default: {
-        return undefined;
+        // Thumbnails, Previews, EncodedVideos, Profile, Backups
+        return config.s3.hotBucket;
       }
     }
   }
 
   /**
-   * Merge default S3 config with bucket-specific overrides.
+   * Merge bucket config with default S3 credentials.
    */
-  private mergeConfig(defaultConfig: SystemConfig['storage']['s3'], override?: S3BucketOverride): S3StorageConfig {
+  private mergeWithDefaults(config: SystemConfig['storage'], bucketConfig: S3BucketConfig): S3StorageConfig {
     return {
-      endpoint: override?.endpoint ?? (defaultConfig.endpoint || undefined),
-      region: override?.region ?? defaultConfig.region,
-      bucket: override?.bucket ?? defaultConfig.bucket,
-      accessKeyId: override?.accessKeyId ?? defaultConfig.accessKeyId,
-      secretAccessKey: override?.secretAccessKey ?? defaultConfig.secretAccessKey,
-      prefix: override?.prefix ?? defaultConfig.prefix,
-      forcePathStyle: override?.forcePathStyle ?? defaultConfig.forcePathStyle,
+      endpoint: bucketConfig.endpoint ?? (config.s3.endpoint || undefined),
+      publicEndpoint: bucketConfig.publicEndpoint ?? (config.s3.publicEndpoint || undefined),
+      region: bucketConfig.region ?? config.s3.region,
+      bucket: bucketConfig.bucket,
+      accessKeyId: bucketConfig.accessKeyId ?? config.s3.accessKeyId,
+      secretAccessKey: bucketConfig.secretAccessKey ?? config.s3.secretAccessKey,
+      prefix: bucketConfig.prefix,
+      forcePathStyle: bucketConfig.forcePathStyle ?? config.s3.forcePathStyle,
     };
-  }
-
-  /**
-   * Resolve the storage class for a location.
-   * Priority: bucket override > storageClasses config
-   */
-  private resolveStorageClass(
-    locationType: StorageLocationType,
-    bucketOverride?: S3BucketOverride,
-    assetType?: AssetType,
-  ): string | undefined {
-    // First check bucket override
-    if (bucketOverride?.storageClass) {
-      return bucketOverride.storageClass;
-    }
-
-    // Fall back to storageClasses config
-    const storageClasses = this.config.s3.storageClasses;
-    switch (locationType) {
-      case StorageLocationType.Originals: {
-        return assetType === AssetType.Video ? storageClasses.originalsVideos : storageClasses.originalsPhotos;
-      }
-      case StorageLocationType.Thumbnails: {
-        return storageClasses.thumbnails;
-      }
-      case StorageLocationType.Previews: {
-        return storageClasses.previews;
-      }
-      case StorageLocationType.EncodedVideos: {
-        return storageClasses.encodedVideos;
-      }
-      default: {
-        return undefined;
-      }
-    }
   }
 
   /**
@@ -275,9 +300,15 @@ export class S3StorageManager {
 
   /**
    * Generate a unique key for an S3 config to enable adapter caching.
+   * Includes region to ensure adapters are not shared between different regions.
+   * Credentials are hashed to prevent exposure in logs or error messages.
    */
   private getConfigKey(config: S3StorageConfig): string {
-    return `${config.endpoint ?? 'default'}|${config.bucket}|${config.accessKeyId}|${config.prefix ?? ''}`;
+    const credHash = createHash('sha256')
+      .update(config.accessKeyId + config.secretAccessKey)
+      .digest('hex')
+      .slice(0, 8);
+    return `${config.endpoint ?? 'default'}|${config.region}|${config.bucket}|${credHash}|${config.prefix ?? ''}`;
   }
 
   /**
@@ -285,5 +316,6 @@ export class S3StorageManager {
    */
   reset(): void {
     this.adapters.clear();
+    this.cachedConfig = null;
   }
 }

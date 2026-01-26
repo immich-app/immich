@@ -123,6 +123,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   noWebpPath: Object.freeze({
@@ -165,6 +166,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   noThumbhash: Object.freeze({
@@ -204,6 +206,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   primaryImage: Object.freeze({
@@ -253,6 +256,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   image: Object.freeze({
@@ -302,6 +306,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   trashed: Object.freeze({
@@ -346,6 +351,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   trashedOffline: Object.freeze({
@@ -390,6 +396,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
   archived: Object.freeze({
     id: 'asset-id',
@@ -433,6 +440,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   external: Object.freeze({
@@ -476,6 +484,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   image1: Object.freeze({
@@ -519,6 +528,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   imageFrom2015: Object.freeze({
@@ -561,6 +571,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   video: Object.freeze({
@@ -605,6 +616,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -626,6 +638,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif }),
 
   livePhotoStillAsset: Object.freeze({
@@ -648,6 +661,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
 
   livePhotoWithOriginalFileName: Object.freeze({
@@ -672,6 +686,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   } as MapAsset & { faces: AssetFace[]; files: AssetFile[] }),
 
   withLocation: Object.freeze({
@@ -720,6 +735,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   sidecar: Object.freeze({
@@ -759,6 +775,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   sidecarWithoutExt: Object.freeze({
@@ -795,6 +812,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   hasEncodedVideo: Object.freeze({
@@ -838,6 +856,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   hasFileExtension: Object.freeze({
@@ -878,6 +897,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   imageDng: Object.freeze({
@@ -922,6 +942,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 
   imageHif: Object.freeze({
@@ -966,6 +987,7 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
   panoramaTif: Object.freeze({
     id: 'asset-id',
@@ -1009,5 +1031,6 @@ export const assetStub = {
     s3Bucket: null,
     s3Key: null,
     s3KeyEncodedVideo: null,
+    s3BucketEncodedVideo: null,
   }),
 };

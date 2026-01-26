@@ -1,43 +1,147 @@
 import { Injectable } from '@nestjs/common';
-import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AssetFileType, JobName, JobStatus, QueueName, StorageBackend, StorageLocationType } from 'src/enum';
-import { LocalStorageAdapter, S3StorageManager } from 'src/repositories/storage';
+import { S3StorageAdapter } from 'src/repositories/storage';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { classifyS3Error, S3ErrorType } from 'src/utils/s3-error';
 
 /**
- * Service for handling S3 storage operations.
- * Manages uploading assets to S3 and synchronizing storage locations.
+ * Result of an asset file upload attempt.
+ */
+type UploadResult = { success: true } | { success: false; failed: true };
+
+/**
+ * S3StorageService - S3 Operations Layer
+ *
+ * Responsibilities:
+ * - Asset uploads to S3 (originals, thumbnails, encoded videos)
+ * - Storage class migration
+ * - Orphan scanning and cleanup
+ * - S3 file deletion
+ *
+ * When to use: Any S3-specific operation that runs as a queued job.
+ * For presigned URLs, use PresignedUrlService instead.
  */
 @Injectable()
 export class S3StorageService extends BaseService {
-  private s3Manager: S3StorageManager | null = null;
-  private localAdapter: LocalStorageAdapter | null = null;
-
   /**
-   * Get or create the S3 storage manager with current config.
+   * Unified S3 object deletion with consistent error handling.
+   * All S3 deletion operations should use this method.
    */
-  private async getS3Manager(): Promise<S3StorageManager> {
-    const config = await this.getConfig({ withCache: true });
-    if (this.s3Manager) {
-      this.s3Manager.updateConfig(config.storage);
-    } else {
-      this.s3Manager = new S3StorageManager(config.storage);
+  private async deleteS3Object(adapter: S3StorageAdapter, key: string, context: string): Promise<boolean> {
+    try {
+      await adapter.delete(key);
+      this.logger.debug(`Deleted S3 object for ${context}: ${key}`);
+      return true;
+    } catch (error) {
+      const errorType = classifyS3Error(error);
+      if (errorType === S3ErrorType.Permanent) {
+        // Object doesn't exist or access denied - log but consider it handled
+        this.logger.warn(`Permanent error deleting S3 object for ${context} (${key}): ${error}`);
+      } else {
+        // Transient error - log as error
+        this.logger.error(`Failed to delete S3 object for ${context} (${key}): ${error}`);
+      }
+      return false;
     }
-    return this.s3Manager;
   }
 
   /**
-   * Get the local storage adapter.
+   * Upload an asset file to S3 with verification and cleanup.
+   * Handles the common pattern: upload -> verify -> update db -> cleanup on failure.
    */
-  private getLocalAdapter(): LocalStorageAdapter {
-    if (!this.localAdapter) {
-      this.localAdapter = new LocalStorageAdapter(StorageCore.getMediaLocation());
+  private async uploadAssetFileToS3(options: {
+    assetId: string;
+    fileType: AssetFileType;
+    localPath: string;
+    s3Key: string;
+    s3Adapter: S3StorageAdapter;
+    bucket: string;
+    storageClass: string | undefined;
+    contentType: string;
+    deleteLocalAfterUpload: boolean;
+  }): Promise<UploadResult> {
+    const {
+      assetId,
+      fileType,
+      localPath,
+      s3Key,
+      s3Adapter,
+      bucket,
+      storageClass,
+      contentType,
+      deleteLocalAfterUpload,
+    } = options;
+    const localAdapter = this.s3Manager.getLocalAdapter();
+    const fileTypeName = fileType === AssetFileType.Thumbnail ? 'thumbnail' : 'preview';
+
+    // Check if local file exists
+    const localFileExists = await localAdapter.exists(localPath);
+    if (!localFileExists) {
+      // Check if already in S3
+      try {
+        const s3Exists = await s3Adapter.exists(s3Key);
+        if (s3Exists) {
+          this.logger.debug(`${fileTypeName} ${assetId} local file missing but already in S3, marking as uploaded`);
+          await this.assetRepository.upsertFileWithS3({
+            assetId,
+            type: fileType,
+            path: localPath,
+            storageBackend: StorageBackend.S3,
+            s3Bucket: bucket,
+            s3Key,
+          });
+          return { success: true };
+        }
+      } catch (s3Error) {
+        this.logger.warn(`S3 existence check failed for ${fileTypeName} ${assetId}: ${s3Error}`);
+      }
+      this.logger.warn(`Local ${fileTypeName} not found for asset ${assetId}: ${localPath}`);
+      return { success: false, failed: true };
     }
-    return this.localAdapter;
+
+    // Upload to S3
+    this.logger.log(`Uploading ${fileTypeName} for asset ${assetId} to S3 bucket ${bucket}: ${s3Key}`);
+    const { stream: readStream } = await localAdapter.readStream(localPath);
+    await s3Adapter.writeStreamAsync(s3Key, readStream, { contentType, storageClass });
+
+    // Verify upload size
+    const s3Stat = await s3Adapter.stat(s3Key);
+    const localStat = await localAdapter.stat(localPath);
+    if (s3Stat.size !== localStat.size) {
+      throw new Error(`Size mismatch after ${fileTypeName} S3 upload: local=${localStat.size}, s3=${s3Stat.size}`);
+    }
+
+    // Update database with compensation for failures
+    try {
+      await this.assetRepository.upsertFileWithS3({
+        assetId,
+        type: fileType,
+        path: localPath,
+        storageBackend: StorageBackend.S3,
+        s3Bucket: bucket,
+        s3Key,
+      });
+    } catch (dbError) {
+      this.logger.error(`Database update failed for ${fileTypeName} ${assetId}, cleaning up S3 object: ${dbError}`);
+      await this.deleteS3Object(s3Adapter, s3Key, `orphaned ${fileTypeName} for asset ${assetId}`);
+      throw dbError;
+    }
+
+    // Delete local file after successful upload
+    if (deleteLocalAfterUpload) {
+      try {
+        await localAdapter.delete(localPath);
+        this.logger.debug(`Deleted local ${fileTypeName} for asset ${assetId}`);
+      } catch (error) {
+        this.logger.warn(`Failed to delete local ${fileTypeName}: ${error}`);
+      }
+    }
+
+    this.logger.log(`Successfully uploaded ${fileTypeName} for asset ${assetId} to S3`);
+    return { success: true };
   }
 
   /**
@@ -48,10 +152,10 @@ export class S3StorageService extends BaseService {
   async handleS3UploadAsset(job: JobOf<JobName.S3UploadAsset>): Promise<JobStatus> {
     const { id } = job;
 
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
     // Check if S3 is enabled for originals
-    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.Originals)) {
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.Originals))) {
       this.logger.debug(`S3 upload skipped for asset ${id}: S3 not enabled for originals`);
       return JobStatus.Success;
     }
@@ -74,8 +178,8 @@ export class S3StorageService extends BaseService {
         adapter: s3Adapter,
         bucket,
         storageClass,
-      } = s3Manager.getConfigForLocation(StorageLocationType.Originals, asset.type);
-      const localAdapter = this.getLocalAdapter();
+      } = await s3Manager.getConfigForLocation(StorageLocationType.Originals);
+      const localAdapter = this.s3Manager.getLocalAdapter();
       const config = await this.getConfig({ withCache: true });
 
       // Generate S3 key
@@ -98,8 +202,8 @@ export class S3StorageService extends BaseService {
             });
             return JobStatus.Success;
           }
-        } catch {
-          // S3 check failed, log and fail the job
+        } catch (s3Error) {
+          this.logger.warn(`S3 existence check failed for asset ${id}: ${s3Error}`);
         }
         this.logger.warn(`Local file not found for asset ${id}: ${asset.originalPath}`);
         return JobStatus.Failed;
@@ -125,13 +229,20 @@ export class S3StorageService extends BaseService {
         throw new Error(`Size mismatch after S3 upload: local=${localStat.size}, s3=${s3Stat.size}`);
       }
 
-      // Update database with S3 location
-      await this.assetRepository.update({
-        id: asset.id,
-        storageBackend: StorageBackend.S3,
-        s3Bucket: bucket,
-        s3Key,
-      });
+      // Update database with S3 location - with compensation for failures
+      try {
+        await this.assetRepository.update({
+          id: asset.id,
+          storageBackend: StorageBackend.S3,
+          s3Bucket: bucket,
+          s3Key,
+        });
+      } catch (dbError) {
+        // Database update failed - delete the orphaned S3 object to maintain consistency
+        this.logger.error(`Database update failed for asset ${id}, cleaning up S3 object: ${dbError}`);
+        await this.deleteS3Object(s3Adapter, s3Key, `orphaned asset ${id}`);
+        throw dbError; // Re-throw to trigger retry
+      }
 
       this.logger.log(`Successfully uploaded asset ${id} to S3`);
 
@@ -151,10 +262,11 @@ export class S3StorageService extends BaseService {
       const errorType = classifyS3Error(error);
       if (errorType === S3ErrorType.Permanent) {
         this.logger.error(`Permanent S3 error for asset ${id}, will not retry: ${error}`);
+        return JobStatus.Skipped; // Don't retry permanent errors
       } else {
         this.logger.warn(`Transient S3 error for asset ${id}, will retry: ${error}`);
+        return JobStatus.Failed;
       }
-      return JobStatus.Failed;
     }
   }
 
@@ -163,9 +275,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadQueueAll(): Promise<JobStatus> {
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.Originals)) {
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.Originals))) {
       this.logger.log('S3 upload queue all skipped: S3 not enabled for originals');
       return JobStatus.Success;
     }
@@ -195,9 +307,9 @@ export class S3StorageService extends BaseService {
   @OnJob({ name: JobName.S3MigrateStorageClass, queue: QueueName.S3Upload })
   async handleS3MigrateStorageClass(job: JobOf<JobName.S3MigrateStorageClass>): Promise<JobStatus> {
     const { id } = job;
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    if (!s3Manager.isS3Enabled()) {
+    if (!(await s3Manager.isS3Enabled())) {
       return JobStatus.Success;
     }
 
@@ -208,9 +320,8 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const { adapter: s3Adapter, storageClass: targetClass } = s3Manager.getConfigForLocation(
+      const { adapter: s3Adapter, storageClass: targetClass } = await s3Manager.getConfigForLocation(
         StorageLocationType.Originals,
-        asset.type,
       );
 
       this.logger.log(`Migrating asset ${id} to storage class ${targetClass}`);
@@ -231,9 +342,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3MigrateStorageClassAll, queue: QueueName.S3Upload })
   async handleS3MigrateStorageClassAll(): Promise<JobStatus> {
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    if (!s3Manager.isS3Enabled()) {
+    if (!(await s3Manager.isS3Enabled())) {
       this.logger.log('S3 storage class migration skipped: S3 not enabled');
       return JobStatus.Success;
     }
@@ -263,10 +374,10 @@ export class S3StorageService extends BaseService {
   async handleS3UploadEncodedVideo(job: JobOf<JobName.S3UploadEncodedVideo>): Promise<JobStatus> {
     const { id } = job;
 
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
     // Check if S3 is enabled for encoded videos
-    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos)) {
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos))) {
       this.logger.debug(`S3 upload skipped for encoded video ${id}: S3 not enabled for encoded videos`);
       return JobStatus.Success;
     }
@@ -295,8 +406,8 @@ export class S3StorageService extends BaseService {
         adapter: s3Adapter,
         bucket,
         storageClass,
-      } = s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
-      const localAdapter = this.getLocalAdapter();
+      } = await s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
+      const localAdapter = this.s3Manager.getLocalAdapter();
       const config = await this.getConfig({ withCache: true });
 
       // Generate S3 key for encoded video
@@ -313,11 +424,12 @@ export class S3StorageService extends BaseService {
             await this.assetRepository.update({
               id: asset.id,
               s3KeyEncodedVideo: s3Key,
+              s3BucketEncodedVideo: bucket,
             });
             return JobStatus.Success;
           }
-        } catch {
-          // S3 check failed
+        } catch (s3Error) {
+          this.logger.warn(`S3 existence check failed for encoded video ${id}: ${s3Error}`);
         }
         this.logger.warn(`Local encoded video not found for asset ${id}: ${asset.encodedVideoPath}`);
         return JobStatus.Failed;
@@ -343,11 +455,19 @@ export class S3StorageService extends BaseService {
         throw new Error(`Size mismatch after S3 upload: local=${localStat.size}, s3=${s3Stat.size}`);
       }
 
-      // Update database with S3 key for encoded video
-      await this.assetRepository.update({
-        id: asset.id,
-        s3KeyEncodedVideo: s3Key,
-      });
+      // Update database with S3 key and bucket for encoded video - with compensation for failures
+      try {
+        await this.assetRepository.update({
+          id: asset.id,
+          s3KeyEncodedVideo: s3Key,
+          s3BucketEncodedVideo: bucket,
+        });
+      } catch (dbError) {
+        // Database update failed - delete the orphaned S3 object to maintain consistency
+        this.logger.error(`Database update failed for encoded video ${id}, cleaning up S3 object: ${dbError}`);
+        await this.deleteS3Object(s3Adapter, s3Key, `orphaned encoded video ${id}`);
+        throw dbError; // Re-throw to trigger retry
+      }
 
       this.logger.log(`Successfully uploaded encoded video for asset ${id} to S3`);
 
@@ -370,10 +490,11 @@ export class S3StorageService extends BaseService {
       const errorType = classifyS3Error(error);
       if (errorType === S3ErrorType.Permanent) {
         this.logger.error(`Permanent S3 error for encoded video ${id}, will not retry: ${error}`);
+        return JobStatus.Skipped; // Don't retry permanent errors
       } else {
         this.logger.warn(`Transient S3 error for encoded video ${id}, will retry: ${error}`);
+        return JobStatus.Failed;
       }
-      return JobStatus.Failed;
     }
   }
 
@@ -382,9 +503,9 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadEncodedVideoQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadEncodedVideoQueueAll(): Promise<JobStatus> {
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    if (!s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos)) {
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos))) {
       this.logger.log('S3 encoded video upload queue all skipped: S3 not enabled for encoded videos');
       return JobStatus.Success;
     }
@@ -415,11 +536,11 @@ export class S3StorageService extends BaseService {
   async handleS3UploadThumbnails(job: JobOf<JobName.S3UploadThumbnails>): Promise<JobStatus> {
     const { id } = job;
 
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
     // Check if S3 is enabled for thumbnails or previews
-    const uploadThumbnails = s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
-    const uploadPreviews = s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
+    const uploadThumbnails = await s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
+    const uploadPreviews = await s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
 
     if (!uploadThumbnails && !uploadPreviews) {
       this.logger.debug(`S3 upload skipped for thumbnails ${id}: S3 not enabled for thumbnails/previews`);
@@ -433,8 +554,8 @@ export class S3StorageService extends BaseService {
     }
 
     try {
-      const localAdapter = this.getLocalAdapter();
       const config = await this.getConfig({ withCache: true });
+      const deleteLocalAfterUpload = config.storage.upload.deleteLocalAfterUpload;
 
       // Process thumbnails
       if (uploadThumbnails) {
@@ -442,42 +563,23 @@ export class S3StorageService extends BaseService {
           adapter: s3Adapter,
           bucket,
           storageClass,
-        } = s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
-
+        } = await s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
         const thumbnailFile = asset.files?.find((f: { type: string }) => f.type === 'thumbnail');
+
         if (thumbnailFile && thumbnailFile.storageBackend !== StorageBackend.S3) {
-          const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'thumbnail.webp');
-
-          const localFileExists = await localAdapter.exists(thumbnailFile.path);
-          if (localFileExists) {
-            this.logger.log(`Uploading thumbnail for asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
-            const { stream: readStream } = await localAdapter.readStream(thumbnailFile.path);
-            await s3Adapter.writeStreamAsync(s3Key, readStream, {
-              contentType: 'image/webp',
-              storageClass,
-            });
-
-            // Update asset_file record
-            await this.assetRepository.upsertFileWithS3({
-              assetId: asset.id,
-              type: AssetFileType.Thumbnail,
-              path: thumbnailFile.path,
-              storageBackend: StorageBackend.S3,
-              s3Bucket: bucket,
-              s3Key,
-            });
-
-            // Delete local file after successful upload
-            if (config.storage.upload.deleteLocalAfterUpload) {
-              try {
-                await localAdapter.delete(thumbnailFile.path);
-                this.logger.debug(`Deleted local thumbnail for asset ${id}`);
-              } catch (error) {
-                this.logger.warn(`Failed to delete local thumbnail: ${error}`);
-              }
-            }
-
-            this.logger.log(`Successfully uploaded thumbnail for asset ${id} to S3`);
+          const result = await this.uploadAssetFileToS3({
+            assetId: asset.id,
+            fileType: AssetFileType.Thumbnail,
+            localPath: thumbnailFile.path,
+            s3Key: this.generateThumbnailS3Key(asset.ownerId, asset.id, 'thumbnail.webp'),
+            s3Adapter,
+            bucket,
+            storageClass,
+            contentType: 'image/webp',
+            deleteLocalAfterUpload,
+          });
+          if (!result.success) {
+            return JobStatus.Failed;
           }
         }
       }
@@ -488,42 +590,23 @@ export class S3StorageService extends BaseService {
           adapter: s3Adapter,
           bucket,
           storageClass,
-        } = s3Manager.getConfigForLocation(StorageLocationType.Previews);
-
+        } = await s3Manager.getConfigForLocation(StorageLocationType.Previews);
         const previewFile = asset.files?.find((f: { type: string }) => f.type === 'preview');
+
         if (previewFile && previewFile.storageBackend !== StorageBackend.S3) {
-          const s3Key = this.generateThumbnailS3Key(asset.ownerId, asset.id, 'preview.webp');
-
-          const localFileExists = await localAdapter.exists(previewFile.path);
-          if (localFileExists) {
-            this.logger.log(`Uploading preview for asset ${id} to S3 bucket ${bucket}: ${s3Key}`);
-            const { stream: readStream } = await localAdapter.readStream(previewFile.path);
-            await s3Adapter.writeStreamAsync(s3Key, readStream, {
-              contentType: 'image/webp',
-              storageClass,
-            });
-
-            // Update asset_file record
-            await this.assetRepository.upsertFileWithS3({
-              assetId: asset.id,
-              type: AssetFileType.Preview,
-              path: previewFile.path,
-              storageBackend: StorageBackend.S3,
-              s3Bucket: bucket,
-              s3Key,
-            });
-
-            // Delete local file after successful upload
-            if (config.storage.upload.deleteLocalAfterUpload) {
-              try {
-                await localAdapter.delete(previewFile.path);
-                this.logger.debug(`Deleted local preview for asset ${id}`);
-              } catch (error) {
-                this.logger.warn(`Failed to delete local preview: ${error}`);
-              }
-            }
-
-            this.logger.log(`Successfully uploaded preview for asset ${id} to S3`);
+          const result = await this.uploadAssetFileToS3({
+            assetId: asset.id,
+            fileType: AssetFileType.Preview,
+            localPath: previewFile.path,
+            s3Key: this.generateThumbnailS3Key(asset.ownerId, asset.id, 'preview.webp'),
+            s3Adapter,
+            bucket,
+            storageClass,
+            contentType: 'image/webp',
+            deleteLocalAfterUpload,
+          });
+          if (!result.success) {
+            return JobStatus.Failed;
           }
         }
       }
@@ -533,10 +616,11 @@ export class S3StorageService extends BaseService {
       const errorType = classifyS3Error(error);
       if (errorType === S3ErrorType.Permanent) {
         this.logger.error(`Permanent S3 error for thumbnails ${id}, will not retry: ${error}`);
+        return JobStatus.Skipped;
       } else {
         this.logger.warn(`Transient S3 error for thumbnails ${id}, will retry: ${error}`);
+        return JobStatus.Failed;
       }
-      return JobStatus.Failed;
     }
   }
 
@@ -545,10 +629,10 @@ export class S3StorageService extends BaseService {
    */
   @OnJob({ name: JobName.S3UploadThumbnailsQueueAll, queue: QueueName.S3Upload })
   async handleS3UploadThumbnailsQueueAll(): Promise<JobStatus> {
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    const uploadThumbnails = s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
-    const uploadPreviews = s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
+    const uploadThumbnails = await s3Manager.isS3EnabledForLocation(StorageLocationType.Thumbnails);
+    const uploadPreviews = await s3Manager.isS3EnabledForLocation(StorageLocationType.Previews);
 
     if (!uploadThumbnails && !uploadPreviews) {
       this.logger.log('S3 thumbnail upload queue all skipped: S3 not enabled for thumbnails/previews');
@@ -578,8 +662,16 @@ export class S3StorageService extends BaseService {
    * Format: users/{userId}/{assetId}/original.{ext}
    */
   private generateS3Key(userId: string, assetId: string, originalPath: string): string {
-    const ext = originalPath.split('.').pop() || '';
-    return `users/${userId}/${assetId}/original.${ext}`;
+    // Extract extension properly - only consider it an extension if there's a dot in the filename
+    const filename = originalPath.split('/').pop() || '';
+    const lastDotIndex = filename.lastIndexOf('.');
+    // Only treat as extension if dot is not at start (hidden files) and not the only character
+    const ext = lastDotIndex > 0 ? filename.slice(Math.max(0, lastDotIndex + 1)) : '';
+    // Sanitize extension - only allow alphanumeric chars
+    const sanitizedExt = ext.replaceAll(/[^a-zA-Z0-9]/g, '');
+    // If no extension, use 'bin' as a fallback
+    const safeExt = sanitizedExt || 'bin';
+    return `users/${userId}/${assetId}/original.${safeExt}`;
   }
 
   /**
@@ -599,137 +691,15 @@ export class S3StorageService extends BaseService {
   }
 
   /**
-   * Get a presigned download URL for an S3 asset original.
-   */
-  async getPresignedDownloadUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
-    const s3Manager = await this.getS3Manager();
-
-    if (!s3Manager.isS3Enabled()) {
-      return null;
-    }
-
-    const asset = await this.assetRepository.getById(assetId);
-    if (!asset || asset.storageBackend !== StorageBackend.S3 || !asset.s3Key) {
-      return null;
-    }
-
-    // Use the originals adapter (where the asset is stored)
-    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.Originals);
-
-    if (!s3Adapter.getPresignedDownloadUrl) {
-      return null;
-    }
-
-    return s3Adapter.getPresignedDownloadUrl(asset.s3Key, { expiresIn });
-  }
-
-  /**
-   * Get a presigned download URL for an encoded video in S3.
-   */
-  async getPresignedEncodedVideoUrl(assetId: string, expiresIn: number = 3600): Promise<string | null> {
-    const s3Manager = await this.getS3Manager();
-
-    if (!s3Manager.isS3Enabled()) {
-      return null;
-    }
-
-    const asset = await this.assetRepository.getById(assetId);
-    if (!asset || !asset.s3KeyEncodedVideo) {
-      return null;
-    }
-
-    // Use the encoded videos adapter
-    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
-
-    if (!s3Adapter.getPresignedDownloadUrl) {
-      return null;
-    }
-
-    return s3Adapter.getPresignedDownloadUrl(asset.s3KeyEncodedVideo, { expiresIn });
-  }
-
-  /**
-   * Get a presigned download URL for a thumbnail or preview in S3.
-   */
-  async getPresignedThumbnailUrl(
-    assetId: string,
-    fileType: 'thumbnail' | 'preview',
-    expiresIn: number = 3600,
-  ): Promise<string | null> {
-    const s3Manager = await this.getS3Manager();
-
-    if (!s3Manager.isS3Enabled()) {
-      return null;
-    }
-
-    const asset = await this.assetRepository.getById(assetId, { files: true });
-    if (!asset || !asset.files) {
-      return null;
-    }
-
-    const file = asset.files.find(
-      (f: { type: string; storageBackend?: StorageBackend; s3Key?: string | null }) =>
-        f.type === fileType && f.storageBackend === StorageBackend.S3 && f.s3Key,
-    );
-
-    if (!file || !file.s3Key) {
-      return null;
-    }
-
-    // Use the appropriate adapter based on file type
-    const locationType = fileType === 'thumbnail' ? StorageLocationType.Thumbnails : StorageLocationType.Previews;
-    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(locationType);
-
-    if (!s3Adapter.getPresignedDownloadUrl) {
-      return null;
-    }
-
-    return s3Adapter.getPresignedDownloadUrl(file.s3Key, { expiresIn });
-  }
-
-  /**
-   * Get a presigned upload URL for direct client upload.
-   */
-  async getPresignedUploadUrl(
-    userId: string,
-    filename: string,
-    contentType: string,
-    expiresIn: number = 3600,
-  ): Promise<{ url: string; key: string } | null> {
-    const config = await this.getConfig({ withCache: true });
-    const s3Manager = await this.getS3Manager();
-
-    if (!s3Manager.isS3Enabled() || config.storage.upload.strategy !== 's3-first') {
-      return null;
-    }
-
-    // Use the originals adapter for uploads
-    const { adapter: s3Adapter } = s3Manager.getConfigForLocation(StorageLocationType.Originals);
-
-    if (!s3Adapter.getPresignedUploadUrl) {
-      return null;
-    }
-
-    // Generate a temporary upload key
-    const uploadId = crypto.randomUUID();
-    const ext = filename.split('.').pop() || '';
-    const key = `uploads/${userId}/${uploadId}/original.${ext}`;
-
-    const url = await s3Adapter.getPresignedUploadUrl(key, { expiresIn, contentType });
-
-    return { url, key };
-  }
-
-  /**
    * Clean up orphaned local files for assets that have been uploaded to S3.
    * This handles the case where the process crashed after S3 upload but before local delete.
    */
   @OnJob({ name: JobName.S3CleanupOrphanedFiles, queue: QueueName.S3Upload })
   async handleS3CleanupOrphanedFiles(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
-    const s3Manager = await this.getS3Manager();
+    const s3Manager = this.s3Manager;
 
-    if (!s3Manager.isS3Enabled()) {
+    if (!(await s3Manager.isS3Enabled())) {
       this.logger.log('S3 orphaned files cleanup skipped: S3 not enabled');
       return JobStatus.Success;
     }
@@ -741,7 +711,7 @@ export class S3StorageService extends BaseService {
 
     this.logger.log('Starting S3 orphaned files cleanup');
 
-    const localAdapter = this.getLocalAdapter();
+    const localAdapter = this.s3Manager.getLocalAdapter();
     let cleanedCount = 0;
     let errorCount = 0;
 
@@ -761,6 +731,135 @@ export class S3StorageService extends BaseService {
     }
 
     this.logger.log(`S3 orphaned files cleanup complete: ${cleanedCount} files deleted, ${errorCount} errors`);
+    return JobStatus.Success;
+  }
+
+  /**
+   * Scan S3 buckets for orphaned objects (objects without corresponding DB records).
+   * This handles the case where DB records were deleted but S3 deletion failed.
+   * Run periodically (weekly/monthly) to clean up orphaned storage.
+   */
+  @OnJob({ name: JobName.S3OrphanScanner, queue: QueueName.BackgroundTask })
+  async handleS3OrphanScanner(): Promise<JobStatus> {
+    const s3Manager = this.s3Manager;
+
+    if (!(await s3Manager.isS3Enabled())) {
+      this.logger.log('S3 orphan scanner skipped: S3 not enabled');
+      return JobStatus.Success;
+    }
+
+    this.logger.log('Starting S3 orphan scanner');
+
+    let orphanedCount = 0;
+    let scannedCount = 0;
+    let errorCount = 0;
+
+    try {
+      // Scan the main originals location
+      const s3Adapter = await s3Manager.getDefaultAdapter();
+      if (!s3Adapter) {
+        this.logger.warn('S3 orphan scanner: No default S3 adapter available');
+        return JobStatus.Success;
+      }
+
+      // List all objects under the users/ prefix
+      const objects = await s3Adapter.listObjects('users/');
+
+      for (const obj of objects) {
+        scannedCount++;
+
+        // Extract asset ID from the key
+        // Expected format: users/{userId}/{assetId}/original.{ext}
+        const assetId = this.extractAssetIdFromKey(obj.key);
+        if (!assetId) {
+          continue;
+        }
+
+        try {
+          const asset = await this.assetRepository.getById(assetId);
+          if (!asset) {
+            this.logger.warn(`S3 orphan detected: ${obj.key} (no DB record for asset ${assetId})`);
+            orphanedCount++;
+
+            // Note: We log orphans but don't auto-delete for safety.
+            // To enable auto-delete, uncomment below and add config option:
+            // await s3Adapter.delete(obj.key);
+            // this.logger.log(`Deleted orphaned S3 object: ${obj.key}`);
+          }
+        } catch (error) {
+          this.logger.debug(`Error checking asset ${assetId}: ${error}`);
+          errorCount++;
+        }
+
+        // Log progress every 1000 objects
+        if (scannedCount % 1000 === 0) {
+          this.logger.log(
+            `S3 orphan scanner progress: ${scannedCount} objects scanned, ${orphanedCount} orphans found`,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(`S3 orphan scanner error: ${error}`);
+      return JobStatus.Failed;
+    }
+
+    this.logger.log(
+      `S3 orphan scanner complete: ${scannedCount} objects scanned, ${orphanedCount} orphans found, ${errorCount} errors`,
+    );
+    return JobStatus.Success;
+  }
+
+  /**
+   * Extract asset ID from an S3 object key.
+   * Expected format: users/{userId}/{assetId}/original.{ext} or users/{userId}/{assetId}/{filename}
+   */
+  private extractAssetIdFromKey(key: string): string | null {
+    // Format: users/{userId}/{assetId}/...
+    const parts = key.split('/');
+    if (parts.length >= 3 && parts[0] === 'users') {
+      const potentialAssetId = parts[2];
+      // UUID format validation (loose check)
+      if (potentialAssetId && potentialAssetId.length === 36 && potentialAssetId.includes('-')) {
+        return potentialAssetId;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Handle deletion of S3 files.
+   * Called when assets are permanently deleted.
+   */
+  @OnJob({ name: JobName.S3FileDelete, queue: QueueName.S3Upload })
+  async handleS3FileDelete(job: JobOf<JobName.S3FileDelete>): Promise<JobStatus> {
+    const { files } = job;
+
+    if (!files || files.length === 0) {
+      return JobStatus.Success;
+    }
+
+    const s3Manager = this.s3Manager;
+
+    if (!(await s3Manager.isS3Enabled())) {
+      this.logger.warn('S3 file delete called but S3 is not enabled');
+      return JobStatus.Success;
+    }
+
+    let deletedCount = 0;
+    let errorCount = 0;
+
+    for (const file of files) {
+      // Get adapter for the specific bucket (supports multi-bucket configurations)
+      const adapter = await s3Manager.getAdapterForBucket(file.bucket);
+      const success = await this.deleteS3Object(adapter, file.key, `file delete job (${file.bucket}/${file.key})`);
+      if (success) {
+        deletedCount++;
+      } else {
+        errorCount++;
+      }
+    }
+
+    this.logger.log(`S3 file delete complete: ${deletedCount} deleted, ${errorCount} errors`);
     return JobStatus.Success;
   }
 }

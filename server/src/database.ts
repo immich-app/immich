@@ -175,6 +175,7 @@ export type AuthSharedLink = {
   showExif: boolean;
   allowUpload: boolean;
   allowDownload: boolean;
+  allowShare: boolean;
   password: string | null;
 };
 
@@ -184,6 +185,7 @@ export type SharedLink = {
   albumId: string | null;
   allowDownload: boolean;
   allowUpload: boolean;
+  allowShare: boolean;
   assets: MapAsset[];
   createdAt: Date;
   description: string | null;
@@ -363,6 +365,7 @@ export const columns = {
     'shared_link.showExif',
     'shared_link.allowUpload',
     'shared_link.allowDownload',
+    'shared_link.allowShare',
     'shared_link.password',
   ],
   user: userColumns,

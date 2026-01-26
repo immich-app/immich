@@ -29,6 +29,7 @@ import { OcrService } from 'src/services/ocr.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
 import { PluginService } from 'src/services/plugin.service';
+import { PresignedUrlService } from 'src/services/presigned-url.service';
 import { QueueService } from 'src/services/queue.service';
 import { S3StorageService } from 'src/services/s3-storage.service';
 import { SearchService } from 'src/services/search.service';
@@ -85,6 +86,7 @@ export const services = [
   PartnerService,
   PersonService,
   PluginService,
+  PresignedUrlService,
   QueueService,
   S3StorageService,
   SearchService,

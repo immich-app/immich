@@ -6,6 +6,7 @@ import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -67,6 +68,15 @@ export class StorageRepository {
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
     return fs.writeFile(filepath, buffer, { flag: 'w' });
+  }
+
+  /**
+   * Create a file from a readable stream.
+   * Uses streaming to avoid buffering large files in memory.
+   */
+  async createFileFromStream(filepath: string, stream: Readable): Promise<void> {
+    const writeStream = createWriteStream(filepath);
+    await pipeline(stream, writeStream);
   }
 
   overwriteFile(filepath: string, buffer: Buffer) {

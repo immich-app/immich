@@ -41,8 +41,26 @@ export interface ClientEventMap {
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;
 
+/**
+ * Get CORS configuration from environment variable.
+ * Supports comma-separated list of allowed origins.
+ * Falls back to true (allow all) if not configured.
+ */
+const getCorsConfig = () => {
+  const allowedOrigins = process.env.IMMICH_CORS_ALLOWED_ORIGINS;
+  if (!allowedOrigins) {
+    return true; // Allow all origins (backwards compatible)
+  }
+
+  const origins = allowedOrigins.split(',').map((origin) => origin.trim());
+  return {
+    origin: origins.length === 1 ? origins[0] : origins,
+    credentials: true,
+  };
+};
+
 @WebSocketGateway({
-  cors: true,
+  cors: getCorsConfig(),
   path: '/api/socket.io',
   transports: ['websocket'],
 })

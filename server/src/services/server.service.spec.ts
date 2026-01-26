@@ -1,6 +1,21 @@
+import { AuthDto } from 'src/dtos/auth.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { ServerService } from 'src/services/server.service';
+import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
+
+const ONE_TB = 1024 * 1024 * 1024 * 1024;
+
+const makeAuth = (quotaSizeInBytes: number | null, quotaUsageInBytes: number): AuthDto => ({
+  user: {
+    id: 'user-id',
+    name: 'Test User',
+    email: 'test@test.com',
+    isAdmin: false,
+    quotaSizeInBytes,
+    quotaUsageInBytes,
+  },
+});
 
 describe(ServerService.name, () => {
   let sut: ServerService;
@@ -15,112 +30,59 @@ describe(ServerService.name, () => {
   });
 
   describe('getStorage', () => {
-    it('should return the disk space as B', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200, available: 300, total: 500 });
+    it('should return user quota with default 1TB when quotaSizeInBytes is null', async () => {
+      const auth = makeAuth(null, 300_000_000_000); // null quota, 300GB used
 
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '300 B',
-        diskAvailableRaw: 300,
-        diskSize: '500 B',
-        diskSizeRaw: 500,
-        diskUsagePercentage: 60,
-        diskUse: '300 B',
-        diskUseRaw: 300,
+      await expect(sut.getStorage(auth)).resolves.toEqual({
+        diskAvailable: '744.6 GiB',
+        diskAvailableRaw: ONE_TB - 300_000_000_000,
+        diskSize: '1.0 TiB',
+        diskSizeRaw: ONE_TB,
+        diskUsagePercentage: 27.28,
+        diskUse: '279.4 GiB',
+        diskUseRaw: 300_000_000_000,
       });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
-    it('should return the disk space as KiB', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200_000, available: 300_000, total: 500_000 });
+    it('should return user quota when quotaSizeInBytes is set', async () => {
+      const auth = makeAuth(500_000_000_000, 300_000_000_000); // 500GB quota, 300GB used
 
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '293.0 KiB',
-        diskAvailableRaw: 300_000,
-        diskSize: '488.3 KiB',
-        diskSizeRaw: 500_000,
-        diskUsagePercentage: 60,
-        diskUse: '293.0 KiB',
-        diskUseRaw: 300_000,
-      });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
-    });
-
-    it('should return the disk space as MiB', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200_000_000, available: 300_000_000, total: 500_000_000 });
-
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '286.1 MiB',
-        diskAvailableRaw: 300_000_000,
-        diskSize: '476.8 MiB',
-        diskSizeRaw: 500_000_000,
-        diskUsagePercentage: 60,
-        diskUse: '286.1 MiB',
-        diskUseRaw: 300_000_000,
-      });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
-    });
-
-    it('should return the disk space as GiB', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({
-        free: 200_000_000_000,
-        available: 300_000_000_000,
-        total: 500_000_000_000,
-      });
-
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '279.4 GiB',
-        diskAvailableRaw: 300_000_000_000,
+      await expect(sut.getStorage(auth)).resolves.toEqual({
+        diskAvailable: '186.3 GiB',
+        diskAvailableRaw: 200_000_000_000,
         diskSize: '465.7 GiB',
         diskSizeRaw: 500_000_000_000,
         diskUsagePercentage: 60,
         diskUse: '279.4 GiB',
         diskUseRaw: 300_000_000_000,
       });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
-    it('should return the disk space as TiB', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({
-        free: 200_000_000_000_000,
-        available: 300_000_000_000_000,
-        total: 500_000_000_000_000,
-      });
+    it('should return 0 available when usage exceeds quota', async () => {
+      const auth = makeAuth(100_000_000_000, 150_000_000_000); // 100GB quota, 150GB used
 
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '272.8 TiB',
-        diskAvailableRaw: 300_000_000_000_000,
-        diskSize: '454.7 TiB',
-        diskSizeRaw: 500_000_000_000_000,
-        diskUsagePercentage: 60,
-        diskUse: '272.8 TiB',
-        diskUseRaw: 300_000_000_000_000,
+      await expect(sut.getStorage(auth)).resolves.toEqual({
+        diskAvailable: '0 B',
+        diskAvailableRaw: 0,
+        diskSize: '93.1 GiB',
+        diskSizeRaw: 100_000_000_000,
+        diskUsagePercentage: 150,
+        diskUse: '139.7 GiB',
+        diskUseRaw: 150_000_000_000,
       });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
-    it('should return the disk space as PiB', async () => {
-      mocks.storage.checkDiskUsage.mockResolvedValue({
-        free: 200_000_000_000_000_000,
-        available: 300_000_000_000_000_000,
-        total: 500_000_000_000_000_000,
+    it('should use authStub correctly', async () => {
+      // authStub.user1 has quotaSizeInBytes: null and quotaUsageInBytes: 0
+      await expect(sut.getStorage(authStub.user1)).resolves.toEqual({
+        diskAvailable: '1.0 TiB',
+        diskAvailableRaw: ONE_TB,
+        diskSize: '1.0 TiB',
+        diskSizeRaw: ONE_TB,
+        diskUsagePercentage: 0,
+        diskUse: '0 B',
+        diskUseRaw: 0,
       });
-
-      await expect(sut.getStorage()).resolves.toEqual({
-        diskAvailable: '266.5 PiB',
-        diskAvailableRaw: 300_000_000_000_000_000,
-        diskSize: '444.1 PiB',
-        diskSizeRaw: 500_000_000_000_000_000,
-        diskUsagePercentage: 60,
-        diskUse: '266.5 PiB',
-        diskUseRaw: 300_000_000_000_000_000,
-      });
-
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
   });
 

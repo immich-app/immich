@@ -177,13 +177,37 @@ export class QueueService extends BaseService {
   }
 
   private async getByName(name: QueueName): Promise<QueueResponseDto> {
-    const [statistics, isPaused, queueState] = await Promise.all([
+    const [statistics, isPaused, queueState, missingCount] = await Promise.all([
       this.jobRepository.getJobCounts(name),
       this.jobRepository.isPaused(name),
       this.systemMetadataRepository.get(SystemMetadataKey.QueueState),
+      this.getMissingCount(name),
     ]);
     const lastTriggeredAt = queueState?.[name]?.lastTriggeredAt;
-    return { name, isPaused, statistics, lastTriggeredAt };
+    return { name, isPaused, statistics, lastTriggeredAt, missingCount };
+  }
+
+  private async getMissingCount(name: QueueName): Promise<number | undefined> {
+    switch (name) {
+      case QueueName.AssetThumbnailGeneration: {
+        return this.assetJobRepository.countMissingThumbnails();
+      }
+      case QueueName.PersonThumbnailGeneration: {
+        return this.personRepository.countMissingThumbnails();
+      }
+      case QueueName.FaceDetection: {
+        return this.assetJobRepository.countMissingFaceDetection();
+      }
+      case QueueName.FacialRecognition: {
+        return this.personRepository.countUnrecognizedFaces();
+      }
+      case QueueName.MetadataExtraction: {
+        return this.assetJobRepository.countMissingMetadata();
+      }
+      default: {
+        return undefined;
+      }
+    }
   }
 
   private async start(name: QueueName, { force }: QueueCommandDto): Promise<void> {

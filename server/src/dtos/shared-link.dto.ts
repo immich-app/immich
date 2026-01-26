@@ -50,6 +50,9 @@ export class SharedLinkCreateDto {
 
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean = true;
+
+  @ValidateBoolean({ optional: true })
+  allowShare?: boolean = false;
 }
 
 export class SharedLinkEditDto {
@@ -76,6 +79,9 @@ export class SharedLinkEditDto {
 
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  allowShare?: boolean;
 
   /**
    * Few clients cannot send null to set the expiryTime to never.
@@ -114,6 +120,7 @@ export class SharedLinkResponseDto {
 
   allowDownload!: boolean;
   showMetadata!: boolean;
+  allowShare!: boolean;
 
   slug!: string | null;
 }
@@ -135,6 +142,7 @@ export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    allowShare: sharedLink.allowShare,
     slug: sharedLink.slug,
   };
 }
@@ -159,6 +167,7 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLink
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    allowShare: sharedLink.allowShare,
     slug: sharedLink.slug,
   };
 }

@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { createReadStream } from 'node:fs';
+import { Readable } from 'node:stream';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { IStorageAdapter, StorageWriteOptions } from 'src/repositories/storage/storage-adapter.interface';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -19,6 +22,7 @@ import {
   RawExtractedFormat,
   StorageBackend,
   StorageFolder,
+  StorageLocationType,
   ToneMapping,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
@@ -27,7 +31,6 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { StorageAdapterFactory } from 'src/repositories/storage/storage-adapter.factory';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -53,7 +56,6 @@ interface UpsertFileOptions {
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
-  private storageAdapterFactory = new StorageAdapterFactory();
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
@@ -73,11 +75,7 @@ export class MediaService extends BaseService {
     };
 
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
-      const { previewFile, thumbnailFile } = getAssetFiles(asset.files);
-
-      if (!previewFile || !thumbnailFile || !asset.thumbhash || force) {
-        jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
-      }
+      jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
 
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
@@ -187,28 +185,29 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Handle S3-stored originals: download to temp file first
+    // Handle S3-stored originals: stream to temp file first
     let tempFilePath: string | undefined;
     let effectiveOriginalPath = asset.originalPath;
 
-    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key) {
-      const { storage } = await this.getConfig({ withCache: true });
-      if (!storage.s3.enabled) {
+    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key && asset.s3Bucket) {
+      const s3Manager = this.s3Manager;
+      if (!(await s3Manager.isS3Enabled())) {
         this.logger.error(`Thumbnail generation failed for ${id}: asset is in S3 but S3 is not enabled`);
         return JobStatus.Failed;
       }
 
       try {
-        this.logger.debug(`Downloading asset from S3 for thumbnail generation: ${asset.s3Key}`);
-        const s3Adapter = this.storageAdapterFactory.getS3Adapter(storage.s3);
-        const fileBuffer = await s3Adapter.read(asset.s3Key);
+        this.logger.debug(`Streaming asset from S3 for thumbnail generation: ${asset.s3Bucket}/${asset.s3Key}`);
+        // Use the bucket stored in the database, not the default config
+        const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
 
-        // Write to temp file
+        // Stream to temp file to avoid buffering large files in memory
         const ext = asset.originalFileName.split('.').pop() || 'tmp';
         tempFilePath = `/tmp/immich-thumb-${id}.${ext}`;
-        await this.storageRepository.createOrOverwriteFile(tempFilePath, fileBuffer);
+        const { stream } = await s3Adapter.readStream(asset.s3Key);
+        await this.storageRepository.createFileFromStream(tempFilePath, stream);
         effectiveOriginalPath = tempFilePath;
-        this.logger.debug(`Downloaded S3 asset to temp file: ${tempFilePath}`);
+        this.logger.debug(`Streamed S3 asset to temp file: ${tempFilePath}`);
       } catch (error) {
         this.logger.error(`Could not download asset from S3 for thumbnail generation ${id}: ${error}`);
         return JobStatus.Failed;
@@ -295,13 +294,159 @@ export class MediaService extends BaseService {
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
 
-    // S3 upload is now queued after encryption (see asset-encryption.service.ts)
-    // For users without vault, encryption service will queue S3 upload directly
-
-    // Queue thumbnail S3 upload if S3 is enabled for thumbnails/previews
-    await this.jobRepository.queue({ name: JobName.S3UploadThumbnails, data: { id: asset.id } });
+    // Upload thumbnails to S3 inline (not queued) to ensure they're uploaded before worker stops
+    await this.uploadThumbnailsToS3Inline(asset.id, asset.ownerId, generated.thumbnailPath, generated.previewPath);
 
     return JobStatus.Success;
+  }
+
+  /**
+   * Upload a file to S3 with verification that the upload completed successfully.
+   * Compares file sizes between local and S3 to detect partial uploads.
+   * Cleans up the S3 object if verification fails.
+   */
+  private async uploadAndVerifyToS3(
+    s3Adapter: IStorageAdapter,
+    localAdapter: IStorageAdapter,
+    localPath: string,
+    s3Key: string,
+    options: StorageWriteOptions,
+  ): Promise<void> {
+    const readStream: Readable = createReadStream(localPath);
+
+    try {
+      // Step 1: Upload to S3
+      await s3Adapter.writeStreamAsync!(s3Key, readStream, options);
+
+      // Step 2: Verify upload by comparing sizes
+      const [s3Stat, localStat] = await Promise.all([s3Adapter.stat(s3Key), localAdapter.stat(localPath)]);
+
+      if (s3Stat.size !== localStat.size) {
+        // Size mismatch - clean up and throw
+        await s3Adapter.delete(s3Key);
+        throw new Error(`S3 upload size mismatch for ${s3Key}: local=${localStat.size}, s3=${s3Stat.size}`);
+      }
+    } catch (error) {
+      // Clean up partial upload on any error (best effort)
+      await s3Adapter.delete(s3Key).catch(() => {});
+      throw error;
+    }
+  }
+
+  /**
+   * Upload thumbnails directly to S3 inline (synchronously) instead of queueing.
+   * This ensures thumbnails are persisted before the worker potentially stops.
+   */
+  private async uploadThumbnailsToS3Inline(
+    assetId: string,
+    ownerId: string,
+    thumbnailPath: string,
+    previewPath: string,
+  ): Promise<void> {
+    const { storage } = await this.getConfig({ withCache: true });
+
+    // Check if S3 is enabled for thumbnails or previews
+    const uploadThumbnails = storage.s3.enabled && storage.locations.thumbnails === StorageBackend.S3;
+    const uploadPreviews = storage.s3.enabled && storage.locations.previews === StorageBackend.S3;
+
+    if (!uploadThumbnails && !uploadPreviews) {
+      this.logger.debug(`S3 upload skipped for thumbnails ${assetId}: S3 not enabled for thumbnails/previews`);
+      return;
+    }
+
+    const s3Manager = this.s3Manager;
+    const localAdapter = s3Manager.getLocalAdapter();
+
+    try {
+      // Upload thumbnail to S3
+      if (uploadThumbnails && thumbnailPath) {
+        const {
+          adapter: s3Adapter,
+          bucket,
+          storageClass,
+        } = await s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
+        const s3Key = `users/${ownerId}/${assetId}/thumbnail.webp`;
+
+        const localFileExists = await localAdapter.exists(thumbnailPath);
+        if (localFileExists) {
+          this.logger.log(`Uploading thumbnail inline for asset ${assetId} to S3: ${s3Key}`);
+
+          // Upload with verification before updating database
+          await this.uploadAndVerifyToS3(s3Adapter, localAdapter, thumbnailPath, s3Key, {
+            contentType: 'image/webp',
+            storageClass,
+          });
+
+          // Update asset_file record only after verified upload
+          await this.assetRepository.upsertFileWithS3({
+            assetId,
+            type: AssetFileType.Thumbnail,
+            path: thumbnailPath,
+            storageBackend: StorageBackend.S3,
+            s3Bucket: bucket,
+            s3Key,
+          });
+
+          // Delete local file after successful upload if configured
+          if (storage.upload.deleteLocalAfterUpload) {
+            try {
+              await this.storageRepository.unlink(thumbnailPath);
+              this.logger.debug(`Deleted local thumbnail for asset ${assetId}`);
+            } catch (error) {
+              this.logger.warn(`Failed to delete local thumbnail: ${error}`);
+            }
+          }
+
+          this.logger.log(`Successfully uploaded thumbnail inline for asset ${assetId} to S3`);
+        }
+      }
+
+      // Upload preview to S3
+      if (uploadPreviews && previewPath) {
+        const {
+          adapter: s3Adapter,
+          bucket,
+          storageClass,
+        } = await s3Manager.getConfigForLocation(StorageLocationType.Previews);
+        const s3Key = `users/${ownerId}/${assetId}/preview.webp`;
+
+        const localFileExists = await localAdapter.exists(previewPath);
+        if (localFileExists) {
+          this.logger.log(`Uploading preview inline for asset ${assetId} to S3: ${s3Key}`);
+
+          // Upload with verification before updating database
+          await this.uploadAndVerifyToS3(s3Adapter, localAdapter, previewPath, s3Key, {
+            contentType: 'image/webp',
+            storageClass,
+          });
+
+          // Update asset_file record only after verified upload
+          await this.assetRepository.upsertFileWithS3({
+            assetId,
+            type: AssetFileType.Preview,
+            path: previewPath,
+            storageBackend: StorageBackend.S3,
+            s3Bucket: bucket,
+            s3Key,
+          });
+
+          // Delete local file after successful upload if configured
+          if (storage.upload.deleteLocalAfterUpload) {
+            try {
+              await this.storageRepository.unlink(previewPath);
+              this.logger.debug(`Deleted local preview for asset ${assetId}`);
+            } catch (error) {
+              this.logger.warn(`Failed to delete local preview: ${error}`);
+            }
+          }
+
+          this.logger.log(`Successfully uploaded preview inline for asset ${assetId} to S3`);
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to upload thumbnails inline to S3 for asset ${assetId}: ${error}`);
+      // Don't fail the job - thumbnails are generated locally and can be re-uploaded later
+    }
   }
 
   private async extractImage(originalPath: string, minSize: number) {
@@ -402,7 +547,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.PersonThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
-    const { machineLearning, metadata, image, storage } = await this.getConfig({ withCache: true });
+    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
     if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
       return JobStatus.Skipped;
     }
@@ -434,15 +579,17 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
       inputImage = previewPath;
-    } else if (storageBackend === StorageBackend.S3 && s3Key) {
+    } else if (storageBackend === StorageBackend.S3 && s3Key && data.s3Bucket) {
       // Asset is stored in S3, download it for processing
-      if (!storage.s3.enabled) {
+      const s3Manager = this.s3Manager;
+      if (!(await s3Manager.isS3Enabled())) {
         this.logger.error(`Could not generate person thumbnail for ${id}: asset is in S3 but S3 is not enabled`);
         return JobStatus.Failed;
       }
       try {
-        this.logger.debug(`Downloading asset from S3 for person thumbnail generation: ${s3Key}`);
-        const s3Adapter = this.storageAdapterFactory.getS3Adapter(storage.s3);
+        this.logger.debug(`Downloading asset from S3 for person thumbnail generation: ${data.s3Bucket}/${s3Key}`);
+        // Use the bucket stored in the database, not the default config
+        const s3Adapter = await s3Manager.getAdapterForBucket(data.s3Bucket);
         inputImage = await s3Adapter.read(s3Key);
       } catch (error) {
         this.logger.error(`Could not download asset from S3 for person thumbnail ${id}: ${error}`);
@@ -579,90 +726,202 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const input = asset.originalPath;
-    const output = StorageCore.getEncodedVideoPath(asset);
-    this.storageCore.ensureFolders(output);
+    // Handle S3-stored originals: download to temp file first
+    let tempFilePath: string | undefined;
+    let input = asset.originalPath;
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
-      countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
-    });
-    const videoStream = this.getMainStream(videoStreams);
-    const audioStream = this.getMainStream(audioStreams);
-    if (!videoStream || !format.formatName) {
-      return JobStatus.Failed;
-    }
-
-    if (!videoStream.height || !videoStream.width) {
-      this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
-      return JobStatus.Failed;
-    }
-
-    let { ffmpeg } = await this.getConfig({ withCache: true });
-    const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
-    if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
-      if (asset.encodedVideoPath) {
-        this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
-        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [asset.encodedVideoPath] } });
-        await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
-      } else {
-        this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
-      }
-
-      // Mark video encoding as complete (skipped) for encryption coordination
-      await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
-
-      return JobStatus.Skipped;
-    }
-
-    const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-    if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
-      this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
-    } else {
-      this.logger.log(
-        `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
-      );
-    }
-
-    try {
-      await this.mediaRepository.transcode(input, output, command);
-    } catch (error: any) {
-      this.logger.error(`Error occurred during transcoding: ${error.message}`);
-      if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key && asset.s3Bucket) {
+      const s3Manager = this.s3Manager;
+      if (!(await s3Manager.isS3Enabled())) {
+        this.logger.error(`Video conversion failed for ${id}: asset is in S3 but S3 is not enabled`);
         return JobStatus.Failed;
       }
 
-      let partialFallbackSuccess = false;
-      if (ffmpeg.accelDecode) {
-        try {
-          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
-          ffmpeg = { ...ffmpeg, accelDecode: false };
-          const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-          await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
-        } catch (error: any) {
-          this.logger.error(`Error occurred during transcoding: ${error.message}`);
-        }
-      }
+      try {
+        this.logger.debug(`Streaming video from S3 for encoding: ${asset.s3Bucket}/${asset.s3Key}`);
+        // Use the bucket stored in the database, not the default config
+        const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
 
-      if (!partialFallbackSuccess) {
-        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-        ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
-        const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-        await this.mediaRepository.transcode(input, output, command);
+        // Stream to temp file to avoid buffering large videos in memory
+        const ext = asset.originalFileName.split('.').pop() || 'mp4';
+        tempFilePath = `/tmp/immich-video-${id}.${ext}`;
+        const { stream } = await s3Adapter.readStream(asset.s3Key);
+        await this.storageRepository.createFileFromStream(tempFilePath, stream);
+        input = tempFilePath;
+        this.logger.debug(`Streamed S3 video to temp file: ${tempFilePath}`);
+      } catch (error) {
+        this.logger.error(`Could not download video from S3 for encoding ${id}: ${error}`);
+        return JobStatus.Failed;
       }
     }
 
-    this.logger.log(`Successfully encoded ${asset.id}`);
+    const output = StorageCore.getEncodedVideoPath(asset);
+    this.storageCore.ensureFolders(output);
 
-    await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
+    try {
+      const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
+        countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
+      });
+      const videoStream = this.getMainStream(videoStreams);
+      const audioStream = this.getMainStream(audioStreams);
+      if (!videoStream || !format.formatName) {
+        return JobStatus.Failed;
+      }
 
-    // Track video encoding completion for encryption coordination
-    await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
+      if (!videoStream.height || !videoStream.width) {
+        this.logger.warn(`Skipped transcoding for asset ${asset.id}: no video streams found`);
+        return JobStatus.Failed;
+      }
 
-    // Queue S3 upload for encoded video if S3 is enabled for encoded videos
-    await this.jobRepository.queue({ name: JobName.S3UploadEncodedVideo, data: { id: asset.id } });
+      let { ffmpeg } = await this.getConfig({ withCache: true });
+      const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
+      if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
+        if (asset.encodedVideoPath) {
+          this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
+          await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [asset.encodedVideoPath] } });
+          await this.assetRepository.update({ id: asset.id, encodedVideoPath: null });
+        } else {
+          this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
+        }
 
-    return JobStatus.Success;
+        // Mark video encoding as complete (skipped) for encryption coordination
+        await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
+
+        return JobStatus.Skipped;
+      }
+
+      const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
+      if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+        this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
+      } else {
+        this.logger.log(
+          `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
+        );
+      }
+
+      try {
+        await this.mediaRepository.transcode(input, output, command);
+      } catch (error: any) {
+        this.logger.error(`Error occurred during transcoding: ${error.message}`);
+        if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+          return JobStatus.Failed;
+        }
+
+        let partialFallbackSuccess = false;
+        if (ffmpeg.accelDecode) {
+          try {
+            this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
+            ffmpeg = { ...ffmpeg, accelDecode: false };
+            const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(
+              target,
+              videoStream,
+              audioStream,
+            );
+            await this.mediaRepository.transcode(input, output, command);
+            partialFallbackSuccess = true;
+          } catch (error: any) {
+            this.logger.error(`Error occurred during transcoding: ${error.message}`);
+          }
+        }
+
+        if (!partialFallbackSuccess) {
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
+          ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
+          const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
+          await this.mediaRepository.transcode(input, output, command);
+        }
+      }
+
+      this.logger.log(`Successfully encoded ${asset.id}`);
+
+      await this.assetRepository.update({ id: asset.id, encodedVideoPath: output });
+
+      // Track video encoding completion for encryption coordination
+      await this.assetRepository.upsertJobStatus({ assetId: asset.id, videoEncodedAt: new Date() });
+
+      // Upload encoded video to S3 inline (not queued) to ensure it's uploaded before worker stops
+      await this.uploadEncodedVideoToS3Inline(asset.id, asset.ownerId, output);
+
+      return JobStatus.Success;
+    } finally {
+      // Clean up temp file if we downloaded from S3
+      if (tempFilePath) {
+        try {
+          await this.storageRepository.unlink(tempFilePath);
+          this.logger.debug(`Cleaned up temp video file: ${tempFilePath}`);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
+    }
+  }
+
+  /**
+   * Upload encoded video directly to S3 inline instead of queueing.
+   */
+  private async uploadEncodedVideoToS3Inline(
+    assetId: string,
+    ownerId: string,
+    encodedVideoPath: string,
+  ): Promise<void> {
+    const s3Manager = this.s3Manager;
+    const { storage } = await this.getConfig({ withCache: true });
+
+    // Check if S3 is enabled for encoded videos
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.EncodedVideos))) {
+      this.logger.debug(`S3 upload skipped for encoded video ${assetId}: S3 not enabled for encoded videos`);
+      return;
+    }
+
+    const localAdapter = s3Manager.getLocalAdapter();
+
+    try {
+      const {
+        adapter: s3Adapter,
+        bucket,
+        storageClass,
+      } = await s3Manager.getConfigForLocation(StorageLocationType.EncodedVideos);
+      const s3Key = `users/${ownerId}/${assetId}/encoded.mp4`;
+
+      const localFileExists = await localAdapter.exists(encodedVideoPath);
+      if (!localFileExists) {
+        this.logger.warn(`Local encoded video not found for asset ${assetId}: ${encodedVideoPath}`);
+        return;
+      }
+
+      this.logger.log(`Uploading encoded video inline for asset ${assetId} to S3: ${s3Key}`);
+      const readStream = createReadStream(encodedVideoPath);
+      await s3Adapter.writeStreamAsync(s3Key, readStream, {
+        contentType: 'video/mp4',
+        storageClass,
+      });
+
+      // Update database with S3 key and bucket
+      await this.assetRepository.update({
+        id: assetId,
+        s3KeyEncodedVideo: s3Key,
+        s3BucketEncodedVideo: bucket,
+      });
+
+      // Delete local encoded video after successful upload if configured
+      if (storage.upload.deleteLocalAfterUpload) {
+        try {
+          await this.storageRepository.unlink(encodedVideoPath);
+          await this.assetRepository.update({
+            id: assetId,
+            encodedVideoPath: null,
+          });
+          this.logger.debug(`Deleted local encoded video for asset ${assetId}`);
+        } catch (error) {
+          this.logger.warn(`Failed to delete local encoded video: ${error}`);
+        }
+      }
+
+      this.logger.log(`Successfully uploaded encoded video inline for asset ${assetId} to S3`);
+    } catch (error) {
+      this.logger.error(`Failed to upload encoded video inline to S3 for asset ${assetId}: ${error}`);
+      // Don't fail the job - video is encoded locally and can be re-uploaded later
+    }
   }
 
   private getMainStream<T extends VideoStreamInfo | AudioStreamInfo>(streams: T[]): T {

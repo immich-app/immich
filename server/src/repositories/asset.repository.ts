@@ -137,8 +137,9 @@ export class AssetRepository {
   async upsertExif(
     exif: Insertable<AssetExifTable>,
     { lockedPropertiesBehavior }: { lockedPropertiesBehavior: 'override' | 'append' | 'skip' },
+    db: Kysely<DB> = this.db,
   ): Promise<void> {
-    await this.db
+    await db
       .insertInto('asset_exif')
       .values(exif)
       .onConflict((oc) =>
@@ -295,8 +296,8 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>) {
-    return this.db
+  upsertMetadata(id: string, items: Array<{ key: AssetMetadataKey; value: object }>, db: Kysely<DB> = this.db) {
+    return db
       .insertInto('asset_metadata')
       .values(items.map((item) => ({ assetId: id, ...item })))
       .onConflict((oc) =>
@@ -323,8 +324,8 @@ export class AssetRepository {
     await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
   }
 
-  create(asset: Insertable<AssetTable>) {
-    return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+  create(asset: Insertable<AssetTable>, db: Kysely<DB> = this.db) {
+    return db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
   createAll(assets: Insertable<AssetTable>[]) {
@@ -895,9 +896,12 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
+  async upsertFile(
+    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>,
+    db: Kysely<DB> = this.db,
+  ): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
-    await this.db
+    await db
       .insertInto('asset_file')
       .values(value)
       .onConflict((oc) =>

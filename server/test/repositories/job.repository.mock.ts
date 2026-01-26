@@ -5,6 +5,7 @@ import { Mocked, vitest } from 'vitest';
 export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository>> => {
   return {
     setup: vitest.fn(),
+    onModuleDestroy: vitest.fn(),
     startWorkers: vitest.fn(),
     run: vitest.fn(),
     setConcurrency: vitest.fn(),

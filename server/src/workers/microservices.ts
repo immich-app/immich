@@ -16,6 +16,11 @@ export async function bootstrap() {
   }
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
+
+  // Enable graceful shutdown on SIGTERM/SIGINT
+  // This triggers OnModuleDestroy hooks (e.g., JobRepository closes BullMQ workers)
+  app.enableShutdownHooks();
+
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
   app.get(AppRepository).setCloseFn(() => app.close());

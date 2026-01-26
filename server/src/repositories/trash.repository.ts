@@ -8,7 +8,12 @@ export class TrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   getDeletedIds(): AsyncIterableIterator<{ id: string }> {
-    return this.db.selectFrom('asset').select(['id']).where('status', '=', AssetStatus.Deleted).stream();
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('status', '=', AssetStatus.Deleted)
+      .orderBy('id', 'asc') // Deterministic ordering prevents duplicate/skipped records during streaming
+      .stream();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

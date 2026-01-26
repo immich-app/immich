@@ -29,6 +29,11 @@ read_file_and_export "DB_USERNAME_FILE" "DB_USERNAME"
 read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
 read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
 
+# Process config file with environment variable substitution
+if [ -n "$IMMICH_CONFIG_FILE" ] && [ -f "$IMMICH_CONFIG_FILE" ]; then
+  envsubst < "$IMMICH_CONFIG_FILE" > "${IMMICH_CONFIG_FILE}.tmp" && mv "${IMMICH_CONFIG_FILE}.tmp" "$IMMICH_CONFIG_FILE"
+fi
+
 if CPU_CORES="${CPU_CORES:=$(get-cpus.sh 2>/dev/null)}"; then
   echo "Detected CPU Cores: $CPU_CORES"
   if [ "$CPU_CORES" -gt 4 ]; then

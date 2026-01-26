@@ -46,6 +46,9 @@ export class SharedLinkTable {
   @Column({ type: 'boolean', default: true })
   showExif!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  allowShare!: Generated<boolean>;
+
   @Column({ type: 'character varying', nullable: true })
   password!: string | null;
 

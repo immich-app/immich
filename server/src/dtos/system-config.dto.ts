@@ -683,40 +683,21 @@ export class SystemConfigImageDto {
   extractEmbedded!: boolean;
 }
 
-class SystemConfigStorageClassesDto {
-  @IsString()
-  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
-  thumbnails!: string;
-
-  @IsString()
-  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
-  previews!: string;
-
-  @IsString()
-  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
-  originalsPhotos!: string;
-
-  @IsString()
-  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
-  originalsVideos!: string;
-
-  @IsString()
-  @IsIn(['STANDARD', 'STANDARD_IA', 'GLACIER_IR'])
-  encodedVideos!: string;
-}
-
 /**
- * Per-media-type S3 bucket override configuration.
- * All fields are optional - unspecified fields inherit from the default S3 config.
+ * S3 bucket configuration for archive or hot storage.
  */
-class SystemConfigS3BucketOverrideDto {
+class S3BucketConfigDto {
+  @IsNotEmpty()
+  @IsString()
+  bucket!: string;
+
   @Optional()
   @IsString()
   endpoint?: string;
 
   @Optional()
   @IsString()
-  bucket?: string;
+  publicEndpoint?: string;
 
   @Optional()
   @IsString()
@@ -744,38 +725,6 @@ class SystemConfigS3BucketOverrideDto {
   storageClass?: string;
 }
 
-class SystemConfigS3BucketsDto {
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  originals?: SystemConfigS3BucketOverrideDto;
-
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  thumbnails?: SystemConfigS3BucketOverrideDto;
-
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  previews?: SystemConfigS3BucketOverrideDto;
-
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  encodedVideos?: SystemConfigS3BucketOverrideDto;
-
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  profile?: SystemConfigS3BucketOverrideDto;
-
-  @Optional()
-  @Type(() => SystemConfigS3BucketOverrideDto)
-  @ValidateNested()
-  backups?: SystemConfigS3BucketOverrideDto;
-}
-
 const isS3Enabled = (config: SystemConfigStorageS3Dto) => config.enabled;
 
 class SystemConfigStorageS3Dto {
@@ -787,10 +736,8 @@ class SystemConfigStorageS3Dto {
   @IsString()
   endpoint!: string;
 
-  @ValidateIf(isS3Enabled)
-  @IsNotEmpty()
   @IsString()
-  bucket!: string;
+  publicEndpoint!: string;
 
   @IsString()
   region!: string;
@@ -805,21 +752,18 @@ class SystemConfigStorageS3Dto {
   @IsString()
   secretAccessKey!: string;
 
-  @IsString()
-  prefix!: string;
-
   @ValidateBoolean()
   forcePathStyle!: boolean;
 
-  @Type(() => SystemConfigStorageClassesDto)
+  @Type(() => S3BucketConfigDto)
   @ValidateNested()
   @IsObject()
-  storageClasses!: SystemConfigStorageClassesDto;
+  archiveBucket!: S3BucketConfigDto;
 
-  @Type(() => SystemConfigS3BucketsDto)
+  @Type(() => S3BucketConfigDto)
   @ValidateNested()
   @IsObject()
-  buckets!: SystemConfigS3BucketsDto;
+  hotBucket!: S3BucketConfigDto;
 }
 
 class SystemConfigStorageLocationsDto {

@@ -146,6 +146,40 @@ export class PersonRepository {
       .execute();
   }
 
+  @GenerateSql()
+  async countMissingThumbnails(): Promise<number> {
+    const result = await this.db
+      .selectFrom('person')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('person.thumbnailPath', '=', '')
+      .where((eb) =>
+        eb.or([
+          eb('person.faceAssetId', 'is not', null),
+          eb.exists(
+            eb
+              .selectFrom('asset_face')
+              .select(sql.lit(1).as('one'))
+              .whereRef('asset_face.personId', '=', 'person.id')
+              .where('asset_face.deletedAt', 'is', null),
+          ),
+        ]),
+      )
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
+  }
+
+  @GenerateSql()
+  async countUnrecognizedFaces(): Promise<number> {
+    const result = await this.db
+      .selectFrom('asset_face')
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .where('asset_face.personId', 'is', null)
+      .where('asset_face.sourceType', '=', SourceType.MachineLearning)
+      .where('asset_face.deletedAt', 'is', null)
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
+  }
+
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
     const items = await this.db
@@ -275,6 +309,7 @@ export class PersonRepository {
         'asset.originalPath',
         'asset.storageBackend',
         'asset.s3Key',
+        'asset.s3Bucket',
         'asset_exif.orientation as exifOrientation',
       ])
       .select((eb) =>

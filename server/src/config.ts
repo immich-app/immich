@@ -17,12 +17,12 @@ import {
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
 /**
- * Per-media-type S3 bucket configuration override.
- * All fields are optional - unspecified fields inherit from the default S3 config.
+ * S3 bucket configuration for archive (originals) or hot (thumbnails/previews/encoded) storage.
  */
-export interface S3BucketOverride {
+export interface S3BucketConfig {
+  bucket: string;
   endpoint?: string;
-  bucket?: string;
+  publicEndpoint?: string; // Custom domain for presigned URLs (e.g., https://media.example.com)
   region?: string;
   accessKeyId?: string;
   secretAccessKey?: string;
@@ -155,30 +155,16 @@ export interface SystemConfig {
     backend: StorageBackend;
     s3: {
       enabled: boolean;
+      // Default credentials (used if bucket-specific not provided)
       endpoint: string;
-      bucket: string;
+      publicEndpoint: string; // Custom domain for presigned URLs (e.g., https://media.example.com)
       region: string;
       accessKeyId: string;
       secretAccessKey: string;
-      prefix: string;
       forcePathStyle: boolean;
-      storageClasses: {
-        thumbnails: string;
-        previews: string;
-        originalsPhotos: string;
-        originalsVideos: string;
-        encodedVideos: string;
-      };
-      // Per-media-type bucket overrides (optional)
-      // If specified, these override the default bucket/endpoint/credentials for that media type
-      buckets: {
-        originals?: S3BucketOverride;
-        thumbnails?: S3BucketOverride;
-        previews?: S3BucketOverride;
-        encodedVideos?: S3BucketOverride;
-        profile?: S3BucketOverride;
-        backups?: S3BucketOverride;
-      };
+      // Two-bucket architecture
+      archiveBucket: S3BucketConfig; // For originals (Glacier IR)
+      hotBucket: S3BucketConfig; // For thumbnails, previews, encoded videos (STANDARD)
     };
     locations: {
       originals: StorageBackend;
@@ -401,29 +387,37 @@ export const defaults = Object.freeze<SystemConfig>({
   storage: {
     backend: StorageBackend.Local,
     s3: {
-      enabled: false,
+      enabled: process.env.STORAGE_S3_ENABLED === 'true',
+      // Default credentials (used if bucket-specific not provided)
       endpoint: process.env.STORAGE_S3_ENDPOINT || '',
-      bucket: process.env.STORAGE_S3_BUCKET || '',
+      publicEndpoint: process.env.STORAGE_S3_PUBLIC_ENDPOINT || '', // Custom domain for presigned URLs
       region: process.env.STORAGE_S3_REGION || 'us-east-1',
       accessKeyId: process.env.STORAGE_S3_ACCESS_KEY_ID || '',
       secretAccessKey: process.env.STORAGE_S3_SECRET_ACCESS_KEY || '',
-      prefix: process.env.STORAGE_S3_PREFIX || 'users/',
       forcePathStyle: true,
-      storageClasses: {
-        thumbnails: 'STANDARD',
-        previews: 'STANDARD',
-        originalsPhotos: 'GLACIER_IR',
-        originalsVideos: 'GLACIER_IR',
-        encodedVideos: 'STANDARD_IA', // Infrequent access - for playback
+      // Archive bucket for originals (Glacier IR)
+      archiveBucket: {
+        bucket: process.env.STORAGE_S3_ARCHIVE_BUCKET || '',
+        storageClass: 'GLACIER_IR',
+        prefix: 'users/',
+        // Per-bucket config (optional, falls back to default)
+        endpoint: process.env.STORAGE_S3_ARCHIVE_ENDPOINT,
+        publicEndpoint: process.env.STORAGE_S3_ARCHIVE_PUBLIC_ENDPOINT,
+        region: process.env.STORAGE_S3_ARCHIVE_REGION,
+        accessKeyId: process.env.STORAGE_S3_ARCHIVE_ACCESS_KEY_ID,
+        secretAccessKey: process.env.STORAGE_S3_ARCHIVE_SECRET_ACCESS_KEY,
       },
-      buckets: {
-        // Empty by default - all media types use the default bucket config
-        // Example override for cold storage originals on AWS:
-        // originals: {
-        //   endpoint: 'https://s3.amazonaws.com',
-        //   bucket: 'my-originals-bucket',
-        //   storageClass: 'GLACIER_IR',
-        // },
+      // Hot bucket for thumbnails, previews, encoded videos (STANDARD)
+      hotBucket: {
+        bucket: process.env.STORAGE_S3_HOT_BUCKET || '',
+        storageClass: 'STANDARD',
+        prefix: 'users/',
+        // Per-bucket config (optional, falls back to default)
+        endpoint: process.env.STORAGE_S3_HOT_ENDPOINT,
+        publicEndpoint: process.env.STORAGE_S3_HOT_PUBLIC_ENDPOINT,
+        region: process.env.STORAGE_S3_HOT_REGION,
+        accessKeyId: process.env.STORAGE_S3_HOT_ACCESS_KEY_ID,
+        secretAccessKey: process.env.STORAGE_S3_HOT_SECRET_ACCESS_KEY,
       },
     },
     locations: {

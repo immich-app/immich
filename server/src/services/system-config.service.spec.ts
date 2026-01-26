@@ -182,20 +182,20 @@ const updatedConfig = Object.freeze<SystemConfig>({
     s3: {
       enabled: false,
       endpoint: '',
-      bucket: '',
       region: 'us-east-1',
       accessKeyId: '',
       secretAccessKey: '',
-      prefix: 'users/',
       forcePathStyle: true,
-      storageClasses: {
-        thumbnails: 'STANDARD',
-        previews: 'STANDARD',
-        originalsPhotos: 'GLACIER_IR',
-        originalsVideos: 'GLACIER_IR',
-        encodedVideos: 'STANDARD_IA',
+      archiveBucket: {
+        bucket: '',
+        storageClass: 'GLACIER_IR',
+        prefix: 'users/',
       },
-      buckets: {},
+      hotBucket: {
+        bucket: '',
+        storageClass: 'STANDARD',
+        prefix: 'users/',
+      },
     },
     locations: {
       originals: StorageBackend.Local,

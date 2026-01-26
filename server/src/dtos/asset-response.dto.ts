@@ -133,6 +133,7 @@ export type MapAsset = {
   s3Bucket: string | null;
   s3Key: string | null;
   s3KeyEncodedVideo: string | null;
+  s3BucketEncodedVideo: string | null;
 };
 
 export class AssetStackResponseDto {

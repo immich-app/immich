@@ -47,6 +47,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
+import { S3StorageManager } from 'src/repositories/storage';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
@@ -101,6 +102,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   PersonRepository,
   PluginRepository,
   ProcessRepository,
+  S3StorageManager,
   SearchRepository,
   ServerInfoRepository,
   SessionRepository,
@@ -163,6 +165,7 @@ export class BaseService {
     protected personRepository: PersonRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
+    protected s3Manager: S3StorageManager,
     protected searchRepository: SearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
     protected sessionRepository: SessionRepository,

@@ -51,5 +51,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByStorageBackend: vitest.fn(),
     getWithLocalEncodedVideos: vitest.fn(),
     getWithLocalThumbnails: vitest.fn(),
+    upsertFileWithS3: vitest.fn(),
+    getS3AssetsWithLocalPaths: vitest.fn(),
   } as any;
 };
