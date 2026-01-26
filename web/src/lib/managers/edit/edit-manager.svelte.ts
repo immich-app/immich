@@ -1,4 +1,5 @@
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
+import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
@@ -129,6 +130,10 @@ export class EditManager {
           }));
 
       await editCompleted;
+
+      assetCacheManager.clearAssetCache();
+      assetCacheManager.clearOcrCache();
+
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
 
