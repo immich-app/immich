@@ -8231,224 +8231,6 @@ class TrashedLocalAssetEntityCompanion
   }
 }
 
-class TrashSyncEntity extends Table
-    with TableInfo<TrashSyncEntity, TrashSyncEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  TrashSyncEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<bool> isSyncApproved = GeneratedColumn<bool>(
-    'is_sync_approved',
-    aliasedName,
-    true,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_sync_approved" IN (0, 1))',
-    ),
-  );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [checksum, isSyncApproved, updatedAt];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'trash_sync_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {checksum};
-  @override
-  TrashSyncEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TrashSyncEntityData(
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      )!,
-      isSyncApproved: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_sync_approved'],
-      ),
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-    );
-  }
-
-  @override
-  TrashSyncEntity createAlias(String alias) {
-    return TrashSyncEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class TrashSyncEntityData extends DataClass
-    implements Insertable<TrashSyncEntityData> {
-  final String checksum;
-  final bool? isSyncApproved;
-  final DateTime updatedAt;
-  const TrashSyncEntityData({
-    required this.checksum,
-    this.isSyncApproved,
-    required this.updatedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['checksum'] = Variable<String>(checksum);
-    if (!nullToAbsent || isSyncApproved != null) {
-      map['is_sync_approved'] = Variable<bool>(isSyncApproved);
-    }
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    return map;
-  }
-
-  factory TrashSyncEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TrashSyncEntityData(
-      checksum: serializer.fromJson<String>(json['checksum']),
-      isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'checksum': serializer.toJson<String>(checksum),
-      'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-    };
-  }
-
-  TrashSyncEntityData copyWith({
-    String? checksum,
-    Value<bool?> isSyncApproved = const Value.absent(),
-    DateTime? updatedAt,
-  }) => TrashSyncEntityData(
-    checksum: checksum ?? this.checksum,
-    isSyncApproved: isSyncApproved.present
-        ? isSyncApproved.value
-        : this.isSyncApproved,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
-  TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
-    return TrashSyncEntityData(
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isSyncApproved: data.isSyncApproved.present
-          ? data.isSyncApproved.value
-          : this.isSyncApproved,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityData(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, updatedAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TrashSyncEntityData &&
-          other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved &&
-          other.updatedAt == this.updatedAt);
-}
-
-class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
-  final Value<String> checksum;
-  final Value<bool?> isSyncApproved;
-  final Value<DateTime> updatedAt;
-  const TrashSyncEntityCompanion({
-    this.checksum = const Value.absent(),
-    this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-  });
-  TrashSyncEntityCompanion.insert({
-    required String checksum,
-    this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-  }) : checksum = Value(checksum);
-  static Insertable<TrashSyncEntityData> custom({
-    Expression<String>? checksum,
-    Expression<bool>? isSyncApproved,
-    Expression<DateTime>? updatedAt,
-  }) {
-    return RawValuesInsertable({
-      if (checksum != null) 'checksum': checksum,
-      if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (updatedAt != null) 'updated_at': updatedAt,
-    });
-  }
-
-  TrashSyncEntityCompanion copyWith({
-    Value<String>? checksum,
-    Value<bool?>? isSyncApproved,
-    Value<DateTime>? updatedAt,
-  }) {
-    return TrashSyncEntityCompanion(
-      checksum: checksum ?? this.checksum,
-      isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (isSyncApproved.present) {
-      map['is_sync_approved'] = Variable<bool>(isSyncApproved.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityCompanion(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class DatabaseAtV18 extends GeneratedDatabase {
   DatabaseAtV18(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
@@ -8500,10 +8282,13 @@ class DatabaseAtV18 extends GeneratedDatabase {
   late final StoreEntity storeEntity = StoreEntity(this);
   late final TrashedLocalAssetEntity trashedLocalAssetEntity =
       TrashedLocalAssetEntity(this);
-  late final TrashSyncEntity trashSyncEntity = TrashSyncEntity(this);
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  );
+  late final Index idxRemoteAssetCloudId = Index(
+    'idx_remote_asset_cloud_id',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)',
   );
   late final Index idxTrashedLocalAssetChecksum = Index(
     'idx_trashed_local_asset_checksum',
@@ -8512,14 +8297,6 @@ class DatabaseAtV18 extends GeneratedDatabase {
   late final Index idxTrashedLocalAssetAlbum = Index(
     'idx_trashed_local_asset_album',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
-  );
-  late final Index idxTrashSyncIsSyncApproved = Index(
-    'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
-  );
-  late final Index idxTrashSyncChecksumStatus = Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -8552,12 +8329,10 @@ class DatabaseAtV18 extends GeneratedDatabase {
     assetFaceEntity,
     storeEntity,
     trashedLocalAssetEntity,
-    trashSyncEntity,
     idxLatLng,
+    idxRemoteAssetCloudId,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
-    idxTrashSyncIsSyncApproved,
-    idxTrashSyncChecksumStatus,
   ];
   @override
   int get schemaVersion => 18;

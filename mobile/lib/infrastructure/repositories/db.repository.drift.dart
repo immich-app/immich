@@ -41,11 +41,9 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i19;
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart'
     as i20;
-import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
-    as i21;
 import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
-    as i22;
-import 'package:drift/internal/modular.dart' as i23;
+    as i21;
+import 'package:drift/internal/modular.dart' as i22;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -87,11 +85,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i19.$StoreEntityTable storeEntity = i19.$StoreEntityTable(this);
   late final i20.$TrashedLocalAssetEntityTable trashedLocalAssetEntity = i20
       .$TrashedLocalAssetEntityTable(this);
-  late final i21.$TrashSyncEntityTable trashSyncEntity = i21
-      .$TrashSyncEntityTable(this);
-  i22.MergedAssetDrift get mergedAssetDrift => i23.ReadDatabaseContainer(
+  i21.MergedAssetDrift get mergedAssetDrift => i22.ReadDatabaseContainer(
     this,
-  ).accessor<i22.MergedAssetDrift>(i22.MergedAssetDrift.new);
+  ).accessor<i21.MergedAssetDrift>(i21.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -123,12 +119,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
     assetFaceEntity,
     storeEntity,
     trashedLocalAssetEntity,
-    trashSyncEntity,
     i11.idxLatLng,
+    i14.idxRemoteAssetCloudId,
     i20.idxTrashedLocalAssetChecksum,
     i20.idxTrashedLocalAssetAlbum,
-    i21.idxTrashSyncIsSyncApproved,
-    i21.idxTrashSyncChecksumStatus,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -379,6 +373,4 @@ class $DriftManager {
         _db,
         _db.trashedLocalAssetEntity,
       );
-  i21.$$TrashSyncEntityTableTableManager get trashSyncEntity =>
-      i21.$$TrashSyncEntityTableTableManager(_db, _db.trashSyncEntity);
 }

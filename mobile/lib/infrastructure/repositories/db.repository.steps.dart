@@ -7439,12 +7439,10 @@ final class Schema18 extends i0.VersionedSchema {
     assetFaceEntity,
     storeEntity,
     trashedLocalAssetEntity,
-    trashSyncEntity,
     idxLatLng,
+    idxRemoteAssetCloudId,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
-    idxTrashSyncIsSyncApproved,
-    idxTrashSyncChecksumStatus,
   ];
   late final Shape20 userEntity = Shape20(
     source: i0.VersionedTable(
@@ -7841,20 +7839,13 @@ final class Schema18 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape29 trashSyncEntity = Shape29(
-    source: i0.VersionedTable(
-      entityName: 'trash_sync_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(checksum)'],
-      columns: [_column_13, _column_102, _column_5],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
   final i1.Index idxLatLng = i1.Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+  );
+  final i1.Index idxRemoteAssetCloudId = i1.Index(
+    'idx_remote_asset_cloud_id',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)',
   );
   final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
     'idx_trashed_local_asset_checksum',
@@ -7864,36 +7855,8 @@ final class Schema18 extends i0.VersionedSchema {
     'idx_trashed_local_asset_album',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
   );
-  final i1.Index idxTrashSyncIsSyncApproved = i1.Index(
-    'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
-  );
-  final i1.Index idxTrashSyncChecksumStatus = i1.Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
-  );
 }
 
-class Shape29 extends i0.VersionedTable {
-  Shape29({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<bool> get isSyncApproved =>
-      columnsByName['is_sync_approved']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<DateTime> get updatedAt =>
-      columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
-}
-
-i1.GeneratedColumn<bool> _column_102(String aliasedName) =>
-    i1.GeneratedColumn<bool>(
-      'is_sync_approved',
-      aliasedName,
-      true,
-      type: i1.DriftSqlType.bool,
-      defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
-        'CHECK ("is_sync_approved" IN (0, 1))',
-      ),
-    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

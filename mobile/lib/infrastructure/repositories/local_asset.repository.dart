@@ -204,34 +204,23 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<Map<String, String>> getHashMappingFromCloudId() async {
-    final query =
-        _db.localAssetEntity.selectOnly().join([
-            leftOuterJoin(
-              _db.remoteAssetCloudIdEntity,
-              _db.localAssetEntity.iCloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
-              useColumns: false,
-            ),
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-              useColumns: false,
-            ),
-          ])
-          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
-          ..where(
-            _db.remoteAssetCloudIdEntity.cloudId.isNotNull() &
-                _db.localAssetEntity.checksum.isNull() &
-                ((_db.remoteAssetCloudIdEntity.adjustmentTime.isExp(_db.localAssetEntity.adjustmentTime)) &
-                    (_db.remoteAssetCloudIdEntity.latitude.isExp(_db.localAssetEntity.latitude)) &
-                    (_db.remoteAssetCloudIdEntity.longitude.isExp(_db.localAssetEntity.longitude)) &
-                    (_db.remoteAssetCloudIdEntity.createdAt.isExp(_db.localAssetEntity.createdAt))),
-          );
-    final mapping = await query
-        .map(
-          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
-        )
-        .get();
-    return {for (final entry in mapping) entry.assetId: entry.checksum};
+  Future<void> reconcileHashesFromCloudId() async {
+    await _db.customUpdate(
+      '''
+      UPDATE local_asset_entity
+      SET checksum = remote_asset_entity.checksum
+      FROM remote_asset_cloud_id_entity
+      INNER JOIN remote_asset_entity
+        ON remote_asset_cloud_id_entity.asset_id = remote_asset_entity.id
+      WHERE local_asset_entity.i_cloud_id = remote_asset_cloud_id_entity.cloud_id
+        AND local_asset_entity.checksum IS NULL
+        AND remote_asset_cloud_id_entity.adjustment_time IS local_asset_entity.adjustment_time
+        AND remote_asset_cloud_id_entity.latitude IS local_asset_entity.latitude
+        AND remote_asset_cloud_id_entity.longitude IS local_asset_entity.longitude
+        AND remote_asset_cloud_id_entity.created_at IS local_asset_entity.created_at
+      ''',
+      updates: {_db.localAssetEntity},
+      updateKind: UpdateKind.update,
+    );
   }
 }
