@@ -1,6 +1,6 @@
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
-import { assetCacheManager } from '$lib/managers/AssetCacheManager.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
@@ -131,8 +131,7 @@ export class EditManager {
 
       await editCompleted;
 
-      assetCacheManager.clearAssetCache();
-      assetCacheManager.clearOcrCache();
+      eventManager.emit('AssetEditsApplied', this.currentAsset!.id);
 
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
