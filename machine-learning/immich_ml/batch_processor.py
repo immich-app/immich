@@ -12,6 +12,16 @@ from .models.transforms import decode_pil
 from .schemas import ModelTask, ModelType
 from .stream_consumer import WorkRequest, WorkResult
 
+# Conditionally import aioboto3 for S3 support
+if settings.s3.enabled:
+    try:
+        import aioboto3
+    except ImportError:
+        aioboto3 = None  # type: ignore[assignment]
+        log.warning("aioboto3 not installed, S3 support disabled")
+else:
+    aioboto3 = None  # type: ignore[assignment]
+
 
 class BatchProcessor:
     """Processes batches of ML work requests."""
@@ -19,6 +29,44 @@ class BatchProcessor:
     def __init__(self, model_cache: ModelCache, thread_pool: ThreadPoolExecutor | None = None):
         self.model_cache = model_cache
         self.thread_pool = thread_pool
+        self._s3_session = aioboto3.Session() if aioboto3 and settings.s3.enabled else None
+        self._s3_client = None  # Lazy-init reusable client
+        self._s3_client_lock = asyncio.Lock()
+
+    async def _get_s3_client(self):
+        """Get or create a reusable S3 client."""
+        if self._s3_client is None:
+            async with self._s3_client_lock:
+                if self._s3_client is None:  # Double-check after lock
+                    self._s3_client = await self._s3_session.client(
+                        "s3",
+                        endpoint_url=settings.s3.endpoint,
+                        region_name=settings.s3.region,
+                        aws_access_key_id=settings.s3.access_key_id,
+                        aws_secret_access_key=settings.s3.secret_access_key,
+                    ).__aenter__()
+        return self._s3_client
+
+    async def close(self):
+        """Cleanup S3 client on shutdown."""
+        if self._s3_client:
+            await self._s3_client.__aexit__(None, None, None)
+            self._s3_client = None
+
+    def _parse_s3_path(self, s3_path: str) -> tuple[str, str]:
+        """Parse s3://bucket/key format, raising on invalid paths."""
+        if not s3_path.startswith("s3://"):
+            raise ValueError(f"Invalid S3 path (must start with s3://): {s3_path}")
+
+        path_without_prefix = s3_path[5:]  # Remove "s3://"
+        if "/" not in path_without_prefix:
+            raise ValueError(f"Invalid S3 path (missing key): {s3_path}")
+
+        bucket, key = path_without_prefix.split("/", 1)
+        if not bucket or not key:
+            raise ValueError(f"Invalid S3 path (empty bucket or key): {s3_path}")
+
+        return bucket, key
 
     async def process(self, task_type: str, batch: list[WorkRequest]) -> list[WorkResult]:
         """Process a batch of requests for a given task type."""
@@ -42,8 +90,13 @@ class BatchProcessor:
         """Load images for a batch of requests in parallel."""
         async def load_single(request: WorkRequest) -> tuple[WorkRequest, Image.Image | None]:
             try:
-                with open(request.image_path, "rb") as f:
-                    image_data = f.read()
+                # Check if S3 path (starts with s3://)
+                if self._s3_session and request.image_path.startswith("s3://"):
+                    image_data = await self._load_from_s3(request.image_path)
+                else:
+                    with open(request.image_path, "rb") as f:
+                        image_data = f.read()
+
                 image = await self._run(decode_pil, image_data)
                 return (request, image)
             except Exception as e:
@@ -51,6 +104,16 @@ class BatchProcessor:
                 return (request, None)
 
         return await asyncio.gather(*[load_single(req) for req in batch])
+
+    async def _load_from_s3(self, s3_path: str) -> bytes:
+        """Load image from S3. Path format: s3://bucket/key"""
+        if not self._s3_session:
+            raise RuntimeError("S3 session not initialized")
+
+        bucket, key = self._parse_s3_path(s3_path)
+        client = await self._get_s3_client()
+        response = await client.get_object(Bucket=bucket, Key=key)
+        return await response["Body"].read()
 
     async def _process_clip_batch(self, batch: list[WorkRequest]) -> list[WorkResult]:
         """Process CLIP visual encoding in batch."""

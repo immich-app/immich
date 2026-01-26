@@ -44,6 +44,7 @@ model_cache = ModelCache(revalidate=settings.model_ttl > 0)
 thread_pool: ThreadPoolExecutor | None = None
 stream_consumer: StreamConsumer | None = None
 stream_consumer_task: asyncio.Task | None = None
+batch_processor: BatchProcessor | None = None
 lock = threading.Lock()
 active_requests = 0
 last_called: float | None = None
@@ -51,7 +52,7 @@ last_called: float | None = None
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    global thread_pool, stream_consumer, stream_consumer_task
+    global thread_pool, stream_consumer, stream_consumer_task, batch_processor
     log.info(
         (
             "Created in-memory cache with unloading "
@@ -71,7 +72,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
         # Start stream consumer if enabled
         if settings.stream.enabled:
-            batch_processor = BatchProcessor(model_cache, thread_pool)
+            batch_processor = BatchProcessor(model_cache, thread_pool)  # Uses global
             stream_consumer = StreamConsumer(
                 redis_url=settings.stream.redis_url,
                 processor=batch_processor.process,
@@ -81,6 +82,10 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
         yield
     finally:
+        # Cleanup batch processor S3 client
+        if batch_processor is not None:
+            await batch_processor.close()
+
         # Stop stream consumer
         if stream_consumer is not None:
             await stream_consumer.stop()

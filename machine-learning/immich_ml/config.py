@@ -67,6 +67,15 @@ class StreamSettings(BaseModel):
     batch: StreamBatchSettings = StreamBatchSettings()
 
 
+class S3Settings(BaseModel):
+    enabled: bool = False
+    endpoint: str | None = None  # e.g., "https://fly.storage.tigris.dev"
+    bucket: str | None = None  # e.g., "user-uploads"
+    region: str = "auto"
+    access_key_id: str | None = None
+    secret_access_key: str | None = None
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MACHINE_LEARNING_",
@@ -95,6 +104,7 @@ class Settings(BaseSettings):
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
     stream: StreamSettings = StreamSettings()
+    s3: S3Settings = S3Settings()
 
     @property
     def device_id(self) -> str:
