@@ -65,10 +65,27 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
   return getConfig(repos, { withCache: false });
 };
 
+const substituteEnvVariables = (content: string): string => {
+  // Replace ${VAR} or ${VAR:-default} with environment variable values
+  return content.replaceAll(/\$\{([^}]+)\}/g, (match, expression) => {
+    const [varName, defaultValue] = expression.split(':-');
+    const envValue = process.env[varName.trim()];
+    if (envValue !== undefined) {
+      return envValue;
+    }
+    if (defaultValue !== undefined) {
+      return defaultValue;
+    }
+    // Return empty string if no value and no default
+    return '';
+  });
+};
+
 const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string) => {
   try {
     const file = await metadataRepo.readFile(filepath);
-    return loadYaml(file.toString()) as unknown;
+    const content = substituteEnvVariables(file.toString());
+    return loadYaml(content) as unknown;
   } catch (error: Error | any) {
     logger.error(`Unable to load configuration file: ${filepath}`);
     logger.error(error);

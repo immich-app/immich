@@ -1,8 +1,3 @@
-# fly.toml app configuration file generated for immich-server on 2026-01-19T14:25:43-05:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'immich-server'
 primary_region = 'ord'
 
@@ -20,26 +15,28 @@ primary_region = 'ord'
   IMMICH_MACHINE_LEARNING_URL = 'http://ml-immich.flycast:3003'
   IMMICH_MEDIA_LOCATION = '/tmp/upload'
   IMMICH_CONFIG_FILE = '/etc/immich/config.yaml'
-  OAUTH_AUTO_REGISTER = 'false'
-  OAUTH_BUTTON_TEXT = 'Sign in with Google'
-  OAUTH_ENABLED = 'true'
-  OAUTH_ISSUER_URL = 'https://accounts.google.com'
-  OAUTH_SCOPE = 'openid email profile'
-  REDIS_HOSTNAME = 'fly-redis-immich.upstash.io'
+  REDIS_HOSTNAME = 'immich-dragonfly.internal'
   REDIS_PORT = '6379'
-  REDIS_USERNAME = 'default'
   STORAGE_S3_ENABLED = 'true'
   STORAGE_S3_BUCKET = 'user-media'
   STORAGE_S3_ENDPOINT = 'https://t3.storage.dev'
   STORAGE_S3_PREFIX = 'users/'
   STORAGE_S3_REGION = 'auto'
+  # OAuth config via secrets
 
+# Process groups - different startup commands
+[processes]
+  web = "start-web.sh"
+  worker = "start-worker.sh"
+
+# HTTP service - only web machines handle traffic
 [http_service]
   internal_port = 2283
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = false
   auto_start_machines = true
   min_machines_running = 1
+  processes = ["web"]
 
   [http_service.concurrency]
     type = 'requests'
@@ -53,7 +50,33 @@ primary_region = 'ord'
     method = "GET"
     path = "/api/server/ping"
 
+# Machine-level health check for web (in addition to http_service check)
+[[checks]]
+  name = "health"
+  port = 2283
+  type = "http"
+  interval = "15s"
+  timeout = "5s"
+  grace_period = "30s"
+  method = "GET"
+  path = "/api/server/ping"
+  processes = ["web"]
+
+# Web machines - lighter, always available
 [[vm]]
+  processes = ["web"]
+  memory = '2gb'
+  cpus = 2
+  cpu_kind = "shared"
+
+# Worker machines - performance CPUs for job processing
+[[vm]]
+  processes = ["worker"]
   memory = '4gb'
   cpus = 2
-  memory_mb = 4096
+  cpu_kind = "performance"
+
+# Give workers time to finish current job before SIGKILL (matches 10-min lock duration)
+# This applies to all process groups but only affects workers (web shuts down quickly)
+kill_timeout = "660s"
+kill_signal = "SIGTERM"

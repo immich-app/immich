@@ -1,3 +1,52 @@
 storage:
   upload:
     deleteLocalAfterUpload: true
+  locations:
+    originals: s3
+    thumbnails: s3
+    previews: s3
+    encodedVideos: s3
+
+job:
+  backgroundTask:
+    concurrency: 15
+  smartSearch:
+    concurrency: 6
+  metadataExtraction:
+    concurrency: 15
+  faceDetection:
+    concurrency: 6
+  search:
+    concurrency: 15
+  sidecar:
+    concurrency: 15
+  library:
+    concurrency: 15
+  migration:
+    concurrency: 15
+  assetThumbnailGeneration:
+    concurrency: 25
+  personThumbnailGeneration:
+    concurrency: 6
+  videoConversion:
+    concurrency: 3
+  notification:
+    concurrency: 15
+  ocr:
+    concurrency: 3
+  workflow:
+    concurrency: 15
+  s3Upload:
+    concurrency: 15
+  encryption:
+    concurrency: 6
+
+oauth:
+  enabled: true
+  issuerUrl: https://accounts.google.com
+  clientId: ${OAUTH_CLIENT_ID}
+  clientSecret: ${OAUTH_CLIENT_SECRET}
+  buttonText: Login with Google
+  autoRegister: true
+  autoLaunch: false
+  scope: openid email profile

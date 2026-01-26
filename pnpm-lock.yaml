@@ -771,7 +771,7 @@ importers:
         specifier: ^2.6.0
         version: 2.6.0
       fabric:
-        specifier: ^6.5.4
+        specifier: ^6.9.1
         version: 6.9.1
       geo-coordinates-parser:
         specifier: ^1.7.4
