@@ -75,7 +75,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                       _resumeBackup(backupProvider);
                     }),
                     _resumeBackup(backupProvider),
-                    backgroundManager.syncCloudIds(),
                   ]);
                 } else {
                   await backgroundManager.hashAssets();

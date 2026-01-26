@@ -10,14 +10,13 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart' hide AssetVisibility;
 
-Future<void> syncCloudIds(ProviderContainer ref) async {
+Future<void> syncCloudIds(Ref ref) async {
   if (!CurrentPlatform.isIOS) {
     return;
   }
@@ -34,14 +33,6 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
     return;
   }
   final canBulkUpdateMetadata = serverInfo.serverVersion.isAtLeast(major: 2, minor: 5);
-
-  // Wait for remote sync to complete, so we have up-to-date asset metadata entries
-  try {
-    await ref.read(syncStreamServiceProvider).sync();
-  } catch (e, s) {
-    logger.fine('Failed to complete remote sync before cloudId migration.', e, s);
-    return;
-  }
 
   // Fetch the mapping for backed up assets that have a cloud ID locally but do not have a cloud ID on the server
   final currentUser = ref.read(currentUserProvider);
