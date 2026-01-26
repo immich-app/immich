@@ -73,7 +73,7 @@ void main() {
     when(() => mockLocalFilesManager.moveToTrash(any<List<String>>())).thenAnswer((_) async => true);
     when(() => mockStorageRepository.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
     when(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<LocalAsset>>())).thenAnswer((_) async {});
-    when(() => mockTrashSyncRepo.deleteOutdated()).thenAnswer((_) async => 0);
+    when(() => mockTrashSyncRepo.deleteOutdatedThrottled()).thenAnswer((_) async => 0);
 
     sut = LocalSyncService(
       localAlbumRepository: mockLocalAlbumRepository,
@@ -162,7 +162,7 @@ void main() {
 
       verify(() => mockTrashedLocalAssetRepository.getToTrash()).called(1);
       verify(() => mockTrashSyncRepo.upsertReviewCandidates(any<Iterable<LocalAsset>>())).called(1);
-      verify(() => mockTrashSyncRepo.deleteOutdated()).called(1);
+      verify(() => mockTrashSyncRepo.deleteOutdatedThrottled()).called(1);
       verifyNever(() => mockLocalFilesManager.moveToTrash(any()));
       verifyNever(() => mockTrashedLocalAssetRepository.trashLocalAsset(any()));
     });
