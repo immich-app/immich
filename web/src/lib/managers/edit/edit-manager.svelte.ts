@@ -111,19 +111,20 @@ export class EditManager {
     this.isApplyingEdits = true;
 
     const edits = this.tools.flatMap((tool) => tool.manager.edits);
+    if (!this.currentAsset) {
+      return false;
+    }
+
+    const assetId = this.currentAsset.id;
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent(
-        'AssetEditReadyV1',
-        (event) => event.asset.id === this.currentAsset!.id,
-        10_000,
-      );
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, 10_000);
 
       await (edits.length === 0
-        ? removeAssetEdits({ id: this.currentAsset!.id })
+        ? removeAssetEdits({ id: assetId })
         : editAsset({
-            id: this.currentAsset!.id,
+            id: assetId,
             assetEditActionListDto: {
               edits,
             },
@@ -131,7 +132,7 @@ export class EditManager {
 
       await editCompleted;
 
-      eventManager.emit('AssetEditsApplied', this.currentAsset!.id);
+      eventManager.emit('AssetEditsApplied', assetId);
 
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
