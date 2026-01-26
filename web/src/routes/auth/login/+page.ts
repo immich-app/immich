@@ -15,7 +15,7 @@ export const load = (async ({ parent, url }) => {
 
   const authenticated = await loadUser();
   if (authenticated) {
-    redirect(302, Route.photos());
+    redirect(307, Route.photos());
   }
 
   const $t = await getFormatter();
