@@ -43,6 +43,11 @@
 
         {#if configToEdit.storage.s3.enabled}
           <div class="ml-4 flex flex-col gap-4 border-l-2 border-gray-200 pl-4 dark:border-gray-700">
+            <h4 class="text-md font-semibold dark:text-white">Default Credentials</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              These credentials are used by default for all buckets unless overridden per-bucket.
+            </p>
+
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               required={true}
@@ -51,16 +56,6 @@
               description="The S3-compatible endpoint URL (e.g., https://fly.storage.tigris.dev)"
               bind:value={configToEdit.storage.s3.endpoint}
               isEdited={configToEdit.storage.s3.endpoint !== config.storage.s3.endpoint}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              required={true}
-              {disabled}
-              label="Bucket Name"
-              description="The S3 bucket to store assets in"
-              bind:value={configToEdit.storage.s3.bucket}
-              isEdited={configToEdit.storage.s3.bucket !== config.storage.s3.bucket}
             />
 
             <SettingInputField
@@ -93,21 +88,61 @@
               isEdited={configToEdit.storage.s3.secretAccessKey !== config.storage.s3.secretAccessKey}
             />
 
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              required={false}
-              {disabled}
-              label="Key Prefix"
-              description="Prefix for all S3 keys (default: users/)"
-              bind:value={configToEdit.storage.s3.prefix}
-              isEdited={configToEdit.storage.s3.prefix !== config.storage.s3.prefix}
-            />
-
             <SettingSwitch
               title="Force Path Style"
               subtitle="Use path-style URLs instead of virtual-hosted-style (required for MinIO and some S3-compatible providers)"
               {disabled}
               bind:checked={configToEdit.storage.s3.forcePathStyle}
+            />
+
+            <h4 class="mt-4 text-md font-semibold dark:text-white">Archive Bucket</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              For original photos and videos. Uses Glacier IR storage class for cost savings.
+            </p>
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required={true}
+              {disabled}
+              label="Bucket Name"
+              description="The S3 bucket for original assets"
+              bind:value={configToEdit.storage.s3.archiveBucket.bucket}
+              isEdited={configToEdit.storage.s3.archiveBucket.bucket !== config.storage.s3.archiveBucket.bucket}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required={false}
+              {disabled}
+              label="Key Prefix"
+              description="Prefix for archive bucket keys (default: users/)"
+              bind:value={configToEdit.storage.s3.archiveBucket.prefix}
+              isEdited={configToEdit.storage.s3.archiveBucket.prefix !== config.storage.s3.archiveBucket.prefix}
+            />
+
+            <h4 class="mt-4 text-md font-semibold dark:text-white">Hot Bucket</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              For thumbnails, previews, and encoded videos. Uses standard storage for fast access.
+            </p>
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required={true}
+              {disabled}
+              label="Bucket Name"
+              description="The S3 bucket for thumbnails and previews"
+              bind:value={configToEdit.storage.s3.hotBucket.bucket}
+              isEdited={configToEdit.storage.s3.hotBucket.bucket !== config.storage.s3.hotBucket.bucket}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              required={false}
+              {disabled}
+              label="Key Prefix"
+              description="Prefix for hot bucket keys (default: users/)"
+              bind:value={configToEdit.storage.s3.hotBucket.prefix}
+              isEdited={configToEdit.storage.s3.hotBucket.prefix !== config.storage.s3.hotBucket.prefix}
             />
           </div>
 

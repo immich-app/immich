@@ -1028,6 +1028,8 @@ export type PluginTriggerResponseDto = {
 export type QueueResponseDto = {
     isPaused: boolean;
     lastTriggeredAt?: string;
+    /** Number of items missing processing for this queue */
+    missingCount?: number;
     name: QueueName;
     statistics: QueueStatisticsDto;
 };
@@ -1381,6 +1383,7 @@ export type SessionUpdateDto = {
 export type SharedLinkResponseDto = {
     album?: AlbumResponseDto;
     allowDownload: boolean;
+    allowShare: boolean;
     allowUpload: boolean;
     assets: AssetResponseDto[];
     createdAt: string;
@@ -1398,6 +1401,7 @@ export type SharedLinkResponseDto = {
 export type SharedLinkCreateDto = {
     albumId?: string;
     allowDownload?: boolean;
+    allowShare?: boolean;
     allowUpload?: boolean;
     assetIds?: string[];
     description?: string | null;
@@ -1409,6 +1413,7 @@ export type SharedLinkCreateDto = {
 };
 export type SharedLinkEditDto = {
     allowDownload?: boolean;
+    allowShare?: boolean;
     allowUpload?: boolean;
     /** Few clients cannot send null to set the expiryTime to never.
     Setting this flag and not sending expiryAt is considered as null instead.
@@ -1664,9 +1669,9 @@ export type SystemConfigStorageLocationsDto = {
     profile: StorageBackend;
     thumbnails: StorageBackend;
 };
-export type SystemConfigS3BucketOverrideDto = {
+export type S3BucketConfigDto = {
     accessKeyId?: string;
-    bucket?: string;
+    bucket: string;
     endpoint?: string;
     forcePathStyle?: boolean;
     prefix?: string;
@@ -1674,32 +1679,15 @@ export type SystemConfigS3BucketOverrideDto = {
     secretAccessKey?: string;
     storageClass?: StorageClass;
 };
-export type SystemConfigS3BucketsDto = {
-    backups?: SystemConfigS3BucketOverrideDto;
-    encodedVideos?: SystemConfigS3BucketOverrideDto;
-    originals?: SystemConfigS3BucketOverrideDto;
-    previews?: SystemConfigS3BucketOverrideDto;
-    profile?: SystemConfigS3BucketOverrideDto;
-    thumbnails?: SystemConfigS3BucketOverrideDto;
-};
-export type SystemConfigStorageClassesDto = {
-    encodedVideos: EncodedVideos;
-    originalsPhotos: OriginalsPhotos;
-    originalsVideos: OriginalsVideos;
-    previews: Previews;
-    thumbnails: Thumbnails;
-};
 export type SystemConfigStorageS3Dto = {
     accessKeyId: string;
-    bucket: string;
-    buckets: SystemConfigS3BucketsDto;
+    archiveBucket: S3BucketConfigDto;
     enabled: boolean;
     endpoint: string;
     forcePathStyle: boolean;
-    prefix: string;
+    hotBucket: S3BucketConfigDto;
     region: string;
     secretAccessKey: string;
-    storageClasses: SystemConfigStorageClassesDto;
 };
 export type SystemConfigStorageUploadDto = {
     deleteLocalAfterUpload: boolean;
@@ -5944,6 +5932,8 @@ export enum JobName {
     S3MigrateStorageClass = "S3MigrateStorageClass",
     S3MigrateStorageClassAll = "S3MigrateStorageClassAll",
     S3CleanupOrphanedFiles = "S3CleanupOrphanedFiles",
+    S3FileDelete = "S3FileDelete",
+    S3OrphanScanner = "S3OrphanScanner",
     TagCleanup = "TagCleanup",
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
@@ -6109,31 +6099,6 @@ export enum StorageBackend {
     S3 = "s3"
 }
 export enum StorageClass {
-    Standard = "STANDARD",
-    StandardIa = "STANDARD_IA",
-    GlacierIr = "GLACIER_IR"
-}
-export enum EncodedVideos {
-    Standard = "STANDARD",
-    StandardIa = "STANDARD_IA",
-    GlacierIr = "GLACIER_IR"
-}
-export enum OriginalsPhotos {
-    Standard = "STANDARD",
-    StandardIa = "STANDARD_IA",
-    GlacierIr = "GLACIER_IR"
-}
-export enum OriginalsVideos {
-    Standard = "STANDARD",
-    StandardIa = "STANDARD_IA",
-    GlacierIr = "GLACIER_IR"
-}
-export enum Previews {
-    Standard = "STANDARD",
-    StandardIa = "STANDARD_IA",
-    GlacierIr = "GLACIER_IR"
-}
-export enum Thumbnails {
     Standard = "STANDARD",
     StandardIa = "STANDARD_IA",
     GlacierIr = "GLACIER_IR"

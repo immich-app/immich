@@ -17822,6 +17822,8 @@
           "S3MigrateStorageClass",
           "S3MigrateStorageClassAll",
           "S3CleanupOrphanedFiles",
+          "S3FileDelete",
+          "S3OrphanScanner",
           "TagCleanup",
           "VersionCheck",
           "OcrQueueAll",
@@ -19787,6 +19789,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "missingCount": {
+            "description": "Number of items missing processing for this queue",
+            "type": "integer"
+          },
           "name": {
             "allOf": [
               {
@@ -20153,6 +20159,43 @@
         "required": [
           "lastImportFileName",
           "lastUpdate"
+        ],
+        "type": "object"
+      },
+      "S3BucketConfigDto": {
+        "properties": {
+          "accessKeyId": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "forcePathStyle": {
+            "type": "boolean"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "secretAccessKey": {
+            "type": "string"
+          },
+          "storageClass": {
+            "enum": [
+              "STANDARD",
+              "STANDARD_IA",
+              "GLACIER_IR"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket"
         ],
         "type": "object"
       },
@@ -20886,6 +20929,10 @@
             "default": true,
             "type": "boolean"
           },
+          "allowShare": {
+            "default": false,
+            "type": "boolean"
+          },
           "allowUpload": {
             "type": "boolean"
           },
@@ -20936,6 +20983,9 @@
           "allowDownload": {
             "type": "boolean"
           },
+          "allowShare": {
+            "type": "boolean"
+          },
           "allowUpload": {
             "type": "boolean"
           },
@@ -20972,6 +21022,9 @@
             "$ref": "#/components/schemas/AlbumResponseDto"
           },
           "allowDownload": {
+            "type": "boolean"
+          },
+          "allowShare": {
             "type": "boolean"
           },
           "allowUpload": {
@@ -21030,6 +21083,7 @@
         },
         "required": [
           "allowDownload",
+          "allowShare",
           "allowUpload",
           "assets",
           "createdAt",
@@ -23196,63 +23250,6 @@
         ],
         "type": "object"
       },
-      "SystemConfigS3BucketOverrideDto": {
-        "properties": {
-          "accessKeyId": {
-            "type": "string"
-          },
-          "bucket": {
-            "type": "string"
-          },
-          "endpoint": {
-            "type": "string"
-          },
-          "forcePathStyle": {
-            "type": "boolean"
-          },
-          "prefix": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "secretAccessKey": {
-            "type": "string"
-          },
-          "storageClass": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          }
-        },
-        "type": "object"
-      },
-      "SystemConfigS3BucketsDto": {
-        "properties": {
-          "backups": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          },
-          "encodedVideos": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          },
-          "originals": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          },
-          "previews": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          },
-          "profile": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          },
-          "thumbnails": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketOverrideDto"
-          }
-        },
-        "type": "object"
-      },
       "SystemConfigServerDto": {
         "properties": {
           "externalDomain": {
@@ -23326,58 +23323,6 @@
           "port",
           "secure",
           "username"
-        ],
-        "type": "object"
-      },
-      "SystemConfigStorageClassesDto": {
-        "properties": {
-          "encodedVideos": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          },
-          "originalsPhotos": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          },
-          "originalsVideos": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          },
-          "previews": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          },
-          "thumbnails": {
-            "enum": [
-              "STANDARD",
-              "STANDARD_IA",
-              "GLACIER_IR"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "encodedVideos",
-          "originalsPhotos",
-          "originalsVideos",
-          "previews",
-          "thumbnails"
         ],
         "type": "object"
       },
@@ -23468,11 +23413,8 @@
           "accessKeyId": {
             "type": "string"
           },
-          "bucket": {
-            "type": "string"
-          },
-          "buckets": {
-            "$ref": "#/components/schemas/SystemConfigS3BucketsDto"
+          "archiveBucket": {
+            "$ref": "#/components/schemas/S3BucketConfigDto"
           },
           "enabled": {
             "type": "boolean"
@@ -23483,30 +23425,25 @@
           "forcePathStyle": {
             "type": "boolean"
           },
-          "prefix": {
-            "type": "string"
+          "hotBucket": {
+            "$ref": "#/components/schemas/S3BucketConfigDto"
           },
           "region": {
             "type": "string"
           },
           "secretAccessKey": {
             "type": "string"
-          },
-          "storageClasses": {
-            "$ref": "#/components/schemas/SystemConfigStorageClassesDto"
           }
         },
         "required": [
           "accessKeyId",
-          "bucket",
-          "buckets",
+          "archiveBucket",
           "enabled",
           "endpoint",
           "forcePathStyle",
-          "prefix",
+          "hotBucket",
           "region",
-          "secretAccessKey",
-          "storageClasses"
+          "secretAccessKey"
         ],
         "type": "object"
       },

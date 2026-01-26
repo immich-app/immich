@@ -43,10 +43,19 @@
   }: Props = $props();
 
   const { icon, title, subtitle } = $derived(asQueueItem($t, queue));
-  const { statistics } = $derived(queue);
+  const { statistics, missingCount } = $derived(queue);
   let waitingCount = $derived(statistics.waiting + statistics.paused + statistics.delayed);
   let isIdle = $derived(statistics.active + statistics.waiting === 0 && !queue.isPaused);
   let multipleButtons = $derived(allText || refreshText);
+  // Remaining missing = total missing - jobs already in queue (waiting + active)
+  let remainingMissing = $derived(
+    missingCount !== undefined
+      ? Math.max(0, missingCount - waitingCount - statistics.active)
+      : undefined,
+  );
+  let missingButtonLabel = $derived(
+    remainingMissing !== undefined ? remainingMissing.toLocaleString($locale) : missingText,
+  );
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
@@ -143,13 +152,24 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg"
+          class="{commonClasses} flex-row-reverse bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray {remainingMissing === undefined ? 'rounded-b-lg sm:rounded-s-none sm:rounded-e-lg' : ''}"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
           </p>
           <p>{$t('waiting')}</p>
         </div>
+
+        {#if remainingMissing !== undefined}
+          <div
+            class="{commonClasses} flex-row-reverse rounded-b-lg text-immich-dark-bg dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg {remainingMissing > 0 ? 'bg-yellow-200 dark:bg-yellow-700' : 'bg-green-200 dark:bg-green-700'}"
+          >
+            <p class="text-2xl">
+              {remainingMissing.toLocaleString($locale)}
+            </p>
+            <p>{missingText}</p>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -205,14 +225,14 @@
       {/if}
       <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiSelectionSearch} size="24" />
-        <span class="uppercase">{missingText}</span>
+        <span class="uppercase">{missingButtonLabel}</span>
       </QueueCardButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
       <QueueCardButton color="light-gray" onClick={() => onCommand({ command: QueueCommand.Start, force: false })}>
         <Icon icon={mdiPlay} size="48" />
-        <span class="uppercase">{missingText}</span>
+        <span class="uppercase">{missingButtonLabel}</span>
       </QueueCardButton>
     {/if}
   </div>
