@@ -33,7 +33,7 @@ final deepLinkServiceProvider = Provider(
     ref.watch(beta_asset_provider.assetServiceProvider),
     ref.watch(remoteAlbumServiceProvider),
     ref.watch(driftMemoryServiceProvider),
-    ref.watch(currentUserProvider.select((user) => user)),
+    ref.watch(currentUserProvider),
   ),
 );
 
