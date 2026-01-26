@@ -23,7 +23,7 @@ class FilterImagePage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorFilter = useState<ColorFilter>(filters[0]);
+    final colorFilter = useState<EditFilter>(filters[0]);
     final selectedFilterIndex = useState<int>(0);
 
     Future<ui.Image> createFilteredImage(ui.Image inputImage, ColorFilter filter) {
@@ -42,12 +42,12 @@ class FilterImagePage extends HookWidget {
       return completer.future;
     }
 
-    void applyFilter(ColorFilter filter, int index) {
+    void applyFilter(EditFilter filter, int index) {
       colorFilter.value = filter;
       selectedFilterIndex.value = index;
     }
 
-    Future<Image> applyFilterAndConvert(ColorFilter filter) async {
+    Future<Image> applyFilterAndConvert(EditFilter filter) async {
       final completer = Completer<ui.Image>();
       image.image
           .resolve(ImageConfiguration.empty)
@@ -58,7 +58,7 @@ class FilterImagePage extends HookWidget {
           );
       final uiImage = await completer.future;
 
-      final filteredUiImage = await createFilteredImage(uiImage, filter);
+      final filteredUiImage = await createFilteredImage(uiImage, filter.colorFilter);
       final byteData = await filteredUiImage.toByteData(format: ui.ImageByteFormat.png);
       final pngBytes = byteData!.buffer.asUint8List();
 
@@ -86,7 +86,7 @@ class FilterImagePage extends HookWidget {
           SizedBox(
             height: context.height * 0.7,
             child: Center(
-              child: ColorFiltered(colorFilter: colorFilter.value, child: image),
+              child: ColorFiltered(colorFilter: colorFilter.value.colorFilter, child: image),
             ),
           ),
           SizedBox(
@@ -99,7 +99,7 @@ class FilterImagePage extends HookWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: _FilterButton(
                     image: image,
-                    label: filterNames[index],
+                    label: filters[index].name,
                     filter: filters[index],
                     isSelected: selectedFilterIndex.value == index,
                     onTap: () => applyFilter(filters[index], index),
@@ -117,7 +117,7 @@ class FilterImagePage extends HookWidget {
 class _FilterButton extends StatelessWidget {
   final Image image;
   final String label;
-  final ColorFilter filter;
+  final EditFilter filter;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -145,7 +145,7 @@ class _FilterButton extends StatelessWidget {
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
               child: ColorFiltered(
-                colorFilter: filter,
+                colorFilter: filter.colorFilter,
                 child: FittedBox(fit: BoxFit.cover, child: image),
               ),
             ),
