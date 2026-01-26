@@ -18,10 +18,7 @@ dependencies = [
     "pillow>=9.5.0,<11.0",
     "pydantic>=2.0.0,<3",
     "pydantic-settings>=2.5.2,<3",
-    "python-multipart>=0.0.6,<1.0",
-    "rich>=13.4.2",
     "tokenizers>=0.15.0,<1.0",
-    "uvicorn[standard]>=0.22.0,<1.0",
     "rapidocr>=3.1.0",
 ]
 
