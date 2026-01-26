@@ -7,37 +7,38 @@ export function normalizeTransformEdits(edits: EditActions): {
   mirrorHorizontal: boolean;
   mirrorVertical: boolean;
 } {
-  // construct an affine matrix from the edits
-  // this is the same approach used in the backend to combine multiple transforms
-  const matrix = buildAffineFromEdits(edits);
+  const { a, b, c, d } = buildAffineFromEdits(edits);
 
-  let rotation = 0;
-  let mirrorH = false;
-  let mirrorV = false;
+  // 1. Extract rotation (full quadrant-safe)
+  let rotation = (Math.atan2(b, a) * 180) / Math.PI;
+  rotation = ((rotation % 360) + 360) % 360;
 
-  let { a, b, c, d } = matrix;
-  // round to avoid floating point precision issues
-  a = Math.round(a);
-  b = Math.round(b);
-  c = Math.round(c);
-  d = Math.round(d);
+  // 2. Build inverse rotation matrix
+  const rad = (rotation * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
 
-  // [ +/-1, 0, 0, +/-1 ] indicates a 0° or 180° rotation with possible mirrors
-  // [ 0, +/-1, +/-1, 0 ] indicates a 90° or 270° rotation with possible mirrors
-  if (Math.abs(a) == 1 && Math.abs(b) == 0 && Math.abs(c) == 0 && Math.abs(d) == 1) {
-    rotation = a > 0 ? 0 : 180;
-    mirrorH = rotation === 0 ? a < 0 : a > 0;
-    mirrorV = rotation === 0 ? d < 0 : d > 0;
-  } else if (Math.abs(a) == 0 && Math.abs(b) == 1 && Math.abs(c) == 1 && Math.abs(d) == 0) {
-    rotation = c > 0 ? 90 : 270;
-    mirrorH = rotation === 90 ? c < 0 : c > 0;
-    mirrorV = rotation === 90 ? b > 0 : b < 0;
+  // Inverse rotation * original matrix
+  const ua = cos * a + sin * c;
+  const ud = -sin * b + cos * d;
+
+  // 3. Detect mirrors in unrotated space
+  const mirrorHorizontal = ua < 0;
+  const mirrorVertical = ud < 0;
+
+  // 4. Fold double mirrors into rotation
+  if (mirrorHorizontal && mirrorVertical) {
+    return {
+      rotation: (rotation + 180) % 360,
+      mirrorHorizontal: false,
+      mirrorVertical: false,
+    };
   }
 
   return {
     rotation,
-    mirrorHorizontal: mirrorH,
-    mirrorVertical: mirrorV,
+    mirrorHorizontal,
+    mirrorVertical,
   };
 }
 
