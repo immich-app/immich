@@ -9,6 +9,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -18,7 +19,6 @@ import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart'
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
@@ -106,8 +106,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     Widget buildOutOfSyncButton() {
       return Consumer(
         builder: (context, ref, _) {
-          final count = ref.watch(outOfSyncAssetsCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
-          if (count == 0) {
+          final outOfSyncCount = ref.watch(outOfSyncAssetsCountProvider).value ?? 0;
+          if (outOfSyncCount == 0) {
             return const SizedBox.shrink();
           }
           final btnColor = theme.colorScheme.tertiary;
@@ -115,7 +115,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             Icons.warning_amber_rounded,
             'review_out_of_sync_changes'.t(),
             () => context.pushRoute(const DriftTrashSyncReviewRoute()),
-            trailing: Text('($count)', style: theme.textTheme.labelLarge?.copyWith(color: btnColor)),
+            trailing: Text('($outOfSyncCount)', style: theme.textTheme.labelLarge?.copyWith(color: btnColor)),
             btnColor: btnColor,
           );
         },
