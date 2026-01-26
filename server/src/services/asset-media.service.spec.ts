@@ -572,7 +572,7 @@ describe(AssetMediaService.name, () => {
       );
     });
 
-    it('should download edited file when using a shared link and edited=false', async () => {
+    it('should not return the unedited version if requested using a shared link', async () => {
       const editedAsset = {
         ...assetStub.withCropEdit,
         files: [
@@ -741,7 +741,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
     });
 
-    it('should get edited thumbnail when using shared link and edited=false', async () => {
+    it('should not return the unedited version if requested using a shared link', async () => {
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([assetStub.image.id]));
       mocks.asset.getForThumbnail.mockResolvedValue({
         ...assetStub.image,
