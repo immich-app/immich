@@ -1059,4 +1059,31 @@ export class AssetRepository {
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForOcr(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .select(withEdits)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageWidth', 'asset_exif.exifImageHeight', 'asset_exif.orientation'])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForEdit(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .where('asset.id', '=', id)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select([
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.orientation',
+        'asset_exif.projectionType',
+      ])
+      .executeTakeFirst();
+  }
 }

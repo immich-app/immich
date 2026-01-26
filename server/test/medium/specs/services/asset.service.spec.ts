@@ -1,12 +1,15 @@
 import { Kysely } from 'kysely';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
@@ -25,6 +28,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AssetRepository,
+      AssetEditRepository,
       AssetJobRepository,
       AlbumRepository,
       AccessRepository,
@@ -32,7 +36,7 @@ const setup = (db?: Kysely<DB>) => {
       StackRepository,
       UserRepository,
     ],
-    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
+    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository, OcrRepository],
   });
 };
 
@@ -586,6 +590,57 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getOcr', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({ x1: 0.1, x2: 0.3, x3: 0.3, x4: 0.1, y1: 0.2, y2: 0.2, y3: 0.4, y4: 0.4 }),
+      ]);
+    });
+
+    it('should apply rotation', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      await ctx.database
+        .insertInto('asset_edit')
+        .values({ assetId: asset.id, action: AssetEditAction.Rotate, parameters: { angle: 90 }, sequence: 1 })
+        .execute();
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({
+          x1: 0.6,
+          x2: 0.8,
+          x3: 0.8,
+          x4: 0.6,
+          y1: expect.any(Number),
+          y2: expect.any(Number),
+          y3: 0.3,
+          y4: 0.3,
+        }),
+      ]);
+    });
+  });
+
   describe('upsertBulkMetadata', () => {
     it('should work', async () => {
       const { sut, ctx } = setup();
@@ -756,6 +811,40 @@ describe(AssetService.name, () => {
 
       const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
       expect(metadata).toEqual([expect.objectContaining({ key: 'some-other-key', value: { foo: 'bar' } })]);
+    });
+  });
+
+  describe('editAsset', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(
+        sut.editAsset(auth, asset.id, { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] }),
+      ).rejects.toThrow('Not found or no asset.edit.create access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+
+      const editAction = { action: AssetEditAction.Rotate, parameters: { angle: 90 } } as const;
+      await expect(sut.editAsset(auth, asset.id, { edits: [editAction] })).resolves.toEqual({
+        assetId: asset.id,
+        edits: [editAction],
+      });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ isEdited: true }),
+      );
+      await expect(ctx.get(AssetEditRepository).getAll(asset.id)).resolves.toEqual([editAction]);
     });
   });
 });
