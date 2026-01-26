@@ -33,7 +33,6 @@ class ControlBottomAppBar extends HookConsumerWidget {
   final void Function([bool force])? onDelete;
   final void Function([bool force])? onDeleteServer;
   final void Function(bool onlyBackedUp)? onDeleteLocal;
-  final void Function()? onSetAlbumCover;
   final Function(Album album) onAddToAlbum;
   final void Function() onCreateNewAlbum;
   final void Function() onUpload;
@@ -58,7 +57,6 @@ class ControlBottomAppBar extends HookConsumerWidget {
     this.onDelete,
     this.onDeleteServer,
     this.onDeleteLocal,
-    this.onSetAlbumCover,
     required this.onAddToAlbum,
     required this.onCreateNewAlbum,
     required this.onUpload,
@@ -267,15 +265,6 @@ class ControlBottomAppBar extends HookConsumerWidget {
               iconData: Icons.remove_circle_outline,
               label: 'remove_from_album'.tr(),
               onPressed: enabled ? onRemoveFromAlbum : null,
-            ),
-          ),
-        if (onSetAlbumCover != null)
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 90),
-            child: ControlBoxButton(
-              iconData: Icons.image_outlined,
-              label: 'set_as_album_cover'.tr(),
-              onPressed: enabled ? onSetAlbumCover : null,
             ),
           ),
         if (selectionAssetState.hasLocal)
