@@ -181,7 +181,10 @@ export class MediaService extends BaseService {
     }
 
     const generated = await this.generateEditedThumbnails(asset, config);
-    await this.syncFiles(asset.files.filter((asset) => asset.isEdited), generated?.files ?? []);
+    await this.syncFiles(
+      asset.files.filter((asset) => asset.isEdited),
+      generated?.files ?? [],
+    );
 
     let thumbhash: Buffer | undefined = generated?.thumbhash;
     if (!thumbhash) {
@@ -787,7 +790,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async syncFiles(oldFiles: AssetFile[], newFiles: UpsertFileOptions[]) {
+  private async syncFiles(oldFiles: (AssetFile & { isProgressive: boolean })[], newFiles: UpsertFileOptions[]) {
     const toUpsert: UpsertFileOptions[] = [];
     const pathsToDelete: string[] = [];
     const toDelete = new Set(oldFiles);

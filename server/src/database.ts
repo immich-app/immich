@@ -40,7 +40,6 @@ export type AssetFile = {
   type: AssetFileType;
   path: string;
   isEdited: boolean;
-  isProgressive: boolean;
 };
 
 export type Library = {
@@ -346,7 +345,8 @@ export const columns = {
     'asset.width',
     'asset.height',
   ],
-  assetFiles: [
+  assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.isEdited'],
+  assetFilesForThumbnail: [
     'asset_file.id',
     'asset_file.path',
     'asset_file.type',
