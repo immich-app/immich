@@ -45,6 +45,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   void resumeSession() async {
+    log.fine("Resuming previous session if possible...");
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
@@ -58,6 +59,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       unawaited(
         ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
           (_) async {
+            log.fine("Successfully updated auth info with stored access token");
             try {
               wsProvider.connect();
               unawaited(infoProvider.getServerInfo());
@@ -114,6 +116,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         return;
       }
 
+      log.fine("Navigating to main application...");
       unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 

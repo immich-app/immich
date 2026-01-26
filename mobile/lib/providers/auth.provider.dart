@@ -11,9 +11,9 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -123,6 +123,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> saveAuthInfo({required String accessToken}) async {
+    _log.fine("Saving authentication information...");
     await _apiService.setAccessToken(accessToken);
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
@@ -132,13 +133,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
+    _log.fine("Fetching stored user information");
     UserDto? user = _userService.tryGetMyUser();
 
     try {
+      _log.fine("Fetching user information from server");
       final serverUser = await _userService.refreshMyUser().timeout(_timeoutDuration);
       if (serverUser == null) {
         _log.severe("Unable to get user information from the server.");
       } else {
+        _log.fine("Successfully fetched user information from server");
         // If the user information is successfully retrieved, update the store
         // Due to the flow of the code, this will always happen on first login
         user = serverUser;
