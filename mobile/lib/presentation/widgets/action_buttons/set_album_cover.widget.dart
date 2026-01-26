@@ -32,10 +32,6 @@ class SetAlbumCoverActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).setAlbumCover(source, albumId);
     ref.read(multiSelectProvider.notifier).reset();
 
-    if (source == ActionSource.viewer) {
-      EventStream.shared.emit(const ViewerReloadAssetEvent());
-    }
-
     final successMessage = 'album_cover_updated'.t(context: context);
 
     if (context.mounted) {
