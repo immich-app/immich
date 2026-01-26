@@ -213,7 +213,6 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       INNER JOIN remote_asset_entity
         ON remote_asset_cloud_id_entity.asset_id = remote_asset_entity.id
       WHERE local_asset_entity.i_cloud_id = remote_asset_cloud_id_entity.cloud_id
-        AND local_asset_entity.i_cloud_id IS NOT NULL
         AND local_asset_entity.checksum IS NULL
         AND remote_asset_cloud_id_entity.adjustment_time IS local_asset_entity.adjustment_time
         AND remote_asset_cloud_id_entity.latitude IS local_asset_entity.latitude
