@@ -12,6 +12,7 @@ import {
   type MaintenanceStatusResponseDto,
   type NotificationDto,
   type ServerVersionResponseDto,
+  type SyncAssetV1,
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
@@ -40,7 +41,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
+  AssetEditReadyV1: (data: { asset: SyncAssetV1 }) => void;
 }
 
 const websocket: Socket<Events> = io({

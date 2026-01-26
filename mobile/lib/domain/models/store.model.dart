@@ -83,8 +83,16 @@ enum StoreKey<T> {
   needBetaMigration<bool>._(1006),
   // TODO: Remove this after patching open-api
   shouldResetSync<bool>._(1007),
-  reviewOutOfSyncChangesAndroid<bool>._(1008),
-  trashSyncLastCleanup<int>._(1009);
+
+  // Free up space
+  cleanupKeepFavorites<bool>._(1008),
+  cleanupKeepMediaType<int>._(1009),
+  cleanupKeepAlbumIds<String>._(1010),
+  cleanupCutoffDaysAgo<int>._(1011),
+  cleanupDefaultsInitialized<bool>._(1012),
+
+  reviewOutOfSyncChangesAndroid<bool>._(1013),
+  trashSyncLastCleanup<int>._(1014);
 
   const StoreKey._(this.id);
   final int id;

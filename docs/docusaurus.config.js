@@ -76,6 +76,10 @@ const config = {
           autoCollapseCategories: false,
         },
       },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 4,
+      },
       navbar: {
         logo: {
           alt: 'Immich Logo',

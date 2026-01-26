@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart'
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
@@ -92,6 +93,14 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     buildSettingButton() {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
+    }
+
+    buildFreeUpSpaceButton() {
+      return buildActionButton(
+        Icons.cleaning_services_outlined,
+        "free_up_space",
+        () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
+      );
     }
 
     Widget buildOutOfSyncButton() {
@@ -298,6 +307,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 buildOutOfSyncButton(),
                 if (Store.isBetaTimelineEnabled && isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
+                buildFreeUpSpaceButton(),
                 buildSettingButton(),
                 buildSignOutButton(),
                 buildFooter(),
