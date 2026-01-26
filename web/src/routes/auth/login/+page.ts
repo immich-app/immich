@@ -13,9 +13,11 @@ export const load = (async ({ parent, url }) => {
     redirect(307, Route.register());
   }
 
+  const continueUrl = url.searchParams.get('continue') || Route.photos();
+
   const authenticated = await loadUser();
   if (authenticated) {
-    redirect(307, Route.photos());
+    redirect(307, continueUrl);
   }
 
   const $t = await getFormatter();
@@ -23,6 +25,6 @@ export const load = (async ({ parent, url }) => {
     meta: {
       title: $t('login'),
     },
-    continueUrl: url.searchParams.get('continue') || Route.photos(),
+    continueUrl,
   };
 }) satisfies PageLoad;
