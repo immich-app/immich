@@ -73,7 +73,7 @@ class DriftEditImagePage extends ConsumerWidget {
 
       unawaited(ref.read(backgroundSyncProvider).syncLocal(full: true));
       _exitEditing(context);
-      ImmichToast.show(durationInSecond: 3, context: context, msg: 'image_saved'.tr());
+      ImmichToast.show(durationInSecond: 3, context: context, msg: 'image_saved_successfully'.tr());
 
       if (localAsset == null) {
         return;

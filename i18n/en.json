@@ -109,7 +109,6 @@
     "image_quality": "Quality",
     "image_resolution": "Resolution",
     "image_resolution_description": "Higher resolutions can preserve more detail but take longer to encode, have larger file sizes and can reduce app responsiveness.",
-    "image_saved": "Image saved!",
     "image_settings": "Image Settings",
     "image_settings_description": "Manage the quality and resolution of generated images",
     "image_thumbnail_description": "Small thumbnail with stripped metadata, used when viewing groups of photos like the main timeline",
