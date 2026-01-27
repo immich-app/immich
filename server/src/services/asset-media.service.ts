@@ -196,6 +196,10 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
+    if (auth.sharedLink) {
+      dto.edited = true;
+    }
+
     const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
       id,
       dto.edited ?? false,
@@ -220,6 +224,10 @@ export class AssetMediaService extends BaseService {
 
     if (dto.size === AssetMediaSize.Original) {
       throw new BadRequestException('May not request original file');
+    }
+
+    if (auth.sharedLink) {
+      dto.edited = true;
     }
 
     const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;

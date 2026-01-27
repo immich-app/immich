@@ -298,11 +298,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               spacing: 8,
               children: [
                 Text(
-                  'rating'.t(context: context).toUpperCase(),
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  'rating'.t(context: context),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
                 RatingBar(
                   initialRating: exifInfo?.rating?.toDouble() ?? 0,
