@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
@@ -811,6 +812,27 @@ describe(AssetService.name, () => {
       );
 
       expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('editAsset', () => {
+    it('should enforce crop first', async () => {
+      await expect(
+        sut.editAsset(authStub.admin, 'asset-1', {
+          edits: [
+            {
+              action: AssetEditAction.Rotate,
+              parameters: { angle: 90 },
+            },
+            {
+              action: AssetEditAction.Crop,
+              parameters: { x: 0, y: 0, width: 100, height: 100 },
+            },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
     });
   });
 });
