@@ -619,25 +619,20 @@ jobs:
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
-      - name: Install uv
-        uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
-        with:
-          python-version: 3.11
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@cd24790a7f5f6439ac32cc94f5523cb2de8bfa8c # use-mise-action-v1.1.0
+
       - name: Install dependencies
-        run: |
-          uv sync --extra cpu
-      - name: Lint with ruff
-        run: |
-          uv run ruff check --output-format=github immich_ml
-      - name: Format with ruff
-        run: |
-          uv run ruff format --check immich_ml
-      - name: Run mypy type checking
-        run: |
-          uv run mypy --strict immich_ml/
+        run: mise run install --extra cpu
+      - name: Lint code
+        run: mise run lint --output-format=github
+      - name: Format code
+        run: mise run format
+      - name: Run type checking
+        run: mise run check
       - name: Run tests and coverage
-        run: |
-          uv run pytest --cov=immich_ml --cov-report term-missing
+        run: mise run test
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
