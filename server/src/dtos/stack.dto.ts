@@ -1,4 +1,3 @@
-
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMinSize } from 'class-validator';
 import { Stack } from 'src/database';

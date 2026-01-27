@@ -100,7 +100,10 @@ export class UpdateAlbumDto {
 }
 
 export class GetAlbumsDto {
-  @ValidateBoolean({ optional: true, description: 'Filter by shared status: true = only shared, false = only own, undefined = all' })
+  @ValidateBoolean({
+    optional: true,
+    description: 'Filter by shared status: true = only shared, false = only own, undefined = all',
+  })
   shared?: boolean;
 
   @ValidateUUID({ optional: true, description: 'Filter albums containing this asset ID (ignores shared parameter)' })

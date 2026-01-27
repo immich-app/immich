@@ -141,7 +141,11 @@ export class SystemConfigFFmpegDto {
   @ValidateEnum({ enum: TranscodePolicy, name: 'TranscodePolicy', description: 'Transcode policy' })
   transcode!: TranscodePolicy;
 
-  @ValidateEnum({ enum: TranscodeHardwareAcceleration, name: 'TranscodeHWAccel', description: 'Transcode hardware acceleration' })
+  @ValidateEnum({
+    enum: TranscodeHardwareAcceleration,
+    name: 'TranscodeHWAccel',
+    description: 'Transcode hardware acceleration',
+  })
   accel!: TranscodeHardwareAcceleration;
 
   @ValidateBoolean({ description: 'Accelerated decode' })
@@ -397,7 +401,11 @@ class SystemConfigOAuthDto {
   @ApiProperty({ description: 'Client secret' })
   clientSecret!: string;
 
-  @ValidateEnum({ enum: OAuthTokenEndpointAuthMethod, name: 'OAuthTokenEndpointAuthMethod', description: 'Token endpoint auth method' })
+  @ValidateEnum({
+    enum: OAuthTokenEndpointAuthMethod,
+    name: 'OAuthTokenEndpointAuthMethod',
+    description: 'Token endpoint auth method',
+  })
   tokenEndpointAuthMethod!: OAuthTokenEndpointAuthMethod;
 
   @IsInt()
@@ -649,7 +657,7 @@ export class SystemConfigImageDto {
   @ValidateNested()
   @IsObject()
   // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined})
+  @ApiProperty({ description: undefined })
   thumbnail!: SystemConfigGeneratedImageDto;
 
   @Type(() => SystemConfigGeneratedImageDto)

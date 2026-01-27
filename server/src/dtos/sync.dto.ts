@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -150,7 +150,7 @@ export class SyncAssetV1 {
   stackId!: string | null;
   @ApiProperty({ description: 'Library ID' })
   libraryId!: string | null;
-  @ApiProperty({ type: 'integer', description: 'Asset width'})
+  @ApiProperty({ type: 'integer', description: 'Asset width' })
   width!: number | null;
   @ApiProperty({ type: 'integer', description: 'Asset height' })
   height!: number | null;
