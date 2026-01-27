@@ -620,8 +620,9 @@ jobs:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cd24790a7f5f6439ac32cc94f5523cb2de8bfa8c # use-mise-action-v1.1.0
+      - uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8 # v3.6.1
         with:
+          version: 2026.1.1
           working_directory: ./machine-learning
       - name: Install dependencies
         run: mise run install --extra cpu
