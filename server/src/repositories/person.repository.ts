@@ -239,7 +239,7 @@ export class PersonRepository {
   getAllWithoutFaces() {
     return this.db
       .selectFrom('person')
-      .selectAll('person')
+      .select(['person.id', 'person.thumbnailPath', 'person.storageBackend', 'person.s3Bucket', 'person.s3Key'])
       .leftJoin('asset_face', 'asset_face.personId', 'person.id')
       .where('asset_face.deletedAt', 'is', null)
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
@@ -574,6 +574,10 @@ export class PersonRepository {
     if (ids.length === 0) {
       return Promise.resolve([]);
     }
-    return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
+    return this.db
+      .selectFrom('person')
+      .select(['id', 'thumbnailPath', 'storageBackend', 's3Bucket', 's3Key'])
+      .where('id', 'in', ids)
+      .execute();
   }
 }

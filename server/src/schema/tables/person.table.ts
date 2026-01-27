@@ -1,4 +1,6 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { StorageBackend } from 'src/enum';
+import { storage_backend_enum } from 'src/schema/enums';
 import { person_delete_audit } from 'src/schema/functions';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -42,6 +44,16 @@ export class PersonTable {
 
   @Column({ default: '' })
   thumbnailPath!: Generated<string>;
+
+  // S3 storage columns for person thumbnails
+  @Column({ enum: storage_backend_enum, default: StorageBackend.Local })
+  storageBackend!: Generated<StorageBackend>;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Bucket!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  s3Key!: string | null;
 
   @Column({ type: 'boolean', default: false })
   isHidden!: Generated<boolean>;

@@ -20,6 +20,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   hidden: Object.freeze({
     id: 'person-1',
@@ -36,6 +39,9 @@ export const personStub = {
     isHidden: true,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   withName: Object.freeze({
     id: 'person-1',
@@ -52,6 +58,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   withBirthDate: Object.freeze({
     id: 'person-1',
@@ -68,6 +77,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   noThumbnail: Object.freeze({
     id: 'person-1',
@@ -84,6 +96,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   newThumbnail: Object.freeze({
     id: 'person-1',
@@ -100,6 +115,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   primaryPerson: Object.freeze({
     id: 'person-1',
@@ -116,6 +134,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   mergePerson: Object.freeze({
     id: 'person-2',
@@ -132,6 +153,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   randomPerson: Object.freeze({
     id: 'person-3',
@@ -148,6 +172,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
   isFavorite: Object.freeze({
     id: 'person-4',
@@ -164,6 +191,9 @@ export const personStub = {
     isHidden: false,
     isFavorite: true,
     color: 'red',
+    storageBackend: StorageBackend.Local,
+    s3Bucket: null,
+    s3Key: null,
   }),
 };
 

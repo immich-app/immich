@@ -628,7 +628,70 @@ export class MediaService extends BaseService {
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
     await this.personRepository.update({ id, thumbnailPath });
 
+    // Upload person thumbnail to S3 inline (not queued) to ensure it's uploaded before worker stops
+    await this.uploadPersonThumbnailToS3Inline(id, ownerId, thumbnailPath);
+
     return JobStatus.Success;
+  }
+
+  /**
+   * Upload person thumbnail directly to S3 inline instead of queueing.
+   * This ensures person thumbnails are persisted before the worker potentially stops.
+   */
+  private async uploadPersonThumbnailToS3Inline(
+    personId: string,
+    ownerId: string,
+    thumbnailPath: string,
+  ): Promise<void> {
+    const { storage } = await this.getConfig({ withCache: true });
+    const uploadToS3 = storage.s3.enabled && storage.locations.thumbnails === StorageBackend.S3;
+
+    if (!uploadToS3) {
+      return;
+    }
+
+    const s3Manager = this.s3Manager;
+    const localAdapter = s3Manager.getLocalAdapter();
+
+    try {
+      const { adapter: s3Adapter, bucket, storageClass } =
+        await s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
+
+      const s3Key = `users/${ownerId}/persons/${personId}/thumbnail.jpeg`;
+
+      if (!(await localAdapter.exists(thumbnailPath))) {
+        this.logger.warn(`Local person thumbnail not found: ${thumbnailPath}`);
+        return;
+      }
+
+      this.logger.log(`Uploading person thumbnail for ${personId} to S3: ${s3Key}`);
+
+      await this.uploadAndVerifyToS3(s3Adapter, localAdapter, thumbnailPath, s3Key, {
+        contentType: 'image/jpeg',
+        storageClass,
+      });
+
+      try {
+        await this.personRepository.update({
+          id: personId,
+          storageBackend: StorageBackend.S3,
+          s3Bucket: bucket,
+          s3Key,
+        });
+      } catch (dbError) {
+        await s3Adapter.delete(s3Key).catch(() => {});
+        throw dbError;
+      }
+
+      if (storage.upload.deleteLocalAfterUpload) {
+        await this.storageRepository.unlink(thumbnailPath).catch(() => {});
+      }
+
+      this.logger.log(`Successfully uploaded person thumbnail for ${personId}`);
+    } catch (error) {
+      this.logger.error(`Failed to upload person thumbnail to S3: ${error}`);
+      // Don't throw - local file exists as fallback
+    }
   }
 
   private getCrop(dims: { old: ImageDimensions; new: ImageDimensions }, { x1, y1, x2, y2 }: BoundingBox): CropOptions {

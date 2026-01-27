@@ -32,6 +32,7 @@ import {
   PersonPathType,
   QueueName,
   SourceType,
+  StorageBackend,
   SystemMetadataKey,
   VectorIndex,
 } from 'src/enum';
@@ -165,6 +166,25 @@ export class PersonService extends BaseService {
       throw new NotFoundException();
     }
 
+    // Handle S3 storage
+    if (
+      person.storageBackend === StorageBackend.S3 &&
+      person.s3Key &&
+      person.s3Bucket &&
+      (await this.s3Manager.isS3Enabled())
+    ) {
+      const s3Adapter = await this.s3Manager.getAdapterForBucket(person.s3Bucket);
+      const presignedUrl = await s3Adapter.getPresignedDownloadUrl(person.s3Key, { expiresIn: 86_400 });
+      if (presignedUrl) {
+        return new ImmichFileResponse({
+          path: person.thumbnailPath,
+          contentType: mimeTypes.lookup(person.thumbnailPath),
+          cacheControl: CacheControl.PrivateWithCache,
+          redirectUrl: presignedUrl,
+        });
+      }
+    }
+
     return new ImmichFileResponse({
       path: person.thumbnailPath,
       contentType: mimeTypes.lookup(person.thumbnailPath),
@@ -253,8 +273,28 @@ export class PersonService extends BaseService {
   }
 
   @Chunked()
-  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
-    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
+  private async removeAllPeople(
+    people: { id: string; thumbnailPath: string; storageBackend: StorageBackend; s3Bucket: string | null; s3Key: string | null }[],
+  ) {
+    await Promise.all(
+      people.map(async (person) => {
+        // Delete from S3 if stored there
+        if (person.storageBackend === StorageBackend.S3 && person.s3Bucket && person.s3Key) {
+          try {
+            if (await this.s3Manager.isS3Enabled()) {
+              const s3Adapter = await this.s3Manager.getAdapterForBucket(person.s3Bucket);
+              await s3Adapter.delete(person.s3Key);
+            }
+          } catch (error) {
+            this.logger.warn(`Failed to delete S3 person thumbnail: ${error}`);
+          }
+        }
+        // Delete local file
+        if (person.thumbnailPath) {
+          await this.storageRepository.unlink(person.thumbnailPath).catch(() => {});
+        }
+      }),
+    );
     await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
   }

@@ -182,6 +182,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     s3: {
       enabled: false,
       endpoint: '',
+      publicEndpoint: '',
       region: 'us-east-1',
       accessKeyId: '',
       secretAccessKey: '',
