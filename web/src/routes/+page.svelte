@@ -107,12 +107,12 @@
     }
   };
 
-  const handleJoin = async () => {
+  const handleJoin = () => {
     // TODO: Implement invite code validation and registration
     console.log('Join with code:', inviteCode, joinName, joinEmail);
   };
 
-  const handleRequest = async () => {
+  const handleRequest = () => {
     // TODO: Implement invite request
     console.log('Request invite:', requestEmail, requestReason);
   };
@@ -153,6 +153,7 @@
     <div class="auth-card">
       <div class="auth-tabs">
         <button
+          type="button"
           class="auth-tab"
           class:active={activeTab === 'signin'}
           onclick={() => activeTab = 'signin'}
@@ -160,6 +161,7 @@
           Sign in
         </button>
         <button
+          type="button"
           class="auth-tab"
           class:active={activeTab === 'join'}
           onclick={() => activeTab = 'join'}
@@ -167,6 +169,7 @@
           Join
         </button>
         <button
+          type="button"
           class="auth-tab"
           class:active={activeTab === 'request'}
           onclick={() => activeTab = 'request'}
@@ -177,7 +180,7 @@
 
       <!-- Sign In Form -->
       {#if activeTab === 'signin'}
-        <form class="auth-form" onsubmit={(e) => { e.preventDefault(); handleSignIn(); }}>
+        <form class="auth-form" onsubmit={(e) => { e.preventDefault(); void handleSignIn(); }}>
           {#if errorMessage}
             <div class="error-message">{errorMessage}</div>
           {/if}

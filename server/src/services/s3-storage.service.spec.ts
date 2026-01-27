@@ -116,7 +116,7 @@ describe(S3StorageService.name, () => {
 
     it('should return Failed when asset is not found', async () => {
       mocks.s3Manager.isS3EnabledForLocation.mockResolvedValue(true);
-      mocks.asset.getById.mockResolvedValue();
+      mocks.asset.getById.mockResolvedValue(undefined);
 
       const result = await sut.handleS3UploadAsset({ id: 'asset-1' });
 
@@ -434,7 +434,7 @@ describe(S3StorageService.name, () => {
       mocks.s3Manager.isS3EnabledForLocation
         .mockResolvedValueOnce(true) // thumbnails
         .mockResolvedValueOnce(false); // previews
-      mocks.asset.getById.mockResolvedValue();
+      mocks.asset.getById.mockResolvedValue(undefined);
 
       const result = await sut.handleS3UploadThumbnails({ id: 'asset-1' });
 
@@ -893,7 +893,7 @@ describe(S3StorageService.name, () => {
       mockS3Adapter.listObjects.mockResolvedValue([
         { key: 'users/user-1/asset-uuid-1234-5678-9012-345678901234/original.jpg', size: 1000 },
       ]);
-      mocks.asset.getById.mockResolvedValue(); // Asset not found = orphan
+      mocks.asset.getById.mockResolvedValue(undefined); // Asset not found = orphan
 
       const result = await sut.handleS3OrphanScanner();
 

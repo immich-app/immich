@@ -49,12 +49,12 @@
   let multipleButtons = $derived(allText || refreshText);
   // Remaining missing = total missing - jobs already in queue (waiting + active)
   let remainingMissing = $derived(
-    missingCount !== undefined
-      ? Math.max(0, missingCount - waitingCount - statistics.active)
-      : undefined,
+    missingCount === undefined
+      ? undefined
+      : Math.max(0, missingCount - waitingCount - statistics.active),
   );
   let missingButtonLabel = $derived(
-    remainingMissing !== undefined ? remainingMissing.toLocaleString($locale) : missingText,
+    remainingMissing === undefined ? missingText : remainingMissing.toLocaleString($locale),
   );
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
