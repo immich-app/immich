@@ -5,10 +5,8 @@ primary_region = 'ord'
   dockerfile = 'server/Dockerfile'
 
 [env]
-  DB_DATABASE_NAME = 'immich'
-  DB_HOSTNAME = 'immich-db.internal'
-  DB_PORT = '5432'
-  DB_USERNAME = 'immich'
+  # DB_URL is set automatically via `fly postgres attach` as a secret
+  # It uses the managed Fly Postgres cluster (immich-pg)
   IMMICH_ENV = 'production'
   IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
   IMMICH_LOG_LEVEL = 'log'
