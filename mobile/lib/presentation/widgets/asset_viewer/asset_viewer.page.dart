@@ -306,10 +306,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    // Sheet closed during drag - animate to center now that finger is released
+    // Skip view state reset when zoomed or when sheet closed during drag
     if (blockGestures) {
       blockGestures = false;
-      viewController?.animateMultiple(position: Offset.zero);
       return;
     }
 
@@ -411,6 +410,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (shouldClose) {
       if (dragInProgress) {
+        // Block further drag processing until finger is released
         blockGestures = true;
       }
       // Only jump down if currently above snap extent to prevent glitch
