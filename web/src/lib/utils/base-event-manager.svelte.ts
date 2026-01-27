@@ -30,6 +30,17 @@ export class BaseEventManager<Events extends EventMap> {
     };
   }
 
+  onMany(subscriptions: { [T in keyof Events]?: EventCallback<Events, T> }) {
+    const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
+      this.on(event as keyof Events, callback as EventCallback<Events, keyof Events>),
+    );
+    return () => {
+      for (const cleanup of cleanups) {
+        cleanup();
+      }
+    };
+  }
+
   emit<T extends keyof Events>(event: T, ...params: Events[T]) {
     const listeners = this.getListeners(event);
     for (const listener of listeners) {
