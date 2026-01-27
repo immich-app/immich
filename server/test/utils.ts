@@ -60,6 +60,7 @@ import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { ThumbnailStorageRepository } from 'src/repositories/thumbnail-storage.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -81,6 +82,7 @@ import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock'
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
+import { newThumbnailStorageRepositoryMock } from 'test/repositories/thumbnail-storage.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { assert, Mock, Mocked, vitest } from 'vitest';
 
@@ -255,6 +257,7 @@ export type ServiceOverrides = {
   systemMetadata: SystemMetadataRepository;
   tag: TagRepository;
   telemetry: TelemetryRepository;
+  thumbnailStorage: ThumbnailStorageRepository;
   trash: TrashRepository;
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
@@ -332,6 +335,7 @@ export const getMocks = () => {
     // eslint-disable-next-line no-sparse-arrays
     tag: automock(TagRepository, { args: [, loggerMock], strict: false }),
     telemetry: newTelemetryRepositoryMock(),
+    thumbnailStorage: newThumbnailStorageRepositoryMock(),
     trash: automock(TrashRepository),
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
@@ -397,6 +401,7 @@ export const newTestService = <T extends BaseService>(
     overrides.systemMetadata || (mocks.systemMetadata as As<SystemMetadataRepository>),
     overrides.tag || (mocks.tag as As<TagRepository>),
     overrides.telemetry || (mocks.telemetry as unknown as TelemetryRepository),
+    overrides.thumbnailStorage || (mocks.thumbnailStorage as As<ThumbnailStorageRepository>),
     overrides.trash || (mocks.trash as As<TrashRepository>),
     overrides.user || (mocks.user as As<UserRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),

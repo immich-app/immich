@@ -42,7 +42,7 @@ import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.inte
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadFiles } from 'src/types';
-import { ImmichFileResponse, sendFile } from 'src/utils/file';
+import { ImmichBufferResponse, ImmichFileResponse, sendBuffer, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
@@ -163,26 +163,29 @@ export class AssetMediaController {
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {
       await sendFile(res, next, () => Promise.resolve(viewThumbnailRes), this.logger);
-    } else {
-      // viewThumbnailRes is a AssetMediaRedirectResponse
-      // which redirects to the original asset or a specific size to make better use of caching
-      const { targetSize } = viewThumbnailRes;
-      const [reqPath, reqSearch] = req.url.split('?');
-      let redirPath: string;
-      const redirSearchParams = new URLSearchParams(reqSearch);
-      if (targetSize === 'original') {
-        // relative path to this.downloadAsset
-        redirPath = 'original';
-        redirSearchParams.delete('size');
-      } else if (Object.values(AssetMediaSize).includes(targetSize)) {
-        redirPath = reqPath;
-        redirSearchParams.set('size', targetSize);
-      } else {
-        throw new Error('Invalid targetSize: ' + targetSize);
-      }
-      const finalRedirPath = redirPath + '?' + redirSearchParams.toString();
-      return res.redirect(finalRedirPath);
+      return;
     }
+
+    if (viewThumbnailRes instanceof ImmichBufferResponse) {
+      await sendBuffer(res, next, () => Promise.resolve(viewThumbnailRes), this.logger);
+      return;
+    }
+
+    const { targetSize } = viewThumbnailRes;
+    const [reqPath, reqSearch] = req.url.split('?');
+    let redirPath: string;
+    const redirSearchParams = new URLSearchParams(reqSearch);
+    if (targetSize === 'original') {
+      redirPath = 'original';
+      redirSearchParams.delete('size');
+    } else if (Object.values(AssetMediaSize).includes(targetSize)) {
+      redirPath = reqPath;
+      redirSearchParams.set('size', targetSize);
+    } else {
+      throw new Error('Invalid targetSize: ' + targetSize);
+    }
+    const finalRedirPath = redirPath + '?' + redirSearchParams.toString();
+    return res.redirect(finalRedirPath);
   }
 
   @Get(':id/video/playback')

@@ -89,8 +89,10 @@ export class BaseModule implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    console.log(`[${this.worker}] onModuleDestroy called - emitting AppShutdown`);
     await this.eventRepository.emit('AppShutdown');
     await teardownTelemetry();
+    console.log(`[${this.worker}] onModuleDestroy complete`);
   }
 }
 
@@ -148,6 +150,8 @@ export class ImmichAdminModule implements OnModuleDestroy {
   constructor(private service: CliService) {}
 
   async onModuleDestroy() {
+    console.log('[ImmichAdmin] onModuleDestroy called');
     await this.service.cleanup();
+    console.log('[ImmichAdmin] onModuleDestroy complete');
   }
 }

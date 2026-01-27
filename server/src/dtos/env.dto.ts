@@ -140,6 +140,10 @@ export class EnvDto {
   @Optional()
   IMMICH_WORKERS_EXCLUDE?: string;
 
+  @Optional()
+  @Matches(/^\//, { message: 'IMMICH_THUMBNAIL_SQLITE_PATH must be an absolute path' })
+  IMMICH_THUMBNAIL_SQLITE_PATH?: string;
+
   @IsString()
   @Optional()
   DB_DATABASE_NAME?: string;

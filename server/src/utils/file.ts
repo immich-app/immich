@@ -30,6 +30,17 @@ export class ImmichFileResponse {
     Object.assign(this, response);
   }
 }
+
+export class ImmichBufferResponse {
+  public readonly data!: Buffer;
+  public readonly contentType!: string;
+  public readonly cacheControl!: CacheControl;
+  public readonly fileName?: string;
+
+  constructor(response: ImmichBufferResponse) {
+    Object.assign(this, response);
+  }
+}
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
@@ -75,6 +86,40 @@ export const sendFile = async (
     // log non-http errors
     if (error instanceof HttpException === false) {
       logger.error(`Unable to send file: ${error}`, error.stack);
+    }
+
+    res.header('Cache-Control', 'none');
+    next(error);
+  }
+};
+
+export const sendBuffer = async (
+  res: Response,
+  next: NextFunction,
+  handler: () => Promise<ImmichBufferResponse> | ImmichBufferResponse,
+  logger: LoggingRepository,
+): Promise<void> => {
+  try {
+    const file = await handler();
+    const cacheControlHeader = cacheControlHeaders[file.cacheControl];
+    if (cacheControlHeader) {
+      res.set('Cache-Control', cacheControlHeader);
+    }
+
+    res.header('Content-Type', file.contentType);
+    res.header('Content-Length', file.data.length.toString());
+    if (file.fileName) {
+      res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+    }
+
+    res.send(file.data);
+  } catch (error: Error | any) {
+    if (isConnectionAborted(error) || res.headersSent) {
+      return;
+    }
+
+    if (error instanceof HttpException === false) {
+      logger.error(`Unable to send buffer: ${error}`, error.stack);
     }
 
     res.header('Cache-Control', 'none');

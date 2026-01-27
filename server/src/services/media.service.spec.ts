@@ -1128,6 +1128,82 @@ describe(MediaService.name, () => {
         expect.stringContaining('fullsize.jpeg'),
       );
     });
+
+    describe('with SQLite storage enabled', () => {
+      beforeEach(() => {
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(true);
+      });
+
+      it('should store thumbnail in SQLite when enabled', async () => {
+        const thumbnailBuffer = Buffer.from('thumbnail-data');
+        mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+        mocks.media.generateThumbnailToBuffer.mockResolvedValue(thumbnailBuffer);
+
+        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+        expect(mocks.media.generateThumbnailToBuffer).toHaveBeenCalledTimes(2);
+        expect(mocks.thumbnailStorage.store).toHaveBeenCalledWith({
+          assetId: assetStub.image.id,
+          type: AssetFileType.Thumbnail,
+          isEdited: false,
+          data: thumbnailBuffer,
+          mimeType: 'image/webp',
+        });
+        expect(mocks.thumbnailStorage.store).toHaveBeenCalledWith({
+          assetId: assetStub.image.id,
+          type: AssetFileType.Preview,
+          isEdited: false,
+          data: thumbnailBuffer,
+          mimeType: 'image/jpeg',
+        });
+        expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+      });
+
+      it('should not write to filesystem when SQLite is enabled', async () => {
+        const thumbnailBuffer = Buffer.from('thumbnail-data');
+        mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+        mocks.media.generateThumbnailToBuffer.mockResolvedValue(thumbnailBuffer);
+
+        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+        expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+        expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      });
+
+      it('should store with correct mime type for JPEG preview', async () => {
+        const thumbnailBuffer = Buffer.from('preview-data');
+        mocks.systemMetadata.get.mockResolvedValue({
+          image: { preview: { format: ImageFormat.Jpeg } },
+        });
+        mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+        mocks.media.generateThumbnailToBuffer.mockResolvedValue(thumbnailBuffer);
+
+        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+        expect(mocks.thumbnailStorage.store).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: AssetFileType.Preview,
+            mimeType: 'image/jpeg',
+          }),
+        );
+      });
+    });
+
+    describe('with SQLite storage disabled', () => {
+      beforeEach(() => {
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(false);
+      });
+
+      it('should continue using filesystem when SQLite is disabled', async () => {
+        mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+        await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+        expect(mocks.media.generateThumbnail).toHaveBeenCalled();
+        expect(mocks.media.generateThumbnailToBuffer).not.toHaveBeenCalled();
+        expect(mocks.thumbnailStorage.store).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('handleAssetEditThumbnailGeneration', () => {

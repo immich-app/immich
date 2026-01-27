@@ -84,6 +84,10 @@ const envData: EnvData = {
     ignoreMountCheckErrors: false,
   },
 
+  thumbnailStorage: {
+    sqlitePath: undefined,
+  },
+
   telemetry: {
     apiPort: 8081,
     microservicesPort: 8082,

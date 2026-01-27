@@ -29,6 +29,7 @@ onlyBuiltDependencies:
   - sharp
   - '@tailwindcss/oxide'
   - bcrypt
+  - better-sqlite3
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.5
@@ -56,6 +57,10 @@ packageExtensions:
     dependencies:
       tailwindcss: '>=4.1'
   bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  better-sqlite3:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'

@@ -45,6 +45,7 @@ export class StorageService extends BaseService {
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.StorageService })
   async onBootstrap() {
     StorageCore.setMediaLocation(this.detectMediaLocation());
+    this.initializeThumbnailStorage();
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags =
@@ -131,6 +132,12 @@ export class StorageService extends BaseService {
         await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
       }
     });
+  }
+
+  private initializeThumbnailStorage(): void {
+    const { thumbnailStorage } = this.configRepository.getEnv();
+    const path = thumbnailStorage.sqlitePath ?? StorageCore.getThumbnailStoragePath();
+    this.thumbnailStorageRepository.initialize(path);
   }
 
   @OnJob({ name: JobName.FileDelete, queue: QueueName.BackgroundTask })

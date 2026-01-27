@@ -26,9 +26,15 @@ class Workers {
   restarting = false;
 
   /**
+   * Whether we're in graceful shutdown
+   */
+  shuttingDown = false;
+
+  /**
    * Boot all enabled workers
    */
   async bootstrap() {
+    this.setupSignalHandlers();
     const isMaintenanceMode = await this.isMaintenanceMode();
     const { workers } = new ConfigRepository().getEnv();
 
@@ -114,7 +120,12 @@ class Workers {
     } else {
       const worker = new Worker(workerFile);
 
-      kill = async () => void (await worker.terminate());
+      kill = () => {
+        // Post a shutdown message to allow graceful cleanup
+        worker.postMessage({ type: 'shutdown' });
+        // Force terminate after timeout if worker doesn't exit
+        setTimeout(() => void worker.terminate(), 5000);
+      };
       anyWorker = worker;
     }
 
@@ -124,17 +135,53 @@ class Workers {
     this.workers[name] = { kill };
   }
 
+  private setupSignalHandlers() {
+    const shutdown = async (signal: NodeJS.Signals) => {
+      if (this.shuttingDown) {
+        return;
+      }
+      this.shuttingDown = true;
+      console.log(`Received ${signal}, initiating graceful shutdown...`);
+
+      const workerNames = Object.keys(this.workers) as ImmichWorker[];
+      for (const name of workerNames) {
+        console.log(`Sending ${signal} to ${name} worker`);
+        await this.workers[name]?.kill(signal);
+      }
+
+      // Give workers time to shutdown gracefully
+      setTimeout(() => {
+        console.log('Shutdown timeout reached, forcing exit');
+        process.exit(0);
+      }, 10_000);
+    };
+
+    process.on('SIGTERM', () => void shutdown('SIGTERM'));
+    process.on('SIGINT', () => void shutdown('SIGINT'));
+  }
+
   onError(name: ImmichWorker, error: Error) {
     console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
   }
 
   onExit(name: ImmichWorker, exitCode: number | null) {
+    console.log(`${name} worker exited with code ${exitCode}`);
+    delete this.workers[name];
+
+    // graceful shutdown in progress
+    if (this.shuttingDown) {
+      if (Object.keys(this.workers).length === 0) {
+        console.log('All workers have exited, shutting down main process');
+        process.exit(0);
+      }
+      return;
+    }
+
     // restart immich server
     if (exitCode === ExitCode.AppRestart || this.restarting) {
       this.restarting = true;
 
       console.info(`${name} worker shutdown for restart`);
-      delete this.workers[name];
 
       // once all workers shut down, bootstrap again
       if (Object.keys(this.workers).length === 0) {
@@ -145,11 +192,9 @@ class Workers {
       return;
     }
 
-    // shutdown the entire process
-    delete this.workers[name];
-
+    // unexpected exit - shutdown the entire process
     if (exitCode !== 0) {
-      console.error(`${name} worker exited with code ${exitCode}`);
+      console.error(`${name} worker exited unexpectedly`);
 
       if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
         console.error('Killing api process');

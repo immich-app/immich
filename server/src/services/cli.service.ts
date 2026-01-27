@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { isAbsolute } from 'node:path';
 import { SALT_ROUNDS } from 'src/constants';
+import { StorageCore } from 'src/cores/storage.core';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
+import { AssetFileType, MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
+import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
 export class CliService extends BaseService {
@@ -185,5 +187,89 @@ export class CliService extends BaseService {
 
   cleanup() {
     return this.databaseRepository.shutdown();
+  }
+
+  getDefaultThumbnailStoragePath(): string {
+    const envData = this.configRepository.getEnv();
+    if (envData.thumbnailStorage.sqlitePath) {
+      return envData.thumbnailStorage.sqlitePath;
+    }
+
+    const mediaLocation = envData.storage.mediaLocation ?? this.detectMediaLocation();
+    StorageCore.setMediaLocation(mediaLocation);
+    return StorageCore.getThumbnailStoragePath();
+  }
+
+  private detectMediaLocation(): string {
+    const candidates = ['/data', '/usr/src/app/upload'];
+    for (const candidate of candidates) {
+      if (this.storageRepository.existsSync(candidate)) {
+        return candidate;
+      }
+    }
+    return '/usr/src/app/upload';
+  }
+
+  async migrateThumbnailsToSqlite(options: {
+    sqlitePath: string;
+    onProgress: (progress: { current: number; migrated: number; skipped: number; errors: number }) => void;
+  }): Promise<{ total: number; migrated: number; skipped: number; errors: number }> {
+    const { sqlitePath, onProgress } = options;
+
+    if (!isAbsolute(sqlitePath)) {
+      throw new Error('SQLite path must be an absolute path');
+    }
+
+    this.thumbnailStorageRepository.initialize(sqlitePath);
+
+    let current = 0;
+    let migrated = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for await (const file of this.assetJobRepository.streamAllThumbnailFiles()) {
+      current++;
+
+      try {
+        const existingData = this.thumbnailStorageRepository.get(
+          file.assetId,
+          file.type as AssetFileType,
+          file.isEdited,
+        );
+
+        if (existingData) {
+          skipped++;
+          onProgress({ current, migrated, skipped, errors });
+          continue;
+        }
+
+        const fileExists = await this.storageRepository.checkFileExists(file.path);
+        if (!fileExists) {
+          skipped++;
+          onProgress({ current, migrated, skipped, errors });
+          continue;
+        }
+
+        const data = await this.storageRepository.readFile(file.path);
+        const mimeType = mimeTypes.lookup(file.path) || 'image/jpeg';
+
+        this.thumbnailStorageRepository.store({
+          assetId: file.assetId,
+          type: file.type as AssetFileType,
+          isEdited: file.isEdited,
+          data,
+          mimeType,
+        });
+
+        migrated++;
+      } catch (error) {
+        errors++;
+        this.logger.error(`Failed to migrate thumbnail for asset ${file.assetId}: ${error}`);
+      }
+
+      onProgress({ current, migrated, skipped, errors });
+    }
+
+    return { total: current, migrated, skipped, errors };
   }
 }

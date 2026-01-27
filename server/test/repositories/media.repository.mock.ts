@@ -5,6 +5,7 @@ import { Mocked, vitest } from 'vitest';
 export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaRepository>> => {
   return {
     generateThumbnail: vitest.fn().mockImplementation(() => Promise.resolve()),
+    generateThumbnailToBuffer: vitest.fn().mockResolvedValue(Buffer.from('')),
     writeExif: vitest.fn().mockImplementation(() => Promise.resolve()),
     copyTagGroup: vitest.fn().mockImplementation(() => Promise.resolve()),
     generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),

@@ -11,6 +11,7 @@ async function bootstrap() {
   configureTelemetry();
 
   const app = await NestFactory.create<NestExpressApplication>(MaintenanceModule, { bufferLogs: true });
+  app.enableShutdownHooks();
   app.get(AppRepository).setCloseFn(() => app.close());
 
   void configureExpress(app, {

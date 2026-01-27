@@ -6,6 +6,10 @@ import {
   PromptConfirmMoveQuestions,
   PromptMediaLocationQuestions,
 } from 'src/commands/media-location.command';
+import {
+  MigrateThumbnailsCommand,
+  PromptConfirmMigrationQuestion,
+} from 'src/commands/migrate-thumbnails.command';
 import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
@@ -28,4 +32,6 @@ export const commandsAndQuestions = [
   ChangeMediaLocationCommand,
   PromptMediaLocationQuestions,
   PromptConfirmMoveQuestions,
+  MigrateThumbnailsCommand,
+  PromptConfirmMigrationQuestion,
 ];

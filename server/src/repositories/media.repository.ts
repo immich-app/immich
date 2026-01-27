@@ -182,6 +182,17 @@ export class MediaRepository {
     await decoded.toFile(output);
   }
 
+  async generateThumbnailToBuffer(input: string | Buffer, options: GenerateThumbnailOptions): Promise<Buffer> {
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    return pipeline
+      .toFormat(options.format, {
+        quality: options.quality,
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+        progressive: options.progressive,
+      })
+      .toBuffer();
+  }
+
   private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes

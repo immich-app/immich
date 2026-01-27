@@ -107,6 +107,10 @@ export interface EnvData {
     mediaLocation?: string;
   };
 
+  thumbnailStorage: {
+    sqlitePath?: string;
+  };
+
   workers: ImmichWorker[];
 
   plugins: {
@@ -329,6 +333,10 @@ const getEnv = (): EnvData => {
     storage: {
       ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,
       mediaLocation: dto.IMMICH_MEDIA_LOCATION,
+    },
+
+    thumbnailStorage: {
+      sqlitePath: dto.IMMICH_THUMBNAIL_SQLITE_PATH,
     },
 
     telemetry: {

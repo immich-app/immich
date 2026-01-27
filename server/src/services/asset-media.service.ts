@@ -37,7 +37,12 @@ import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
-import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
+import {
+  getFilenameExtension,
+  getFileNameWithoutExtension,
+  ImmichBufferResponse,
+  ImmichFileResponse,
+} from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 
@@ -219,7 +224,7 @@ export class AssetMediaService extends BaseService {
     auth: AuthDto,
     id: string,
     dto: AssetMediaOptionsDto,
-  ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
+  ): Promise<ImmichFileResponse | ImmichBufferResponse | AssetMediaRedirectResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
     if (dto.size === AssetMediaSize.Original) {
@@ -231,20 +236,30 @@ export class AssetMediaService extends BaseService {
     }
 
     const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
-    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(
-      id,
-      size,
-      dto.edited ?? false,
-    );
+    const isEdited = dto.edited ?? false;
+
+    if (this.thumbnailStorageRepository.isEnabled()) {
+      const thumbnail = this.thumbnailStorageRepository.get(id, size, isEdited);
+      if (thumbnail) {
+        // this.logger.log(`Thumbnail served from SQLite: assetId=${id}, type=${size}`);
+        const extension = mimeTypes.toExtension(thumbnail.mimeType) || '';
+        const fileName = `${id}_${size}${extension}`;
+        return new ImmichBufferResponse({
+          data: thumbnail.data,
+          contentType: thumbnail.mimeType,
+          cacheControl: CacheControl.PrivateWithCache,
+          fileName,
+        });
+      }
+    }
+
+    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(id, size, isEdited);
 
     if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !dto.edited) {
-      // use original file for web supported images
       return { targetSize: 'original' };
     }
 
     if (dto.size === AssetMediaSize.FULLSIZE && !path) {
-      // downgrade to preview if fullsize is not available.
-      // e.g. disabled or not yet (re)generated
       return { targetSize: AssetMediaSize.PREVIEW };
     }
 

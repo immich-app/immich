@@ -120,6 +120,10 @@ export class StorageCore {
     );
   }
 
+  static getThumbnailStoragePath(): string {
+    return join(StorageCore.getMediaLocation(), 'thumbnails.sqlite3');
+  }
+
   static getEncodedVideoPath(asset: ThumbnailPathEntity) {
     return StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.mp4`);
   }

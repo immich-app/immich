@@ -14,7 +14,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
-import { ImmichFileResponse } from 'src/utils/file';
+import { ImmichBufferResponse, ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
@@ -761,6 +761,128 @@ describe(AssetMediaService.name, () => {
         }),
       );
       expect(mocks.asset.getForThumbnail).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, true);
+    });
+
+    describe('with SQLite storage', () => {
+      it('should return ImmichBufferResponse when thumbnail exists in SQLite', async () => {
+        const thumbnailData = Buffer.from('thumbnail-data');
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(true);
+        mocks.thumbnailStorage.get.mockReturnValue({
+          data: thumbnailData,
+          mimeType: 'image/webp',
+          size: thumbnailData.length,
+        });
+
+        await expect(
+          sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
+        ).resolves.toEqual(
+          new ImmichBufferResponse({
+            data: thumbnailData,
+            contentType: 'image/webp',
+            cacheControl: CacheControl.PrivateWithCache,
+            fileName: 'asset-id_thumbnail.webp',
+          }),
+        );
+
+        expect(mocks.thumbnailStorage.get).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
+        expect(mocks.asset.getForThumbnail).not.toHaveBeenCalled();
+      });
+
+      it('should fall back to filesystem when thumbnail not in SQLite', async () => {
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(true);
+        mocks.thumbnailStorage.get.mockReturnValue(null);
+        mocks.asset.getForThumbnail.mockResolvedValue({
+          ...assetStub.image,
+          path: '/uploads/user-id/thumbs/path.jpg',
+        });
+
+        await expect(
+          sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
+        ).resolves.toEqual(
+          new ImmichFileResponse({
+            path: '/uploads/user-id/thumbs/path.jpg',
+            cacheControl: CacheControl.PrivateWithCache,
+            contentType: 'image/jpeg',
+            fileName: 'asset-id_thumbnail.jpg',
+          }),
+        );
+
+        expect(mocks.thumbnailStorage.get).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, false);
+        expect(mocks.asset.getForThumbnail).toHaveBeenCalled();
+      });
+
+      it('should handle edited thumbnails from SQLite', async () => {
+        const thumbnailData = Buffer.from('edited-thumbnail-data');
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(true);
+        mocks.thumbnailStorage.get.mockReturnValue({
+          data: thumbnailData,
+          mimeType: 'image/webp',
+          size: thumbnailData.length,
+        });
+
+        await expect(
+          sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL, edited: true }),
+        ).resolves.toEqual(
+          new ImmichBufferResponse({
+            data: thumbnailData,
+            contentType: 'image/webp',
+            cacheControl: CacheControl.PrivateWithCache,
+            fileName: 'asset-id_thumbnail.webp',
+          }),
+        );
+
+        expect(mocks.thumbnailStorage.get).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Thumbnail, true);
+      });
+
+      it('should handle preview size from SQLite', async () => {
+        const previewData = Buffer.from('preview-data');
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(true);
+        mocks.thumbnailStorage.get.mockReturnValue({
+          data: previewData,
+          mimeType: 'image/jpeg',
+          size: previewData.length,
+        });
+
+        await expect(
+          sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.PREVIEW }),
+        ).resolves.toEqual(
+          new ImmichBufferResponse({
+            data: previewData,
+            contentType: 'image/jpeg',
+            cacheControl: CacheControl.PrivateWithCache,
+            fileName: 'asset-id_preview.jpg',
+          }),
+        );
+
+        expect(mocks.thumbnailStorage.get).toHaveBeenCalledWith(assetStub.image.id, AssetFileType.Preview, false);
+      });
+
+      it('should skip SQLite lookup when storage is disabled', async () => {
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+        mocks.thumbnailStorage.isEnabled.mockReturnValue(false);
+        mocks.asset.getForThumbnail.mockResolvedValue({
+          ...assetStub.image,
+          path: '/uploads/user-id/thumbs/path.jpg',
+        });
+
+        await expect(
+          sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.THUMBNAIL }),
+        ).resolves.toEqual(
+          new ImmichFileResponse({
+            path: '/uploads/user-id/thumbs/path.jpg',
+            cacheControl: CacheControl.PrivateWithCache,
+            contentType: 'image/jpeg',
+            fileName: 'asset-id_thumbnail.jpg',
+          }),
+        );
+
+        expect(mocks.thumbnailStorage.get).not.toHaveBeenCalled();
+        expect(mocks.asset.getForThumbnail).toHaveBeenCalled();
+      });
     });
   });
 

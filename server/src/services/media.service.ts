@@ -4,7 +4,7 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile, Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionItem, CropParameters } from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -35,6 +35,7 @@ import {
   ImageDimensions,
   JobItem,
   JobOf,
+  RawImageInfo,
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
@@ -55,6 +56,9 @@ interface UpsertFileOptions {
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
+
+// Feature flag: Enable fullsize thumbnail storage in SQLite
+const SQLITE_STORE_FULLSIZE = true;
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -320,8 +324,27 @@ export class MediaService extends BaseService {
     const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
     const { info, data, colorspace, generateFullsize, convertFullsize, extracted } = extractedImage;
 
-    // generate final images
     const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const decodedDimensions = { width: info.width, height: info.height };
+    const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
+
+    if (this.thumbnailStorageRepository.isEnabled()) {
+      return this.generateImageThumbnailsToSqlite(
+        asset,
+        data,
+        image,
+        thumbnailOptions,
+        useEdits,
+        fullsizeDimensions,
+        extracted,
+        generateFullsize,
+        convertFullsize,
+      );
+    } else {
+      console.log('not enabled');
+    }
+
+    // generate final images to filesystem
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailFile.path),
@@ -376,12 +399,85 @@ export class MediaService extends BaseService {
       await Promise.all(promises);
     }
 
-    const decodedDimensions = { width: info.width, height: info.height };
-    const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
-
     return {
       files: fullsizeFile ? [previewFile, thumbnailFile, fullsizeFile] : [previewFile, thumbnailFile],
       thumbhash: outputs[0] as Buffer,
+      fullsizeDimensions,
+    };
+  }
+
+  private async generateImageThumbnailsToSqlite(
+    asset: ThumbnailAsset,
+    data: Buffer,
+    image: SystemConfig['image'],
+    thumbnailOptions: {
+      colorspace: Colorspace;
+      processInvalidImages: boolean;
+      raw: RawImageInfo;
+      edits: AssetEditActionItem[];
+    },
+    useEdits: boolean,
+    fullsizeDimensions: ImageDimensions,
+    extracted: { buffer: Buffer; format: RawExtractedFormat } | null,
+    generateFullsize: boolean,
+    convertFullsize: boolean,
+  ) {
+    const [thumbnailBuffer, previewBuffer, thumbhash] = await Promise.all([
+      this.mediaRepository.generateThumbnailToBuffer(data, { ...image.thumbnail, ...thumbnailOptions }),
+      this.mediaRepository.generateThumbnailToBuffer(data, { ...image.preview, ...thumbnailOptions }),
+      this.mediaRepository.generateThumbhash(data, thumbnailOptions),
+    ]);
+
+    // Check if fullsize should be stored in SQLite
+    let fullsizeBuffer: Buffer | null = null;
+    let fullsizeMimeType: string | null = null;
+
+    if (SQLITE_STORE_FULLSIZE && generateFullsize) {
+      if (convertFullsize) {
+        // Convert scenario: generate fullsize from data buffer
+        fullsizeBuffer = await this.mediaRepository.generateThumbnailToBuffer(data, {
+          format: image.fullsize.format,
+          quality: image.fullsize.quality,
+          progressive: image.fullsize.progressive,
+          ...thumbnailOptions,
+        });
+        fullsizeMimeType = `image/${image.fullsize.format}`;
+      } else if (extracted && extracted.format === RawExtractedFormat.Jpeg) {
+        // Extract scenario: use extracted buffer directly
+        fullsizeBuffer = extracted.buffer;
+        fullsizeMimeType = 'image/jpeg';
+      }
+    }
+
+    this.thumbnailStorageRepository.store({
+      assetId: asset.id,
+      type: AssetFileType.Thumbnail,
+      isEdited: useEdits,
+      data: thumbnailBuffer,
+      mimeType: `image/${image.thumbnail.format}`,
+    });
+    this.thumbnailStorageRepository.store({
+      assetId: asset.id,
+      type: AssetFileType.Preview,
+      isEdited: useEdits,
+      data: previewBuffer,
+      mimeType: `image/${image.preview.format}`,
+    });
+
+    // Store fullsize if generated
+    if (fullsizeBuffer && fullsizeMimeType) {
+      this.thumbnailStorageRepository.store({
+        assetId: asset.id,
+        type: AssetFileType.FullSize,
+        isEdited: useEdits,
+        data: fullsizeBuffer,
+        mimeType: fullsizeMimeType,
+      });
+    }
+
+    return {
+      files: [] as UpsertFileOptions[],
+      thumbhash,
       fullsizeDimensions,
     };
   }

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { isMainThread } from 'node:worker_threads';
+import { isMainThread, parentPort } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
@@ -16,6 +16,7 @@ export async function bootstrap() {
   }
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
+  app.enableShutdownHooks();
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
   app.get(AppRepository).setCloseFn(() => app.close());
@@ -29,13 +30,24 @@ export async function bootstrap() {
   await (host ? app.listen(0, host) : app.listen(0));
 
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
+
+  return app;
 }
 
 if (!isMainThread) {
-  bootstrap().catch((error) => {
-    if (!isStartUpError(error)) {
-      console.error(error);
-    }
-    throw error;
-  });
+  bootstrap()
+    .then((app) => {
+      parentPort?.on('message', (message) => {
+        if (message?.type === 'shutdown') {
+          console.log('Microservices worker received shutdown message');
+          void app.close();
+        }
+      });
+    })
+    .catch((error) => {
+      if (!isStartUpError(error)) {
+        console.error(error);
+      }
+      throw error;
+    });
 }

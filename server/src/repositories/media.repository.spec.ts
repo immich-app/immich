@@ -2,7 +2,7 @@ import sharp from 'sharp';
 import { AssetFace } from 'src/database';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { SourceType } from 'src/enum';
+import { ImageFormat, SourceType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
@@ -662,6 +662,53 @@ describe(MediaRepository.name, () => {
         expect(result.visible).toEqual([ocrInsideCrop]);
         expect(result.hidden).toEqual([ocrOutsideCrop]);
       });
+    });
+  });
+
+  describe('generateThumbnailToBuffer', () => {
+    it('should return a buffer instead of writing to file', async () => {
+      const inputBuffer = await sharp({
+        create: { width: 100, height: 100, channels: 3, background: { r: 255, g: 0, b: 0 } },
+      })
+        .png()
+        .toBuffer();
+
+      const result = await sut.generateThumbnailToBuffer(inputBuffer, {
+        format: ImageFormat.Webp,
+        quality: 80,
+        size: 50,
+        colorspace: 'srgb',
+        processInvalidImages: false,
+      });
+
+      expect(result).toBeInstanceOf(Buffer);
+      expect(result.length).toBeGreaterThan(0);
+
+      const metadata = await sharp(result).metadata();
+      expect(metadata.format).toBe('webp');
+      expect(metadata.width).toBeLessThanOrEqual(50);
+    });
+
+    it('should apply same options as generateThumbnail', async () => {
+      const inputBuffer = await sharp({
+        create: { width: 200, height: 200, channels: 3, background: { r: 0, g: 255, b: 0 } },
+      })
+        .png()
+        .toBuffer();
+
+      const result = await sut.generateThumbnailToBuffer(inputBuffer, {
+        format: ImageFormat.Jpeg,
+        quality: 90,
+        size: 75,
+        colorspace: 'srgb',
+        processInvalidImages: false,
+        progressive: true,
+      });
+
+      const metadata = await sharp(result).metadata();
+      expect(metadata.format).toBe('jpeg');
+      expect(metadata.width).toBe(75);
+      expect(metadata.height).toBe(75);
     });
   });
 });

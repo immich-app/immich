@@ -423,4 +423,13 @@ export class AssetJobRepository {
   streamForMigrationJob() {
     return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', 'is', null).stream();
   }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAllThumbnailFiles() {
+    return this.db
+      .selectFrom('asset_file')
+      .select(['asset_file.assetId', 'asset_file.type', 'asset_file.path', 'asset_file.isEdited'])
+      .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview])
+      .stream();
+  }
 }
