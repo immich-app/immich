@@ -5,7 +5,7 @@ export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolea
   const zoomInstance = createZoomImageWheel(node, { maxZoom: 10, initialState: assetViewerManager.zoomState });
 
   const unsubscribes = [
-    assetViewerManager.on('ZoomChange', (state) => zoomInstance.setState(state)),
+    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
     zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
   ];
 
