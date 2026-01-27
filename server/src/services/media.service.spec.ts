@@ -8,6 +8,7 @@ import {
   AudioCodec,
   Colorspace,
   ExifOrientation,
+  GeneratedImageType,
   ImageFormat,
   JobName,
   JobStatus,
@@ -356,6 +357,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         expect.any(String),
       );
@@ -370,6 +372,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Thumbnail,
         },
         expect.any(String),
       );
@@ -581,6 +584,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         previewPath,
       );
@@ -595,6 +599,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Thumbnail,
         },
         thumbnailPath,
       );
@@ -630,6 +635,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         previewPath,
       );
@@ -644,6 +650,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Thumbnail,
         },
         thumbnailPath,
       );
@@ -838,6 +845,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         expect.any(String),
       );
@@ -870,6 +878,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Fullsize,
         },
         expect.any(String),
       );
@@ -884,6 +893,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         expect.any(String),
       );
@@ -914,6 +924,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Fullsize,
         },
         expect.any(String),
       );
@@ -928,6 +939,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Preview,
         },
         expect.any(String),
       );
@@ -959,6 +971,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Fullsize,
         },
         expect.any(String),
       );
@@ -1016,6 +1029,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Fullsize,
         },
         expect.any(String),
       );
@@ -1056,6 +1070,7 @@ describe(MediaService.name, () => {
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
+          imageType: GeneratedImageType.Fullsize,
         },
         expect.any(String),
       );
@@ -1300,6 +1315,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1345,6 +1361,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1388,6 +1405,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1431,6 +1449,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1474,6 +1493,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1517,6 +1537,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );
@@ -1565,6 +1586,7 @@ describe(MediaService.name, () => {
           raw: info,
           processInvalidImages: false,
           size: 250,
+          imageType: GeneratedImageType.Person,
         },
         expect.any(String),
       );

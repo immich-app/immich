@@ -47,6 +47,13 @@ export enum AssetFileType {
   Sidecar = 'sidecar',
 }
 
+export enum GeneratedImageType {
+  Thumbnail = 'thumbnail',
+  Preview = 'preview',
+  Fullsize = 'fullsize',
+  Person = 'person',
+}
+
 export enum AlbumUserRole {
   Editor = 'editor',
   Viewer = 'viewer',

@@ -1,6 +1,7 @@
 import {
   AliasedRawBuilder,
   DeduplicateJoinsPlugin,
+  Dialect,
   Expression,
   ExpressionBuilder,
   ExpressionWrapper,
@@ -22,6 +23,7 @@ import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } fr
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
+import { createInstrumentedDriver } from 'src/utils/otel-kysely-plugin';
 
 type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
 
@@ -59,50 +61,65 @@ export const asPostgresConnectionConfig = (params: DatabaseConnectionParams) => 
   };
 };
 
+const DATABASE_MAX_CONNECTIONS = 10;
+
+function createInstrumentedDialect(innerDialect: Dialect, maxConnections: number): Dialect {
+  return {
+    createAdapter: () => innerDialect.createAdapter(),
+    createDriver: () => createInstrumentedDriver(innerDialect.createDriver(), maxConnections),
+    createIntrospector: (db) => innerDialect.createIntrospector(db),
+    createQueryCompiler: () => innerDialect.createQueryCompiler(),
+  };
+}
+
 export const getKyselyConfig = (
   params: DatabaseConnectionParams,
   options: Partial<postgres.Options<Record<string, postgres.PostgresType>>> = {},
 ): KyselyConfig => {
   const config = asPostgresConnectionConfig(params);
+  const maxConnections = options.max ?? DATABASE_MAX_CONNECTIONS;
+
+  const innerDialect = new PostgresJSDialect({
+    postgres: postgres({
+      onnotice: (notice: Notice) => {
+        if (notice['severity'] !== 'NOTICE') {
+          console.warn('Postgres notice:', notice);
+        }
+      },
+      max: maxConnections,
+      types: {
+        date: {
+          to: 1184,
+          from: [1082, 1114, 1184],
+          serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+          parse: (x: string) => new Date(x),
+        },
+        bigint: {
+          to: 20,
+          from: [20, 1700],
+          parse: (value: string) => Number.parseInt(value),
+          serialize: (value: number) => value.toString(),
+        },
+      },
+      connection: {
+        TimeZone: 'UTC',
+      },
+      host: config.host,
+      port: config.port,
+      username: config.username,
+      password: config.password,
+      database: config.database,
+      ssl: config.ssl,
+      ...options,
+    }),
+  });
 
   return {
-    dialect: new PostgresJSDialect({
-      postgres: postgres({
-        onnotice: (notice: Notice) => {
-          if (notice['severity'] !== 'NOTICE') {
-            console.warn('Postgres notice:', notice);
-          }
-        },
-        max: 10,
-        types: {
-          date: {
-            to: 1184,
-            from: [1082, 1114, 1184],
-            serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
-            parse: (x: string) => new Date(x),
-          },
-          bigint: {
-            to: 20,
-            from: [20, 1700],
-            parse: (value: string) => Number.parseInt(value),
-            serialize: (value: number) => value.toString(),
-          },
-        },
-        connection: {
-          TimeZone: 'UTC',
-        },
-        host: config.host,
-        port: config.port,
-        username: config.username,
-        password: config.password,
-        database: config.database,
-        ssl: config.ssl,
-        ...options,
-      }),
-    }),
-    log(event) {
+    dialect: createInstrumentedDialect(innerDialect, maxConnections),
+    plugins: [],
+    log: (event) => {
       if (event.level === 'error') {
-        console.error('Query failed :', {
+        console.error('Query failed:', {
           durationMs: event.queryDurationMillis,
           error: event.error,
           sql: event.query.sql,

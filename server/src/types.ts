@@ -10,6 +10,7 @@ import {
   AssetType,
   DatabaseSslMode,
   ExifOrientation,
+  GeneratedImageType,
   ImageFormat,
   JobName,
   MemoryType,
@@ -64,7 +65,10 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> &
+  DecodeToBufferOptions & {
+    imageType?: GeneratedImageType;
+  };
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 
@@ -178,8 +182,14 @@ export type ConcurrentQueueName = Exclude<
 export type Jobs = { [K in JobItem['name']]: (JobItem & { name: K })['data'] };
 export type JobOf<T extends JobName> = Jobs[T];
 
+export interface TraceContext {
+  traceparent: string;
+  tracestate?: string;
+}
+
 export interface IBaseJob {
   force?: boolean;
+  traceContext?: TraceContext;
 }
 
 export interface IDelayedJob extends IBaseJob {

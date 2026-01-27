@@ -8,6 +8,7 @@ import { RedisOptions } from 'ioredis';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { join } from 'node:path';
+import { bullMQTelemetry } from 'src/telemetry-preload';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
@@ -262,6 +263,7 @@ const getEnv = (): EnvData => {
           removeOnComplete: true,
           removeOnFail: false,
         },
+        telemetry: bullMQTelemetry,
       },
       queues: Object.values(QueueName).map((name) => ({ name })),
     },

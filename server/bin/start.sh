@@ -39,7 +39,7 @@ else
 fi
 
 if [ -f "${SERVER_HOME}/dist/main.js" ]; then
-  exec node "${SERVER_HOME}/dist/main.js" "$@"
+  exec node --require "${SERVER_HOME}/dist/telemetry-preload.js" "${SERVER_HOME}/dist/main.js" "$@"
 else
   echo "Error: ${SERVER_HOME}/dist/main.js not found"
   if [ "$IMMICH_ENV" = "development" ]; then

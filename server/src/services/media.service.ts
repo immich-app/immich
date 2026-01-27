@@ -12,6 +12,7 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  GeneratedImageType,
   ImageFormat,
   JobName,
   JobStatus,
@@ -329,12 +330,12 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(
         data,
-        { ...image.thumbnail, ...thumbnailOptions, edits: useEdits ? asset.edits : [] },
+        { ...image.thumbnail, ...thumbnailOptions, imageType: GeneratedImageType.Thumbnail, edits: useEdits ? asset.edits : [] },
         thumbnailPath,
       ),
       this.mediaRepository.generateThumbnail(
         data,
-        { ...image.preview, ...thumbnailOptions, edits: useEdits ? asset.edits : [] },
+        { ...image.preview, ...thumbnailOptions, imageType: GeneratedImageType.Preview, edits: useEdits ? asset.edits : [] },
         previewPath,
       ),
     ];
@@ -352,6 +353,7 @@ export class MediaService extends BaseService {
         format: image.fullsize.format,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
+        imageType: GeneratedImageType.Fullsize,
         ...thumbnailOptions,
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
@@ -438,6 +440,7 @@ export class MediaService extends BaseService {
       progressive: false,
       processInvalidImages: false,
       size: FACE_THUMBNAIL_SIZE,
+      imageType: GeneratedImageType.Person,
       edits: [
         {
           action: AssetEditAction.Crop,

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { SpanStatusCode, trace } from '@opentelemetry/api';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { Traced } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
 interface ExifDuration {
@@ -104,22 +106,34 @@ export class MetadataRepository {
     await this.exiftool.end();
   }
 
-  readTags(path: string): Promise<ImmichTags> {
-    const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
-    return this.exiftool.read(path, args).catch((error) => {
-      this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
+  @Traced('metadata.exiftool.readTags')
+  async readTags(path: string): Promise<ImmichTags> {
+    try {
+      const args = mimeTypes.isVideo(path) ? ['-ee'] : [];
+      return (await this.exiftool.read(path, args)) as ImmichTags;
+    } catch (error: unknown) {
+      const span = trace.getActiveSpan();
+      span?.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+      span?.recordException(error as Error);
+      this.logger.warn(`Error reading exif data (${path}): ${error}`);
       return {};
-    }) as Promise<ImmichTags>;
+    }
   }
 
-  extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
+  @Traced('metadata.exiftool.extractBinaryTag')
+  async extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
+    trace.getActiveSpan()?.setAttribute('exiftool.tagName', tagName);
     return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
+  @Traced('metadata.exiftool.writeTags')
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
       await this.exiftool.write(path, tags);
-    } catch (error) {
+    } catch (error: unknown) {
+      const span = trace.getActiveSpan();
+      span?.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+      span?.recordException(error as Error);
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
   }

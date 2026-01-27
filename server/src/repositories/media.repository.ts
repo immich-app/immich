@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { context, Span, SpanKind, SpanStatusCode, trace } from '@opentelemetry/api';
 import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
@@ -19,6 +20,7 @@ import {
   TranscodeCommand,
   VideoInfo,
 } from 'src/types';
+import { Traced } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -26,8 +28,16 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
+const tracer = trace.getTracer('immich');
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
+
+const EXTRACTION_METHODS = [
+  { tag: 'JpgFromRaw2', format: RawExtractedFormat.Jpeg },
+  { tag: 'JpgFromRaw', format: RawExtractedFormat.Jpeg },
+  { tag: 'PreviewJXL', format: RawExtractedFormat.Jxl },
+  { tag: 'PreviewImage', format: RawExtractedFormat.Jpeg },
+] as const;
 
 type ProgressEvent = {
   frames: number;
@@ -49,81 +59,66 @@ export class MediaRepository {
     this.logger.setContext(MediaRepository.name);
   }
 
-  /**
-   *
-   * @param input file path to the input image
-   * @returns ExtractResult if succeeded, or null if failed
-   */
+  @Traced('media.exiftool.extract')
   async extract(input: string): Promise<ExtractResult | null> {
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
+    for (const { tag, format } of EXTRACTION_METHODS) {
+      try {
+        const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        trace.getActiveSpan()?.setAttribute('exiftool.extractedTag', tag);
+        return { buffer, format };
+      } catch {
+        this.logger.debug(`Could not extract ${tag} from image, trying next method`);
+      }
     }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.Jxl };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
-    }
-
-    try {
-      const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.Jpeg };
-    } catch (error: any) {
-      this.logger.debug(`Could not extract preview buffer from image: ${error}`);
-      return null;
-    }
+    trace.getActiveSpan()?.setAttribute('exiftool.extractedTag', 'none');
+    return null;
   }
 
+  @Traced('media.exiftool.writeExif')
   async writeExif(tags: Partial<Exif>, output: string): Promise<boolean> {
-    try {
-      const tagsToWrite: WriteTags = {
-        ExifImageWidth: tags.exifImageWidth,
-        ExifImageHeight: tags.exifImageHeight,
-        DateTimeOriginal: tags.dateTimeOriginal && ExifDateTime.fromMillis(tags.dateTimeOriginal.getTime()),
-        ModifyDate: tags.modifyDate && ExifDateTime.fromMillis(tags.modifyDate.getTime()),
-        TimeZone: tags.timeZone,
-        GPSLatitude: tags.latitude,
-        GPSLongitude: tags.longitude,
-        ProjectionType: tags.projectionType,
-        City: tags.city,
-        Country: tags.country,
-        Make: tags.make,
-        Model: tags.model,
-        LensModel: tags.lensModel,
-        Fnumber: tags.fNumber?.toFixed(1),
-        FocalLength: tags.focalLength?.toFixed(1),
-        ISO: tags.iso,
-        ExposureTime: tags.exposureTime,
-        ProfileDescription: tags.profileDescription,
-        ColorSpace: tags.colorspace,
-        Rating: tags.rating,
-        // specially convert Orientation to numeric Orientation# for exiftool
-        'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
-      };
+    const tagsToWrite: WriteTags = {
+      ExifImageWidth: tags.exifImageWidth,
+      ExifImageHeight: tags.exifImageHeight,
+      DateTimeOriginal: tags.dateTimeOriginal && ExifDateTime.fromMillis(tags.dateTimeOriginal.getTime()),
+      ModifyDate: tags.modifyDate && ExifDateTime.fromMillis(tags.modifyDate.getTime()),
+      TimeZone: tags.timeZone,
+      GPSLatitude: tags.latitude,
+      GPSLongitude: tags.longitude,
+      ProjectionType: tags.projectionType,
+      City: tags.city,
+      Country: tags.country,
+      Make: tags.make,
+      Model: tags.model,
+      LensModel: tags.lensModel,
+      Fnumber: tags.fNumber?.toFixed(1),
+      FocalLength: tags.focalLength?.toFixed(1),
+      ISO: tags.iso,
+      ExposureTime: tags.exposureTime,
+      ProfileDescription: tags.profileDescription,
+      ColorSpace: tags.colorspace,
+      Rating: tags.rating,
+      'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
+    };
 
+    try {
       await exiftool.write(output, tagsToWrite, {
         ignoreMinorErrors: true,
         writeArgs: ['-overwrite_original'],
       });
       return true;
-    } catch (error: any) {
-      this.logger.warn(`Could not write exif data to image: ${error.message}`);
+    } catch (error: unknown) {
+      const span = trace.getActiveSpan();
+      span?.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+      span?.recordException(error as Error);
+      this.logger.warn(`Could not write exif data to image: ${error}`);
       return false;
     }
   }
 
+  @Traced('media.exiftool.copyTagGroup')
   async copyTagGroup(tagGroup: string, source: string, target: string): Promise<boolean> {
+    trace.getActiveSpan()?.setAttribute('exiftool.tagGroup', tagGroup);
+
     try {
       await exiftool.write(
         target,
@@ -134,15 +129,28 @@ export class MediaRepository {
         },
       );
       return true;
-    } catch (error: any) {
-      this.logger.warn(`Could not copy tag data to image: ${error.message}`);
+    } catch (error: unknown) {
+      const span = trace.getActiveSpan();
+      span?.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+      span?.recordException(error as Error);
+      this.logger.warn(`Could not copy tag data to image: ${error}`);
       return false;
     }
   }
 
+  @Traced('media.decodeImage')
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('media.colorspace', options.colorspace);
+    if (options.size !== undefined) {
+      span?.setAttribute('media.size', options.size);
+    }
+
     const pipeline = await this.getImageDecodingPipeline(input, options);
-    return pipeline.raw().toBuffer({ resolveWithObject: true });
+    const result = await pipeline.raw().toBuffer({ resolveWithObject: true });
+    span?.setAttribute('media.output.width', result.info.width);
+    span?.setAttribute('media.output.height', result.info.height);
+    return result;
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
@@ -170,11 +178,21 @@ export class MediaRepository {
     return pipeline;
   }
 
+  @Traced('media.generateThumbnail')
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('media.imageType', options.imageType ?? 'unknown');
+    span?.setAttribute('media.format', options.format);
+    span?.setAttribute('media.quality', options.quality);
+    span?.setAttribute('media.size', options.size ?? 0);
+    span?.setAttribute('media.colorspace', options.colorspace);
+    if (options.progressive !== undefined) {
+      span?.setAttribute('media.progressive', options.progressive);
+    }
+
     const pipeline = await this.getImageDecodingPipeline(input, options);
     const decoded = pipeline.toFormat(options.format, {
       quality: options.quality,
-      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
       chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
       progressive: options.progressive,
     });
@@ -215,7 +233,11 @@ export class MediaRepository {
     return pipeline;
   }
 
+  @Traced('media.generateThumbhash')
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('media.colorspace', options.colorspace);
+
     const [{ rgbaToThumbHash }, decodingPipeline] = await Promise.all([
       import('thumbhash'),
       this.getImageDecodingPipeline(input, {
@@ -229,12 +251,23 @@ export class MediaRepository {
     const pipeline = decodingPipeline.resize(100, 100, { fit: 'inside', withoutEnlargement: true }).raw().ensureAlpha();
 
     const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+    span?.setAttribute('media.thumbhash.width', info.width);
+    span?.setAttribute('media.thumbhash.height', info.height);
 
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
 
+  @Traced('ffmpeg.probe')
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('ffmpeg.countFrames', options?.countFrames ?? false);
+
     const results = await probe(input, options?.countFrames ? ['-count_packets'] : []); // gets frame count quickly: https://stackoverflow.com/a/28376817
+
+    span?.setAttribute('ffmpeg.duration', this.parseFloat(results.format.duration));
+    span?.setAttribute('ffmpeg.videoStreams', results.streams.filter((s) => s.codec_type === 'video').length);
+    span?.setAttribute('ffmpeg.audioStreams', results.streams.filter((s) => s.codec_type === 'audio').length);
+
     return {
       format: {
         formatName: results.format.format_name,
@@ -272,17 +305,39 @@ export class MediaRepository {
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
+    const span = tracer.startSpan('ffmpeg.transcode', { kind: SpanKind.INTERNAL }, context.active());
+    span.setAttribute('ffmpeg.twoPass', options.twoPass ?? false);
+    span.setAttribute('ffmpeg.frameCount', options.progress.frameCount);
+
+    const endSpan = (error?: Error) => {
+      if (error) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
+        span.recordException(error);
+      } else {
+        span.setStatus({ code: SpanStatusCode.OK });
+      }
+      span.end();
+    };
+
     if (!options.twoPass) {
       return new Promise((resolve, reject) => {
         this.configureFfmpegCall(input, output, options)
-          .on('error', reject)
-          .on('end', () => resolve())
+          .on('error', (error) => {
+            endSpan(error);
+            reject(error);
+          })
+          .on('end', () => {
+            endSpan();
+            resolve();
+          })
           .run();
       });
     }
 
     if (typeof output !== 'string') {
-      throw new TypeError('Two-pass transcoding does not support writing to a stream');
+      const error = new TypeError('Two-pass transcoding does not support writing to a stream');
+      endSpan(error);
+      throw error;
     }
 
     // two-pass allows for precise control of bitrate at the cost of running twice
@@ -293,24 +348,37 @@ export class MediaRepository {
         .addOptions('-pass', '1')
         .addOptions('-passlogfile', output)
         .addOptions('-f null')
-        .on('error', reject)
+        .on('error', (error) => {
+          endSpan(error);
+          reject(error);
+        })
         .on('end', () => {
           // second pass
           this.configureFfmpegCall(input, output, options)
             .addOptions('-pass', '2')
             .addOptions('-passlogfile', output)
-            .on('error', reject)
+            .on('error', (error) => {
+              endSpan(error);
+              reject(error);
+            })
             .on('end', () => handlePromiseError(fs.unlink(`${output}-0.log`), this.logger))
             .on('end', () => handlePromiseError(fs.rm(`${output}-0.log.mbtree`, { force: true }), this.logger))
-            .on('end', () => resolve())
+            .on('end', () => {
+              endSpan();
+              resolve();
+            })
             .run();
         })
         .run();
     });
   }
 
+  @Traced('media.getImageDimensions')
   async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
     const { width = 0, height = 0 } = await sharp(input).metadata();
+    const span = trace.getActiveSpan();
+    span?.setAttribute('media.width', width);
+    span?.setAttribute('media.height', height);
     return { width, height };
   }
 

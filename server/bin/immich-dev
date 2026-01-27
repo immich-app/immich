@@ -6,4 +6,17 @@ if [[ "$IMMICH_ENV" == "production" ]]; then
 fi
 
 cd /usr/src/app || exit
+
+# Compile telemetry-preload so it can be required before the app starts.
+# This is necessary for OpenTelemetry http instrumentation to work correctly.
+mkdir -p dist
+pnpm --filter immich exec tsc src/telemetry-preload.ts \
+  --outDir dist \
+  --esModuleInterop \
+  --module node16 \
+  --moduleResolution node16 \
+  --target ES2022 \
+  --skipLibCheck
+
+export NODE_OPTIONS="${NODE_OPTIONS} --require ./dist/telemetry-preload.js"
 pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch -- "$@"

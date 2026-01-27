@@ -1,21 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { MetricOptions } from '@opentelemetry/api';
-import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { IORedisInstrumentation } from '@opentelemetry/instrumentation-ioredis';
-import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-import { resourceFromAttributes } from '@opentelemetry/resources';
-import { AggregationType } from '@opentelemetry/sdk-metrics';
-import { NodeSDK, contextBase } from '@opentelemetry/sdk-node';
-import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { contextBase } from '@opentelemetry/sdk-node';
 import { ClassConstructor } from 'class-transformer';
 import { snakeCase, startCase } from 'lodash';
 import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
-import { serverVersion } from 'src/constants';
 import { ImmichTelemetry, MetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -51,49 +41,16 @@ export class MetricGroupRepository {
   }
 }
 
-const aggregationBoundaries = [
-  0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10_000,
-];
+// OpenTelemetry SDK is now initialized in telemetry-preload.ts
+// which runs before any modules are imported. This ensures the
+// global meter provider is available for nestjs-otel.
 
-let instance: NodeSDK | undefined;
-
-export const bootstrapTelemetry = (port: number) => {
-  if (instance) {
-    throw new Error('OpenTelemetry SDK already started');
-  }
-  instance = new NodeSDK({
-    resource: resourceFromAttributes({
-      [ATTR_SERVICE_NAME]: `immich`,
-      [ATTR_SERVICE_VERSION]: serverVersion.toString(),
-    }),
-    metricReader: new PrometheusExporter({ port }),
-    contextManager: new AsyncLocalStorageContextManager(),
-    instrumentations: [
-      new HttpInstrumentation(),
-      new IORedisInstrumentation(),
-      new NestInstrumentation(),
-      new PgInstrumentation(),
-    ],
-    views: [
-      {
-        instrumentName: '*',
-        instrumentUnit: 'ms',
-        aggregation: {
-          type: AggregationType.EXPLICIT_BUCKET_HISTOGRAM,
-          options: { boundaries: aggregationBoundaries },
-        },
-      },
-    ],
-  });
-
-  instance.start();
+export const bootstrapTelemetry = (_port: number) => {
+  // No-op: SDK is initialized in telemetry-preload.ts
 };
 
 export const teardownTelemetry = async () => {
-  if (instance) {
-    await instance.shutdown();
-    instance = undefined;
-  }
+  // No-op: SDK shutdown is handled by process exit
 };
 
 @Injectable()

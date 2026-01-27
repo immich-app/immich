@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { trace } from '@opentelemetry/api';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
@@ -9,6 +10,7 @@ import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { Traced } from 'src/utils/instrumentation';
 import { mimeTypes } from 'src/utils/mime-types';
 
 export interface WatchEvents {
@@ -106,9 +108,18 @@ export class StorageRepository {
     return createReadStream(filepath);
   }
 
+  @Traced('storage.createReadStream')
   async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {
     const { size } = await fs.stat(filepath);
     await fs.access(filepath, constants.R_OK);
+
+    const span = trace.getActiveSpan();
+    span?.setAttribute('file.path', filepath);
+    span?.setAttribute('file.size', size);
+    if (mimeType) {
+      span?.setAttribute('file.content_type', mimeType);
+    }
+
     return {
       stream: createReadStream(filepath),
       length: size,
@@ -116,10 +127,15 @@ export class StorageRepository {
     };
   }
 
+  @Traced('storage.readFile')
   async readFile(filepath: string, options?: ReadOptionsWithBuffer<Buffer>): Promise<Buffer> {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('file.path', filepath);
+
     const file = await fs.open(filepath);
     try {
-      const { buffer } = await file.read(options);
+      const { buffer, bytesRead } = await file.read(options);
+      span?.setAttribute('file.bytes_read', bytesRead);
       return buffer as Buffer;
     } finally {
       await file.close();

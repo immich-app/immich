@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { context, Span, SpanKind, SpanStatusCode, trace } from '@opentelemetry/api';
 import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { MachineLearningConfig } from 'src/config';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { Traced } from 'src/utils/instrumentation';
+
+const tracer = trace.getTracer('immich');
 
 export interface BoundingBox {
   x1: number;
@@ -162,36 +166,60 @@ export class MachineLearningRepository {
   }
 
   private async predict<T>(payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
-    const formData = await this.getFormData(payload, config);
+    const taskType = Object.keys(config)[0] as ModelTask;
 
-    for (const url of [
-      // try healthy servers first
-      ...this.config.urls.filter((url) => this.isHealthy(url)),
-      ...this.config.urls.filter((url) => !this.isHealthy(url)),
-    ]) {
-      try {
-        const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
-        if (response.ok) {
-          this.setHealthy(url, true);
-          return response.json();
+    return tracer.startActiveSpan('ml.predict', { kind: SpanKind.CLIENT }, context.active(), async (span: Span) => {
+      span.setAttribute('ml.task', taskType);
+
+      const formData = await this.getFormData(payload, config);
+      let attemptCount = 0;
+      let successUrl: string | undefined;
+
+      const urls = [
+        ...this.config.urls.filter((url) => this.isHealthy(url)),
+        ...this.config.urls.filter((url) => !this.isHealthy(url)),
+      ];
+
+      for (const url of urls) {
+        attemptCount++;
+        try {
+          const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
+          if (response.ok) {
+            this.setHealthy(url, true);
+            successUrl = url;
+            span.setAttribute('ml.url', url);
+            span.setAttribute('ml.attempts', attemptCount);
+            span.setStatus({ code: SpanStatusCode.OK });
+            span.end();
+            return response.json();
+          }
+
+          this.logger.warn(
+            `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
+          );
+        } catch (error: Error | unknown) {
+          this.logger.warn(
+            `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
+          );
         }
 
-        this.logger.warn(
-          `Machine learning request to "${url}" failed with status ${response.status}: ${response.statusText}`,
-        );
-      } catch (error: Error | unknown) {
-        this.logger.warn(
-          `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
-        );
+        this.setHealthy(url, false);
       }
 
-      this.setHealthy(url, false);
-    }
-
-    throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
+      span.setAttribute('ml.attempts', attemptCount);
+      const errorMessage = `Machine learning request '${JSON.stringify(config)}' failed for all URLs`;
+      span.setStatus({ code: SpanStatusCode.ERROR, message: errorMessage });
+      span.end();
+      throw new Error(errorMessage);
+    });
   }
 
+  @Traced({ name: 'ml.detectFaces', kind: SpanKind.CLIENT })
   async detectFaces(imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('ml.modelName', modelName);
+    span?.setAttribute('ml.minScore', minScore);
+
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, options: { minScore } },
@@ -206,19 +234,36 @@ export class MachineLearningRepository {
     };
   }
 
+  @Traced({ name: 'ml.encodeImage', kind: SpanKind.CLIENT })
   async encodeImage(imagePath: string, { modelName }: CLIPConfig) {
+    trace.getActiveSpan()?.setAttribute('ml.modelName', modelName);
+
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
     const response = await this.predict<ClipVisualResponse>({ imagePath }, request);
     return response[ModelTask.SEARCH];
   }
 
+  @Traced({ name: 'ml.encodeText', kind: SpanKind.CLIENT })
   async encodeText(text: string, { language, modelName }: TextEncodingOptions) {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('ml.modelName', modelName);
+    if (language) {
+      span?.setAttribute('ml.language', language);
+    }
+
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
     const response = await this.predict<ClipTextualResponse>({ text }, request);
     return response[ModelTask.SEARCH];
   }
 
+  @Traced({ name: 'ml.ocr', kind: SpanKind.CLIENT })
   async ocr(imagePath: string, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
+    const span = trace.getActiveSpan();
+    span?.setAttribute('ml.modelName', modelName);
+    span?.setAttribute('ml.minDetectionScore', minDetectionScore);
+    span?.setAttribute('ml.minRecognitionScore', minRecognitionScore);
+    span?.setAttribute('ml.maxResolution', maxResolution);
+
     const request = {
       [ModelTask.OCR]: {
         [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },

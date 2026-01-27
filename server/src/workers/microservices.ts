@@ -1,3 +1,6 @@
+// Must be first import - sets up OpenTelemetry SDK before any modules load
+import 'src/telemetry-preload';
+
 import { NestFactory } from '@nestjs/core';
 import { isMainThread } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module';
