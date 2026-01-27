@@ -331,7 +331,7 @@ describe(PersonService.name, () => {
       const asset = AssetFactory.from({ id: face.assetId }).exif().build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.person.getFaces.mockResolvedValue([face]);
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getForFaces.mockResolvedValue({ edits: [], ...asset.exifInfo });
       await expect(sut.getFacesById(auth, { id: face.assetId })).resolves.toStrictEqual([mapFaces(face, auth)]);
     });
 
