@@ -36,7 +36,7 @@ jobs:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
             i18n:
-              - modified: 'i18n/!(en)**\.json'
+              - modified: 'i18n/!(en|package)**\.json'
           skip-force-logic: 'true'
 
   enforce-lock:
