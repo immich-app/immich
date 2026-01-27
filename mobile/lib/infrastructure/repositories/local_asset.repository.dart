@@ -111,7 +111,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<Map<String, List<RemoteDeletedLocalAsset>>> getAssetsFromBackupAlbums(
-      Map<String, DateTime> trashedAssetsMap,) async {
+    Map<String, DateTime> trashedAssetsMap,
+  ) async {
     if (trashedAssetsMap.isEmpty) {
       return {};
     }
@@ -133,10 +134,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
         (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
-          RemoteDeletedLocalAsset(
-            asset: assetData.toDto(),
-            remoteDeletedAt: trashedAssetsMap[assetData.checksum]!,
-          ),
+          RemoteDeletedLocalAsset(asset: assetData.toDto(), remoteDeletedAt: trashedAssetsMap[assetData.checksum]!),
         );
       }
     }
