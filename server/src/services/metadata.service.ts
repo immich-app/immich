@@ -566,10 +566,10 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {
-    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const asset = await this.assetRepository.getForMetadataExtractionTags(id);
     const results = await upsertTags(this.tagRepository, {
       userId: ownerId,
-      tags: asset?.exifInfo?.tags ?? [],
+      tags: asset?.tags ?? [],
     });
     await this.tagRepository.replaceAssetTags(
       id,

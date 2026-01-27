@@ -127,10 +127,10 @@ export class PersonService extends BaseService {
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
     const faces = await this.personRepository.getFaces(dto.id);
-    const asset = await this.assetRepository.getById(dto.id, { edits: true, exifInfo: true });
-    const assetDimensions = getDimensions(asset!.exifInfo!);
+    const asset = await this.assetRepository.getForFaces(dto.id);
+    const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset!.edits!, assetDimensions));
+    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {

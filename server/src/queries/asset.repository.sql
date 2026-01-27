@@ -663,3 +663,57 @@ from
   inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
   "asset"."id" = $1
+
+-- AssetRepository.getForMetadataExtractionTags
+select
+  "asset_exif"."tags"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
+
+-- AssetRepository.getForFaces
+select
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."orientation",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForUpdateTags
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tag"."value"
+        from
+          "tag"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+        where
+          "asset"."id" = "tag_asset"."assetId"
+      ) as agg
+  ) as "tags"
+from
+  "asset"
+where
+  "asset"."id" = $1

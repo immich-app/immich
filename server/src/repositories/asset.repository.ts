@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
@@ -1079,5 +1080,42 @@ export class AssetRepository {
         'asset_exif.projectionType',
       ])
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForMetadataExtractionTags(id: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.tags')
+      .where('asset_exif.assetId', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForFaces(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(withEdits)
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForUpdateTags(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('tag')
+            .select('tag.value')
+            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+            .whereRef('asset.id', '=', 'tag_asset.assetId'),
+        ).as('tags'),
+      )
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
   }
 }
