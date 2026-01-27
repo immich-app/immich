@@ -5,8 +5,7 @@ import { PartnerDirection } from 'src/repositories/partner.repository';
 import { ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class PartnerCreateDto {
-  @ApiProperty({ description: 'User ID to share with' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'User ID to share with' })
   sharedWithId!: string;
 }
 
@@ -17,8 +16,7 @@ export class PartnerUpdateDto {
 }
 
 export class PartnerSearchDto {
-  @ApiProperty({ description: 'Partner direction', enum: PartnerDirection })
-  @ValidateEnum({ enum: PartnerDirection, name: 'PartnerDirection' })
+  @ValidateEnum({ enum: PartnerDirection, name: 'PartnerDirection', description: 'Partner direction' })
   direction!: PartnerDirection;
 }
 

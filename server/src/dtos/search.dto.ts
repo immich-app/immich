@@ -9,8 +9,8 @@ import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ApiPropertyOptional({ description: 'Library ID to filter by', nullable: true })
-  @ValidateUUID({ optional: true, nullable: true })
+  @ApiPropertyOptional({ description: 'Library ID to filter by' })
+  @ValidateUUID({ optional: true })
   libraryId?: string | null;
 
   @ApiPropertyOptional({ description: 'Device ID to filter by' })
@@ -19,8 +19,7 @@ class BaseSearchDto {
   @Optional()
   deviceId?: string;
 
-  @ApiPropertyOptional({ description: 'Asset type filter', enum: AssetType })
-  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', optional: true })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', optional: true, description: 'Asset type filter' })
   type?: AssetType;
 
   @ApiPropertyOptional({ description: 'Filter by encoded status' })
@@ -39,8 +38,7 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by visibility', enum: AssetVisibility })
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true, description: 'Filter by visibility' })
   visibility?: AssetVisibility;
 
   @ApiPropertyOptional({ description: 'Filter by creation date (before)', format: 'date-time' })
@@ -75,17 +73,17 @@ class BaseSearchDto {
   @ValidateDate({ optional: true })
   takenAfter?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by city name', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by city name' })
   @IsString()
   @Optional({ nullable: true, emptyToNull: true })
   city?: string | null;
 
-  @ApiPropertyOptional({ description: 'Filter by state/province name', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by state/province name' })
   @IsString()
   @Optional({ nullable: true, emptyToNull: true })
   state?: string | null;
 
-  @ApiPropertyOptional({ description: 'Filter by country name', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by country name' })
   @IsString()
   @IsNotEmpty()
   @Optional({ nullable: true, emptyToNull: true })
@@ -96,12 +94,12 @@ class BaseSearchDto {
   @Optional({ nullable: true, emptyToNull: true })
   make?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by camera model', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by camera model' })
   @IsString()
   @Optional({ nullable: true, emptyToNull: true })
   model?: string | null;
 
-  @ApiPropertyOptional({ description: 'Filter by lens model', nullable: true })
+  @ApiPropertyOptional({ description: 'Filter by lens model' })
   @IsString()
   @Optional({ nullable: true, emptyToNull: true })
   lensModel?: string | null;
@@ -110,19 +108,16 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isNotInAlbum?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by person IDs', type: [String] })
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateUUID({ each: true, optional: true, description: 'Filter by person IDs' })
   personIds?: string[];
 
-  @ApiPropertyOptional({ description: 'Filter by tag IDs', type: [String], nullable: true })
-  @ValidateUUID({ each: true, optional: true, nullable: true })
+  @ValidateUUID({ each: true, optional: true, description: 'Filter by tag IDs' })
   tagIds?: string[] | null;
 
-  @ApiPropertyOptional({ description: 'Filter by album IDs', type: [String] })
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateUUID({ each: true, optional: true, description: 'Filter by album IDs' })
   albumIds?: string[];
 
-  @ApiPropertyOptional({ type: 'number', description: 'Filter by rating (-1 to 5)', minimum: -1, maximum: 5 })
+  @ApiPropertyOptional({ type: 'number', description: 'Filter by rating', minimum: -1, maximum: 5 })
   @Optional()
   @IsInt()
   @Max(5)
@@ -137,12 +132,10 @@ class BaseSearchDto {
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {
-  @ApiPropertyOptional({ description: 'Include deleted assets' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include deleted assets' })
   withDeleted?: boolean;
 
-  @ApiPropertyOptional({ description: 'Include EXIF data in response' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include EXIF data in response' })
   withExif?: boolean;
 
   @ApiPropertyOptional({ type: 'number', description: 'Number of results to return', minimum: 1, maximum: 1000 })
@@ -155,12 +148,10 @@ class BaseSearchWithResultsDto extends BaseSearchDto {
 }
 
 export class RandomSearchDto extends BaseSearchWithResultsDto {
-  @ApiPropertyOptional({ description: 'Include stacked assets' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include stacked assets' })
   withStacked?: boolean;
 
-  @ApiPropertyOptional({ description: 'Include assets with people' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include assets with people' })
   withPeople?: boolean;
 }
 
@@ -174,8 +165,7 @@ export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
 }
 
 export class MetadataSearchDto extends RandomSearchDto {
-  @ApiPropertyOptional({ description: 'Filter by asset ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by asset ID' })
   id?: string;
 
   @ApiPropertyOptional({ description: 'Filter by device asset ID' })
@@ -184,8 +174,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   deviceAssetId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by description text' })
-  @ValidateString({ optional: true, trim: true })
+  @ValidateString({ optional: true, trim: true, description: 'Filter by description text' })
   description?: string;
 
   @ApiPropertyOptional({ description: 'Filter by file checksum' })
@@ -194,8 +183,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   checksum?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by original file name' })
-  @ValidateString({ optional: true, trim: true })
+  @ValidateString({ optional: true, trim: true, description: 'Filter by original file name' })
   originalFileName?: string;
 
   @ApiPropertyOptional({ description: 'Filter by original file path' })
@@ -222,8 +210,13 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   encodedVideoPath?: string;
 
-  @ApiPropertyOptional({ description: 'Sort order', enum: AssetOrder, default: AssetOrder.Desc })
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
+  @ValidateEnum({
+    enum: AssetOrder,
+    name: 'AssetOrder',
+    optional: true,
+    default: AssetOrder.Desc,
+    description: 'Sort order',
+  })
   order?: AssetOrder;
 
   @ApiPropertyOptional({ type: 'number', description: 'Page number', minimum: 1 })
@@ -235,19 +228,15 @@ export class MetadataSearchDto extends RandomSearchDto {
 }
 
 export class StatisticsSearchDto extends BaseSearchDto {
-  @ApiPropertyOptional({ description: 'Filter by description text' })
-  @ValidateString({ optional: true, trim: true })
+  @ValidateString({ optional: true, trim: true, description: 'Filter by description text' })
   description?: string;
 }
 
 export class SmartSearchDto extends BaseSearchWithResultsDto {
-  @ApiPropertyOptional({ description: 'Natural language search query' })
-  @ValidateString({ optional: true, trim: true })
+  @ValidateString({ optional: true, trim: true, description: 'Natural language search query' })
   query?: string;
 
-  @ApiPropertyOptional({ description: 'Asset ID to use as search reference' })
-  @ValidateUUID({ optional: true })
-  @Optional()
+  @ValidateUUID({ optional: true, description: 'Asset ID to use as search reference' })
   queryAssetId?: string;
 
   @ApiPropertyOptional({ description: 'Search language code' })
@@ -277,8 +266,7 @@ export class SearchPeopleDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Include hidden people' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include hidden people' })
   withHidden?: boolean;
 }
 
@@ -315,8 +303,7 @@ export enum SearchSuggestionType {
 }
 
 export class SearchSuggestionRequestDto {
-  @ApiProperty({ description: 'Suggestion type', enum: SearchSuggestionType })
-  @ValidateEnum({ enum: SearchSuggestionType, name: 'SearchSuggestionType' })
+  @ValidateEnum({ enum: SearchSuggestionType, name: 'SearchSuggestionType', description: 'Suggestion type' })
   type!: SearchSuggestionType;
 
   @ApiPropertyOptional({ description: 'Filter by country' })
@@ -344,9 +331,11 @@ export class SearchSuggestionRequestDto {
   @Optional()
   lensModel?: string;
 
-  @ApiPropertyOptional({ description: 'Include null values in suggestions' })
   @ValidateBoolean({ optional: true })
-  @Property({ history: new HistoryBuilder().added('v1.111.0').stable('v2') })
+  @Property({
+    description: 'Include null values in suggestions',
+    history: new HistoryBuilder().added('v1.111.0').stable('v2'),
+  })
   includeNull?: boolean;
 }
 
@@ -360,7 +349,7 @@ class SearchFacetCountResponseDto {
 class SearchFacetResponseDto {
   @ApiProperty({ description: 'Facet field name' })
   fieldName!: string;
-  @ApiProperty({ description: 'Facet counts', type: () => [SearchFacetCountResponseDto] })
+  @ApiProperty({ description: 'Facet counts' })
   counts!: SearchFacetCountResponseDto[];
 }
 

@@ -18,12 +18,10 @@ export enum AssetMediaSize {
 }
 
 export class AssetMediaOptionsDto {
-  @ApiProperty({ description: 'Asset media size', enum: AssetMediaSize, required: false })
-  @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
+  @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', description: 'Asset media size', optional: true })
   size?: AssetMediaSize;
 
-  @ApiPropertyOptional({ description: 'Return edited asset if available', default: false })
-  @ValidateBoolean({ optional: true, default: false })
+  @ValidateBoolean({ optional: true, description: 'Return edited asset if available', default: false })
   edited?: boolean;
 }
 
@@ -69,19 +67,16 @@ class AssetMediaBase {
 }
 
 export class AssetMediaCreateDto extends AssetMediaBase {
-  @ApiPropertyOptional({ description: 'Mark as favorite' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Mark as favorite' })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Asset visibility', enum: AssetVisibility })
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', description: 'Asset visibility', optional: true })
   visibility?: AssetVisibility;
 
-  @ApiPropertyOptional({ description: 'Live photo video ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Live photo video ID' })
   livePhotoVideoId?: string;
 
-  @ApiPropertyOptional({ description: 'Asset metadata items', type: () => [AssetMetadataUpsertItemDto] })
+  @ApiPropertyOptional({ description: 'Asset metadata items' })
   @Transform(({ value }) => {
     try {
       const json = JSON.parse(value);
@@ -115,7 +110,7 @@ export class AssetBulkUploadCheckItem {
 }
 
 export class AssetBulkUploadCheckDto {
-  @ApiProperty({ description: 'Assets to check', type: [AssetBulkUploadCheckItem] })
+  @ApiProperty({ description: 'Assets to check' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetBulkUploadCheckItem)
@@ -123,7 +118,7 @@ export class AssetBulkUploadCheckDto {
 }
 
 export class CheckExistingAssetsDto {
-  @ApiProperty({ description: 'Device asset IDs to check', type: [String] })
+  @ApiProperty({ description: 'Device asset IDs to check' })
   @ArrayNotEmpty()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })

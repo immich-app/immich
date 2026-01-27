@@ -20,7 +20,7 @@ class DuplicateDetectionConfig {
   /// Whether the task is enabled
   bool enabled;
 
-  /// Maximum distance threshold for duplicate detection (0.001-0.1)
+  /// Maximum distance threshold for duplicate detection
   ///
   /// Minimum value: 0.001
   /// Maximum value: 0.1

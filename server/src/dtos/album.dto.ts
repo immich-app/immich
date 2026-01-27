@@ -21,24 +21,26 @@ export class AlbumUserAddDto {
   @ValidateUUID()
   userId!: string;
 
-  @ApiPropertyOptional({ description: 'Album user role', enum: AlbumUserRole, default: AlbumUserRole.Editor })
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', default: AlbumUserRole.Editor })
+  @ValidateEnum({
+    enum: AlbumUserRole,
+    name: 'AlbumUserRole',
+    description: 'Album user role',
+    default: AlbumUserRole.Editor,
+  })
   role?: AlbumUserRole;
 }
 
 export class AddUsersDto {
-  @ApiProperty({ description: 'Album users to add', type: () => [AlbumUserAddDto] })
+  @ApiProperty({ description: 'Album users to add' })
   @ArrayNotEmpty()
   albumUsers!: AlbumUserAddDto[];
 }
 
 export class AlbumUserCreateDto {
-  @ApiProperty({ description: 'User ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'User ID' })
   userId!: string;
 
-  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', description: 'Album user role' })
   role!: AlbumUserRole;
 }
 
@@ -52,33 +54,30 @@ export class CreateAlbumDto {
   @Optional()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Album users', type: () => [AlbumUserCreateDto] })
+  @ApiPropertyOptional({ description: 'Album users' })
   @Optional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AlbumUserCreateDto)
   albumUsers?: AlbumUserCreateDto[];
 
-  @ApiPropertyOptional({ description: 'Initial asset IDs', type: [String] })
+  @ApiPropertyOptional({ description: 'Initial asset IDs' })
   @ValidateUUID({ optional: true, each: true })
   assetIds?: string[];
 }
 
 export class AlbumsAddAssetsDto {
-  @ApiProperty({ description: 'Album IDs', type: [String] })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Album IDs' })
   albumIds!: string[];
 
-  @ApiProperty({ description: 'Asset IDs', type: [String] })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs' })
   assetIds!: string[];
 }
 
 export class AlbumsAddAssetsResponseDto {
   @ApiProperty({ description: 'Operation success' })
   success!: boolean;
-  @ApiPropertyOptional({ description: 'Error reason', enum: BulkIdErrorReason })
-  @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', optional: true })
+  @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', description: 'Error reason', optional: true })
   error?: BulkIdErrorReason;
 }
 
@@ -101,8 +100,7 @@ export class UpdateAlbumDto {
   @ValidateBoolean({ optional: true })
   isActivityEnabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Asset sort order', enum: AssetOrder })
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
   order?: AssetOrder;
 }
 
@@ -130,8 +128,7 @@ export class AlbumStatisticsResponseDto {
 }
 
 export class UpdateAlbumUserDto {
-  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', description: 'Album user role' })
   role!: AlbumUserRole;
 }
 
@@ -139,8 +136,7 @@ export class AlbumUserResponseDto {
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
   user!: UserResponseDto;
-  @ApiProperty({ description: 'Album user role', enum: AlbumUserRole })
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', description: 'Album user role' })
   role!: AlbumUserRole;
 }
 
@@ -165,7 +161,7 @@ export class AlbumResponseDto {
   createdAt!: Date;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: Date;
-  @ApiProperty({ description: 'Thumbnail asset ID', nullable: true })
+  @ApiProperty({ description: 'Thumbnail asset ID' })
   albumThumbnailAssetId!: string | null;
   @ApiProperty({ description: 'Is shared album' })
   shared!: boolean;
@@ -190,8 +186,7 @@ export class AlbumResponseDto {
   endDate?: Date;
   @ApiProperty({ description: 'Activity feed enabled' })
   isActivityEnabled!: boolean;
-  @ApiPropertyOptional({ description: 'Asset sort order', enum: AssetOrder })
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
   order?: AssetOrder;
 
   // Description lives on schema to avoid duplication

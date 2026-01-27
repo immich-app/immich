@@ -18,20 +18,16 @@ class MemoryBaseDto {
 }
 
 export class MemorySearchDto {
-  @ApiPropertyOptional({ description: 'Memory type', enum: MemoryType })
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', optional: true })
+  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type', optional: true })
   type?: MemoryType;
 
-  @ApiPropertyOptional({ description: 'Filter by date', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by date' })
   for?: Date;
 
-  @ApiPropertyOptional({ description: 'Include trashed memories' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include trashed memories' })
   isTrashed?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by saved status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by saved status' })
   isSaved?: boolean;
 
   @IsInt()
@@ -41,8 +37,7 @@ export class MemorySearchDto {
   @ApiProperty({ type: 'integer', description: 'Number of memories to return' })
   size?: number;
 
-  @ApiPropertyOptional({ description: 'Sort order', enum: AssetOrderWithRandom })
-  @ValidateEnum({ enum: AssetOrderWithRandom, name: 'MemorySearchOrder', optional: true })
+  @ValidateEnum({ enum: AssetOrderWithRandom, name: 'MemorySearchOrder', description: 'Sort order', optional: true })
   order?: AssetOrderWithRandom;
 }
 
@@ -56,14 +51,12 @@ class OnThisDayDto {
 type MemoryData = OnThisDayDto;
 
 export class MemoryUpdateDto extends MemoryBaseDto {
-  @ApiPropertyOptional({ description: 'Memory date', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Memory date' })
   memoryAt?: Date;
 }
 
 export class MemoryCreateDto extends MemoryBaseDto {
-  @ApiProperty({ description: 'Memory type', enum: MemoryType })
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
+  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
   type!: MemoryType;
 
   // Description lives on schema to avoid duplication
@@ -83,12 +76,10 @@ export class MemoryCreateDto extends MemoryBaseDto {
   })
   data!: MemoryData;
 
-  @ApiProperty({ description: 'Memory date', format: 'date-time' })
-  @ValidateDate()
+  @ValidateDate({ description: 'Memory date' })
   memoryAt!: Date;
 
-  @ApiPropertyOptional({ description: 'Asset IDs to associate with memory', type: [String] })
-  @ValidateUUID({ optional: true, each: true })
+  @ValidateUUID({ optional: true, each: true, description: 'Asset IDs to associate with memory' })
   assetIds?: string[];
 }
 
@@ -100,24 +91,23 @@ export class MemoryStatisticsResponseDto {
 export class MemoryResponseDto {
   @ApiProperty({ description: 'Memory ID' })
   id!: string;
-  @ApiProperty({ description: 'Creation date', format: 'date-time' })
+  @ValidateDate({ description: 'Creation date' })
   createdAt!: Date;
-  @ApiProperty({ description: 'Last update date', format: 'date-time' })
+  @ValidateDate({ description: 'Last update date' })
   updatedAt!: Date;
-  @ApiPropertyOptional({ description: 'Deletion date', format: 'date-time' })
+  @ValidateDate({ optional: true, description: 'Deletion date' })
   deletedAt?: Date;
-  @ApiProperty({ description: 'Memory date', format: 'date-time' })
+  @ValidateDate({ description: 'Memory date' })
   memoryAt!: Date;
-  @ApiPropertyOptional({ description: 'Date when memory was seen', format: 'date-time' })
+  @ValidateDate({ optional: true, description: 'Date when memory was seen' })
   seenAt?: Date;
-  @ApiPropertyOptional({ description: 'Date when memory should be shown', format: 'date-time' })
+  @ValidateDate({ optional: true, description: 'Date when memory should be shown' })
   showAt?: Date;
-  @ApiPropertyOptional({ description: 'Date when memory should be hidden', format: 'date-time' })
+  @ValidateDate({ optional: true, description: 'Date when memory should be hidden' })
   hideAt?: Date;
   @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
-  @ApiProperty({ description: 'Memory type', enum: MemoryType })
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
+  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
   type!: MemoryType;
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })

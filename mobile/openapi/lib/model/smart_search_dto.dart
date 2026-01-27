@@ -199,7 +199,7 @@ class SmartSearchDto {
   ///
   String? queryAssetId;
 
-  /// Filter by rating (-1 to 5)
+  /// Filter by rating
   ///
   /// Minimum value: -1
   /// Maximum value: 5

@@ -2,50 +2,50 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exif } from 'src/database';
 
 export class ExifResponseDto {
-  @ApiPropertyOptional({ description: 'Camera make', nullable: true })
+  @ApiPropertyOptional({ description: 'Camera make' })
   make?: string | null = null;
-  @ApiPropertyOptional({ description: 'Camera model', nullable: true })
+  @ApiPropertyOptional({ description: 'Camera model' })
   model?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Image width in pixels', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Image width in pixels' })
   exifImageWidth?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Image height in pixels', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Image height in pixels' })
   exifImageHeight?: number | null = null;
 
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'File size in bytes', nullable: true })
+  @ApiProperty({ type: 'integer', format: 'int64', description: 'File size in bytes' })
   fileSizeInByte?: number | null = null;
-  @ApiPropertyOptional({ description: 'Image orientation', nullable: true })
+  @ApiPropertyOptional({ description: 'Image orientation' })
   orientation?: string | null = null;
-  @ApiPropertyOptional({ description: 'Original date/time', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Original date/time', format: 'date-time' })
   dateTimeOriginal?: Date | null = null;
-  @ApiPropertyOptional({ description: 'Modification date/time', format: 'date-time', nullable: true })
+  @ApiPropertyOptional({ description: 'Modification date/time', format: 'date-time' })
   modifyDate?: Date | null = null;
-  @ApiPropertyOptional({ description: 'Time zone', nullable: true })
+  @ApiPropertyOptional({ description: 'Time zone' })
   timeZone?: string | null = null;
-  @ApiPropertyOptional({ description: 'Lens model', nullable: true })
+  @ApiPropertyOptional({ description: 'Lens model' })
   lensModel?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'F-number (aperture)', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'F-number (aperture)' })
   fNumber?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Focal length in mm', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Focal length in mm' })
   focalLength?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'ISO sensitivity', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'ISO sensitivity' })
   iso?: number | null = null;
-  @ApiPropertyOptional({ description: 'Exposure time', nullable: true })
+  @ApiPropertyOptional({ description: 'Exposure time' })
   exposureTime?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'GPS latitude', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'GPS latitude' })
   latitude?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'GPS longitude', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'GPS longitude' })
   longitude?: number | null = null;
-  @ApiPropertyOptional({ description: 'City name', nullable: true })
+  @ApiPropertyOptional({ description: 'City name' })
   city?: string | null = null;
-  @ApiPropertyOptional({ description: 'State/province name', nullable: true })
+  @ApiPropertyOptional({ description: 'State/province name' })
   state?: string | null = null;
-  @ApiPropertyOptional({ description: 'Country name', nullable: true })
+  @ApiPropertyOptional({ description: 'Country name' })
   country?: string | null = null;
-  @ApiPropertyOptional({ description: 'Image description', nullable: true })
+  @ApiPropertyOptional({ description: 'Image description' })
   description?: string | null = null;
-  @ApiPropertyOptional({ description: 'Projection type', nullable: true })
+  @ApiPropertyOptional({ description: 'Projection type' })
   projectionType?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Rating (-1 to 5)', nullable: true })
+  @ApiPropertyOptional({ type: 'number', description: 'Rating' })
   rating?: number | null = null;
 }
 

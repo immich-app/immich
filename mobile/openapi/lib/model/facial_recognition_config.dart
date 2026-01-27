@@ -23,7 +23,7 @@ class FacialRecognitionConfig {
   /// Whether the task is enabled
   bool enabled;
 
-  /// Maximum distance threshold for face recognition (0.1-2)
+  /// Maximum distance threshold for face recognition
   ///
   /// Minimum value: 0.1
   /// Maximum value: 2
@@ -34,7 +34,7 @@ class FacialRecognitionConfig {
   /// Minimum value: 1
   int minFaces;
 
-  /// Minimum confidence score for face detection (0.1-1)
+  /// Minimum confidence score for face detection
   ///
   /// Minimum value: 0.1
   /// Maximum value: 1

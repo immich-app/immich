@@ -28,13 +28,13 @@ class OcrConfig {
   /// Minimum value: 1
   int maxResolution;
 
-  /// Minimum confidence score for text detection (0.1-1)
+  /// Minimum confidence score for text detection
   ///
   /// Minimum value: 0.1
   /// Maximum value: 1
   double minDetectionScore;
 
-  /// Minimum confidence score for text recognition (0.1-1)
+  /// Minimum confidence score for text recognition
   ///
   /// Minimum value: 0.1
   /// Maximum value: 1

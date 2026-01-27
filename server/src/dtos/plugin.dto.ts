@@ -6,11 +6,9 @@ import type { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
 export class PluginTriggerResponseDto {
-  @ApiProperty({ description: 'Trigger type', enum: PluginTriggerType })
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Trigger type' })
   type!: PluginTriggerType;
-  @ApiProperty({ description: 'Context type', enum: PluginContextType })
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', description: 'Context type' })
   contextType!: PluginContextType;
 }
 
@@ -31,9 +29,9 @@ export class PluginResponseDto {
   createdAt!: string;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: string;
-  @ApiProperty({ description: 'Plugin filters', type: () => [PluginFilterResponseDto] })
+  @ApiProperty({ description: 'Plugin filters' })
   filters!: PluginFilterResponseDto[];
-  @ApiProperty({ description: 'Plugin actions', type: () => [PluginActionResponseDto] })
+  @ApiProperty({ description: 'Plugin actions' })
   actions!: PluginActionResponseDto[];
 }
 
@@ -49,10 +47,9 @@ export class PluginFilterResponseDto {
   @ApiProperty({ description: 'Filter description' })
   description!: string;
 
-  @ApiProperty({ description: 'Supported contexts', enum: PluginContextType, isArray: true })
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', each: true, description: 'Supported contexts' })
   supportedContexts!: PluginContextType[];
-  @ApiProperty({ description: 'Filter schema', nullable: true })
+  @ApiProperty({ description: 'Filter schema' })
   schema!: JSONSchema | null;
 }
 
@@ -68,10 +65,9 @@ export class PluginActionResponseDto {
   @ApiProperty({ description: 'Action description' })
   description!: string;
 
-  @ApiProperty({ description: 'Supported contexts', enum: PluginContextType, isArray: true })
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType' })
+  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', each: true, description: 'Supported contexts' })
   supportedContexts!: PluginContextType[];
-  @ApiProperty({ description: 'Action schema', nullable: true })
+  @ApiProperty({ description: 'Action schema' })
   schema!: JSONSchema | null;
 }
 

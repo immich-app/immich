@@ -29,7 +29,7 @@ export class PersonCreateDto {
   name?: string;
 
   // Note: the mobile app cannot currently set the birth date to null.
-  @ApiProperty({ format: 'date', description: 'Person date of birth', required: false, nullable: true })
+  @ApiProperty({ format: 'date', description: 'Person date of birth', required: false })
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true, emptyToNull: true })
@@ -43,8 +43,8 @@ export class PersonCreateDto {
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Person color (hex)', nullable: true })
-  @Optional({ emptyToNull: true, nullable: true })
+  @ApiPropertyOptional({ description: 'Person color (hex)' })
+  @Optional({ emptyToNull: true })
   @ValidateHexColor()
   color?: string | null;
 }
@@ -56,7 +56,7 @@ export class PersonUpdateDto extends PersonCreateDto {
 }
 
 export class PeopleUpdateDto {
-  @ApiProperty({ description: 'People to update', type: () => [PeopleUpdateItem] })
+  @ApiProperty({ description: 'People to update' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PeopleUpdateItem)
@@ -71,7 +71,7 @@ export class PeopleUpdateItem extends PersonUpdateDto {
 }
 
 export class MergePersonDto {
-  @ApiProperty({ description: 'Person IDs to merge', type: [String] })
+  @ApiProperty({ description: 'Person IDs to merge' })
   @ValidateUUID({ each: true })
   ids!: string[];
 }
@@ -106,7 +106,7 @@ export class PersonResponseDto {
   id!: string;
   @ApiProperty({ description: 'Person name' })
   name!: string;
-  @ApiProperty({ format: 'date', description: 'Person date of birth', nullable: true })
+  @ApiProperty({ format: 'date', description: 'Person date of birth' })
   birthDate!: string | null;
   @ApiProperty({ description: 'Thumbnail path' })
   thumbnailPath!: string;
@@ -124,13 +124,12 @@ export class PersonResponseDto {
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
-  @ApiProperty({ description: 'Face detections', type: () => [AssetFaceWithoutPersonResponseDto] })
+  @ApiProperty({ description: 'Face detections' })
   faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
 export class AssetFaceWithoutPersonResponseDto {
-  @ApiProperty({ description: 'Face ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Face ID' })
   id!: string;
   @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
   imageHeight!: number;
@@ -144,18 +143,17 @@ export class AssetFaceWithoutPersonResponseDto {
   boundingBoxY1!: number;
   @ApiProperty({ type: 'integer', description: 'Bounding box Y2 coordinate' })
   boundingBoxY2!: number;
-  @ApiPropertyOptional({ description: 'Face detection source type', enum: SourceType })
-  @ValidateEnum({ enum: SourceType, name: 'SourceType' })
+  @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
   sourceType?: SourceType;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
-  @ApiProperty({ description: 'Person associated with face', type: PersonResponseDto, nullable: true })
+  @ApiProperty({ description: 'Person associated with face' })
   person!: PersonResponseDto | null;
 }
 
 export class AssetFaceUpdateDto {
-  @ApiProperty({ description: 'Face update items', type: () => [AssetFaceUpdateItem] })
+  @ApiProperty({ description: 'Face update items' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetFaceUpdateItem)
@@ -163,18 +161,15 @@ export class AssetFaceUpdateDto {
 }
 
 export class FaceDto {
-  @ApiProperty({ description: 'Face ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Face ID' })
   id!: string;
 }
 
 export class AssetFaceUpdateItem {
-  @ApiProperty({ description: 'Person ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Person ID' })
   personId!: string;
 
-  @ApiProperty({ description: 'Asset ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Asset ID' })
   assetId!: string;
 }
 
@@ -226,12 +221,14 @@ export class PeopleResponseDto {
   total!: number;
   @ApiProperty({ type: 'integer', description: 'Number of hidden people' })
   hidden!: number;
-  @ApiProperty({ description: 'List of people', type: () => [PersonResponseDto] })
+  @ApiProperty({ description: 'List of people' })
   people!: PersonResponseDto[];
 
   // TODO: make required after a few versions
-  @ApiPropertyOptional({ description: 'Whether there are more pages' })
-  @Property({ history: new HistoryBuilder().added('v1.110.0').stable('v2') })
+  @Property({
+    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
+    description: 'Whether there are more pages',
+  })
   hasNextPage?: boolean;
 }
 

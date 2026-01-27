@@ -94,7 +94,7 @@ class ExifResponseDto {
   /// Projection type
   String? projectionType;
 
-  /// Rating (-1 to 5)
+  /// Rating
   num? rating;
 
   /// State/province name

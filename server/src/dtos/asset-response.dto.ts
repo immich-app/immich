@@ -23,8 +23,7 @@ import { ValidateEnum } from 'src/validation';
 export class SanitizedAssetResponseDto {
   @ApiProperty({ description: 'Asset ID' })
   id!: string;
-  @ApiProperty({ description: 'Asset type', enum: AssetType })
-  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', description: 'Asset type' })
   type!: AssetType;
   @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
   thumbhash!: string | null;
@@ -40,7 +39,7 @@ export class SanitizedAssetResponseDto {
   localDateTime!: Date;
   @ApiProperty({ description: 'Video duration (for videos)' })
   duration!: string;
-  @ApiPropertyOptional({ description: 'Live photo video ID', nullable: true })
+  @ApiPropertyOptional({ description: 'Live photo video ID' })
   livePhotoVideoId?: string | null;
   @ApiProperty({ description: 'Whether asset has metadata' })
   hasMetadata!: boolean;
@@ -67,7 +66,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
   owner?: UserResponseDto;
-  @ApiPropertyOptional({ description: 'Library ID (deprecated)', nullable: true })
+  @ApiPropertyOptional({ description: 'Library ID (deprecated)' })
   @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
   libraryId?: string | null;
   @ApiProperty({ description: 'Original file path' })
@@ -106,8 +105,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isTrashed!: boolean;
   @ApiProperty({ description: 'Is offline' })
   isOffline!: boolean;
-  @ApiProperty({ description: 'Asset visibility', enum: AssetVisibility })
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', description: 'Asset visibility' })
   visibility!: AssetVisibility;
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
@@ -126,7 +124,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
   stack?: AssetStackResponseDto | null;
-  @ApiPropertyOptional({ description: 'Duplicate group ID', nullable: true })
+  @ApiPropertyOptional({ description: 'Duplicate group ID' })
   duplicateId?: string | null;
 
   @ApiPropertyOptional({ description: 'Is resized (deprecated)' })

@@ -21,15 +21,14 @@ export class ActivityResponseDto {
   id!: string;
   @ApiProperty({ description: 'Creation date', format: 'date-time' })
   createdAt!: Date;
-  @ApiProperty({ description: 'Activity type', enum: ReactionType })
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType' })
+  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Activity type' })
   type!: ReactionType;
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
   user!: UserResponseDto;
   @ApiProperty({ description: 'Asset ID (if activity is for an asset)' })
   assetId!: string | null;
-  @ApiPropertyOptional({ description: 'Comment text (for comment activities)', nullable: true })
+  @ApiPropertyOptional({ description: 'Comment text (for comment activities)' })
   comment?: string | null;
 }
 
@@ -52,24 +51,20 @@ export class ActivityDto {
 }
 
 export class ActivitySearchDto extends ActivityDto {
-  @ApiPropertyOptional({ description: 'Filter by activity type', enum: ReactionType })
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', optional: true })
+  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Filter by activity type', optional: true })
   type?: ReactionType;
 
-  @ApiPropertyOptional({ description: 'Filter by activity level', enum: ReactionLevel })
-  @ValidateEnum({ enum: ReactionLevel, name: 'ReactionLevel', optional: true })
+  @ValidateEnum({ enum: ReactionLevel, name: 'ReactionLevel', description: 'Filter by activity level', optional: true })
   level?: ReactionLevel;
 
-  @ApiPropertyOptional({ description: 'Filter by user ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by user ID' })
   userId?: string;
 }
 
 const isComment = (dto: ActivityCreateDto) => dto.type === ReactionType.COMMENT;
 
 export class ActivityCreateDto extends ActivityDto {
-  @ApiProperty({ description: 'Activity type (like or comment)', enum: ReactionType })
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType' })
+  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Activity type (like or comment)' })
   type!: ReactionType;
 
   @ApiPropertyOptional({ description: 'Comment text (required if type is comment)' })

@@ -71,7 +71,7 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
-  /// Rating (-1 to 5)
+  /// Rating
   ///
   /// Minimum value: -1
   /// Maximum value: 5

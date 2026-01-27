@@ -14,7 +14,7 @@ export class CreateLibraryDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Import paths (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Import paths (max 128)' })
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -22,7 +22,7 @@ export class CreateLibraryDto {
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -38,7 +38,7 @@ export class UpdateLibraryDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Import paths (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Import paths (max 128)' })
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -46,7 +46,7 @@ export class UpdateLibraryDto {
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
   @Optional()
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
@@ -66,7 +66,7 @@ export interface WalkOptionsDto extends CrawlOptionsDto {
 }
 
 export class ValidateLibraryDto {
-  @ApiPropertyOptional({ description: 'Import paths to validate (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Import paths to validate (max 128)' })
   @Optional()
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
@@ -74,7 +74,7 @@ export class ValidateLibraryDto {
   @ArrayMaxSize(128)
   importPaths?: string[];
 
-  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)', type: [String] })
+  @ApiPropertyOptional({ description: 'Exclusion patterns (max 128)' })
   @Optional()
   @IsNotEmpty({ each: true })
   @IsString({ each: true })
@@ -84,10 +84,7 @@ export class ValidateLibraryDto {
 }
 
 export class ValidateLibraryResponseDto {
-  @ApiPropertyOptional({
-    description: 'Validation results for import paths',
-    type: () => [ValidateLibraryImportPathResponseDto],
-  })
+  @ApiPropertyOptional({ description: 'Validation results for import paths' })
   importPaths?: ValidateLibraryImportPathResponseDto[];
 }
 
@@ -117,17 +114,17 @@ export class LibraryResponseDto {
   @ApiProperty({ type: 'integer', description: 'Number of assets' })
   assetCount!: number;
 
-  @ApiProperty({ description: 'Import paths', type: [String] })
+  @ApiProperty({ description: 'Import paths' })
   importPaths!: string[];
 
-  @ApiProperty({ description: 'Exclusion patterns', type: [String] })
+  @ApiProperty({ description: 'Exclusion patterns' })
   exclusionPatterns!: string[];
 
   @ApiProperty({ description: 'Creation date' })
   createdAt!: Date;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: Date;
-  @ApiProperty({ description: 'Last refresh date', nullable: true })
+  @ApiProperty({ description: 'Last refresh date' })
   refreshedAt!: Date | null;
 }
 

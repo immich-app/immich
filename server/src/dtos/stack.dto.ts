@@ -6,7 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ValidateUUID } from 'src/validation';
 
 export class StackCreateDto {
-  @ApiProperty({ description: 'Asset IDs (first becomes primary, min 2)', type: [String] })
+  @ApiProperty({ description: 'Asset IDs (first becomes primary, min 2)' })
   @ValidateUUID({ each: true })
   @ArrayMinSize(2)
   assetIds!: string[];
@@ -29,7 +29,7 @@ export class StackResponseDto {
   id!: string;
   @ApiProperty({ description: 'Primary asset ID' })
   primaryAssetId!: string;
-  @ApiProperty({ description: 'Stack assets', type: () => [AssetResponseDto] })
+  @ApiProperty({ description: 'Stack assets' })
   assets!: AssetResponseDto[];
 }
 

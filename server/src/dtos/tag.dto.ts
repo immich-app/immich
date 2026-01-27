@@ -9,8 +9,8 @@ export class TagCreateDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Parent tag ID', nullable: true })
-  @ValidateUUID({ optional: true, nullable: true })
+  @ApiPropertyOptional({ description: 'Parent tag ID' })
+  @ValidateUUID({ optional: true })
   parentId?: string | null;
 
   @ApiPropertyOptional({ description: 'Tag color (hex)' })
@@ -20,25 +20,25 @@ export class TagCreateDto {
 }
 
 export class TagUpdateDto {
-  @ApiPropertyOptional({ description: 'Tag color (hex)', nullable: true })
-  @Optional({ emptyToNull: true, nullable: true })
+  @ApiPropertyOptional({ description: 'Tag color (hex)' })
+  @Optional({ emptyToNull: true })
   @ValidateHexColor()
   color?: string | null;
 }
 
 export class TagUpsertDto {
-  @ApiProperty({ description: 'Tag names to upsert', type: [String] })
+  @ApiProperty({ description: 'Tag names to upsert' })
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   tags!: string[];
 }
 
 export class TagBulkAssetsDto {
-  @ApiProperty({ description: 'Tag IDs', type: [String] })
+  @ApiProperty({ description: 'Tag IDs' })
   @ValidateUUID({ each: true })
   tagIds!: string[];
 
-  @ApiProperty({ description: 'Asset IDs', type: [String] })
+  @ApiProperty({ description: 'Asset IDs' })
   @ValidateUUID({ each: true })
   assetIds!: string[];
 }

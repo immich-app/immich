@@ -67,10 +67,8 @@ class PluginManifestActionDto {
   @IsNotEmpty()
   description!: string;
 
-  @ApiProperty({ description: 'Supported contexts', enum: PluginContext, isArray: true })
-  @IsArray()
   @ArrayMinSize(1)
-  @ValidateEnum({ enum: PluginContext, name: 'PluginContext', each: true })
+  @ValidateEnum({ enum: PluginContext, name: 'PluginContext', each: true, description: 'Supported contexts' })
   supportedContexts!: PluginContext[];
 
   @ApiPropertyOptional({ description: 'Action schema' })
@@ -109,19 +107,19 @@ export class PluginManifestDto {
   @IsNotEmpty()
   author!: string;
 
-  @ApiProperty({ description: 'WASM configuration', type: PluginManifestWasmDto })
+  @ApiProperty({ description: 'WASM configuration' })
   @ValidateNested()
   @Type(() => PluginManifestWasmDto)
   wasm!: PluginManifestWasmDto;
 
-  @ApiPropertyOptional({ description: 'Plugin filters', type: () => [PluginManifestFilterDto] })
+  @ApiPropertyOptional({ description: 'Plugin filters' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PluginManifestFilterDto)
   @IsOptional()
   filters?: PluginManifestFilterDto[];
 
-  @ApiPropertyOptional({ description: 'Plugin actions', type: () => [PluginManifestActionDto] })
+  @ApiPropertyOptional({ description: 'Plugin actions' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PluginManifestActionDto)

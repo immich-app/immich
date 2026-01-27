@@ -4,13 +4,13 @@ import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { ValidateBoolean } from 'src/validation';
 
 export class TaskConfig {
-  @ApiProperty({ description: 'Whether the task is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether the task is enabled' })
   @ValidateBoolean()
   enabled!: boolean;
 }
 
 export class ModelConfig extends TaskConfig {
-  @ApiProperty({ description: 'Name of the model to use', type: String })
+  @ApiProperty({ description: 'Name of the model to use' })
   @IsString()
   @IsNotEmpty()
   modelName!: string;
@@ -26,7 +26,7 @@ export class DuplicateDetectionConfig extends TaskConfig {
   @ApiProperty({
     type: 'number',
     format: 'double',
-    description: 'Maximum distance threshold for duplicate detection (0.001-0.1)',
+    description: 'Maximum distance threshold for duplicate detection',
   })
   maxDistance!: number;
 }
@@ -36,7 +36,7 @@ export class FacialRecognitionConfig extends ModelConfig {
   @Min(0.1)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for face detection (0.1-1)' })
+  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for face detection' })
   minScore!: number;
 
   @IsNumber()
@@ -46,7 +46,7 @@ export class FacialRecognitionConfig extends ModelConfig {
   @ApiProperty({
     type: 'number',
     format: 'double',
-    description: 'Maximum distance threshold for face recognition (0.1-2)',
+    description: 'Maximum distance threshold for face recognition',
   })
   maxDistance!: number;
 
@@ -68,7 +68,7 @@ export class OcrConfig extends ModelConfig {
   @Min(0.1)
   @Max(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for text detection (0.1-1)' })
+  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for text detection' })
   minDetectionScore!: number;
 
   @IsNumber()
@@ -78,7 +78,7 @@ export class OcrConfig extends ModelConfig {
   @ApiProperty({
     type: 'number',
     format: 'double',
-    description: 'Minimum confidence score for text recognition (0.1-1)',
+    description: 'Minimum confidence score for text recognition',
   })
   minRecognitionScore!: number;
 }

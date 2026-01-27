@@ -26,8 +26,7 @@ export class UserUpdateMeDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Avatar color', enum: UserAvatarColor, nullable: true })
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
   avatarColor?: UserAvatarColor | null;
 }
 
@@ -40,8 +39,7 @@ export class UserResponseDto {
   email!: string;
   @ApiProperty({ description: 'Profile image path' })
   profileImagePath!: string;
-  @ApiProperty({ description: 'Avatar color', enum: UserAvatarColor })
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor' })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', description: 'Avatar color' })
   avatarColor!: UserAvatarColor;
   @ApiProperty({ description: 'Profile change date' })
   profileChangedAt!: Date;
@@ -100,17 +98,16 @@ export class UserAdminCreateDto {
   @IsString()
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Avatar color', enum: UserAvatarColor, nullable: true })
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
   avatarColor?: UserAvatarColor | null;
 
-  @ApiPropertyOptional({ description: 'Storage label', nullable: true })
+  @ApiPropertyOptional({ description: 'Storage label' })
   @Optional({ nullable: true })
   @IsString()
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes', nullable: true })
+  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
   @Optional({ nullable: true })
   @IsInt()
   @Min(0)
@@ -142,8 +139,8 @@ export class UserAdminUpdateDto {
   @IsString()
   password?: string;
 
-  @ApiPropertyOptional({ description: 'PIN code', nullable: true })
-  @PinCode({ optional: true, nullable: true, emptyToNull: true })
+  @ApiPropertyOptional({ description: 'PIN code' })
+  @PinCode({ optional: true, emptyToNull: true })
   pinCode?: string | null;
 
   @ApiPropertyOptional({ description: 'User name' })
@@ -152,11 +149,10 @@ export class UserAdminUpdateDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Avatar color', enum: UserAvatarColor, nullable: true })
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, nullable: true })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
   avatarColor?: UserAvatarColor | null;
 
-  @ApiPropertyOptional({ description: 'Storage label', nullable: true })
+  @ApiPropertyOptional({ description: 'Storage label' })
   @Optional({ nullable: true })
   @IsString()
   @Transform(toSanitized)
@@ -166,7 +162,7 @@ export class UserAdminUpdateDto {
   @ValidateBoolean({ optional: true })
   shouldChangePassword?: boolean;
 
-  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes', nullable: true })
+  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
   @Optional({ nullable: true })
   @IsInt()
   @Min(0)
@@ -184,7 +180,7 @@ export class UserAdminDeleteDto {
 }
 
 export class UserAdminResponseDto extends UserResponseDto {
-  @ApiProperty({ description: 'Storage label', nullable: true })
+  @ApiProperty({ description: 'Storage label' })
   storageLabel!: string | null;
   @ApiProperty({ description: 'Require password change on next login' })
   shouldChangePassword!: boolean;
@@ -198,14 +194,13 @@ export class UserAdminResponseDto extends UserResponseDto {
   updatedAt!: Date;
   @ApiProperty({ description: 'OAuth ID' })
   oauthId!: string;
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage quota in bytes', nullable: true })
+  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
   quotaSizeInBytes!: number | null;
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage usage in bytes', nullable: true })
+  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage usage in bytes' })
   quotaUsageInBytes!: number | null;
-  @ApiProperty({ description: 'User status', enum: UserStatus })
-  @ValidateEnum({ enum: UserStatus, name: 'UserStatus' })
+  @ValidateEnum({ enum: UserStatus, name: 'UserStatus', description: 'User status' })
   status!: string;
-  @ApiProperty({ description: 'User license', type: UserLicense, nullable: true })
+  @ApiProperty({ description: 'User license' })
   license!: UserLicense | null;
 }
 

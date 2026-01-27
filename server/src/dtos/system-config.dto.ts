@@ -474,11 +474,11 @@ class SystemConfigServerDto {
 }
 
 class SystemConfigSmtpTransportDto {
-  @ApiProperty({ description: 'Whether to ignore SSL certificate errors', type: Boolean })
+  @ApiProperty({ description: 'Whether to ignore SSL certificate errors' })
   @ValidateBoolean()
   ignoreCert!: boolean;
 
-  @ApiProperty({ description: 'SMTP server hostname', type: String })
+  @ApiProperty({ description: 'SMTP server hostname' })
   @IsNotEmpty()
   @IsString()
   host!: string;
@@ -489,32 +489,32 @@ class SystemConfigSmtpTransportDto {
   @Max(65_535)
   port!: number;
 
-  @ApiProperty({ description: 'Whether to use secure connection (TLS/SSL)', type: Boolean })
+  @ApiProperty({ description: 'Whether to use secure connection (TLS/SSL)' })
   @ValidateBoolean()
   secure!: boolean;
 
-  @ApiProperty({ description: 'SMTP username', type: String })
+  @ApiProperty({ description: 'SMTP username' })
   @IsString()
   username!: string;
 
-  @ApiProperty({ description: 'SMTP password', type: String })
+  @ApiProperty({ description: 'SMTP password' })
   @IsString()
   password!: string;
 }
 
 export class SystemConfigSmtpDto {
-  @ApiProperty({ description: 'Whether SMTP email notifications are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether SMTP email notifications are enabled' })
   @ValidateBoolean()
   enabled!: boolean;
 
-  @ApiProperty({ description: 'Email address to send from', type: String })
+  @ApiProperty({ description: 'Email address to send from' })
   @ValidateIf(isEmailNotificationEnabled)
   @IsNotEmpty()
   @IsString()
   @IsNotEmpty()
   from!: string;
 
-  @ApiProperty({ description: 'Email address for replies', type: String })
+  @ApiProperty({ description: 'Email address for replies' })
   @IsString()
   replyTo!: string;
 
@@ -565,26 +565,26 @@ class SystemConfigStorageTemplateDto {
 }
 
 export class SystemConfigTemplateStorageOptionDto {
-  @ApiProperty({ description: 'Available year format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available year format options for storage template' })
   yearOptions!: string[];
-  @ApiProperty({ description: 'Available month format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available month format options for storage template' })
   monthOptions!: string[];
-  @ApiProperty({ description: 'Available week format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available week format options for storage template' })
   weekOptions!: string[];
-  @ApiProperty({ description: 'Available day format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available day format options for storage template' })
   dayOptions!: string[];
-  @ApiProperty({ description: 'Available hour format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available hour format options for storage template' })
   hourOptions!: string[];
-  @ApiProperty({ description: 'Available minute format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available minute format options for storage template' })
   minuteOptions!: string[];
-  @ApiProperty({ description: 'Available second format options for storage template', type: [String] })
+  @ApiProperty({ description: 'Available second format options for storage template' })
   secondOptions!: string[];
-  @ApiProperty({ description: 'Available preset template options', type: [String] })
+  @ApiProperty({ description: 'Available preset template options' })
   presetOptions!: string[];
 }
 
 export class SystemConfigThemeDto {
-  @ApiProperty({ description: 'Custom CSS for theming', type: String })
+  @ApiProperty({ description: 'Custom CSS for theming' })
   @IsString()
   customCss!: string;
 }

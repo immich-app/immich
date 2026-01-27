@@ -10,8 +10,7 @@ export class APIKeyCreateDto {
   @Optional()
   name?: string;
 
-  @ApiProperty({ description: 'List of permissions', enum: Permission, isArray: true })
-  @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, description: 'List of permissions' })
   @ArrayMinSize(1)
   permissions!: Permission[];
 }
@@ -23,8 +22,13 @@ export class APIKeyUpdateDto {
   @IsNotEmpty()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'List of permissions', enum: Permission, isArray: true })
-  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, optional: true })
+  @ValidateEnum({
+    enum: Permission,
+    name: 'Permission',
+    description: 'List of permissions',
+    each: true,
+    optional: true,
+  })
   @ArrayMinSize(1)
   permissions?: Permission[];
 }
@@ -38,8 +42,7 @@ export class APIKeyResponseDto {
   createdAt!: Date;
   @ApiProperty({ description: 'Last update date' })
   updatedAt!: Date;
-  @ApiProperty({ description: 'List of permissions', enum: Permission, isArray: true })
-  @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, description: 'List of permissions' })
   permissions!: Permission[];
 }
 

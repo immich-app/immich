@@ -23,14 +23,11 @@ export class TemplateDto {
 export class NotificationDto {
   @ApiProperty({ description: 'Notification ID' })
   id!: string;
-  @ApiProperty({ description: 'Creation date', format: 'date-time' })
-  @ValidateDate()
+  @ValidateDate({ description: 'Creation date' })
   createdAt!: Date;
-  @ApiProperty({ description: 'Notification level', enum: NotificationLevel })
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel' })
+  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', description: 'Notification level' })
   level!: NotificationLevel;
-  @ApiProperty({ description: 'Notification type', enum: NotificationType })
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType' })
+  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', description: 'Notification type' })
   type!: NotificationType;
   @ApiProperty({ description: 'Notification title' })
   title!: string;
@@ -47,33 +44,43 @@ export class NotificationSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by notification level', enum: NotificationLevel })
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
+  @ValidateEnum({
+    enum: NotificationLevel,
+    name: 'NotificationLevel',
+    optional: true,
+    description: 'Filter by notification level',
+  })
   level?: NotificationLevel;
 
-  @ApiPropertyOptional({ description: 'Filter by notification type', enum: NotificationType })
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
+  @ValidateEnum({
+    enum: NotificationType,
+    name: 'NotificationType',
+    optional: true,
+    description: 'Filter by notification type',
+  })
   type?: NotificationType;
 
-  @ApiPropertyOptional({ description: 'Filter by unread status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by unread status' })
   unread?: boolean;
 }
 
 export class NotificationCreateDto {
-  @ApiPropertyOptional({ description: 'Notification level', enum: NotificationLevel })
-  @ValidateEnum({ enum: NotificationLevel, name: 'NotificationLevel', optional: true })
+  @ValidateEnum({
+    enum: NotificationLevel,
+    name: 'NotificationLevel',
+    optional: true,
+    description: 'Notification level',
+  })
   level?: NotificationLevel;
 
-  @ApiPropertyOptional({ description: 'Notification type', enum: NotificationType })
-  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true })
+  @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true, description: 'Notification type' })
   type?: NotificationType;
 
   @ApiProperty({ description: 'Notification title' })
   @IsString()
   title!: string;
 
-  @ApiPropertyOptional({ description: 'Notification description', nullable: true })
+  @ApiPropertyOptional({ description: 'Notification description' })
   @IsString()
   @Optional({ nullable: true })
   description?: string | null;
@@ -82,34 +89,28 @@ export class NotificationCreateDto {
   @Optional({ nullable: true })
   data?: any;
 
-  @ApiPropertyOptional({ description: 'Date when notification was read', format: 'date-time', nullable: true })
-  @ValidateDate({ optional: true, nullable: true })
+  @ValidateDate({ optional: true, description: 'Date when notification was read' })
   readAt?: Date | null;
 
-  @ApiProperty({ description: 'User ID to send notification to' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'User ID to send notification to' })
   userId!: string;
 }
 
 export class NotificationUpdateDto {
-  @ApiPropertyOptional({ description: 'Date when notification was read', format: 'date-time', nullable: true })
-  @ValidateDate({ optional: true, nullable: true })
+  @ValidateDate({ optional: true, description: 'Date when notification was read' })
   readAt?: Date | null;
 }
 
 export class NotificationUpdateAllDto {
-  @ApiProperty({ description: 'Notification IDs to update', type: [String] })
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateUUID({ each: true, optional: true, description: 'Notification IDs to update' })
   ids!: string[];
 
-  @ApiPropertyOptional({ description: 'Date when notifications were read', format: 'date-time', nullable: true })
-  @ValidateDate({ optional: true, nullable: true })
+  @ValidateDate({ optional: true, description: 'Date when notifications were read' })
   readAt?: Date | null;
 }
 
 export class NotificationDeleteAllDto {
-  @ApiProperty({ description: 'Notification IDs to delete', type: [String] })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Notification IDs to delete' })
   ids!: string[];
 }
 

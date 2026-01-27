@@ -9392,7 +9392,7 @@
             "name": "rating",
             "required": false,
             "in": "query",
-            "description": "Filter by rating (-1 to 5)",
+            "description": "Filter by rating",
             "schema": {
               "minimum": -1,
               "maximum": 5,
@@ -9975,6 +9975,7 @@
             "name": "includeNull",
             "required": false,
             "in": "query",
+            "description": "Include null values in suggestions",
             "x-immich-history": [
               {
                 "version": "v1.111.0",
@@ -9986,7 +9987,6 @@
               }
             ],
             "x-immich-state": "Stable",
-            "description": "Include null values in suggestions",
             "schema": {
               "type": "boolean"
             }
@@ -15785,7 +15785,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating (-1 to 5)",
+            "description": "Rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"
@@ -17674,7 +17674,7 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "description": "Maximum distance threshold for duplicate detection (0.001-0.1)",
+            "description": "Maximum distance threshold for duplicate detection",
             "format": "double",
             "maximum": 0.1,
             "minimum": 0.001,
@@ -17867,7 +17867,7 @@
           },
           "rating": {
             "default": null,
-            "description": "Rating (-1 to 5)",
+            "description": "Rating",
             "nullable": true,
             "type": "number"
           },
@@ -17906,7 +17906,7 @@
             "type": "boolean"
           },
           "maxDistance": {
-            "description": "Maximum distance threshold for face recognition (0.1-2)",
+            "description": "Maximum distance threshold for face recognition",
             "format": "double",
             "maximum": 2,
             "minimum": 0.1,
@@ -17918,7 +17918,7 @@
             "type": "integer"
           },
           "minScore": {
-            "description": "Minimum confidence score for face detection (0.1-1)",
+            "description": "Minimum confidence score for face detection",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
@@ -18318,6 +18318,7 @@
         "type": "object"
       },
       "MaintenanceAction": {
+        "description": "Maintenance action",
         "enum": [
           "start",
           "end",
@@ -18355,6 +18356,7 @@
       "MaintenanceDetectInstallStorageFolderDto": {
         "properties": {
           "files": {
+            "description": "Number of files in the folder",
             "type": "number"
           },
           "folder": {
@@ -18362,12 +18364,15 @@
               {
                 "$ref": "#/components/schemas/StorageFolder"
               }
-            ]
+            ],
+            "description": "Storage folder"
           },
           "readable": {
+            "description": "Whether the folder is readable",
             "type": "boolean"
           },
           "writable": {
+            "description": "Whether the folder is writable",
             "type": "boolean"
           }
         },
@@ -18395,7 +18400,8 @@
               {
                 "$ref": "#/components/schemas/MaintenanceAction"
               }
-            ]
+            ],
+            "description": "Maintenance action"
           },
           "active": {
             "type": "boolean"
@@ -18846,7 +18852,7 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating (-1 to 5)",
+            "description": "Filter by rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"
@@ -19207,14 +19213,14 @@
             "type": "integer"
           },
           "minDetectionScore": {
-            "description": "Minimum confidence score for text detection (0.1-1)",
+            "description": "Minimum confidence score for text detection",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
             "type": "number"
           },
           "minRecognitionScore": {
-            "description": "Minimum confidence score for text recognition (0.1-1)",
+            "description": "Minimum confidence score for text recognition",
             "format": "double",
             "maximum": 1,
             "minimum": 0.1,
@@ -20569,7 +20575,7 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating (-1 to 5)",
+            "description": "Filter by rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"
@@ -21535,6 +21541,7 @@
             "description": "Maintenance action"
           },
           "restoreBackupFilename": {
+            "description": "Restore backup filename",
             "type": "string"
           }
         },
@@ -21913,7 +21920,7 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating (-1 to 5)",
+            "description": "Filter by rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"
@@ -22147,7 +22154,7 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating (-1 to 5)",
+            "description": "Filter by rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"
@@ -22216,6 +22223,7 @@
         "type": "object"
       },
       "StorageFolder": {
+        "description": "Storage folder",
         "enum": [
           "encoded-video",
           "library",
@@ -24713,7 +24721,7 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating (-1 to 5)",
+            "description": "Rating",
             "maximum": 5,
             "minimum": -1,
             "type": "number"

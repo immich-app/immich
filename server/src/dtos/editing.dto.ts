@@ -125,7 +125,6 @@ export class AssetEditActionListDto {
 }
 
 export class AssetEditsDto extends AssetEditActionListDto {
-  @ValidateUUID()
-  @ApiProperty({ description: 'Asset ID to apply edits to', type: String, format: 'uuid' })
+  @ValidateUUID({ description: 'Asset ID to apply edits to' })
   assetId!: string;
 }

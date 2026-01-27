@@ -73,12 +73,17 @@ export type DatabaseBackupUploadDto = {
 export type SetMaintenanceModeDto = {
     /** Maintenance action */
     action: MaintenanceAction;
+    /** Restore backup filename */
     restoreBackupFilename?: string;
 };
 export type MaintenanceDetectInstallStorageFolderDto = {
+    /** Number of files in the folder */
     files: number;
+    /** Storage folder */
     folder: StorageFolder;
+    /** Whether the folder is readable */
     readable: boolean;
+    /** Whether the folder is writable */
     writable: boolean;
 };
 export type MaintenanceDetectInstallResponseDto = {
@@ -93,6 +98,7 @@ export type MaintenanceAuthDto = {
     username: string;
 };
 export type MaintenanceStatusResponseDto = {
+    /** Maintenance action */
     action: MaintenanceAction;
     active: boolean;
     error?: string;
@@ -485,7 +491,7 @@ export type ExifResponseDto = {
     orientation?: string | null;
     /** Projection type */
     projectionType?: string | null;
-    /** Rating (-1 to 5) */
+    /** Rating */
     rating?: number | null;
     /** State/province name */
     state?: string | null;
@@ -825,7 +831,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating (-1 to 5) */
+    /** Rating */
     rating?: number;
     /** Time zone (IANA timezone) */
     timeZone?: string;
@@ -935,7 +941,7 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating (-1 to 5) */
+    /** Rating */
     rating?: number;
     /** Asset visibility */
     visibility?: AssetVisibility;
@@ -1698,7 +1704,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     /** Filter by preview file path */
     previewPath?: string;
-    /** Filter by rating (-1 to 5) */
+    /** Filter by rating */
     rating?: number;
     /** Number of results to return */
     size?: number;
@@ -1814,7 +1820,7 @@ export type RandomSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating (-1 to 5) */
+    /** Filter by rating */
     rating?: number;
     /** Number of results to return */
     size?: number;
@@ -1890,7 +1896,7 @@ export type SmartSearchDto = {
     query?: string;
     /** Asset ID to use as search reference */
     queryAssetId?: string;
-    /** Filter by rating (-1 to 5) */
+    /** Filter by rating */
     rating?: number;
     /** Number of results to return */
     size?: number;
@@ -1956,7 +1962,7 @@ export type StatisticsSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating (-1 to 5) */
+    /** Filter by rating */
     rating?: number;
     /** Filter by state/province name */
     state?: string | null;
@@ -2462,17 +2468,17 @@ export type ClipConfig = {
 export type DuplicateDetectionConfig = {
     /** Whether the task is enabled */
     enabled: boolean;
-    /** Maximum distance threshold for duplicate detection (0.001-0.1) */
+    /** Maximum distance threshold for duplicate detection */
     maxDistance: number;
 };
 export type FacialRecognitionConfig = {
     /** Whether the task is enabled */
     enabled: boolean;
-    /** Maximum distance threshold for face recognition (0.1-2) */
+    /** Maximum distance threshold for face recognition */
     maxDistance: number;
     /** Minimum number of faces required for recognition */
     minFaces: number;
-    /** Minimum confidence score for face detection (0.1-1) */
+    /** Minimum confidence score for face detection */
     minScore: number;
     /** Name of the model to use */
     modelName: string;
@@ -2482,9 +2488,9 @@ export type OcrConfig = {
     enabled: boolean;
     /** Maximum resolution for OCR processing */
     maxResolution: number;
-    /** Minimum confidence score for text detection (0.1-1) */
+    /** Minimum confidence score for text detection */
     minDetectionScore: number;
-    /** Minimum confidence score for text recognition (0.1-1) */
+    /** Minimum confidence score for text recognition */
     minRecognitionScore: number;
     /** Name of the model to use */
     modelName: string;

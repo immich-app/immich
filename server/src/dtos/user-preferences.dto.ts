@@ -6,14 +6,12 @@ import { UserPreferences } from 'src/types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 class AvatarUpdate {
-  @ApiPropertyOptional({ description: 'Avatar color', enum: UserAvatarColor })
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
   color?: UserAvatarColor;
 }
 
 class MemoriesUpdate {
-  @ApiPropertyOptional({ description: 'Whether memories are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether memories are enabled' })
   enabled?: boolean;
 
   @Optional()
@@ -24,69 +22,56 @@ class MemoriesUpdate {
 }
 
 class RatingsUpdate {
-  @ApiPropertyOptional({ description: 'Whether ratings are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether ratings are enabled' })
   enabled?: boolean;
 }
 
 @ApiSchema({ description: 'Album preferences' })
 class AlbumsUpdate {
-  @ApiPropertyOptional({ description: 'Default asset order for albums', enum: AssetOrder })
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, description: 'Default asset order for albums' })
   defaultAssetOrder?: AssetOrder;
 }
 
 class FoldersUpdate {
-  @ApiPropertyOptional({ description: 'Whether folders are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether folders are enabled' })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether folders appear in web sidebar', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether folders appear in web sidebar' })
   sidebarWeb?: boolean;
 }
 
 class PeopleUpdate {
-  @ApiPropertyOptional({ description: 'Whether people are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether people are enabled' })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether people appear in web sidebar', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether people appear in web sidebar' })
   sidebarWeb?: boolean;
 }
 
 class SharedLinksUpdate {
-  @ApiPropertyOptional({ description: 'Whether shared links are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether shared links are enabled' })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether shared links appear in web sidebar', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether shared links appear in web sidebar' })
   sidebarWeb?: boolean;
 }
 
 class TagsUpdate {
-  @ApiPropertyOptional({ description: 'Whether tags are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether tags are enabled' })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether tags appear in web sidebar', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether tags appear in web sidebar' })
   sidebarWeb?: boolean;
 }
 
 class EmailNotificationsUpdate {
-  @ApiPropertyOptional({ description: 'Whether email notifications are enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether email notifications are enabled' })
   enabled?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether to receive email notifications for album invites', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether to receive email notifications for album invites' })
   albumInvite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether to receive email notifications for album updates', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether to receive email notifications for album updates' })
   albumUpdate?: boolean;
 }
 
@@ -97,25 +82,22 @@ class DownloadUpdate implements Partial<DownloadResponse> {
   @ApiPropertyOptional({ type: 'integer', description: 'Maximum archive size in bytes' })
   archiveSize?: number;
 
-  @ApiPropertyOptional({ description: 'Whether to include embedded videos in downloads', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether to include embedded videos in downloads' })
   includeEmbeddedVideos?: boolean;
 }
 
 class PurchaseUpdate {
-  @ApiPropertyOptional({ description: 'Whether to show support badge', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether to show support badge' })
   showSupportBadge?: boolean;
 
-  @ApiPropertyOptional({ description: 'Date until which to hide buy button', type: String })
+  @ApiPropertyOptional({ description: 'Date until which to hide buy button' })
   @IsDateString()
   @Optional()
   hideBuyButtonUntil?: string;
 }
 
 class CastUpdate {
-  @ApiPropertyOptional({ description: 'Whether Google Cast is enabled', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether Google Cast is enabled' })
   gCastEnabled?: boolean;
 }
 
@@ -206,18 +188,17 @@ export class UserPreferencesUpdateDto {
 }
 
 class AlbumsResponse {
-  @ApiProperty({ description: 'Default asset order for albums', enum: AssetOrder })
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Default asset order for albums' })
   defaultAssetOrder: AssetOrder = AssetOrder.Desc;
 }
 
 class RatingsResponse {
-  @ApiProperty({ description: 'Whether ratings are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether ratings are enabled' })
   enabled: boolean = false;
 }
 
 class MemoriesResponse {
-  @ApiProperty({ description: 'Whether memories are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether memories are enabled' })
   enabled: boolean = true;
 
   @ApiProperty({ type: 'integer', description: 'Memory duration in seconds' })
@@ -225,39 +206,39 @@ class MemoriesResponse {
 }
 
 class FoldersResponse {
-  @ApiProperty({ description: 'Whether folders are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether folders are enabled' })
   enabled: boolean = false;
-  @ApiProperty({ description: 'Whether folders appear in web sidebar', type: Boolean })
+  @ApiProperty({ description: 'Whether folders appear in web sidebar' })
   sidebarWeb: boolean = false;
 }
 
 class PeopleResponse {
-  @ApiProperty({ description: 'Whether people are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether people are enabled' })
   enabled: boolean = true;
-  @ApiProperty({ description: 'Whether people appear in web sidebar', type: Boolean })
+  @ApiProperty({ description: 'Whether people appear in web sidebar' })
   sidebarWeb: boolean = false;
 }
 
 class TagsResponse {
-  @ApiProperty({ description: 'Whether tags are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether tags are enabled' })
   enabled: boolean = true;
-  @ApiProperty({ description: 'Whether tags appear in web sidebar', type: Boolean })
+  @ApiProperty({ description: 'Whether tags appear in web sidebar' })
   sidebarWeb: boolean = true;
 }
 
 class SharedLinksResponse {
-  @ApiProperty({ description: 'Whether shared links are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether shared links are enabled' })
   enabled: boolean = true;
-  @ApiProperty({ description: 'Whether shared links appear in web sidebar', type: Boolean })
+  @ApiProperty({ description: 'Whether shared links appear in web sidebar' })
   sidebarWeb: boolean = false;
 }
 
 class EmailNotificationsResponse {
-  @ApiProperty({ description: 'Whether email notifications are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether email notifications are enabled' })
   enabled!: boolean;
-  @ApiProperty({ description: 'Whether to receive email notifications for album invites', type: Boolean })
+  @ApiProperty({ description: 'Whether to receive email notifications for album invites' })
   albumInvite!: boolean;
-  @ApiProperty({ description: 'Whether to receive email notifications for album updates', type: Boolean })
+  @ApiProperty({ description: 'Whether to receive email notifications for album updates' })
   albumUpdate!: boolean;
 }
 
@@ -265,19 +246,19 @@ class DownloadResponse {
   @ApiProperty({ type: 'integer', description: 'Maximum archive size in bytes' })
   archiveSize!: number;
 
-  @ApiProperty({ description: 'Whether to include embedded videos in downloads', type: Boolean })
+  @ApiProperty({ description: 'Whether to include embedded videos in downloads' })
   includeEmbeddedVideos: boolean = false;
 }
 
 class PurchaseResponse {
-  @ApiProperty({ description: 'Whether to show support badge', type: Boolean })
+  @ApiProperty({ description: 'Whether to show support badge' })
   showSupportBadge!: boolean;
-  @ApiProperty({ description: 'Date until which to hide buy button', type: String })
+  @ApiProperty({ description: 'Date until which to hide buy button' })
   hideBuyButtonUntil!: string;
 }
 
 class CastResponse {
-  @ApiProperty({ description: 'Whether Google Cast is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether Google Cast is enabled' })
   gCastEnabled: boolean = false;
 }
 

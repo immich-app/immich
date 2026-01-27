@@ -8,73 +8,73 @@ export class ServerPingResponse {
 }
 
 export class ServerAboutResponseDto {
-  @ApiProperty({ description: 'Server version', type: String })
+  @ApiProperty({ description: 'Server version' })
   version!: string;
-  @ApiProperty({ description: 'URL to version information', type: String })
+  @ApiProperty({ description: 'URL to version information' })
   versionUrl!: string;
 
-  @ApiPropertyOptional({ description: 'Repository name', type: String })
+  @ApiPropertyOptional({ description: 'Repository name' })
   repository?: string;
-  @ApiPropertyOptional({ description: 'Repository URL', type: String })
+  @ApiPropertyOptional({ description: 'Repository URL' })
   repositoryUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Source reference (branch/tag)', type: String })
+  @ApiPropertyOptional({ description: 'Source reference (branch/tag)' })
   sourceRef?: string;
-  @ApiPropertyOptional({ description: 'Source commit hash', type: String })
+  @ApiPropertyOptional({ description: 'Source commit hash' })
   sourceCommit?: string;
-  @ApiPropertyOptional({ description: 'Source URL', type: String })
+  @ApiPropertyOptional({ description: 'Source URL' })
   sourceUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Build identifier', type: String })
+  @ApiPropertyOptional({ description: 'Build identifier' })
   build?: string;
-  @ApiPropertyOptional({ description: 'Build URL', type: String })
+  @ApiPropertyOptional({ description: 'Build URL' })
   buildUrl?: string;
-  @ApiPropertyOptional({ description: 'Build image name', type: String })
+  @ApiPropertyOptional({ description: 'Build image name' })
   buildImage?: string;
-  @ApiPropertyOptional({ description: 'Build image URL', type: String })
+  @ApiPropertyOptional({ description: 'Build image URL' })
   buildImageUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Node.js version', type: String })
+  @ApiPropertyOptional({ description: 'Node.js version' })
   nodejs?: string;
-  @ApiPropertyOptional({ description: 'FFmpeg version', type: String })
+  @ApiPropertyOptional({ description: 'FFmpeg version' })
   ffmpeg?: string;
-  @ApiPropertyOptional({ description: 'ImageMagick version', type: String })
+  @ApiPropertyOptional({ description: 'ImageMagick version' })
   imagemagick?: string;
-  @ApiPropertyOptional({ description: 'libvips version', type: String })
+  @ApiPropertyOptional({ description: 'libvips version' })
   libvips?: string;
-  @ApiPropertyOptional({ description: 'ExifTool version', type: String })
+  @ApiPropertyOptional({ description: 'ExifTool version' })
   exiftool?: string;
 
-  @ApiProperty({ description: 'Whether the server is licensed', type: Boolean })
+  @ApiProperty({ description: 'Whether the server is licensed' })
   licensed!: boolean;
 
-  @ApiPropertyOptional({ description: 'Third-party source URL', type: String })
+  @ApiPropertyOptional({ description: 'Third-party source URL' })
   thirdPartySourceUrl?: string;
-  @ApiPropertyOptional({ description: 'Third-party bug/feature URL', type: String })
+  @ApiPropertyOptional({ description: 'Third-party bug/feature URL' })
   thirdPartyBugFeatureUrl?: string;
-  @ApiPropertyOptional({ description: 'Third-party documentation URL', type: String })
+  @ApiPropertyOptional({ description: 'Third-party documentation URL' })
   thirdPartyDocumentationUrl?: string;
-  @ApiPropertyOptional({ description: 'Third-party support URL', type: String })
+  @ApiPropertyOptional({ description: 'Third-party support URL' })
   thirdPartySupportUrl?: string;
 }
 
 export class ServerApkLinksDto {
-  @ApiProperty({ description: 'APK download link for ARM64 v8a architecture', type: String })
+  @ApiProperty({ description: 'APK download link for ARM64 v8a architecture' })
   arm64v8a!: string;
-  @ApiProperty({ description: 'APK download link for ARM EABI v7a architecture', type: String })
+  @ApiProperty({ description: 'APK download link for ARM EABI v7a architecture' })
   armeabiv7a!: string;
-  @ApiProperty({ description: 'APK download link for universal architecture', type: String })
+  @ApiProperty({ description: 'APK download link for universal architecture' })
   universal!: string;
-  @ApiProperty({ description: 'APK download link for x86_64 architecture', type: String })
+  @ApiProperty({ description: 'APK download link for x86_64 architecture' })
   x86_64!: string;
 }
 
 export class ServerStorageResponseDto {
-  @ApiProperty({ description: 'Total disk size (human-readable format)', type: String })
+  @ApiProperty({ description: 'Total disk size (human-readable format)' })
   diskSize!: string;
-  @ApiProperty({ description: 'Used disk space (human-readable format)', type: String })
+  @ApiProperty({ description: 'Used disk space (human-readable format)' })
   diskUse!: string;
-  @ApiProperty({ description: 'Available disk space (human-readable format)', type: String })
+  @ApiProperty({ description: 'Available disk space (human-readable format)' })
   diskAvailable!: string;
 
   @ApiProperty({ type: 'integer', format: 'int64', description: 'Total disk size in bytes' })
@@ -104,11 +104,11 @@ export class ServerVersionResponseDto {
 }
 
 export class ServerVersionHistoryResponseDto {
-  @ApiProperty({ description: 'Version history entry ID', type: String })
+  @ApiProperty({ description: 'Version history entry ID' })
   id!: string;
-  @ApiProperty({ description: 'When this version was first seen', type: String, format: 'date-time' })
+  @ApiProperty({ description: 'When this version was first seen', format: 'date-time' })
   createdAt!: Date;
-  @ApiProperty({ description: 'Version string', type: String })
+  @ApiProperty({ description: 'Version string' })
   version!: string;
 }
 
@@ -170,71 +170,71 @@ export class ServerStatsResponseDto {
 }
 
 export class ServerMediaTypesResponseDto {
-  @ApiProperty({ description: 'Supported video MIME types', type: [String] })
+  @ApiProperty({ description: 'Supported video MIME types' })
   video!: string[];
-  @ApiProperty({ description: 'Supported image MIME types', type: [String] })
+  @ApiProperty({ description: 'Supported image MIME types' })
   image!: string[];
-  @ApiProperty({ description: 'Supported sidecar MIME types', type: [String] })
+  @ApiProperty({ description: 'Supported sidecar MIME types' })
   sidecar!: string[];
 }
 
 export class ServerThemeDto extends SystemConfigThemeDto {}
 
 export class ServerConfigDto {
-  @ApiProperty({ description: 'OAuth button text', type: String })
+  @ApiProperty({ description: 'OAuth button text' })
   oauthButtonText!: string;
-  @ApiProperty({ description: 'Login page message', type: String })
+  @ApiProperty({ description: 'Login page message' })
   loginPageMessage!: string;
   @ApiProperty({ type: 'integer', description: 'Number of days before trashed assets are permanently deleted' })
   trashDays!: number;
   @ApiProperty({ type: 'integer', description: 'Delay in days before deleted users are permanently removed' })
   userDeleteDelay!: number;
-  @ApiProperty({ description: 'Whether the server has been initialized', type: Boolean })
+  @ApiProperty({ description: 'Whether the server has been initialized' })
   isInitialized!: boolean;
-  @ApiProperty({ description: 'Whether the admin has completed onboarding', type: Boolean })
+  @ApiProperty({ description: 'Whether the admin has completed onboarding' })
   isOnboarded!: boolean;
-  @ApiProperty({ description: 'External domain URL', type: String })
+  @ApiProperty({ description: 'External domain URL' })
   externalDomain!: string;
-  @ApiProperty({ description: 'Whether public user registration is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether public user registration is enabled' })
   publicUsers!: boolean;
-  @ApiProperty({ description: 'Map dark style URL', type: String })
+  @ApiProperty({ description: 'Map dark style URL' })
   mapDarkStyleUrl!: string;
-  @ApiProperty({ description: 'Map light style URL', type: String })
+  @ApiProperty({ description: 'Map light style URL' })
   mapLightStyleUrl!: string;
-  @ApiProperty({ description: 'Whether maintenance mode is active', type: Boolean })
+  @ApiProperty({ description: 'Whether maintenance mode is active' })
   maintenanceMode!: boolean;
 }
 
 export class ServerFeaturesDto {
-  @ApiProperty({ description: 'Whether smart search is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether smart search is enabled' })
   smartSearch!: boolean;
-  @ApiProperty({ description: 'Whether duplicate detection is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether duplicate detection is enabled' })
   duplicateDetection!: boolean;
-  @ApiProperty({ description: 'Whether config file is available', type: Boolean })
+  @ApiProperty({ description: 'Whether config file is available' })
   configFile!: boolean;
-  @ApiProperty({ description: 'Whether facial recognition is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether facial recognition is enabled' })
   facialRecognition!: boolean;
-  @ApiProperty({ description: 'Whether map feature is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether map feature is enabled' })
   map!: boolean;
-  @ApiProperty({ description: 'Whether trash feature is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether trash feature is enabled' })
   trash!: boolean;
-  @ApiProperty({ description: 'Whether reverse geocoding is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether reverse geocoding is enabled' })
   reverseGeocoding!: boolean;
-  @ApiProperty({ description: 'Whether face import is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether face import is enabled' })
   importFaces!: boolean;
-  @ApiProperty({ description: 'Whether OAuth is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether OAuth is enabled' })
   oauth!: boolean;
-  @ApiProperty({ description: 'Whether OAuth auto-launch is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether OAuth auto-launch is enabled' })
   oauthAutoLaunch!: boolean;
-  @ApiProperty({ description: 'Whether password login is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether password login is enabled' })
   passwordLogin!: boolean;
-  @ApiProperty({ description: 'Whether sidecar files are supported', type: Boolean })
+  @ApiProperty({ description: 'Whether sidecar files are supported' })
   sidecar!: boolean;
-  @ApiProperty({ description: 'Whether search is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether search is enabled' })
   search!: boolean;
-  @ApiProperty({ description: 'Whether email notifications are enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether email notifications are enabled' })
   email!: boolean;
-  @ApiProperty({ description: 'Whether OCR is enabled', type: Boolean })
+  @ApiProperty({ description: 'Whether OCR is enabled' })
   ocr!: boolean;
 }
 

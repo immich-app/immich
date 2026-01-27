@@ -26,8 +26,7 @@ export enum BulkIdErrorReason {
 }
 
 export class BulkIdsDto {
-  @ApiProperty({ description: 'IDs to process', type: [String] })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'IDs to process' })
   ids!: string[];
 }
 

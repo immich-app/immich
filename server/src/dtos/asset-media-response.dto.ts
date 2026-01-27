@@ -7,8 +7,7 @@ export enum AssetMediaStatus {
   DUPLICATE = 'duplicate',
 }
 export class AssetMediaResponseDto {
-  @ApiProperty({ description: 'Upload status', enum: AssetMediaStatus })
-  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus' })
+  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus', description: 'Upload status' })
   status!: AssetMediaStatus;
   @ApiProperty({ description: 'Asset media ID' })
   id!: string;
@@ -38,11 +37,11 @@ export class AssetBulkUploadCheckResult {
 }
 
 export class AssetBulkUploadCheckResponseDto {
-  @ApiProperty({ description: 'Upload check results', type: () => [AssetBulkUploadCheckResult] })
+  @ApiProperty({ description: 'Upload check results' })
   results!: AssetBulkUploadCheckResult[];
 }
 
 export class CheckExistingAssetsResponseDto {
-  @ApiProperty({ description: 'Existing asset IDs', type: [String] })
+  @ApiProperty({ description: 'Existing asset IDs' })
   existingIds!: string[];
 }

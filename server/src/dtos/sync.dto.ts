@@ -40,7 +40,7 @@ export class AssetDeltaSyncDto {
   @ValidateDate()
   updatedAfter!: Date;
 
-  @ApiProperty({ description: 'User IDs to sync', type: [String] })
+  @ApiProperty({ description: 'User IDs to sync' })
   @ValidateUUID({ each: true })
   userIds!: string[];
 }
@@ -48,9 +48,9 @@ export class AssetDeltaSyncDto {
 export class AssetDeltaSyncResponseDto {
   @ApiProperty({ description: 'Whether full sync is needed' })
   needsFullSync!: boolean;
-  @ApiProperty({ description: 'Upserted assets', type: () => [AssetResponseDto] })
+  @ApiProperty({ description: 'Upserted assets' })
   upserted!: AssetResponseDto[];
-  @ApiProperty({ description: 'Deleted asset IDs', type: [String] })
+  @ApiProperty({ description: 'Deleted asset IDs' })
   deleted!: string[];
 }
 
@@ -68,7 +68,7 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor' })
   avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
   hasProfileImage!: boolean;
@@ -402,8 +402,7 @@ export type SyncItem = {
 };
 
 export class SyncStreamDto {
-  @ApiProperty({ description: 'Sync request types', enum: SyncRequestType, isArray: true })
-  @ValidateEnum({ enum: SyncRequestType, name: 'SyncRequestType', each: true })
+  @ValidateEnum({ enum: SyncRequestType, name: 'SyncRequestType', each: true, description: 'Sync request types' })
   types!: SyncRequestType[];
 
   @ApiPropertyOptional({ description: 'Reset sync state' })
@@ -412,22 +411,26 @@ export class SyncStreamDto {
 }
 
 export class SyncAckDto {
-  @ApiProperty({ description: 'Sync entity type', enum: SyncEntityType })
-  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType' })
+  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType', description: 'Sync entity type' })
   type!: SyncEntityType;
   @ApiProperty({ description: 'Acknowledgment ID' })
   ack!: string;
 }
 
 export class SyncAckSetDto {
-  @ApiProperty({ description: 'Acknowledgment IDs (max 1000)', type: [String] })
+  @ApiProperty({ description: 'Acknowledgment IDs (max 1000)' })
   @ArrayMaxSize(1000)
   @IsString({ each: true })
   acks!: string[];
 }
 
 export class SyncAckDeleteDto {
-  @ApiPropertyOptional({ description: 'Sync entity types to delete acks for', enum: SyncEntityType, isArray: true })
-  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType', optional: true, each: true })
+  @ValidateEnum({
+    enum: SyncEntityType,
+    name: 'SyncEntityType',
+    optional: true,
+    each: true,
+    description: 'Sync entity types to delete acks for',
+  })
   types?: SyncEntityType[];
 }

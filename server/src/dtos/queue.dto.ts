@@ -4,24 +4,20 @@ import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
 import { ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class QueueNameParamDto {
-  @ApiProperty({ description: 'Queue name', enum: QueueName })
-  @ValidateEnum({ enum: QueueName, name: 'QueueName' })
+  @ValidateEnum({ enum: QueueName, name: 'QueueName', description: 'Queue name' })
   name!: QueueName;
 }
 
 export class QueueCommandDto {
-  @ApiProperty({ description: 'Queue command to execute', enum: QueueCommand })
-  @ValidateEnum({ enum: QueueCommand, name: 'QueueCommand' })
+  @ValidateEnum({ enum: QueueCommand, name: 'QueueCommand', description: 'Queue command to execute' })
   command!: QueueCommand;
 
-  @ApiPropertyOptional({ description: 'Force the command execution (if applicable)', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Force the command execution (if applicable)' })
   force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
 }
 
 export class QueueUpdateDto {
-  @ApiPropertyOptional({ description: 'Whether to pause the queue', type: Boolean })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Whether to pause the queue' })
   isPaused?: boolean;
 }
 
@@ -35,16 +31,20 @@ export class QueueDeleteDto {
 }
 
 export class QueueJobSearchDto {
-  @ApiPropertyOptional({ description: 'Filter jobs by status', enum: QueueJobStatus, isArray: true })
-  @ValidateEnum({ enum: QueueJobStatus, name: 'QueueJobStatus', optional: true, each: true })
+  @ValidateEnum({
+    enum: QueueJobStatus,
+    name: 'QueueJobStatus',
+    optional: true,
+    each: true,
+    description: 'Filter jobs by status',
+  })
   status?: QueueJobStatus[];
 }
 export class QueueJobResponseDto {
-  @ApiPropertyOptional({ description: 'Job ID', type: String })
+  @ApiPropertyOptional({ description: 'Job ID' })
   id?: string;
 
-  @ApiProperty({ description: 'Job name', enum: JobName })
-  @ValidateEnum({ enum: JobName, name: 'JobName' })
+  @ValidateEnum({ enum: JobName, name: 'JobName', description: 'Job name' })
   name!: JobName;
 
   @ApiProperty({ description: 'Job data payload', type: Object })
@@ -70,12 +70,10 @@ export class QueueStatisticsDto {
 }
 
 export class QueueResponseDto {
-  @ApiProperty({ description: 'Queue name', enum: QueueName })
-  @ValidateEnum({ enum: QueueName, name: 'QueueName' })
+  @ValidateEnum({ enum: QueueName, name: 'QueueName', description: 'Queue name' })
   name!: QueueName;
 
-  @ApiProperty({ description: 'Whether the queue is paused', type: Boolean })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Whether the queue is paused' })
   isPaused!: boolean;
 
   // Description lives on schema to avoid duplication

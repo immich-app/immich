@@ -16,13 +16,13 @@ export class MapReverseGeocodeDto {
 }
 
 export class MapReverseGeocodeResponseDto {
-  @ApiProperty({ description: 'City name', nullable: true })
+  @ApiProperty({ description: 'City name' })
   city!: string | null;
 
-  @ApiProperty({ description: 'State/Province name', nullable: true })
+  @ApiProperty({ description: 'State/Province name' })
   state!: string | null;
 
-  @ApiProperty({ description: 'Country name', nullable: true })
+  @ApiProperty({ description: 'Country name' })
   country!: string | null;
 }
 
@@ -62,12 +62,12 @@ export class MapMarkerResponseDto {
   @ApiProperty({ format: 'double', description: 'Longitude' })
   lon!: number;
 
-  @ApiProperty({ description: 'City name', nullable: true })
+  @ApiProperty({ description: 'City name' })
   city!: string | null;
 
-  @ApiProperty({ description: 'State/Province name', nullable: true })
+  @ApiProperty({ description: 'State/Province name' })
   state!: string | null;
 
-  @ApiProperty({ description: 'Country name', nullable: true })
+  @ApiProperty({ description: 'Country name' })
   country!: string | null;
 }

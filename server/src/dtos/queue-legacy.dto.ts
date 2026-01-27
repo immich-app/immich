@@ -3,9 +3,9 @@ import { QueueResponseDto, QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { QueueName } from 'src/enum';
 
 export class QueueStatusLegacyDto {
-  @ApiProperty({ description: 'Whether the queue is currently active (has running jobs)', type: Boolean })
+  @ApiProperty({ description: 'Whether the queue is currently active (has running jobs)' })
   isActive!: boolean;
-  @ApiProperty({ description: 'Whether the queue is paused', type: Boolean })
+  @ApiProperty({ description: 'Whether the queue is paused' })
   isPaused!: boolean;
 }
 

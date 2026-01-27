@@ -43,7 +43,7 @@ export class SessionResponseDto {
   deviceType!: string;
   @ApiProperty({ description: 'Device OS' })
   deviceOS!: string;
-  @ApiProperty({ description: 'App version', nullable: true })
+  @ApiProperty({ description: 'App version' })
   appVersion!: string | null;
   @ApiProperty({ description: 'Is pending sync reset' })
   isPendingSyncReset!: boolean;
