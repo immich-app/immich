@@ -17087,15 +17087,15 @@
         "properties": {
           "images": {
             "description": "Number of images",
-            "type": "number"
+            "type": "integer"
           },
           "total": {
             "description": "Total number of assets",
-            "type": "number"
+            "type": "integer"
           },
           "videos": {
             "description": "Number of videos",
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [

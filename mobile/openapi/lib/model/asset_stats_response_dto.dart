@@ -19,13 +19,13 @@ class AssetStatsResponseDto {
   });
 
   /// Number of images
-  num images;
+  int images;
 
   /// Total number of assets
-  num total;
+  int total;
 
   /// Number of videos
-  num videos;
+  int videos;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetStatsResponseDto &&
@@ -60,9 +60,9 @@ class AssetStatsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AssetStatsResponseDto(
-        images: num.parse('${json[r'images']}'),
-        total: num.parse('${json[r'total']}'),
-        videos: num.parse('${json[r'videos']}'),
+        images: mapValueOfType<int>(json, r'images')!,
+        total: mapValueOfType<int>(json, r'total')!,
+        videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
     return null;

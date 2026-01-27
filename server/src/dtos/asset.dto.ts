@@ -149,13 +149,13 @@ export class AssetStatsDto {
 }
 
 export class AssetStatsResponseDto {
-  @ApiProperty({ description: 'Number of images' })
+  @ApiProperty({ description: 'Number of images', type: 'integer' })
   images!: number;
 
-  @ApiProperty({ description: 'Number of videos' })
+  @ApiProperty({ description: 'Number of videos', type: 'integer' })
   videos!: number;
 
-  @ApiProperty({ description: 'Total number of assets' })
+  @ApiProperty({ description: 'Total number of assets', type: 'integer' })
   total!: number;
 }
 
