@@ -269,6 +269,8 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment || 'development' }}
           BUNDLE_ID_SUFFIX: ${{ inputs.environment == 'production' && '' || 'development' }}
           GITHUB_REF: ${{ github.ref }}
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 6
         working-directory: ./mobile/ios
         run: |
           # Only upload to TestFlight on main branch
