@@ -95,12 +95,7 @@ export class SharedLinkEditDto {
   @ValidateBoolean({ optional: true })
   showMetadata?: boolean;
 
-  /**
-   * Few clients cannot send null to set the expiryTime to never.
-   * Setting this flag and not sending expiryAt is considered as null instead.
-   * Clients that can send null values can ignore this.
-   */
-  @ApiPropertyOptional({ description: 'Change expiry time (set to true to remove expiry)' })
+  @ApiPropertyOptional({ description: 'Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.' })
   @ValidateBoolean({ optional: true })
   changeExpiryTime?: boolean;
 }

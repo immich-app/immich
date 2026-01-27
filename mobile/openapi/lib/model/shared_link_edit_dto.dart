@@ -41,7 +41,7 @@ class SharedLinkEditDto {
   ///
   bool? allowUpload;
 
-  /// Change expiry time (set to true to remove expiry)
+  /// Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

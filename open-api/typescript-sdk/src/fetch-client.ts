@@ -2283,7 +2283,7 @@ export type SharedLinkEditDto = {
     allowDownload?: boolean;
     /** Allow uploads */
     allowUpload?: boolean;
-    /** Change expiry time (set to true to remove expiry) */
+    /** Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this. */
     changeExpiryTime?: boolean;
     /** Link description */
     description?: string | null;
