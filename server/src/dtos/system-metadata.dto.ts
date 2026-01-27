@@ -2,14 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ValidateBoolean } from 'src/validation';
 
 export class AdminOnboardingUpdateDto {
-  @ApiProperty({ description: 'Is admin onboarded' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Is admin onboarded' })
   isOnboarded!: boolean;
 }
 
 export class AdminOnboardingResponseDto {
-  @ApiProperty({ description: 'Is admin onboarded' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Is admin onboarded' })
   isOnboarded!: boolean;
 }
 

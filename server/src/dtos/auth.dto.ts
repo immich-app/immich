@@ -98,8 +98,7 @@ export class ChangePasswordDto {
   @MinLength(8)
   newPassword!: string;
 
-  @ApiPropertyOptional({ description: 'Invalidate all other sessions', default: false })
-  @ValidateBoolean({ optional: true, default: false })
+  @ValidateBoolean({ optional: true, default: false, description: 'Invalidate all other sessions' })
   invalidateSessions?: boolean;
 }
 

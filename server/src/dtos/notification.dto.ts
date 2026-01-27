@@ -40,8 +40,7 @@ export class NotificationDto {
 }
 
 export class NotificationSearchDto {
-  @ApiPropertyOptional({ description: 'Filter by notification ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by notification ID' })
   id?: string;
 
   @ValidateEnum({

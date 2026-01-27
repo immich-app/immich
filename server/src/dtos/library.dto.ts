@@ -4,8 +4,7 @@ import { Library } from 'src/database';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
-  @ApiProperty({ description: 'Owner user ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Owner user ID' })
   ownerId!: string;
 
   @ApiPropertyOptional({ description: 'Library name' })
@@ -98,8 +97,7 @@ export class ValidateLibraryImportPathResponseDto {
 }
 
 export class LibrarySearchDto {
-  @ApiPropertyOptional({ description: 'Filter by user ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by user ID' })
   userId?: string;
 }
 

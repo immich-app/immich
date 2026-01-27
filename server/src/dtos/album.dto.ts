@@ -11,14 +11,12 @@ import { AlbumUserRole, AssetOrder } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
-  @ApiPropertyOptional({ description: 'Exclude assets from response' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Exclude assets from response' })
   withoutAssets?: boolean;
 }
 
 export class AlbumUserAddDto {
-  @ApiProperty({ description: 'User ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'User ID' })
   userId!: string;
 
   @ValidateEnum({
@@ -61,8 +59,7 @@ export class CreateAlbumDto {
   @Type(() => AlbumUserCreateDto)
   albumUsers?: AlbumUserCreateDto[];
 
-  @ApiPropertyOptional({ description: 'Initial asset IDs' })
-  @ValidateUUID({ optional: true, each: true })
+  @ValidateUUID({ optional: true, each: true, description: 'Initial asset IDs' })
   assetIds?: string[];
 }
 
@@ -92,12 +89,10 @@ export class UpdateAlbumDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Album thumbnail asset ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Album thumbnail asset ID' })
   albumThumbnailAssetId?: string;
 
-  @ApiPropertyOptional({ description: 'Enable activity feed' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Enable activity feed' })
   isActivityEnabled?: boolean;
 
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
@@ -105,14 +100,10 @@ export class UpdateAlbumDto {
 }
 
 export class GetAlbumsDto {
-  @ApiPropertyOptional({
-    description: 'Filter by shared status: true = only shared, false = only own, undefined = all',
-  })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by shared status: true = only shared, false = only own, undefined = all' })
   shared?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter albums containing this asset ID (ignores shared parameter)' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter albums containing this asset ID (ignores shared parameter)' })
   assetId?: string;
 }
 

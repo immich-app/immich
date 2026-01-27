@@ -40,18 +40,20 @@ const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabl
 const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
 
 export class DatabaseBackupConfig {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @ValidateIf(isDatabaseBackupEnabled)
   @IsNotEmpty()
   @IsCronExpression()
   @IsString()
+  @ApiProperty({ description: 'Cron expression' })
   cronExpression!: string;
 
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
+  @ApiProperty({ description: 'Keep last amount' })
   keepLastAmount!: number;
 }
 
@@ -67,171 +69,175 @@ export class SystemConfigFFmpegDto {
   @Min(0)
   @Max(51)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'CRF' })
   crf!: number;
 
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Threads' })
   threads!: number;
 
   @IsString()
+  @ApiProperty({ description: 'Preset' })
   preset!: string;
 
-  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec' })
+  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec', description: 'Target video codec' })
   targetVideoCodec!: VideoCodec;
 
-  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec', each: true })
+  @ValidateEnum({ enum: VideoCodec, name: 'VideoCodec', each: true, description: 'Accepted video codecs' })
   acceptedVideoCodecs!: VideoCodec[];
 
-  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec' })
+  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec', description: 'Target audio codec' })
   targetAudioCodec!: AudioCodec;
 
-  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec', each: true })
+  @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec', each: true, description: 'Accepted audio codecs' })
   acceptedAudioCodecs!: AudioCodec[];
 
-  @ValidateEnum({ enum: VideoContainer, name: 'VideoContainer', each: true })
+  @ValidateEnum({ enum: VideoContainer, name: 'VideoContainer', each: true, description: 'Accepted containers' })
   acceptedContainers!: VideoContainer[];
 
   @IsString()
+  @ApiProperty({ description: 'Target resolution' })
   targetResolution!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Max bitrate' })
   maxBitrate!: string;
 
   @IsInt()
   @Min(-1)
   @Max(16)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'B-frames' })
   bframes!: number;
 
   @IsInt()
   @Min(0)
   @Max(6)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'References' })
   refs!: number;
 
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'GOP size' })
   gopSize!: number;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Temporal AQ' })
   temporalAQ!: boolean;
 
-  @ValidateEnum({ enum: CQMode, name: 'CQMode' })
+  @ValidateEnum({ enum: CQMode, name: 'CQMode', description: 'CQ mode' })
   cqMode!: CQMode;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Two pass' })
   twoPass!: boolean;
 
+  @ApiProperty({ description: 'Preferred hardware device' })
   @IsString()
   preferredHwDevice!: string;
 
-  @ValidateEnum({ enum: TranscodePolicy, name: 'TranscodePolicy' })
+  @ValidateEnum({ enum: TranscodePolicy, name: 'TranscodePolicy', description: 'Transcode policy' })
   transcode!: TranscodePolicy;
 
-  @ValidateEnum({ enum: TranscodeHardwareAcceleration, name: 'TranscodeHWAccel' })
+  @ValidateEnum({ enum: TranscodeHardwareAcceleration, name: 'TranscodeHWAccel', description: 'Transcode hardware acceleration' })
   accel!: TranscodeHardwareAcceleration;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Accelerated decode' })
   accelDecode!: boolean;
 
-  @ValidateEnum({ enum: ToneMapping, name: 'ToneMapping' })
+  @ValidateEnum({ enum: ToneMapping, name: 'ToneMapping', description: 'Tone mapping' })
   tonemap!: ToneMapping;
 }
 
 class JobSettingsDto {
   @IsInt()
   @IsPositive()
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Concurrency' })
   concurrency!: number;
 }
 
 class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> {
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.ThumbnailGeneration]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.MetadataExtraction]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.VideoConversion]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.SmartSearch]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Migration]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.BackgroundTask]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Search]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.FaceDetection]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Ocr]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Sidecar]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Library]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Notification]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.Workflow]!: JobSettingsDto;
 
-  @ApiProperty({ type: JobSettingsDto })
+  @ApiProperty({ type: JobSettingsDto, description: undefined })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
@@ -239,7 +245,7 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
 }
 
 class SystemConfigLibraryScanDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @ValidateIf(isLibraryScanEnabled)
@@ -250,7 +256,7 @@ class SystemConfigLibraryScanDto {
 }
 
 class SystemConfigLibraryWatchDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 }
 
@@ -267,7 +273,7 @@ class SystemConfigLibraryDto {
 }
 
 class SystemConfigLoggingDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @ValidateEnum({ enum: LogLevel, name: 'LogLevel' })
@@ -275,7 +281,7 @@ class SystemConfigLoggingDto {
 }
 
 class MachineLearningAvailabilityChecksDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @IsInt()
@@ -286,7 +292,7 @@ class MachineLearningAvailabilityChecksDto {
 }
 
 class SystemConfigMachineLearningDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
@@ -332,7 +338,7 @@ export class MapThemeDto {
 }
 
 class SystemConfigMapDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @IsNotEmpty()
@@ -345,7 +351,7 @@ class SystemConfigMapDto {
 }
 
 class SystemConfigNewVersionCheckDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 }
 
@@ -353,72 +359,78 @@ class SystemConfigNightlyTasksDto {
   @IsDateStringFormat('HH:mm', { message: 'startTime must be in HH:mm format' })
   startTime!: string;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Database cleanup' })
   databaseCleanup!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Missing thumbnails' })
   missingThumbnails!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Cluster new faces' })
   clusterNewFaces!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Generate memories' })
   generateMemories!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Sync quota usage' })
   syncQuotaUsage!: boolean;
 }
 
 class SystemConfigOAuthDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Auto launch' })
   autoLaunch!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Auto register' })
   autoRegister!: boolean;
 
   @IsString()
+  @ApiProperty({ description: 'Button text' })
   buttonText!: string;
 
   @ValidateIf(isOAuthEnabled)
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({ description: 'Client ID' })
   clientId!: string;
 
   @ValidateIf(isOAuthEnabled)
   @IsString()
+  @ApiProperty({ description: 'Client secret' })
   clientSecret!: string;
 
-  @ValidateEnum({ enum: OAuthTokenEndpointAuthMethod, name: 'OAuthTokenEndpointAuthMethod' })
+  @ValidateEnum({ enum: OAuthTokenEndpointAuthMethod, name: 'OAuthTokenEndpointAuthMethod', description: 'Token endpoint auth method' })
   tokenEndpointAuthMethod!: OAuthTokenEndpointAuthMethod;
 
   @IsInt()
   @IsPositive()
   @Optional()
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Timeout' })
   timeout!: number;
 
   @IsNumber()
   @Min(0)
   @Optional({ nullable: true })
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiProperty({ type: 'integer', format: 'int64', description: 'Default storage quota' })
   defaultStorageQuota!: number | null;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @ValidateIf(isOAuthEnabled)
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({ description: 'Issuer URL' })
   issuerUrl!: string;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Mobile override enabled' })
   mobileOverrideEnabled!: boolean;
 
   @ValidateIf(isOAuthOverrideEnabled)
   @IsUrl()
+  @ApiProperty({ description: 'Mobile redirect URI' })
   mobileRedirectUri!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Scope' })
   scope!: string;
 
   @IsString()
@@ -427,30 +439,34 @@ class SystemConfigOAuthDto {
 
   @IsString()
   @IsNotEmpty()
+  @ApiProperty({ description: 'Profile signing algorithm' })
   profileSigningAlgorithm!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Storage label claim' })
   storageLabelClaim!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Storage quota claim' })
   storageQuotaClaim!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Role claim' })
   roleClaim!: string;
 }
 
 class SystemConfigPasswordLoginDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 }
 
 class SystemConfigReverseGeocodingDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 }
 
 class SystemConfigFacesDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Import' })
   import!: boolean;
 }
 
@@ -464,18 +480,19 @@ class SystemConfigMetadataDto {
 class SystemConfigServerDto {
   @ValidateIf((_, value: string) => value !== '')
   @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
+  @ApiProperty({ description: 'External domain' })
   externalDomain!: string;
 
   @IsString()
+  @ApiProperty({ description: 'Login page message' })
   loginPageMessage!: string;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Public users' })
   publicUsers!: boolean;
 }
 
 class SystemConfigSmtpTransportDto {
-  @ApiProperty({ description: 'Whether to ignore SSL certificate errors' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Whether to ignore SSL certificate errors' })
   ignoreCert!: boolean;
 
   @ApiProperty({ description: 'SMTP server hostname' })
@@ -489,8 +506,7 @@ class SystemConfigSmtpTransportDto {
   @Max(65_535)
   port!: number;
 
-  @ApiProperty({ description: 'Whether to use secure connection (TLS/SSL)' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Whether to use secure connection (TLS/SSL)' })
   secure!: boolean;
 
   @ApiProperty({ description: 'SMTP username' })
@@ -503,8 +519,7 @@ class SystemConfigSmtpTransportDto {
 }
 
 export class SystemConfigSmtpDto {
-  @ApiProperty({ description: 'Whether SMTP email notifications are enabled' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Whether SMTP email notifications are enabled' })
   enabled!: boolean;
 
   @ApiProperty({ description: 'Email address to send from' })
@@ -553,14 +568,15 @@ class SystemConfigTemplatesDto {
 }
 
 class SystemConfigStorageTemplateDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Hash verification enabled' })
   hashVerificationEnabled!: boolean;
 
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({ description: 'Template' })
   template!: string;
 }
 
@@ -590,20 +606,20 @@ export class SystemConfigThemeDto {
 }
 
 class SystemConfigGeneratedImageDto {
-  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat' })
+  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat', description: 'Image format' })
   format!: ImageFormat;
 
   @IsInt()
   @Min(1)
   @Max(100)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Quality' })
   quality!: number;
 
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Size' })
   size!: number;
 
   @ValidateBoolean({ optional: true, default: false })
@@ -611,20 +627,20 @@ class SystemConfigGeneratedImageDto {
 }
 
 class SystemConfigGeneratedFullsizeImageDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
-  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat' })
+  @ValidateEnum({ enum: ImageFormat, name: 'ImageFormat', description: 'Image format' })
   format!: ImageFormat;
 
   @IsInt()
   @Min(1)
   @Max(100)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Quality' })
   quality!: number;
 
-  @ValidateBoolean({ optional: true, default: false })
+  @ValidateBoolean({ optional: true, default: false, description: 'Progressive' })
   progressive?: boolean;
 }
 
@@ -632,33 +648,39 @@ export class SystemConfigImageDto {
   @Type(() => SystemConfigGeneratedImageDto)
   @ValidateNested()
   @IsObject()
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined})
   thumbnail!: SystemConfigGeneratedImageDto;
 
   @Type(() => SystemConfigGeneratedImageDto)
   @ValidateNested()
   @IsObject()
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   preview!: SystemConfigGeneratedImageDto;
 
   @Type(() => SystemConfigGeneratedFullsizeImageDto)
   @ValidateNested()
   @IsObject()
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   fullsize!: SystemConfigGeneratedFullsizeImageDto;
 
-  @ValidateEnum({ enum: Colorspace, name: 'Colorspace' })
+  @ValidateEnum({ enum: Colorspace, name: 'Colorspace', description: 'Colorspace' })
   colorspace!: Colorspace;
 
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Extract embedded' })
   extractEmbedded!: boolean;
 }
 
 class SystemConfigTrashDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Enabled' })
   enabled!: boolean;
 
   @IsInt()
   @Min(0)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Days' })
   days!: number;
 }
 
@@ -666,7 +688,7 @@ class SystemConfigUserDto {
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Delete delay' })
   deleteDelay!: number;
 }
 

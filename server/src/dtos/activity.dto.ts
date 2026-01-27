@@ -41,12 +41,10 @@ export class ActivityStatisticsResponseDto {
 }
 
 export class ActivityDto {
-  @ApiProperty({ description: 'Album ID' })
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Album ID' })
   albumId!: string;
 
-  @ApiPropertyOptional({ description: 'Asset ID (if activity is for an asset)' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Asset ID (if activity is for an asset)' })
   assetId?: string;
 }
 

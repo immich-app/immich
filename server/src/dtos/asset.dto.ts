@@ -33,12 +33,10 @@ const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
 const ValidateGPS = () => ValidateIf(hasGPS);
 
 export class UpdateAssetBase {
-  @ApiProperty({ description: 'Mark as favorite' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Mark as favorite' })
   isFavorite?: boolean;
 
-  @ApiProperty({ description: 'Asset visibility' })
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true, description: 'Asset visibility' })
   visibility?: AssetVisibility;
 
   @ApiProperty({ description: 'Original date and time' })
@@ -72,8 +70,7 @@ export class UpdateAssetBase {
 }
 
 export class AssetBulkUpdateDto extends UpdateAssetBase {
-  @ApiProperty({ description: 'Asset IDs to update' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs to update' })
   ids!: string[];
 
   @ApiProperty({ description: 'Duplicate asset ID' })
@@ -94,8 +91,7 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {
-  @ApiProperty({ description: 'Live photo video ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Live photo video ID' })
   livePhotoVideoId?: string | null;
 }
 
@@ -109,14 +105,12 @@ export class RandomAssetsDto {
 }
 
 export class AssetBulkDeleteDto extends BulkIdsDto {
-  @ApiProperty({ description: 'Force delete even if in use' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Force delete even if in use' })
   force?: boolean;
 }
 
 export class AssetIdsDto {
-  @ApiProperty({ description: 'Asset IDs' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs' })
   assetIds!: string[];
 }
 

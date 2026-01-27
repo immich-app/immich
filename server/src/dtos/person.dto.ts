@@ -35,12 +35,10 @@ export class PersonCreateDto {
   @Optional({ nullable: true, emptyToNull: true })
   birthDate?: Date | null;
 
-  @ApiPropertyOptional({ description: 'Person visibility (hidden)' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Person visibility (hidden)' })
   isHidden?: boolean;
 
-  @ApiPropertyOptional({ description: 'Mark as favorite' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Mark as favorite' })
   isFavorite?: boolean;
 
   @ApiPropertyOptional({ description: 'Person color (hex)' })
@@ -50,8 +48,7 @@ export class PersonCreateDto {
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
-  @ApiPropertyOptional({ description: 'Asset ID used for feature face thumbnail' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Asset ID used for feature face thumbnail' })
   featureFaceAssetId?: string;
 }
 
@@ -71,20 +68,16 @@ export class PeopleUpdateItem extends PersonUpdateDto {
 }
 
 export class MergePersonDto {
-  @ApiProperty({ description: 'Person IDs to merge' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Person IDs to merge' })
   ids!: string[];
 }
 
 export class PersonSearchDto {
-  @ApiPropertyOptional({ description: 'Include hidden people' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include hidden people' })
   withHidden?: boolean;
-  @ApiPropertyOptional({ description: 'Closest person ID for similarity search' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Closest person ID for similarity search' })
   closestPersonId?: string;
-  @ApiPropertyOptional({ description: 'Closest asset ID for similarity search' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Closest asset ID for similarity search' })
   closestAssetId?: string;
 
   @ApiPropertyOptional({ description: 'Page number for pagination', default: 1 })

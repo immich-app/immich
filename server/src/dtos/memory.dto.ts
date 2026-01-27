@@ -8,12 +8,10 @@ import { AssetOrderWithRandom, MemoryType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 class MemoryBaseDto {
-  @ApiPropertyOptional({ description: 'Is memory saved' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Is memory saved' })
   isSaved?: boolean;
 
-  @ApiPropertyOptional({ description: 'Date when memory was seen', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Date when memory was seen' })
   seenAt?: Date;
 }
 

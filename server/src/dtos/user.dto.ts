@@ -74,12 +74,10 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
 };
 
 export class UserAdminSearchDto {
-  @ApiPropertyOptional({ description: 'Include deleted users' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include deleted users' })
   withDeleted?: boolean;
 
-  @ApiPropertyOptional({ description: 'User ID filter' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'User ID filter' })
   id?: string;
 }
 
@@ -113,16 +111,13 @@ export class UserAdminCreateDto {
   @Min(0)
   quotaSizeInBytes?: number | null;
 
-  @ApiPropertyOptional({ description: 'Require password change on next login' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Require password change on next login' })
   shouldChangePassword?: boolean;
 
-  @ApiPropertyOptional({ description: 'Send notification email' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Send notification email' })
   notify?: boolean;
 
-  @ApiPropertyOptional({ description: 'Grant admin privileges' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Grant admin privileges' })
   isAdmin?: boolean;
 }
 
@@ -158,8 +153,7 @@ export class UserAdminUpdateDto {
   @Transform(toSanitized)
   storageLabel?: string | null;
 
-  @ApiPropertyOptional({ description: 'Require password change on next login' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Require password change on next login' })
   shouldChangePassword?: boolean;
 
   @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
@@ -168,14 +162,12 @@ export class UserAdminUpdateDto {
   @Min(0)
   quotaSizeInBytes?: number | null;
 
-  @ApiPropertyOptional({ description: 'Grant admin privileges' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Grant admin privileges' })
   isAdmin?: boolean;
 }
 
 export class UserAdminDeleteDto {
-  @ApiPropertyOptional({ description: 'Force delete even if user has assets' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Force delete even if user has assets' })
   force?: boolean;
 }
 

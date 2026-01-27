@@ -17126,6 +17126,7 @@
         "type": "string"
       },
       "AudioCodec": {
+        "description": "Target audio codec",
         "enum": [
           "mp3",
           "aac",
@@ -17248,6 +17249,7 @@
         "type": "object"
       },
       "CQMode": {
+        "description": "CQ mode",
         "enum": [
           "auto",
           "cqp",
@@ -17339,6 +17341,7 @@
         "type": "object"
       },
       "Colorspace": {
+        "description": "Colorspace",
         "enum": [
           "srgb",
           "p3"
@@ -17498,12 +17501,15 @@
       "DatabaseBackupConfig": {
         "properties": {
           "cronExpression": {
+            "description": "Cron expression",
             "type": "string"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "keepLastAmount": {
+            "description": "Keep last amount",
             "minimum": 1,
             "type": "number"
           }
@@ -17971,6 +17977,7 @@
         "type": "object"
       },
       "ImageFormat": {
+        "description": "Image format",
         "enum": [
           "jpeg",
           "webp"
@@ -18058,6 +18065,7 @@
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
+            "description": "Concurrency",
             "minimum": 1,
             "type": "integer"
           }
@@ -18301,6 +18309,7 @@
       "MachineLearningAvailabilityChecksDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "interval": {
@@ -19195,6 +19204,7 @@
         "type": "object"
       },
       "OAuthTokenEndpointAuthMethod": {
+        "description": "Token endpoint auth method",
         "enum": [
           "client_secret_post",
           "client_secret_basic"
@@ -22290,6 +22300,7 @@
       "SyncAlbumDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           }
         },
@@ -22301,9 +22312,11 @@
       "SyncAlbumToAssetDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22316,9 +22329,11 @@
       "SyncAlbumToAssetV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22331,9 +22346,11 @@
       "SyncAlbumUserDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -22346,6 +22363,7 @@
       "SyncAlbumUserV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "role": {
@@ -22353,9 +22371,11 @@
               {
                 "$ref": "#/components/schemas/AlbumUserRole"
               }
-            ]
+            ],
+            "description": "Album user role"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -22369,19 +22389,24 @@
       "SyncAlbumV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "description": {
+            "description": "Album description",
             "type": "string"
           },
           "id": {
+            "description": "Album ID",
             "type": "string"
           },
           "isActivityEnabled": {
+            "description": "Is activity enabled",
             "type": "boolean"
           },
           "name": {
+            "description": "Album name",
             "type": "string"
           },
           "order": {
@@ -22392,13 +22417,16 @@
             ]
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
             "nullable": true,
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -22419,6 +22447,7 @@
       "SyncAssetDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22430,108 +22459,133 @@
       "SyncAssetExifV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "city": {
+            "description": "City",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Country",
             "nullable": true,
             "type": "string"
           },
           "dateTimeOriginal": {
+            "description": "Date time original",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "description": {
+            "description": "Description",
             "nullable": true,
             "type": "string"
           },
           "exifImageHeight": {
+            "description": "Exif image height",
             "nullable": true,
             "type": "integer"
           },
           "exifImageWidth": {
+            "description": "Exif image width",
             "nullable": true,
             "type": "integer"
           },
           "exposureTime": {
+            "description": "Exposure time",
             "nullable": true,
             "type": "string"
           },
           "fNumber": {
+            "description": "F number",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "fileSizeInByte": {
+            "description": "File size in byte",
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
+            "description": "Focal length",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "fps": {
+            "description": "FPS",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "iso": {
+            "description": "ISO",
             "nullable": true,
             "type": "integer"
           },
           "latitude": {
+            "description": "Latitude",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "lensModel": {
+            "description": "Lens model",
             "nullable": true,
             "type": "string"
           },
           "longitude": {
+            "description": "Longitude",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "make": {
+            "description": "Make",
             "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Model",
             "nullable": true,
             "type": "string"
           },
           "modifyDate": {
+            "description": "Modify date",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "orientation": {
+            "description": "Orientation",
             "nullable": true,
             "type": "string"
           },
           "profileDescription": {
+            "description": "Profile description",
             "nullable": true,
             "type": "string"
           },
           "projectionType": {
+            "description": "Projection type",
             "nullable": true,
             "type": "string"
           },
           "rating": {
+            "description": "Rating",
             "nullable": true,
             "type": "integer"
           },
           "state": {
+            "description": "State",
             "nullable": true,
             "type": "string"
           },
           "timeZone": {
+            "description": "Time zone",
             "nullable": true,
             "type": "string"
           }
@@ -22568,6 +22622,7 @@
       "SyncAssetFaceDeleteV1": {
         "properties": {
           "assetFaceId": {
+            "description": "Asset face ID",
             "type": "string"
           }
         },
@@ -22579,6 +22634,7 @@
       "SyncAssetFaceV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "boundingBoxX1": {
@@ -22594,6 +22650,7 @@
             "type": "integer"
           },
           "id": {
+            "description": "Asset face ID",
             "type": "string"
           },
           "imageHeight": {
@@ -22603,10 +22660,12 @@
             "type": "integer"
           },
           "personId": {
+            "description": "Person ID",
             "nullable": true,
             "type": "string"
           },
           "sourceType": {
+            "description": "Source type",
             "type": "string"
           }
         },
@@ -22627,9 +22686,11 @@
       "SyncAssetMetadataDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "key": {
+            "description": "Key",
             "type": "string"
           }
         },
@@ -22642,12 +22703,15 @@
       "SyncAssetMetadataV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "key": {
+            "description": "Key",
             "type": "string"
           },
           "value": {
+            "description": "Value",
             "type": "object"
           }
         },
@@ -22661,64 +22725,80 @@
       "SyncAssetV1": {
         "properties": {
           "checksum": {
+            "description": "Checksum",
             "type": "string"
           },
           "deletedAt": {
+            "description": "Deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "duration": {
+            "description": "Duration",
             "nullable": true,
             "type": "string"
           },
           "fileCreatedAt": {
+            "description": "File created at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "fileModifiedAt": {
+            "description": "File modified at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "height": {
+            "description": "Asset height",
             "nullable": true,
             "type": "integer"
           },
           "id": {
+            "description": "Asset ID",
             "type": "string"
           },
           "isEdited": {
+            "description": "Is edited",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Is favorite",
             "type": "boolean"
           },
           "libraryId": {
+            "description": "Library ID",
             "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
+            "description": "Live photo video ID",
             "nullable": true,
             "type": "string"
           },
           "localDateTime": {
+            "description": "Local date time",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "originalFileName": {
+            "description": "Original file name",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "stackId": {
+            "description": "Stack ID",
             "nullable": true,
             "type": "string"
           },
           "thumbhash": {
+            "description": "Thumbhash",
             "nullable": true,
             "type": "string"
           },
@@ -22727,16 +22807,19 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type"
           },
           "visibility": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Asset visibility"
           },
           "width": {
+            "description": "Asset width",
             "nullable": true,
             "type": "integer"
           }
@@ -22772,36 +22855,46 @@
                 "$ref": "#/components/schemas/UserAvatarColor"
               }
             ],
+            "description": "User avatar color",
             "nullable": true
           },
           "deletedAt": {
+            "description": "User deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "email": {
+            "description": "User email",
             "type": "string"
           },
           "hasProfileImage": {
+            "description": "User has profile image",
             "type": "boolean"
           },
           "id": {
+            "description": "User ID",
             "type": "string"
           },
           "isAdmin": {
+            "description": "User is admin",
             "type": "boolean"
           },
           "name": {
+            "description": "User name",
             "type": "string"
           },
           "oauthId": {
+            "description": "User OAuth ID",
             "type": "string"
           },
           "pinCode": {
+            "description": "User pin code",
             "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
+            "description": "User profile changed at",
             "format": "date-time",
             "type": "string"
           },
@@ -22813,6 +22906,7 @@
             "type": "integer"
           },
           "storageLabel": {
+            "description": "User storage label",
             "nullable": true,
             "type": "string"
           }
@@ -22894,9 +22988,11 @@
       "SyncMemoryAssetDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22909,9 +23005,11 @@
       "SyncMemoryAssetV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22924,6 +23022,7 @@
       "SyncMemoryDeleteV1": {
         "properties": {
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22935,41 +23034,51 @@
       "SyncMemoryV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "data": {
+            "description": "Data",
             "type": "object"
           },
           "deletedAt": {
+            "description": "Deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "hideAt": {
+            "description": "Hide at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "id": {
+            "description": "Memory ID",
             "type": "string"
           },
           "isSaved": {
+            "description": "Is saved",
             "type": "boolean"
           },
           "memoryAt": {
+            "description": "Memory at",
             "format": "date-time",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "seenAt": {
+            "description": "Seen at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "showAt": {
+            "description": "Show at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
@@ -22979,9 +23088,11 @@
               {
                 "$ref": "#/components/schemas/MemoryType"
               }
-            ]
+            ],
+            "description": "Memory type"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23005,9 +23116,11 @@
       "SyncPartnerDeleteV1": {
         "properties": {
           "sharedById": {
+            "description": "Shared by ID",
             "type": "string"
           },
           "sharedWithId": {
+            "description": "Shared with ID",
             "type": "string"
           }
         },
@@ -23020,12 +23133,15 @@
       "SyncPartnerV1": {
         "properties": {
           "inTimeline": {
+            "description": "In timeline",
             "type": "boolean"
           },
           "sharedById": {
+            "description": "Shared by ID",
             "type": "string"
           },
           "sharedWithId": {
+            "description": "Shared with ID",
             "type": "string"
           }
         },
@@ -23039,6 +23155,7 @@
       "SyncPersonDeleteV1": {
         "properties": {
           "personId": {
+            "description": "Person ID",
             "type": "string"
           }
         },
@@ -23050,38 +23167,48 @@
       "SyncPersonV1": {
         "properties": {
           "birthDate": {
+            "description": "Birth date",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "color": {
+            "description": "Color",
             "nullable": true,
             "type": "string"
           },
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "faceAssetId": {
+            "description": "Face asset ID",
             "nullable": true,
             "type": "string"
           },
           "id": {
+            "description": "Person ID",
             "type": "string"
           },
           "isFavorite": {
+            "description": "Is favorite",
             "type": "boolean"
           },
           "isHidden": {
+            "description": "Is hidden",
             "type": "boolean"
           },
           "name": {
+            "description": "Person name",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23133,6 +23260,7 @@
       "SyncStackDeleteV1": {
         "properties": {
           "stackId": {
+            "description": "Stack ID",
             "type": "string"
           }
         },
@@ -23144,19 +23272,24 @@
       "SyncStackV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "id": {
+            "description": "Stack ID",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "primaryAssetId": {
+            "description": "Primary asset ID",
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23192,6 +23325,7 @@
       "SyncUserDeleteV1": {
         "properties": {
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -23207,9 +23341,11 @@
               {
                 "$ref": "#/components/schemas/UserMetadataKey"
               }
-            ]
+            ],
+            "description": "User metadata key"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -23226,12 +23362,15 @@
               {
                 "$ref": "#/components/schemas/UserMetadataKey"
               }
-            ]
+            ],
+            "description": "User metadata key"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           },
           "value": {
+            "description": "User metadata value",
             "type": "object"
           }
         },
@@ -23250,26 +23389,33 @@
                 "$ref": "#/components/schemas/UserAvatarColor"
               }
             ],
+            "description": "User avatar color",
             "nullable": true
           },
           "deletedAt": {
+            "description": "User deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "email": {
+            "description": "User email",
             "type": "string"
           },
           "hasProfileImage": {
+            "description": "User has profile image",
             "type": "boolean"
           },
           "id": {
+            "description": "User ID",
             "type": "string"
           },
           "name": {
+            "description": "User name",
             "type": "string"
           },
           "profileChangedAt": {
+            "description": "User profile changed at",
             "format": "date-time",
             "type": "string"
           }
@@ -23394,30 +23540,36 @@
               {
                 "$ref": "#/components/schemas/TranscodeHWAccel"
               }
-            ]
+            ],
+            "description": "Transcode hardware acceleration"
           },
           "accelDecode": {
+            "description": "Accelerated decode",
             "type": "boolean"
           },
           "acceptedAudioCodecs": {
+            "description": "Accepted audio codecs",
             "items": {
               "$ref": "#/components/schemas/AudioCodec"
             },
             "type": "array"
           },
           "acceptedContainers": {
+            "description": "Accepted containers",
             "items": {
               "$ref": "#/components/schemas/VideoContainer"
             },
             "type": "array"
           },
           "acceptedVideoCodecs": {
+            "description": "Accepted video codecs",
             "items": {
               "$ref": "#/components/schemas/VideoCodec"
             },
             "type": "array"
           },
           "bframes": {
+            "description": "B-frames",
             "maximum": 16,
             "minimum": -1,
             "type": "integer"
@@ -23427,27 +23579,34 @@
               {
                 "$ref": "#/components/schemas/CQMode"
               }
-            ]
+            ],
+            "description": "CQ mode"
           },
           "crf": {
+            "description": "CRF",
             "maximum": 51,
             "minimum": 0,
             "type": "integer"
           },
           "gopSize": {
+            "description": "GOP size",
             "minimum": 0,
             "type": "integer"
           },
           "maxBitrate": {
+            "description": "Max bitrate",
             "type": "string"
           },
           "preferredHwDevice": {
+            "description": "Preferred hardware device",
             "type": "string"
           },
           "preset": {
+            "description": "Preset",
             "type": "string"
           },
           "refs": {
+            "description": "References",
             "maximum": 6,
             "minimum": 0,
             "type": "integer"
@@ -23457,9 +23616,11 @@
               {
                 "$ref": "#/components/schemas/AudioCodec"
               }
-            ]
+            ],
+            "description": "Target audio codec"
           },
           "targetResolution": {
+            "description": "Target resolution",
             "type": "string"
           },
           "targetVideoCodec": {
@@ -23467,12 +23628,15 @@
               {
                 "$ref": "#/components/schemas/VideoCodec"
               }
-            ]
+            ],
+            "description": "Target video codec"
           },
           "temporalAQ": {
+            "description": "Temporal AQ",
             "type": "boolean"
           },
           "threads": {
+            "description": "Threads",
             "minimum": 0,
             "type": "integer"
           },
@@ -23481,16 +23645,19 @@
               {
                 "$ref": "#/components/schemas/ToneMapping"
               }
-            ]
+            ],
+            "description": "Tone mapping"
           },
           "transcode": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/TranscodePolicy"
               }
-            ]
+            ],
+            "description": "Transcode policy"
           },
           "twoPass": {
+            "description": "Two pass",
             "type": "boolean"
           }
         },
@@ -23522,6 +23689,7 @@
       "SystemConfigFacesDto": {
         "properties": {
           "import": {
+            "description": "Import",
             "type": "boolean"
           }
         },
@@ -23533,6 +23701,7 @@
       "SystemConfigGeneratedFullsizeImageDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "format": {
@@ -23540,13 +23709,16 @@
               {
                 "$ref": "#/components/schemas/ImageFormat"
               }
-            ]
+            ],
+            "description": "Image format"
           },
           "progressive": {
             "default": false,
+            "description": "Progressive",
             "type": "boolean"
           },
           "quality": {
+            "description": "Quality",
             "maximum": 100,
             "minimum": 1,
             "type": "integer"
@@ -23566,18 +23738,21 @@
               {
                 "$ref": "#/components/schemas/ImageFormat"
               }
-            ]
+            ],
+            "description": "Image format"
           },
           "progressive": {
             "default": false,
             "type": "boolean"
           },
           "quality": {
+            "description": "Quality",
             "maximum": 100,
             "minimum": 1,
             "type": "integer"
           },
           "size": {
+            "description": "Size",
             "minimum": 1,
             "type": "integer"
           }
@@ -23596,9 +23771,11 @@
               {
                 "$ref": "#/components/schemas/Colorspace"
               }
-            ]
+            ],
+            "description": "Colorspace"
           },
           "extractEmbedded": {
+            "description": "Extract embedded",
             "type": "boolean"
           },
           "fullsize": {
@@ -23704,6 +23881,7 @@
             "type": "string"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -23716,6 +23894,7 @@
       "SystemConfigLibraryWatchDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -23727,6 +23906,7 @@
       "SystemConfigLoggingDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "level": {
@@ -23755,6 +23935,7 @@
             "$ref": "#/components/schemas/DuplicateDetectionConfig"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "facialRecognition": {
@@ -23791,6 +23972,7 @@
             "type": "string"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "lightStyle": {
@@ -23819,6 +24001,7 @@
       "SystemConfigNewVersionCheckDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -23830,21 +24013,26 @@
       "SystemConfigNightlyTasksDto": {
         "properties": {
           "clusterNewFaces": {
+            "description": "Cluster new faces",
             "type": "boolean"
           },
           "databaseCleanup": {
+            "description": "Database cleanup",
             "type": "boolean"
           },
           "generateMemories": {
+            "description": "Generate memories",
             "type": "boolean"
           },
           "missingThumbnails": {
+            "description": "Missing thumbnails",
             "type": "boolean"
           },
           "startTime": {
             "type": "string"
           },
           "syncQuotaUsage": {
+            "description": "Sync quota usage",
             "type": "boolean"
           }
         },
@@ -23872,58 +24060,74 @@
       "SystemConfigOAuthDto": {
         "properties": {
           "autoLaunch": {
+            "description": "Auto launch",
             "type": "boolean"
           },
           "autoRegister": {
+            "description": "Auto register",
             "type": "boolean"
           },
           "buttonText": {
+            "description": "Button text",
             "type": "string"
           },
           "clientId": {
+            "description": "Client ID",
             "type": "string"
           },
           "clientSecret": {
+            "description": "Client secret",
             "type": "string"
           },
           "defaultStorageQuota": {
+            "description": "Default storage quota",
             "format": "int64",
             "minimum": 0,
             "nullable": true,
             "type": "integer"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "issuerUrl": {
+            "description": "Issuer URL",
             "type": "string"
           },
           "mobileOverrideEnabled": {
+            "description": "Mobile override enabled",
             "type": "boolean"
           },
           "mobileRedirectUri": {
+            "description": "Mobile redirect URI",
             "format": "uri",
             "type": "string"
           },
           "profileSigningAlgorithm": {
+            "description": "Profile signing algorithm",
             "type": "string"
           },
           "roleClaim": {
+            "description": "Role claim",
             "type": "string"
           },
           "scope": {
+            "description": "Scope",
             "type": "string"
           },
           "signingAlgorithm": {
             "type": "string"
           },
           "storageLabelClaim": {
+            "description": "Storage label claim",
             "type": "string"
           },
           "storageQuotaClaim": {
+            "description": "Storage quota claim",
             "type": "string"
           },
           "timeout": {
+            "description": "Timeout",
             "minimum": 1,
             "type": "integer"
           },
@@ -23932,7 +24136,8 @@
               {
                 "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
               }
-            ]
+            ],
+            "description": "Token endpoint auth method"
           }
         },
         "required": [
@@ -23960,6 +24165,7 @@
       "SystemConfigPasswordLoginDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -23971,6 +24177,7 @@
       "SystemConfigReverseGeocodingDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -23982,13 +24189,16 @@
       "SystemConfigServerDto": {
         "properties": {
           "externalDomain": {
+            "description": "External domain",
             "format": "uri",
             "type": "string"
           },
           "loginPageMessage": {
+            "description": "Login page message",
             "type": "string"
           },
           "publicUsers": {
+            "description": "Public users",
             "type": "boolean"
           }
         },
@@ -24067,12 +24277,15 @@
       "SystemConfigStorageTemplateDto": {
         "properties": {
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           },
           "hashVerificationEnabled": {
+            "description": "Hash verification enabled",
             "type": "boolean"
           },
           "template": {
+            "description": "Template",
             "type": "string"
           }
         },
@@ -24199,10 +24412,12 @@
       "SystemConfigTrashDto": {
         "properties": {
           "days": {
+            "description": "Days",
             "minimum": 0,
             "type": "integer"
           },
           "enabled": {
+            "description": "Enabled",
             "type": "boolean"
           }
         },
@@ -24215,6 +24430,7 @@
       "SystemConfigUserDto": {
         "properties": {
           "deleteDelay": {
+            "description": "Delete delay",
             "minimum": 1,
             "type": "integer"
           }
@@ -24606,6 +24822,7 @@
         "type": "object"
       },
       "ToneMapping": {
+        "description": "Tone mapping",
         "enum": [
           "hable",
           "mobius",
@@ -24615,6 +24832,7 @@
         "type": "string"
       },
       "TranscodeHWAccel": {
+        "description": "Transcode hardware acceleration",
         "enum": [
           "nvenc",
           "qsv",
@@ -24625,6 +24843,7 @@
         "type": "string"
       },
       "TranscodePolicy": {
+        "description": "Transcode policy",
         "enum": [
           "all",
           "optimal",
@@ -25089,6 +25308,7 @@
         "type": "object"
       },
       "UserMetadataKey": {
+        "description": "User metadata key",
         "enum": [
           "preferences",
           "license",
@@ -25355,6 +25575,7 @@
         "type": "object"
       },
       "VideoCodec": {
+        "description": "Target video codec",
         "enum": [
           "h264",
           "hevc",
@@ -25364,6 +25585,7 @@
         "type": "string"
       },
       "VideoContainer": {
+        "description": "Accepted containers",
         "enum": [
           "mov",
           "mp4",

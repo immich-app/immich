@@ -9,8 +9,7 @@ export class TagCreateDto {
   @IsNotEmpty()
   name!: string;
 
-  @ApiPropertyOptional({ description: 'Parent tag ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Parent tag ID' })
   parentId?: string | null;
 
   @ApiPropertyOptional({ description: 'Tag color (hex)' })
@@ -34,12 +33,10 @@ export class TagUpsertDto {
 }
 
 export class TagBulkAssetsDto {
-  @ApiProperty({ description: 'Tag IDs' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Tag IDs' })
   tagIds!: string[];
 
-  @ApiProperty({ description: 'Asset IDs' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs' })
   assetIds!: string[];
 }
 

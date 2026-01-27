@@ -8,12 +8,10 @@ import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class SharedLinkSearchDto {
-  @ApiPropertyOptional({ description: 'Filter by album ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by album ID' })
   albumId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by shared link ID' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Filter by shared link ID' })
   @Property({ history: new HistoryBuilder().added('v2.5.0') })
   id?: string;
 }

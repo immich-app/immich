@@ -4,8 +4,7 @@ import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { ValidateBoolean } from 'src/validation';
 
 export class TaskConfig {
-  @ApiProperty({ description: 'Whether the task is enabled' })
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Whether the task is enabled' })
   enabled!: boolean;
 }
 

@@ -42,12 +42,10 @@ class AssetMediaBase {
   @IsString()
   deviceId!: string;
 
-  @ApiProperty({ description: 'File creation date' })
-  @ValidateDate()
+  @ValidateDate({ description: 'File creation date' })
   fileCreatedAt!: Date;
 
-  @ApiProperty({ description: 'File modification date' })
-  @ValidateDate()
+  @ValidateDate({ description: 'File modification date' })
   fileModifiedAt!: Date;
 
   @ApiPropertyOptional({ description: 'Duration (for videos)' })

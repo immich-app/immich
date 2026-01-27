@@ -3,16 +3,13 @@ import { IsInt, IsPositive } from 'class-validator';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export class DownloadInfoDto {
-  @ApiPropertyOptional({ description: 'Asset IDs to download' })
-  @ValidateUUID({ each: true, optional: true })
+  @ValidateUUID({ each: true, optional: true, description: 'Asset IDs to download' })
   assetIds?: string[];
 
-  @ApiPropertyOptional({ description: 'Album ID to download' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Album ID to download' })
   albumId?: string;
 
-  @ApiPropertyOptional({ description: 'User ID to download assets from' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'User ID to download assets from' })
   userId?: string;
 
   @ApiPropertyOptional({ type: 'integer', description: 'Archive size limit in bytes' })

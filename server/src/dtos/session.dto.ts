@@ -22,8 +22,7 @@ export class SessionCreateDto {
 }
 
 export class SessionUpdateDto {
-  @ApiPropertyOptional({ description: 'Reset pending sync state' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Reset pending sync state' })
   @Equals(true)
   isPendingSyncReset?: true;
 }

@@ -9,8 +9,7 @@ import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ApiPropertyOptional({ description: 'Library ID to filter by' })
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Library ID to filter by' })
   libraryId?: string | null;
 
   @ApiPropertyOptional({ description: 'Device ID to filter by' })
@@ -22,55 +21,43 @@ class BaseSearchDto {
   @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', optional: true, description: 'Asset type filter' })
   type?: AssetType;
 
-  @ApiPropertyOptional({ description: 'Filter by encoded status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by encoded status' })
   isEncoded?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by favorite status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by favorite status' })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by motion photo status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by motion photo status' })
   isMotion?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by offline status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by offline status' })
   isOffline?: boolean;
 
   @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true, description: 'Filter by visibility' })
   visibility?: AssetVisibility;
 
-  @ApiPropertyOptional({ description: 'Filter by creation date (before)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by creation date (before)' })
   createdBefore?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by creation date (after)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by creation date (after)' })
   createdAfter?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by update date (before)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by update date (before)' })
   updatedBefore?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by update date (after)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by update date (after)' })
   updatedAfter?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by trash date (before)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by trash date (before)' })
   trashedBefore?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by trash date (after)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by trash date (after)' })
   trashedAfter?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by taken date (before)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by taken date (before)' })
   takenBefore?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter by taken date (after)', format: 'date-time' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter by taken date (after)' })
   takenAfter?: Date;
 
   @ApiPropertyOptional({ description: 'Filter by city name' })
@@ -104,8 +91,7 @@ class BaseSearchDto {
   @Optional({ nullable: true, emptyToNull: true })
   lensModel?: string | null;
 
-  @ApiPropertyOptional({ description: 'Filter assets not in any album' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter assets not in any album' })
   isNotInAlbum?: boolean;
 
   @ValidateUUID({ each: true, optional: true, description: 'Filter by person IDs' })

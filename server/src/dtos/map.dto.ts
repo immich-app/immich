@@ -27,28 +27,22 @@ export class MapReverseGeocodeResponseDto {
 }
 
 export class MapMarkerDto {
-  @ApiPropertyOptional({ description: 'Filter by archived status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by archived status' })
   isArchived?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter by favorite status' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Filter by favorite status' })
   isFavorite?: boolean;
 
-  @ApiPropertyOptional({ description: 'Filter assets created after this date' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter assets created after this date' })
   fileCreatedAfter?: Date;
 
-  @ApiPropertyOptional({ description: 'Filter assets created before this date' })
-  @ValidateDate({ optional: true })
+  @ValidateDate({ optional: true, description: 'Filter assets created before this date' })
   fileCreatedBefore?: Date;
 
-  @ApiPropertyOptional({ description: 'Include partner assets' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include partner assets' })
   withPartners?: boolean;
 
-  @ApiPropertyOptional({ description: 'Include shared album assets' })
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include shared album assets' })
   withSharedAlbums?: boolean;
 }
 

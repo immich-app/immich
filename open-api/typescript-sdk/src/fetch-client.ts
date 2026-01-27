@@ -2371,56 +2371,90 @@ export type SyncStreamDto = {
     types: SyncRequestType[];
 };
 export type DatabaseBackupConfig = {
+    /** Cron expression */
     cronExpression: string;
+    /** Enabled */
     enabled: boolean;
+    /** Keep last amount */
     keepLastAmount: number;
 };
 export type SystemConfigBackupsDto = {
     database: DatabaseBackupConfig;
 };
 export type SystemConfigFFmpegDto = {
+    /** Transcode hardware acceleration */
     accel: TranscodeHWAccel;
+    /** Accelerated decode */
     accelDecode: boolean;
+    /** Accepted audio codecs */
     acceptedAudioCodecs: AudioCodec[];
+    /** Accepted containers */
     acceptedContainers: VideoContainer[];
+    /** Accepted video codecs */
     acceptedVideoCodecs: VideoCodec[];
+    /** B-frames */
     bframes: number;
+    /** CQ mode */
     cqMode: CQMode;
+    /** CRF */
     crf: number;
+    /** GOP size */
     gopSize: number;
+    /** Max bitrate */
     maxBitrate: string;
+    /** Preferred hardware device */
     preferredHwDevice: string;
+    /** Preset */
     preset: string;
+    /** References */
     refs: number;
+    /** Target audio codec */
     targetAudioCodec: AudioCodec;
+    /** Target resolution */
     targetResolution: string;
+    /** Target video codec */
     targetVideoCodec: VideoCodec;
+    /** Temporal AQ */
     temporalAQ: boolean;
+    /** Threads */
     threads: number;
+    /** Tone mapping */
     tonemap: ToneMapping;
+    /** Transcode policy */
     transcode: TranscodePolicy;
+    /** Two pass */
     twoPass: boolean;
 };
 export type SystemConfigGeneratedFullsizeImageDto = {
+    /** Enabled */
     enabled: boolean;
+    /** Image format */
     format: ImageFormat;
+    /** Progressive */
     progressive?: boolean;
+    /** Quality */
     quality: number;
 };
 export type SystemConfigGeneratedImageDto = {
+    /** Image format */
     format: ImageFormat;
     progressive?: boolean;
+    /** Quality */
     quality: number;
+    /** Size */
     size: number;
 };
 export type SystemConfigImageDto = {
+    /** Colorspace */
     colorspace: Colorspace;
+    /** Extract embedded */
     extractEmbedded: boolean;
     fullsize: SystemConfigGeneratedFullsizeImageDto;
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
 export type JobSettingsDto = {
+    /** Concurrency */
     concurrency: number;
 };
 export type SystemConfigJobDto = {
@@ -2441,9 +2475,11 @@ export type SystemConfigJobDto = {
 };
 export type SystemConfigLibraryScanDto = {
     cronExpression: string;
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigLibraryWatchDto = {
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigLibraryDto = {
@@ -2451,10 +2487,12 @@ export type SystemConfigLibraryDto = {
     watch: SystemConfigLibraryWatchDto;
 };
 export type SystemConfigLoggingDto = {
+    /** Enabled */
     enabled: boolean;
     level: LogLevel;
 };
 export type MachineLearningAvailabilityChecksDto = {
+    /** Enabled */
     enabled: boolean;
     interval: number;
     timeout: number;
@@ -2499,6 +2537,7 @@ export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
+    /** Enabled */
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
     ocr: OcrConfig;
@@ -2506,63 +2545,96 @@ export type SystemConfigMachineLearningDto = {
 };
 export type SystemConfigMapDto = {
     darkStyle: string;
+    /** Enabled */
     enabled: boolean;
     lightStyle: string;
 };
 export type SystemConfigFacesDto = {
+    /** Import */
     "import": boolean;
 };
 export type SystemConfigMetadataDto = {
     faces: SystemConfigFacesDto;
 };
 export type SystemConfigNewVersionCheckDto = {
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigNightlyTasksDto = {
+    /** Cluster new faces */
     clusterNewFaces: boolean;
+    /** Database cleanup */
     databaseCleanup: boolean;
+    /** Generate memories */
     generateMemories: boolean;
+    /** Missing thumbnails */
     missingThumbnails: boolean;
     startTime: string;
+    /** Sync quota usage */
     syncQuotaUsage: boolean;
 };
 export type SystemConfigNotificationsDto = {
     smtp: SystemConfigSmtpDto;
 };
 export type SystemConfigOAuthDto = {
+    /** Auto launch */
     autoLaunch: boolean;
+    /** Auto register */
     autoRegister: boolean;
+    /** Button text */
     buttonText: string;
+    /** Client ID */
     clientId: string;
+    /** Client secret */
     clientSecret: string;
+    /** Default storage quota */
     defaultStorageQuota: number | null;
+    /** Enabled */
     enabled: boolean;
+    /** Issuer URL */
     issuerUrl: string;
+    /** Mobile override enabled */
     mobileOverrideEnabled: boolean;
+    /** Mobile redirect URI */
     mobileRedirectUri: string;
+    /** Profile signing algorithm */
     profileSigningAlgorithm: string;
+    /** Role claim */
     roleClaim: string;
+    /** Scope */
     scope: string;
     signingAlgorithm: string;
+    /** Storage label claim */
     storageLabelClaim: string;
+    /** Storage quota claim */
     storageQuotaClaim: string;
+    /** Timeout */
     timeout: number;
+    /** Token endpoint auth method */
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethod;
 };
 export type SystemConfigPasswordLoginDto = {
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigReverseGeocodingDto = {
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigServerDto = {
+    /** External domain */
     externalDomain: string;
+    /** Login page message */
     loginPageMessage: string;
+    /** Public users */
     publicUsers: boolean;
 };
 export type SystemConfigStorageTemplateDto = {
+    /** Enabled */
     enabled: boolean;
+    /** Hash verification enabled */
     hashVerificationEnabled: boolean;
+    /** Template */
     template: string;
 };
 export type SystemConfigTemplateEmailsDto = {
@@ -2578,10 +2650,13 @@ export type SystemConfigThemeDto = {
     customCss: string;
 };
 export type SystemConfigTrashDto = {
+    /** Days */
     days: number;
+    /** Enabled */
     enabled: boolean;
 };
 export type SystemConfigUserDto = {
+    /** Delete delay */
     deleteDelay: number;
 };
 export type SystemConfigDto = {
@@ -2825,206 +2900,342 @@ export type WorkflowUpdateDto = {
 };
 export type SyncAckV1 = {};
 export type SyncAlbumDeleteV1 = {
+    /** Album ID */
     albumId: string;
 };
 export type SyncAlbumToAssetDeleteV1 = {
+    /** Album ID */
     albumId: string;
+    /** Asset ID */
     assetId: string;
 };
 export type SyncAlbumToAssetV1 = {
+    /** Album ID */
     albumId: string;
+    /** Asset ID */
     assetId: string;
 };
 export type SyncAlbumUserDeleteV1 = {
+    /** Album ID */
     albumId: string;
+    /** User ID */
     userId: string;
 };
 export type SyncAlbumUserV1 = {
+    /** Album ID */
     albumId: string;
+    /** Album user role */
     role: AlbumUserRole;
+    /** User ID */
     userId: string;
 };
 export type SyncAlbumV1 = {
+    /** Created at */
     createdAt: string;
+    /** Album description */
     description: string;
+    /** Album ID */
     id: string;
+    /** Is activity enabled */
     isActivityEnabled: boolean;
+    /** Album name */
     name: string;
     order: AssetOrder;
+    /** Owner ID */
     ownerId: string;
+    /** Thumbnail asset ID */
     thumbnailAssetId: string | null;
+    /** Updated at */
     updatedAt: string;
 };
 export type SyncAssetDeleteV1 = {
+    /** Asset ID */
     assetId: string;
 };
 export type SyncAssetExifV1 = {
+    /** Asset ID */
     assetId: string;
+    /** City */
     city: string | null;
+    /** Country */
     country: string | null;
+    /** Date time original */
     dateTimeOriginal: string | null;
+    /** Description */
     description: string | null;
+    /** Exif image height */
     exifImageHeight: number | null;
+    /** Exif image width */
     exifImageWidth: number | null;
+    /** Exposure time */
     exposureTime: string | null;
+    /** F number */
     fNumber: number | null;
+    /** File size in byte */
     fileSizeInByte: number | null;
+    /** Focal length */
     focalLength: number | null;
+    /** FPS */
     fps: number | null;
+    /** ISO */
     iso: number | null;
+    /** Latitude */
     latitude: number | null;
+    /** Lens model */
     lensModel: string | null;
+    /** Longitude */
     longitude: number | null;
+    /** Make */
     make: string | null;
+    /** Model */
     model: string | null;
+    /** Modify date */
     modifyDate: string | null;
+    /** Orientation */
     orientation: string | null;
+    /** Profile description */
     profileDescription: string | null;
+    /** Projection type */
     projectionType: string | null;
+    /** Rating */
     rating: number | null;
+    /** State */
     state: string | null;
+    /** Time zone */
     timeZone: string | null;
 };
 export type SyncAssetFaceDeleteV1 = {
+    /** Asset face ID */
     assetFaceId: string;
 };
 export type SyncAssetFaceV1 = {
+    /** Asset ID */
     assetId: string;
     boundingBoxX1: number;
     boundingBoxX2: number;
     boundingBoxY1: number;
     boundingBoxY2: number;
+    /** Asset face ID */
     id: string;
     imageHeight: number;
     imageWidth: number;
+    /** Person ID */
     personId: string | null;
+    /** Source type */
     sourceType: string;
 };
 export type SyncAssetMetadataDeleteV1 = {
+    /** Asset ID */
     assetId: string;
+    /** Key */
     key: string;
 };
 export type SyncAssetMetadataV1 = {
+    /** Asset ID */
     assetId: string;
+    /** Key */
     key: string;
+    /** Value */
     value: object;
 };
 export type SyncAssetV1 = {
+    /** Checksum */
     checksum: string;
+    /** Deleted at */
     deletedAt: string | null;
+    /** Duration */
     duration: string | null;
+    /** File created at */
     fileCreatedAt: string | null;
+    /** File modified at */
     fileModifiedAt: string | null;
+    /** Asset height */
     height: number | null;
+    /** Asset ID */
     id: string;
+    /** Is edited */
     isEdited: boolean;
+    /** Is favorite */
     isFavorite: boolean;
+    /** Library ID */
     libraryId: string | null;
+    /** Live photo video ID */
     livePhotoVideoId: string | null;
+    /** Local date time */
     localDateTime: string | null;
+    /** Original file name */
     originalFileName: string;
+    /** Owner ID */
     ownerId: string;
+    /** Stack ID */
     stackId: string | null;
+    /** Thumbhash */
     thumbhash: string | null;
+    /** Asset type */
     "type": AssetTypeEnum;
+    /** Asset visibility */
     visibility: AssetVisibility;
+    /** Asset width */
     width: number | null;
 };
 export type SyncAuthUserV1 = {
+    /** User avatar color */
     avatarColor: (UserAvatarColor) | null;
+    /** User deleted at */
     deletedAt: string | null;
+    /** User email */
     email: string;
+    /** User has profile image */
     hasProfileImage: boolean;
+    /** User ID */
     id: string;
+    /** User is admin */
     isAdmin: boolean;
+    /** User name */
     name: string;
+    /** User OAuth ID */
     oauthId: string;
+    /** User pin code */
     pinCode: string | null;
+    /** User profile changed at */
     profileChangedAt: string;
     quotaSizeInBytes: number | null;
     quotaUsageInBytes: number;
+    /** User storage label */
     storageLabel: string | null;
 };
 export type SyncCompleteV1 = {};
 export type SyncMemoryAssetDeleteV1 = {
+    /** Asset ID */
     assetId: string;
+    /** Memory ID */
     memoryId: string;
 };
 export type SyncMemoryAssetV1 = {
+    /** Asset ID */
     assetId: string;
+    /** Memory ID */
     memoryId: string;
 };
 export type SyncMemoryDeleteV1 = {
+    /** Memory ID */
     memoryId: string;
 };
 export type SyncMemoryV1 = {
+    /** Created at */
     createdAt: string;
+    /** Data */
     data: object;
+    /** Deleted at */
     deletedAt: string | null;
+    /** Hide at */
     hideAt: string | null;
+    /** Memory ID */
     id: string;
+    /** Is saved */
     isSaved: boolean;
+    /** Memory at */
     memoryAt: string;
+    /** Owner ID */
     ownerId: string;
+    /** Seen at */
     seenAt: string | null;
+    /** Show at */
     showAt: string | null;
+    /** Memory type */
     "type": MemoryType;
+    /** Updated at */
     updatedAt: string;
 };
 export type SyncPartnerDeleteV1 = {
+    /** Shared by ID */
     sharedById: string;
+    /** Shared with ID */
     sharedWithId: string;
 };
 export type SyncPartnerV1 = {
+    /** In timeline */
     inTimeline: boolean;
+    /** Shared by ID */
     sharedById: string;
+    /** Shared with ID */
     sharedWithId: string;
 };
 export type SyncPersonDeleteV1 = {
+    /** Person ID */
     personId: string;
 };
 export type SyncPersonV1 = {
+    /** Birth date */
     birthDate: string | null;
+    /** Color */
     color: string | null;
+    /** Created at */
     createdAt: string;
+    /** Face asset ID */
     faceAssetId: string | null;
+    /** Person ID */
     id: string;
+    /** Is favorite */
     isFavorite: boolean;
+    /** Is hidden */
     isHidden: boolean;
+    /** Person name */
     name: string;
+    /** Owner ID */
     ownerId: string;
+    /** Updated at */
     updatedAt: string;
 };
 export type SyncResetV1 = {};
 export type SyncStackDeleteV1 = {
+    /** Stack ID */
     stackId: string;
 };
 export type SyncStackV1 = {
+    /** Created at */
     createdAt: string;
+    /** Stack ID */
     id: string;
+    /** Owner ID */
     ownerId: string;
+    /** Primary asset ID */
     primaryAssetId: string;
+    /** Updated at */
     updatedAt: string;
 };
 export type SyncUserDeleteV1 = {
+    /** User ID */
     userId: string;
 };
 export type SyncUserMetadataDeleteV1 = {
+    /** User metadata key */
     key: UserMetadataKey;
+    /** User ID */
     userId: string;
 };
 export type SyncUserMetadataV1 = {
+    /** User metadata key */
     key: UserMetadataKey;
+    /** User ID */
     userId: string;
+    /** User metadata value */
     value: object;
 };
 export type SyncUserV1 = {
+    /** User avatar color */
     avatarColor: (UserAvatarColor) | null;
+    /** User deleted at */
     deletedAt: string | null;
+    /** User email */
     email: string;
+    /** User has profile image */
     hasProfileImage: boolean;
+    /** User ID */
     id: string;
+    /** User name */
     name: string;
+    /** User profile changed at */
     profileChangedAt: string;
 };
 /**
