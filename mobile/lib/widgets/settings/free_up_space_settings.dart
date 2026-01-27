@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
   const FreeUpSpaceSettings({super.key});
@@ -29,6 +30,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   @override
   void initState() {
     super.initState();
+    WakelockPlus.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAlbumDefaults();
     });
@@ -166,6 +168,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   void _showAssetsPreview(List<LocalAsset> assets) {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     context.pushRoute(CleanupPreviewRoute(assets: assets));
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    WakelockPlus.disable();
   }
 
   @override
