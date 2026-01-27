@@ -260,6 +260,7 @@ class BackgroundUploadService {
   Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
+      _logger.warning("Asset entity not found for ${asset.id} - ${asset.name}");
       return null;
     }
 
@@ -282,6 +283,7 @@ class BackgroundUploadService {
     }
 
     if (file == null) {
+      _logger.warning("Failed to get file for asset ${asset.id} - ${asset.name}");
       return null;
     }
 
