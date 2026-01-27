@@ -4,8 +4,5 @@ class RemoteDeletedLocalAsset {
   final LocalAsset asset;
   final DateTime remoteDeletedAt;
 
-  const RemoteDeletedLocalAsset({
-    required this.asset,
-    required this.remoteDeletedAt,
-  });
+  const RemoteDeletedLocalAsset({required this.asset, required this.remoteDeletedAt});
 }
