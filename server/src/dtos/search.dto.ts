@@ -388,7 +388,7 @@ class SearchAssetResponseDto {
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
   facets!: SearchFacetResponseDto[];
-  @ApiPropertyOptional({ description: 'Next page token', nullable: true })
+  @ApiProperty({ description: 'Next page token' })
   nextPage!: string | null;
 }
 

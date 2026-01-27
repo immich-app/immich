@@ -13,7 +13,7 @@ part of openapi.api;
 class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
-    this.assetId,
+    required this.assetId,
     this.comment,
     required this.createdAt,
     required this.id,
@@ -141,6 +141,7 @@ class ActivityResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'assetId',
     'createdAt',
     'id',
     'type',

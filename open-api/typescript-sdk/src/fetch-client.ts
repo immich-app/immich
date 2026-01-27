@@ -30,7 +30,7 @@ export type UserResponseDto = {
 };
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
-    assetId?: string | null;
+    assetId: string | null;
     /** Comment text (for comment activities) */
     comment?: string | null;
     /** Creation date */
@@ -1759,7 +1759,7 @@ export type SearchAssetResponseDto = {
     facets: SearchFacetResponseDto[];
     items: AssetResponseDto[];
     /** Next page token */
-    nextPage?: string | null;
+    nextPage: string | null;
     /** Total number of matching assets */
     total: number;
 };

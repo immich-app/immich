@@ -27,7 +27,7 @@ export class ActivityResponseDto {
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })
   user!: UserResponseDto;
-  @ApiPropertyOptional({ description: 'Asset ID (if activity is for an asset)', nullable: true })
+  @ApiProperty({ description: 'Asset ID (if activity is for an asset)' })
   assetId!: string | null;
   @ApiPropertyOptional({ description: 'Comment text (for comment activities)', nullable: true })
   comment?: string | null;

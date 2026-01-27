@@ -16,7 +16,7 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
-    this.nextPage,
+    required this.nextPage,
     required this.total,
   });
 
@@ -131,6 +131,7 @@ class SearchAssetResponseDto {
     'count',
     'facets',
     'items',
+    'nextPage',
     'total',
   };
 }

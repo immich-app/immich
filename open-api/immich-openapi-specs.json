@@ -15390,6 +15390,7 @@
           }
         },
         "required": [
+          "assetId",
           "createdAt",
           "id",
           "type",
@@ -20788,6 +20789,7 @@
           "count",
           "facets",
           "items",
+          "nextPage",
           "total"
         ],
         "type": "object"
