@@ -36,7 +36,7 @@ class ViewerKebabMenu extends ConsumerWidget {
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
-    final isWaitingForTrashApproval = ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
+    final isWaitingForTrashApproval = ref.watch(isWaitingForTrashApprovalProvider(asset.checksum)).value == true;
 
     final actionContext = ActionButtonContext(
       asset: asset,

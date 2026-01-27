@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -85,7 +84,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
@@ -103,7 +102,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
 
     if (isCancelled) {
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 

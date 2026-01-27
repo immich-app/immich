@@ -1,5 +1,5 @@
 import AlbumCover from '$lib/components/album-page/album-cover.svelte';
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetMediaUrl } from '$lib/utils';
 import { albumFactory } from '@test-data/factories/album-factory';
 import { render } from '@testing-library/svelte';
 
@@ -7,7 +7,7 @@ vi.mock('$lib/utils');
 
 describe('AlbumCover component', () => {
   it('renders an image when the album has a thumbnail', () => {
-    vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
+    vi.mocked(getAssetMediaUrl).mockReturnValue('/asdf');
     const component = render(AlbumCover, {
       album: albumFactory.build({
         albumName: 'someName',
@@ -21,7 +21,7 @@ describe('AlbumCover component', () => {
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.className).toBe('size-full rounded-xl object-cover aspect-square text');
     expect(img.getAttribute('src')).toBe('/asdf');
-    expect(getAssetThumbnailUrl).toHaveBeenCalledWith({ id: '123' });
+    expect(getAssetMediaUrl).toHaveBeenCalledWith({ id: '123' });
   });
 
   it('renders an image when the album has no thumbnail', () => {

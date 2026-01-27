@@ -43,6 +43,7 @@ select
               "asset_exif"."projectionType",
               "asset_exif"."rating",
               "asset_exif"."state",
+              "asset_exif"."tags",
               "asset_exif"."timeZone"
             from
               "asset_exif"
@@ -127,6 +128,7 @@ select
               "asset_exif"."projectionType",
               "asset_exif"."rating",
               "asset_exif"."state",
+              "asset_exif"."tags",
               "asset_exif"."timeZone"
             from
               "asset_exif"

@@ -45,9 +45,6 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
-  FullSizeEdited = 'fullsize_edited',
-  PreviewEdited = 'preview_edited',
-  ThumbnailEdited = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -149,6 +146,8 @@ export enum Permission {
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
 
+  FolderRead = 'folder.read',
+
   JobCreate = 'job.create',
   JobRead = 'job.read',
 
@@ -162,6 +161,9 @@ export enum Permission {
   TimelineDownload = 'timeline.download',
 
   Maintenance = 'maintenance',
+
+  MapRead = 'map.read',
+  MapSearch = 'map.search',
 
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
@@ -369,14 +371,7 @@ export enum ManualJobName {
 
 export enum AssetPathType {
   Original = 'original',
-  FullSize = 'fullsize',
-  Preview = 'preview',
-  EditedFullSize = 'edited_fullsize',
-  EditedPreview = 'edited_preview',
-  EditedThumbnail = 'edited_thumbnail',
-  Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
-  Sidecar = 'sidecar',
 }
 
 export enum PersonPathType {
@@ -387,7 +382,7 @@ export enum UserPathType {
   Profile = 'profile',
 }
 
-export type PathType = AssetPathType | PersonPathType | UserPathType;
+export type PathType = AssetFileType | AssetPathType | PersonPathType | UserPathType;
 
 export enum TranscodePolicy {
   All = 'all',

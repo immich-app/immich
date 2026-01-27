@@ -372,7 +372,7 @@ describe(NotificationService.name, () => {
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([
-        { id: '1', type: AssetFileType.Thumbnail, path: 'path-to-thumb.jpg' },
+        { id: '1', type: AssetFileType.Thumbnail, path: 'path-to-thumb.jpg', isEdited: false },
       ]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Success);
@@ -403,7 +403,7 @@ describe(NotificationService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([assetStub.image.files[2]]);
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([{ ...assetStub.image.files[2], isEdited: false }]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.assetJob.getAlbumThumbnailFiles).toHaveBeenCalledWith(

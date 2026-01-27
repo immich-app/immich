@@ -20,6 +20,7 @@
     slideshowLook,
     slideshowTransition,
     slideshowAutoplay,
+    slideshowRepeat,
     slideshowState,
   } = slideshowStore;
 
@@ -36,6 +37,7 @@
   let tempSlideshowLook = $state($slideshowLook);
   let tempSlideshowTransition = $state($slideshowTransition);
   let tempSlideshowAutoplay = $state($slideshowAutoplay);
+  let tempSlideshowRepeat = $state($slideshowRepeat);
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -67,6 +69,7 @@
     $slideshowLook = tempSlideshowLook;
     $slideshowTransition = tempSlideshowTransition;
     $slideshowAutoplay = tempSlideshowAutoplay;
+    $slideshowRepeat = tempSlideshowRepeat;
     $slideshowState = SlideshowState.PlaySlideshow;
     onClose();
   };
@@ -102,6 +105,10 @@
 
     <Field label={$t('show_slideshow_transition')}>
       <Switch bind:checked={tempSlideshowTransition} />
+    </Field>
+
+    <Field label={$t('slideshow_repeat')} description={$t('slideshow_repeat_description')}>
+      <Switch bind:checked={tempSlideshowRepeat} />
     </Field>
 
     <Field label={$t('duration')}>

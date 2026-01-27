@@ -31,23 +31,26 @@ const sidecarFileWithoutExt = factory.assetFile({
 });
 
 const editedPreviewFile = factory.assetFile({
-  type: AssetFileType.PreviewEdited,
+  type: AssetFileType.Preview,
   path: '/uploads/user-id/preview/path_edited.jpg',
+  isEdited: true,
 });
 
 const editedThumbnailFile = factory.assetFile({
-  type: AssetFileType.ThumbnailEdited,
+  type: AssetFileType.Thumbnail,
   path: '/uploads/user-id/thumbnail/path_edited.jpg',
+  isEdited: true,
 });
 
 const editedFullsizeFile = factory.assetFile({
-  type: AssetFileType.FullSizeEdited,
+  type: AssetFileType.FullSize,
   path: '/uploads/user-id/fullsize/path_edited.jpg',
+  isEdited: true,
 });
 
-const files: AssetFile[] = [fullsizeFile, previewFile, thumbnailFile];
+const files = [fullsizeFile, previewFile, thumbnailFile];
 
-const editedFiles: AssetFile[] = [
+const editedFiles = [
   fullsizeFile,
   previewFile,
   thumbnailFile,
@@ -621,14 +624,19 @@ export const assetStub = {
       fileSizeInByte: 100_000,
       timeZone: `America/New_York`,
     },
-    files: [] as AssetFile[],
+    files: [],
     libraryId: null,
     visibility: AssetVisibility.Hidden,
     width: null,
     height: null,
     edits: [] as AssetEditActionItem[],
     isEdited: false,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; exifInfo: Exif; edits: AssetEditActionItem[] }),
+  } as unknown as MapAsset & {
+    faces: AssetFace[];
+    files: (AssetFile & { isProgressive: boolean })[];
+    exifInfo: Exif;
+    edits: AssetEditActionItem[];
+  }),
 
   livePhotoStillAsset: Object.freeze({
     id: 'live-photo-still-asset',
@@ -650,7 +658,11 @@ export const assetStub = {
     height: null,
     edits: [] as AssetEditActionItem[],
     isEdited: false,
-  } as MapAsset & { faces: AssetFace[]; files: AssetFile[]; edits: AssetEditActionItem[] }),
+  } as unknown as MapAsset & {
+    faces: AssetFace[];
+    files: (AssetFile & { isProgressive: boolean })[];
+    edits: AssetEditActionItem[];
+  }),
 
   livePhotoWithOriginalFileName: Object.freeze({
     id: 'live-photo-still-asset',

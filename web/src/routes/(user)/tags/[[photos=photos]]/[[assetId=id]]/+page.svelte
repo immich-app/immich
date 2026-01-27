@@ -30,6 +30,7 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { Text } from '@immich/ui';
   import { mdiDotsVertical, mdiPlus, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -82,7 +83,7 @@
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
-        <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
+        <Text class="ps-4 mb-4" size="small">{$t('explorer')}</Text>
         <div class="h-full">
           <TreeItems icons={{ default: mdiTag, active: mdiTag }} {tree} active={tag.path} {getLink} />
         </div>

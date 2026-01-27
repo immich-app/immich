@@ -24,21 +24,22 @@ final trashSyncServiceProvider = Provider(
   (ref) => TrashSyncService(trashSyncRepository: ref.watch(trashSyncRepositoryProvider)),
 );
 
-final outOfSyncCountProvider = StreamProvider<int>((ref) {
+final outOfSyncAssetsCountProvider = StreamProvider<int>((ref) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
-    data: (enabled) => enabled ? service.watchPendingApprovalCount() : Stream<int>.value(0),
+    data: (enabled) => enabled ? service.watchPendingApprovalAssetCount() : Stream<int>.value(0),
     loading: () => Stream<int>.value(0),
     error: (_, __) => Stream<int>.value(0),
   );
 });
 
-final isWaitingForSyncApprovalProvider = StreamProvider.family<bool, String?>((ref, checksum) {
+final isWaitingForTrashApprovalProvider = StreamProvider.family<bool, String?>((ref, checksum) {
   final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
   return enabledReviewMode.when(
-    data: (enabled) => enabled && checksum != null ? service.watchIsApprovalPending(checksum) : Stream.value(false),
+    data: (enabled) =>
+        enabled && checksum != null ? service.watchIsAssetApprovalPending(checksum) : Stream.value(false),
     loading: () => Stream.value(false),
     error: (_, __) => Stream.value(false),
   );

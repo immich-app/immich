@@ -28,7 +28,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -77,7 +77,7 @@
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} breakpoint="md" />
       <section>
-        <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
+        <Text class="ps-4 mb-4" size="small">{$t('explorer')}</Text>
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}

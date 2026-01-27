@@ -2,14 +2,13 @@
   import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
   import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
   import { Route } from '$lib/route';
-  import { Icon, modalManager } from '@immich/ui';
+  import { Icon, modalManager, Text } from '@immich/ui';
   import {
     mdiCellphoneArrowDownVariant,
     mdiContentDuplicate,
     mdiCrosshairsGps,
     mdiImageSizeSelectLarge,
     mdiLinkEdit,
-    mdiStateMachine,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -17,12 +16,12 @@
     { href: Route.duplicatesUtility(), icon: mdiContentDuplicate, label: $t('review_duplicates') },
     { href: Route.largeFileUtility(), icon: mdiImageSizeSelectLarge, label: $t('review_large_files') },
     { href: Route.geolocationUtility(), icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
-    { href: Route.workflows(), icon: mdiStateMachine, label: $t('workflows') },
+    // { href: Route.workflows(), icon: mdiStateMachine, label: $t('workflows') },
   ];
 </script>
 
 <div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
-  <p class="uppercase text-xs font-medium p-4">{$t('organize_your_library')}</p>
+  <Text size="tiny" color="muted" fontWeight="medium" class="p-4">{$t('organize_your_library')}</Text>
 
   {#each links as link (link.href)}
     <a href={link.href} class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4">
@@ -33,7 +32,8 @@
 </div>
 <br />
 <div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
-  <p class="uppercase text-xs font-medium p-4">{$t('download')}</p>
+  <Text size="tiny" color="muted" fontWeight="medium" class="p-4">{$t('download')}</Text>
+
   <button
     type="button"
     onclick={() => modalManager.show(ObtainiumConfigModal, {})}

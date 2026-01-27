@@ -125,10 +125,10 @@ abstract class $Drift extends i0.GeneratedDatabase {
     trashedLocalAssetEntity,
     trashSyncEntity,
     i11.idxLatLng,
+    i14.idxRemoteAssetCloudId,
     i20.idxTrashedLocalAssetChecksum,
     i20.idxTrashedLocalAssetAlbum,
-    i21.idxTrashSyncChecksum,
-    i21.idxTrashSyncStatus,
+    i21.idxTrashSyncIsSyncApproved,
     i21.idxTrashSyncChecksumStatus,
   ];
   @override

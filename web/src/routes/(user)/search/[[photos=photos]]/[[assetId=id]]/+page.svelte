@@ -2,7 +2,6 @@
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
-  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -308,16 +307,6 @@
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
 >
-  {#if searchResultAlbums.length > 0}
-    <section>
-      <div class="uppercase ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
-      <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
-
-      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-        {$t('photos_and_videos')}
-      </div>
-    </section>
-  {/if}
   <section id="search-content">
     {#if searchResultAssets.length > 0}
       <GalleryViewer

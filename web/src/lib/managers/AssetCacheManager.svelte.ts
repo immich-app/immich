@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { getAssetInfo, getAssetOcr, type AssetOcrResponseDto, type AssetResponseDto } from '@immich/sdk';
 
 const defaultSerializer = <K>(params: K) => JSON.stringify(params);
@@ -34,6 +35,13 @@ class AsyncCache<V> {
 class AssetCacheManager {
   #assetCache = new AsyncCache<AssetResponseDto>();
   #ocrCache = new AsyncCache<AssetOcrResponseDto[]>();
+
+  constructor() {
+    eventManager.on('AssetEditsApplied', () => {
+      this.#assetCache.clear();
+      this.#ocrCache.clear();
+    });
+  }
 
   async getAsset(assetIdentifier: { key?: string; slug?: string; id: string }, updateCache = true) {
     return this.#assetCache.getOrFetch(assetIdentifier, getAssetInfo, defaultSerializer, updateCache);

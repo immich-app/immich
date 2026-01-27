@@ -54,7 +54,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final isWaitingForSyncApproval =
         ref.read(timelineServiceProvider).origin == TimelineOrigin.syncTrash ||
-        ref.watch(isWaitingForSyncApprovalProvider(asset.checksum)).value == true;
+        ref.watch(isWaitingForTrashApprovalProvider(asset.checksum)).value == true;
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),

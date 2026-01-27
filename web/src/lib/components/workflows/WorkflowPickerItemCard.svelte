@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import { Card, CardBody, IconButton, Text } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
@@ -20,7 +20,7 @@
       {#if isAlbum && 'albumThumbnailAssetId' in item}
         {#if item.albumThumbnailAssetId}
           <img
-            src={getAssetThumbnailUrl(item.albumThumbnailAssetId)}
+            src={getAssetMediaUrl({ id: item.albumThumbnailAssetId })}
             alt={item.albumName}
             class="h-12 w-12 rounded-lg object-cover"
           />

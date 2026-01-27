@@ -147,7 +147,8 @@ export class AssetMediaController {
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   @Endpoint({
     summary: 'View asset thumbnail',
-    description: 'Retrieve the thumbnail image for the specified asset.',
+    description:
+      'Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   async viewAsset(
@@ -202,7 +203,7 @@ export class AssetMediaController {
   }
 
   @Post('exist')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpload })
   @Endpoint({
     summary: 'Check existing assets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',

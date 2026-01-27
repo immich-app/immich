@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -62,6 +63,12 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
+    registerFallbackValue(
+      RemoteDeletedLocalAsset(
+        asset: LocalAssetStub.image1,
+        remoteDeletedAt: DateTime(2025, 1, 1),
+      ),
+    );
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
@@ -141,7 +148,9 @@ void main() {
       trashSyncRepository: mockTrashSyncRepo,
     );
 
-    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((_) async => {});
+    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer(
+          (_) async => <String, List<RemoteDeletedLocalAsset>>{},
+    );
     when(() => mockTrashedLocalAssetRepo.trashLocalAssets(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
@@ -151,7 +160,7 @@ void main() {
     when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
     when(() => mockStorageRepo.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
     when(() => mockTrashSyncRepo.upsertReviewCandidates(any())).thenAnswer((_) async {});
-    when(() => mockTrashSyncRepo.deleteOutdated()).thenAnswer((_) async => 0);
+    when(() => mockTrashSyncRepo.deleteOutdatedThrottled()).thenAnswer((_) async => 0);
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
     await Store.put(StoreKey.reviewOutOfSyncChangesAndroid, false);
   });
@@ -392,8 +401,8 @@ void main() {
         remoteId: 'remote-merged',
       );
       final assetsByAlbum = {
-        'album-a': [localAsset],
-        'album-b': [mergedAsset],
+        'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
+        'album-b': [RemoteDeletedLocalAsset(asset: mergedAsset, remoteDeletedAt: DateTime(2025, 5, 2))],
       };
       when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>())).thenAnswer((
         invocation,
@@ -456,7 +465,7 @@ void main() {
       when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => true);
       final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-review', remoteId: null);
       final assetsByAlbum = {
-        'album-a': [localAsset],
+        'album-a': [RemoteDeletedLocalAsset(asset: localAsset, remoteDeletedAt: DateTime(2025, 5, 1))],
       };
       when(
         () => mockLocalAssetRepo.getAssetsFromBackupAlbums(any<Map<String, DateTime>>()),

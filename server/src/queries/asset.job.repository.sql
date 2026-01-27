@@ -29,7 +29,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -37,20 +38,6 @@ select
           and "asset_file"."type" = $1
       ) as agg
   ) as "files",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "tag"."value"
-        from
-          "tag"
-          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
-        where
-          "asset"."id" = "tag_asset"."assetId"
-      ) as agg
-  ) as "tags",
   to_json("asset_exif") as "exifInfo"
 from
   "asset"
@@ -72,7 +59,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -99,7 +87,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -145,7 +134,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -174,11 +164,14 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited",
+          "asset_file"."isProgressive"
         from
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" in ($1, $2, $3)
       ) as agg
   ) as "files",
   (
@@ -200,7 +193,7 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = $1
+  "asset"."id" = $4
 
 -- AssetJobRepository.getForMetadataExtraction
 select
@@ -244,7 +237,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -269,7 +263,8 @@ where
 select
   "asset_file"."id",
   "asset_file"."path",
-  "asset_file"."type"
+  "asset_file"."type",
+  "asset_file"."isEdited"
 from
   "asset_file"
 where
@@ -318,7 +313,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -357,7 +353,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -444,7 +441,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -536,7 +534,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -575,7 +574,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where

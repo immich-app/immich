@@ -108,6 +108,17 @@ class _ImageWrapperState extends State<ImageWrapper> {
     }
   }
 
+  // Should be called only when _imageSize is not null
+  ScaleBoundaries get scaleBoundaries {
+    return ScaleBoundaries(
+      widget.minScale ?? 0.0,
+      widget.maxScale ?? double.infinity,
+      widget.initialScale ?? PhotoViewComputedScale.contained,
+      widget.outerSize,
+      _imageSize!,
+    );
+  }
+
   // retrieve image from the provider
   void _resolveImage() {
     final ImageStream newStream = widget.imageProvider.resolve(const ImageConfiguration());
@@ -133,6 +144,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _lastStack = null;
 
         _didLoadSynchronously = synchronousCall;
+        widget.controller.scaleBoundaries = scaleBoundaries;
       }
 
       synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
@@ -203,14 +215,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
         child: _loading ? _buildLoading(context) : _buildError(context),
       );
     }
-
-    final scaleBoundaries = ScaleBoundaries(
-      widget.minScale ?? 0.0,
-      widget.maxScale ?? double.infinity,
-      widget.initialScale ?? PhotoViewComputedScale.contained,
-      widget.outerSize,
-      _imageSize!,
-    );
 
     return PhotoViewCore(
       imageProvider: widget.imageProvider,

@@ -12,5 +12,5 @@
 
 <div class="flex items-center gap-2">
   <input type="radio" {name} {id} {value} class="focus-visible:ring" bind:group />
-  <label for={id}>{label}</label>
+  <label for={id} class="text-sm">{label}</label>
 </div>

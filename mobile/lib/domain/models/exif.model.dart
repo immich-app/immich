@@ -6,6 +6,7 @@ class ExifInfo {
   final String? orientation;
   final String? timeZone;
   final DateTime? dateTimeOriginal;
+  final int? rating;
 
   // GPS
   final double? latitude;
@@ -46,6 +47,7 @@ class ExifInfo {
     this.orientation,
     this.timeZone,
     this.dateTimeOriginal,
+    this.rating,
     this.isFlipped = false,
     this.latitude,
     this.longitude,
@@ -71,6 +73,7 @@ class ExifInfo {
         other.orientation == orientation &&
         other.timeZone == timeZone &&
         other.dateTimeOriginal == dateTimeOriginal &&
+        other.rating == rating &&
         other.latitude == latitude &&
         other.longitude == longitude &&
         other.city == city &&
@@ -94,6 +97,7 @@ class ExifInfo {
         isFlipped.hashCode ^
         timeZone.hashCode ^
         dateTimeOriginal.hashCode ^
+        rating.hashCode ^
         latitude.hashCode ^
         longitude.hashCode ^
         city.hashCode ^
@@ -118,6 +122,7 @@ orientation: ${orientation ?? 'NA'},
 isFlipped: $isFlipped,
 timeZone: ${timeZone ?? 'NA'},
 dateTimeOriginal: ${dateTimeOriginal ?? 'NA'},
+rating: ${rating ?? 'NA'},
 latitude: ${latitude ?? 'NA'},
 longitude: ${longitude ?? 'NA'},
 city: ${city ?? 'NA'},
@@ -140,6 +145,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
     String? orientation,
     String? timeZone,
     DateTime? dateTimeOriginal,
+    int? rating,
     double? latitude,
     double? longitude,
     String? city,
@@ -161,6 +167,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
       orientation: orientation ?? this.orientation,
       timeZone: timeZone ?? this.timeZone,
       dateTimeOriginal: dateTimeOriginal ?? this.dateTimeOriginal,
+      rating: rating ?? this.rating,
       isFlipped: isFlipped ?? this.isFlipped,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

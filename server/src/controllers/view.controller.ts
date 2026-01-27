@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ViewService } from 'src/services/view.service';
 
@@ -13,7 +13,7 @@ export class ViewController {
   constructor(private service: ViewService) {}
 
   @Get('folder/unique-paths')
-  @Authenticated()
+  @Authenticated({ permission: Permission.FolderRead })
   @Endpoint({
     summary: 'Retrieve unique paths',
     description: 'Retrieve a list of unique folder paths from asset original paths.',
@@ -24,7 +24,7 @@ export class ViewController {
   }
 
   @Get('folder')
-  @Authenticated()
+  @Authenticated({ permission: Permission.FolderRead })
   @Endpoint({
     summary: 'Retrieve assets by original path',
     description: 'Retrieve assets that are children of a specific folder.',

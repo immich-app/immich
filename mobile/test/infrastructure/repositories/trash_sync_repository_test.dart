@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
@@ -32,13 +33,13 @@ void main() {
   Future<void> insertTrashSync({
     required String checksum,
     bool? isSyncApproved,
-    required DateTime updatedAt,
+    required DateTime remoteDeletedAt,
   }) async {
     await db.into(db.trashSyncEntity).insert(
       TrashSyncEntityCompanion.insert(
         checksum: checksum,
         isSyncApproved: Value(isSyncApproved),
-        updatedAt: Value(updatedAt),
+        remoteDeletedAt: remoteDeletedAt,
       ),
     );
   }
@@ -95,15 +96,16 @@ void main() {
       final oldTime = DateTime(2025, 1, 1);
       final newTime = DateTime(2025, 1, 2);
 
-      await insertTrashSync(checksum: 'approved', isSyncApproved: true, updatedAt: oldTime);
-      await insertTrashSync(checksum: 'rejected', isSyncApproved: false, updatedAt: oldTime);
-      await insertTrashSync(checksum: 'rejected-newer', isSyncApproved: false, updatedAt: newTime);
+      await insertTrashSync(checksum: 'approved', isSyncApproved: true, remoteDeletedAt: oldTime);
+      await insertTrashSync(checksum: 'rejected', isSyncApproved: false, remoteDeletedAt: oldTime);
+      await insertTrashSync(checksum: 'rejected-newer', isSyncApproved: false, remoteDeletedAt: newTime);
 
       final items = [
-        LocalAssetStub.image1.copyWith(checksum: 'new', deletedAt: newTime),
-        LocalAssetStub.image1.copyWith(checksum: 'rejected', deletedAt: newTime),
-        LocalAssetStub.image1.copyWith(checksum: 'approved', deletedAt: newTime),
-        LocalAssetStub.image1.copyWith(checksum: 'rejected-newer', deletedAt: oldTime),
+        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'new'), remoteDeletedAt: newTime),
+        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'rejected'), remoteDeletedAt: newTime),
+        RemoteDeletedLocalAsset(asset: LocalAssetStub.image1.copyWith(checksum: 'approved'), remoteDeletedAt: newTime),
+        RemoteDeletedLocalAsset(
+            asset: LocalAssetStub.image1.copyWith(checksum: 'rejected-newer'), remoteDeletedAt: oldTime),
       ];
 
       await repository.upsertReviewCandidates(items);
@@ -113,17 +115,17 @@ void main() {
 
       expect(byChecksum['new'], isNotNull);
       expect(byChecksum['new']!.isSyncApproved, isNull);
-      expect(byChecksum['new']?.updatedAt, newTime);
+      expect(byChecksum['new']?.remoteDeletedAt, newTime);
 
       expect(byChecksum['rejected'], isNotNull);
       expect(byChecksum['rejected']!.isSyncApproved, isNull);
-      expect(byChecksum['rejected']?.updatedAt, newTime);
+      expect(byChecksum['rejected']?.remoteDeletedAt, newTime);
 
       expect(byChecksum['approved']?.isSyncApproved, isTrue);
-      expect(byChecksum['approved']?.updatedAt, oldTime);
+      expect(byChecksum['approved']?.remoteDeletedAt, oldTime);
 
       expect(byChecksum['rejected-newer']?.isSyncApproved, isFalse);
-      expect(byChecksum['rejected-newer']?.updatedAt, newTime);
+      expect(byChecksum['rejected-newer']?.remoteDeletedAt, newTime);
     });
   });
 
@@ -136,13 +138,13 @@ void main() {
       await insertTrashedLocalAsset(checksum: 'approve-keep');
       await insertTrashedLocalAsset(checksum: 'local-trashed');
 
-      await insertTrashSync(checksum: 'alive-remote', isSyncApproved: null, updatedAt: now);
-      await insertTrashSync(checksum: 'local-trashed', isSyncApproved: false, updatedAt: now);
-      await insertTrashSync(checksum: 'pending-keep', isSyncApproved: null, updatedAt: now);
-      await insertTrashSync(checksum: 'reject-orphan', isSyncApproved: false, updatedAt: now);
-      await insertTrashSync(checksum: 'reject-keep', isSyncApproved: false, updatedAt: now);
-      await insertTrashSync(checksum: 'approve-orphan', isSyncApproved: true, updatedAt: now);
-      await insertTrashSync(checksum: 'approve-keep', isSyncApproved: true, updatedAt: now);
+      await insertTrashSync(checksum: 'alive-remote', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'local-trashed', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'pending-keep', isSyncApproved: null, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'reject-orphan', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'reject-keep', isSyncApproved: false, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'approve-orphan', isSyncApproved: true, remoteDeletedAt: now);
+      await insertTrashSync(checksum: 'approve-keep', isSyncApproved: true, remoteDeletedAt: now);
 
       final deleted = await repository.deleteOutdated();
 

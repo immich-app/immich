@@ -142,7 +142,7 @@ class SettingsSubPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
-      body: Padding(padding: const EdgeInsets.only(bottom: 60.0), child: section.widget),
+      body: section.widget,
     );
   }
 }

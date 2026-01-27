@@ -19,7 +19,6 @@ class LocalAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
-    super.deletedAt,
     super.width,
     super.height,
     super.durationInSeconds,
@@ -54,7 +53,6 @@ class LocalAsset extends BaseAsset {
    type: $type,
    createdAt: $createdAt,
    updatedAt: $updatedAt,
-   deletedAt: $deletedAt,
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
@@ -107,7 +105,6 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
-    DateTime? deletedAt,
     DateTime? adjustmentTime,
     double? latitude,
     double? longitude,
@@ -131,7 +128,6 @@ class LocalAsset extends BaseAsset {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isEdited: isEdited ?? this.isEdited,
-      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

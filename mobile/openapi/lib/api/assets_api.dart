@@ -1691,7 +1691,7 @@ class AssetsApi {
 
   /// View asset thumbnail
   ///
-  /// Retrieve the thumbnail image for the specified asset.
+  /// Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1747,7 +1747,7 @@ class AssetsApi {
 
   /// View asset thumbnail
   ///
-  /// Retrieve the thumbnail image for the specified asset.
+  /// Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.
   ///
   /// Parameters:
   ///

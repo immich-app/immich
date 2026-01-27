@@ -5,14 +5,14 @@ import { vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
   return {
-    mobileDevice: {
+    mediaQueryManager: {
       isFullSidebar: false,
     },
   };
 });
 
-vi.mock('$lib/stores/mobile-device.svelte', () => ({
-  mobileDevice: mocks.mobileDevice,
+vi.mock('$lib/stores/media-query-manager.svelte', () => ({
+  mediaQueryManager: mocks.mediaQueryManager,
 }));
 
 vi.mock('$lib/stores/sidebar.svelte', () => ({
@@ -25,7 +25,7 @@ vi.mock('$lib/stores/sidebar.svelte', () => ({
 describe('Sidebar component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mocks.mobileDevice.isFullSidebar = false;
+    mocks.mediaQueryManager.isFullSidebar = false;
     sidebarStore.isOpen = false;
   });
 
@@ -39,7 +39,7 @@ describe('Sidebar component', () => {
     'inert is $expectedInert when isFullSidebar=$isFullSidebar and isSidebarOpen=$isSidebarOpen',
     ({ isFullSidebar, isSidebarOpen, expectedInert }) => {
       // setup
-      mocks.mobileDevice.isFullSidebar = isFullSidebar;
+      mocks.mediaQueryManager.isFullSidebar = isFullSidebar;
       sidebarStore.isOpen = isSidebarOpen;
 
       // when
@@ -53,7 +53,7 @@ describe('Sidebar component', () => {
 
   it('should set width when sidebar is expanded', () => {
     // setup
-    mocks.mobileDevice.isFullSidebar = false;
+    mocks.mediaQueryManager.isFullSidebar = false;
     sidebarStore.isOpen = true;
 
     // when
@@ -68,7 +68,7 @@ describe('Sidebar component', () => {
 
   it('should close the sidebar if it is open on initial render', () => {
     // setup
-    mocks.mobileDevice.isFullSidebar = false;
+    mocks.mediaQueryManager.isFullSidebar = false;
     sidebarStore.isOpen = true;
 
     // when

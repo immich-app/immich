@@ -1,6 +1,6 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ActionReturn } from 'svelte/action';
@@ -60,7 +60,7 @@
       onComplete?.(false);
     }
     return {
-      destroy: () => preloadManager.cancelPreloadUrl(url),
+      destroy: () => imageManager.cancelPreloadUrl(url),
     };
   }
 

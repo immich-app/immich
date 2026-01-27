@@ -113,9 +113,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     const onAssetUpdate = (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]);
 
-    eventManager.on('AssetUpdate', onAssetUpdate);
-
-    this.#unsubscribes.push(() => eventManager.off('AssetUpdate', onAssetUpdate));
+    this.#unsubscribes.push(eventManager.on('AssetUpdate', onAssetUpdate));
   }
 
   override get scrollTop(): number {

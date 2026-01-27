@@ -6,10 +6,18 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+
+class RemovalCandidatesResult {
+  final List<LocalAsset> assets;
+  final int totalBytes;
+
+  const RemovalCandidatesResult({required this.assets, required this.totalBytes});
+}
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -102,12 +110,14 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Map<String, DateTime> trashedAssetsMap) async {
+  Future<Map<String, List<RemoteDeletedLocalAsset>>> getAssetsFromBackupAlbums(
+    Map<String, DateTime> trashedAssetsMap,
+  ) async {
     if (trashedAssetsMap.isEmpty) {
       return {};
     }
 
-    final result = <String, List<LocalAsset>>{};
+    final result = <String, List<RemoteDeletedLocalAsset>>{};
 
     for (final slice in trashedAssetsMap.keys.toSet().slices(kDriftMaxChunk)) {
       final rows =
@@ -123,18 +133,20 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto().copyWith(deletedAt: trashedAssetsMap[assetData.checksum]);
-        (result[albumId] ??= <LocalAsset>[]).add(asset);
+        (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
+          RemoteDeletedLocalAsset(asset: assetData.toDto(), remoteDeletedAt: trashedAssetsMap[assetData.checksum]!),
+        );
       }
     }
     return result;
   }
 
-  Future<List<LocalAsset>> getRemovalCandidates(
+  Future<RemovalCandidatesResult> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
-    AssetFilterType filterType = AssetFilterType.all,
+    AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
+    Set<String> keepAlbumIds = const {},
   }) async {
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -149,6 +161,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
     final query = _db.localAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),
+      leftOuterJoin(_db.remoteExifEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteExifEntity.assetId)),
     ]);
 
     Expression<bool> whereClause =
@@ -159,10 +172,19 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     // Exclude assets that are in iOS shared albums
     whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(iosSharedAlbumAssets);
 
-    if (filterType == AssetFilterType.photosOnly) {
-      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
-    } else if (filterType == AssetFilterType.videosOnly) {
+    if (keepAlbumIds.isNotEmpty) {
+      final keepAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..where(_db.localAlbumAssetEntity.albumId.isIn(keepAlbumIds));
+      whereClause = whereClause & _db.localAssetEntity.id.isNotInQuery(keepAlbumAssets);
+    }
+
+    if (keepMediaType == AssetKeepType.photosOnly) {
+      // Keep photos = delete only videos
       whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
+    } else if (keepMediaType == AssetKeepType.videosOnly) {
+      // Keep videos = delete only photos
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
     }
 
     if (keepFavorites) {
@@ -172,7 +194,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     query.where(whereClause);
 
     final rows = await query.get();
-    return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final assets = rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
+    final totalBytes = rows.fold<int>(0, (sum, row) {
+      final fileSize = row.readTableOrNull(_db.remoteExifEntity)?.fileSize;
+      return sum + (fileSize ?? 0);
+    });
+
+    return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
 
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {
@@ -180,35 +208,24 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<Map<String, String>> getHashMappingFromCloudId() async {
-    final query =
-        _db.localAssetEntity.selectOnly().join([
-            leftOuterJoin(
-              _db.remoteAssetCloudIdEntity,
-              _db.localAssetEntity.iCloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
-              useColumns: false,
-            ),
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-              useColumns: false,
-            ),
-          ])
-          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
-          ..where(
-            _db.remoteAssetCloudIdEntity.cloudId.isNotNull() &
-                _db.localAssetEntity.checksum.isNull() &
-                ((_db.remoteAssetCloudIdEntity.adjustmentTime.isExp(_db.localAssetEntity.adjustmentTime)) &
-                    (_db.remoteAssetCloudIdEntity.latitude.isExp(_db.localAssetEntity.latitude)) &
-                    (_db.remoteAssetCloudIdEntity.longitude.isExp(_db.localAssetEntity.longitude)) &
-                    (_db.remoteAssetCloudIdEntity.createdAt.isExp(_db.localAssetEntity.createdAt))),
-          );
-    final mapping = await query
-        .map(
-          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
-        )
-        .get();
-    return {for (final entry in mapping) entry.assetId: entry.checksum};
+  Future<void> reconcileHashesFromCloudId() async {
+    await _db.customUpdate(
+      '''
+      UPDATE local_asset_entity
+      SET checksum = remote_asset_entity.checksum
+      FROM remote_asset_cloud_id_entity
+      INNER JOIN remote_asset_entity
+        ON remote_asset_cloud_id_entity.asset_id = remote_asset_entity.id
+      WHERE local_asset_entity.i_cloud_id = remote_asset_cloud_id_entity.cloud_id
+        AND local_asset_entity.checksum IS NULL
+        AND remote_asset_cloud_id_entity.adjustment_time IS local_asset_entity.adjustment_time
+        AND remote_asset_cloud_id_entity.latitude IS local_asset_entity.latitude
+        AND remote_asset_cloud_id_entity.longitude IS local_asset_entity.longitude
+        AND remote_asset_cloud_id_entity.created_at IS local_asset_entity.created_at
+      ''',
+      updates: {_db.localAssetEntity},
+      updateKind: UpdateKind.update,
+    );
   }
 
   Future<List<LocalAsset>> getByChecksumsFiltered(

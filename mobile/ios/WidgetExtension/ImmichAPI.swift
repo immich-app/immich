@@ -225,7 +225,7 @@ class ImmichAPI {
   }
 
   func fetchImage(asset: Asset) async throws(FetchError) -> UIImage {
-    let thumbnailParams = [URLQueryItem(name: "size", value: "preview")]
+    let thumbnailParams = [URLQueryItem(name: "size", value: "preview"), URLQueryItem(name: "edited", value: "true")]
     let assetEndpoint = "/assets/" + asset.id + "/thumbnail"
 
     guard

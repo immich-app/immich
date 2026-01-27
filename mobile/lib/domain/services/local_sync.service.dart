@@ -47,8 +47,9 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-          Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+      if (CurrentPlatform.isAndroid &&
+          (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
@@ -385,17 +386,18 @@ class LocalSyncService {
     final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
     final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
     if (localAssetsToTrash.isNotEmpty) {
+      final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
       if (reviewMode) {
-        final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
-        _log.info(
-          "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.id}, name:${e.name}, deletedAt:${e.deletedAt}').join('|')}",
+        final itemsToReview = flattenedAssetsToTrash.where((la) => la.asset.checksum?.isNotEmpty == true);
+        _log.fine(
+          "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('|')}",
         );
         await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
       } else {
         final mediaUrls = await Future.wait(
-          localAssetsToTrash.values
-              .expand((e) => e)
-              .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
+          flattenedAssetsToTrash.map(
+            (record) => _storageRepository.getAssetEntityForAsset(record.asset).then((e) => e?.getMediaUrl()),
+          ),
         );
         _log.info("Moving to trash ${mediaUrls.join(", ")} assets");
         final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
@@ -407,7 +409,7 @@ class LocalSyncService {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
     }
     if (reviewMode) {
-      final result = await _trashSyncRepository.deleteOutdated();
+      final result = await _trashSyncRepository.deleteOutdatedThrottled();
       _log.info("syncTrashedAssets, outdated deleted: $result");
     }
   }

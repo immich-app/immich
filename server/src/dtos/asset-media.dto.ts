@@ -7,6 +7,7 @@ import { AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
+  Original = 'original',
   /**
    * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
    * or otherwise the original image itself.
