@@ -49,9 +49,7 @@
   let multipleButtons = $derived(allText || refreshText);
   // Remaining missing = total missing - jobs already in queue (waiting + active)
   let remainingMissing = $derived(
-    missingCount === undefined
-      ? undefined
-      : Math.max(0, missingCount - waitingCount - statistics.active),
+    missingCount === undefined ? undefined : Math.max(0, missingCount - waitingCount - statistics.active),
   );
   let missingButtonLabel = $derived(
     remainingMissing === undefined ? missingText : remainingMissing.toLocaleString($locale),
@@ -152,7 +150,10 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray {remainingMissing === undefined ? 'rounded-b-lg sm:rounded-s-none sm:rounded-e-lg' : ''}"
+          class="{commonClasses} flex-row-reverse bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray {remainingMissing ===
+          undefined
+            ? 'rounded-b-lg sm:rounded-s-none sm:rounded-e-lg'
+            : ''}"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}
@@ -162,7 +163,10 @@
 
         {#if remainingMissing !== undefined}
           <div
-            class="{commonClasses} flex-row-reverse rounded-b-lg text-immich-dark-bg dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg {remainingMissing > 0 ? 'bg-yellow-200 dark:bg-yellow-700' : 'bg-green-200 dark:bg-green-700'}"
+            class="{commonClasses} flex-row-reverse rounded-b-lg text-immich-dark-bg dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg {remainingMissing >
+            0
+              ? 'bg-yellow-200 dark:bg-yellow-700'
+              : 'bg-green-200 dark:bg-green-700'}"
           >
             <p class="text-2xl">
               {remainingMissing.toLocaleString($locale)}

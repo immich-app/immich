@@ -97,7 +97,7 @@ describe(PresignedUrlService.name, () => {
 
     it('should return null when asset is not found', async () => {
       mocks.s3Manager.isS3Enabled.mockResolvedValue(true);
-      mocks.asset.getById.mockResolvedValue(undefined);
+      mocks.asset.getById.mockResolvedValue();
 
       const result = await sut.getPresignedDownloadUrl('asset-1');
 

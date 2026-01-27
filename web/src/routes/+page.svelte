@@ -129,7 +129,10 @@
 </script>
 
 <svelte:head>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
   <title>tessera.pics - Your photos belong with people who matter</title>
 </svelte:head>
 
@@ -156,23 +159,18 @@
           type="button"
           class="auth-tab"
           class:active={activeTab === 'signin'}
-          onclick={() => activeTab = 'signin'}
+          onclick={() => (activeTab = 'signin')}
         >
           Sign in
         </button>
-        <button
-          type="button"
-          class="auth-tab"
-          class:active={activeTab === 'join'}
-          onclick={() => activeTab = 'join'}
-        >
+        <button type="button" class="auth-tab" class:active={activeTab === 'join'} onclick={() => (activeTab = 'join')}>
           Join
         </button>
         <button
           type="button"
           class="auth-tab"
           class:active={activeTab === 'request'}
-          onclick={() => activeTab = 'request'}
+          onclick={() => (activeTab = 'request')}
         >
           Request
         </button>
@@ -180,20 +178,20 @@
 
       <!-- Sign In Form -->
       {#if activeTab === 'signin'}
-        <form class="auth-form" onsubmit={(e) => { e.preventDefault(); void handleSignIn(); }}>
+        <form
+          class="auth-form"
+          onsubmit={(e) => {
+            e.preventDefault();
+            void handleSignIn();
+          }}
+        >
           {#if errorMessage}
             <div class="error-message">{errorMessage}</div>
           {/if}
 
           <div class="form-group">
             <label for="signin-email">Email</label>
-            <input
-              type="email"
-              id="signin-email"
-              placeholder="you@example.com"
-              bind:value={signinEmail}
-              required
-            />
+            <input type="email" id="signin-email" placeholder="you@example.com" bind:value={signinEmail} required />
           </div>
 
           <div class="form-group">
@@ -234,44 +232,32 @@
 
       <!-- Join Form -->
       {#if activeTab === 'join'}
-        <form class="auth-form" onsubmit={(e) => { e.preventDefault(); handleJoin(); }}>
+        <form
+          class="auth-form"
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleJoin();
+          }}
+        >
           <div class="invite-info">
             <strong>Have an invite code?</strong> Enter it below to create your account and join your family's album.
           </div>
 
           <div class="form-group">
             <label for="invite-code">Invite code</label>
-            <input
-              type="text"
-              id="invite-code"
-              placeholder="e.g. FAMILY-ABCD-1234"
-              bind:value={inviteCode}
-              required
-            />
+            <input type="text" id="invite-code" placeholder="e.g. FAMILY-ABCD-1234" bind:value={inviteCode} required />
           </div>
 
           <div class="divider">then create your account</div>
 
           <div class="form-group">
             <label for="join-name">Your name</label>
-            <input
-              type="text"
-              id="join-name"
-              placeholder="What should we call you?"
-              bind:value={joinName}
-              required
-            />
+            <input type="text" id="join-name" placeholder="What should we call you?" bind:value={joinName} required />
           </div>
 
           <div class="form-group">
             <label for="join-email">Email</label>
-            <input
-              type="email"
-              id="join-email"
-              placeholder="you@example.com"
-              bind:value={joinEmail}
-              required
-            />
+            <input type="email" id="join-email" placeholder="you@example.com" bind:value={joinEmail} required />
           </div>
 
           <div class="form-group">
@@ -291,20 +277,21 @@
 
       <!-- Request Form -->
       {#if activeTab === 'request'}
-        <form class="auth-form" onsubmit={(e) => { e.preventDefault(); handleRequest(); }}>
+        <form
+          class="auth-form"
+          onsubmit={(e) => {
+            e.preventDefault();
+            handleRequest();
+          }}
+        >
           <div class="invite-info">
-            <strong>tessera is invite-only.</strong> Request access and we'll notify you when someone invites you or when spots open up.
+            <strong>tessera is invite-only.</strong> Request access and we'll notify you when someone invites you or when
+            spots open up.
           </div>
 
           <div class="form-group">
             <label for="request-email">Email</label>
-            <input
-              type="email"
-              id="request-email"
-              placeholder="you@example.com"
-              bind:value={requestEmail}
-              required
-            />
+            <input type="email" id="request-email" placeholder="you@example.com" bind:value={requestEmail} required />
           </div>
 
           <div class="form-group">
@@ -323,7 +310,9 @@
           <button type="submit" class="btn">Request an invite</button>
 
           <div class="auth-footer">
-            Know someone on tessera? <button type="button" class="link-button" onclick={() => activeTab = 'join'}>Ask them for an invite</button>
+            Know someone on tessera? <button type="button" class="link-button" onclick={() => (activeTab = 'join')}
+              >Ask them for an invite</button
+            >
           </div>
         </form>
       {/if}
@@ -408,9 +397,13 @@
 
 <style>
   .tessera-page {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #FAF9F7;
-    color: #3D3D3D;
+    font-family:
+      'Inter',
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
+    background: #faf9f7;
+    color: #3d3d3d;
     line-height: 1.6;
     min-height: 100dvh;
   }
@@ -429,7 +422,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #3D3D3D;
+    color: #3d3d3d;
   }
 
   .nav-links {
@@ -440,12 +433,12 @@
 
   .nav-links a {
     text-decoration: none;
-    color: #6B6B6B;
+    color: #6b6b6b;
     font-size: 0.95rem;
   }
 
   .nav-links a:hover {
-    color: #3D3D3D;
+    color: #3d3d3d;
   }
 
   /* Hero */
@@ -464,12 +457,12 @@
     font-size: 3.2rem;
     line-height: 1.2;
     margin-bottom: 1.5rem;
-    color: #2D2D2D;
+    color: #2d2d2d;
   }
 
   .hero-content p {
     font-size: 1.15rem;
-    color: #6B6B6B;
+    color: #6b6b6b;
     max-width: 480px;
   }
 
@@ -478,15 +471,15 @@
     background: white;
     border-radius: 20px;
     padding: 2.5rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    border: 1px solid #E8E6E3;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8e6e3;
   }
 
   .auth-tabs {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 2rem;
-    background: #F5F4F2;
+    background: #f5f4f2;
     padding: 4px;
     border-radius: 10px;
   }
@@ -498,21 +491,21 @@
     background: transparent;
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
-    color: #6B6B6B;
+    color: #6b6b6b;
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s;
   }
 
   .auth-tab:hover {
-    color: #3D3D3D;
+    color: #3d3d3d;
   }
 
   .auth-tab.active {
     background: white;
-    color: #3D3D3D;
+    color: #3d3d3d;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .auth-form {
@@ -527,42 +520,44 @@
   .form-group label {
     display: block;
     font-size: 0.9rem;
-    color: #4D4D4D;
+    color: #4d4d4d;
     margin-bottom: 0.5rem;
     font-weight: 500;
   }
 
   .form-group .optional {
     font-weight: 400;
-    color: #A0A0A0;
+    color: #a0a0a0;
   }
 
   .form-group input {
     width: 100%;
     padding: 0.875rem 1rem;
-    border: 1.5px solid #E8E6E3;
+    border: 1.5px solid #e8e6e3;
     border-radius: 10px;
     font-size: 1rem;
     font-family: 'Inter', sans-serif;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: #FAFAF9;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+    background: #fafaf9;
     box-sizing: border-box;
   }
 
   .form-group input:focus {
     outline: none;
-    border-color: #6B7F59;
+    border-color: #6b7f59;
     box-shadow: 0 0 0 3px rgba(107, 127, 89, 0.1);
     background: white;
   }
 
   .form-group input::placeholder {
-    color: #A0A0A0;
+    color: #a0a0a0;
   }
 
   .btn {
     width: 100%;
-    background: #6B7F59;
+    background: #6b7f59;
     color: white;
     padding: 0.875rem 1.5rem;
     border-radius: 10px;
@@ -571,12 +566,14 @@
     font-size: 1rem;
     border: none;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
+    transition:
+      background 0.2s,
+      transform 0.2s;
     font-family: 'Inter', sans-serif;
   }
 
   .btn:hover:not(:disabled) {
-    background: #5A6D4A;
+    background: #5a6d4a;
     transform: translateY(-1px);
   }
 
@@ -591,19 +588,19 @@
 
   .btn-secondary {
     background: transparent;
-    border: 1.5px solid #6B7F59;
-    color: #6B7F59;
+    border: 1.5px solid #6b7f59;
+    color: #6b7f59;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #6B7F59;
+    background: #6b7f59;
     color: white;
   }
 
   .error-message {
-    background: #FEE2E2;
-    border: 1px solid #FECACA;
-    color: #991B1B;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-bottom: 1rem;
@@ -614,11 +611,11 @@
     margin-top: 1.5rem;
     text-align: center;
     font-size: 0.9rem;
-    color: #6B6B6B;
+    color: #6b6b6b;
   }
 
   .auth-footer a {
-    color: #6B7F59;
+    color: #6b7f59;
     text-decoration: none;
     font-weight: 500;
   }
@@ -632,7 +629,7 @@
     border: none;
     padding: 0;
     font: inherit;
-    color: #6B7F59;
+    color: #6b7f59;
     font-weight: 500;
     cursor: pointer;
   }
@@ -645,7 +642,7 @@
     display: flex;
     align-items: center;
     margin: 1.5rem 0;
-    color: #A0A0A0;
+    color: #a0a0a0;
     font-size: 0.85rem;
   }
 
@@ -654,7 +651,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: #E8E6E3;
+    background: #e8e6e3;
   }
 
   .divider::before {
@@ -666,16 +663,16 @@
   }
 
   .invite-info {
-    background: #F5F4F2;
+    background: #f5f4f2;
     border-radius: 10px;
     padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
-    color: #5A5A5A;
+    color: #5a5a5a;
   }
 
   .invite-info strong {
-    color: #3D3D3D;
+    color: #3d3d3d;
   }
 
   /* Sections */
@@ -703,21 +700,21 @@
     padding: 2.5rem;
     border-radius: 16px;
     text-align: center;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    border: 1px solid #E8E6E3;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e8e6e3;
   }
 
   .card-icon {
     width: 64px;
     height: 64px;
-    background: #F0F2ED;
+    background: #f0f2ed;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1.5rem;
     font-size: 1.5rem;
-    color: #6B7F59;
+    color: #6b7f59;
   }
 
   .card h3 {
@@ -727,7 +724,7 @@
   }
 
   .card p {
-    color: #6B6B6B;
+    color: #6b6b6b;
     font-size: 0.95rem;
   }
 
@@ -735,8 +732,8 @@
   .storage-section {
     background: white;
     padding: 5rem 5%;
-    border-top: 1px solid #E8E6E3;
-    border-bottom: 1px solid #E8E6E3;
+    border-top: 1px solid #e8e6e3;
+    border-bottom: 1px solid #e8e6e3;
   }
 
   .storage-content {
@@ -749,7 +746,7 @@
   }
 
   .storage-visual {
-    background: #F5F4F2;
+    background: #f5f4f2;
     border-radius: 24px;
     padding: 3rem;
     text-align: center;
@@ -758,7 +755,7 @@
   .vault {
     width: 120px;
     height: 100px;
-    background: #8B9A7E;
+    background: #8b9a7e;
     border-radius: 12px;
     margin: 0 auto 2rem;
     position: relative;
@@ -793,14 +790,22 @@
     margin-left: 0;
   }
 
-  .avatar:nth-child(1) { background: #6B7F59; }
-  .avatar:nth-child(2) { background: #8B9A7E; }
-  .avatar:nth-child(3) { background: #A8B5A0; }
-  .avatar:nth-child(4) { background: #C9B8A8; }
+  .avatar:nth-child(1) {
+    background: #6b7f59;
+  }
+  .avatar:nth-child(2) {
+    background: #8b9a7e;
+  }
+  .avatar:nth-child(3) {
+    background: #a8b5a0;
+  }
+  .avatar:nth-child(4) {
+    background: #c9b8a8;
+  }
 
   .storage-caption {
     margin-top: 1.5rem;
-    color: #6B6B6B;
+    color: #6b6b6b;
   }
 
   .storage-text h2 {
@@ -810,7 +815,7 @@
   }
 
   .storage-text p {
-    color: #6B6B6B;
+    color: #6b6b6b;
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
   }
@@ -825,7 +830,7 @@
     padding: 0.5rem 0;
     padding-left: 1.5rem;
     position: relative;
-    color: #5A5A5A;
+    color: #5a5a5a;
   }
 
   .feature-list li::before {
@@ -836,7 +841,7 @@
     transform: translateY(-50%);
     width: 8px;
     height: 8px;
-    background: #8B9A7E;
+    background: #8b9a7e;
     border-radius: 50%;
   }
 
@@ -844,7 +849,7 @@
   .privacy-section {
     text-align: center;
     padding: 6rem 5%;
-    background: #F5F4F2;
+    background: #f5f4f2;
   }
 
   .privacy-section h2 {
@@ -854,7 +859,7 @@
   }
 
   .privacy-section > p {
-    color: #6B6B6B;
+    color: #6b6b6b;
     font-size: 1.2rem;
     max-width: 600px;
     margin: 0 auto 2rem;
@@ -872,15 +877,15 @@
     padding: 1rem 1.5rem;
     border-radius: 100px;
     font-size: 0.9rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border: 1px solid #E8E6E3;
-    color: #5A5A5A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e8e6e3;
+    color: #5a5a5a;
   }
 
   /* Footer */
   .footer {
-    background: #3D3D3D;
-    color: #FAF9F7;
+    background: #3d3d3d;
+    color: #faf9f7;
     padding: 3rem 5%;
   }
 
@@ -909,7 +914,7 @@
   }
 
   .footer-links a {
-    color: #FAF9F7;
+    color: #faf9f7;
     text-decoration: none;
     font-size: 0.9rem;
     opacity: 0.7;

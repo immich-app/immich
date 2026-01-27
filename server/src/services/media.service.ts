@@ -654,8 +654,11 @@ export class MediaService extends BaseService {
     const localAdapter = s3Manager.getLocalAdapter();
 
     try {
-      const { adapter: s3Adapter, bucket, storageClass } =
-        await s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
+      const {
+        adapter: s3Adapter,
+        bucket,
+        storageClass,
+      } = await s3Manager.getConfigForLocation(StorageLocationType.Thumbnails);
 
       const s3Key = `users/${ownerId}/persons/${personId}/thumbnail.jpeg`;
 

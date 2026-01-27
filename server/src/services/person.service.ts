@@ -274,7 +274,13 @@ export class PersonService extends BaseService {
 
   @Chunked()
   private async removeAllPeople(
-    people: { id: string; thumbnailPath: string; storageBackend: StorageBackend; s3Bucket: string | null; s3Key: string | null }[],
+    people: {
+      id: string;
+      thumbnailPath: string;
+      storageBackend: StorageBackend;
+      s3Bucket: string | null;
+      s3Key: string | null;
+    }[],
   ) {
     await Promise.all(
       people.map(async (person) => {
