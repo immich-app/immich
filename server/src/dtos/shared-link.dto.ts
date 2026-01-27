@@ -50,7 +50,7 @@ export class SharedLinkCreateDto {
   @ValidateDate({ optional: true, nullable: true })
   expiresAt?: Date | null = null;
 
-  @ApiPropertyOptional({ description: 'Allow uploads', default: false })
+  @ApiPropertyOptional({ description: 'Allow uploads' })
   @ValidateBoolean({ optional: true })
   allowUpload?: boolean;
 

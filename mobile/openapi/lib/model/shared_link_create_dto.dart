@@ -15,7 +15,7 @@ class SharedLinkCreateDto {
   SharedLinkCreateDto({
     this.albumId,
     this.allowDownload = true,
-    this.allowUpload = false,
+    this.allowUpload,
     this.assetIds = const [],
     this.description,
     this.expiresAt,
@@ -38,7 +38,13 @@ class SharedLinkCreateDto {
   bool allowDownload;
 
   /// Allow uploads
-  bool allowUpload;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? allowUpload;
 
   /// Asset IDs (for individual assets)
   List<String> assetIds;
@@ -79,7 +85,7 @@ class SharedLinkCreateDto {
     // ignore: unnecessary_parenthesis
     (albumId == null ? 0 : albumId!.hashCode) +
     (allowDownload.hashCode) +
-    (allowUpload.hashCode) +
+    (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
@@ -99,7 +105,11 @@ class SharedLinkCreateDto {
     //  json[r'albumId'] = null;
     }
       json[r'allowDownload'] = this.allowDownload;
+    if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
+    } else {
+    //  json[r'allowUpload'] = null;
+    }
       json[r'assetIds'] = this.assetIds;
     if (this.description != null) {
       json[r'description'] = this.description;
@@ -137,7 +147,7 @@ class SharedLinkCreateDto {
       return SharedLinkCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload') ?? false,
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
