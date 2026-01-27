@@ -197,10 +197,10 @@ class TransformManager implements EditToolManager {
 
     // Normalize rotation and mirror edits to single rotation and mirror state
     // This allows edits to be imported in any order and still produce correct state
-    const normalizedTransfromation = normalizeTransformEdits(transformEdits);
-    this.imageRotation = normalizedTransfromation.rotation;
-    this.mirrorHorizontal = normalizedTransfromation.mirrorHorizontal;
-    this.mirrorVertical = normalizedTransfromation.mirrorVertical;
+    const normalizedTransformation = normalizeTransformEdits(transformEdits);
+    this.imageRotation = normalizedTransformation.rotation;
+    this.mirrorHorizontal = normalizedTransformation.mirrorHorizontal;
+    this.mirrorVertical = normalizedTransformation.mirrorVertical;
 
     await tick();
 
