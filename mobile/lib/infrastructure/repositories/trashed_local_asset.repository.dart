@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
@@ -124,7 +125,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAsset(Map<String, List<LocalAsset>> assetsByAlbums) async {
+  Future<void> trashLocalAsset(Map<String, List<RemoteDeletedLocalAsset>> assetsByAlbums) async {
     if (assetsByAlbums.isEmpty) {
       return Future.value();
     }
@@ -133,7 +134,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     final idToDelete = <String>{};
 
     for (final entry in assetsByAlbums.entries) {
-      for (final asset in entry.value) {
+      for (final record in entry.value) {
+        final asset = record.asset;
         idToDelete.add(asset.id);
         companions.add(
           TrashedLocalAssetEntityCompanion(
@@ -260,8 +262,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<Map<String, List<LocalAsset>>> getToTrash() async {
-    final result = <String, List<LocalAsset>>{};
+  Future<Map<String, List<RemoteDeletedLocalAsset>>> getToTrash() async {
+    final result = <String, List<RemoteDeletedLocalAsset>>{};
 
     final rows =
         await (_db.select(_db.localAlbumAssetEntity).join([
@@ -280,8 +282,10 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     for (final row in rows) {
       final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
       final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt);
-      final asset = row.readTable(_db.localAssetEntity).toDto().copyWith(deletedAt: remoteDeletedAt);
-      (result[albumId] ??= <LocalAsset>[]).add(asset);
+      final asset = row.readTable(_db.localAssetEntity).toDto();
+      (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
+        RemoteDeletedLocalAsset(asset: asset, remoteDeletedAt: remoteDeletedAt!),
+      );
     }
 
     return result;

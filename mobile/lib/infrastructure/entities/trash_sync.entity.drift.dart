@@ -5,19 +5,18 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.da
     as i1;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart'
     as i2;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
 
 typedef $$TrashSyncEntityTableCreateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       required String checksum,
       i0.Value<bool?> isSyncApproved,
-      i0.Value<DateTime> updatedAt,
+      required DateTime remoteDeletedAt,
     });
 typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       i0.Value<String> checksum,
       i0.Value<bool?> isSyncApproved,
-      i0.Value<DateTime> updatedAt,
+      i0.Value<DateTime> remoteDeletedAt,
     });
 
 class $$TrashSyncEntityTableFilterComposer
@@ -39,8 +38,8 @@ class $$TrashSyncEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  i0.ColumnFilters<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 }
@@ -64,8 +63,8 @@ class $$TrashSyncEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  i0.ColumnOrderings<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
     builder: (column) => i0.ColumnOrderings(column),
   );
 }
@@ -87,8 +86,10 @@ class $$TrashSyncEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
-  i0.GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+  i0.GeneratedColumn<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
+    builder: (column) => column,
+  );
 }
 
 class $$TrashSyncEntityTableTableManager
@@ -130,21 +131,21 @@ class $$TrashSyncEntityTableTableManager
               ({
                 i0.Value<String> checksum = const i0.Value.absent(),
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                i0.Value<DateTime> remoteDeletedAt = const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion(
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
-                updatedAt: updatedAt,
+                remoteDeletedAt: remoteDeletedAt,
               ),
           createCompanionCallback:
               ({
                 required String checksum,
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                required DateTime remoteDeletedAt,
               }) => i1.TrashSyncEntityCompanion.insert(
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
-                updatedAt: updatedAt,
+                remoteDeletedAt: remoteDeletedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -210,24 +211,22 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
       'CHECK ("is_sync_approved" IN (0, 1))',
     ),
   );
-  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta(
-    'updatedAt',
-  );
+  static const i0.VerificationMeta _remoteDeletedAtMeta =
+      const i0.VerificationMeta('remoteDeletedAt');
   @override
-  late final i0.GeneratedColumn<DateTime> updatedAt =
+  late final i0.GeneratedColumn<DateTime> remoteDeletedAt =
       i0.GeneratedColumn<DateTime>(
-        'updated_at',
+        'remote_deleted_at',
         aliasedName,
         false,
         type: i0.DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-        defaultValue: i3.currentDateAndTime,
+        requiredDuringInsert: true,
       );
   @override
   List<i0.GeneratedColumn> get $columns => [
     checksum,
     isSyncApproved,
-    updatedAt,
+    remoteDeletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -258,11 +257,16 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
         ),
       );
     }
-    if (data.containsKey('updated_at')) {
+    if (data.containsKey('remote_deleted_at')) {
       context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+        _remoteDeletedAtMeta,
+        remoteDeletedAt.isAcceptableOrUnknown(
+          data['remote_deleted_at']!,
+          _remoteDeletedAtMeta,
+        ),
       );
+    } else if (isInserting) {
+      context.missing(_remoteDeletedAtMeta);
     }
     return context;
   }
@@ -281,9 +285,9 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
         i0.DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
-      updatedAt: attachedDatabase.typeMapping.read(
+      remoteDeletedAt: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
+        data['${effectivePrefix}remote_deleted_at'],
       )!,
     );
   }
@@ -303,11 +307,11 @@ class TrashSyncEntityData extends i0.DataClass
     implements i0.Insertable<i1.TrashSyncEntityData> {
   final String checksum;
   final bool? isSyncApproved;
-  final DateTime updatedAt;
+  final DateTime remoteDeletedAt;
   const TrashSyncEntityData({
     required this.checksum,
     this.isSyncApproved,
-    required this.updatedAt,
+    required this.remoteDeletedAt,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -316,7 +320,7 @@ class TrashSyncEntityData extends i0.DataClass
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved);
     }
-    map['updated_at'] = i0.Variable<DateTime>(updatedAt);
+    map['remote_deleted_at'] = i0.Variable<DateTime>(remoteDeletedAt);
     return map;
   }
 
@@ -328,7 +332,7 @@ class TrashSyncEntityData extends i0.DataClass
     return TrashSyncEntityData(
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      remoteDeletedAt: serializer.fromJson<DateTime>(json['remoteDeletedAt']),
     );
   }
   @override
@@ -337,20 +341,20 @@ class TrashSyncEntityData extends i0.DataClass
     return <String, dynamic>{
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'remoteDeletedAt': serializer.toJson<DateTime>(remoteDeletedAt),
     };
   }
 
   i1.TrashSyncEntityData copyWith({
     String? checksum,
     i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
-    DateTime? updatedAt,
+    DateTime? remoteDeletedAt,
   }) => i1.TrashSyncEntityData(
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
-    updatedAt: updatedAt ?? this.updatedAt,
+    remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
   );
   TrashSyncEntityData copyWithCompanion(i1.TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -358,7 +362,9 @@ class TrashSyncEntityData extends i0.DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      remoteDeletedAt: data.remoteDeletedAt.present
+          ? data.remoteDeletedAt.value
+          : this.remoteDeletedAt,
     );
   }
 
@@ -367,58 +373,59 @@ class TrashSyncEntityData extends i0.DataClass
     return (StringBuffer('TrashSyncEntityData(')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, updatedAt);
+  int get hashCode => Object.hash(checksum, isSyncApproved, remoteDeletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.TrashSyncEntityData &&
           other.checksum == this.checksum &&
           other.isSyncApproved == this.isSyncApproved &&
-          other.updatedAt == this.updatedAt);
+          other.remoteDeletedAt == this.remoteDeletedAt);
 }
 
 class TrashSyncEntityCompanion
     extends i0.UpdateCompanion<i1.TrashSyncEntityData> {
   final i0.Value<String> checksum;
   final i0.Value<bool?> isSyncApproved;
-  final i0.Value<DateTime> updatedAt;
+  final i0.Value<DateTime> remoteDeletedAt;
   const TrashSyncEntityCompanion({
     this.checksum = const i0.Value.absent(),
     this.isSyncApproved = const i0.Value.absent(),
-    this.updatedAt = const i0.Value.absent(),
+    this.remoteDeletedAt = const i0.Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String checksum,
     this.isSyncApproved = const i0.Value.absent(),
-    this.updatedAt = const i0.Value.absent(),
-  }) : checksum = i0.Value(checksum);
+    required DateTime remoteDeletedAt,
+  }) : checksum = i0.Value(checksum),
+       remoteDeletedAt = i0.Value(remoteDeletedAt);
   static i0.Insertable<i1.TrashSyncEntityData> custom({
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isSyncApproved,
-    i0.Expression<DateTime>? updatedAt,
+    i0.Expression<DateTime>? remoteDeletedAt,
   }) {
     return i0.RawValuesInsertable({
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (updatedAt != null) 'updated_at': updatedAt,
+      if (remoteDeletedAt != null) 'remote_deleted_at': remoteDeletedAt,
     });
   }
 
   i1.TrashSyncEntityCompanion copyWith({
     i0.Value<String>? checksum,
     i0.Value<bool?>? isSyncApproved,
-    i0.Value<DateTime>? updatedAt,
+    i0.Value<DateTime>? remoteDeletedAt,
   }) {
     return i1.TrashSyncEntityCompanion(
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      updatedAt: updatedAt ?? this.updatedAt,
+      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
     );
   }
 
@@ -431,8 +438,8 @@ class TrashSyncEntityCompanion
     if (isSyncApproved.present) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
+    if (remoteDeletedAt.present) {
+      map['remote_deleted_at'] = i0.Variable<DateTime>(remoteDeletedAt.value);
     }
     return map;
   }
@@ -442,7 +449,7 @@ class TrashSyncEntityCompanion
     return (StringBuffer('TrashSyncEntityCompanion(')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }

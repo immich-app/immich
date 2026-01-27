@@ -10,6 +10,7 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
+  final DateTime? deletedAt;
 
   const RemoteAsset({
     required this.id,
@@ -20,7 +21,7 @@ class RemoteAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
-    super.deletedAt,
+    this.deletedAt,
     super.width,
     super.height,
     super.durationInSeconds,
@@ -77,6 +78,7 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
+        deletedAt == other.deletedAt &&
         stackId == other.stackId;
   }
 
@@ -88,6 +90,7 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
+      deletedAt.hashCode ^
       stackId.hashCode;
 
   RemoteAsset copyWith({

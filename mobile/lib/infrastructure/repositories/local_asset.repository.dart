@@ -6,6 +6,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -109,12 +110,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Map<String, DateTime> trashedAssetsMap) async {
+  Future<Map<String, List<RemoteDeletedLocalAsset>>> getAssetsFromBackupAlbums(
+      Map<String, DateTime> trashedAssetsMap,) async {
     if (trashedAssetsMap.isEmpty) {
       return {};
     }
 
-    final result = <String, List<LocalAsset>>{};
+    final result = <String, List<RemoteDeletedLocalAsset>>{};
 
     for (final slice in trashedAssetsMap.keys.toSet().slices(kDriftMaxChunk)) {
       final rows =
@@ -130,8 +132,12 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       for (final row in rows) {
         final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
         final assetData = row.readTable(_db.localAssetEntity);
-        final asset = assetData.toDto().copyWith(deletedAt: trashedAssetsMap[assetData.checksum]);
-        (result[albumId] ??= <LocalAsset>[]).add(asset);
+        (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
+          RemoteDeletedLocalAsset(
+            asset: assetData.toDto(),
+            remoteDeletedAt: trashedAssetsMap[assetData.checksum]!,
+          ),
+        );
       }
     }
     return result;

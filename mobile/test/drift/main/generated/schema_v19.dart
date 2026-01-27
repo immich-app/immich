@@ -8254,16 +8254,20 @@ class TrashSyncEntity extends Table
       'CHECK ("is_sync_approved" IN (0, 1))',
     ),
   );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
+  late final GeneratedColumn<DateTime> remoteDeletedAt =
+      GeneratedColumn<DateTime>(
+        'remote_deleted_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
   @override
-  List<GeneratedColumn> get $columns => [checksum, isSyncApproved, updatedAt];
+  List<GeneratedColumn> get $columns => [
+    checksum,
+    isSyncApproved,
+    remoteDeletedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -8283,9 +8287,9 @@ class TrashSyncEntity extends Table
         DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
-      updatedAt: attachedDatabase.typeMapping.read(
+      remoteDeletedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
+        data['${effectivePrefix}remote_deleted_at'],
       )!,
     );
   }
@@ -8305,11 +8309,11 @@ class TrashSyncEntityData extends DataClass
     implements Insertable<TrashSyncEntityData> {
   final String checksum;
   final bool? isSyncApproved;
-  final DateTime updatedAt;
+  final DateTime remoteDeletedAt;
   const TrashSyncEntityData({
     required this.checksum,
     this.isSyncApproved,
-    required this.updatedAt,
+    required this.remoteDeletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8318,7 +8322,7 @@ class TrashSyncEntityData extends DataClass
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved);
     }
-    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['remote_deleted_at'] = Variable<DateTime>(remoteDeletedAt);
     return map;
   }
 
@@ -8330,7 +8334,7 @@ class TrashSyncEntityData extends DataClass
     return TrashSyncEntityData(
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      remoteDeletedAt: serializer.fromJson<DateTime>(json['remoteDeletedAt']),
     );
   }
   @override
@@ -8339,20 +8343,20 @@ class TrashSyncEntityData extends DataClass
     return <String, dynamic>{
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'remoteDeletedAt': serializer.toJson<DateTime>(remoteDeletedAt),
     };
   }
 
   TrashSyncEntityData copyWith({
     String? checksum,
     Value<bool?> isSyncApproved = const Value.absent(),
-    DateTime? updatedAt,
+    DateTime? remoteDeletedAt,
   }) => TrashSyncEntityData(
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
-    updatedAt: updatedAt ?? this.updatedAt,
+    remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
   );
   TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -8360,7 +8364,9 @@ class TrashSyncEntityData extends DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      remoteDeletedAt: data.remoteDeletedAt.present
+          ? data.remoteDeletedAt.value
+          : this.remoteDeletedAt,
     );
   }
 
@@ -8369,57 +8375,58 @@ class TrashSyncEntityData extends DataClass
     return (StringBuffer('TrashSyncEntityData(')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, updatedAt);
+  int get hashCode => Object.hash(checksum, isSyncApproved, remoteDeletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TrashSyncEntityData &&
           other.checksum == this.checksum &&
           other.isSyncApproved == this.isSyncApproved &&
-          other.updatedAt == this.updatedAt);
+          other.remoteDeletedAt == this.remoteDeletedAt);
 }
 
 class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
   final Value<String> checksum;
   final Value<bool?> isSyncApproved;
-  final Value<DateTime> updatedAt;
+  final Value<DateTime> remoteDeletedAt;
   const TrashSyncEntityCompanion({
     this.checksum = const Value.absent(),
     this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    this.remoteDeletedAt = const Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String checksum,
     this.isSyncApproved = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-  }) : checksum = Value(checksum);
+    required DateTime remoteDeletedAt,
+  }) : checksum = Value(checksum),
+       remoteDeletedAt = Value(remoteDeletedAt);
   static Insertable<TrashSyncEntityData> custom({
     Expression<String>? checksum,
     Expression<bool>? isSyncApproved,
-    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? remoteDeletedAt,
   }) {
     return RawValuesInsertable({
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (updatedAt != null) 'updated_at': updatedAt,
+      if (remoteDeletedAt != null) 'remote_deleted_at': remoteDeletedAt,
     });
   }
 
   TrashSyncEntityCompanion copyWith({
     Value<String>? checksum,
     Value<bool?>? isSyncApproved,
-    Value<DateTime>? updatedAt,
+    Value<DateTime>? remoteDeletedAt,
   }) {
     return TrashSyncEntityCompanion(
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      updatedAt: updatedAt ?? this.updatedAt,
+      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
     );
   }
 
@@ -8432,8 +8439,8 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     if (isSyncApproved.present) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    if (remoteDeletedAt.present) {
+      map['remote_deleted_at'] = Variable<DateTime>(remoteDeletedAt.value);
     }
     return map;
   }
@@ -8443,7 +8450,7 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     return (StringBuffer('TrashSyncEntityCompanion(')
           ..write('checksum: $checksum, ')
           ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }

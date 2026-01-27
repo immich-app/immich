@@ -10,7 +10,7 @@ class TrashSyncEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isSyncApproved => boolean().nullable()();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get remoteDeletedAt => dateTime()();
 
   @override
   Set<Column> get primaryKey => {checksum};

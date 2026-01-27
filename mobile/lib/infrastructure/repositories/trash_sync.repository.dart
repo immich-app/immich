@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
@@ -12,13 +12,13 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
   const DriftTrashSyncRepository(this._db) : super(_db);
 
-  Future<void> upsertReviewCandidates(Iterable<LocalAsset> itemsToReview) async {
+  Future<void> upsertReviewCandidates(Iterable<RemoteDeletedLocalAsset> itemsToReview) async {
     if (itemsToReview.isEmpty) {
       return Future.value();
     }
 
     final existingEntities = <TrashSyncEntityData>[];
-    final checksums = itemsToReview.map((e) => e.checksum).nonNulls;
+    final checksums = itemsToReview.map((e) => e.asset.checksum).nonNulls;
     for (final slice in checksums.slices(kDriftMaxChunk)) {
       final sliceResult = await (_db.trashSyncEntity.select()..where((tbl) => tbl.checksum.isIn(slice))).get();
       existingEntities.addAll(sliceResult);
@@ -27,14 +27,15 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     final existingMap = {for (var e in existingEntities) e.checksum: e};
     return _db.batch((batch) {
       for (var item in itemsToReview) {
-        final existing = existingMap[item.checksum];
-        if (existing == null || (existing.isSyncApproved == false && item.deletedAt!.isAfter(existing.updatedAt))) {
+        final existing = existingMap[item.asset.checksum];
+        if (existing == null ||
+            (existing.isSyncApproved == false && item.remoteDeletedAt.isAfter(existing.remoteDeletedAt))) {
           batch.insert(
             _db.trashSyncEntity,
-            TrashSyncEntityCompanion.insert(checksum: item.checksum!, updatedAt: Value(item.deletedAt!)),
+            TrashSyncEntityCompanion.insert(checksum: item.asset.checksum!, remoteDeletedAt: item.remoteDeletedAt),
             onConflict: DoUpdate(
               (_) => TrashSyncEntityCompanion.custom(
-                updatedAt: Variable(item.deletedAt),
+                remoteDeletedAt: Variable(item.remoteDeletedAt),
                 isSyncApproved: const Variable(null),
               ),
             ),

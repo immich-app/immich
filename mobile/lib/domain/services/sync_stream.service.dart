@@ -304,19 +304,19 @@ class SyncStreamService {
     } else {
       final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);
       if (localAssetsToTrash.isNotEmpty) {
+        final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
         if (reviewMode) {
-          final itemsToReview = localAssetsToTrash.values.flattened.where((la) => la.checksum?.isNotEmpty == true);
+          final itemsToReview = flattenedAssetsToTrash.where((la) => la.asset.checksum?.isNotEmpty == true);
           _logger.info(
-            "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.id}, name:${e.name}, deletedAt:${e.deletedAt}').join('*')}",
+            "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('*')}",
           );
           await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
         } else {
           final mediaUrls = await Future.wait(
-            localAssetsToTrash.values
-                .expand((e) => e)
-                .map(
-                  (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
-                ),
+            flattenedAssetsToTrash.map(
+              (assetRecord) =>
+                  _storageRepository.getAssetEntityForAsset(assetRecord.asset).then((e) => e?.getMediaUrl()),
+            ),
           );
           _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
           final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());

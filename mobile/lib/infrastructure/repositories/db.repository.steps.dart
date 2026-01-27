@@ -8296,7 +8296,7 @@ final class Schema19 extends i0.VersionedSchema {
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(checksum)'],
-      columns: [_column_13, _column_102, _column_5],
+      columns: [_column_13, _column_102, _column_103],
       attachedDatabase: database,
     ),
     alias: null,
@@ -8333,8 +8333,8 @@ class Shape29 extends i0.VersionedTable {
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<bool> get isSyncApproved =>
       columnsByName['is_sync_approved']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<DateTime> get updatedAt =>
-      columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<DateTime> get remoteDeletedAt =>
+      columnsByName['remote_deleted_at']! as i1.GeneratedColumn<DateTime>;
 }
 
 i1.GeneratedColumn<bool> _column_102(String aliasedName) =>
@@ -8346,6 +8346,13 @@ i1.GeneratedColumn<bool> _column_102(String aliasedName) =>
       defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
         'CHECK ("is_sync_approved" IN (0, 1))',
       ),
+    );
+i1.GeneratedColumn<DateTime> _column_103(String aliasedName) =>
+    i1.GeneratedColumn<DateTime>(
+      'remote_deleted_at',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.dateTime,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
