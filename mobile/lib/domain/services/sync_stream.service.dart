@@ -76,7 +76,7 @@ class SyncStreamService {
     await _runPreSyncTasks(migrations, semVer);
 
     if (migrations.length != previousLength) {
-      print("Updated pre-sync migration status: $migrations");
+      _logger.info("Updated pre-sync migration status: $migrations");
       await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
     }
 
@@ -92,7 +92,7 @@ class SyncStreamService {
     await _runPostSyncTasks(migrations);
 
     if (migrations.length != previousLength) {
-      print("Updated pre-sync migration status: $migrations");
+      _logger.info("Updated pre-sync migration status: $migrations");
       await Store.put(StoreKey.syncMigrationStatus, jsonEncode(migrations));
     }
 
@@ -101,7 +101,7 @@ class SyncStreamService {
 
   Future<void> _runPreSyncTasks(List<String> migrations, SemVer semVer) async {
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetExifV1.name)) {
-      print("Running pre-sync task: v20260128_ResetExifV1");
+      _logger.info("Running pre-sync task: v20260128_ResetExifV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetExifV1,
         SyncEntityType.partnerAssetExifV1,
@@ -113,7 +113,7 @@ class SyncStreamService {
 
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
         semVer >= const SemVer(major: 2, minor: 5, patch: 0)) {
-      print("Running pre-sync task: v20260128_ResetAssetV1");
+      _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetV1,
         SyncEntityType.partnerAssetV1,
@@ -131,7 +131,7 @@ class SyncStreamService {
 
   Future<void> _runPostSyncTasks(List<String> migrations) async {
     if (!migrations.contains(SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name)) {
-      print("Running post-sync task: v20260128_CopyExifWidthHeightToAsset");
+      _logger.info("Running post-sync task: v20260128_CopyExifWidthHeightToAsset");
       await _syncMigrationRepository.v20260128CopyExifWidthHeightToAsset();
       migrations.add(SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name);
     }

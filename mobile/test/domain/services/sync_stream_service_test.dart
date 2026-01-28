@@ -106,6 +106,9 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
+    when(() => mockServerApi.getServerVersion()).thenAnswer(
+      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0),
+    );
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
