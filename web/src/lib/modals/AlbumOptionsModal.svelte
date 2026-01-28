@@ -9,7 +9,6 @@
     handleUpdateAlbum,
     handleUpdateUserAlbumRole,
   } from '$lib/services/album.service';
-  import { user } from '$lib/stores/user.store';
   import {
     AlbumUserRole,
     AssetOrder,
@@ -108,9 +107,9 @@
         <div class="ps-2">
           <div class="flex items-center gap-2 mb-2">
             <div>
-              <UserAvatar user={$user} size="md" />
+              <UserAvatar user={album.owner} size="md" />
             </div>
-            <Text class="w-full" size="small">{$user.name}</Text>
+            <Text class="w-full" size="small">{album.owner.name}</Text>
             <Field disabled class="w-32 shrink-0">
               <Select options={[{ label: $t('owner'), value: 'owner' }]} value="owner" />
             </Field>
