@@ -248,6 +248,9 @@ export class MediaService extends BaseService {
       await this.assetRepository.update({ id: asset.id, thumbhash });
     }
 
+    const now = new Date();
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: now, thumbnailAt: now });
+
     return JobStatus.Success;
   }
 
