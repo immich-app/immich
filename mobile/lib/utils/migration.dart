@@ -95,8 +95,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await _addSyncEntityReset([
       SyncEntityType.assetV1,
       SyncEntityType.partnerAssetV1,
+      SyncEntityType.partnerAssetBackfillV1,
       SyncEntityType.albumAssetCreateV1,
       SyncEntityType.albumAssetUpdateV1,
+      SyncEntityType.albumAssetBackfillV1,
     ]);
   }
 
