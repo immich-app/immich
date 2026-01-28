@@ -8,15 +8,8 @@ import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 
 describe('AssetViewerNavBar component', () => {
   const additionalProps = {
-    showCopyButton: false,
-    showZoomButton: false,
-    showDownloadButton: false,
-    showMotionPlayButton: false,
-    showShareButton: false,
     preAction: () => {},
-    onZoomImage: () => {},
     onAction: () => {},
-    onEdit: () => {},
     onPlaySlideshow: () => {},
     onClose: () => {},
     playOriginalVideo: false,

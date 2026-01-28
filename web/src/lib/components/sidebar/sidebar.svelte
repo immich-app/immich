@@ -2,7 +2,7 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { focusTrap } from '$lib/actions/focus-trap';
   import { menuButtonId } from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { onMount, type Snippet } from 'svelte';
 
@@ -13,8 +13,8 @@
 
   let { ariaLabel, children }: Props = $props();
 
-  const isHidden = $derived(!sidebarStore.isOpen && !mobileDevice.isFullSidebar);
-  const isExpanded = $derived(sidebarStore.isOpen && !mobileDevice.isFullSidebar);
+  const isHidden = $derived(!sidebarStore.isOpen && !mediaQueryManager.isFullSidebar);
+  const isExpanded = $derived(sidebarStore.isOpen && !mediaQueryManager.isFullSidebar);
 
   onMount(() => {
     closeSidebar();

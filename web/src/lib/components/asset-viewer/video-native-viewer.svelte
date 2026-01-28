@@ -10,7 +10,7 @@
     videoViewerMuted,
     videoViewerVolume,
   } from '$lib/stores/preferences.store';
-  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
@@ -44,7 +44,9 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let assetFileUrl = $derived(
-    playOriginalVideo ? getAssetOriginalUrl({ id: assetId, cacheKey }) : getAssetPlaybackUrl({ id: assetId, cacheKey }),
+    playOriginalVideo
+      ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey }),
   );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
@@ -127,7 +129,7 @@
     {#if castManager.isCasting}
       <div class="place-content-center h-full place-items-center">
         <VideoRemoteViewer
-          poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+          poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
           {onVideoEnded}
           {assetFileUrl}
@@ -154,7 +156,7 @@
         onclose={() => onClose()}
         muted={$videoViewerMuted}
         bind:volume={$videoViewerVolume}
-        poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+        poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
         src={assetFileUrl}
       >
       </video>

@@ -904,11 +904,12 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
+  async upsertFile(
+    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>,
+  ): Promise<void> {
     await this.db
       .insertInto('asset_file')
-      .values(value)
+      .values(file)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
@@ -918,19 +919,19 @@ export class AssetRepository {
   }
 
   async upsertFiles(
-    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>[],
   ): Promise<void> {
     if (files.length === 0) {
       return;
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
     await this.db
       .insertInto('asset_file')
-      .values(values)
+      .values(files)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
+          isProgressive: eb.ref('excluded.isProgressive'),
         })),
       )
       .execute();
@@ -1008,5 +1009,48 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
 
     return count;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  async getForOriginal(id: string, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select('originalFileName')
+      .where('asset.id', '=', id)
+      .$if(isEdited, (qb) =>
+        qb
+          .leftJoin('asset_file', (join) =>
+            join
+              .onRef('asset.id', '=', 'asset_file.assetId')
+              .on('asset_file.isEdited', '=', true)
+              .on('asset_file.type', '=', AssetFileType.FullSize),
+          )
+          .select('asset_file.path as editedPath'),
+      )
+      .select('originalPath')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
+  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
+      )
+      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForVideo(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', AssetType.Video)
+      .executeTakeFirst();
   }
 }

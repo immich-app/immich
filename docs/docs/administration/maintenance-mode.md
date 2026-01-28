@@ -4,7 +4,7 @@ Maintenance mode is used to perform administrative tasks such as restoring backu
 
 You can enter maintenance mode by either:
 
-- Selecting "enable maintenance mode" in system settings in administration.
+- Selecting "Switch to maintenance mode" in `Maintenance` tab in administration.
 - Running the enable maintenance mode [administration command](./server-commands.md).
 
 ## Logging in during maintenance

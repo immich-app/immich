@@ -41,7 +41,7 @@ class HashService {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       // Migrate hashes from cloud ID to local ID so we don't have to re-hash them
-      await _migrateHashes();
+      await _localAssetRepository.reconcileHashesFromCloudId();
 
       // Sorted by backupSelection followed by isCloud
       final localAlbums = await _localAlbumRepository.getBackupAlbums();
@@ -76,15 +76,6 @@ class HashService {
 
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
-  }
-
-  Future<void> _migrateHashes() async {
-    final hashMappings = await _localAssetRepository.getHashMappingFromCloudId();
-    if (hashMappings.isEmpty) {
-      return;
-    }
-
-    await _localAssetRepository.updateHashes(hashMappings);
   }
 
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB

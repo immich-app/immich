@@ -113,6 +113,7 @@ class PlaceTile extends StatelessWidget {
             camera: SearchCameraFilter(),
             date: SearchDateFilter(),
             display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+            rating: SearchRatingFilter(),
             mediaType: AssetType.other,
           ),
         ),

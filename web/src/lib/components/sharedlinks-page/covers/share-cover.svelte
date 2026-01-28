@@ -2,7 +2,7 @@
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import AssetCover from '$lib/components/sharedlinks-page/covers/asset-cover.svelte';
   import NoCover from '$lib/components/sharedlinks-page/covers/no-cover.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import type { SharedLinkResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
@@ -23,7 +23,7 @@
       alt={$t('individual_share')}
       class={className}
       {preload}
-      src={getAssetThumbnailUrl(sharedLink.assets[0].id)}
+      src={getAssetMediaUrl({ id: sharedLink.assets[0].id })}
     />
   {:else}
     <NoCover alt={$t('unnamed_share')} class={className} {preload} />

@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 2.4.1+3030
+version: 2.5.1+3032
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -86,6 +86,8 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.3.0
   worker_manager: ^7.2.7
+  cronet_http: ^1.7.0
+  cupertino_http: ^2.4.0
 
 dev_dependencies:
   auto_route_generator: ^9.0.0

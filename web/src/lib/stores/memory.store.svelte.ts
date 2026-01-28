@@ -23,8 +23,10 @@ class MemoryStoreSvelte {
   #loading: Promise<void> | undefined;
 
   constructor() {
-    eventManager.on('AuthLogout', () => this.clearCache());
-    eventManager.on('AuthUserLoaded', () => void this.initialize());
+    eventManager.onMany({
+      AuthLogout: () => this.clearCache(),
+      AuthUserLoaded: () => this.initialize(),
+    });
   }
 
   ready() {

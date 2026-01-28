@@ -16,7 +16,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
@@ -388,7 +388,7 @@
             <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
           {:else}
             <img
-              src={getAssetThumbnailUrl(feature.properties?.id)}
+              src={getAssetMediaUrl({ id: feature.properties?.id })}
               class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
               alt={feature.properties?.city && feature.properties.country
                 ? $t('map_marker_for_images', {

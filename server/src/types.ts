@@ -23,41 +23,48 @@ import {
   VideoCodec,
 } from 'src/enum';
 
-export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+export type DeepPartial<T> =
+  T extends Record<string, unknown>
+    ? { [K in keyof T]?: DeepPartial<T[K]> }
+    : T extends Array<infer R>
+      ? DeepPartial<R>[]
+      : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export interface FullsizeImageOptions {
+export type FullsizeImageOptions = {
   format: ImageFormat;
   quality: number;
   enabled: boolean;
-}
+  progressive?: boolean;
+};
 
-export interface ImageOptions {
+export type ImageOptions = {
   format: ImageFormat;
   quality: number;
   size: number;
-}
+  progressive?: boolean;
+};
 
-export interface RawImageInfo {
+export type RawImageInfo = {
   width: number;
   height: number;
   channels: 1 | 2 | 3 | 4;
-}
+};
 
-interface DecodeImageOptions {
+type DecodeImageOptions = {
   colorspace: string;
   processInvalidImages: boolean;
   raw?: RawImageInfo;
   edits?: AssetEditActionItem[];
-}
+};
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 
@@ -483,7 +490,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action: SetMaintenanceModeDto }
+  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
   | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
@@ -504,7 +511,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.MemoriesState]: MemoriesState;
 }
 
-export interface UserPreferences {
+export type UserPreferences = {
   albums: {
     defaultAssetOrder: AssetOrder;
   };
@@ -547,7 +554,7 @@ export interface UserPreferences {
   cast: {
     gCastEnabled: boolean;
   };
-}
+};
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
   key: T;

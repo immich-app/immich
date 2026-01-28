@@ -2,7 +2,6 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -25,6 +24,7 @@
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 
   interface Props {
     assetId: string;
@@ -269,7 +269,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
+                  {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
                     <ImageThumbnail
                       curve
                       shadow

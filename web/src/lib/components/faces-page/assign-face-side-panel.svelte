@@ -1,7 +1,7 @@
 <script lang="ts">
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -61,7 +61,7 @@
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
-    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewerImgElement);
+    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, assetViewerManager.imgRef);
 
     onCreatePerson(newFeaturePhoto);
 

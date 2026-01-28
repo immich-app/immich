@@ -30,26 +30,17 @@ In the Immich web UI:
 - click the **Administration** link in the upper right corner.
   <img src={require('./img/administration-link.webp').default} width="50%" title="Administration link" />
 
-- Select the **External Libraries** tab
-  <img src={require('./img/external-libraries.webp').default} width="50%" title="External Libraries tab" />
-
-- Click the **Create Library** button
-  <img src={require('./img/create-external-library.webp').default} width="50%" title="Create Library button" />
+- Select the **External Libraries** tab and click the **Create Library** button
+  <img src={require('./img/create-external-library.webp').default} width="80%" title="Create Library button" />
 
 - In the dialog, select which user should own the new library
   <img src={require('./img/library-owner.webp').default} width="50%" title="Library owner dialog" />
 
-- Click the three-dots menu and select **Edit Import Paths**
-  <img src={require('./img/edit-import-paths.webp').default} width="50%" title="Edit Import Paths menu option" />
+- You are now entering the library management page.
+  <img src={require('./img/library-management-page.webp').default} width="80%" title="Library management page" />
 
-- Click Add path
-  <img src={require('./img/add-path-button.webp').default} width="50%" title="Add Path button" />
-
-- Enter **/home/user/photos1** as the path and click Add
-  <img src={require('./img/add-path-field.webp').default} width="50%" title="Add Path field" />
-
-- Save the new path
-  <img src={require('./img/path-save.webp').default} width="50%" title="Path Save button" />
+- Click `Add` in the Folder section to specify a path for scanning and enter **/home/user/photos1** as the path and click Add
+  <img src={require('./img/edit-import-path.webp').default} width="50%" title="Add an import path" />
 
 - Click the three-dots menu and select **Scan New Library Files**
   <img src={require('./img/scan-new-library-files.webp').default} width="50%" title="Scan New Library Files menu option" />
@@ -64,4 +55,3 @@ In the Immich web UI:
 
 - You should see non-zero Active jobs for
   Library, Generate Thumbnails, and Extract Metadata.
-  <img src={require('./img/job-status.webp').default} width="50%" title="Job Status display" />

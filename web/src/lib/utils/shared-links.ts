@@ -1,4 +1,4 @@
-import { getAssetThumbnailUrl, setSharedLink } from '$lib/utils';
+import { getAssetMediaUrl, setSharedLink } from '$lib/utils';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
@@ -36,7 +36,7 @@ export const loadSharedLink = async ({
     setSharedLink(sharedLink);
     const assetCount = sharedLink.assets.length;
     const assetId = sharedLink.album?.albumThumbnailAssetId || sharedLink.assets[0]?.id;
-    const assetPath = assetId ? getAssetThumbnailUrl(assetId) : '/feature-panel.png';
+    const assetPath = assetId ? getAssetMediaUrl({ id: assetId }) : '/feature-panel.png';
 
     return {
       ...common,

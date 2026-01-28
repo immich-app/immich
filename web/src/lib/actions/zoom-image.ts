@@ -1,19 +1,12 @@
-import { photoZoomState } from '$lib/stores/zoom-image.store';
+import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { createZoomImageWheel } from '@zoom-image/core';
-import { get } from 'svelte/store';
 
 export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolean }) => {
-  const state = get(photoZoomState);
-  const zoomInstance = createZoomImageWheel(node, {
-    maxZoom: 10,
-    initialState: state,
-  });
+  const zoomInstance = createZoomImageWheel(node, { maxZoom: 10, initialState: assetViewerManager.zoomState });
 
   const unsubscribes = [
-    photoZoomState.subscribe((state) => zoomInstance.setState(state)),
-    zoomInstance.subscribe(({ state }) => {
-      photoZoomState.set(state);
-    }),
+    assetViewerManager.on('ZoomChange', (state) => zoomInstance.setState(state)),
+    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
   ];
 
   const stopIfDisabled = (event: Event) => {

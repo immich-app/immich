@@ -1,5 +1,5 @@
 import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetMediaUrl } from '$lib/utils';
 import { albumFactory } from '@test-data/factories/album-factory';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
@@ -21,7 +21,7 @@ describe('ShareCover component', () => {
   });
 
   it('renders an image when the shared link is an individual share', () => {
-    vi.mocked(getAssetThumbnailUrl).mockReturnValue('/asdf');
+    vi.mocked(getAssetMediaUrl).mockReturnValue('/asdf');
     const component = render(ShareCover, {
       sharedLink: sharedLinkFactory.build({ assets: [assetFactory.build({ id: 'someId' })] }),
       preload: false,
@@ -32,7 +32,7 @@ describe('ShareCover component', () => {
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.className).toBe('size-full rounded-xl object-cover aspect-square text');
     expect(img.getAttribute('src')).toBe('/asdf');
-    expect(getAssetThumbnailUrl).toHaveBeenCalledWith('someId');
+    expect(getAssetMediaUrl).toHaveBeenCalledWith({ id: 'someId' });
   });
 
   it('renders an image when the shared link has no album or assets', () => {

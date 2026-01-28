@@ -25,7 +25,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFileType,
   AssetStatus,
-  AssetType,
   AssetVisibility,
   CacheControl,
   JobName,
@@ -36,7 +35,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
-import { asUploadRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -197,27 +196,21 @@ export class AssetMediaService extends BaseService {
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    const asset = await this.findOrFail(id);
-
-    if (asset.edits!.length > 0 && (dto.edited ?? false)) {
-      const { editedFullsizeFile } = getAssetFiles(asset.files ?? []);
-
-      if (!editedFullsizeFile) {
-        throw new NotFoundException('Edited asset media not found');
-      }
-
-      return new ImmichFileResponse({
-        path: editedFullsizeFile.path,
-        fileName: getFileNameWithoutExtension(asset.originalFileName) + getFilenameExtension(editedFullsizeFile.path),
-        contentType: mimeTypes.lookup(editedFullsizeFile.path),
-        cacheControl: CacheControl.PrivateWithCache,
-      });
+    if (auth.sharedLink) {
+      dto.edited = true;
     }
 
+    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
+      id,
+      dto.edited ?? false,
+    );
+
+    const path = editedPath ?? originalPath!;
+
     return new ImmichFileResponse({
-      path: asset.originalPath,
-      fileName: asset.originalFileName,
-      contentType: mimeTypes.lookup(asset.originalPath),
+      path,
+      fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
+      contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
   }
@@ -229,45 +222,42 @@ export class AssetMediaService extends BaseService {
   ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
-    const asset = await this.findOrFail(id);
-    const size = dto.size ?? AssetMediaSize.THUMBNAIL;
-
-    const files = getAssetFiles(asset.files ?? []);
-
-    const requestingEdited = (dto.edited ?? false) && asset.edits!.length > 0;
-    const { fullsizeFile, previewFile, thumbnailFile } = {
-      fullsizeFile: requestingEdited ? files.editedFullsizeFile : files.fullsizeFile,
-      previewFile: requestingEdited ? files.editedPreviewFile : files.previewFile,
-      thumbnailFile: requestingEdited ? files.editedThumbnailFile : files.thumbnailFile,
-    };
-
-    let filepath = previewFile?.path;
-    if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
-      filepath = thumbnailFile.path;
-    } else if (size === AssetMediaSize.FULLSIZE) {
-      if (mimeTypes.isWebSupportedImage(asset.originalPath) && !dto.edited) {
-        // use original file for web supported images
-        return { targetSize: 'original' };
-      }
-      if (!fullsizeFile) {
-        // downgrade to preview if fullsize is not available.
-        // e.g. disabled or not yet (re)generated
-        return { targetSize: AssetMediaSize.PREVIEW };
-      }
-      filepath = fullsizeFile.path;
+    if (dto.size === AssetMediaSize.Original) {
+      throw new BadRequestException('May not request original file');
     }
 
-    if (!filepath) {
+    if (auth.sharedLink) {
+      dto.edited = true;
+    }
+
+    const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
+    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(
+      id,
+      size,
+      dto.edited ?? false,
+    );
+
+    if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !dto.edited) {
+      // use original file for web supported images
+      return { targetSize: 'original' };
+    }
+
+    if (dto.size === AssetMediaSize.FULLSIZE && !path) {
+      // downgrade to preview if fullsize is not available.
+      // e.g. disabled or not yet (re)generated
+      return { targetSize: AssetMediaSize.PREVIEW };
+    }
+
+    if (!path) {
       throw new NotFoundException('Asset media not found');
     }
-    let fileName = getFileNameWithoutExtension(asset.originalFileName);
-    fileName += `_${size}`;
-    fileName += getFilenameExtension(filepath);
+
+    const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;
 
     return new ImmichFileResponse({
       fileName,
-      path: filepath,
-      contentType: mimeTypes.lookup(filepath),
+      path,
+      contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
   }
@@ -275,10 +265,10 @@ export class AssetMediaService extends BaseService {
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
-    const asset = await this.findOrFail(id);
+    const asset = await this.assetRepository.getForVideo(id);
 
-    if (asset.type !== AssetType.Video) {
-      throw new BadRequestException('Asset is not a video');
+    if (!asset) {
+      throw new NotFoundException('Asset not found or asset is not a video');
     }
 
     const filepath = asset.encodedVideoPath || asset.originalPath;
@@ -486,14 +476,5 @@ export class AssetMediaService extends BaseService {
     if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
-  }
-
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id, { files: true, edits: true });
-    if (!asset) {
-      throw new NotFoundException('Asset not found');
-    }
-
-    return asset;
   }
 }

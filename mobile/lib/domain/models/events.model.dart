@@ -30,3 +30,8 @@ class MultiSelectToggleEvent extends Event {
   final bool isEnabled;
   const MultiSelectToggleEvent(this.isEnabled);
 }
+
+// Map Events
+class MapMarkerReloadEvent extends Event {
+  const MapMarkerReloadEvent();
+}

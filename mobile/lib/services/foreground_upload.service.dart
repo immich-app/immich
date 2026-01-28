@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
@@ -266,6 +267,10 @@ class ForegroundUploadService {
     try {
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
       if (entity == null) {
+        callbacks.onError?.call(
+          asset.localId!,
+          CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
+        );
         return;
       }
 
@@ -298,6 +303,11 @@ class ForegroundUploadService {
         // Get files locally
         file = await _storageRepository.getFileForAsset(asset.id);
         if (file == null) {
+          _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
+          callbacks.onError?.call(
+            asset.localId!,
+            CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
+          );
           return;
         }
 
@@ -306,12 +316,17 @@ class ForegroundUploadService {
           livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
           if (livePhotoFile == null) {
             _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
+            callbacks.onError?.call(
+              asset.localId!,
+              CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
+            );
           }
         }
       }
 
       if (file == null) {
-        _logger.warning("Failed to obtain file for asset ${asset.id} - ${asset.name}");
+        _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
+        callbacks.onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
         return;
       }
 

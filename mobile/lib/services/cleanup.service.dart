@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -15,17 +14,19 @@ class CleanupService {
 
   const CleanupService(this._localAssetRepository, this._assetMediaRepository);
 
-  Future<List<LocalAsset>> getRemovalCandidates(
+  Future<RemovalCandidatesResult> getRemovalCandidates(
     String userId,
     DateTime cutoffDate, {
-    AssetFilterType filterType = AssetFilterType.all,
+    AssetKeepType keepMediaType = AssetKeepType.none,
     bool keepFavorites = true,
+    Set<String> keepAlbumIds = const {},
   }) {
     return _localAssetRepository.getRemovalCandidates(
       userId,
       cutoffDate,
-      filterType: filterType,
+      keepMediaType: keepMediaType,
       keepFavorites: keepFavorites,
+      keepAlbumIds: keepAlbumIds,
     );
   }
 
@@ -41,5 +42,19 @@ class CleanupService {
     }
 
     return 0;
+  }
+
+  /// Returns album IDs that should be kept by default (e.g., messaging app albums)
+  Set<String> getDefaultKeepAlbumIds(List<(String id, String name)> albums) {
+    const messagingApps = ['whatsapp', 'telegram', 'signal', 'messenger', 'viber', 'wechat', 'line'];
+
+    final toKeep = <String>{};
+    for (final (id, name) in albums) {
+      final albumName = name.toLowerCase();
+      if (messagingApps.any((app) => albumName.contains(app))) {
+        toKeep.add(id);
+      }
+    }
+    return toKeep;
   }
 }

@@ -326,7 +326,7 @@ class _BackupDelaySliderState extends ConsumerState<_BackupDelaySlider> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+          padding: const EdgeInsets.only(left: 24.0, top: 8.0),
           child: Text(
             'backup_controller_page_background_delay'.tr(
               namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},

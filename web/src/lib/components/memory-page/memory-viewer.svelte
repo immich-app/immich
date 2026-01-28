@@ -30,7 +30,7 @@
   import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
@@ -449,7 +449,7 @@
             {#if current.previousMemory && current.previousMemory.assets.length > 0}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
+                src={getAssetMediaUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('previous_memory')}
                 draggable="false"
               />
@@ -598,7 +598,7 @@
             {#if current.nextMemory && current.nextMemory.assets.length > 0}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
+                src={getAssetMediaUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('next_memory')}
                 draggable="false"
               />

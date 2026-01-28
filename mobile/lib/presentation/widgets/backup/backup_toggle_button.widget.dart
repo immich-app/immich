@@ -62,6 +62,8 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
     final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
 
+    final errorCount = ref.watch(driftBackupProvider.select((state) => state.errorCount));
+
     final isProcessing = uploadTasks.isNotEmpty || isSyncing || iCloudProgress.isNotEmpty;
 
     return AnimatedBuilder(
@@ -149,6 +151,14 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                                 ),
                               ],
                             ),
+                            if (errorCount > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                                  style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                                ),
+                              ),
                           ],
                         ),
                       ),

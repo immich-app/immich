@@ -1,40 +1,38 @@
 #include <jni.h>
 #include <stdlib.h>
+#include <string.h>
 
 JNIEXPORT jlong JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_00024Companion_allocateNative(
-        JNIEnv *env, jclass clazz, jint size) {
-    void *ptr = malloc(size);
-    return (jlong) ptr;
-}
-
-JNIEXPORT jlong JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_allocateNative(
+Java_app_alextran_immich_NativeBuffer_allocate(
         JNIEnv *env, jclass clazz, jint size) {
     void *ptr = malloc(size);
     return (jlong) ptr;
 }
 
 JNIEXPORT void JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_00024Companion_freeNative(
+Java_app_alextran_immich_NativeBuffer_free(
         JNIEnv *env, jclass clazz, jlong address) {
     free((void *) address);
+}
+
+JNIEXPORT jlong JNICALL
+Java_app_alextran_immich_NativeBuffer_realloc(
+        JNIEnv *env, jclass clazz, jlong address, jint size) {
+    void *ptr = realloc((void *) address, size);
+    return (jlong) ptr;
+}
+
+JNIEXPORT jobject JNICALL
+Java_app_alextran_immich_NativeBuffer_wrap(
+        JNIEnv *env, jclass clazz, jlong address, jint capacity) {
+    return (*env)->NewDirectByteBuffer(env, (void *) address, capacity);
 }
 
 JNIEXPORT void JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_freeNative(
-        JNIEnv *env, jclass clazz, jlong address) {
-    free((void *) address);
-}
-
-JNIEXPORT jobject JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_00024Companion_wrapAsBuffer(
-        JNIEnv *env, jclass clazz, jlong address, jint capacity) {
-    return (*env)->NewDirectByteBuffer(env, (void *) address, capacity);
-}
-
-JNIEXPORT jobject JNICALL
-Java_app_alextran_immich_images_ThumbnailsImpl_wrapAsBuffer(
-        JNIEnv *env, jclass clazz, jlong address, jint capacity) {
-    return (*env)->NewDirectByteBuffer(env, (void *) address, capacity);
+Java_app_alextran_immich_NativeBuffer_copy(
+        JNIEnv *env, jclass clazz, jobject buffer, jlong destAddress, jint offset, jint length) {
+    void *src = (*env)->GetDirectBufferAddress(env, buffer);
+    if (src != NULL) {
+        memcpy((void *) destAddress, (char *) src + offset, length);
+    }
 }

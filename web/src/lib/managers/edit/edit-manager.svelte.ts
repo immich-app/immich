@@ -1,5 +1,6 @@
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
@@ -110,25 +111,29 @@ export class EditManager {
     this.isApplyingEdits = true;
 
     const edits = this.tools.flatMap((tool) => tool.manager.edits);
+    if (!this.currentAsset) {
+      return false;
+    }
+
+    const assetId = this.currentAsset.id;
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent(
-        'AssetEditReadyV1',
-        (event) => event.asset.id === this.currentAsset!.id,
-        10_000,
-      );
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, 10_000);
 
       await (edits.length === 0
-        ? removeAssetEdits({ id: this.currentAsset!.id })
+        ? removeAssetEdits({ id: assetId })
         : editAsset({
-            id: this.currentAsset!.id,
+            id: assetId,
             assetEditActionListDto: {
               edits,
             },
           }));
 
       await editCompleted;
+
+      eventManager.emit('AssetEditsApplied', assetId);
+
       toastManager.success('Edits applied successfully');
       this.hasAppliedEdits = true;
 

@@ -149,6 +149,8 @@ class DriftBackupState {
     );
   }
 
+  int get errorCount => uploadItems.values.where((item) => item.isFailed == true).length;
+
   @override
   String toString() {
     return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';

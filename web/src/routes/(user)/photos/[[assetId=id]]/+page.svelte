@@ -28,7 +28,7 @@
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -98,7 +98,7 @@
       title: $memoryLaneTitle(memory),
       href: Route.memories({ id: memory.assets[0].id }),
       alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
-      src: getAssetThumbnailUrl(memory.assets[0].id),
+      src: getAssetMediaUrl({ id: memory.assets[0].id }),
     })),
   );
 </script>

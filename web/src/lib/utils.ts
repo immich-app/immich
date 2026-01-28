@@ -193,7 +193,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
 
 export const getAssetUrl = ({
   asset,
@@ -210,12 +210,10 @@ export const getAssetUrl = ({
   const id = asset.id;
   const cacheKey = asset.thumbhash;
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-    return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+    return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   }
-  const targetSize = targetImageSize(asset, forceOriginal);
-  return targetSize === 'original'
-    ? getAssetOriginalUrl({ id, cacheKey })
-    : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
+  const size = targetImageSize(asset, forceOriginal);
+  return getAssetMediaUrl({ id, size, cacheKey });
 };
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
@@ -224,33 +222,21 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
+    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
 
-export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, cacheKey, edited = true } = options;
-  return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey, edited });
+export const getAssetMediaUrl = (options: AssetUrlOptions) => {
+  const { id, size, cacheKey: c, edited = true } = options;
+  const isOriginal = size === AssetMediaSize.Original;
+  const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
+  return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
 };
 
-export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, size, cacheKey, edited = true } = options;
-  return createUrl(getAssetThumbnailPath(id), { ...authManager.params, size, c: cacheKey, edited });
-};
-
-export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c: cacheKey });
+export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
+  const { id, cacheKey: c } = options;
+  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>

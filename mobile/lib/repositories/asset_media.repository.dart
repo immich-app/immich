@@ -112,17 +112,23 @@ class AssetMediaRepository {
           : asset is RemoteAsset
           ? asset.localId
           : null;
-      if (localId != null) {
+      if (localId != null && !asset.isEdited) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
         if (CurrentPlatform.isIOS) {
           tempFiles.add(f);
         }
-      } else if (asset is RemoteAsset) {
+      } else {
+        final remoteId = (asset is RemoteAsset) ? asset.id : asset.remoteId;
+        if (remoteId == null) {
+          _log.warning("Asset has no remote ID for sharing: $asset");
+          continue;
+        }
+
         final tempDir = await getTemporaryDirectory();
         final name = asset.name;
         final tempFile = await File('${tempDir.path}/$name').create();
-        final res = await _assetApiRepository.downloadAsset(asset.id);
+        final res = await _assetApiRepository.downloadAsset(remoteId, edited: true);
 
         if (res.statusCode != 200) {
           _log.severe("Download for $name failed", res.toLoggerString());
@@ -132,9 +138,6 @@ class AssetMediaRepository {
         await tempFile.writeAsBytes(res.bodyBytes);
         downloadedXFiles.add(XFile(tempFile.path));
         tempFiles.add(tempFile);
-      } else {
-        _log.warning("Asset type not supported for sharing: $asset");
-        continue;
       }
     }
 

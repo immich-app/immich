@@ -151,6 +151,7 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
   domain.ExifInfo toDto() => domain.ExifInfo(
     fileSize: fileSize,
     dateTimeOriginal: dateTimeOriginal,
+    rating: rating,
     timeZone: timeZone,
     make: make,
     model: model,

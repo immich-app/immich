@@ -346,6 +346,13 @@ export const columns = {
     'asset.height',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.isEdited'],
+  assetFilesForThumbnail: [
+    'asset_file.id',
+    'asset_file.path',
+    'asset_file.type',
+    'asset_file.isEdited',
+    'asset_file.isProgressive',
+  ],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],

@@ -34,6 +34,8 @@ export interface MoveRequest {
 
 export type ThumbnailPathEntity = { id: string; ownerId: string };
 
+export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean };
+
 let instance: StorageCore | null;
 
 let mediaLocation: string | undefined;
@@ -110,14 +112,7 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.Thumbnails, person.ownerId, `${person.id}.jpeg`);
   }
 
-  static getImagePath(
-    asset: ThumbnailPathEntity,
-    {
-      fileType,
-      format,
-      isEdited,
-    }: { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean },
-  ) {
+  static getImagePath(asset: ThumbnailPathEntity, { fileType, format, isEdited }: ImagePathOptions) {
     return StorageCore.getNestedPath(
       StorageFolder.Thumbnails,
       asset.ownerId,

@@ -585,6 +585,9 @@ class SystemConfigGeneratedImageDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   size!: number;
+
+  @ValidateBoolean({ optional: true, default: false })
+  progressive?: boolean;
 }
 
 class SystemConfigGeneratedFullsizeImageDto {
@@ -600,6 +603,9 @@ class SystemConfigGeneratedFullsizeImageDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   quality!: number;
+
+  @ValidateBoolean({ optional: true, default: false })
+  progressive?: boolean;
 }
 
 export class SystemConfigImageDto {

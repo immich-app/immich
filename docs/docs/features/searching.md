@@ -11,44 +11,24 @@ Contextual CLIP search is powered by the [VectorChord](https://github.com/tensor
 
 In addition, Immich offers advanced search functionality, allowing you to find specific content using customizable search filters. These filters include location, one or more faces, specific albums, and more. You can try out the search filters on the [Demo site](https://demo.immich.app).
 
-The filters smart search allows you to search by include:
+You can search the following types of content:
 
-- People
-- Location
-  - Country
-  - State
-  - City
-- Camera
-  - Make
-  - Model
-- Date range
-- File name or extension
-- Media type
-  - Image (including live/motion photos)
-  - Video
-  - All
-- Condition
-  - Not in any album
-  - Archived
-  - Favorited
-  - Rating
-
-<Tabs>
-  <TabItem value="Computer" label="Computer" default>
-
-Some search examples:
+| Type                                | Description                                           |
+| ----------------------------------- | ----------------------------------------------------- |
+| People                              | Faces that are recognized in your photos/videos.      |
+| Contextual                          | Content of the photos and videos.                     |
+| File name or extension              | Full or partial file's name, or file's extension      |
+| Description                         | Description added to assets.                          |
+| Optical Character Recognition (OCR) | Text in images                                        |
+| Locations                           | Cities, states, and countries from reverse geocoding. |
+| Tags                                | Tags assigned or extracted from assets.               |
+| Camera                              | make, model and lens model                            |
+| Time frame                          | Start and end date of a specific time bucket          |
+| Media type                          | Image or video or both                                |
+| Display options                     | In Archive, in Favorites or Not in any album          |
+| Start rating                        | User-assigned start rating                            |
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='Advanced search filters' />
-
-<img src={require('./img/search-ex-1.webp').default} width="70%" title='Search Example 1' />
-
-</TabItem>
-  <TabItem value="Mobile" label="Mobile">
-
-<img src={require('./img/mobile-smart-search.webp').default} width="30%" title='Smart search on mobile' />
-
-</TabItem>
-</Tabs>
 
 ## Configuration
 
