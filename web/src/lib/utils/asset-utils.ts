@@ -303,8 +303,17 @@ const supportedImageMimeTypes = new Set([
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif').add('image/jxl');
+  supportedImageMimeTypes.add('image/heic').add('image/heif');
 }
+
+function checkJxlSupport(): void {
+  const img = new Image();
+  img.addEventListener('load', () => {
+    supportedImageMimeTypes.add('image/jxl');
+  });
+  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+}
+checkJxlSupport();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
