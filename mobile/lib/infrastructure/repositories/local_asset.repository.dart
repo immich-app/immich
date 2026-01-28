@@ -144,16 +144,13 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     bool keepFavorites = true,
     Set<String> keepAlbumIds = const {},
   }) async {
+    final iosSharedAlbumIds = _db.localAlbumEntity.selectOnly()
+      ..addColumns([_db.localAlbumEntity.id])
+      ..where(_db.localAlbumEntity.isIosSharedAlbum.equals(true));
+
     final iosSharedAlbumAssets = _db.localAlbumAssetEntity.selectOnly()
       ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..join([
-        innerJoin(
-          _db.localAlbumEntity,
-          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-          useColumns: false,
-        ),
-      ])
-      ..where(_db.localAlbumEntity.isIosSharedAlbum.equals(true));
+      ..where(_db.localAlbumAssetEntity.albumId.isInQuery(iosSharedAlbumIds));
 
     final query = _db.localAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum)),

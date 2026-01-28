@@ -438,6 +438,39 @@ void main() {
       expect(result.assets, isEmpty);
     });
 
+    test('excludes user-owned assets in iOS shared albums', () async {
+      await insertLocalAlbum(id: 'album-recents', name: 'Recents', isIosSharedAlbum: false);
+
+      await insertLocalAlbum(id: 'album-shared', name: 'Shared Album', isIosSharedAlbum: true);
+
+      await insertLocalAsset(
+        id: 'local-user-shared',
+        checksum: 'checksum-user-shared',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-user-shared', checksum: 'checksum-user-shared', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-recents', assetId: 'local-user-shared');
+      await insertLocalAlbumAsset(albumId: 'album-shared', assetId: 'local-user-shared');
+
+      // User's asset only in Recents (not in iOS shared album) - should be included for removal
+      await insertLocalAsset(
+        id: 'local-user-regular',
+        checksum: 'checksum-user-regular',
+        createdAt: beforeCutoff,
+        type: AssetType.image,
+        isFavorite: false,
+      );
+      await insertRemoteAsset(id: 'remote-user-regular', checksum: 'checksum-user-regular', ownerId: userId);
+      await insertLocalAlbumAsset(albumId: 'album-recents', assetId: 'local-user-regular');
+
+      final result = await repository.getRemovalCandidates(userId, cutoffDate);
+
+      expect(result.assets.length, 1);
+      expect(result.assets[0].id, 'local-user-regular');
+    });
+
     test('excludes assets with null checksum (not backed up)', () async {
       // Asset with null checksum cannot be matched to remote asset
       await db
