@@ -91,6 +91,9 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
+  if (value is DatabaseBackup) {
+    return DatabaseBackupTypeTransformer().encode(value).toString();
+  }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
@@ -105,6 +108,12 @@ String parameterToString(dynamic value) {
   }
   if (value is ManualJobName) {
     return ManualJobNameTypeTransformer().encode(value).toString();
+  }
+  if (value is MemoryCleanup) {
+    return MemoryCleanupTypeTransformer().encode(value).toString();
+  }
+  if (value is MemoryGenerate) {
+    return MemoryGenerateTypeTransformer().encode(value).toString();
   }
   if (value is MemorySearchOrder) {
     return MemorySearchOrderTypeTransformer().encode(value).toString();
@@ -129,6 +138,9 @@ String parameterToString(dynamic value) {
   }
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
+  }
+  if (value is PersonCleanup) {
+    return PersonCleanupTypeTransformer().encode(value).toString();
   }
   if (value is PluginContextType) {
     return PluginContextTypeTypeTransformer().encode(value).toString();
@@ -169,6 +181,9 @@ String parameterToString(dynamic value) {
   if (value is SyncRequestType) {
     return SyncRequestTypeTypeTransformer().encode(value).toString();
   }
+  if (value is TagCleanup) {
+    return TagCleanupTypeTransformer().encode(value).toString();
+  }
   if (value is ToneMapping) {
     return ToneMappingTypeTransformer().encode(value).toString();
   }
@@ -180,6 +195,9 @@ String parameterToString(dynamic value) {
   }
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();
+  }
+  if (value is UserDeleteCheck) {
+    return UserDeleteCheckTypeTransformer().encode(value).toString();
   }
   if (value is UserMetadataKey) {
     return UserMetadataKeyTypeTransformer().encode(value).toString();

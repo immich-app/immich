@@ -217,6 +217,7 @@ Class | Method | HTTP request | Description
 *QueuesApi* | [**getQueue**](doc//QueuesApi.md#getqueue) | **GET** /queues/{name} | Retrieve a queue
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
 *QueuesApi* | [**getQueues**](doc//QueuesApi.md#getqueues) | **GET** /queues | List all queues
+*QueuesApi* | [**queueJob**](doc//QueuesApi.md#queuejob) | **POST** /queues/job | Create a manual job
 *QueuesApi* | [**updateQueue**](doc//QueuesApi.md#updatequeue) | **PUT** /queues/{name} | Update a queue
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
@@ -395,6 +396,7 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
+ - [BaseJobData](doc//BaseJobData.md)
  - [BulkIdErrorReason](doc//BulkIdErrorReason.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
@@ -411,6 +413,7 @@ Class | Method | HTTP request | Description
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CropParameters](doc//CropParameters.md)
+ - [DatabaseBackup](doc//DatabaseBackup.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
  - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
@@ -431,8 +434,14 @@ Class | Method | HTTP request | Description
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
  - [JobCreateDto](doc//JobCreateDto.md)
+ - [JobDatabaseBackup](doc//JobDatabaseBackup.md)
+ - [JobMemoryCleanup](doc//JobMemoryCleanup.md)
+ - [JobMemoryGenerate](doc//JobMemoryGenerate.md)
  - [JobName](doc//JobName.md)
+ - [JobPersonCleanup](doc//JobPersonCleanup.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
+ - [JobTagCleanup](doc//JobTagCleanup.md)
+ - [JobUserDeleteCheck](doc//JobUserDeleteCheck.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
@@ -453,7 +462,9 @@ Class | Method | HTTP request | Description
  - [MapReverseGeocodeResponseDto](doc//MapReverseGeocodeResponseDto.md)
  - [MemoriesResponse](doc//MemoriesResponse.md)
  - [MemoriesUpdate](doc//MemoriesUpdate.md)
+ - [MemoryCleanup](doc//MemoryCleanup.md)
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
+ - [MemoryGenerate](doc//MemoryGenerate.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemorySearchOrder](doc//MemorySearchOrder.md)
  - [MemoryStatisticsResponseDto](doc//MemoryStatisticsResponseDto.md)
@@ -488,6 +499,7 @@ Class | Method | HTTP request | Description
  - [PeopleUpdateDto](doc//PeopleUpdateDto.md)
  - [PeopleUpdateItem](doc//PeopleUpdateItem.md)
  - [Permission](doc//Permission.md)
+ - [PersonCleanup](doc//PersonCleanup.md)
  - [PersonCreateDto](doc//PersonCreateDto.md)
  - [PersonResponseDto](doc//PersonResponseDto.md)
  - [PersonStatisticsResponseDto](doc//PersonStatisticsResponseDto.md)
@@ -508,6 +520,8 @@ Class | Method | HTTP request | Description
  - [QueueCommand](doc//QueueCommand.md)
  - [QueueCommandDto](doc//QueueCommandDto.md)
  - [QueueDeleteDto](doc//QueueDeleteDto.md)
+ - [QueueJobCreateDto](doc//QueueJobCreateDto.md)
+ - [QueueJobCreateDtoJob](doc//QueueJobCreateDtoJob.md)
  - [QueueJobResponseDto](doc//QueueJobResponseDto.md)
  - [QueueJobStatus](doc//QueueJobStatus.md)
  - [QueueName](doc//QueueName.md)
@@ -631,6 +645,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
+ - [TagCleanup](doc//TagCleanup.md)
  - [TagCreateDto](doc//TagCreateDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagUpdateDto](doc//TagUpdateDto.md)
@@ -656,6 +671,7 @@ Class | Method | HTTP request | Description
  - [UserAdminResponseDto](doc//UserAdminResponseDto.md)
  - [UserAdminUpdateDto](doc//UserAdminUpdateDto.md)
  - [UserAvatarColor](doc//UserAvatarColor.md)
+ - [UserDeleteCheck](doc//UserDeleteCheck.md)
  - [UserLicense](doc//UserLicense.md)
  - [UserMetadataKey](doc//UserMetadataKey.md)
  - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)

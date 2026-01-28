@@ -245,6 +245,54 @@ class QueuesApi {
     return null;
   }
 
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [QueueJobCreateDto] queueJobCreateDto (required):
+  Future<Response> queueJobWithHttpInfo(QueueJobCreateDto queueJobCreateDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/queues/job';
+
+    // ignore: prefer_final_locals
+    Object? postBody = queueJobCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Create a manual job
+  ///
+  /// Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.
+  ///
+  /// Parameters:
+  ///
+  /// * [QueueJobCreateDto] queueJobCreateDto (required):
+  Future<void> queueJob(QueueJobCreateDto queueJobCreateDto,) async {
+    final response = await queueJobWithHttpInfo(queueJobCreateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Update a queue
   ///
   /// Change the paused status of a specific queue.

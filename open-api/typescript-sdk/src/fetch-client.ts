@@ -1069,6 +1069,36 @@ export type QueueResponseDto = {
     name: QueueName;
     statistics: QueueStatisticsDto;
 };
+export type BaseJobData = {
+    force?: boolean;
+};
+export type JobTagCleanup = {
+    data: BaseJobData;
+    name: TagCleanup;
+};
+export type JobPersonCleanup = {
+    data: BaseJobData;
+    name: PersonCleanup;
+};
+export type JobUserDeleteCheck = {
+    data: BaseJobData;
+    name: UserDeleteCheck;
+};
+export type JobMemoryCleanup = {
+    data: BaseJobData;
+    name: MemoryCleanup;
+};
+export type JobMemoryGenerate = {
+    data: BaseJobData;
+    name: MemoryGenerate;
+};
+export type JobDatabaseBackup = {
+    data: BaseJobData;
+    name: DatabaseBackup;
+};
+export type QueueJobCreateDto = {
+    job: JobTagCleanup | JobPersonCleanup | JobUserDeleteCheck | JobMemoryCleanup | JobMemoryGenerate | JobDatabaseBackup;
+};
 export type QueueUpdateDto = {
     isPaused?: boolean;
 };
@@ -4151,6 +4181,18 @@ export function getQueues(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Create a manual job
+ */
+export function queueJob({ queueJobCreateDto }: {
+    queueJobCreateDto: QueueJobCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/queues/job", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: queueJobCreateDto
+    })));
+}
+/**
  * Retrieve a queue
  */
 export function getQueue({ name }: {
@@ -5927,6 +5969,24 @@ export enum PluginContextType {
 export enum PluginTriggerType {
     AssetCreate = "AssetCreate",
     PersonRecognized = "PersonRecognized"
+}
+export enum TagCleanup {
+    TagCleanup = "TagCleanup"
+}
+export enum PersonCleanup {
+    PersonCleanup = "PersonCleanup"
+}
+export enum UserDeleteCheck {
+    UserDeleteCheck = "UserDeleteCheck"
+}
+export enum MemoryCleanup {
+    MemoryCleanup = "MemoryCleanup"
+}
+export enum MemoryGenerate {
+    MemoryGenerate = "MemoryGenerate"
+}
+export enum DatabaseBackup {
+    DatabaseBackup = "DatabaseBackup"
 }
 export enum QueueJobStatus {
     Active = "active",

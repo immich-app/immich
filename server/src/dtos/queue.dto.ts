@@ -1,7 +1,85 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ClassConstructor, Transform, Type } from 'class-transformer';
+import { Equals, IsBoolean, IsDefined, IsOptional, ValidateNested } from 'class-validator';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
-import { ValidateBoolean, ValidateEnum } from 'src/validation';
+import { transformToOneOf, ValidateBoolean, ValidateEnum } from 'src/validation';
+
+class BaseJobData {
+  @IsOptional()
+  @IsBoolean()
+  force?: boolean;
+}
+
+class BaseJob {
+  @ValidateNested()
+  @Type(() => BaseJobData)
+  data!: BaseJobData;
+}
+
+class JobTagCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.TagCleanup, enum: [JobName.TagCleanup] })
+  @Equals(JobName.TagCleanup)
+  name!: JobName.TagCleanup;
+}
+
+class JobPersonCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.PersonCleanup, enum: [JobName.PersonCleanup] })
+  @Equals(JobName.PersonCleanup)
+  name!: JobName.PersonCleanup;
+}
+
+class JobUserDeleteCheck extends BaseJob {
+  @ApiProperty({ enumName: JobName.UserDeleteCheck, enum: [JobName.UserDeleteCheck] })
+  @Equals(JobName.UserDeleteCheck)
+  name!: JobName.UserDeleteCheck;
+}
+
+class JobMemoryCleanup extends BaseJob {
+  @ApiProperty({ enumName: JobName.MemoryCleanup, enum: [JobName.MemoryCleanup] })
+  @Equals(JobName.MemoryCleanup)
+  name!: JobName.MemoryCleanup;
+}
+
+class JobMemoryGenerate extends BaseJob {
+  @ApiProperty({ enumName: JobName.MemoryGenerate, enum: [JobName.MemoryGenerate] })
+  @Equals(JobName.MemoryGenerate)
+  name!: JobName.MemoryGenerate;
+}
+
+class JobDatabaseBackup extends BaseJob {
+  @ApiProperty({ enumName: JobName.DatabaseBackup, enum: [JobName.DatabaseBackup] })
+  @Equals(JobName.DatabaseBackup)
+  name!: JobName.DatabaseBackup;
+}
+
+const JOB_MAP: Record<string, ClassConstructor<object>> = {
+  [JobName.TagCleanup]: JobTagCleanup,
+  [JobName.PersonCleanup]: JobPersonCleanup,
+  [JobName.UserDeleteCheck]: JobUserDeleteCheck,
+  [JobName.MemoryCleanup]: JobMemoryCleanup,
+  [JobName.MemoryGenerate]: JobMemoryGenerate,
+  [JobName.DatabaseBackup]: JobDatabaseBackup,
+};
+
+@ApiExtraModels(...Object.values(JOB_MAP))
+export class QueueJobCreateDto {
+  @ApiProperty({
+    oneOf: Object.values(JOB_MAP).map((job) => ({ $ref: getSchemaPath(job) })),
+  })
+  @ValidateNested()
+  @Transform(transformToOneOf(JOB_MAP))
+  @IsDefined({
+    message: `job.name must be one of ${Object.keys(JOB_MAP)}`,
+  })
+  job!:
+    | JobTagCleanup
+    | JobPersonCleanup
+    | JobUserDeleteCheck
+    | JobMemoryCleanup
+    | JobMemoryGenerate
+    | JobDatabaseBackup;
+}
 
 export class QueueNameParamDto {
   @ValidateEnum({ enum: QueueName, name: 'QueueName' })

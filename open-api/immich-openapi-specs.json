@@ -8792,6 +8792,56 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/queues/job": {
+      "post": {
+        "description": "Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.",
+        "operationId": "queueJob",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueueJobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a manual job",
+        "tags": [
+          "Queues"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "job.create",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/queues/{name}": {
       "get": {
         "description": "Retrieves a specific queue by its name.",
@@ -16863,6 +16913,14 @@
         },
         "type": "object"
       },
+      "BaseJobData": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "BulkIdErrorReason": {
         "enum": [
           "duplicate",
@@ -17151,6 +17209,12 @@
           "y"
         ],
         "type": "object"
+      },
+      "DatabaseBackup": {
+        "enum": [
+          "DatabaseBackup"
+        ],
+        "type": "string"
       },
       "DatabaseBackupConfig": {
         "properties": {
@@ -17595,6 +17659,63 @@
         ],
         "type": "object"
       },
+      "JobDatabaseBackup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DatabaseBackup"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobMemoryCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryCleanup"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobMemoryGenerate": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryGenerate"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
       "JobName": {
         "enum": [
           "AssetDelete",
@@ -17656,6 +17777,25 @@
         ],
         "type": "string"
       },
+      "JobPersonCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonCleanup"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
       "JobSettingsDto": {
         "properties": {
           "concurrency": {
@@ -17665,6 +17805,44 @@
         },
         "required": [
           "concurrency"
+        ],
+        "type": "object"
+      },
+      "JobTagCleanup": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TagCleanup"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
+        ],
+        "type": "object"
+      },
+      "JobUserDeleteCheck": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BaseJobData"
+          },
+          "name": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserDeleteCheck"
+              }
+            ]
+          }
+        },
+        "required": [
+          "data",
+          "name"
         ],
         "type": "object"
       },
@@ -18083,6 +18261,12 @@
         },
         "type": "object"
       },
+      "MemoryCleanup": {
+        "enum": [
+          "MemoryCleanup"
+        ],
+        "type": "string"
+      },
       "MemoryCreateDto": {
         "properties": {
           "assetIds": {
@@ -18120,6 +18304,12 @@
           "type"
         ],
         "type": "object"
+      },
+      "MemoryGenerate": {
+        "enum": [
+          "MemoryGenerate"
+        ],
+        "type": "string"
       },
       "MemoryResponseDto": {
         "properties": {
@@ -19073,6 +19263,12 @@
         ],
         "type": "string"
       },
+      "PersonCleanup": {
+        "enum": [
+          "PersonCleanup"
+        ],
+        "type": "string"
+      },
       "PersonCreateDto": {
         "properties": {
           "birthDate": {
@@ -19601,6 +19797,36 @@
             "x-immich-state": "Alpha"
           }
         },
+        "type": "object"
+      },
+      "QueueJobCreateDto": {
+        "properties": {
+          "job": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/JobTagCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobPersonCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobUserDeleteCheck"
+              },
+              {
+                "$ref": "#/components/schemas/JobMemoryCleanup"
+              },
+              {
+                "$ref": "#/components/schemas/JobMemoryGenerate"
+              },
+              {
+                "$ref": "#/components/schemas/JobDatabaseBackup"
+              }
+            ]
+          }
+        },
+        "required": [
+          "job"
+        ],
         "type": "object"
       },
       "QueueJobResponseDto": {
@@ -23322,6 +23548,12 @@
         ],
         "type": "object"
       },
+      "TagCleanup": {
+        "enum": [
+          "TagCleanup"
+        ],
+        "type": "string"
+      },
       "TagCreateDto": {
         "properties": {
           "color": {
@@ -24040,6 +24272,12 @@
           "orange",
           "gray",
           "amber"
+        ],
+        "type": "string"
+      },
+      "UserDeleteCheck": {
+        "enum": [
+          "UserDeleteCheck"
         ],
         "type": "string"
       },

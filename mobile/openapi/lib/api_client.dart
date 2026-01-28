@@ -316,6 +316,8 @@ class ApiClient {
           return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
+        case 'BaseJobData':
+          return BaseJobData.fromJson(value);
         case 'BulkIdErrorReason':
           return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
@@ -348,6 +350,8 @@ class ApiClient {
           return CreateProfileImageResponseDto.fromJson(value);
         case 'CropParameters':
           return CropParameters.fromJson(value);
+        case 'DatabaseBackup':
+          return DatabaseBackupTypeTransformer().decode(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
         case 'DatabaseBackupDeleteDto':
@@ -388,10 +392,22 @@ class ApiClient {
           return ImageFormatTypeTransformer().decode(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
+        case 'JobDatabaseBackup':
+          return JobDatabaseBackup.fromJson(value);
+        case 'JobMemoryCleanup':
+          return JobMemoryCleanup.fromJson(value);
+        case 'JobMemoryGenerate':
+          return JobMemoryGenerate.fromJson(value);
         case 'JobName':
           return JobNameTypeTransformer().decode(value);
+        case 'JobPersonCleanup':
+          return JobPersonCleanup.fromJson(value);
         case 'JobSettingsDto':
           return JobSettingsDto.fromJson(value);
+        case 'JobTagCleanup':
+          return JobTagCleanup.fromJson(value);
+        case 'JobUserDeleteCheck':
+          return JobUserDeleteCheck.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
         case 'LibraryStatsResponseDto':
@@ -432,8 +448,12 @@ class ApiClient {
           return MemoriesResponse.fromJson(value);
         case 'MemoriesUpdate':
           return MemoriesUpdate.fromJson(value);
+        case 'MemoryCleanup':
+          return MemoryCleanupTypeTransformer().decode(value);
         case 'MemoryCreateDto':
           return MemoryCreateDto.fromJson(value);
+        case 'MemoryGenerate':
+          return MemoryGenerateTypeTransformer().decode(value);
         case 'MemoryResponseDto':
           return MemoryResponseDto.fromJson(value);
         case 'MemorySearchOrder':
@@ -502,6 +522,8 @@ class ApiClient {
           return PeopleUpdateItem.fromJson(value);
         case 'Permission':
           return PermissionTypeTransformer().decode(value);
+        case 'PersonCleanup':
+          return PersonCleanupTypeTransformer().decode(value);
         case 'PersonCreateDto':
           return PersonCreateDto.fromJson(value);
         case 'PersonResponseDto':
@@ -542,6 +564,10 @@ class ApiClient {
           return QueueCommandDto.fromJson(value);
         case 'QueueDeleteDto':
           return QueueDeleteDto.fromJson(value);
+        case 'QueueJobCreateDto':
+          return QueueJobCreateDto.fromJson(value);
+        case 'QueueJobCreateDtoJob':
+          return QueueJobCreateDtoJob.fromJson(value);
         case 'QueueJobResponseDto':
           return QueueJobResponseDto.fromJson(value);
         case 'QueueJobStatus':
@@ -788,6 +814,8 @@ class ApiClient {
           return TagBulkAssetsDto.fromJson(value);
         case 'TagBulkAssetsResponseDto':
           return TagBulkAssetsResponseDto.fromJson(value);
+        case 'TagCleanup':
+          return TagCleanupTypeTransformer().decode(value);
         case 'TagCreateDto':
           return TagCreateDto.fromJson(value);
         case 'TagResponseDto':
@@ -838,6 +866,8 @@ class ApiClient {
           return UserAdminUpdateDto.fromJson(value);
         case 'UserAvatarColor':
           return UserAvatarColorTypeTransformer().decode(value);
+        case 'UserDeleteCheck':
+          return UserDeleteCheckTypeTransformer().decode(value);
         case 'UserLicense':
           return UserLicense.fromJson(value);
         case 'UserMetadataKey':

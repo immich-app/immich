@@ -12,6 +12,7 @@ import {
 import {
   QueueCommandDto,
   QueueDeleteDto,
+  QueueJobCreateDto,
   QueueJobResponseDto,
   QueueJobSearchDto,
   QueueResponseDto,
@@ -98,6 +99,10 @@ export class QueueService extends BaseService {
 
   setServices(services: ClassConstructor<unknown>[]) {
     this.services = services;
+  }
+
+  createJob(dto: QueueJobCreateDto): Promise<void> {
+    return this.jobRepository.queue(dto.job);
   }
 
   async runCommandLegacy(name: QueueName, dto: QueueCommandDto): Promise<QueueResponseLegacyDto> {

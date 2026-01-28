@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   QueueDeleteDto,
+  QueueJobCreateDto,
   QueueJobResponseDto,
   QueueJobSearchDto,
   QueueNameParamDto,
@@ -18,6 +19,19 @@ import { QueueService } from 'src/services/queue.service';
 @Controller('queues')
 export class QueueController {
   constructor(private service: QueueService) {}
+
+  @Post('job')
+  @Authenticated({ permission: Permission.JobCreate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Endpoint({
+    summary: 'Create a manual job',
+    description:
+      'Run a specific job. Most jobs are queued automatically, but this endpoint allows for manual creation of a handful of jobs, including various cleanup tasks, as well as creating a new database backup.',
+    history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
+  })
+  queueJob(@Body() dto: QueueJobCreateDto): Promise<void> {
+    return this.service.createJob(dto);
+  }
 
   @Get()
   @Authenticated({ permission: Permission.QueueRead, admin: true })
