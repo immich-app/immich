@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -43,6 +44,7 @@ class DriftSearchPage extends HookConsumerWidget {
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
+    final availableSearchTypes = useState<List<SearchType>?>(null);
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -489,6 +491,28 @@ class DriftSearchPage extends HookConsumerWidget {
       TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
+    List<SearchType> _getAvailableSearchTypes() {
+      if (availableSearchTypes.value != null) {
+        return availableSearchTypes.value!;
+      }
+      
+      final serverConfig = ref.watch(serverInfoProvider);
+      final List<SearchType> available = [SearchType.places];
+      
+      final result = serverConfig.whenData((config) {
+        if (config?.serverFeatures.smartSearch ?? false) {
+          available.add(SearchType.smart);
+        }
+        if (config?.serverFeatures.ocr ?? false) {
+          available.add(SearchType.ocr);
+        }
+        return available;
+      }).value ?? available;
+      
+      availableSearchTypes.value = result;
+      return result;
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -518,24 +542,26 @@ class DriftSearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.image_search_rounded),
-                    title: Text(
-                      'search_by_context'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                if (_getAvailableSearchTypes().contains(SearchType.smart)) ...{
+                  MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.image_search_rounded),
+                      title: Text(
+                        'search_by_context'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.context,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.context,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.context;
+                      searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
-                  },
-                ),
+                },
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.abc_rounded),
@@ -572,9 +598,8 @@ class DriftSearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
                 ),
-                FeatureCheck(
-                  feature: (features) => features.ocr,
-                  child: MenuItemButton(
+                if (_getAvailableSearchTypes().contains(SearchType.ocr)) ...{
+                  MenuItemButton(
                     child: ListTile(
                       leading: const Icon(Icons.document_scanner_outlined),
                       title: Text(
@@ -592,7 +617,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       searchHintText.value = 'search_by_ocr_example'.t(context: context);
                     },
                   ),
-                ),
+                },
               ],
             ),
           ),
