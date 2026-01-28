@@ -284,12 +284,14 @@ Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
 
 Future<void> _backfillAssetExifWidthHeight(Drift db) async {
   try {
+    // Only backfill width/height when exif values are NULL or 0
+    // Don't overwrite existing valid exif dimensions (especially important for videos)
     await db.customStatement('''
-      UPDATE remote_exif_entity AS remote_exif
-      SET width = asset.width,
-          height = asset.height
-      FROM remote_asset_entity AS asset
-      WHERE remote_exif.asset_id = asset.id;
+      UPDATE remote_exif_entity
+      SET width = (SELECT width FROM remote_asset_entity WHERE id = remote_exif_entity.asset_id),
+          height = (SELECT height FROM remote_asset_entity WHERE id = remote_exif_entity.asset_id)
+      WHERE (width IS NULL OR width = 0 OR height IS NULL OR height = 0)
+        AND EXISTS (SELECT 1 FROM remote_asset_entity WHERE id = remote_exif_entity.asset_id);
     ''');
 
     dPrint(() => "[MIGRATION] Successfully backfilled asset exif width and height");
