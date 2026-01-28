@@ -2,7 +2,6 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class DriftPeopleRepository extends DriftDatabaseRepository {
@@ -24,17 +23,11 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     final query =
         _db.select(_db.personEntity).join([
             innerJoin(_db.assetFaceEntity, _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id)),
-            innerJoin(
-              _db.remoteAssetEntity,
-              _db.remoteAssetEntity.id.equalsExp(_db.assetFaceEntity.assetId) &
-                  _db.remoteAssetEntity.visibility.equals(
-                    $RemoteAssetEntityTable.$convertervisibility.toSql(AssetVisibility.timeline),
-                  ) &
-                  _db.remoteAssetEntity.deletedAt.isNull(),
-            ),
+            innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetFaceEntity.assetId)),
           ])
           ..where(_db.personEntity.isHidden.equals(false))
           ..where(_db.remoteAssetEntity.deletedAt.isNull())
+          ..where(_db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline))
           ..groupBy(
             [_db.personEntity.id],
             having: Expression.or([
