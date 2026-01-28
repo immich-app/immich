@@ -1,6 +1,6 @@
 {
   "name": "@immich/sdk",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Auto-generated TypeScript SDK for the Immich API",
   "type": "module",
   "main": "./build/index.js",
