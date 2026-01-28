@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -142,6 +145,39 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
 
   void setLockedSelectionAssets(Set<BaseAsset> assets) {
     state = state.copyWith(lockedSelectionAssets: assets);
+  }
+
+  Future<void> toggleAllSelection() async {
+    final totalAssets = _timelineService.totalAssets;
+    if (totalAssets == 0) {
+      return;
+    }
+
+    final allAssets = <BaseAsset>[];
+    for (var offset = 0; offset < totalAssets; offset += kTimelineAssetLoadBatchSize) {
+      final count = math.min(kTimelineAssetLoadBatchSize, totalAssets - offset);
+      final assets = await _timelineService.loadAssets(offset, count);
+      allAssets.addAll(assets);
+    }
+
+    if (allAssets.isEmpty) {
+      return;
+    }
+
+    final selectedAssets = state.selectedAssets.toSet();
+    final allSelected = allAssets.every(selectedAssets.contains);
+
+    if (allSelected) {
+      state = state.copyWith(selectedAssets: {});
+      return;
+    }
+
+    selectedAssets.addAll(allAssets);
+    if (state.lockedSelectionAssets.isNotEmpty) {
+      selectedAssets.removeAll(state.lockedSelectionAssets);
+    }
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 }
 
