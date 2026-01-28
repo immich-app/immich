@@ -1,5 +1,6 @@
 from typing import Any
 
+import cv2
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image
@@ -65,6 +66,33 @@ class TextRecognizer(InferenceModel):
                 lang_type=self.language,
             )
         )
+        if (static_width := settings.ocr_recognition_static_width) is not None:
+            if static_width <= 0:
+                log.warning("Ignoring ocr_recognition_static_width=%s; must be > 0.", static_width)
+            else:
+                self.model.rec_image_shape = (3, 48, static_width)
+
+                # Keep input width fixed to avoid dynamic tensor shapes on Intel GPU backends.
+                def resize_norm_img_static(self, img: NDArray[np.uint8], max_wh_ratio: float) -> NDArray[np.float32]:
+                    img_channel, img_height, img_width = self.rec_image_shape
+                    assert img_channel == img.shape[2]
+
+                    # Ignore max_wh_ratio: we always pad to the fixed width.
+                    h, w = img.shape[:2]
+                    ratio = w / float(h)
+                    resized_w = min(int(np.ceil(img_height * ratio)), img_width)
+
+                    resized_image = cv2.resize(img, (resized_w, img_height))
+                    resized_image = resized_image.astype("float32")
+                    resized_image = resized_image.transpose((2, 0, 1)) / 255
+                    resized_image -= 0.5
+                    resized_image /= 0.5
+
+                    padding_im = np.zeros((img_channel, img_height, img_width), dtype=np.float32)
+                    padding_im[:, :, 0:resized_w] = resized_image
+                    return padding_im
+
+                self.model.resize_norm_img = resize_norm_img_static.__get__(self.model, type(self.model))
         return session
 
     def _predict(self, img: Image.Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
