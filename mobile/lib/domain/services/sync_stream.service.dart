@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -8,6 +9,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:logging/logging.dart';
@@ -20,6 +22,7 @@ class SyncStreamService {
   final SyncStreamRepository _syncStreamRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final LocalFilesManagerRepository _localFilesManager;
   final StorageRepository _storageRepository;
   final bool Function()? _cancelChecker;
@@ -29,6 +32,7 @@ class SyncStreamService {
     required SyncStreamRepository syncStreamRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
+    required DriftTrashSyncRepository trashSyncRepository,
     required LocalFilesManagerRepository localFilesManager,
     required StorageRepository storageRepository,
     bool Function()? cancelChecker,
@@ -36,6 +40,7 @@ class SyncStreamService {
        _syncStreamRepository = syncStreamRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
+       _trashSyncRepository = trashSyncRepository,
        _localFilesManager = localFilesManager,
        _storageRepository = storageRepository,
        _cancelChecker = cancelChecker;
@@ -104,11 +109,21 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+        if (CurrentPlatform.isAndroid &&
+            (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+                Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
-            await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
+            final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
+            final trashedAssetsMap = Map<String, DateTime>.fromEntries(
+              remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => MapEntry(e.checksum, e.deletedAt!)),
+            );
+            await _handleRemoteTrashed(trashedAssetsMap, reviewMode);
             await _applyRemoteRestoreToLocal();
+            if (reviewMode) {
+              final result = await _trashSyncRepository.deleteOutdatedThrottled();
+              _logger.info("syncTrashedAssets, outdated deleted: $result");
+            }
           } else {
             _logger.warning("sync Trashed Assets cannot proceed because MANAGE_MEDIA permission is missing");
           }
@@ -283,24 +298,34 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _handleRemoteTrashed(Iterable<String> checksums) async {
-    if (checksums.isEmpty) {
+  Future<void> _handleRemoteTrashed(Map<String, DateTime> trashedAssetsMap, bool reviewMode) async {
+    if (trashedAssetsMap.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);
       if (localAssetsToTrash.isNotEmpty) {
-        final mediaUrls = await Future.wait(
-          localAssetsToTrash.values
-              .expand((e) => e)
-              .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
-        );
-        _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-        final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-        if (result) {
-          await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+        final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
+        if (reviewMode) {
+          final itemsToReview = flattenedAssetsToTrash.where((la) => la.asset.checksum?.isNotEmpty == true);
+          _logger.info(
+            "Apply remote trash action to review for: ${itemsToReview.map((e) => 'id:${e.asset.id}, name:${e.asset.name}').join('*')}",
+          );
+          await _trashSyncRepository.upsertReviewCandidates(itemsToReview);
+        } else {
+          final mediaUrls = await Future.wait(
+            flattenedAssetsToTrash.map(
+              (assetRecord) =>
+                  _storageRepository.getAssetEntityForAsset(assetRecord.asset).then((e) => e?.getMediaUrl()),
+            ),
+          );
+          _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+          final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+          if (result) {
+            await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+          }
         }
       } else {
-        _logger.info("No assets found in backup-enabled albums for assets: $checksums");
+        _logger.info("No assets found in backup-enabled albums for assets: $trashedAssetsMap");
       }
     }
   }
