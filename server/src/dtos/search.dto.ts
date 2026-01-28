@@ -2,14 +2,14 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
+import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
-  @ValidateUUID({ optional: true, description: 'Library ID to filter by' })
+  @ValidateUUID({ optional: true, nullable: true, description: 'Library ID to filter by' })
   libraryId?: string | null;
 
   @ApiPropertyOptional({ description: 'Device ID to filter by' })
@@ -317,8 +317,8 @@ export class SearchSuggestionRequestDto {
   @Optional()
   lensModel?: string;
 
-  @ValidateBoolean({ optional: true })
-  @Property({
+  @ValidateBoolean({
+    optional: true,
     description: 'Include null values in suggestions',
     history: new HistoryBuilder().added('v1.111.0').stable('v2'),
   })

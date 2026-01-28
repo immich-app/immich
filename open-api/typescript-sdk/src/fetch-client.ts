@@ -586,6 +586,7 @@ export type AssetResponseDto = {
     id: string;
     /** Is archived */
     isArchived: boolean;
+    /** Is edited */
     isEdited: boolean;
     /** Is favorite */
     isFavorite: boolean;
@@ -593,7 +594,7 @@ export type AssetResponseDto = {
     isOffline: boolean;
     /** Is trashed */
     isTrashed: boolean;
-    /** Library ID (deprecated) */
+    /** Library ID */
     libraryId?: string | null;
     /** Live photo video ID */
     livePhotoVideoId?: string | null;
@@ -609,7 +610,7 @@ export type AssetResponseDto = {
     /** Owner user ID */
     ownerId: string;
     people?: PersonWithFacesResponseDto[];
-    /** Is resized (deprecated) */
+    /** Is resized */
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];

@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { SharedLink } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
+import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
@@ -11,8 +11,11 @@ export class SharedLinkSearchDto {
   @ValidateUUID({ optional: true, description: 'Filter by album ID' })
   albumId?: string;
 
-  @ValidateUUID({ optional: true, description: 'Filter by shared link ID' })
-  @Property({ history: new HistoryBuilder().added('v2.5.0') })
+  @ValidateUUID({
+    optional: true,
+    description: 'Filter by shared link ID',
+    history: new HistoryBuilder().added('v2.5.0'),
+  })
   id?: string;
 }
 

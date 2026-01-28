@@ -94,6 +94,7 @@ class AssetResponseDto {
   /// Is archived
   bool isArchived;
 
+  /// Is edited
   bool isEdited;
 
   /// Is favorite
@@ -105,7 +106,7 @@ class AssetResponseDto {
   /// Is trashed
   bool isTrashed;
 
-  /// Library ID (deprecated)
+  /// Library ID
   String? libraryId;
 
   /// Live photo video ID
@@ -142,7 +143,7 @@ class AssetResponseDto {
 
   List<PersonWithFacesResponseDto> people;
 
-  /// Is resized (deprecated)
+  /// Is resized
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

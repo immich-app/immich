@@ -22,8 +22,8 @@ export class QueueUpdateDto {
 }
 
 export class QueueDeleteDto {
-  @ValidateBoolean({ optional: true })
-  @Property({
+  @ValidateBoolean({
+    optional: true,
     description: 'If true, will also remove failed jobs from the queue.',
     history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
   })

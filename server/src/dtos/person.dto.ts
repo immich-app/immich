@@ -42,7 +42,7 @@ export class PersonCreateDto {
   isFavorite?: boolean;
 
   @ApiPropertyOptional({ description: 'Person color (hex)' })
-  @Optional({ emptyToNull: true })
+  @Optional({ emptyToNull: true, nullable: true })
   @ValidateHexColor()
   color?: string | null;
 }
@@ -105,14 +105,11 @@ export class PersonResponseDto {
   thumbnailPath!: string;
   @ApiProperty({ description: 'Is hidden' })
   isHidden!: boolean;
-  @ApiPropertyOptional({ description: 'Last update date' })
-  @Property({ history: new HistoryBuilder().added('v1.107.0').stable('v2') })
+  @Property({ description: 'Last update date', history: new HistoryBuilder().added('v1.107.0').stable('v2') })
   updatedAt?: Date;
-  @ApiPropertyOptional({ description: 'Is favorite' })
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
+  @Property({ description: 'Is favorite', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   isFavorite?: boolean;
-  @ApiPropertyOptional({ description: 'Person color (hex)' })
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
+  @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   color?: string;
 }
 
@@ -219,8 +216,8 @@ export class PeopleResponseDto {
 
   // TODO: make required after a few versions
   @Property({
-    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
     description: 'Whether there are more pages',
+    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
   })
   hasNextPage?: boolean;
 }

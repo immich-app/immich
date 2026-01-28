@@ -91,7 +91,7 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {
-  @ValidateUUID({ optional: true, description: 'Live photo video ID' })
+  @ValidateUUID({ optional: true, nullable: true, description: 'Live photo video ID' })
   livePhotoVideoId?: string | null;
 }
 

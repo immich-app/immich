@@ -11105,13 +11105,13 @@
             "name": "id",
             "required": false,
             "in": "query",
+            "description": "Filter by shared link ID",
             "x-immich-history": [
               {
                 "version": "v2.5.0",
                 "state": "Added"
               }
             ],
-            "description": "Filter by shared link ID",
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -16886,6 +16886,7 @@
             "type": "boolean"
           },
           "isEdited": {
+            "description": "Is edited",
             "type": "boolean",
             "x-immich-history": [
               {
@@ -16913,7 +16914,8 @@
           },
           "libraryId": {
             "deprecated": true,
-            "description": "Library ID (deprecated)",
+            "description": "Library ID",
+            "format": "uuid",
             "nullable": true,
             "type": "string",
             "x-immich-history": [
@@ -16966,7 +16968,7 @@
           },
           "resized": {
             "deprecated": true,
-            "description": "Is resized (deprecated)",
+            "description": "Is resized",
             "type": "boolean",
             "x-immich-history": [
               {

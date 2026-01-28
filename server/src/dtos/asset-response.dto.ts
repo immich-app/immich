@@ -18,7 +18,7 @@ import { ImageDimensions } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
-import { ValidateEnum } from 'src/validation';
+import { ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class SanitizedAssetResponseDto {
   @ApiProperty({ description: 'Asset ID' })
@@ -66,8 +66,11 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
   owner?: UserResponseDto;
-  @ApiPropertyOptional({ description: 'Library ID (deprecated)' })
-  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
+  @ValidateUUID({
+    nullable: true,
+    description: 'Library ID',
+    history: new HistoryBuilder().added('v1').deprecated('v1'),
+  })
   libraryId?: string | null;
   @ApiProperty({ description: 'Original file path' })
   originalPath!: string;
@@ -127,10 +130,9 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   @ApiPropertyOptional({ description: 'Duplicate group ID' })
   duplicateId?: string | null;
 
-  @ApiPropertyOptional({ description: 'Is resized (deprecated)' })
-  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
+  @Property({ description: 'Is resized', history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
   resized?: boolean;
-  @Property({ history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
+  @Property({ description: 'Is edited', history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
   isEdited!: boolean;
 }
 
