@@ -37,8 +37,20 @@ export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorat
 
   if ((options as SharedLinkRoute)?.sharedLink) {
     decorators.push(
-      ApiQuery({ name: ImmichQuery.SharedLinkKey, type: String, required: false }),
-      ApiQuery({ name: ImmichQuery.SharedLinkSlug, type: String, required: false }),
+      ApiQuery({
+        name: ImmichQuery.SharedLinkKey,
+        type: String,
+        required: false,
+        description:
+          'Public share key (the last path segment of a public share URL, i.e. `/share/<key>`). When provided, the asset can be accessed via the public share link without an API key. Typically you pass either `key` or `slug`.',
+      }),
+      ApiQuery({
+        name: ImmichQuery.SharedLinkSlug,
+        type: String,
+        required: false,
+        description:
+          'Public share slug for custom share URLs (the last path segment of `/s/<slug>`). Allows access without authentication. Typically you pass either `slug` or `key`.',
+      }),
     );
   }
 

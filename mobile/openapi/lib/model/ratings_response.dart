@@ -16,6 +16,7 @@ class RatingsResponse {
     this.enabled = false,
   });
 
+  /// Whether ratings are enabled
   bool enabled;
 
   @override

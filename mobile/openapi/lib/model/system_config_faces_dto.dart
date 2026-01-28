@@ -16,6 +16,7 @@ class SystemConfigFacesDto {
     required this.import_,
   });
 
+  /// Import
   bool import_;
 
   @override

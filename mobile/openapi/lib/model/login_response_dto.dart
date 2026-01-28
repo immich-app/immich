@@ -23,20 +23,28 @@ class LoginResponseDto {
     required this.userId,
   });
 
+  /// Access token
   String accessToken;
 
+  /// Is admin user
   bool isAdmin;
 
+  /// Is onboarded
   bool isOnboarded;
 
+  /// User name
   String name;
 
+  /// Profile image path
   String profileImagePath;
 
+  /// Should change password
   bool shouldChangePassword;
 
+  /// User email
   String userEmail;
 
+  /// User ID
   String userId;
 
   @override

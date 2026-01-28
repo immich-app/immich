@@ -17,8 +17,10 @@ class AssetMediaResponseDto {
     required this.status,
   });
 
+  /// Asset media ID
   String id;
 
+  /// Upload status
   AssetMediaStatus status;
 
   @override

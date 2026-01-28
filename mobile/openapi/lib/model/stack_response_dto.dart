@@ -18,10 +18,13 @@ class StackResponseDto {
     required this.primaryAssetId,
   });
 
+  /// Stack assets
   List<AssetResponseDto> assets;
 
+  /// Stack ID
   String id;
 
+  /// Primary asset ID
   String primaryAssetId;
 
   @override

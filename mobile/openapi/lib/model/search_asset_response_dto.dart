@@ -20,14 +20,17 @@ class SearchAssetResponseDto {
     required this.total,
   });
 
+  /// Number of assets in this page
   int count;
 
   List<SearchFacetResponseDto> facets;
 
   List<AssetResponseDto> items;
 
+  /// Next page token
   String? nextPage;
 
+  /// Total number of matching assets
   int total;
 
   @override

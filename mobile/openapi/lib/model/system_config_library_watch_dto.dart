@@ -16,6 +16,7 @@ class SystemConfigLibraryWatchDto {
     required this.enabled,
   });
 
+  /// Enabled
   bool enabled;
 
   @override

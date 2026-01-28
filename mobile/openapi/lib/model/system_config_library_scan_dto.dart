@@ -19,6 +19,7 @@ class SystemConfigLibraryScanDto {
 
   String cronExpression;
 
+  /// Enabled
   bool enabled;
 
   @override

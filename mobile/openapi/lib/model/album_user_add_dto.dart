@@ -17,8 +17,10 @@ class AlbumUserAddDto {
     required this.userId,
   });
 
+  /// Album user role
   AlbumUserRole role;
 
+  /// User ID
   String userId;
 
   @override

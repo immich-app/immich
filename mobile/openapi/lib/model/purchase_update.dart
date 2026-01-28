@@ -17,6 +17,7 @@ class PurchaseUpdate {
     this.showSupportBadge,
   });
 
+  /// Date until which to hide buy button
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -25,6 +26,7 @@ class PurchaseUpdate {
   ///
   String? hideBuyButtonUntil;
 
+  /// Whether to show support badge
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

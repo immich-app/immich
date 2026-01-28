@@ -16,6 +16,7 @@ class AssetBulkUploadCheckResponseDto {
     this.results = const [],
   });
 
+  /// Upload check results
   List<AssetBulkUploadCheckResult> results;
 
   @override

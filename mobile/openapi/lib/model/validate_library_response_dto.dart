@@ -16,6 +16,7 @@ class ValidateLibraryResponseDto {
     this.importPaths = const [],
   });
 
+  /// Validation results for import paths
   List<ValidateLibraryImportPathResponseDto> importPaths;
 
   @override

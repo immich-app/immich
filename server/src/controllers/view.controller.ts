@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -25,6 +25,7 @@ export class ViewController {
 
   @Get('folder')
   @Authenticated({ permission: Permission.FolderRead })
+  @ApiQuery({ name: 'path', description: 'The original path of the folder', required: true })
   @Endpoint({
     summary: 'Retrieve assets by original path',
     description: 'Retrieve assets that are children of a specific folder.',

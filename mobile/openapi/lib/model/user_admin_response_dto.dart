@@ -32,38 +32,55 @@ class UserAdminResponseDto {
     required this.updatedAt,
   });
 
+  /// Avatar color
   UserAvatarColor avatarColor;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Deletion date
   DateTime? deletedAt;
 
+  /// User email
   String email;
 
+  /// User ID
   String id;
 
+  /// Is admin user
   bool isAdmin;
 
+  /// User license
   UserLicense? license;
 
+  /// User name
   String name;
 
+  /// OAuth ID
   String oauthId;
 
+  /// Profile change date
   DateTime profileChangedAt;
 
+  /// Profile image path
   String profileImagePath;
 
+  /// Storage quota in bytes
   int? quotaSizeInBytes;
 
+  /// Storage usage in bytes
   int? quotaUsageInBytes;
 
+  /// Require password change on next login
   bool shouldChangePassword;
 
+  /// User status
   UserStatus status;
 
+  /// Storage label
   String? storageLabel;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

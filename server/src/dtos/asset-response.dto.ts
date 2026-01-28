@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -21,10 +21,13 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum } from 'src/validation';
 
 export class SanitizedAssetResponseDto {
+  @ApiProperty({ description: 'Asset ID' })
   id!: string;
-  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', description: 'Asset type' })
   type!: AssetType;
+  @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
   thumbhash!: string | null;
+  @ApiPropertyOptional({ description: 'Original MIME type' })
   originalMimeType?: string;
   @ApiProperty({
     type: 'string',
@@ -34,10 +37,15 @@ export class SanitizedAssetResponseDto {
     example: '2024-01-15T14:30:00.000Z',
   })
   localDateTime!: Date;
+  @ApiProperty({ description: 'Video duration (for videos)' })
   duration!: string;
+  @ApiPropertyOptional({ description: 'Live photo video ID' })
   livePhotoVideoId?: string | null;
+  @ApiProperty({ description: 'Whether asset has metadata' })
   hasMetadata!: boolean;
+  @ApiProperty({ description: 'Asset width' })
   width!: number | null;
+  @ApiProperty({ description: 'Asset height' })
   height!: number | null;
 }
 
@@ -49,13 +57,21 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
     example: '2024-01-15T20:30:00.000Z',
   })
   createdAt!: Date;
+  @ApiProperty({ description: 'Device asset ID' })
   deviceAssetId!: string;
+  @ApiProperty({ description: 'Device ID' })
   deviceId!: string;
+  @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   owner?: UserResponseDto;
+  @ApiPropertyOptional({ description: 'Library ID (deprecated)' })
   @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
   libraryId?: string | null;
+  @ApiProperty({ description: 'Original file path' })
   originalPath!: string;
+  @ApiProperty({ description: 'Original file name' })
   originalFileName!: string;
   @ApiProperty({
     type: 'string',
@@ -81,21 +97,37 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
     example: '2024-01-16T12:45:30.000Z',
   })
   updatedAt!: Date;
+  @ApiProperty({ description: 'Is favorite' })
   isFavorite!: boolean;
+  @ApiProperty({ description: 'Is archived' })
   isArchived!: boolean;
+  @ApiProperty({ description: 'Is trashed' })
   isTrashed!: boolean;
+  @ApiProperty({ description: 'Is offline' })
   isOffline!: boolean;
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', description: 'Asset visibility' })
   visibility!: AssetVisibility;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   exifInfo?: ExifResponseDto;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   tags?: TagResponseDto[];
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   people?: PersonWithFacesResponseDto[];
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
-  /**base64 encoded sha1 hash */
+  @ApiProperty({ description: 'Base64 encoded SHA1 hash' })
   checksum!: string;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   stack?: AssetStackResponseDto | null;
+  @ApiPropertyOptional({ description: 'Duplicate group ID' })
   duplicateId?: string | null;
 
+  @ApiPropertyOptional({ description: 'Is resized (deprecated)' })
   @Property({ history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
   resized?: boolean;
   @Property({ history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
@@ -143,11 +175,13 @@ export type MapAsset = {
 };
 
 export class AssetStackResponseDto {
+  @ApiProperty({ description: 'Stack ID' })
   id!: string;
 
+  @ApiProperty({ description: 'Primary asset ID' })
   primaryAssetId!: string;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of assets in stack' })
   assetCount!: number;
 }
 

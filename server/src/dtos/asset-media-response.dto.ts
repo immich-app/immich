@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ValidateEnum } from 'src/validation';
 
 export enum AssetMediaStatus {
@@ -6,8 +7,9 @@ export enum AssetMediaStatus {
   DUPLICATE = 'duplicate',
 }
 export class AssetMediaResponseDto {
-  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus' })
+  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus', description: 'Upload status' })
   status!: AssetMediaStatus;
+  @ApiProperty({ description: 'Asset media ID' })
   id!: string;
 }
 
@@ -22,17 +24,24 @@ export enum AssetRejectReason {
 }
 
 export class AssetBulkUploadCheckResult {
+  @ApiProperty({ description: 'Asset ID' })
   id!: string;
+  @ApiProperty({ description: 'Upload action', enum: AssetUploadAction })
   action!: AssetUploadAction;
+  @ApiPropertyOptional({ description: 'Rejection reason if rejected', enum: AssetRejectReason })
   reason?: AssetRejectReason;
+  @ApiPropertyOptional({ description: 'Existing asset ID if duplicate' })
   assetId?: string;
+  @ApiPropertyOptional({ description: 'Whether existing asset is trashed' })
   isTrashed?: boolean;
 }
 
 export class AssetBulkUploadCheckResponseDto {
+  @ApiProperty({ description: 'Upload check results' })
   results!: AssetBulkUploadCheckResult[];
 }
 
 export class CheckExistingAssetsResponseDto {
+  @ApiProperty({ description: 'Existing asset IDs' })
   existingIds!: string[];
 }

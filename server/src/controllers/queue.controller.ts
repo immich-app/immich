@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -58,6 +58,7 @@ export class QueueController {
 
   @Get(':name/jobs')
   @Authenticated({ permission: Permission.QueueJobRead, admin: true })
+  @ApiQuery({ name: 'status', description: 'Filter by job status', type: String, required: false })
   @Endpoint({
     summary: 'Retrieve queue jobs',
     description: 'Retrieves a list of queue jobs from the specified queue.',
