@@ -82,6 +82,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/device/{deviceId}'
@@ -115,6 +116,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
     final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -305,6 +307,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [num] count:
+  ///   Number of random assets to return
   Future<Response> getRandomWithHttpInfo({ num? count, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/random';
@@ -341,6 +344,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [num] count:
+  ///   Number of random assets to return
   Future<List<AssetResponseDto>?> getRandom({ num? count, }) async {
     final response = await getRandomWithHttpInfo( count: count, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -370,22 +374,29 @@ class DeprecatedApi {
   /// * [String] id (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   Future<Response> replaceAssetWithHttpInfo(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
@@ -462,22 +473,29 @@ class DeprecatedApi {
   /// * [String] id (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
     final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, duration: duration, filename: filename, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -502,6 +520,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
   Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
@@ -537,6 +556,7 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
+  ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
   Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {

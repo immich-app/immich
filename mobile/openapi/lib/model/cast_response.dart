@@ -16,6 +16,7 @@ class CastResponse {
     this.gCastEnabled = false,
   });
 
+  /// Whether Google Cast is enabled
   bool gCastEnabled;
 
   @override

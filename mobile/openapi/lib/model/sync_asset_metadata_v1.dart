@@ -18,10 +18,13 @@ class SyncAssetMetadataV1 {
     required this.value,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Key
   String key;
 
+  /// Value
   Object value;
 
   @override

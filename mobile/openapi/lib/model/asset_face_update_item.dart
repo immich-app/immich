@@ -17,8 +17,10 @@ class AssetFaceUpdateItem {
     required this.personId,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Person ID
   String personId;
 
   @override

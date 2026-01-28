@@ -18,10 +18,13 @@ class SyncAlbumUserV1 {
     required this.userId,
   });
 
+  /// Album ID
   String albumId;
 
+  /// Album user role
   AlbumUserRole role;
 
+  /// User ID
   String userId;
 
   @override

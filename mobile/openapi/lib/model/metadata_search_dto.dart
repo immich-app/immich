@@ -59,8 +59,10 @@ class MetadataSearchDto {
     this.withStacked,
   });
 
+  /// Filter by album IDs
   List<String> albumIds;
 
+  /// Filter by file checksum
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -69,10 +71,13 @@ class MetadataSearchDto {
   ///
   String? checksum;
 
+  /// Filter by city name
   String? city;
 
+  /// Filter by country name
   String? country;
 
+  /// Filter by creation date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -81,6 +86,7 @@ class MetadataSearchDto {
   ///
   DateTime? createdAfter;
 
+  /// Filter by creation date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -89,6 +95,7 @@ class MetadataSearchDto {
   ///
   DateTime? createdBefore;
 
+  /// Filter by description text
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -97,6 +104,7 @@ class MetadataSearchDto {
   ///
   String? description;
 
+  /// Filter by device asset ID
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -105,6 +113,7 @@ class MetadataSearchDto {
   ///
   String? deviceAssetId;
 
+  /// Device ID to filter by
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -113,6 +122,7 @@ class MetadataSearchDto {
   ///
   String? deviceId;
 
+  /// Filter by encoded video file path
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -121,6 +131,7 @@ class MetadataSearchDto {
   ///
   String? encodedVideoPath;
 
+  /// Filter by asset ID
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -129,6 +140,7 @@ class MetadataSearchDto {
   ///
   String? id;
 
+  /// Filter by encoded status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -137,6 +149,7 @@ class MetadataSearchDto {
   ///
   bool? isEncoded;
 
+  /// Filter by favorite status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -145,6 +158,7 @@ class MetadataSearchDto {
   ///
   bool? isFavorite;
 
+  /// Filter by motion photo status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -153,6 +167,7 @@ class MetadataSearchDto {
   ///
   bool? isMotion;
 
+  /// Filter assets not in any album
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -161,6 +176,7 @@ class MetadataSearchDto {
   ///
   bool? isNotInAlbum;
 
+  /// Filter by offline status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -169,10 +185,13 @@ class MetadataSearchDto {
   ///
   bool? isOffline;
 
+  /// Filter by lens model
   String? lensModel;
 
+  /// Library ID to filter by
   String? libraryId;
 
+  /// Filter by camera make
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -181,8 +200,10 @@ class MetadataSearchDto {
   ///
   String? make;
 
+  /// Filter by camera model
   String? model;
 
+  /// Filter by OCR text content
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -191,8 +212,10 @@ class MetadataSearchDto {
   ///
   String? ocr;
 
+  /// Sort order
   AssetOrder order;
 
+  /// Filter by original file name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -201,6 +224,7 @@ class MetadataSearchDto {
   ///
   String? originalFileName;
 
+  /// Filter by original file path
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -209,6 +233,8 @@ class MetadataSearchDto {
   ///
   String? originalPath;
 
+  /// Page number
+  ///
   /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -218,8 +244,10 @@ class MetadataSearchDto {
   ///
   num? page;
 
+  /// Filter by person IDs
   List<String> personIds;
 
+  /// Filter by preview file path
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -228,6 +256,8 @@ class MetadataSearchDto {
   ///
   String? previewPath;
 
+  /// Filter by rating
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
   ///
@@ -238,6 +268,8 @@ class MetadataSearchDto {
   ///
   num? rating;
 
+  /// Number of results to return
+  ///
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -248,10 +280,13 @@ class MetadataSearchDto {
   ///
   num? size;
 
+  /// Filter by state/province name
   String? state;
 
+  /// Filter by tag IDs
   List<String>? tagIds;
 
+  /// Filter by taken date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -260,6 +295,7 @@ class MetadataSearchDto {
   ///
   DateTime? takenAfter;
 
+  /// Filter by taken date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -268,6 +304,7 @@ class MetadataSearchDto {
   ///
   DateTime? takenBefore;
 
+  /// Filter by thumbnail file path
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -276,6 +313,7 @@ class MetadataSearchDto {
   ///
   String? thumbnailPath;
 
+  /// Filter by trash date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -284,6 +322,7 @@ class MetadataSearchDto {
   ///
   DateTime? trashedAfter;
 
+  /// Filter by trash date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -292,6 +331,7 @@ class MetadataSearchDto {
   ///
   DateTime? trashedBefore;
 
+  /// Asset type filter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -300,6 +340,7 @@ class MetadataSearchDto {
   ///
   AssetTypeEnum? type;
 
+  /// Filter by update date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -308,6 +349,7 @@ class MetadataSearchDto {
   ///
   DateTime? updatedAfter;
 
+  /// Filter by update date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -316,6 +358,7 @@ class MetadataSearchDto {
   ///
   DateTime? updatedBefore;
 
+  /// Filter by visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -324,6 +367,7 @@ class MetadataSearchDto {
   ///
   AssetVisibility? visibility;
 
+  /// Include deleted assets
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -332,6 +376,7 @@ class MetadataSearchDto {
   ///
   bool? withDeleted;
 
+  /// Include EXIF data in response
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -340,6 +385,7 @@ class MetadataSearchDto {
   ///
   bool? withExif;
 
+  /// Include assets with people
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -348,6 +394,7 @@ class MetadataSearchDto {
   ///
   bool? withPeople;
 
+  /// Include stacked assets
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

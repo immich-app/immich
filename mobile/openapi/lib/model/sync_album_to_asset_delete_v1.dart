@@ -17,8 +17,10 @@ class SyncAlbumToAssetDeleteV1 {
     required this.assetId,
   });
 
+  /// Album ID
   String albumId;
 
+  /// Asset ID
   String assetId;
 
   @override

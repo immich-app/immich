@@ -20,6 +20,7 @@ class SystemConfigMapDto {
 
   String darkStyle;
 
+  /// Enabled
   bool enabled;
 
   String lightStyle;

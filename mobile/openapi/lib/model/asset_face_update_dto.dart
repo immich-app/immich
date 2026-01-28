@@ -16,6 +16,7 @@ class AssetFaceUpdateDto {
     this.data = const [],
   });
 
+  /// Face update items
   List<AssetFaceUpdateItem> data;
 
   @override

@@ -23,46 +23,37 @@ import {
 } from 'src/validation';
 
 export class PersonCreateDto {
-  /**
-   * Person name.
-   */
+  @ApiPropertyOptional({ description: 'Person name' })
   @Optional()
   @IsString()
   name?: string;
 
-  /**
-   * Person date of birth.
-   * Note: the mobile app cannot currently set the birth date to null.
-   */
-  @ApiProperty({ format: 'date' })
+  // Note: the mobile app cannot currently set the birth date to null.
+  @ApiProperty({ format: 'date', description: 'Person date of birth', required: false })
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true, emptyToNull: true })
   birthDate?: Date | null;
 
-  /**
-   * Person visibility
-   */
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Person visibility (hidden)' })
   isHidden?: boolean;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Mark as favorite' })
   isFavorite?: boolean;
 
+  @ApiPropertyOptional({ description: 'Person color (hex)' })
   @Optional({ emptyToNull: true, nullable: true })
   @ValidateHexColor()
   color?: string | null;
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
-  /**
-   * Asset is used to get the feature face thumbnail.
-   */
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Asset ID used for feature face thumbnail' })
   featureFaceAssetId?: string;
 }
 
 export class PeopleUpdateDto {
+  @ApiProperty({ description: 'People to update' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PeopleUpdateItem)
@@ -70,36 +61,32 @@ export class PeopleUpdateDto {
 }
 
 export class PeopleUpdateItem extends PersonUpdateDto {
-  /**
-   * Person id.
-   */
+  @ApiProperty({ description: 'Person ID' })
   @IsString()
   @IsNotEmpty()
   id!: string;
 }
 
 export class MergePersonDto {
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Person IDs to merge' })
   ids!: string[];
 }
 
 export class PersonSearchDto {
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Include hidden people' })
   withHidden?: boolean;
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Closest person ID for similarity search' })
   closestPersonId?: string;
-  @ValidateUUID({ optional: true })
+  @ValidateUUID({ optional: true, description: 'Closest asset ID for similarity search' })
   closestAssetId?: string;
 
-  /** Page number for pagination */
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Page number for pagination', default: 1 })
   @IsInt()
   @Min(1)
   @Type(() => Number)
   page: number = 1;
 
-  /** Number of items per page */
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Number of items per page', default: 500 })
   @IsInt()
   @Min(1)
   @Max(1000)
@@ -108,48 +95,55 @@ export class PersonSearchDto {
 }
 
 export class PersonResponseDto {
+  @ApiProperty({ description: 'Person ID' })
   id!: string;
+  @ApiProperty({ description: 'Person name' })
   name!: string;
-  @ApiProperty({ format: 'date' })
+  @ApiProperty({ format: 'date', description: 'Person date of birth' })
   birthDate!: string | null;
+  @ApiProperty({ description: 'Thumbnail path' })
   thumbnailPath!: string;
+  @ApiProperty({ description: 'Is hidden' })
   isHidden!: boolean;
-  @Property({ history: new HistoryBuilder().added('v1.107.0').stable('v2') })
+  @Property({ description: 'Last update date', history: new HistoryBuilder().added('v1.107.0').stable('v2') })
   updatedAt?: Date;
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
+  @Property({ description: 'Is favorite', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   isFavorite?: boolean;
-  @Property({ history: new HistoryBuilder().added('v1.126.0').stable('v2') })
+  @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   color?: string;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
+  @ApiProperty({ description: 'Face detections' })
   faces!: AssetFaceWithoutPersonResponseDto[];
 }
 
 export class AssetFaceWithoutPersonResponseDto {
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Face ID' })
   id!: string;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
   imageHeight!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
   imageWidth!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Bounding box X1 coordinate' })
   boundingBoxX1!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Bounding box X2 coordinate' })
   boundingBoxX2!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Bounding box Y1 coordinate' })
   boundingBoxY1!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Bounding box Y2 coordinate' })
   boundingBoxY2!: number;
-  @ValidateEnum({ enum: SourceType, name: 'SourceType' })
+  @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
   sourceType?: SourceType;
 }
 
 export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
+  @ApiProperty({ description: 'Person associated with face' })
   person!: PersonResponseDto | null;
 }
 
 export class AssetFaceUpdateDto {
+  @ApiProperty({ description: 'Face update items' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AssetFaceUpdateItem)
@@ -157,69 +151,74 @@ export class AssetFaceUpdateDto {
 }
 
 export class FaceDto {
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Face ID' })
   id!: string;
 }
 
 export class AssetFaceUpdateItem {
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Person ID' })
   personId!: string;
 
-  @ValidateUUID()
+  @ValidateUUID({ description: 'Asset ID' })
   assetId!: string;
 }
 
 export class AssetFaceCreateDto extends AssetFaceUpdateItem {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
   @IsNotEmpty()
   @IsNumber()
   imageWidth!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
   @IsNotEmpty()
   @IsNumber()
   imageHeight!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Face bounding box X coordinate' })
   @IsNotEmpty()
   @IsNumber()
   x!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Face bounding box Y coordinate' })
   @IsNotEmpty()
   @IsNumber()
   y!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Face bounding box width' })
   @IsNotEmpty()
   @IsNumber()
   width!: number;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Face bounding box height' })
   @IsNotEmpty()
   @IsNumber()
   height!: number;
 }
 
 export class AssetFaceDeleteDto {
+  @ApiProperty({ description: 'Force delete even if person has other faces' })
   @IsNotEmpty()
   force!: boolean;
 }
 
 export class PersonStatisticsResponseDto {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of assets' })
   assets!: number;
 }
 
 export class PeopleResponseDto {
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Total number of people' })
   total!: number;
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of hidden people' })
   hidden!: number;
+  @ApiProperty({ description: 'List of people' })
   people!: PersonResponseDto[];
 
   // TODO: make required after a few versions
-  @Property({ history: new HistoryBuilder().added('v1.110.0').stable('v2') })
+  @Property({
+    description: 'Whether there are more pages',
+    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
+  })
   hasNextPage?: boolean;
 }
 

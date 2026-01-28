@@ -16,6 +16,8 @@ class OnThisDayDto {
     required this.year,
   });
 
+  /// Year for on this day memory
+  ///
   /// Minimum value: 1
   num year;
 

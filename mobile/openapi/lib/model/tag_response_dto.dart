@@ -22,6 +22,7 @@ class TagResponseDto {
     required this.value,
   });
 
+  /// Tag color (hex)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -30,12 +31,16 @@ class TagResponseDto {
   ///
   String? color;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Tag ID
   String id;
 
+  /// Tag name
   String name;
 
+  /// Parent tag ID
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -44,8 +49,10 @@ class TagResponseDto {
   ///
   String? parentId;
 
+  /// Last update date
   DateTime updatedAt;
 
+  /// Tag value (full path)
   String value;
 
   @override

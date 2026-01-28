@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Tone mapping
 class ToneMapping {
   /// Instantiate a new enum with the provided [value].
   const ToneMapping._(this.value);

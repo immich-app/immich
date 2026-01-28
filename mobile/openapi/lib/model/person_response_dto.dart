@@ -23,8 +23,10 @@ class PersonResponseDto {
     this.updatedAt,
   });
 
+  /// Person date of birth
   DateTime? birthDate;
 
+  /// Person color (hex)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -33,8 +35,10 @@ class PersonResponseDto {
   ///
   String? color;
 
+  /// Person ID
   String id;
 
+  /// Is favorite
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -43,12 +47,16 @@ class PersonResponseDto {
   ///
   bool? isFavorite;
 
+  /// Is hidden
   bool isHidden;
 
+  /// Person name
   String name;
 
+  /// Thumbnail path
   String thumbnailPath;
 
+  /// Last update date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

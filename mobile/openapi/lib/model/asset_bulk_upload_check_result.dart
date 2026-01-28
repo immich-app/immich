@@ -20,8 +20,10 @@ class AssetBulkUploadCheckResult {
     this.reason,
   });
 
+  /// Upload action
   AssetBulkUploadCheckResultActionEnum action;
 
+  /// Existing asset ID if duplicate
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -30,8 +32,10 @@ class AssetBulkUploadCheckResult {
   ///
   String? assetId;
 
+  /// Asset ID
   String id;
 
+  /// Whether existing asset is trashed
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -40,6 +44,7 @@ class AssetBulkUploadCheckResult {
   ///
   bool? isTrashed;
 
+  /// Rejection reason if rejected
   AssetBulkUploadCheckResultReasonEnum? reason;
 
   @override
@@ -150,7 +155,7 @@ class AssetBulkUploadCheckResult {
   };
 }
 
-
+/// Upload action
 class AssetBulkUploadCheckResultActionEnum {
   /// Instantiate a new enum with the provided [value].
   const AssetBulkUploadCheckResultActionEnum._(this.value);
@@ -224,7 +229,7 @@ class AssetBulkUploadCheckResultActionEnumTypeTransformer {
 }
 
 
-
+/// Rejection reason if rejected
 class AssetBulkUploadCheckResultReasonEnum {
   /// Instantiate a new enum with the provided [value].
   const AssetBulkUploadCheckResultReasonEnum._(this.value);

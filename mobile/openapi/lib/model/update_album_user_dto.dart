@@ -16,6 +16,7 @@ class UpdateAlbumUserDto {
     required this.role,
   });
 
+  /// Album user role
   AlbumUserRole role;
 
   @override

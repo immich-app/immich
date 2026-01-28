@@ -18,6 +18,7 @@ class OAuthCallbackDto {
     required this.url,
   });
 
+  /// OAuth code verifier (PKCE)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,6 +27,7 @@ class OAuthCallbackDto {
   ///
   String? codeVerifier;
 
+  /// OAuth state parameter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,6 +36,7 @@ class OAuthCallbackDto {
   ///
   String? state;
 
+  /// OAuth callback URL
   String url;
 
   @override

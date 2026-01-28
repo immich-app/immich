@@ -17,6 +17,7 @@ class WorkflowActionItemDto {
     required this.pluginActionId,
   });
 
+  /// Action configuration
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -25,6 +26,7 @@ class WorkflowActionItemDto {
   ///
   Object? actionConfig;
 
+  /// Plugin action ID
   String pluginActionId;
 
   @override

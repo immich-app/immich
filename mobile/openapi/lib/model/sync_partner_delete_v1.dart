@@ -17,8 +17,10 @@ class SyncPartnerDeleteV1 {
     required this.sharedWithId,
   });
 
+  /// Shared by ID
   String sharedById;
 
+  /// Shared with ID
   String sharedWithId;
 
   @override

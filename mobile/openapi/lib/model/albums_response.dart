@@ -16,6 +16,7 @@ class AlbumsResponse {
     this.defaultAssetOrder = AssetOrder.desc,
   });
 
+  /// Default asset order for albums
   AssetOrder defaultAssetOrder;
 
   @override

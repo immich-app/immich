@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// CQ mode
 class CQMode {
   /// Instantiate a new enum with the provided [value].
   const CQMode._(this.value);

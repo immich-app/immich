@@ -18,10 +18,13 @@ class ServerMediaTypesResponseDto {
     this.video = const [],
   });
 
+  /// Supported image MIME types
   List<String> image;
 
+  /// Supported sidecar MIME types
   List<String> sidecar;
 
+  /// Supported video MIME types
   List<String> video;
 
   @override

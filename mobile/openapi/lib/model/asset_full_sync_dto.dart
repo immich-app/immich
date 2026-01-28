@@ -19,6 +19,7 @@ class AssetFullSyncDto {
     this.userId,
   });
 
+  /// Last asset ID (pagination)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -27,11 +28,15 @@ class AssetFullSyncDto {
   ///
   String? lastId;
 
+  /// Maximum number of assets to return
+  ///
   /// Minimum value: 1
   int limit;
 
+  /// Sync assets updated until this date
   DateTime updatedUntil;
 
+  /// Filter by user ID
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

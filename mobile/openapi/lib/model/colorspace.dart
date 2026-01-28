@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Colorspace
 class Colorspace {
   /// Instantiate a new enum with the provided [value].
   const Colorspace._(this.value);

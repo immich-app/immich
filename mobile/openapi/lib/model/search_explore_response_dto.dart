@@ -17,6 +17,7 @@ class SearchExploreResponseDto {
     this.items = const [],
   });
 
+  /// Explore field name
   String fieldName;
 
   List<SearchExploreItem> items;

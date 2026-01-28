@@ -16,6 +16,7 @@ class PersonStatisticsResponseDto {
     required this.assets,
   });
 
+  /// Number of assets
   int assets;
 
   @override

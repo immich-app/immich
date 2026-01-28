@@ -20,6 +20,7 @@ class MaintenanceStatusResponseDto {
     this.task,
   });
 
+  /// Maintenance action
   MaintenanceAction action;
 
   bool active;

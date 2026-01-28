@@ -17,8 +17,10 @@ class TagBulkAssetsDto {
     this.tagIds = const [],
   });
 
+  /// Asset IDs
   List<String> assetIds;
 
+  /// Tag IDs
   List<String> tagIds;
 
   @override

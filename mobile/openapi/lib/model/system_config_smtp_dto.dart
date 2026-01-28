@@ -19,10 +19,13 @@ class SystemConfigSmtpDto {
     required this.transport,
   });
 
+  /// Whether SMTP email notifications are enabled
   bool enabled;
 
+  /// Email address to send from
   String from;
 
+  /// Email address for replies
   String replyTo;
 
   SystemConfigSmtpTransportDto transport;

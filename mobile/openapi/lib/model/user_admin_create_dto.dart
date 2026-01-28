@@ -24,10 +24,13 @@ class UserAdminCreateDto {
     this.storageLabel,
   });
 
+  /// Avatar color
   UserAvatarColor? avatarColor;
 
+  /// User email
   String email;
 
+  /// Grant admin privileges
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -36,8 +39,10 @@ class UserAdminCreateDto {
   ///
   bool? isAdmin;
 
+  /// User name
   String name;
 
+  /// Send notification email
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -46,11 +51,15 @@ class UserAdminCreateDto {
   ///
   bool? notify;
 
+  /// User password
   String password;
 
+  /// Storage quota in bytes
+  ///
   /// Minimum value: 0
   int? quotaSizeInBytes;
 
+  /// Require password change on next login
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -59,6 +68,7 @@ class UserAdminCreateDto {
   ///
   bool? shouldChangePassword;
 
+  /// Storage label
   String? storageLabel;
 
   @override

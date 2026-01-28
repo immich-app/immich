@@ -16,6 +16,7 @@ class JobCreateDto {
     required this.name,
   });
 
+  /// Job name
   ManualJobName name;
 
   @override
