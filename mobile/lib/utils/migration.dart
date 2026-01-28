@@ -92,7 +92,12 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   if (version < 21) {
-    await _addSyncEntityReset([SyncEntityType.assetExifV1]);
+    await _addSyncEntityReset([
+      SyncEntityType.assetV1,
+      SyncEntityType.partnerAssetV1,
+      SyncEntityType.albumAssetCreateV1,
+      SyncEntityType.albumAssetUpdateV1,
+    ]);
   }
 
   if (targetVersion >= 12) {
