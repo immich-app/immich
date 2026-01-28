@@ -149,6 +149,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (asset != null) {
       _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
     }
+    if (ref.read(assetViewerProvider).showingControls) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    } else {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
+    }
   }
 
   @override
