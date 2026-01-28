@@ -13136,6 +13136,14 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "name": "untagDescendants",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "requestBody": {

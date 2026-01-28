@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Query, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -10,6 +10,7 @@ import {
   TagResponseDto,
   TagUpdateDto,
   TagUpsertDto,
+  UntagAssetsOptionsDto,
 } from 'src/dtos/tag.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -125,7 +126,8 @@ export class TagController {
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,
     @Param() { id }: UUIDParamDto,
+    @Query() { untagDescendants }: UntagAssetsOptionsDto,
   ): Promise<BulkIdResponseDto[]> {
-    return this.service.removeAssets(auth, id, dto);
+    return this.service.removeAssets(auth, id, dto, untagDescendants);
   }
 }
