@@ -228,53 +228,44 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<List<LocalAsset>> getByChecksumsFiltered(
-    Iterable<String> checksums, {
-    BackupSelection? backupSelection,
-    bool? isRemoteTrashed,
-  }) {
+  Future<List<RemoteDeletedLocalAsset>> getRemoteTrashedLocalAssets(Iterable<String> checksums) {
     if (checksums.isEmpty) {
       return Future.value([]);
     }
 
+    final selectionQuery =
+        _db.localAlbumAssetEntity.selectOnly().join([
+            innerJoin(
+              _db.localAlbumEntity,
+              _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAlbumAssetEntity.assetId])
+          ..where(
+            _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+          );
+
     final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.deletedAt]).join([
-      leftOuterJoin(
+      innerJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
         useColumns: false,
       ),
     ]);
 
-    Expression<bool> whereClause = _db.localAssetEntity.checksum.isIn(checksums);
-
-    if (backupSelection != null) {
-      final selectionQuery =
-          _db.localAlbumAssetEntity.selectOnly().join([
-              innerJoin(
-                _db.localAlbumEntity,
-                _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-                useColumns: false,
-              ),
-            ])
-            ..addColumns([_db.localAlbumAssetEntity.assetId])
-            ..where(
-              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-                  _db.localAlbumEntity.backupSelection.equalsValue(backupSelection),
-            );
-      whereClause = whereClause & existsQuery(selectionQuery);
-    }
-
-    if (isRemoteTrashed != null) {
-      whereClause =
-          whereClause &
-          (isRemoteTrashed ? _db.remoteAssetEntity.deletedAt.isNotNull() : _db.remoteAssetEntity.deletedAt.isNull());
-    }
+    final whereClause =
+        _db.localAssetEntity.checksum.isIn(checksums) &
+        existsQuery(selectionQuery) &
+        _db.remoteAssetEntity.deletedAt.isNotNull();
 
     query.where(whereClause);
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
-      return asset.copyWith(deletedAt: row.read(_db.remoteAssetEntity.deletedAt));
+      final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt)!;
+      return RemoteDeletedLocalAsset(asset: asset, remoteDeletedAt: remoteDeletedAt);
     }).get();
   }
 }

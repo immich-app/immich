@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -277,11 +276,7 @@ class ActionService {
       await _trashSyncRepository.updateApproves(trashedChecksums, false);
       return trashedChecksums.length;
     }
-    final assetsToTrash = await _localAssetRepository.getByChecksumsFiltered(
-      trashedChecksums,
-      backupSelection: BackupSelection.selected,
-      isRemoteTrashed: true,
-    );
+    final assetsToTrash = await _localAssetRepository.getRemoteTrashedLocalAssets(trashedChecksums);
     if (assetsToTrash.isEmpty) {
       // No localAssetEntity found; close review to avoid re-showing the same items.
       await _trashSyncRepository.updateApproves(trashedChecksums, true);
@@ -289,7 +284,7 @@ class ActionService {
     }
     final mediaUrls = await Future.wait(
       assetsToTrash.map(
-        (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
+            (e) => _storageRepository.getAssetEntityForAsset(e.asset).then((e) => e?.getMediaUrl()),
       ),
     );
     final trashUrls = mediaUrls.nonNulls;
@@ -305,7 +300,7 @@ class ActionService {
     await _trashSyncRepository.updateApproves(trashedChecksums, true);
 
     final trashedAssetsMap = Map<String, DateTime>.fromEntries(
-      assetsToTrash.map((e) => MapEntry(e.checksum!, e.deletedAt!)),
+      assetsToTrash.map((e) => MapEntry(e.asset.checksum!, e.remoteDeletedAt)),
     );
 
     final assetsByAlbum = await _localAssetRepository.getAssetsFromBackupAlbums(trashedAssetsMap);

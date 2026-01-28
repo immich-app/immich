@@ -22,15 +22,11 @@ class TrashSyncBottomBar extends ConsumerWidget {
               children: [
                 KeepOnDeviceActionButton(
                   source: ActionSource.timeline,
-                  onResult: (result) {
-                    //todo STEP 2;
-                  },
+                  onResult: (result) => showKeepResultToast(context, result),
                 ),
                 MoveToTrashActionButton(
                   source: ActionSource.timeline,
-                  onResult: (result) {
-                    //todo STEP 2;
-                  },
+                  onResult: (result) => showTrashResultToast(context, result),
                 ),
               ],
             ),
