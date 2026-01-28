@@ -92,7 +92,9 @@ class AssetViewer extends ConsumerStatefulWidget {
     if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
-      // Hide controls by default for videos and motion photos
+    }
+    // Hide controls by default for videos
+    if (asset.isVideo) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
   }
