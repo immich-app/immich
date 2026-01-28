@@ -4,7 +4,6 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
@@ -260,35 +259,6 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
-  }
-
-  Future<Map<String, List<RemoteDeletedLocalAsset>>> getToTrash() async {
-    final result = <String, List<RemoteDeletedLocalAsset>>{};
-
-    final rows =
-        await (_db.select(_db.localAlbumAssetEntity).join([
-              innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
-              innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-              leftOuterJoin(
-                _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-              ),
-            ])..where(
-              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                  _db.remoteAssetEntity.deletedAt.isNotNull(),
-            ))
-            .get();
-
-    for (final row in rows) {
-      final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final remoteDeletedAt = row.read(_db.remoteAssetEntity.deletedAt);
-      final asset = row.readTable(_db.localAssetEntity).toDto();
-      (result[albumId] ??= <RemoteDeletedLocalAsset>[]).add(
-        RemoteDeletedLocalAsset(asset: asset, remoteDeletedAt: remoteDeletedAt!),
-      );
-    }
-
-    return result;
   }
 
   //attempt to reuse existing checksums

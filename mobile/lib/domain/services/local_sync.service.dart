@@ -384,7 +384,7 @@ class LocalSyncService {
       _log.info("syncTrashedAssets, No remote assets found for restoration");
     }
     final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
-    final localAssetsToTrash = await _trashedLocalAssetRepository.getToTrash();
+    final localAssetsToTrash = await _localAssetRepository.getToTrash();
     if (localAssetsToTrash.isNotEmpty) {
       final flattenedAssetsToTrash = localAssetsToTrash.values.flattened;
       if (reviewMode) {
