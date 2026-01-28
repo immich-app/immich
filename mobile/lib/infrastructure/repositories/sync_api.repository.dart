@@ -79,16 +79,6 @@ class SyncApiRepository {
     final reset = onReset ?? () {};
 
     try {
-      final syncResets = Store.get(StoreKey.requiredResets, '');
-      final resetTypes = syncResets.split(',').map((e) => SyncEntityTypeTypeTransformer().decode(e)).nonNulls.toList();
-
-      if (resetTypes.isNotEmpty) {
-        _logger.info("Performing sync reset for types: $resetTypes");
-        await _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: resetTypes));
-        await Store.put(StoreKey.requiredResets, '');
-        _logger.info("Successfully reset sync types: $resetTypes");
-      }
-
       final response = await client.send(request);
 
       if (response.statusCode != 200) {

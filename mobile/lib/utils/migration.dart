@@ -28,7 +28,6 @@ import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
-import 'package:openapi/api.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
@@ -92,14 +91,8 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   if (version < 21) {
-    await _addSyncEntityReset([
-      SyncEntityType.assetV1,
-      SyncEntityType.partnerAssetV1,
-      SyncEntityType.partnerAssetBackfillV1,
-      SyncEntityType.albumAssetCreateV1,
-      SyncEntityType.albumAssetUpdateV1,
-      SyncEntityType.albumAssetBackfillV1,
-    ]);
+    await syncStreamRepository.reset();
+    await Store.put(StoreKey.shouldResetSync, true);
   }
 
   if (targetVersion >= 12) {
@@ -290,17 +283,6 @@ Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
     dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
-  }
-}
-
-Future<void> _addSyncEntityReset(List<SyncEntityType> entities) async {
-  try {
-    final currentReset = Store.tryGet(StoreKey.requiredResets) ?? '';
-    final resets = currentReset.split(',').toSet();
-    resets.addAll(entities.map((e) => e.value));
-    await Store.put(StoreKey.requiredResets, resets.where((e) => e.isNotEmpty).join(','));
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while adding sync entity reset: $error");
   }
 }
 
