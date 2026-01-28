@@ -36,6 +36,9 @@ class SyncApiRepository {
     headers.addAll(headerParams);
 
     final shouldReset = Store.get(StoreKey.shouldResetSync, false);
+    if (shouldReset) {
+      _logger.info("Resetting sync state by client");
+    }
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
     request.body = jsonEncode(
