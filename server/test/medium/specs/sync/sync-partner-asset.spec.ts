@@ -63,6 +63,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           type: asset.type,
           visibility: asset.visibility,
           duration: asset.duration,
+          isEdited: asset.isEdited,
           stackId: null,
           livePhotoVideoId: null,
           libraryId: asset.libraryId,

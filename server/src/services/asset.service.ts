@@ -4,7 +4,7 @@ import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
-import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -21,7 +21,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
@@ -112,7 +112,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: MapAsset | null = null;
+    let previousMotion: { id: string } | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -414,11 +414,32 @@ export class AssetService extends BaseService {
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+
+    const uniqueKeys = new Set<string>();
+    for (const item of dto.items) {
+      const key = `(${item.assetId}, ${item.key})`;
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertBulkMetadata(dto.items);
   }
 
   async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+
+    const uniqueKeys = new Set<string>();
+    for (const { key } of dto.items) {
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertMetadata(id, dto.items);
   }
 
@@ -553,16 +574,21 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Editing SVG images is not supported');
     }
 
-    // check that crop parameters will not go out of bounds
-    const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
-
-    if (!assetWidth || !assetHeight) {
-      throw new BadRequestException('Asset dimensions are not available for editing');
+    const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
+    if (cropIndex > 0) {
+      throw new BadRequestException('Crop action must be the first edit action');
     }
 
-    const crop = dto.edits.find((e) => e.action === AssetEditAction.Crop)?.parameters;
+    const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
     if (crop) {
-      const { x, y, width, height } = crop;
+      // check that crop parameters will not go out of bounds
+      const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
+
+      if (!assetWidth || !assetHeight) {
+        throw new BadRequestException('Asset dimensions are not available for editing');
+      }
+
+      const { x, y, width, height } = crop.parameters;
       if (x + width > assetWidth || y + height > assetHeight) {
         throw new BadRequestException('Crop parameters are out of bounds');
       }

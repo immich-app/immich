@@ -8,10 +8,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
@@ -153,6 +155,44 @@ class AdvancedSettings extends HookConsumerWidget {
             );
           },
         ),
+      ListTile(
+        title: Text("advanced_settings_clear_image_cache".tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
+        leading: const Icon(Icons.playlist_remove_rounded),
+        onTap: () async {
+          final int clearedBytes;
+          try {
+            clearedBytes = await remoteImageApi.clearCache();
+          } catch (e) {
+            context.scaffoldMessenger.showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 2),
+                content: Text(
+                  "advanced_settings_clear_image_cache_error".tr(),
+                  style: context.textTheme.bodyLarge?.copyWith(color: context.themeData.colorScheme.error),
+                ),
+              ),
+            );
+            return;
+          }
+
+          if (clearedBytes < 0) {
+            return;
+          }
+
+          // iOS always returns a small non-zero value
+          final clearedMB = clearedBytes < (256 * 1024) ? "0 MiB" : formatHumanReadableBytes(clearedBytes, 2);
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                "advanced_settings_clear_image_cache_success".tr(namedArgs: {'size': clearedMB}),
+                style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+              ),
+            ),
+          );
+        },
+      ),
+      const SizedBox(height: 60),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);

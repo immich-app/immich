@@ -2,6 +2,8 @@
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { mdiAlertCircle, mdiCheckCircle } from '@mdi/js';
+import Icon from '@mdi/react';
 
 A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)
 
@@ -11,47 +13,127 @@ The instructions on this page show you how to prepare your Immich instance to be
 
 ## Database
 
+Immich stores [file paths](https://github.com/immich-app/immich/discussions/3299) and user metadata in the database. It does not scan the library folder, so database backups are essential.
+
+### Automatic Database Backups
+
+Immich automatically creates database backups for disaster-recovery purposes. These backups are stored in `UPLOAD_LOCATION/backups` and can be managed through the web interface.
+
+You can adjust the backup schedule and retention settings in **Administration > Settings > Backup** (default: keep last 14 backups, create daily at 2:00 AM).
+
 :::caution
-Immich saves [file paths in the database](https://github.com/immich-app/immich/discussions/3299), it does not scan the library folder to update the database so backups are crucial.
+Database backups do **not** contain photos or videos — only metadata. They must be used together with a copy of the files in `UPLOAD_LOCATION` as outlined below.
 :::
+
+#### Creating a Backup
+
+You can trigger a database backup manually:
+
+1. Go to **Administration > Job Queues**
+2. Click **Create job** in the top right
+3. Select **Create Database Backup** and click **Confirm**
+
+The backup will appear in `UPLOAD_LOCATION/backups` and counts toward your retention limit.
+
+### Restoring a Database Backup
+
+Immich provides two ways to restore a database backup: through the web interface or via the command line. The web interface is the recommended method for most users.
+
+#### Restore from Settings {#restore-from-settings}
+
+If you have an existing Immich installation:
+
+<img
+src={require('./img/restore-from-settings.webp').default}
+title="Restore from settings"
+/>
+
+1. Go to **Administration > Maintenance**
+2. Expand the **Restore database backup** section
+3. You'll see a list of available backups with their version and creation date
+4. Click **Restore** next to the backup you want to restore
+5. Confirm the restore operation
 
 :::info
-Refer to the official [postgres documentation](https://www.postgresql.org/docs/current/backup.html) for details about backing up and restoring a postgres database.
+Restoring a backup will wipe the current database and replace it with the backup. A restore point is automatically created before the operation begins, allowing rollback if the restore fails.
 :::
 
-:::caution
-It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
+#### Restore from Onboarding {#restore-from-onboarding}
+
+If you're setting up Immich on a fresh installation and want to restore from an existing backup:
+
+1. Download and populate `.env` and `docker-compose.yml` as per the [installation instructions](/install/docker-compose).
+2. Move the previous's instance data directories containing `backups`, `encoded-video`, `library`, `profile`, `thumbs` and `upload` into the new `UPLOAD_LOCATION`
+3. **(For external libraries)** If you used external library feature in your previous instance, make sure that the mount settings in your new `docker-compose.yml` reflect the same structure. You may need to move files accordingly.
+
+:::info Example
+
+Assuming your previous `UPLOAD_LOCATION` was `UPLOAD_LOCATION=/my-broken-instance/media` and your new one is `UPLOAD_LOCATION=/a-brand-new-instance/data`, you will need to perform the following file moves:
+
+```
+/my-broken-instance/media/backups          ->    /a-brand-new-instance/data/backups
+/my-broken-instance/media/encoded-video    ->    /a-brand-new-instance/data/encoded-video
+/my-broken-instance/media/library          ->    /a-brand-new-instance/data/library
+/my-broken-instance/media/profile          ->    /a-brand-new-instance/data/profile
+/my-broken-instance/media/thumbs           ->    /a-brand-new-instance/data/thumbs
+/my-broken-instance/media/upload           ->    /a-brand-new-instance/data/upload
+```
+
 :::
 
-### Automatic Database Dumps
+4. Start the Immich services with `docker compose up -d`
+
+<img
+src={require('./img/restore-from-onboarding.webp').default}
+title="Restore from onboarding"
+/>
+
+5. On the welcome screen, click **Restore from backup**
+6. Immich will enter maintenance mode and display integrity checks for your storage folders
+7. Review the folder status to ensure your library files are accessible
+8. Click **Next** to proceed to backup selection
+9. Select a backup from the list or upload a backup file (`.sql.gz`)
+10. Click **Restore** to begin the restoration process
+
+:::tip
+Before restoring, ensure your `UPLOAD_LOCATION` folders contain the same files that existed when the backup was created. The integrity check will show you which folders are readable/writable and how many files they contain.
+:::
+
+### Uploading a Backup File {#uploading-backup}
+
+You can upload a database backup file directly:
+
+1. In the **Restore database backup** section, click **Select from computer**
+2. Choose a `.sql.gz` file
+3. The uploaded backup will appear in the list with an `uploaded-` prefix
+4. Click **Restore** to restore from the uploaded file
+
+### Backup Version Compatibility {#backup-compatibility}
+
+When viewing backups, Immich displays compatibility indicators based on the current version and the information from the filename:
+
+- <Icon path={mdiCheckCircle} size={1} color="green"/> Backup version matches current Immich version
+- <Icon path={mdiAlertCircle} size={1} color="#feb001"/> Backup was created with a different Immich version
+- <Icon path={mdiAlertCircle} size={1} color="red"/> Could not determine backup version
 
 :::warning
-The automatic database dumps can be used to restore the database in the event of damage to the Postgres database files.
-There is no monitoring for these dumps and you will not be notified if they are unsuccessful.
+Restoring a backup from a different Immich version may require database migrations. The restore process will attempt to run migrations automatically, but you should ensure you're restoring to a compatible version when possible.
 :::
 
-:::caution
-The database dumps do **NOT** contain any pictures or videos, only metadata. They are only usable with a copy of the other files in `UPLOAD_LOCATION` as outlined below.
-:::
+### Restore Process {#restore-process}
 
-For disaster-recovery purposes, Immich will automatically create database dumps. The dumps are stored in `UPLOAD_LOCATION/backups`.
-Please be sure to make your own, independent backup of the database together with the asset folders as noted below.
-You can adjust the schedule and amount of kept database dumps in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).
-By default, Immich will keep the last 14 database dumps and create a new dump every day at 2:00 AM.
+During restoration, Immich will:
 
-#### Trigger Dump
+1. Create a backup of the current database (restore point)
+2. Restore the selected backup
+3. Run database migrations if needed
+4. Perform a health check to verify the restore succeeded
 
-You are able to trigger a database dump in the [admin job status page](http://my.immich.app/admin/queues).
-Visit the page, open the "Create job" modal from the top right, select "Create Database Dump" and click "Confirm".
-A job will run and trigger a dump, you can verify this worked correctly by checking the logs or the `backups/` folder.
-This dumps will count towards the last `X` dumps that will be kept based on your settings.
+If the restore fails (e.g., corrupted backup or missing admin user), Immich will automatically roll back to the restore point.
 
-#### Restoring
+### Restore via Command Line {#restore-cli}
 
-We hope to make restoring simpler in future versions, for now you can find the database dumps in the `UPLOAD_LOCATION/backups` folder on your host.
-Then please follow the steps in the following section for restoring the database.
-
-### Manual Backup and Restore
+For advanced users or automated recovery scenarios, you can restore a database backup using the command line.
 
 <Tabs>
   <TabItem value="Linux system" label="Linux system" default>
@@ -106,10 +188,12 @@ docker compose up -d                              # Start remainder of Immich ap
   </TabItem>
 </Tabs>
 
-Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.), in which case you need to delete the `DB_DATA_LOCATION` folder to reset the database.
+:::note
+For the database restore to proceed properly, it requires a completely fresh install (i.e., the Immich server has never run since creating the Docker containers). If the Immich app has run, you may encounter Postgres conflicts (relation already exists, violated foreign key constraints, etc.). In this case, delete the `DB_DATA_LOCATION` folder to reset the database.
+:::
 
 :::tip
-Some deployment methods make it difficult to start the database without also starting the server. In these cases, you may set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Be sure to remove this variable and restart the services after the database is restored.
+Some deployment methods make it difficult to start the database without also starting the server. In these cases, set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This prevents the server from running migrations that interfere with the restore process. Remove this variable and restart services after the database is restored.
 :::
 
 ## Filesystem
@@ -157,16 +241,13 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
 - **Encoded Assets:**
   - Videos that have been re-encoded from the original for wider compatibility. The original is not removed.
   - Stored in `UPLOAD_LOCATION/encoded-video/<userID>`.
-
+- **Database Dump Backups:**
+  - Automatic database backups created by Immich for disaster recovery.
+  - Stored in `UPLOAD_LOCATION/backups/`.
 - **Postgres**
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.
-
-  :::danger
-  A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
-  :::
 
 </TabItem>
   <TabItem value="Storage Template On" label="Storage Template On">
@@ -203,15 +284,13 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
   - Files uploaded through mobile apps.
   - Temporarily located in `UPLOAD_LOCATION/upload/<userID>`.
   - Transferred to `UPLOAD_LOCATION/library/<userID>` upon successful upload.
+- **Database Dump Backups:**
+  - Automatic database backups created by Immich for disaster recovery.
+  - Stored in `UPLOAD_LOCATION/backups/`.
 - **Postgres**
   - The Immich database containing all the information to allow the system to function properly.  
     **Note:** This folder will only appear to users who have made the changes mentioned in [v1.102.0](https://github.com/immich-app/immich/discussions/8930) (an optional, non-mandatory change) or who started with this version.
   - Stored in `DB_DATA_LOCATION`.
-
-  :::danger
-  A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
-  :::
 
 </TabItem>
 

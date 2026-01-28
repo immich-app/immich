@@ -25,7 +25,7 @@
     if (assets.length === 1) {
       clearSelect();
       let asset = await getAssetInfo({ ...authManager.params, id: assets[0].id });
-      await handleDownloadAsset(asset);
+      await handleDownloadAsset(asset, { edited: true });
       return;
     }
 

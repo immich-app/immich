@@ -42,15 +42,6 @@ export class AssetJobRepository {
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('tag')
-            .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-            .whereRef('asset.id', '=', 'tag_asset.assetId'),
-        ).as('tags'),
-      )
       .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();
@@ -114,7 +105,15 @@ export class AssetJobRepository {
         'asset.thumbhash',
         'asset.type',
       ])
-      .select(withFiles)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFilesForThumbnail)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize]),
+        ).as('files'),
+      )
       .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)

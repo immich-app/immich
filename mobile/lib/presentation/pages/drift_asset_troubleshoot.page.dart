@@ -118,6 +118,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
+      _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
     ]);
   }
 
@@ -131,6 +132,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     final albums = await ref.read(assetServiceProvider).getSourceAlbums(asset.id);
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
     if (CurrentPlatform.isIOS) {
+      properties.add(_PropertyItem(label: 'Cloud ID', value: asset.cloudId));
       properties.add(_PropertyItem(label: 'Adjustment Time', value: asset.adjustmentTime?.toString()));
     }
     properties.add(

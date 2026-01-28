@@ -101,7 +101,7 @@
     <div class="flex items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <Icon icon={mdiNewBox} size="16" class="text-immich-primary dark:text-immich-dark-primary opacity-80" />
-        <Text size="tiny" class="font-medium text-gray-700 dark:text-gray-300">
+        <Text size="tiny" fontWeight="medium" class="text-gray-700 dark:text-gray-300">
           {releaseInfo.availableVersion}
         </Text>
       </div>
