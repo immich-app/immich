@@ -240,6 +240,12 @@ class ActionService {
     return _downloadRepository.downloadAllAssets(assets);
   }
 
+  Future<bool> setAlbumCover(String albumId, String assetId) async {
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    await _remoteAlbumRepository.update(updatedAlbum);
+    return true;
+  }
+
   Future<int> _deleteLocalAssets(List<String> localIds) async {
     final deletedIds = await _assetMediaRepository.deleteAll(localIds);
     if (deletedIds.isEmpty) {
