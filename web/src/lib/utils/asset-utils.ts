@@ -1,11 +1,11 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
@@ -73,7 +73,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
             text: $t('view_album'),
             color: 'primary',
             onClick() {
-              return goto(`${AppRoute.ALBUMS}/${albumId}`);
+              return goto(Route.viewAlbum({ id: albumId }));
             },
           },
         },
@@ -508,11 +508,13 @@ export const delay = async (ms: number) => {
 };
 
 export const getNextAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  return currentAsset && assets[assets.indexOf(currentAsset) + 1];
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index + 1] : undefined;
 };
 
 export const getPreviousAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  return currentAsset && assets[assets.indexOf(currentAsset) - 1];
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index - 1] : undefined;
 };
 
 export const canCopyImageToClipboard = (): boolean => {
@@ -546,4 +548,13 @@ const imgToBlob = async (imageElement: HTMLImageElement) => {
 export const copyImageToClipboard = async (source: HTMLImageElement) => {
   // do not await, so the Safari clipboard write happens in the context of the user gesture
   await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
+};
+
+export const navigateToAsset = async (targetAsset: AssetResponseDto | undefined | null) => {
+  if (!targetAsset) {
+    return false;
+  }
+
+  await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+  return true;
 };

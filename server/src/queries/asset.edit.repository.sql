@@ -15,3 +15,5 @@ from
   "asset_edit"
 where
   "assetId" = $1
+order by
+  "sequence" asc

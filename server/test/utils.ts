@@ -7,7 +7,7 @@ import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
-import { Readable, Writable } from 'node:stream';
+import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
@@ -493,6 +493,74 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
         callback(exitCode);
       }
     }),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
+export const mockDuplex = vitest.fn(
+  (command: string, exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+    const duplex = new Duplex({
+      write(_chunk, _encoding, callback) {
+        callback();
+      },
+
+      read() {},
+
+      final(callback) {
+        callback();
+      },
+    });
+
+    setImmediate(() => {
+      if (error) {
+        duplex.destroy(error as Error);
+      } else if (exitCode === 0) {
+        /* eslint-disable unicorn/prefer-single-call */
+        duplex.push(stdout);
+        duplex.push(null);
+        /* eslint-enable unicorn/prefer-single-call */
+      } else {
+        duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
+      }
+    });
+
+    return duplex;
+  },
+);
+
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
   } as unknown as ChildProcessWithoutNullStreams;
 });
 

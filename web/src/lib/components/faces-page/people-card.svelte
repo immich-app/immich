@@ -2,7 +2,7 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
@@ -42,7 +42,7 @@
   use:focusOutside={{ onFocusOut: () => (showVerticalDots = false) }}
 >
   <a
-    href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}"
+    href={Route.viewPerson(person, { previousRoute: Route.people() })}
     draggable="false"
     onfocus={() => (showVerticalDots = true)}
   >

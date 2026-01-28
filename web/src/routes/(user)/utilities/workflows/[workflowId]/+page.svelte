@@ -7,8 +7,8 @@
   import WorkflowJsonEditor from '$lib/components/workflows/WorkflowJsonEditor.svelte';
   import WorkflowSummarySidebar from '$lib/components/workflows/WorkflowSummary.svelte';
   import WorkflowTriggerCard from '$lib/components/workflows/WorkflowTriggerCard.svelte';
-  import { AppRoute } from '$lib/constants';
   import AddWorkflowStepModal from '$lib/modals/AddWorkflowStepModal.svelte';
+  import { Route } from '$lib/route';
   import {
     buildWorkflowPayload,
     getActionsByContext,
@@ -326,7 +326,7 @@
 
 {#snippet cardOrder(index: number)}
   <div class="h-8 w-8 rounded-lg flex place-items-center place-content-center shrink-0 border bg-light-50">
-    <Text size="small" class="font-immich-mono font-bold">
+    <Text size="small" class="font-mono font-bold">
       {index + 1}
     </Text>
   </div>
@@ -338,7 +338,7 @@
       <div class="w-full border-t-2 border-dashed border-light-200"></div>
     </div>
     <div class="relative flex justify-center text-xs uppercase">
-      <span class="bg-white dark:bg-black px-2 font-semibold text-light-500">THEN</span>
+      <Text class="bg-white dark:bg-black px-2" fontWeight="semi-bold" size="tiny" color="muted">{$t('then')}</Text>
     </div>
   </div>
 {/snippet}
@@ -350,7 +350,7 @@
     class="w-full p-8 rounded-lg border-2 border-dashed hover:border-light-400 hover:bg-light-50 transition-all flex flex-col items-center justify-center gap-2"
   >
     <Icon icon={mdiPlus} size="32" />
-    <Text size="small" class="font-medium">{title}</Text>
+    <Text size="small" fontWeight="medium">{title}</Text>
     <Text size="tiny">{description}</Text>
   </button>
 {/snippet}
@@ -580,7 +580,7 @@
   <WorkflowSummarySidebar trigger={selectedTrigger} filters={selectedFilters} actions={selectedActions} />
 </main>
 
-<ControlAppBar onClose={() => goto(AppRoute.WORKFLOWS)} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
+<ControlAppBar onClose={() => goto(Route.workflows())} backIcon={mdiArrowLeft} tailwindClasses="fixed! top-0! w-full">
   {#snippet leading()}
     <Text>{data.meta.title}</Text>
   {/snippet}
