@@ -1,5 +1,6 @@
 import {
   Activity,
+  Album,
   ApiKey,
   AssetFace,
   AssetFile,
@@ -23,6 +24,7 @@ import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editi
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
 import {
   AssetFileType,
+  AssetOrder,
   AssetStatus,
   AssetType,
   AssetVisibility,
@@ -505,6 +507,24 @@ const personFactory = (person?: Partial<Person>): Person => ({
   ...person,
 });
 
+const albumFactory = (album?: Partial<Omit<Album, 'assets'>>) => ({
+  albumName: 'My Album',
+  albumThumbnailAssetId: null,
+  albumUsers: [],
+  assets: [],
+  createdAt: newDate(),
+  deletedAt: null,
+  description: 'Album description',
+  id: newUuid(),
+  isActivityEnabled: false,
+  order: AssetOrder.Desc,
+  ownerId: newUuid(),
+  sharedLinks: [],
+  updatedAt: newDate(),
+  updateId: newUuidV7(),
+  ...album,
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
@@ -531,6 +551,7 @@ export const factory = {
   person: personFactory,
   assetEdit: assetEditFactory,
   tag: tagFactory,
+  album: albumFactory,
   uuid: newUuid,
   date: newDate,
   responses: {
