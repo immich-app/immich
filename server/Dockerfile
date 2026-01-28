@@ -23,6 +23,9 @@ RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
 
 FROM builder AS web
 
+ARG NODE_OPTIONS
+ENV NODE_OPTIONS=$NODE_OPTIONS
+
 WORKDIR /usr/src/app
 COPY ./web ./web/
 COPY ./i18n ./i18n/
