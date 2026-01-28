@@ -45,6 +45,46 @@ const config = {
       };
     },
     require.resolve('docusaurus-lunr-search'),
+    function resolve(context, options) {
+      return {
+        name: 'resolve',
+        configureWebpack(config, isServer) {
+          return {
+            externals: {
+              'node:events': '{}',
+              'node:fs': '{}',
+              'node:http': '{}',
+              'node:net': '{}',
+              'node:path': '{}',
+              'node:zlib': '{}',
+            },
+            resolve: {
+              preferRelative: true,
+              fallback: {
+                '@nestjs/microservices': false,
+                '@nestjs/microservices/microservices': false,
+                async_hooks: false,
+                child_process: false,
+                crypto: false,
+                fs: false,
+                http: false,
+                https: false,
+                net: false,
+                os: false,
+                path: false,
+                perf_hooks: false,
+                querystring: false,
+                stream: false,
+                timers: false,
+                util: false,
+                zlib: false,
+                'src/enum': require.resolve('../server/src/enum.ts'),
+              },
+            },
+          };
+        },
+      };
+    },
   ],
   presets: [
     [
