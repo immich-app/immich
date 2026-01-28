@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { HistoryBuilder, Property } from 'src/decorators';
+import { HistoryBuilder } from 'src/decorators';
 import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
 import { ValidateBoolean, ValidateEnum } from 'src/validation';
 

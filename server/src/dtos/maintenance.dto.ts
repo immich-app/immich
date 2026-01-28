@@ -8,7 +8,7 @@ export class SetMaintenanceModeDto {
   action!: MaintenanceAction;
 
   @ValidateIf((o) => o.action === MaintenanceAction.RestoreDatabase)
-  @ValidateString({ optional: true, description: 'Restore backup filename' })
+  @ValidateString({ description: 'Restore backup filename' })
   restoreBackupFilename?: string;
 }
 

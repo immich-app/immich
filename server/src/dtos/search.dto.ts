@@ -398,14 +398,14 @@ export class SearchExploreResponseDto {
 }
 
 export class MemoryLaneDto {
-  @ApiProperty({ type: 'integer', description: 'Day of month (1-31)', minimum: 1, maximum: 31 })
+  @ApiProperty({ type: 'integer', description: 'Day of month' })
   @IsInt()
   @Type(() => Number)
   @Max(31)
   @Min(1)
   day!: number;
 
-  @ApiProperty({ type: 'integer', description: 'Month (1-12)', minimum: 1, maximum: 12 })
+  @ApiProperty({ type: 'integer', description: 'Month' })
   @IsInt()
   @Type(() => Number)
   @Max(12)
