@@ -1,7 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
+  import Letterboxes from '$lib/components/asset-viewer/letterboxes.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { SlideshowLook, SlideshowState } from '$lib/stores/slideshow.store';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import {
@@ -28,17 +30,29 @@
   };
 
   type Props = {
+    transitionName?: string;
     panorama: string | { source: string };
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
+    onReady?: () => void;
   };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  let {
+    transitionName,
+    panorama,
+    originalPanorama,
+    adapter = EquirectangularAdapter,
+    plugins = [],
+    navbar = false,
+    onReady,
+  }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
+
+  const fullscreenDimensions = { width: globalThis.innerWidth || 0, height: globalThis.innerHeight || 0 };
 
   let animationInProgress: { cancel: () => void } | undefined;
   let previousFaces: Faces[] = [];
@@ -144,6 +158,7 @@
       zoomSpeed: 0.5,
       fisheye: false,
     });
+    viewer.addEventListener('ready', () => onReady?.(), { once: true });
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel is 0-100
@@ -175,4 +190,19 @@
 <AssetViewerEvents {onZoom} />
 
 <svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true }]} />
-<div class="h-full w-full mb-0" bind:this={container}></div>
+<div
+  id="sphere"
+  class="h-full w-full h-dvh w-dvw mb-0"
+  bind:this={container}
+  style:view-transition-name={transitionName}
+></div>
+
+<!-- Zero-sized letterboxes for view transitions from/to regular photos -->
+<Letterboxes
+  {transitionName}
+  slideshowState={SlideshowState.None}
+  slideshowLook={SlideshowLook.Contain}
+  hasThumbhash={false}
+  scaledDimensions={fullscreenDimensions}
+  container={fullscreenDimensions}
+/>

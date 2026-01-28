@@ -34,6 +34,7 @@
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
     onClose?: () => void;
+    onReady?: () => void;
   }
 
   let {
@@ -48,6 +49,7 @@
     onVideoEnded = () => {},
     onVideoStarted = () => {},
     onClose = () => {},
+    onReady,
   }: Props = $props();
 
   const asset = $derived(cursor.current);
@@ -109,6 +111,7 @@
       width: videoPlayer?.videoWidth ?? 1,
       height: videoPlayer?.videoHeight ?? 1,
     };
+    onReady?.();
   };
 
   const handleCanPlay = async (video: HTMLVideoElement) => {

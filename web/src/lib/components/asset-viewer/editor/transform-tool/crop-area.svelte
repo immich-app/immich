@@ -7,9 +7,10 @@
 
   interface Props {
     asset: AssetResponseDto;
+    onReady?: () => void;
   }
 
-  let { asset }: Props = $props();
+  let { asset, onReady }: Props = $props();
 
   let canvasContainer = $state<HTMLElement | null>(null);
 
@@ -62,6 +63,8 @@
       src={imageSrc}
       alt={$getAltText(toTimelineAsset(asset))}
       style={imageTransform ? `transform: ${imageTransform}` : ''}
+      onload={() => onReady?.()}
+      onerror={() => onReady?.()}
     />
     <div
       class={`${transformManager.isInteracting ? 'resizing' : ''} crop-frame`}
