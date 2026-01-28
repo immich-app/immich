@@ -255,6 +255,8 @@ void main() {
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        syncMigrationRepository: null,
+        api: null,
       );
 
       await sut.sync();
@@ -474,11 +476,7 @@ void main() {
       });
 
       final events = [
-        SyncStreamStub.assetModified(
-          id: 'remote-1',
-          checksum: 'checksum-trash',
-          ack: 'asset-remote-1-11',
-        ),
+        SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-trash', ack: 'asset-remote-1-11'),
       ];
 
       await simulateEvents(events);
