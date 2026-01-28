@@ -45,10 +45,8 @@ RUN git apply /tmp/*.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 
 ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
-ENV CCACHE_DIR="/ccache"
 # Note: the `parallel` setting uses a substantial amount of RAM
-RUN --mount=type=cache,target=/ccache,id=rocm-ccache \
-    ./build.sh \
+RUN ./build.sh \
     --allow_running_as_root \
     --config Release \
     --build_wheel \
@@ -61,7 +59,6 @@ RUN --mount=type=cache,target=/ccache,id=rocm-ccache \
     --skip_tests \
     --use_rocm \
     --rocm_home=/opt/rocm \
-    --use_cache \
     --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
