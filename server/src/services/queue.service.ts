@@ -261,18 +261,24 @@ export class QueueService extends BaseService {
 
   async handleNightlyJobs() {
     const config = await this.getConfig({ withCache: false });
+    const { familyMode } = this.configRepository.getEnv();
     const jobs: JobItem[] = [];
 
     if (config.nightlyTasks.databaseCleanup) {
       jobs.push(
         { name: JobName.AssetDeleteCheck },
         { name: JobName.UserDeleteCheck },
-        { name: JobName.PersonCleanup },
-        { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
         { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
       );
+
+      // Skip person cleanup in family mode (ML-dependent)
+      if (!familyMode) {
+        jobs.push({ name: JobName.PersonCleanup });
+      }
+
+      jobs.push({ name: JobName.MemoryCleanup });
     }
 
     if (config.nightlyTasks.generateMemories) {
@@ -287,7 +293,8 @@ export class QueueService extends BaseService {
       jobs.push({ name: JobName.AssetGenerateThumbnailsQueueAll, data: { force: false } });
     }
 
-    if (config.nightlyTasks.clusterNewFaces) {
+    // Skip face clustering in family mode (ML-dependent)
+    if (config.nightlyTasks.clusterNewFaces && !familyMode) {
       jobs.push({ name: JobName.FacialRecognitionQueueAll, data: { force: false, nightly: true } });
     }
 

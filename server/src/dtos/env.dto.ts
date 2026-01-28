@@ -120,6 +120,9 @@ export class EnvDto {
   @ValidateBoolean({ optional: true })
   IMMICH_ALLOW_SETUP?: boolean;
 
+  @ValidateBoolean({ optional: true })
+  IMMICH_FAMILY_MODE?: boolean;
+
   @IsIPRange({ requireCIDR: false }, { each: true })
   @Transform(({ value }) =>
     value && typeof value === 'string'

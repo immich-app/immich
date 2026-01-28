@@ -5,6 +5,7 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   ActivityCreateDto,
   ActivityDto,
+  ActivityFeedDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
@@ -19,6 +20,18 @@ import { UUIDParamDto } from 'src/validation';
 @Controller('activities')
 export class ActivityController {
   constructor(private service: ActivityService) {}
+
+  @Get('feed')
+  @Authenticated()
+  @Endpoint({
+    summary: 'Get activity feed',
+    description:
+      'Returns recent activities across all accessible albums for the current user. Activities are returned in reverse chronological order (newest first).',
+    history: new HistoryBuilder().added('v2'),
+  })
+  getActivityFeed(@Auth() auth: AuthDto, @Query() dto: ActivityFeedDto): Promise<ActivityResponseDto[]> {
+    return this.service.getFeed(auth, dto);
+  }
 
   @Get()
   @Authenticated({ permission: Permission.ActivityRead })

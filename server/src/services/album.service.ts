@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
   AlbumInfoDto,
@@ -94,6 +94,12 @@ export class AlbumService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
+    // In family mode, only admins can create albums
+    const { familyMode } = this.configRepository.getEnv();
+    if (familyMode && !auth.user.isAdmin) {
+      throw new ForbiddenException('Only the owner can create albums in family mode');
+    }
+
     const albumUsers = dto.albumUsers || [];
 
     for (const { userId } of albumUsers) {
@@ -136,6 +142,12 @@ export class AlbumService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAlbumDto): Promise<AlbumResponseDto> {
+    // In family mode, only admins can update albums
+    const { familyMode } = this.configRepository.getEnv();
+    if (familyMode && !auth.user.isAdmin) {
+      throw new ForbiddenException('Only the owner can update albums in family mode');
+    }
+
     await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: true });
@@ -159,6 +171,12 @@ export class AlbumService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
+    // In family mode, only admins can delete albums
+    const { familyMode } = this.configRepository.getEnv();
+    if (familyMode && !auth.user.isAdmin) {
+      throw new ForbiddenException('Only the owner can delete albums in family mode');
+    }
+
     await this.requireAccess({ auth, permission: Permission.AlbumDelete, ids: [id] });
     await this.albumRepository.delete(id);
   }

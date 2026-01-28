@@ -98,4 +98,52 @@ export class ActivityRepository {
 
     return result;
   }
+
+  /**
+   * Get recent activity feed across all accessible albums for a user
+   * This includes albums owned by the user and albums shared with the user
+   */
+  @GenerateSql({ params: [DummyValue.UUID, 20] })
+  async getFeed(userId: string, limit: number = 20) {
+    return this.db
+      .selectFrom('activity')
+      .selectAll('activity')
+      .innerJoin('user as user2', (join) =>
+        join.onRef('user2.id', '=', 'activity.userId').on('user2.deletedAt', 'is', null),
+      )
+      .innerJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom(sql`(select 1)`.as('dummy'))
+            .select(columns.userWithPrefix)
+            .as('user'),
+        (join) => join.onTrue(),
+      )
+      .select((eb) => eb.fn.toJson('user').as('user'))
+      .innerJoin('album', 'album.id', 'activity.albumId')
+      .leftJoin('asset', 'asset.id', 'activity.assetId')
+      .where((eb) =>
+        eb.or([
+          // Albums owned by the user
+          eb('album.ownerId', '=', userId),
+          // Albums shared with the user
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', userId),
+          ),
+        ]),
+      )
+      .where('album.deletedAt', 'is', null)
+      .where(({ or, and, eb }) =>
+        or([
+          and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),
+          eb('asset.id', 'is', null),
+        ]),
+      )
+      .orderBy('activity.createdAt', 'desc')
+      .limit(limit)
+      .execute();
+  }
 }

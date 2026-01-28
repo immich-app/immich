@@ -139,17 +139,25 @@ export class JobService extends BaseService {
           break;
         }
 
-        const jobs: JobItem[] = [
-          { name: JobName.SmartSearch, data: item.data },
-          { name: JobName.AssetDetectFaces, data: item.data },
-          { name: JobName.Ocr, data: item.data },
-        ];
+        const jobs: JobItem[] = [];
+
+        // Skip ML jobs in family mode
+        const { familyMode } = this.configRepository.getEnv();
+        if (!familyMode) {
+          jobs.push(
+            { name: JobName.SmartSearch, data: item.data },
+            { name: JobName.AssetDetectFaces, data: item.data },
+            { name: JobName.Ocr, data: item.data },
+          );
+        }
 
         if (asset.type === AssetType.Video) {
           jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
         }
 
-        await this.jobRepository.queueAll(jobs);
+        if (jobs.length > 0) {
+          await this.jobRepository.queueAll(jobs);
+        }
         if (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive) {
           this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));
           if (asset.exifInfo) {
@@ -212,7 +220,9 @@ export class JobService extends BaseService {
       }
 
       case JobName.SmartSearch: {
-        if (item.data.source === 'upload') {
+        // Skip duplicate detection in family mode (ML-dependent)
+        const { familyMode } = this.configRepository.getEnv();
+        if (item.data.source === 'upload' && !familyMode) {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         }
         break;

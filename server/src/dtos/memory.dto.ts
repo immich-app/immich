@@ -37,6 +37,10 @@ export class MemorySearchDto {
 
   @ValidateEnum({ enum: AssetOrderWithRandom, name: 'MemorySearchOrder', optional: true })
   order?: AssetOrderWithRandom;
+
+  @ValidateUUID({ optional: true })
+  @ApiProperty({ description: 'Filter memories by tag ID (e.g., family member tag)', required: false })
+  tagId?: string;
 }
 
 class OnThisDayDto {

@@ -43,7 +43,7 @@ export class PluginRepository {
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      const filters = manifest.filters
+      const filters = manifest.filters?.length
         ? await tx
             .insertInto('plugin_filter')
             .values(
@@ -69,7 +69,7 @@ export class PluginRepository {
             .execute()
         : [];
 
-      const actions = manifest.actions
+      const actions = manifest.actions?.length
         ? await tx
             .insertInto('plugin_action')
             .values(

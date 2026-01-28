@@ -134,6 +134,12 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
+      // In family mode, only admins can upload assets
+      const { familyMode } = this.configRepository.getEnv();
+      if (familyMode && !auth.user.isAdmin) {
+        throw new BadRequestException('Only the owner can upload photos in family mode');
+      }
+
       await this.requireAccess({
         auth,
         permission: Permission.AssetUpload,
@@ -167,6 +173,12 @@ export class AssetMediaService extends BaseService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
+      // In family mode, only admins can upload/replace assets
+      const { familyMode } = this.configRepository.getEnv();
+      if (familyMode && !auth.user.isAdmin) {
+        throw new BadRequestException('Only the owner can upload photos in family mode');
+      }
+
       await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
       const asset = await this.assetRepository.getById(id);
 

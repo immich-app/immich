@@ -491,3 +491,24 @@ export const lockableProperties = [
   'timeZone',
   'tags',
 ] as const;
+
+export type Invitation = {
+  id: string;
+  email: string;
+  token: string;
+  invitedById: string;
+  createdAt: Date;
+  expiresAt: Date;
+  acceptedAt: Date | null;
+};
+
+export type FamilyMember = {
+  id: string;
+  ownerId: string;
+  tagId: string;
+  name: string;
+  birthdate: string;
+  color: string | null;
+  avatarAssetId: string | null;
+  createdAt: Date;
+};

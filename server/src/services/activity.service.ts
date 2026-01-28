@@ -3,6 +3,7 @@ import { Activity } from 'src/database';
 import {
   ActivityCreateDto,
   ActivityDto,
+  ActivityFeedDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
@@ -17,6 +18,14 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class ActivityService extends BaseService {
+  /**
+   * Get activity feed across all accessible albums
+   */
+  async getFeed(auth: AuthDto, dto: ActivityFeedDto): Promise<ActivityResponseDto[]> {
+    const activities = await this.activityRepository.getFeed(auth.user.id, dto.limit ?? 20);
+    return activities.map((activity) => mapActivity(activity));
+  }
+
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     const activities = await this.activityRepository.search({

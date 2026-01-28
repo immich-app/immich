@@ -39,6 +39,17 @@ export class MemoryRepository implements IBulkAsset {
           .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
           .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
       )
+      .$if(dto.tagId !== undefined, (qb) =>
+        qb.where((eb) =>
+          eb.exists(
+            eb
+              .selectFrom('memory_asset')
+              .innerJoin('tag_asset', 'tag_asset.assetId', 'memory_asset.assetId')
+              .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+              .where('tag_asset.tagId', '=', dto.tagId!),
+          ),
+        ),
+      )
       .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
       .where('ownerId', '=', ownerId);
   }
@@ -68,7 +79,17 @@ export class MemoryRepository implements IBulkAsset {
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
             .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
+            .where('asset.deletedAt', 'is', null)
+            .$if(dto.tagId !== undefined, (qb) =>
+              qb.where((eb) =>
+                eb.exists(
+                  eb
+                    .selectFrom('tag_asset')
+                    .whereRef('tag_asset.assetId', '=', 'asset.id')
+                    .where('tag_asset.tagId', '=', dto.tagId!),
+                ),
+              ),
+            ),
         ).as('assets'),
       )
       .selectAll('memory')

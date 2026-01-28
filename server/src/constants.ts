@@ -145,8 +145,12 @@ export const endpointTags: Record<ApiTag, string> = {
   [ApiTag.Deprecated]: 'Deprecated endpoints that are planned for removal in the next major release.',
   [ApiTag.Download]: 'Endpoints for downloading assets or collections of assets.',
   [ApiTag.Duplicates]: 'Endpoints for managing and identifying duplicate assets.',
+  [ApiTag.FamilyMembers]:
+    'Family members are profiles for children or other family members with birthdates, enabling age-based photo filtering and comparisons. Only available in family mode.',
   [ApiTag.Faces]:
     'A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually.',
+  [ApiTag.Invitations]:
+    'Invitations allow administrators to invite family members to join the photo sharing system. Only available in family mode.',
   [ApiTag.Jobs]:
     'Queues and background jobs are used for processing tasks asynchronously. Queues can be paused and resumed as needed.',
   [ApiTag.Libraries]:

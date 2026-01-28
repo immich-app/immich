@@ -31,6 +31,8 @@ import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
+import { FamilyMemberTable } from 'src/schema/tables/family-member.table';
+import { InvitationTable } from 'src/schema/tables/invitation.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
@@ -98,7 +100,9 @@ export class ImmichDatabase {
     AssetFileTable,
     AuditTable,
     AssetExifTable,
+    FamilyMemberTable,
     FaceSearchTable,
+    InvitationTable,
     GeodataPlacesTable,
     LibraryTable,
     MemoryTable,
@@ -196,7 +200,11 @@ export interface DB {
 
   face_search: FaceSearchTable;
 
+  family_member: FamilyMemberTable;
+
   geodata_places: GeodataPlacesTable;
+
+  invitation: InvitationTable;
 
   library: LibraryTable;
 

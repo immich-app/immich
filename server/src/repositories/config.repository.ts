@@ -96,6 +96,8 @@ export interface EnvData {
     allow: boolean;
   };
 
+  familyMode: boolean;
+
   telemetry: {
     apiPort: number;
     microservicesPort: number;
@@ -325,6 +327,8 @@ const getEnv = (): EnvData => {
     setup: {
       allow: dto.IMMICH_ALLOW_SETUP ?? true,
     },
+
+    familyMode: dto.IMMICH_FAMILY_MODE ?? false,
 
     storage: {
       ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,

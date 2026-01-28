@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsPositive, IsString, ValidateIf } from 'class-validator';
 import { Activity } from 'src/database';
 import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
-import { ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum ReactionType {
   COMMENT = 'comment',
@@ -51,6 +52,15 @@ export class ActivitySearchDto extends ActivityDto {
 
   @ValidateUUID({ optional: true })
   userId?: string;
+}
+
+export class ActivityFeedDto {
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'integer', description: 'Number of activities to return (default: 20)', required: false })
+  limit?: number;
 }
 
 const isComment = (dto: ActivityCreateDto) => dto.type === ReactionType.COMMENT;

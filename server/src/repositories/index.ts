@@ -15,6 +15,8 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
+import { FamilyMemberRepository } from 'src/repositories/family-member.repository';
+import { InvitationRepository } from 'src/repositories/invitation.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -70,6 +72,8 @@ export const repositories = [
   DuplicateRepository,
   EmailRepository,
   EventRepository,
+  FamilyMemberRepository,
+  InvitationRepository,
   JobRepository,
   LibraryRepository,
   LoggingRepository,
