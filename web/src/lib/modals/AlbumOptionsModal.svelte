@@ -3,6 +3,7 @@
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import { AlbumPageViewMode } from '$lib/constants';
   import {
     getAlbumActions,
     handleRemoveUserFromAlbum,
@@ -55,7 +56,7 @@
     sharedLinks = sharedLinks.filter(({ id }) => sharedLink.id !== id);
   };
 
-  const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
+  const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album, AlbumPageViewMode.OPTIONS));
 
   let sharedLinks: SharedLinkResponseDto[] = $state([]);
 
