@@ -5,7 +5,9 @@ class FeatureFlagsManager {
   #value?: ServerFeaturesDto = $state();
 
   constructor() {
-    eventManager.on('SystemConfigUpdate', () => void this.#loadFeatureFlags());
+    eventManager.on({
+      SystemConfigUpdate: () => void this.#loadFeatureFlags(),
+    });
   }
 
   async init() {

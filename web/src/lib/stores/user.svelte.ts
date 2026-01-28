@@ -26,4 +26,6 @@ const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
-eventManager.on('AuthLogout', () => reset());
+eventManager.on({
+  AuthLogout: () => reset(),
+});
