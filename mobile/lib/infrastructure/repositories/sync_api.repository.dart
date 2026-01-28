@@ -19,6 +19,10 @@ class SyncApiRepository {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
+  Future<void> deleteSyncAck(List<SyncEntityType> types) {
+    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types));
+  }
+
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
     Function()? onReset,
