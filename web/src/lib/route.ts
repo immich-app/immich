@@ -49,6 +49,7 @@ export const Route = {
   changePassword: () => '/auth/change-password',
   onboarding: (params?: { step?: string }) => '/auth/onboarding' + asQueryString(params),
   pinPrompt: (params?: { continue?: string }) => '/auth/pin-prompt' + asQueryString({ continue: params?.continue }),
+  acceptInvitation: ({ token }: { token: string }) => `/invite/${token}`,
 
   // albums
   albums: () => '/albums',
@@ -81,6 +82,9 @@ export const Route = {
 
   // memories
   memories: (params?: { id?: string }) => '/memory' + asQueryString(params),
+
+  // compare (family mode)
+  compare: (params?: { ageMonths?: number }) => '/compare' + asQueryString(params),
 
   // partners
   viewPartner: ({ id }: { id: string }) => `/partners/${id}`,
@@ -130,6 +134,15 @@ export const Route = {
   newUser: () => `/admin/users/new`,
   viewUser: ({ id }: { id: string }) => `/admin/users/${id}`,
   editUser: ({ id }: { id: string }) => `/admin/users/${id}/edit`,
+
+  // invitations (family mode)
+  invitations: () => '/admin/invitations',
+  newInvitation: () => '/admin/invitations/new',
+
+  // family members (family mode)
+  familyMembers: () => '/admin/family-members',
+  newFamilyMember: () => '/admin/family-members/new',
+  editFamilyMember: ({ id }: { id: string }) => `/admin/family-members/${id}/edit`,
 
   // utilities
   utilities: () => '/utilities',

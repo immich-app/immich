@@ -14,6 +14,7 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiCompare,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -45,6 +46,10 @@
 
   {#if featureFlagsManager.value.map}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
+  {/if}
+
+  {#if featureFlagsManager.value.familyMode}
+    <NavbarItem title={$t('compare')} href={Route.compare()} icon={mdiCompare} />
   {/if}
 
   {#if $preferences.people.enabled && $preferences.people.sidebarWeb}

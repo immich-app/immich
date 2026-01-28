@@ -173,6 +173,7 @@ export class ServerFeaturesDto {
   search!: boolean;
   email!: boolean;
   ocr!: boolean;
+  familyMode!: boolean;
 }
 
 export interface ReleaseNotification {

@@ -18,21 +18,21 @@ export class FamilyMemberController {
 
   @Post()
   @Authenticated({ permission: Permission.All })
-  @ApiOperation({ summary: 'Create a family member (admin only)' })
+  @ApiOperation({ operationId: 'createFamilyMember', summary: 'Create a family member (admin only)' })
   create(@Auth() auth: AuthDto, @Body() dto: CreateFamilyMemberDto): Promise<FamilyMemberResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
   @Authenticated()
-  @ApiOperation({ summary: 'Get all family members' })
+  @ApiOperation({ operationId: 'getAllFamilyMembers', summary: 'Get all family members' })
   getAll(@Auth() auth: AuthDto): Promise<FamilyMemberResponseDto[]> {
     return this.service.getAll(auth);
   }
 
   @Get('compare')
   @Authenticated()
-  @ApiOperation({ summary: 'Compare all family members at the same age' })
+  @ApiOperation({ operationId: 'getFamilyMemberAgeComparison', summary: 'Compare all family members at the same age' })
   @ApiQuery({ name: 'ageMonths', required: true, type: Number, description: 'Age in months to compare' })
   @ApiQuery({ name: 'toleranceMonths', required: false, type: Number, description: 'Tolerance in months (default: 1)' })
   getAgeComparison(
@@ -45,14 +45,14 @@ export class FamilyMemberController {
 
   @Get(':id')
   @Authenticated()
-  @ApiOperation({ summary: 'Get a family member by ID' })
+  @ApiOperation({ operationId: 'getFamilyMember', summary: 'Get a family member by ID' })
   get(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<FamilyMemberResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Get(':id/photos')
   @Authenticated()
-  @ApiOperation({ summary: 'Get photos of a family member at a specific age' })
+  @ApiOperation({ operationId: 'getFamilyMemberPhotosAtAge', summary: 'Get photos of a family member at a specific age' })
   @ApiQuery({ name: 'ageMonths', required: true, type: Number, description: 'Age in months' })
   @ApiQuery({ name: 'toleranceMonths', required: false, type: Number, description: 'Tolerance in months (default: 1)' })
   getPhotosAtAge(
@@ -66,7 +66,7 @@ export class FamilyMemberController {
 
   @Patch(':id')
   @Authenticated({ permission: Permission.All })
-  @ApiOperation({ summary: 'Update a family member (admin only)' })
+  @ApiOperation({ operationId: 'updateFamilyMember', summary: 'Update a family member (admin only)' })
   update(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -77,7 +77,7 @@ export class FamilyMemberController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.All })
-  @ApiOperation({ summary: 'Delete a family member (admin only)' })
+  @ApiOperation({ operationId: 'deleteFamilyMember', summary: 'Delete a family member (admin only)' })
   delete(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

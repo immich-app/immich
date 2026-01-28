@@ -7,6 +7,8 @@ import type {
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
+  FamilyMemberResponseDto,
+  InvitationResponseDto,
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
@@ -83,6 +85,13 @@ export type Events = {
   WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
+
+  FamilyMemberCreate: [FamilyMemberResponseDto];
+  FamilyMemberUpdate: [FamilyMemberResponseDto];
+  FamilyMemberDelete: [{ id: string }];
+
+  InvitationCreate: [InvitationResponseDto];
+  InvitationRevoke: [{ id: string }];
 
   ReleaseEvent: [ReleaseEvent];
 };

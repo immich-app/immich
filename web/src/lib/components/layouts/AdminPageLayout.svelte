@@ -2,11 +2,21 @@
   import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
+  import {
+    mdiAccountChildCircle,
+    mdiAccountMultipleOutline,
+    mdiBookshelf,
+    mdiCog,
+    mdiEmailOutline,
+    mdiServer,
+    mdiTrayFull,
+    mdiWrench,
+  } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -17,6 +27,8 @@
   };
 
   let { breadcrumbs, actions, children }: Props = $props();
+
+  const familyMode = $derived(featureFlagsManager.value.familyMode);
 </script>
 
 <AppShell>
@@ -29,6 +41,10 @@
   >
     <div class="flex flex-col pt-8 pe-4 gap-1">
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
+      {#if familyMode}
+        <NavbarItem title={$t('invitations')} href={Route.invitations()} icon={mdiEmailOutline} />
+        <NavbarItem title={$t('family_members')} href={Route.familyMembers()} icon={mdiAccountChildCircle} />
+      {/if}
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
       <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />

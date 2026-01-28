@@ -33,6 +33,7 @@ export class AcceptInvitationDto {
 export class InvitationResponseDto {
   id!: string;
   email!: string;
+  token!: string;
   createdAt!: string;
   expiresAt!: string;
   acceptedAt!: string | null;
@@ -42,6 +43,7 @@ export function mapInvitation(invitation: Invitation): InvitationResponseDto {
   return {
     id: invitation.id,
     email: invitation.email,
+    token: invitation.token,
     createdAt: invitation.createdAt.toISOString(),
     expiresAt: invitation.expiresAt.toISOString(),
     acceptedAt: invitation.acceptedAt ? invitation.acceptedAt.toISOString() : null,

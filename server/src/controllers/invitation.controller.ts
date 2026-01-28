@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -53,6 +53,7 @@ export class InvitationController {
   }
 
   @Get('validate')
+  @ApiOkResponse({ type: InvitationResponseDto })
   @Endpoint({
     summary: 'Validate an invitation token',
     description: 'Check if an invitation token is valid and not expired. Public endpoint.',

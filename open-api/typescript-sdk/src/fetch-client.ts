@@ -801,6 +801,52 @@ export type AssetFaceDeleteDto = {
 export type FaceDto = {
     id: string;
 };
+export type FamilyMemberResponseDto = {
+    avatarAssetId?: string | null;
+    birthdate: string;
+    color?: string | null;
+    createdAt: string;
+    id: string;
+    name: string;
+    tagId: string;
+};
+export type CreateFamilyMemberDto = {
+    /** Asset ID to use as avatar */
+    avatarAssetId?: string;
+    /** Birthdate in ISO format (YYYY-MM-DD) */
+    birthdate: string;
+    /** Hex color for UI display (e.g., #FF5733) */
+    color?: string;
+    /** Name of the family member */
+    name: string;
+};
+export type UpdateFamilyMemberDto = {
+    /** Asset ID to use as avatar */
+    avatarAssetId?: string;
+    /** Birthdate in ISO format (YYYY-MM-DD) */
+    birthdate?: string;
+    /** Hex color for UI display (e.g., #FF5733) */
+    color?: string;
+    /** Name of the family member */
+    name?: string;
+};
+export type InvitationResponseDto = {
+    acceptedAt: string | null;
+    createdAt: string;
+    email: string;
+    expiresAt: string;
+    id: string;
+    token: string;
+};
+export type CreateInvitationDto = {
+    email: string;
+};
+export type AcceptInvitationDto = {
+    name: string;
+    password: string;
+    /** Invitation token from the email link */
+    token: string;
+};
 export type QueueStatisticsDto = {
     active: number;
     completed: number;
@@ -1321,6 +1367,7 @@ export type ServerFeaturesDto = {
     duplicateDetection: boolean;
     email: boolean;
     facialRecognition: boolean;
+    familyMode: boolean;
     importFaces: boolean;
     map: boolean;
     oauth: boolean;
@@ -2118,6 +2165,21 @@ export function createActivity({ activityCreateDto }: {
         method: "POST",
         body: activityCreateDto
     })));
+}
+/**
+ * Get activity feed
+ */
+export function getActivityFeed({ limit }: {
+    limit?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ActivityResponseDto[];
+    }>(`/activities/feed${QS.query(QS.explode({
+        limit
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Retrieve activity statistics
@@ -3397,6 +3459,168 @@ export function reassignFacesById({ id, faceDto }: {
     })));
 }
 /**
+ * Get all family members
+ */
+export function getAllFamilyMembers(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FamilyMemberResponseDto[];
+    }>("/family-members", {
+        ...opts
+    }));
+}
+/**
+ * Create a family member (admin only)
+ */
+export function createFamilyMember({ createFamilyMemberDto }: {
+    createFamilyMemberDto: CreateFamilyMemberDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: FamilyMemberResponseDto;
+    }>("/family-members", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createFamilyMemberDto
+    })));
+}
+/**
+ * Compare all family members at the same age
+ */
+export function getFamilyMemberAgeComparison({ ageMonths, toleranceMonths }: {
+    ageMonths: number;
+    toleranceMonths?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/family-members/compare${QS.query(QS.explode({
+        ageMonths,
+        toleranceMonths
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Delete a family member (admin only)
+ */
+export function deleteFamilyMember({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/family-members/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Get a family member by ID
+ */
+export function getFamilyMember({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FamilyMemberResponseDto;
+    }>(`/family-members/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Update a family member (admin only)
+ */
+export function updateFamilyMember({ id, updateFamilyMemberDto }: {
+    id: string;
+    updateFamilyMemberDto: UpdateFamilyMemberDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FamilyMemberResponseDto;
+    }>(`/family-members/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PATCH",
+        body: updateFamilyMemberDto
+    })));
+}
+/**
+ * Get photos of a family member at a specific age
+ */
+export function getFamilyMemberPhotosAtAge({ ageMonths, id, toleranceMonths }: {
+    ageMonths: number;
+    id: string;
+    toleranceMonths?: number;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/family-members/${encodeURIComponent(id)}/photos${QS.query(QS.explode({
+        ageMonths,
+        toleranceMonths
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * List pending invitations
+ */
+export function listInvitations(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: InvitationResponseDto[];
+    }>("/invitations", {
+        ...opts
+    }));
+}
+/**
+ * Create an invitation
+ */
+export function createInvitation({ createInvitationDto }: {
+    createInvitationDto: CreateInvitationDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: InvitationResponseDto;
+    }>("/invitations", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createInvitationDto
+    })));
+}
+/**
+ * Accept an invitation
+ */
+export function acceptInvitation({ acceptInvitationDto }: {
+    acceptInvitationDto: AcceptInvitationDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: UserAdminResponseDto;
+    }>("/invitations/accept", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: acceptInvitationDto
+    })));
+}
+/**
+ * Validate an invitation token
+ */
+export function validateInvitation({ token }: {
+    token: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: InvitationResponseDto;
+    }>(`/invitations/validate${QS.query(QS.explode({
+        token
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Revoke an invitation
+ */
+export function revokeInvitation({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/invitations/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
  * Retrieve queue counts and status
  */
 export function getQueuesLegacy(opts?: Oazapfts.RequestOpts) {
@@ -3586,12 +3810,13 @@ export function reverseGeocode({ lat, lon }: {
 /**
  * Retrieve memories
  */
-export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
+export function searchMemories({ $for, isSaved, isTrashed, order, size, tagId, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
     size?: number;
+    tagId?: string;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3603,6 +3828,7 @@ export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }:
         isTrashed,
         order,
         size,
+        tagId,
         "type": $type
     }))}`, {
         ...opts
@@ -3626,12 +3852,13 @@ export function createMemory({ memoryCreateDto }: {
 /**
  * Retrieve memories statistics
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
+export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, tagId, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
     size?: number;
+    tagId?: string;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3643,6 +3870,7 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $typ
         isTrashed,
         order,
         size,
+        tagId,
         "type": $type
     }))}`, {
         ...opts

@@ -156,6 +156,60 @@
         "x-immich-state": "Stable"
       }
     },
+    "/activities/feed": {
+      "get": {
+        "description": "Returns recent activities across all accessible albums for the current user. Activities are returned in reverse chronological order (newest first).",
+        "operationId": "getActivityFeed",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of activities to return (default: 20)",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get activity feed",
+        "tags": [
+          "Activities"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/activities/statistics": {
       "get": {
         "description": "Returns the number of likes and comments for a given album or asset in an album.",
@@ -5542,6 +5596,552 @@
         "x-immich-state": "Stable"
       }
     },
+    "/family-members": {
+      "get": {
+        "operationId": "getAllFamilyMembers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FamilyMemberResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get all family members",
+        "tags": [
+          "Family Members"
+        ]
+      },
+      "post": {
+        "operationId": "createFamilyMember",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFamilyMemberDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a family member (admin only)",
+        "tags": [
+          "Family Members"
+        ],
+        "x-immich-permission": "all"
+      }
+    },
+    "/family-members/compare": {
+      "get": {
+        "operationId": "getFamilyMemberAgeComparison",
+        "parameters": [
+          {
+            "name": "ageMonths",
+            "required": true,
+            "in": "query",
+            "description": "Age in months to compare",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "toleranceMonths",
+            "required": false,
+            "in": "query",
+            "description": "Tolerance in months (default: 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Compare all family members at the same age",
+        "tags": [
+          "Family Members"
+        ]
+      }
+    },
+    "/family-members/{id}": {
+      "delete": {
+        "operationId": "deleteFamilyMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a family member (admin only)",
+        "tags": [
+          "Family Members"
+        ],
+        "x-immich-permission": "all"
+      },
+      "get": {
+        "operationId": "getFamilyMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get a family member by ID",
+        "tags": [
+          "Family Members"
+        ]
+      },
+      "patch": {
+        "operationId": "updateFamilyMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFamilyMemberDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyMemberResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update a family member (admin only)",
+        "tags": [
+          "Family Members"
+        ],
+        "x-immich-permission": "all"
+      }
+    },
+    "/family-members/{id}/photos": {
+      "get": {
+        "operationId": "getFamilyMemberPhotosAtAge",
+        "parameters": [
+          {
+            "name": "ageMonths",
+            "required": true,
+            "in": "query",
+            "description": "Age in months",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "toleranceMonths",
+            "required": false,
+            "in": "query",
+            "description": "Tolerance in months (default: 1)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get photos of a family member at a specific age",
+        "tags": [
+          "Family Members"
+        ]
+      }
+    },
+    "/invitations": {
+      "get": {
+        "description": "List all pending invitations created by the admin.",
+        "operationId": "listInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List pending invitations",
+        "tags": [
+          "Invitations"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      },
+      "post": {
+        "description": "Create an invitation to join the family photo sharing instance. Admin only.",
+        "operationId": "createInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create an invitation",
+        "tags": [
+          "Invitations"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/invitations/accept": {
+      "post": {
+        "description": "Accept an invitation and create a new user account. Public endpoint.",
+        "operationId": "acceptInvitation",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInvitationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Accept an invitation",
+        "tags": [
+          "Invitations"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/invitations/validate": {
+      "get": {
+        "description": "Check if an invitation token is valid and not expired. Public endpoint.",
+        "operationId": "validateInvitation",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Validate an invitation token",
+        "tags": [
+          "Invitations"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
+    "/invitations/{id}": {
+      "delete": {
+        "description": "Revoke a pending invitation.",
+        "operationId": "revokeInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Revoke an invitation",
+        "tags": [
+          "Invitations"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
     "/jobs": {
       "get": {
         "deprecated": true,
@@ -6432,6 +7032,16 @@
             }
           },
           {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "description": "Filter memories by tag ID (e.g., family member tag)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "type",
             "required": false,
             "in": "query",
@@ -6592,6 +7202,16 @@
             "schema": {
               "minimum": 1,
               "type": "integer"
+            }
+          },
+          {
+            "name": "tagId",
+            "required": false,
+            "in": "query",
+            "description": "Filter memories by tag ID (e.g., family member tag)",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
             }
           },
           {
@@ -14996,8 +15616,16 @@
       "description": "Endpoints for managing and identifying duplicate assets."
     },
     {
+      "name": "Family Members",
+      "description": "Family members are profiles for children or other family members with birthdates, enabling age-based photo filtering and comparisons. Only available in family mode."
+    },
+    {
       "name": "Faces",
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created via manually."
+    },
+    {
+      "name": "Invitations",
+      "description": "Invitations allow administrators to invite family members to join the photo sharing system. Only available in family mode."
     },
     {
       "name": "Jobs",
@@ -15207,6 +15835,29 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "AcceptInvitationDto": {
+        "properties": {
+          "name": {
+            "example": "John Doe",
+            "type": "string"
+          },
+          "password": {
+            "example": "password",
+            "minLength": 8,
+            "type": "string"
+          },
+          "token": {
+            "description": "Invitation token from the email link",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "password",
+          "token"
+        ],
         "type": "object"
       },
       "ActivityCreateDto": {
@@ -17058,6 +17709,46 @@
         ],
         "type": "object"
       },
+      "CreateFamilyMemberDto": {
+        "properties": {
+          "avatarAssetId": {
+            "description": "Asset ID to use as avatar",
+            "type": "string"
+          },
+          "birthdate": {
+            "description": "Birthdate in ISO format (YYYY-MM-DD)",
+            "type": "string"
+          },
+          "color": {
+            "description": "Hex color for UI display (e.g., #FF5733)",
+            "pattern": "/^#[0-9A-Fa-f]{6}$/",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the family member",
+            "maxLength": 255,
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthdate",
+          "name"
+        ],
+        "type": "object"
+      },
+      "CreateInvitationDto": {
+        "properties": {
+          "email": {
+            "example": "family@example.com",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
       "CreateLibraryDto": {
         "properties": {
           "exclusionPatterns": {
@@ -17545,6 +18236,42 @@
         ],
         "type": "object"
       },
+      "FamilyMemberResponseDto": {
+        "properties": {
+          "avatarAssetId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "birthdate": {
+            "type": "string"
+          },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tagId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "birthdate",
+          "createdAt",
+          "id",
+          "name",
+          "tagId"
+        ],
+        "type": "object"
+      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -17579,6 +18306,38 @@
           "webp"
         ],
         "type": "string"
+      },
+      "InvitationResponseDto": {
+        "properties": {
+          "acceptedAt": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "acceptedAt",
+          "createdAt",
+          "email",
+          "expiresAt",
+          "id",
+          "token"
+        ],
+        "type": "object"
       },
       "JobCreateDto": {
         "properties": {
@@ -20368,6 +21127,9 @@
           "facialRecognition": {
             "type": "boolean"
           },
+          "familyMode": {
+            "type": "boolean"
+          },
           "importFaces": {
             "type": "boolean"
           },
@@ -20407,6 +21169,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "familyMode",
           "importFaces",
           "map",
           "oauth",
@@ -23759,6 +24522,29 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          }
+        },
+        "type": "object"
+      },
+      "UpdateFamilyMemberDto": {
+        "properties": {
+          "avatarAssetId": {
+            "description": "Asset ID to use as avatar",
+            "type": "string"
+          },
+          "birthdate": {
+            "description": "Birthdate in ISO format (YYYY-MM-DD)",
+            "type": "string"
+          },
+          "color": {
+            "description": "Hex color for UI display (e.g., #FF5733)",
+            "pattern": "/^#[0-9A-Fa-f]{6}$/",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the family member",
+            "maxLength": 255,
+            "type": "string"
           }
         },
         "type": "object"
