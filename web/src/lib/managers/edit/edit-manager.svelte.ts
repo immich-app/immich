@@ -15,6 +15,7 @@ export interface EditToolManager {
   onDeactivate: () => void;
   resetAllChanges: () => Promise<void>;
   hasChanges: boolean;
+  canReset: boolean;
   edits: EditAction[];
 }
 
@@ -41,19 +42,22 @@ export class EditManager {
 
   currentAsset = $state<AssetResponseDto | null>(null);
   selectedTool = $state<EditTool | null>(null);
-  hasChanges = $derived(this.tools.some((t) => t.manager.hasChanges));
 
   // used to disable multiple confirm dialogs and mouse events while one is open
   isShowingConfirmDialog = $state(false);
   isApplyingEdits = $state(false);
   hasAppliedEdits = $state(false);
 
+  hasUnsavedChanges = $derived(this.tools.some((t) => t.manager.hasChanges) && !this.hasAppliedEdits);
+  canReset = $derived(this.tools.some((t) => t.manager.canReset));
+
   async closeConfirm(): Promise<boolean> {
     // Prevent multiple dialogs (usually happens with rapid escape key presses)
     if (this.isShowingConfirmDialog) {
       return false;
     }
-    if (!this.hasChanges || this.hasAppliedEdits) {
+
+    if (!this.hasUnsavedChanges) {
       return true;
     }
 
