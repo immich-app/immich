@@ -49,7 +49,7 @@ const defaultMapSettings = {
 const persistedObject = <T>(key: string, defaults: T) =>
   persisted<T>(key, defaults, {
     serializer: {
-      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
       stringify: JSON.stringify,
     },
   });
@@ -149,3 +149,49 @@ export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
 export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-video', false, {});
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
+
+export interface DuplicateSettings {
+  synchronizeAlbums: boolean;
+  synchronizeVisibility: boolean;
+  synchronizeFavorites: boolean;
+  synchronizeRating: boolean;
+  synchronizeDescription: boolean;
+  synchronizeLocation: boolean;
+  synchronizeTags: boolean;
+  /** @deprecated typo retained for migration */
+  synchronizeDescpription?: boolean;
+}
+
+const defaultDuplicateSettings: DuplicateSettings = {
+  synchronizeAlbums: true,
+  synchronizeVisibility: true,
+  synchronizeFavorites: true,
+  synchronizeRating: true,
+  synchronizeDescription: true,
+  synchronizeLocation: true,
+  synchronizeTags: true,
+};
+
+const normalizeDuplicateSettings = (
+  settings: Partial<DuplicateSettings> & { synchronizeDescpription?: boolean },
+): DuplicateSettings => {
+  const { synchronizeDescpription: _deprecated, ...rest } = settings;
+  return {
+    ...defaultDuplicateSettings,
+    ...rest,
+    synchronizeDescription:
+      settings.synchronizeDescription ??
+      settings.synchronizeDescpription ??
+      defaultDuplicateSettings.synchronizeDescription,
+  };
+};
+
+export const duplicateSettings = persisted<DuplicateSettings>('duplicate-settings', defaultDuplicateSettings, {
+  serializer: {
+    parse: (text) => {
+      const parsed = text ? JSON.parse(text) : null;
+      return normalizeDuplicateSettings(parsed ?? {});
+    },
+    stringify: JSON.stringify,
+  },
+});

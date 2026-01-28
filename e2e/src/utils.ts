@@ -499,6 +499,15 @@ export const utils = {
   createStack: (accessToken: string, assetIds: string[]) =>
     createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
 
+  setAssetDuplicateId: async (accessToken: string, assetId: string, duplicateId: string | null) => {
+    // For testing duplicates, directly set the duplicateId via SQL
+    // This is needed because duplicate detection normally happens via ML pipeline
+    if (!client) {
+      throw new Error('Database client not initialized');
+    }
+    await client.query(`UPDATE "asset" SET "duplicateId" = $1 WHERE "id" = $2`, [duplicateId, assetId]);
+  },
+
   upsertTags: (accessToken: string, tags: string[]) =>
     upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
 
