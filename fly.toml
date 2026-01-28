@@ -5,8 +5,8 @@ primary_region = 'ord'
   dockerfile = 'server/Dockerfile'
 
 [env]
-  # DB_URL is set automatically via `fly postgres attach` as a secret
-  # It uses the managed Fly Postgres cluster (immich-pg)
+  # DATABASE_URL is set as a secret via Fly Managed Postgres (immich-pg)
+  # To attach: fly mpg attach <cluster-id> -a immich-server
   IMMICH_ENV = 'production'
   IMMICH_IGNORE_MOUNT_CHECK_ERRORS = 'true'
   IMMICH_LOG_LEVEL = 'log'

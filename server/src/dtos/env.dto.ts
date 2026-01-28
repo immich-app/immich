@@ -166,6 +166,10 @@ export class EnvDto {
 
   @IsString()
   @Optional()
+  DATABASE_URL?: string;
+
+  @IsString()
+  @Optional()
   DB_USERNAME?: string;
 
   @IsEnum(['pgvector', 'pgvecto.rs', 'vectorchord'])

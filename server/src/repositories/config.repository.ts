@@ -199,8 +199,11 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const databaseConnection: DatabaseConnectionParams = dto.DB_URL
-    ? { connectionType: 'url', url: dto.DB_URL }
+  // DATABASE_URL is the standard env var used by Fly.io and other PaaS providers
+  // DB_URL is kept for backwards compatibility
+  const databaseUrl = dto.DATABASE_URL || dto.DB_URL;
+  const databaseConnection: DatabaseConnectionParams = databaseUrl
+    ? { connectionType: 'url', url: databaseUrl }
     : {
         connectionType: 'parts',
         host: dto.DB_HOSTNAME || 'database',
