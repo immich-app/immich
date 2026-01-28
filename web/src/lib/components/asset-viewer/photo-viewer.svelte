@@ -3,6 +3,7 @@
   import AdaptiveImage from '$lib/components/asset-viewer/adaptive-image.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
+  import SwipeFeedback from '$lib/components/asset-viewer/swipe-feedback.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
@@ -17,7 +18,7 @@
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { AssetCursor } from './asset-viewer.svelte';
 
@@ -27,9 +28,10 @@
     sharedLink?: SharedLinkResponseDto;
     onReady?: () => void;
     onError?: () => void;
+    onSwipe?: (direction: 'left' | 'right') => void;
   }
 
-  let { cursor, element = $bindable(), sharedLink, onReady, onError }: Props = $props();
+  let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
@@ -109,6 +111,13 @@
     width: containerWidth,
     height: containerHeight,
   });
+  let swipeFeedbackReset = $state<(() => void) | undefined>();
+  $effect(() => {
+    // Reset swipe feedback when asset changes
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    asset.id;
+    untrack(() => swipeFeedbackReset?.());
+  });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} />
@@ -122,11 +131,16 @@
   ]}
 />
 
-<div
-  bind:this={element}
+<SwipeFeedback
+  bind:element
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  disabled={isOcrActive || assetViewerManager.zoom > 1}
+  disableSwipeLeft={!cursor.nextAsset}
+  disableSwipeRight={!cursor.previousAsset}
+  bind:reset={swipeFeedbackReset}
+  {onSwipe}
 >
   <AdaptiveImage
     {asset}
@@ -161,4 +175,32 @@
   {#if isFaceEditMode.value && assetViewerManager.imgRef}
     <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
-</div>
+
+  {#snippet leftPreview()}
+    {#if cursor.previousAsset}
+      <AdaptiveImage
+        asset={cursor.previousAsset}
+        {sharedLink}
+        {container}
+        zoomDisabled={true}
+        imageClass="object-contain"
+        slideshowState={$slideshowState}
+        slideshowLook={$slideshowLook}
+      />
+    {/if}
+  {/snippet}
+
+  {#snippet rightPreview()}
+    {#if cursor.nextAsset}
+      <AdaptiveImage
+        asset={cursor.nextAsset}
+        {sharedLink}
+        {container}
+        zoomDisabled={true}
+        imageClass="object-contain"
+        slideshowState={$slideshowState}
+        slideshowLook={$slideshowLook}
+      />
+    {/if}
+  {/snippet}
+</SwipeFeedback>

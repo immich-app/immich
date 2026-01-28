@@ -21,6 +21,9 @@ import type {
 export type Events = {
   AppInit: [];
 
+  ResetSwipeFeedback: [];
+  ViewerFinishNavigate: [];
+
   AuthLogin: [LoginResponseDto];
   AuthLogout: [];
   AuthUserLoaded: [UserAdminResponseDto];
