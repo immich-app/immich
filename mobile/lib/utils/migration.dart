@@ -91,7 +91,6 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   if (version < 21) {
-    await syncStreamRepository.reset();
     await Store.put(StoreKey.shouldResetSync, true);
   }
 
