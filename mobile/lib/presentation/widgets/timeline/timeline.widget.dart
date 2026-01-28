@@ -15,12 +15,14 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -43,6 +45,7 @@ class Timeline extends StatelessWidget {
     this.snapToMonth = true,
     this.initialScrollOffset,
     this.readOnly = false,
+    this.withSelectAll = false,
   });
 
   final Widget? topSliverWidget;
@@ -56,6 +59,7 @@ class Timeline extends StatelessWidget {
   final bool snapToMonth;
   final double? initialScrollOffset;
   final bool readOnly;
+  final bool withSelectAll;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +89,7 @@ class Timeline extends StatelessWidget {
             withScrubber: withScrubber,
             snapToMonth: snapToMonth,
             initialScrollOffset: initialScrollOffset,
+            withSelectAll: withSelectAll,
           ),
         ),
       ),
@@ -112,6 +117,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.withScrubber = true,
     this.snapToMonth = true,
     this.initialScrollOffset,
+    this.withSelectAll = false,
   });
 
   final Widget? topSliverWidget;
@@ -121,6 +127,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final bool withScrubber;
   final bool snapToMonth;
   final double? initialScrollOffset;
+  final bool withSelectAll;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -351,6 +358,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             slivers: [
               if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
               if (widget.topSliverWidget != null) widget.topSliverWidget!,
+              if (widget.withSelectAll) const _TimelineSelectAllSliver(),
               _SliverSegmentedList(
                 segments: segments,
                 delegate: SliverChildBuilderDelegate(
@@ -682,6 +690,41 @@ class _MultiSelectStatusButton extends ConsumerWidget {
       label: Text(
         selectCount.toString(),
         style: context.textTheme.titleMedium?.copyWith(height: 2.5, color: context.colorScheme.onPrimary),
+      ),
+    );
+  }
+}
+
+class _TimelineSelectAllSliver extends ConsumerWidget {
+  const _TimelineSelectAllSliver();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final totalAssets = ref.watch(timelineTotalAssetsProvider).value ?? 0;
+    final selectedCount = ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
+    final isAllSelected = totalAssets > 0 && selectedCount >= totalAssets;
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      sliver: SliverToBoxAdapter(
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: totalAssets > 0
+                ? () {
+                    ref.read(multiSelectProvider.notifier).toggleAllSelection();
+                    ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                  }
+                : null,
+            icon: Icon(isAllSelected ? Icons.deselect : Icons.select_all),
+            iconAlignment: IconAlignment.end,
+            label: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Text(isAllSelected ? 'deselect_all'.t() : "select_all".t()),
+            ),
+            style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0)),
+          ),
+        ),
       ),
     );
   }
