@@ -98,6 +98,7 @@ class OrtSession:
                     options = {
                         "device_type": device,
                         "precision": settings.openvino_precision.value,
+                        "enable_dynamic_shapes": True,
                         "cache_dir": openvino_dir.as_posix(),
                     }
                 case "CoreMLExecutionProvider":
