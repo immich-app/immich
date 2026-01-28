@@ -1,5 +1,18 @@
 experimental_monorepo_root = true
 
+[monorepo]
+config_roots = [
+  "plugins",
+  "server",
+  "cli",
+  "deployment",
+  "mobile",
+  "e2e",
+  "web",
+  "docs",
+  ".github",
+]
+
 [tools]
 node = "24.13.0"
 flutter = "3.35.7"
