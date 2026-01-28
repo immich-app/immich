@@ -33,6 +33,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { IntegrityReportType } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -131,12 +132,25 @@ export class UUIDParamDto {
   id!: string;
 }
 
+export class UUIDv7ParamDto {
+  @IsNotEmpty()
+  @IsUUID('7')
+  @ApiProperty({ format: 'uuid' })
+  id!: string;
+}
+
 export class UUIDAssetIDParamDto {
   @ValidateUUID()
   id!: string;
 
   @ValidateUUID()
   assetId!: string;
+}
+
+export class IntegrityReportTypeParamDto {
+  @IsNotEmpty()
+  @ApiProperty({ enum: IntegrityReportType, enumName: 'IntegrityReportType' })
+  type!: IntegrityReportType;
 }
 
 export class FilenameParamDto {
