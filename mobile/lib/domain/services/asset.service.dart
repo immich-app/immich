@@ -98,7 +98,12 @@ class AssetService {
       height = fetched?.height?.toDouble();
     }
 
-    return (width: width, height: height, isFlipped: false);
+    // Check exif for orientation to determine if dimensions should be flipped
+    // This is important for videos where raw file dimensions may not match display dimensions
+    final exif = await _remoteAssetRepository.getExif(asset.id);
+    final isFlipped = exif?.isFlipped ?? false;
+
+    return (width: width, height: height, isFlipped: isFlipped);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {

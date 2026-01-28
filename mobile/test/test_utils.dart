@@ -118,7 +118,13 @@ abstract final class TestUtils {
     return result;
   }
 
-  static domain.RemoteAsset createRemoteAsset({required String id, int? width, int? height, String? ownerId}) {
+  static domain.RemoteAsset createRemoteAsset({
+    required String id,
+    int? width,
+    int? height,
+    String? ownerId,
+    String? localId,
+  }) {
     return domain.RemoteAsset(
       id: id,
       checksum: 'checksum1',
@@ -132,6 +138,7 @@ abstract final class TestUtils {
       width: width,
       height: height,
       isEdited: false,
+      localId: localId,
     );
   }
 
