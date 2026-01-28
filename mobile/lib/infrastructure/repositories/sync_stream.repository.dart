@@ -268,7 +268,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.update(
             _db.remoteAssetEntity,
             RemoteAssetEntityCompanion(width: Value(width), height: Value(height)),
-            where: (row) => row.id.equals(exif.assetId) & row.width.isNull() & row.height.isNull(),
+            where: (row) => row.id.equals(exif.assetId) & row.isEdited.equals(false),
           );
         }
       });

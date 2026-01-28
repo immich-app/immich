@@ -28,10 +28,11 @@ import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+import 'package:openapi/api.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 20;
+const int targetVersion = 21;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -88,7 +89,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (version < 20 && Store.isBetaTimelineEnabled) {
     await _syncLocalAlbumIsIosSharedAlbum(drift);
-    await _backfillAssetExifWidthHeight(drift);
+  }
+
+  if (version < 21) {
+    await _addSyncEntityReset([SyncEntityType.assetExifV1]);
   }
 
   if (targetVersion >= 12) {
@@ -282,19 +286,14 @@ Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
   }
 }
 
-Future<void> _backfillAssetExifWidthHeight(Drift db) async {
+Future<void> _addSyncEntityReset(List<SyncEntityType> entities) async {
   try {
-    await db.customStatement('''
-      UPDATE remote_exif_entity AS remote_exif
-      SET width = asset.width,
-          height = asset.height
-      FROM remote_asset_entity AS asset
-      WHERE remote_exif.asset_id = asset.id;
-    ''');
-
-    dPrint(() => "[MIGRATION] Successfully backfilled asset exif width and height");
+    final currentReset = Store.tryGet(StoreKey.requiredResets) ?? '';
+    final resets = currentReset.split(',').toSet();
+    resets.addAll(entities.map((e) => e.value));
+    await Store.put(StoreKey.requiredResets, resets.where((e) => e.isNotEmpty).join(','));
   } catch (error) {
-    dPrint(() => "[MIGRATION] Error while backfilling asset exif width and height: $error");
+    dPrint(() => "[MIGRATION] Error while adding sync entity reset: $error");
   }
 }
 
