@@ -1,16 +1,9 @@
 import { editManager, type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
+import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
-import {
-  AssetEditAction,
-  AssetMediaSize,
-  MirrorAxis,
-  type AssetResponseDto,
-  type CropParameters,
-  type MirrorParameters,
-  type RotateParameters,
-} from '@immich/sdk';
+import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
 import { tick } from 'svelte';
 
 export type CropAspectRatio =
@@ -200,22 +193,14 @@ class TransformManager implements EditToolManager {
 
     globalThis.addEventListener('mousemove', (e) => transformManager.handleMouseMove(e), { passive: true });
 
-    // set the rotation before loading the image
-    const rotateEdit = edits.find((e) => e.action === 'rotate');
-    if (rotateEdit) {
-      this.imageRotation = (rotateEdit.parameters as RotateParameters).angle;
-    }
+    const transformEdits = edits.filter((e) => e.action === 'rotate' || e.action === 'mirror');
 
-    // set mirror state from edits
-    const mirrorEdits = edits.filter((e) => e.action === 'mirror');
-    for (const mirrorEdit of mirrorEdits) {
-      const axis = (mirrorEdit.parameters as MirrorParameters).axis;
-      if (axis === MirrorAxis.Horizontal) {
-        this.mirrorHorizontal = true;
-      } else if (axis === MirrorAxis.Vertical) {
-        this.mirrorVertical = true;
-      }
-    }
+    // Normalize rotation and mirror edits to single rotation and mirror state
+    // This allows edits to be imported in any order and still produce correct state
+    const normalizedTransformation = normalizeTransformEdits(transformEdits);
+    this.imageRotation = normalizedTransformation.rotation;
+    this.mirrorHorizontal = normalizedTransformation.mirrorHorizontal;
+    this.mirrorVertical = normalizedTransformation.mirrorVertical;
 
     await tick();
 

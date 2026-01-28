@@ -75,6 +75,7 @@
   "map_settings": "Карттӑ ĕнерленĕвĕ",
   "no_explore_results_message": "Хӑвӑр коллекципе киленмешкӗн сӑнӳкерчӗксем ытларах тийӗр.",
   "open_in_openstreetmap": "OpenStreetMap-па уҫ",
+  "organize_your_library": "Хӑвӑн вулавӑшна йӗркеле",
   "partner_sharing": "Партнер пайланӑвӗ",
   "people": "Ҫынсем",
   "photos": "Сӑнӳкерчӗксем",
@@ -90,5 +91,6 @@
   "sharing": "Пайлани",
   "sharing_enter_password": "Ку питне курма пароль кӗртӗр.",
   "user_usage_stats": "Шута ҫырни усӑ курмалли статистика",
-  "user_usage_stats_description": "Шута ҫырни усӑ курмалли статистикӑна пӑхасси"
+  "user_usage_stats_description": "Шута ҫырни усӑ курмалли статистикӑна пӑхасси",
+  "utilities": "Пулӑшакансем"
 }
