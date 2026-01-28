@@ -24,6 +24,7 @@ SyncAssetV1 _createAsset({
   String ownerId = 'user-1',
   int? width,
   int? height,
+  bool isEdited = false,
 }) {
   return SyncAssetV1(
     id: id,
@@ -44,7 +45,7 @@ SyncAssetV1 _createAsset({
     livePhotoVideoId: null,
     stackId: null,
     thumbhash: null,
-    isEdited: false,
+    isEdited: isEdited,
   );
 }
 
@@ -154,7 +155,7 @@ void main() {
       }
     });
 
-    test('does not update dimensions if asset already has width and height', () async {
+    test('does not update dimensions if asset is edited', () async {
       const assetId = 'asset-with-dimensions';
       const existingWidth = 1920;
       const existingHeight = 1080;
@@ -169,6 +170,7 @@ void main() {
         fileName: 'with_dimensions.jpg',
         width: existingWidth,
         height: existingHeight,
+        isEdited: true,
       );
       await sut.updateAssetsV1([asset]);
 
