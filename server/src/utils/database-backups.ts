@@ -59,7 +59,6 @@ export async function buildPostgresLaunchArguments(
 ): Promise<{
   bin: string;
   args: string[];
-  databaseName: string;
   databaseUsername: string;
   databasePassword: string;
   databaseVersion: string;
