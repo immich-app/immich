@@ -75,7 +75,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   pnpm --prefix server run build
   ( cd ./open-api && bash ./bin/generate-open-api.sh )
 
-  uvx --from=toml-cli toml set --toml-path=machine-learning/pyproject.toml project.version "$NEXT_SERVER"
+  uv version --directory machine-learning "$NEXT_SERVER"
 
   ./misc/release/archive-version.js "$NEXT_SERVER"
 fi
