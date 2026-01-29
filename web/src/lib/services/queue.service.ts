@@ -243,6 +243,10 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiStateMachine,
       title: $t('workflows'),
     },
+    [QueueName.IntegrityCheck]: {
+      icon: '',
+      title: $t('integrity_checks'),
+    },
     [QueueName.Editor]: {
       icon: mdiPencil,
       title: $t('editor'),

@@ -94,6 +94,9 @@ String parameterToString(dynamic value) {
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
+  if (value is IntegrityReportType) {
+    return IntegrityReportTypeTypeTransformer().encode(value).toString();
+  }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
   }
