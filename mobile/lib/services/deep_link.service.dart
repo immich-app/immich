@@ -106,6 +106,7 @@ class DeepLinkService {
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
+    final peopleRegex = RegExp('/people/($uuidRegex)');
 
     PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
@@ -114,6 +115,9 @@ class DeepLinkService {
     } else if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
+    } else if (peopleRegex.hasMatch(path)) {
+      final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
+      deepLinkRoute = await _buildAlbumDeepLink(peopleId);
     } else if (path == "/memory") {
       deepLinkRoute = await _buildMemoryDeepLink(null);
     }
