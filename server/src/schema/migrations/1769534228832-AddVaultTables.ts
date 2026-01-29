@@ -1,56 +1,66 @@
 import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await sql`DROP INDEX "asset_storage_backend_idx";`.execute(db);
-  await sql`DROP INDEX "UQ_asset_encryption_assetId_vaultVersion";`.execute(db);
-  await sql`DROP INDEX "asset_file_storage_backend_idx";`.execute(db);
+  // Create admin_recovery_key table
   await sql`CREATE TABLE "admin_recovery_key" (
-  "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-  "publicKey" text NOT NULL,
-  "keyId" character varying NOT NULL,
-  "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT "admin_recovery_key_keyId_uq" UNIQUE ("keyId"),
-  CONSTRAINT "admin_recovery_key_pkey" PRIMARY KEY ("id")
-);`.execute(db);
-  await sql`ALTER TABLE "asset_encryption" ALTER COLUMN "id" SET DEFAULT uuid_generate_v4();`.execute(db);
-  await sql`ALTER TABLE "user_vault" ALTER COLUMN "id" SET DEFAULT uuid_generate_v4();`.execute(db);
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "publicKey" text NOT NULL,
+    "keyId" character varying NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT "admin_recovery_key_keyId_uq" UNIQUE ("keyId"),
+    CONSTRAINT "admin_recovery_key_pkey" PRIMARY KEY ("id")
+  );`.execute(db);
+
+  // Create user_vault table
+  await sql`CREATE TABLE "user_vault" (
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "userId" uuid NOT NULL,
+    "kdfSalt" character varying NOT NULL,
+    "kdfParams" jsonb NOT NULL,
+    "encryptedVaultKey" character varying NOT NULL,
+    "adminEncryptedVaultKey" character varying,
+    "vaultKeyHash" character varying NOT NULL,
+    "version" integer NOT NULL DEFAULT 1,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT "user_vault_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "user_vault_userId_uq" UNIQUE ("userId"),
+    CONSTRAINT "user_vault_userId_fk" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE
+  );`.execute(db);
+
+  // Create asset_encryption table
+  await sql`CREATE TABLE "asset_encryption" (
+    "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "assetId" uuid NOT NULL,
+    "wrappedDek" character varying NOT NULL,
+    "fileIv" character varying NOT NULL,
+    "authTag" character varying NOT NULL,
+    "algorithm" character varying NOT NULL DEFAULT 'aes-256-gcm',
+    "vaultVersion" integer NOT NULL DEFAULT 1,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT "asset_encryption_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "asset_encryption_assetId_vaultVersion_uq" UNIQUE ("assetId", "vaultVersion"),
+    CONSTRAINT "asset_encryption_assetId_fk" FOREIGN KEY ("assetId") REFERENCES "asset"("id") ON DELETE CASCADE
+  );`.execute(db);
+
+  // Add columns to existing tables
   await sql`ALTER TABLE "asset_job_status" ADD "encryptedAt" timestamp with time zone;`.execute(db);
   await sql`ALTER TABLE "session" ADD "encryptedVaultKeyCache" character varying;`.execute(db);
   await sql`ALTER TABLE "session" ADD "vaultKeyExpiresAt" timestamp with time zone;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "kdfSalt" character varying NOT NULL;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "kdfParams" jsonb NOT NULL;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "encryptedVaultKey" character varying NOT NULL;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "adminEncryptedVaultKey" character varying;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "vaultKeyHash" character varying NOT NULL;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "version" integer NOT NULL DEFAULT 1;`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "createdAt" timestamp with time zone NOT NULL DEFAULT now();`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD "updatedAt" timestamp with time zone NOT NULL DEFAULT now();`.execute(db);
-  await sql`ALTER TABLE "asset_encryption" ADD CONSTRAINT "asset_encryption_assetId_vaultVersion_uq" UNIQUE ("assetId", "vaultVersion");`.execute(db);
-  await sql`ALTER TABLE "user_vault" ADD CONSTRAINT "user_vault_userId_uq" UNIQUE ("userId");`.execute(db);
+
+  // Create indexes
   await sql`CREATE INDEX "asset_encryption_assetId_idx" ON "asset_encryption" ("assetId");`.execute(db);
   await sql`CREATE INDEX "user_vault_userId_idx" ON "user_vault" ("userId");`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`DROP INDEX "asset_encryption_assetId_idx";`.execute(db);
-  await sql`DROP INDEX "user_vault_userId_idx";`.execute(db);
-  await sql`ALTER TABLE "asset_encryption" DROP CONSTRAINT "asset_encryption_assetId_vaultVersion_uq";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP CONSTRAINT "user_vault_userId_uq";`.execute(db);
-  await sql`ALTER TABLE "asset_encryption" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();`.execute(db);
-  await sql`ALTER TABLE "user_vault" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();`.execute(db);
-  await sql`CREATE INDEX "asset_storage_backend_idx" ON "asset" ("storageBackend") WHERE ("storageBackend" = 's3'::storage_backend_enum);`.execute(db);
-  await sql`CREATE INDEX "asset_file_storage_backend_idx" ON "asset_file" ("storageBackend") WHERE ("storageBackend" = 's3'::storage_backend_enum);`.execute(db);
-  await sql`CREATE UNIQUE INDEX "UQ_asset_encryption_assetId_vaultVersion" ON "asset_encryption" ("assetId", "vaultVersion");`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "kdfSalt";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "kdfParams";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "encryptedVaultKey";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "adminEncryptedVaultKey";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "vaultKeyHash";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "version";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "createdAt";`.execute(db);
-  await sql`ALTER TABLE "user_vault" DROP COLUMN "updatedAt";`.execute(db);
-  await sql`ALTER TABLE "session" DROP COLUMN "encryptedVaultKeyCache";`.execute(db);
-  await sql`ALTER TABLE "session" DROP COLUMN "vaultKeyExpiresAt";`.execute(db);
-  await sql`ALTER TABLE "asset_job_status" DROP COLUMN "encryptedAt";`.execute(db);
-  await sql`DROP TABLE "admin_recovery_key";`.execute(db);
+  // Drop columns from existing tables
+  await sql`ALTER TABLE "session" DROP COLUMN IF EXISTS "encryptedVaultKeyCache";`.execute(db);
+  await sql`ALTER TABLE "session" DROP COLUMN IF EXISTS "vaultKeyExpiresAt";`.execute(db);
+  await sql`ALTER TABLE "asset_job_status" DROP COLUMN IF EXISTS "encryptedAt";`.execute(db);
+
+  // Drop tables
+  await sql`DROP TABLE IF EXISTS "asset_encryption";`.execute(db);
+  await sql`DROP TABLE IF EXISTS "user_vault";`.execute(db);
+  await sql`DROP TABLE IF EXISTS "admin_recovery_key";`.execute(db);
 }

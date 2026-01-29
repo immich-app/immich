@@ -2,7 +2,10 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import Redis from 'ioredis';
 import { createHash, scrypt, ScryptOptions } from 'node:crypto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { VaultStatusResponseDto } from 'src/dtos/vault.dto';
 import { BaseService } from 'src/services/base.service';
+
+export { VaultStatusResponseDto };
 
 function scryptAsync(secret: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -40,12 +43,6 @@ export interface AdminRecoveryKeyDto {
   keyId: string;
 }
 
-export interface VaultStatusResponseDto {
-  hasVault: boolean;
-  isUnlocked: boolean;
-  vaultVersion: number | null;
-}
-
 // 4 hours default expiry for vault key cache
 const VAULT_KEY_CACHE_EXPIRY_MS = 4 * 60 * 60 * 1000;
 
@@ -56,6 +53,7 @@ const KDF_PARAMS = {
   r: 8, // Block size
   p: 1, // Parallelization
   keyLen: 32, // Output key length (256 bits)
+  maxmem: 256 * 1024 * 1024, // 256 MiB - override OpenSSL's default limit
 };
 
 // Rate limiting constants for vault PIN brute force protection
@@ -185,8 +183,10 @@ export class VaultService extends BaseService {
 
     this.logger.log(`Vault created for user ${userId}`);
 
-    // Automatically unlock after setup
-    await this.cacheVaultKey(auth, vaultKey);
+    // Automatically unlock after setup (only if session exists)
+    if (auth.session) {
+      await this.cacheVaultKey(auth, vaultKey);
+    }
   }
 
   /**
@@ -530,6 +530,7 @@ export class VaultService extends BaseService {
       N: KDF_PARAMS.N,
       r: KDF_PARAMS.r,
       p: KDF_PARAMS.p,
+      maxmem: KDF_PARAMS.maxmem,
     })) as Buffer;
   }
 
