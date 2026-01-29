@@ -73,6 +73,7 @@
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
+        [ReactionType.AlbumUpdate]: '', // NOTE: No delete message for AlbumUpdate
       };
       toastManager.success(deleteMessages[reaction.type]);
     } catch (error) {

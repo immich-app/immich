@@ -3,7 +3,24 @@
 -- ActivityRepository.search
 select
   "activity".*,
-  to_json("user") as "user"
+  to_json("user") as "user",
+  CASE
+    WHEN "activity"."aggregationId" IS NOT NULL THEN (
+      SELECT
+        COALESCE(array_agg(value), ARRAY[]::uuid[])
+      FROM
+        (
+          SELECT
+            value
+          FROM
+            unnest("activity"."assetIds") AS value
+          LIMIT
+            $1
+        ) AS limited
+    )
+    ELSE "activity"."assetIds"
+  END as "assetIds",
+  cardinality("activity"."assetIds") as "albumUpdateAssetCount"
 from
   "activity"
   inner join "user" as "user2" on "user2"."id" = "activity"."userId"
@@ -24,7 +41,8 @@ from
   ) as "user" on true
   left join "asset" on "asset"."id" = "activity"."assetId"
 where
-  "activity"."albumId" = $1
+  "activity"."albumId" = $2
+  and "activity"."aggregationId" is null
   and "asset"."deletedAt" is null
 order by
   "activity"."createdAt" asc
@@ -78,6 +96,7 @@ from
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
+  and "activity"."aggregationId" is null
   and (
     (
       "asset"."deletedAt" is null

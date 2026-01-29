@@ -19,14 +19,27 @@ import { BaseService } from 'src/services/base.service';
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
+
+    const assetId = dto.level === ReactionLevel.ALBUM ? null : dto.assetId;
+    const includeAlbumUpdates = dto.includeAlbumUpdate === true && dto.level !== ReactionLevel.ASSET;
+    const isLiked = dto.type === ReactionType.LIKE ? true : dto.type === ReactionType.COMMENT ? false : undefined;
+
     const activities = await this.activityRepository.search({
       userId: dto.userId,
       albumId: dto.albumId,
-      assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
-      isLiked: dto.type && dto.type === ReactionType.LIKE,
+      assetId,
+      isLiked,
+      includeAlbumUpdates,
+      albumUpdateAssetLimit: 3, // NOTE: currently, fixed limit
     });
 
-    return activities.map((activity) => mapActivity(activity));
+    const mapped = activities.map((activity) => mapActivity(activity));
+
+    if (dto.type === ReactionType.ALBUM_UPDATE) {
+      return mapped.filter((activity) => activity.type === ReactionType.ALBUM_UPDATE);
+    }
+
+    return mapped;
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {

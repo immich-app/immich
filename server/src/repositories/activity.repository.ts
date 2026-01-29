@@ -14,6 +14,8 @@ export interface ActivitySearch {
   assetId?: string | null;
   userId?: string;
   isLiked?: boolean;
+  includeAlbumUpdates?: boolean;
+  albumUpdateAssetLimit?: number;
 }
 
 @Injectable()
@@ -22,7 +24,7 @@ export class ActivityRepository {
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
   search(options: ActivitySearch) {
-    const { userId, assetId, albumId, isLiked } = options;
+    const { userId, assetId, albumId, isLiked, includeAlbumUpdates = false, albumUpdateAssetLimit = 3 } = options;
 
     return this.db
       .selectFrom('activity')
@@ -39,12 +41,27 @@ export class ActivityRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))
+      .select((_eb) =>
+        sql<string[]>`CASE
+          WHEN "activity"."aggregationId" IS NOT NULL THEN (
+            SELECT COALESCE(array_agg(value), ARRAY[]::uuid[])
+            FROM (
+              SELECT value
+              FROM unnest("activity"."assetIds") AS value
+              LIMIT ${albumUpdateAssetLimit}
+            ) AS limited
+          )
+          ELSE "activity"."assetIds"
+        END`.as('assetIds'),
+      )
+      .select((_eb) => sql<number | null>`cardinality("activity"."assetIds")`.as('albumUpdateAssetCount'))
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
-      .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
+      .$if(assetId === null, (qb) => qb.where('activity.assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
+      .$if(!includeAlbumUpdates, (qb) => qb.where('activity.aggregationId', 'is', null))
       .where('asset.deletedAt', 'is', null)
       .orderBy('activity.createdAt', 'asc')
       .execute();
@@ -88,6 +105,7 @@ export class ActivityRepository {
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
+      .where('activity.aggregationId', 'is', null)
       .where(({ or, and, eb }) =>
         or([
           and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),

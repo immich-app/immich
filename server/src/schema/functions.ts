@@ -132,6 +132,151 @@ export const album_delete_audit = registerFunction({
     END`,
 });
 
+export const album_asset_generate_aggregation_id = registerFunction({
+  name: 'album_asset_generate_aggregation_id',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+      v_now TIMESTAMP WITH TIME ZONE := clock_timestamp();
+      v_existing uuid;
+    BEGIN
+      IF NEW."createdAt" IS NULL THEN
+        NEW."createdAt" = v_now;
+      END IF;
+
+      SELECT "aggregationId"
+        INTO v_existing
+        FROM album_asset
+        WHERE "albumId" = NEW."albumId"
+          AND "createdBy" = NEW."createdBy"
+          AND "createdAt" >= v_now - INTERVAL '60 minutes'
+        ORDER BY "createdAt" DESC
+        LIMIT 1;
+
+      IF v_existing IS NOT NULL THEN
+        NEW."aggregationId" = v_existing;
+      ELSE
+        NEW."aggregationId" = immich_uuid_v7(v_now);
+      END IF;
+
+      RETURN NEW;
+    END`,
+});
+
+export const album_asset_sync_activity_apply = registerFunction({
+  name: 'album_asset_sync_activity_apply',
+  arguments: ['p_aggregation_id uuid', 'p_album_id uuid', 'p_user_id uuid'],
+  returnType: 'void',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+    v_asset_ids uuid[];
+    v_created_at TIMESTAMP WITH TIME ZONE;
+    v_album_id uuid := p_album_id;
+    v_user_id uuid := p_user_id;
+    BEGIN
+      IF p_aggregation_id IS NULL OR p_album_id IS NULL OR p_user_id IS NULL THEN
+        RAISE NOTICE 'album_asset_sync_activity_apply called with NULL parameters: %, %, %', p_aggregation_id, p_album_id, p_user_id;
+        RETURN;
+      END IF;
+
+      SELECT
+        ARRAY(
+          SELECT aa."assetId"
+          FROM album_asset aa
+          WHERE aa."aggregationId" = p_aggregation_id
+          ORDER BY aa."createdAt" ASC
+        )::uuid[],
+        MIN("createdAt")
+      INTO v_asset_ids, v_created_at
+      FROM album_asset
+      WHERE "aggregationId" = p_aggregation_id;
+
+      IF v_asset_ids IS NULL OR array_length(v_asset_ids, 1) IS NULL THEN
+        DELETE FROM activity WHERE "aggregationId" = p_aggregation_id;
+        RETURN;
+      END IF;
+
+      UPDATE activity
+      SET
+        "assetIds" = v_asset_ids,
+        "albumId" = v_album_id,
+        "userId" = COALESCE(v_user_id, activity."userId"),
+        "createdAt" = v_created_at
+      WHERE "aggregationId" = p_aggregation_id;
+
+      IF NOT FOUND THEN
+        INSERT INTO activity (
+          "id",
+          "albumId",
+          "userId",
+          "assetId",
+          "comment",
+          "isLiked",
+          "aggregationId",
+          "assetIds",
+          "createdAt"
+        )
+        VALUES (
+          p_aggregation_id,
+          v_album_id,
+          v_user_id,
+          NULL,
+          NULL,
+          FALSE,
+          p_aggregation_id,
+          v_asset_ids,
+          v_created_at
+        )
+        ON CONFLICT ("aggregationId")
+        DO UPDATE
+          SET "assetIds" = EXCLUDED."assetIds",
+              "albumId" = EXCLUDED."albumId",
+              "userId" = COALESCE(EXCLUDED."userId", activity."userId"),
+              "createdAt" = EXCLUDED."createdAt";
+      END IF;
+    END`,
+});
+
+export const album_asset_sync_activity = registerFunction({
+  name: 'album_asset_sync_activity',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+      v_row RECORD;
+    BEGIN
+      IF TG_OP = 'INSERT' THEN
+        FOR v_row IN
+          SELECT DISTINCT "aggregationId", "albumId", "createdBy"
+          FROM inserted_rows
+          WHERE "aggregationId" IS NOT NULL
+        LOOP
+          PERFORM album_asset_sync_activity_apply(
+            v_row."aggregationId",
+            v_row."albumId",
+            v_row."createdBy"
+          );
+        END LOOP;
+      ELSIF TG_OP = 'DELETE' THEN
+        FOR v_row IN
+          SELECT DISTINCT "aggregationId", "albumId", "createdBy"
+          FROM deleted_rows
+          WHERE "aggregationId" IS NOT NULL
+        LOOP
+          PERFORM album_asset_sync_activity_apply(
+            v_row."aggregationId",
+            v_row."albumId",
+            v_row."createdBy"
+          );
+        END LOOP;
+      END IF;
+
+      RETURN NULL;
+    END`,
+});
+
 export const album_asset_delete_audit = registerFunction({
   name: 'album_asset_delete_audit',
   returnType: 'TRIGGER',

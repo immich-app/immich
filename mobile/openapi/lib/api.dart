@@ -72,6 +72,7 @@ part 'model/api_key_create_dto.dart';
 part 'model/api_key_create_response_dto.dart';
 part 'model/api_key_response_dto.dart';
 part 'model/api_key_update_dto.dart';
+part 'model/activity_album_update_response_dto.dart';
 part 'model/activity_create_dto.dart';
 part 'model/activity_response_dto.dart';
 part 'model/activity_statistics_response_dto.dart';
