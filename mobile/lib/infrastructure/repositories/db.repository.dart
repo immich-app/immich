@@ -193,7 +193,13 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
           },
           from14To15: (m, v15) async {
-            await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
+            await m.alterTable(
+              TableMigration(
+                v15.trashedLocalAssetEntity,
+                columnTransformer: {v15.trashedLocalAssetEntity.source: Constant(TrashOrigin.localSync.index)},
+                newColumns: [v15.trashedLocalAssetEntity.source],
+              ),
+            );
           },
           from15To16: (m, v16) async {
             // Add i_cloud_id to local and remote asset tables

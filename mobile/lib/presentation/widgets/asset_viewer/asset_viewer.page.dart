@@ -92,7 +92,9 @@ class AssetViewer extends ConsumerStatefulWidget {
     if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
-      // Hide controls by default for videos and motion photos
+    }
+    // Hide controls by default for videos
+    if (asset.isVideo) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
   }
@@ -146,6 +148,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final asset = ref.read(currentAssetNotifier);
     if (asset != null) {
       _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
+    if (ref.read(assetViewerProvider).showingControls) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    } else {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
     }
   }
 

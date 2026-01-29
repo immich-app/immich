@@ -16,11 +16,5 @@ export class AssetJobStatusTable {
   duplicatesDetectedAt!: Timestamp | null;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
-  previewAt!: Timestamp | null;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  thumbnailAt!: Timestamp | null;
-
-  @Column({ type: 'timestamp with time zone', nullable: true })
   ocrAt!: Timestamp | null;
 }

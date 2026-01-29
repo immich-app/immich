@@ -2298,6 +2298,7 @@
   "upload_details": "Подробности загрузки",
   "upload_dialog_info": "Хотите загрузить выбранные объекты на сервер?",
   "upload_dialog_title": "Загрузить объект",
+  "upload_error_with_count": "Ошибка при загрузке {count, plural, one {# объекта} other {# объектов}}",
   "upload_errors": "Загрузка завершена с {count, plural, one {# ошибкой} other {# ошибками}}, обновите страницу, чтобы увидеть новые загруженные объекты.",
   "upload_finished": "Загрузка завершена",
   "upload_progress": "Осталось {remaining, number} - Обработано {processed, number}/{total, number}",

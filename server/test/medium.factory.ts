@@ -601,8 +601,6 @@ const assetJobStatusInsert = (
     duplicatesDetectedAt: date,
     facesRecognizedAt: date,
     metadataExtractedAt: date,
-    previewAt: date,
-    thumbnailAt: date,
   };
 
   return {

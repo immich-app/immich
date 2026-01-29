@@ -763,7 +763,7 @@
   "cleanup_found_assets": "Znaleziono {count} zasobów z przesłaną kopią zapasową",
   "cleanup_found_assets_with_size": "Znaleziono {count} zasobów z kopią zapasową ({size})",
   "cleanup_icloud_shared_albums_excluded": "Udostępniane albumy iCloud są wyłączone ze skanowania",
-  "cleanup_no_assets_found": "Nie znaleziono żadnych zasobów spełniających podane kryteria. Zwolnij Miejsce może usuwać jedynie zasoby, które posiadają kopię zapasową na serwerze.",
+  "cleanup_no_assets_found": "Nie znaleziono żadnych zasobów spełniających podane kryteria. Zwolnij Miejsce może usuwać jedynie zasoby, które posiadają kopię zapasową na serwerze",
   "cleanup_preview_title": "Zasoby do usunięcia ({count})",
   "cleanup_step3_description": "Wyszukaj zasoby z kopią zapasową, zgodne z Twoimi ustawieniami.",
   "cleanup_step4_summary": "{count} zasoby (utworzone przed {date}) zostaną usunięte z tego urządzenia. Zdjęcia będą nadal dostępne w aplikacji Immich.",

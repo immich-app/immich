@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { getAlbumDateRange, timeToSeconds } from './date-time';
+import { getAlbumDateRange, getShortDateRange, timeToSeconds } from './date-time';
 
 describe('converting time to seconds', () => {
   it('parses hh:mm:ss correctly', () => {
@@ -46,6 +46,43 @@ describe('converting time to seconds', () => {
   it('handles time strings with invalid numbers', () => {
     expect(timeToSeconds('aa:bb:cc')).toBe(0);
     expect(timeToSeconds('01:bb:03')).toBe(0);
+  });
+});
+
+describe('getShortDateRange', () => {
+  beforeEach(() => {
+    vi.stubEnv('TZ', 'UTC');
+  });
+
+  afterAll(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('should correctly return month if start and end date are within the same month', () => {
+    expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-01-31T00:00:00.000Z')).toEqual('Jan 2022');
+  });
+
+  it('should correctly return month range if start and end date are in separate months within the same year', () => {
+    expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-02-01T00:00:00.000Z')).toEqual('Jan - Feb 2022');
+  });
+
+  it('should correctly return range if start and end date are in separate months and years', () => {
+    expect(getShortDateRange('2021-12-01T00:00:00.000Z', '2022-01-01T00:00:00.000Z')).toEqual('Dec 2021 - Jan 2022');
+  });
+
+  it('should correctly return month if start and end date are within the same month, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC+6');
+    expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-01-31T00:00:00.000Z')).toEqual('Jan 2022');
+  });
+
+  it('should correctly return month range if start and end date are in separate months within the same year, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC+6');
+    expect(getShortDateRange('2022-01-01T00:00:00.000Z', '2022-02-01T00:00:00.000Z')).toEqual('Jan - Feb 2022');
+  });
+
+  it('should correctly return range if start and end date are in separate months and years, ignoring local time zone', () => {
+    vi.stubEnv('TZ', 'UTC+6');
+    expect(getShortDateRange('2021-12-01T00:00:00.000Z', '2022-01-01T00:00:00.000Z')).toEqual('Dec 2021 - Jan 2022');
   });
 });
 

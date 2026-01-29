@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto, onNavigate } from '$app/navigation';
+  import { goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
@@ -52,13 +52,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import {
-    isAlbumsRoute,
-    isPeopleRoute,
-    isSearchRoute,
-    navigate,
-    type AssetGridRouteSearchParams,
-  } from '$lib/utils/navigation';
+  import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { CommandPaletteDefaultProvider, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
@@ -91,7 +85,6 @@
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  let backUrl: string = $state(Route.albums());
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -99,25 +92,6 @@
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
-
-  afterNavigate(({ from }) => {
-    let url: string | undefined = from?.url?.pathname;
-
-    const route = from?.route?.id;
-    if (isSearchRoute(route)) {
-      url = from?.url.href;
-    }
-
-    if (isAlbumsRoute(route) || isPeopleRoute(route)) {
-      url = Route.albums();
-    }
-
-    backUrl = url || Route.albums();
-
-    if (backUrl === Route.sharedLinks()) {
-      backUrl = history.state?.backUrl || Route.albums();
-    }
-  });
 
   const handleFavorite = async () => {
     try {
@@ -158,7 +132,6 @@
       cancelMultiselect(assetInteraction);
       return;
     }
-    await goto(backUrl);
     return;
   };
 
@@ -305,7 +278,7 @@
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id === album.id) {
-      await goto(backUrl);
+      await goto(Route.albums());
       viewMode = AlbumPageViewMode.VIEW;
     }
   };
@@ -332,7 +305,7 @@
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share } = $derived(getAlbumActions($t, album));
+  const { Share, Close } = $derived(getAlbumActions($t, album, viewMode));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineInteraction.selectedAssets));
 </script>
 
@@ -346,7 +319,7 @@
   onAlbumUserDelete={refreshAlbum}
   onAlbumUpdate={(newAlbum) => (album = newAlbum)}
 />
-<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload]} />
+<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
@@ -512,7 +485,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 

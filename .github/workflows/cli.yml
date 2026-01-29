@@ -24,10 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
+      packages: write
     defaults:
       run:
         working-directory: ./cli
-
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
@@ -57,10 +58,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm publish --no-git-checks
+      - run: pnpm publish --provenance --no-git-checks
         if: ${{ github.event_name == 'release' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   docker:
     name: Docker

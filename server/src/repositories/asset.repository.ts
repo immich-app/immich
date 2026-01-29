@@ -251,8 +251,6 @@ export class AssetRepository {
               duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
-              previewAt: eb.ref('excluded.previewAt'),
-              thumbnailAt: eb.ref('excluded.thumbnailAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
@@ -361,7 +359,6 @@ export class AssetRepository {
                 .selectFrom('asset')
                 .selectAll('asset')
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
-                .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
