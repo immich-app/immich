@@ -1630,7 +1630,7 @@
   "permission_onboarding_permission_limited": "如要繼續，請允許 Immich 備份和管理您的相簿收藏，在設定中授予相片和影片權限。",
   "permission_onboarding_request": "Immich 需要權限才能檢視您的相片和短片。",
   "person": "人物",
-  "person_age_months": "{months, plural, one {# 個月} other {# 個月}}前",
+  "person_age_months": "{months, plural, one {# 個月} other {# 個月}}",
   "person_age_year_months": "1 年 {months, plural, one {# 個月} other {# 個月}}",
   "person_age_years": "{years, plural, other {# 歲}}",
   "person_birthdate": "生於 {date}",
