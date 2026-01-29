@@ -22,5 +22,3 @@
     return assetViewerManager.on(events);
   });
 </script>
-
-const event = name.slice(2) as keyof Events;
