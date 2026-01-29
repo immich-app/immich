@@ -230,10 +230,14 @@ const SQL_RESET_SCHEMA = (username: string) => `
 
 async function* sql(inputStream: Readable, databaseUsername: string, isPgClusterDump: boolean) {
   yield SQL_DROP_CONNECTIONS;
-
-  if (!isPgClusterDump) {
-    yield SQL_RESET_SCHEMA(databaseUsername);
-  }
+  yield isPgClusterDump
+    ? // it is likely the dump contains SQL to try to drop the currently active
+      // database to ensure we have a fresh slate; if the `postgres` database exists
+      // then prefer to switch before continuing otherwise this will just silently fail
+      String.raw`
+        \c postgres
+      `
+    : SQL_RESET_SCHEMA(databaseUsername);
 
   for await (const chunk of inputStream) {
     yield chunk;
