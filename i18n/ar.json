@@ -272,7 +272,7 @@
     "oauth_auto_register": "التسجيل التلقائي",
     "oauth_auto_register_description": "التسجيل التلقائي للمستخدمين الجدد بعد تسجيل الدخول باستخدام OAuth",
     "oauth_button_text": "نص الزر",
-    "oauth_client_secret_description": "مطلوب اذاPKCE(مفتاح الاثبات لتبادل الكود) لم يتم توفيره من مزود OAuth",
+    "oauth_client_secret_description": "مطلوب للعميل السري، او اذا PKCE(مفتاح الاثبات لتبادل الكود) ليس مدعوم من العميل العام.",
     "oauth_enable_description": "تسجيل الدخول باستخدام OAuth",
     "oauth_mobile_redirect_uri": "عنوان URI لإعادة التوجيه على الهاتف",
     "oauth_mobile_redirect_uri_override": "تجاوز عنوان URI لإعادة التوجيه على الهاتف",
