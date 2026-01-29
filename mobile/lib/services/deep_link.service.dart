@@ -84,6 +84,7 @@ class DeepLinkService {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
       "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
       _ => null,
     };
@@ -117,7 +118,7 @@ class DeepLinkService {
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
     } else if (peopleRegex.hasMatch(path)) {
       final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildAlbumDeepLink(peopleId);
+      deepLinkRoute = await _buildPeopleDeepLink(peopleId);
     } else if (path == "/memory") {
       deepLinkRoute = await _buildMemoryDeepLink(null);
     }
