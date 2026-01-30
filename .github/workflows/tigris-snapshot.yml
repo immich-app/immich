@@ -1,14 +1,16 @@
 # Tigris Bucket Snapshot Workflow
 #
 # Creates daily snapshots of the Tigris bucket for point-in-time recovery.
-# This is an alternative to the Fly scheduled machine approach.
+# Uses the Tigris S3-compatible API directly since flyctl doesn't support snapshots.
 #
 # Required secrets:
-#   FLY_API_TOKEN: Your Fly.io API token
+#   TIGRIS_ACCESS_KEY_ID: Tigris access key (same as STORAGE_S3_ACCESS_KEY_ID)
+#   TIGRIS_SECRET_ACCESS_KEY: Tigris secret key (same as STORAGE_S3_SECRET_ACCESS_KEY)
 #
 # Setup:
 # 1. Go to repo Settings > Secrets and variables > Actions
-# 2. Add FLY_API_TOKEN secret
+# 2. Add TIGRIS_ACCESS_KEY_ID and TIGRIS_SECRET_ACCESS_KEY secrets
+#    (copy values from your Fly.io app secrets)
 
 name: Tigris Snapshot
 
@@ -33,6 +35,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install boto3 requests
+
       - name: Extract bucket name from fly.toml
         id: bucket
         run: |
@@ -43,11 +53,6 @@ jobs:
           fi
           echo "name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
           echo "Bucket: ${BUCKET_NAME}"
-
-      - name: Install flyctl
-        run: |
-          curl -L https://fly.io/install.sh | sh
-          echo "$HOME/.fly/bin" >> $GITHUB_PATH
 
       - name: Generate snapshot name
         id: snapshot-name
@@ -61,19 +66,122 @@ jobs:
           echo "Snapshot name: ${NAME}"
 
       - name: Create Tigris snapshot
+        id: create-snapshot
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TIGRIS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TIGRIS_SECRET_ACCESS_KEY }}
+          BUCKET_NAME: ${{ steps.bucket.outputs.name }}
+          SNAPSHOT_NAME: ${{ steps.snapshot-name.outputs.name }}
         run: |
-          echo "Creating snapshot: ${{ steps.snapshot-name.outputs.name }}"
-          fly storage snapshots create "${{ steps.bucket.outputs.name }}" \
-            --name "${{ steps.snapshot-name.outputs.name }}"
+          python3 << 'EOF'
+          import os
+          import boto3
+          from botocore.config import Config
+          from botocore.auth import SigV4Auth
+          from botocore.awsrequest import AWSRequest
+          import requests
+
+          bucket_name = os.environ['BUCKET_NAME']
+          snapshot_name = os.environ['SNAPSHOT_NAME']
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url='https://fly.storage.tigris.dev',
+              region_name='auto',
+              config=Config(signature_version='s3v4')
+          )
+
+          # Create snapshot using Tigris API
+          endpoint = f'https://fly.storage.tigris.dev/{bucket_name}'
+          request = AWSRequest(
+              method='PUT',
+              url=endpoint,
+              headers={'X-Tigris-Snapshot': f'true; name={snapshot_name}'}
+          )
+
+          credentials = s3._request_signer._credentials
+          SigV4Auth(credentials, 's3', 'auto').add_auth(request)
+
+          response = requests.put(endpoint, headers=dict(request.headers), timeout=60)
+
+          if response.status_code == 200:
+              version = response.headers.get('X-Tigris-Snapshot-Version', 'unknown')
+              print(f"Snapshot created successfully!")
+              print(f"Version: {version}")
+              print(f"Name: {snapshot_name}")
+
+              # Write outputs for GitHub Actions
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write(f"version={version}\n")
+          else:
+              print(f"ERROR: Failed to create snapshot")
+              print(f"Status: {response.status_code}")
+              print(f"Response: {response.text}")
+              exit(1)
+          EOF
 
       - name: List snapshots
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TIGRIS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TIGRIS_SECRET_ACCESS_KEY }}
+          BUCKET_NAME: ${{ steps.bucket.outputs.name }}
         run: |
-          echo "Current snapshots:"
-          fly storage snapshots list "${{ steps.bucket.outputs.name }}" || true
+          python3 << 'EOF'
+          import os
+          import boto3
+          from botocore.config import Config
+          from botocore.auth import SigV4Auth
+          from botocore.awsrequest import AWSRequest
+          import requests
+          import xml.etree.ElementTree as ET
+
+          bucket_name = os.environ['BUCKET_NAME']
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url='https://fly.storage.tigris.dev',
+              region_name='auto',
+              config=Config(signature_version='s3v4')
+          )
+
+          # List snapshots using ListBuckets with X-Tigris-Snapshot header
+          endpoint = 'https://fly.storage.tigris.dev/'
+          request = AWSRequest(
+              method='GET',
+              url=endpoint,
+              headers={'X-Tigris-Snapshot': bucket_name}
+          )
+
+          credentials = s3._request_signer._credentials
+          SigV4Auth(credentials, 's3', 'auto').add_auth(request)
+
+          response = requests.get(endpoint, headers=dict(request.headers), timeout=60)
+
+          if response.status_code == 200:
+              print("Current snapshots:")
+              print("-" * 60)
+
+              # Parse XML response
+              root = ET.fromstring(response.text)
+              ns = {'s3': 'http://s3.amazonaws.com/doc/2006-03-01/'}
+
+              for bucket in root.findall('.//Bucket', ns) or root.findall('.//Bucket'):
+                  name_elem = bucket.find('Name', ns) or bucket.find('Name')
+                  date_elem = bucket.find('CreationDate', ns) or bucket.find('CreationDate')
+
+                  name = name_elem.text if name_elem is not None else 'unknown'
+                  date = date_elem.text if date_elem is not None else 'unknown'
+
+                  # Parse version and name from the combined string
+                  if '; name=' in name:
+                      version, snap_name = name.split('; name=', 1)
+                  else:
+                      version, snap_name = name, '(unnamed)'
+
+                  print(f"  {snap_name:<30} {version:<25} {date}")
+          else:
+              print(f"Warning: Could not list snapshots (status {response.status_code})")
+          EOF
 
       - name: Summary
         run: |
@@ -81,4 +189,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Bucket**: ${{ steps.bucket.outputs.name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Snapshot**: ${{ steps.snapshot-name.outputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.create-snapshot.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Time**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
