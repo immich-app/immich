@@ -424,6 +424,34 @@ class LoginForm extends HookConsumerWidget {
                   variant: ImmichVariant.ghost,
                   onPressed: () => context.pushRoute(const SettingsRoute()),
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(top: ImmichSpacing.md, bottom: ImmichSpacing.sm),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'login_form_no_account'.t(context: context),
+                        style: context.textTheme.bodyMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          final uri = Uri.parse('https://pixelunion.eu/#pricing');
+                          if (await canLaunchUrl(uri)) {
+                            unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
+                          }
+                        },
+                        child: Text(
+                          'login_form_register'.t(context: context),
+                          style: TextStyle(
+                            color: context.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'GoogleSansCode',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           )
@@ -484,6 +512,34 @@ class LoginForm extends HookConsumerWidget {
                   ),
                 if (!isOauthEnable.value && !isPasswordLoginEnable.value)
                   Center(child: const Text('login_disabled').tr()),
+                Padding(
+                  padding: const EdgeInsets.only(top: ImmichSpacing.md, bottom: ImmichSpacing.sm),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'login_form_no_account'.t(context: context),
+                        style: context.textTheme.bodyMedium,
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          final uri = Uri.parse('https://pixelunion.eu/#pricing');
+                          if (await canLaunchUrl(uri)) {
+                            unawaited(launchUrl(uri, mode: LaunchMode.externalApplication));
+                          }
+                        },
+                        child: Text(
+                          'login_form_register'.t(context: context),
+                          style: TextStyle(
+                            color: context.primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'GoogleSansCode',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 ImmichTextButton(
                   labelText: 'back'.t(context: context),
                   icon: Icons.arrow_back,
