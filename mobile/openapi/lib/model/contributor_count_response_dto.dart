@@ -17,8 +17,10 @@ class ContributorCountResponseDto {
     required this.userId,
   });
 
+  /// Number of assets contributed
   int assetCount;
 
+  /// User ID
   String userId;
 
   @override

@@ -17,8 +17,10 @@ class PurchaseResponse {
     required this.showSupportBadge,
   });
 
+  /// Date until which to hide buy button
   String hideBuyButtonUntil;
 
+  /// Whether to show support badge
   bool showSupportBadge;
 
   @override

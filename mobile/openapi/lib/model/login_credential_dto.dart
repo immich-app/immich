@@ -17,8 +17,10 @@ class LoginCredentialDto {
     required this.password,
   });
 
+  /// User email
   String email;
 
+  /// User password
   String password;
 
   @override

@@ -126,6 +126,7 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Face ID
   Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/faces';
@@ -160,6 +161,7 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Face ID
   Future<List<AssetFaceResponseDto>?> getFaces(String id,) async {
     final response = await getFacesWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -73,8 +73,22 @@ export class AssetJobRepository {
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where((eb) =>
             eb.or([
-              eb('asset_job_status.previewAt', 'is', null),
-              eb('asset_job_status.thumbnailAt', 'is', null),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Preview),
+                ),
+              ),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Thumbnail),
+                ),
+              ),
               eb('asset.thumbhash', 'is', null),
             ]),
           ),
@@ -157,7 +171,14 @@ export class AssetJobRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
-      .where('job_status.previewAt', 'is not', null);
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
   }
 
   @GenerateSql({ params: [], stream: true })

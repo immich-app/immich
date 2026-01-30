@@ -16,6 +16,7 @@ class SyncAssetFaceDeleteV1 {
     required this.assetFaceId,
   });
 
+  /// Asset face ID
   String assetFaceId;
 
   @override

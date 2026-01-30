@@ -16,6 +16,7 @@ class ValidateAccessTokenResponseDto {
     required this.authStatus,
   });
 
+  /// Authentication status
   bool authStatus;
 
   @override

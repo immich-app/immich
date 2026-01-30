@@ -17,8 +17,10 @@ class FoldersResponse {
     this.sidebarWeb = false,
   });
 
+  /// Whether folders are enabled
   bool enabled;
 
+  /// Whether folders appear in web sidebar
   bool sidebarWeb;
 
   @override

@@ -16,6 +16,7 @@ class AddUsersDto {
     this.albumUsers = const [],
   });
 
+  /// Album users to add
   List<AlbumUserAddDto> albumUsers;
 
   @override

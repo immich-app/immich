@@ -24,22 +24,31 @@ class LibraryResponseDto {
     required this.updatedAt,
   });
 
+  /// Number of assets
   int assetCount;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Exclusion patterns
   List<String> exclusionPatterns;
 
+  /// Library ID
   String id;
 
+  /// Import paths
   List<String> importPaths;
 
+  /// Library name
   String name;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Last refresh date
   DateTime? refreshedAt;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

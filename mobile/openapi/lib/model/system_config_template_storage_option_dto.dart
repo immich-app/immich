@@ -23,20 +23,28 @@ class SystemConfigTemplateStorageOptionDto {
     this.yearOptions = const [],
   });
 
+  /// Available day format options for storage template
   List<String> dayOptions;
 
+  /// Available hour format options for storage template
   List<String> hourOptions;
 
+  /// Available minute format options for storage template
   List<String> minuteOptions;
 
+  /// Available month format options for storage template
   List<String> monthOptions;
 
+  /// Available preset template options
   List<String> presetOptions;
 
+  /// Available second format options for storage template
   List<String> secondOptions;
 
+  /// Available week format options for storage template
   List<String> weekOptions;
 
+  /// Available year format options for storage template
   List<String> yearOptions;
 
   @override

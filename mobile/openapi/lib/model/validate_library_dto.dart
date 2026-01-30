@@ -17,8 +17,10 @@ class ValidateLibraryDto {
     this.importPaths = const {},
   });
 
+  /// Exclusion patterns (max 128)
   Set<String> exclusionPatterns;
 
+  /// Import paths to validate (max 128)
   Set<String> importPaths;
 
   @override

@@ -21,14 +21,19 @@ class ActivityResponseDto {
     required this.user,
   });
 
+  /// Asset ID (if activity is for an asset)
   String? assetId;
 
+  /// Comment text (for comment activities)
   String? comment;
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Activity ID
   String id;
 
+  /// Activity type
   ReactionType type;
 
   UserResponseDto user;

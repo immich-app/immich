@@ -116,8 +116,22 @@ where
   "asset"."deletedAt" is null
   and "asset"."visibility" != $1
   and (
-    "asset_job_status"."previewAt" is null
-    or "asset_job_status"."thumbnailAt" is null
+    not exists (
+      select
+      from
+        "asset_file"
+      where
+        "assetId" = "asset"."id"
+        and "asset_file"."type" = $2
+    )
+    or not exists (
+      select
+      from
+        "asset_file"
+      where
+        "assetId" = "asset"."id"
+        and "asset_file"."type" = $3
+    )
     or "asset"."thumbhash" is null
   )
 
@@ -292,7 +306,14 @@ from
 where
   "asset"."visibility" != $1
   and "asset"."deletedAt" is null
-  and "job_status"."previewAt" is not null
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "assetId" = "asset"."id"
+      and "asset_file"."type" = $2
+  )
   and not exists (
     select
     from
@@ -623,7 +644,14 @@ from
 where
   "asset"."visibility" != $1
   and "asset"."deletedAt" is null
-  and "job_status"."previewAt" is not null
+  and exists (
+    select
+    from
+      "asset_file"
+    where
+      "assetId" = "asset"."id"
+      and "asset_file"."type" = $2
+  )
 order by
   "asset"."fileCreatedAt" desc
 

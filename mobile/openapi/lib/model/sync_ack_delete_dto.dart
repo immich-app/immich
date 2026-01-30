@@ -16,6 +16,7 @@ class SyncAckDeleteDto {
     this.types = const [],
   });
 
+  /// Sync entity types to delete acks for
   List<SyncEntityType> types;
 
   @override

@@ -18,10 +18,13 @@ class BulkIdResponseDto {
     required this.success,
   });
 
+  /// Error reason if failed
   BulkIdResponseDtoErrorEnum? error;
 
+  /// ID
   String id;
 
+  /// Whether operation succeeded
   bool success;
 
   @override
@@ -116,7 +119,7 @@ class BulkIdResponseDto {
   };
 }
 
-
+/// Error reason if failed
 class BulkIdResponseDtoErrorEnum {
   /// Instantiate a new enum with the provided [value].
   const BulkIdResponseDtoErrorEnum._(this.value);

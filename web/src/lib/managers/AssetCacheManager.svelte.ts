@@ -37,9 +37,11 @@ class AssetCacheManager {
   #ocrCache = new AsyncCache<AssetOcrResponseDto[]>();
 
   constructor() {
-    eventManager.on('AssetEditsApplied', () => {
-      this.#assetCache.clear();
-      this.#ocrCache.clear();
+    eventManager.on({
+      AssetEditsApplied: () => {
+        this.#assetCache.clear();
+        this.#ocrCache.clear();
+      },
     });
   }
 

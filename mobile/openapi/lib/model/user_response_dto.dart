@@ -21,16 +21,22 @@ class UserResponseDto {
     required this.profileImagePath,
   });
 
+  /// Avatar color
   UserAvatarColor avatarColor;
 
+  /// User email
   String email;
 
+  /// User ID
   String id;
 
+  /// User name
   String name;
 
+  /// Profile change date
   DateTime profileChangedAt;
 
+  /// Profile image path
   String profileImagePath;
 
   @override

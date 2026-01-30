@@ -34,42 +34,61 @@ class SyncAssetV1 {
     required this.width,
   });
 
+  /// Checksum
   String checksum;
 
+  /// Deleted at
   DateTime? deletedAt;
 
+  /// Duration
   String? duration;
 
+  /// File created at
   DateTime? fileCreatedAt;
 
+  /// File modified at
   DateTime? fileModifiedAt;
 
+  /// Asset height
   int? height;
 
+  /// Asset ID
   String id;
 
+  /// Is edited
   bool isEdited;
 
+  /// Is favorite
   bool isFavorite;
 
+  /// Library ID
   String? libraryId;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
+  /// Local date time
   DateTime? localDateTime;
 
+  /// Original file name
   String originalFileName;
 
+  /// Owner ID
   String ownerId;
 
+  /// Stack ID
   String? stackId;
 
+  /// Thumbhash
   String? thumbhash;
 
+  /// Asset type
   AssetTypeEnum type;
 
+  /// Asset visibility
   AssetVisibility visibility;
 
+  /// Asset width
   int? width;
 
   @override

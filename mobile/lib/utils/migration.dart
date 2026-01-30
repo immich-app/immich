@@ -28,6 +28,7 @@ import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
@@ -88,7 +89,6 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (version < 20 && Store.isBetaTimelineEnabled) {
     await _syncLocalAlbumIsIosSharedAlbum(drift);
-    await _backfillAssetExifWidthHeight(drift);
   }
 
   if (targetVersion >= 12) {
@@ -279,22 +279,6 @@ Future<void> _syncLocalAlbumIsIosSharedAlbum(Drift db) async {
     dPrint(() => "[MIGRATION] Successfully updated isIosSharedAlbum for ${albums.length} albums");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while syncing local album isIosSharedAlbum: $error");
-  }
-}
-
-Future<void> _backfillAssetExifWidthHeight(Drift db) async {
-  try {
-    await db.customStatement('''
-      UPDATE remote_exif_entity AS remote_exif
-      SET width = asset.width,
-          height = asset.height
-      FROM remote_asset_entity AS asset
-      WHERE remote_exif.asset_id = asset.id;
-    ''');
-
-    dPrint(() => "[MIGRATION] Successfully backfilled asset exif width and height");
-  } catch (error) {
-    dPrint(() => "[MIGRATION] Error while backfilling asset exif width and height: $error");
   }
 }
 

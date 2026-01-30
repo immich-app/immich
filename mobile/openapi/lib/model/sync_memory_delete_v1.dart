@@ -16,6 +16,7 @@ class SyncMemoryDeleteV1 {
     required this.memoryId,
   });
 
+  /// Memory ID
   String memoryId;
 
   @override

@@ -17,8 +17,10 @@ class AssetDeltaSyncDto {
     this.userIds = const [],
   });
 
+  /// Sync assets updated after this date
   DateTime updatedAfter;
 
+  /// User IDs to sync
   List<String> userIds;
 
   @override

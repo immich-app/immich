@@ -17,8 +17,10 @@ class AssetMetadataBulkDeleteItemDto {
     required this.key,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Metadata key
   String key;
 
   @override

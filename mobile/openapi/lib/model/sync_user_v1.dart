@@ -22,18 +22,25 @@ class SyncUserV1 {
     required this.profileChangedAt,
   });
 
+  /// User avatar color
   UserAvatarColor? avatarColor;
 
+  /// User deleted at
   DateTime? deletedAt;
 
+  /// User email
   String email;
 
+  /// User has profile image
   bool hasProfileImage;
 
+  /// User ID
   String id;
 
+  /// User name
   String name;
 
+  /// User profile changed at
   DateTime profileChangedAt;
 
   @override

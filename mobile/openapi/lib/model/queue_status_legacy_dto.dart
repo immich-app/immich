@@ -17,8 +17,10 @@ class QueueStatusLegacyDto {
     required this.isPaused,
   });
 
+  /// Whether the queue is currently active (has running jobs)
   bool isActive;
 
+  /// Whether the queue is paused
   bool isPaused;
 
   @override

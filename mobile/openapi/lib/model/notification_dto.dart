@@ -23,8 +23,10 @@ class NotificationDto {
     required this.type,
   });
 
+  /// Creation date
   DateTime createdAt;
 
+  /// Additional notification data
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -33,6 +35,7 @@ class NotificationDto {
   ///
   Object? data;
 
+  /// Notification description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -41,10 +44,13 @@ class NotificationDto {
   ///
   String? description;
 
+  /// Notification ID
   String id;
 
+  /// Notification level
   NotificationLevel level;
 
+  /// Date when notification was read
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -53,8 +59,10 @@ class NotificationDto {
   ///
   DateTime? readAt;
 
+  /// Notification title
   String title;
 
+  /// Notification type
   NotificationType type;
 
   @override

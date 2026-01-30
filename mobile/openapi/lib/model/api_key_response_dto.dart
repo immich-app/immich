@@ -20,14 +20,19 @@ class APIKeyResponseDto {
     required this.updatedAt,
   });
 
+  /// Creation date
   DateTime createdAt;
 
+  /// API key ID
   String id;
 
+  /// API key name
   String name;
 
+  /// List of permissions
   List<Permission> permissions;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override

@@ -18,10 +18,13 @@ class ChangePasswordDto {
     required this.password,
   });
 
+  /// Invalidate all other sessions
   bool invalidateSessions;
 
+  /// New password (min 8 characters)
   String newPassword;
 
+  /// Current password
   String password;
 
   @override

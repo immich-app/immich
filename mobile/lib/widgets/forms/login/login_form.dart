@@ -414,6 +414,7 @@ class LoginForm extends HookConsumerWidget {
                     keyboardAction: TextInputAction.next,
                     keyboardType: TextInputType.url,
                     autofillHints: const [AutofillHints.url],
+                    autoCorrect: false,
                     onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
                   ),
                 ),

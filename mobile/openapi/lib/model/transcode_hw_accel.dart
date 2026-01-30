@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Transcode hardware acceleration
 class TranscodeHWAccel {
   /// Instantiate a new enum with the provided [value].
   const TranscodeHWAccel._(this.value);

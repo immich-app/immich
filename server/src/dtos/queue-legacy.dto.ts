@@ -3,15 +3,19 @@ import { QueueResponseDto, QueueStatisticsDto } from 'src/dtos/queue.dto';
 import { QueueName } from 'src/enum';
 
 export class QueueStatusLegacyDto {
+  @ApiProperty({ description: 'Whether the queue is currently active (has running jobs)' })
   isActive!: boolean;
+  @ApiProperty({ description: 'Whether the queue is paused' })
   isPaused!: boolean;
 }
 
 export class QueueResponseLegacyDto {
-  @ApiProperty({ type: QueueStatusLegacyDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   queueStatus!: QueueStatusLegacyDto;
 
-  @ApiProperty({ type: QueueStatisticsDto })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   jobCounts!: QueueStatisticsDto;
 }
 

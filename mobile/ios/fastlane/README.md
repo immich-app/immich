@@ -39,6 +39,14 @@ iOS Release to TestFlight
 
 iOS Manual Release
 
+### ios gha_build_only
+
+```sh
+[bundle exec] fastlane ios gha_build_only
+```
+
+iOS Build Only (no TestFlight upload)
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

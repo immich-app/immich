@@ -130,7 +130,7 @@ describe(VersionService.name, () => {
     });
   });
 
-  describe('onWebsocketConnectionEvent', () => {
+  describe('onWebsocketConnection', () => {
     it('should send on_server_version client event', async () => {
       await sut.onWebsocketConnection({ userId: '42' });
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
@@ -142,6 +142,13 @@ describe(VersionService.name, () => {
       await sut.onWebsocketConnection({ userId: '42' });
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
+    });
+
+    it('should not send a release notification when the version check is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValueOnce({ newVersionCheck: { enabled: false } });
+      await sut.onWebsocketConnection({ userId: '42' });
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.websocket.clientSend).not.toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
   });
 });

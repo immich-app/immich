@@ -18,10 +18,13 @@ class SystemConfigServerDto {
     required this.publicUsers,
   });
 
+  /// External domain
   String externalDomain;
 
+  /// Login page message
   String loginPageMessage;
 
+  /// Public users
   bool publicUsers;
 
   @override

@@ -21,16 +21,22 @@ class MapMarkerResponseDto {
     required this.state,
   });
 
+  /// City name
   String? city;
 
+  /// Country name
   String? country;
 
+  /// Asset ID
   String id;
 
+  /// Latitude
   double lat;
 
+  /// Longitude
   double lon;
 
+  /// State/Province name
   String? state;
 
   @override

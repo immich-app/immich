@@ -16,6 +16,7 @@ class NotificationDeleteAllDto {
     this.ids = const [],
   });
 
+  /// Notification IDs to delete
   List<String> ids;
 
   @override

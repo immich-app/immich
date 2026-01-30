@@ -1,5 +1,6 @@
 <script lang="ts">
   import { eventManager, type Events } from '$lib/managers/event-manager.svelte';
+  import type { EventCallback, EventMap } from '$lib/utils/base-event-manager.svelte';
   import { onMount } from 'svelte';
 
   type Props = {
@@ -9,25 +10,15 @@
   const props: Props = $props();
 
   onMount(() => {
-    const unsubscribes: Array<() => void> = [];
+    const events: EventMap<Events> = {};
 
-    for (const name of Object.keys(props)) {
-      const event = name.slice(2) as keyof Events;
-      const listener = props[name as keyof Props];
-
-      if (!listener) {
-        continue;
+    for (const [name, listener] of Object.entries(props)) {
+      if (listener) {
+        const event = name.slice(2) as keyof Events;
+        events[event] = listener as EventCallback<Events, typeof event>;
       }
-
-      const args = [event, listener as (...args: Events[typeof event]) => void] as const;
-
-      unsubscribes.push(eventManager.on(...args));
     }
 
-    return () => {
-      for (const unsubscribe of unsubscribes) {
-        unsubscribe();
-      }
-    };
+    return eventManager.on(events);
   });
 </script>

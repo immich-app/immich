@@ -18,6 +18,7 @@ class TagCreateDto {
     this.parentId,
   });
 
+  /// Tag color (hex)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,8 +27,10 @@ class TagCreateDto {
   ///
   String? color;
 
+  /// Tag name
   String name;
 
+  /// Parent tag ID
   String? parentId;
 
   @override
