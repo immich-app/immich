@@ -260,13 +260,13 @@ export class VaultService extends BaseService {
 
     let isUnlocked = false;
     if (auth.session && vault) {
-      const session = await this.sessionRepository.get(auth.session.id);
-      if (session) {
-        // Check if vault key is cached and not expired
-        const sessionRecord = await this.getFullSession(auth.session.id);
+      try {
+        const sessionRecord = await this.getSessionWithVaultCache(auth.session.id);
         if (sessionRecord?.encryptedVaultKeyCache && sessionRecord.vaultKeyExpiresAt) {
           isUnlocked = new Date(sessionRecord.vaultKeyExpiresAt) > new Date();
         }
+      } catch (error) {
+        this.logger.warn(`Failed to check vault unlock status: ${error}`);
       }
     }
 
@@ -347,7 +347,7 @@ export class VaultService extends BaseService {
       return null;
     }
 
-    const sessionRecord = await this.getFullSession(auth.session.id);
+    const sessionRecord = await this.getSessionWithVaultCache(auth.session.id);
     if (!sessionRecord?.encryptedVaultKeyCache || !sessionRecord.vaultKeyExpiresAt) {
       return null;
     }
@@ -570,17 +570,14 @@ export class VaultService extends BaseService {
       N: 2 ** 14, // Lower cost for session key derivation
       r: 8,
       p: 1,
+      maxmem: 64 * 1024 * 1024, // 64 MiB
     });
   }
 
   /**
-   * Get full session record including vault key cache fields.
+   * Get session record with vault key cache fields.
    */
-  private async getFullSession(sessionId: string) {
-    // The session repository get() doesn't return vault fields, so we need a custom query
-    // For now, use the update return value trick or add a method to session repository
-    // This is a workaround - ideally add a method to SessionRepository
-    const result = await this.sessionRepository.update(sessionId, {});
-    return result;
+  private async getSessionWithVaultCache(sessionId: string) {
+    return this.sessionRepository.getWithVaultCache(sessionId);
   }
 }

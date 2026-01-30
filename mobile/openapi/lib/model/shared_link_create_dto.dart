@@ -15,6 +15,7 @@ class SharedLinkCreateDto {
   SharedLinkCreateDto({
     this.albumId,
     this.allowDownload = true,
+    this.allowShare = false,
     this.allowUpload,
     this.assetIds = const [],
     this.description,
@@ -34,6 +35,8 @@ class SharedLinkCreateDto {
   String? albumId;
 
   bool allowDownload;
+
+  bool allowShare;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -61,6 +64,7 @@ class SharedLinkCreateDto {
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkCreateDto &&
     other.albumId == albumId &&
     other.allowDownload == allowDownload &&
+    other.allowShare == allowShare &&
     other.allowUpload == allowUpload &&
     _deepEquality.equals(other.assetIds, assetIds) &&
     other.description == description &&
@@ -75,6 +79,7 @@ class SharedLinkCreateDto {
     // ignore: unnecessary_parenthesis
     (albumId == null ? 0 : albumId!.hashCode) +
     (allowDownload.hashCode) +
+    (allowShare.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (assetIds.hashCode) +
     (description == null ? 0 : description!.hashCode) +
@@ -85,7 +90,7 @@ class SharedLinkCreateDto {
     (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type]';
+  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowShare=$allowShare, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -95,6 +100,7 @@ class SharedLinkCreateDto {
     //  json[r'albumId'] = null;
     }
       json[r'allowDownload'] = this.allowDownload;
+      json[r'allowShare'] = this.allowShare;
     if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
     } else {
@@ -137,6 +143,7 @@ class SharedLinkCreateDto {
       return SharedLinkCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId'),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload') ?? true,
+        allowShare: mapValueOfType<bool>(json, r'allowShare') ?? false,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)

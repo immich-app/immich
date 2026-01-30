@@ -200,6 +200,8 @@ class ApiClient {
           return AddUsersDto.fromJson(value);
         case 'AdminOnboardingUpdateDto':
           return AdminOnboardingUpdateDto.fromJson(value);
+        case 'AdminRecoverVaultDto':
+          return AdminRecoverVaultDto.fromJson(value);
         case 'AlbumResponseDto':
           return AlbumResponseDto.fromJson(value);
         case 'AlbumStatisticsResponseDto':
@@ -550,6 +552,8 @@ class ApiClient {
           return ReactionTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
+        case 'S3BucketConfigDto':
+          return S3BucketConfigDto.fromJson(value);
         case 'SearchAlbumResponseDto':
           return SearchAlbumResponseDto.fromJson(value);
         case 'SearchAssetResponseDto':
@@ -748,8 +752,6 @@ class ApiClient {
           return SystemConfigSmtpDto.fromJson(value);
         case 'SystemConfigSmtpTransportDto':
           return SystemConfigSmtpTransportDto.fromJson(value);
-        case 'SystemConfigStorageClassesDto':
-          return SystemConfigStorageClassesDto.fromJson(value);
         case 'SystemConfigStorageDto':
           return SystemConfigStorageDto.fromJson(value);
         case 'SystemConfigStorageLocationsDto':
@@ -850,6 +852,14 @@ class ApiClient {
           return ValidateLibraryImportPathResponseDto.fromJson(value);
         case 'ValidateLibraryResponseDto':
           return ValidateLibraryResponseDto.fromJson(value);
+        case 'VaultChangePinDto':
+          return VaultChangePinDto.fromJson(value);
+        case 'VaultSetupDto':
+          return VaultSetupDto.fromJson(value);
+        case 'VaultStatusResponseDto':
+          return VaultStatusResponseDto.fromJson(value);
+        case 'VaultUnlockDto':
+          return VaultUnlockDto.fromJson(value);
         case 'VersionCheckStateResponseDto':
           return VersionCheckStateResponseDto.fromJson(value);
         case 'VideoCodec':

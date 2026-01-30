@@ -14,19 +14,19 @@ class SystemConfigStorageS3Dto {
   /// Returns a new [SystemConfigStorageS3Dto] instance.
   SystemConfigStorageS3Dto({
     required this.accessKeyId,
-    required this.bucket,
+    required this.archiveBucket,
     required this.enabled,
     required this.endpoint,
     required this.forcePathStyle,
-    required this.prefix,
+    required this.hotBucket,
+    required this.publicEndpoint,
     required this.region,
     required this.secretAccessKey,
-    required this.storageClasses,
   });
 
   String accessKeyId;
 
-  String bucket;
+  S3BucketConfigDto archiveBucket;
 
   bool enabled;
 
@@ -34,53 +34,53 @@ class SystemConfigStorageS3Dto {
 
   bool forcePathStyle;
 
-  String prefix;
+  S3BucketConfigDto hotBucket;
+
+  String publicEndpoint;
 
   String region;
 
   String secretAccessKey;
 
-  SystemConfigStorageClassesDto storageClasses;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigStorageS3Dto &&
     other.accessKeyId == accessKeyId &&
-    other.bucket == bucket &&
+    other.archiveBucket == archiveBucket &&
     other.enabled == enabled &&
     other.endpoint == endpoint &&
     other.forcePathStyle == forcePathStyle &&
-    other.prefix == prefix &&
+    other.hotBucket == hotBucket &&
+    other.publicEndpoint == publicEndpoint &&
     other.region == region &&
-    other.secretAccessKey == secretAccessKey &&
-    other.storageClasses == storageClasses;
+    other.secretAccessKey == secretAccessKey;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accessKeyId.hashCode) +
-    (bucket.hashCode) +
+    (archiveBucket.hashCode) +
     (enabled.hashCode) +
     (endpoint.hashCode) +
     (forcePathStyle.hashCode) +
-    (prefix.hashCode) +
+    (hotBucket.hashCode) +
+    (publicEndpoint.hashCode) +
     (region.hashCode) +
-    (secretAccessKey.hashCode) +
-    (storageClasses.hashCode);
+    (secretAccessKey.hashCode);
 
   @override
-  String toString() => 'SystemConfigStorageS3Dto[accessKeyId=$accessKeyId, bucket=$bucket, enabled=$enabled, endpoint=$endpoint, forcePathStyle=$forcePathStyle, prefix=$prefix, region=$region, secretAccessKey=$secretAccessKey, storageClasses=$storageClasses]';
+  String toString() => 'SystemConfigStorageS3Dto[accessKeyId=$accessKeyId, archiveBucket=$archiveBucket, enabled=$enabled, endpoint=$endpoint, forcePathStyle=$forcePathStyle, hotBucket=$hotBucket, publicEndpoint=$publicEndpoint, region=$region, secretAccessKey=$secretAccessKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accessKeyId'] = this.accessKeyId;
-      json[r'bucket'] = this.bucket;
+      json[r'archiveBucket'] = this.archiveBucket;
       json[r'enabled'] = this.enabled;
       json[r'endpoint'] = this.endpoint;
       json[r'forcePathStyle'] = this.forcePathStyle;
-      json[r'prefix'] = this.prefix;
+      json[r'hotBucket'] = this.hotBucket;
+      json[r'publicEndpoint'] = this.publicEndpoint;
       json[r'region'] = this.region;
       json[r'secretAccessKey'] = this.secretAccessKey;
-      json[r'storageClasses'] = this.storageClasses;
     return json;
   }
 
@@ -94,14 +94,14 @@ class SystemConfigStorageS3Dto {
 
       return SystemConfigStorageS3Dto(
         accessKeyId: mapValueOfType<String>(json, r'accessKeyId')!,
-        bucket: mapValueOfType<String>(json, r'bucket')!,
+        archiveBucket: S3BucketConfigDto.fromJson(json[r'archiveBucket'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         endpoint: mapValueOfType<String>(json, r'endpoint')!,
         forcePathStyle: mapValueOfType<bool>(json, r'forcePathStyle')!,
-        prefix: mapValueOfType<String>(json, r'prefix')!,
+        hotBucket: S3BucketConfigDto.fromJson(json[r'hotBucket'])!,
+        publicEndpoint: mapValueOfType<String>(json, r'publicEndpoint')!,
         region: mapValueOfType<String>(json, r'region')!,
         secretAccessKey: mapValueOfType<String>(json, r'secretAccessKey')!,
-        storageClasses: SystemConfigStorageClassesDto.fromJson(json[r'storageClasses'])!,
       );
     }
     return null;
@@ -150,14 +150,14 @@ class SystemConfigStorageS3Dto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accessKeyId',
-    'bucket',
+    'archiveBucket',
     'enabled',
     'endpoint',
     'forcePathStyle',
-    'prefix',
+    'hotBucket',
+    'publicEndpoint',
     'region',
     'secretAccessKey',
-    'storageClasses',
   };
 }
 

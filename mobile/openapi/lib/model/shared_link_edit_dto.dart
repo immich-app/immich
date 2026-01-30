@@ -14,6 +14,7 @@ class SharedLinkEditDto {
   /// Returns a new [SharedLinkEditDto] instance.
   SharedLinkEditDto({
     this.allowDownload,
+    this.allowShare,
     this.allowUpload,
     this.changeExpiryTime,
     this.description,
@@ -30,6 +31,14 @@ class SharedLinkEditDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   bool? allowDownload;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? allowShare;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -67,6 +76,7 @@ class SharedLinkEditDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
     other.allowDownload == allowDownload &&
+    other.allowShare == allowShare &&
     other.allowUpload == allowUpload &&
     other.changeExpiryTime == changeExpiryTime &&
     other.description == description &&
@@ -79,6 +89,7 @@ class SharedLinkEditDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
+    (allowShare == null ? 0 : allowShare!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
     (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
@@ -88,7 +99,7 @@ class SharedLinkEditDto {
     (slug == null ? 0 : slug!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowShare=$allowShare, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -96,6 +107,11 @@ class SharedLinkEditDto {
       json[r'allowDownload'] = this.allowDownload;
     } else {
     //  json[r'allowDownload'] = null;
+    }
+    if (this.allowShare != null) {
+      json[r'allowShare'] = this.allowShare;
+    } else {
+    //  json[r'allowShare'] = null;
     }
     if (this.allowUpload != null) {
       json[r'allowUpload'] = this.allowUpload;
@@ -145,6 +161,7 @@ class SharedLinkEditDto {
 
       return SharedLinkEditDto(
         allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
+        allowShare: mapValueOfType<bool>(json, r'allowShare'),
         allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
         changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
         description: mapValueOfType<String>(json, r'description'),

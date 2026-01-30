@@ -189,7 +189,7 @@ export class AssetEncryptionService extends BaseService {
       return null;
     }
 
-    const sessionRecord = await this.sessionRepository.update(auth.session.id, {});
+    const sessionRecord = await this.sessionRepository.getWithVaultCache(auth.session.id);
     if (!sessionRecord?.encryptedVaultKeyCache || !sessionRecord.vaultKeyExpiresAt) {
       return null;
     }
@@ -220,6 +220,7 @@ export class AssetEncryptionService extends BaseService {
       N: 2 ** 14,
       r: 8,
       p: 1,
+      maxmem: 64 * 1024 * 1024, // 64 MiB
     });
   }
 

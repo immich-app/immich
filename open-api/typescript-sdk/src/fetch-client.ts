@@ -1675,6 +1675,7 @@ export type S3BucketConfigDto = {
     endpoint?: string;
     forcePathStyle?: boolean;
     prefix?: string;
+    publicEndpoint?: string;
     region?: string;
     secretAccessKey?: string;
     storageClass?: StorageClass;
@@ -1686,6 +1687,7 @@ export type SystemConfigStorageS3Dto = {
     endpoint: string;
     forcePathStyle: boolean;
     hotBucket: S3BucketConfigDto;
+    publicEndpoint: string;
     region: string;
     secretAccessKey: string;
 };
@@ -1861,6 +1863,11 @@ export type VaultChangePinDto = {
 export type VaultMigrationResponseDto = {};
 export type VaultSetupDto = {
     pin: string;
+};
+export type VaultStatusResponseDto = {
+    hasVault: boolean;
+    isUnlocked: boolean;
+    vaultVersion: number | null;
 };
 export type VaultUnlockDto = {
     pin: string;
@@ -5436,7 +5443,7 @@ export function setupVault({ vaultSetupDto }: {
 export function getVaultStatus(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: object;
+        data: VaultStatusResponseDto;
     }>("/vault/status", {
         ...opts
     }));

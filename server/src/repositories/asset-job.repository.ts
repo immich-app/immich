@@ -343,9 +343,7 @@ export class AssetJobRepository {
       .select(['asset.id'])
       .where('asset.type', '=', AssetType.Video)
       .$if(!force, (qb) =>
-        qb
-          .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
-          .where('asset.visibility', '!=', AssetVisibility.Hidden),
+        qb.where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')])),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();

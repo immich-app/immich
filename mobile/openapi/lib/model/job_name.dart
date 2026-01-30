@@ -78,8 +78,13 @@ class JobName {
   static const s3UploadQueueAll = JobName._(r'S3UploadQueueAll');
   static const s3UploadEncodedVideo = JobName._(r'S3UploadEncodedVideo');
   static const s3UploadEncodedVideoQueueAll = JobName._(r'S3UploadEncodedVideoQueueAll');
+  static const s3UploadThumbnails = JobName._(r'S3UploadThumbnails');
+  static const s3UploadThumbnailsQueueAll = JobName._(r'S3UploadThumbnailsQueueAll');
   static const s3MigrateStorageClass = JobName._(r'S3MigrateStorageClass');
   static const s3MigrateStorageClassAll = JobName._(r'S3MigrateStorageClassAll');
+  static const s3CleanupOrphanedFiles = JobName._(r'S3CleanupOrphanedFiles');
+  static const s3FileDelete = JobName._(r'S3FileDelete');
+  static const s3OrphanScanner = JobName._(r'S3OrphanScanner');
   static const tagCleanup = JobName._(r'TagCleanup');
   static const versionCheck = JobName._(r'VersionCheck');
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
@@ -145,8 +150,13 @@ class JobName {
     s3UploadQueueAll,
     s3UploadEncodedVideo,
     s3UploadEncodedVideoQueueAll,
+    s3UploadThumbnails,
+    s3UploadThumbnailsQueueAll,
     s3MigrateStorageClass,
     s3MigrateStorageClassAll,
+    s3CleanupOrphanedFiles,
+    s3FileDelete,
+    s3OrphanScanner,
     tagCleanup,
     versionCheck,
     ocrQueueAll,
@@ -247,8 +257,13 @@ class JobNameTypeTransformer {
         case r'S3UploadQueueAll': return JobName.s3UploadQueueAll;
         case r'S3UploadEncodedVideo': return JobName.s3UploadEncodedVideo;
         case r'S3UploadEncodedVideoQueueAll': return JobName.s3UploadEncodedVideoQueueAll;
+        case r'S3UploadThumbnails': return JobName.s3UploadThumbnails;
+        case r'S3UploadThumbnailsQueueAll': return JobName.s3UploadThumbnailsQueueAll;
         case r'S3MigrateStorageClass': return JobName.s3MigrateStorageClass;
         case r'S3MigrateStorageClassAll': return JobName.s3MigrateStorageClassAll;
+        case r'S3CleanupOrphanedFiles': return JobName.s3CleanupOrphanedFiles;
+        case r'S3FileDelete': return JobName.s3FileDelete;
+        case r'S3OrphanScanner': return JobName.s3OrphanScanner;
         case r'TagCleanup': return JobName.tagCleanup;
         case r'VersionCheck': return JobName.versionCheck;
         case r'OcrQueueAll': return JobName.ocrQueueAll;

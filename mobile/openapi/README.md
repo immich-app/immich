@@ -317,7 +317,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**updateUserAdmin**](doc//UsersAdminApi.md#updateuseradmin) | **PUT** /admin/users/{id} | Update a user
 *UsersAdminApi* | [**updateUserPreferencesAdmin**](doc//UsersAdminApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *VaultApi* | [**adminRecoverVault**](doc//VaultApi.md#adminrecovervault) | **POST** /vault/admin/recover | Recover user vault
-*VaultApi* | [**changeVaultPassword**](doc//VaultApi.md#changevaultpassword) | **POST** /vault/change-password | Change vault password
+*VaultApi* | [**changeVaultPin**](doc//VaultApi.md#changevaultpin) | **POST** /vault/change-pin | Change vault PIN
 *VaultApi* | [**deleteAdminRecoveryKey**](doc//VaultApi.md#deleteadminrecoverykey) | **DELETE** /vault/admin/recovery-key/{id} | Delete admin recovery key
 *VaultApi* | [**deleteVault**](doc//VaultApi.md#deletevault) | **DELETE** /vault | Delete vault
 *VaultApi* | [**getAdminRecoveryKeys**](doc//VaultApi.md#getadminrecoverykeys) | **GET** /vault/admin/recovery-keys | List admin recovery keys
@@ -348,6 +348,7 @@ Class | Method | HTTP request | Description
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
  - [AddUsersDto](doc//AddUsersDto.md)
  - [AdminOnboardingUpdateDto](doc//AdminOnboardingUpdateDto.md)
+ - [AdminRecoverVaultDto](doc//AdminRecoverVaultDto.md)
  - [AlbumResponseDto](doc//AlbumResponseDto.md)
  - [AlbumStatisticsResponseDto](doc//AlbumStatisticsResponseDto.md)
  - [AlbumUserAddDto](doc//AlbumUserAddDto.md)
@@ -523,6 +524,7 @@ Class | Method | HTTP request | Description
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
+ - [S3BucketConfigDto](doc//S3BucketConfigDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
@@ -622,7 +624,6 @@ Class | Method | HTTP request | Description
  - [SystemConfigServerDto](doc//SystemConfigServerDto.md)
  - [SystemConfigSmtpDto](doc//SystemConfigSmtpDto.md)
  - [SystemConfigSmtpTransportDto](doc//SystemConfigSmtpTransportDto.md)
- - [SystemConfigStorageClassesDto](doc//SystemConfigStorageClassesDto.md)
  - [SystemConfigStorageDto](doc//SystemConfigStorageDto.md)
  - [SystemConfigStorageLocationsDto](doc//SystemConfigStorageLocationsDto.md)
  - [SystemConfigStorageS3Dto](doc//SystemConfigStorageS3Dto.md)
@@ -673,6 +674,10 @@ Class | Method | HTTP request | Description
  - [ValidateLibraryDto](doc//ValidateLibraryDto.md)
  - [ValidateLibraryImportPathResponseDto](doc//ValidateLibraryImportPathResponseDto.md)
  - [ValidateLibraryResponseDto](doc//ValidateLibraryResponseDto.md)
+ - [VaultChangePinDto](doc//VaultChangePinDto.md)
+ - [VaultSetupDto](doc//VaultSetupDto.md)
+ - [VaultStatusResponseDto](doc//VaultStatusResponseDto.md)
+ - [VaultUnlockDto](doc//VaultUnlockDto.md)
  - [VersionCheckStateResponseDto](doc//VersionCheckStateResponseDto.md)
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)

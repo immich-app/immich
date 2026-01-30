@@ -18,19 +18,19 @@ class VaultApi {
 
   /// Recover user vault
   ///
-  /// Recover a user vault using the admin private key. Sets a new vault password for the user.
+  /// Recover a user vault using the admin private key. Sets a new 6-digit vault PIN for the user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> adminRecoverVaultWithHttpInfo(Object body,) async {
+  /// * [AdminRecoverVaultDto] adminRecoverVaultDto (required):
+  Future<Response> adminRecoverVaultWithHttpInfo(AdminRecoverVaultDto adminRecoverVaultDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/vault/admin/recover';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = adminRecoverVaultDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -52,33 +52,33 @@ class VaultApi {
 
   /// Recover user vault
   ///
-  /// Recover a user vault using the admin private key. Sets a new vault password for the user.
+  /// Recover a user vault using the admin private key. Sets a new 6-digit vault PIN for the user.
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<void> adminRecoverVault(Object body,) async {
-    final response = await adminRecoverVaultWithHttpInfo(body,);
+  /// * [AdminRecoverVaultDto] adminRecoverVaultDto (required):
+  Future<void> adminRecoverVault(AdminRecoverVaultDto adminRecoverVaultDto,) async {
+    final response = await adminRecoverVaultWithHttpInfo(adminRecoverVaultDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
-  /// Change vault password
+  /// Change vault PIN
   ///
-  /// Change your vault password. This will re-encrypt the vault key.
+  /// Change your vault 6-digit PIN. This will re-encrypt the vault key.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> changeVaultPasswordWithHttpInfo(Object body,) async {
+  /// * [VaultChangePinDto] vaultChangePinDto (required):
+  Future<Response> changeVaultPinWithHttpInfo(VaultChangePinDto vaultChangePinDto,) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/vault/change-password';
+    final apiPath = r'/vault/change-pin';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = vaultChangePinDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -98,15 +98,15 @@ class VaultApi {
     );
   }
 
-  /// Change vault password
+  /// Change vault PIN
   ///
-  /// Change your vault password. This will re-encrypt the vault key.
+  /// Change your vault 6-digit PIN. This will re-encrypt the vault key.
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<void> changeVaultPassword(Object body,) async {
-    final response = await changeVaultPasswordWithHttpInfo(body,);
+  /// * [VaultChangePinDto] vaultChangePinDto (required):
+  Future<void> changeVaultPin(VaultChangePinDto vaultChangePinDto,) async {
+    final response = await changeVaultPinWithHttpInfo(vaultChangePinDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -333,7 +333,7 @@ class VaultApi {
   /// Get vault status
   ///
   /// Check if you have a vault set up and if it is currently unlocked.
-  Future<Object?> getVaultStatus() async {
+  Future<VaultStatusResponseDto?> getVaultStatus() async {
     final response = await getVaultStatusWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -342,7 +342,7 @@ class VaultApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'VaultStatusResponseDto',) as VaultStatusResponseDto;
     
     }
     return null;
@@ -486,19 +486,19 @@ class VaultApi {
 
   /// Set up vault
   ///
-  /// Create a new vault with the specified password. This enables encryption for your assets.
+  /// Create a new vault with the specified 6-digit PIN. This enables encryption for your assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> setupVaultWithHttpInfo(Object body,) async {
+  /// * [VaultSetupDto] vaultSetupDto (required):
+  Future<Response> setupVaultWithHttpInfo(VaultSetupDto vaultSetupDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/vault/setup';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = vaultSetupDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -520,13 +520,13 @@ class VaultApi {
 
   /// Set up vault
   ///
-  /// Create a new vault with the specified password. This enables encryption for your assets.
+  /// Create a new vault with the specified 6-digit PIN. This enables encryption for your assets.
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<void> setupVault(Object body,) async {
-    final response = await setupVaultWithHttpInfo(body,);
+  /// * [VaultSetupDto] vaultSetupDto (required):
+  Future<void> setupVault(VaultSetupDto vaultSetupDto,) async {
+    final response = await setupVaultWithHttpInfo(vaultSetupDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -534,19 +534,19 @@ class VaultApi {
 
   /// Unlock vault
   ///
-  /// Unlock the vault with your password to access encrypted assets.
+  /// Unlock the vault with your 6-digit PIN to access encrypted assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<Response> unlockVaultWithHttpInfo(Object body,) async {
+  /// * [VaultUnlockDto] vaultUnlockDto (required):
+  Future<Response> unlockVaultWithHttpInfo(VaultUnlockDto vaultUnlockDto,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/vault/unlock';
 
     // ignore: prefer_final_locals
-    Object? postBody = body;
+    Object? postBody = vaultUnlockDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -568,13 +568,13 @@ class VaultApi {
 
   /// Unlock vault
   ///
-  /// Unlock the vault with your password to access encrypted assets.
+  /// Unlock the vault with your 6-digit PIN to access encrypted assets.
   ///
   /// Parameters:
   ///
-  /// * [Object] body (required):
-  Future<void> unlockVault(Object body,) async {
-    final response = await unlockVaultWithHttpInfo(body,);
+  /// * [VaultUnlockDto] vaultUnlockDto (required):
+  Future<void> unlockVault(VaultUnlockDto vaultUnlockDto,) async {
+    final response = await unlockVaultWithHttpInfo(vaultUnlockDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

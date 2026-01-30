@@ -15,6 +15,7 @@ class QueueResponseDto {
   QueueResponseDto({
     required this.isPaused,
     this.lastTriggeredAt,
+    this.missingCount,
     required this.name,
     required this.statistics,
   });
@@ -29,6 +30,15 @@ class QueueResponseDto {
   ///
   DateTime? lastTriggeredAt;
 
+  /// Number of items missing processing for this queue
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  int? missingCount;
+
   QueueName name;
 
   QueueStatisticsDto statistics;
@@ -37,6 +47,7 @@ class QueueResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is QueueResponseDto &&
     other.isPaused == isPaused &&
     other.lastTriggeredAt == lastTriggeredAt &&
+    other.missingCount == missingCount &&
     other.name == name &&
     other.statistics == statistics;
 
@@ -45,11 +56,12 @@ class QueueResponseDto {
     // ignore: unnecessary_parenthesis
     (isPaused.hashCode) +
     (lastTriggeredAt == null ? 0 : lastTriggeredAt!.hashCode) +
+    (missingCount == null ? 0 : missingCount!.hashCode) +
     (name.hashCode) +
     (statistics.hashCode);
 
   @override
-  String toString() => 'QueueResponseDto[isPaused=$isPaused, lastTriggeredAt=$lastTriggeredAt, name=$name, statistics=$statistics]';
+  String toString() => 'QueueResponseDto[isPaused=$isPaused, lastTriggeredAt=$lastTriggeredAt, missingCount=$missingCount, name=$name, statistics=$statistics]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -58,6 +70,11 @@ class QueueResponseDto {
       json[r'lastTriggeredAt'] = this.lastTriggeredAt!.toUtc().toIso8601String();
     } else {
     //  json[r'lastTriggeredAt'] = null;
+    }
+    if (this.missingCount != null) {
+      json[r'missingCount'] = this.missingCount;
+    } else {
+    //  json[r'missingCount'] = null;
     }
       json[r'name'] = this.name;
       json[r'statistics'] = this.statistics;
@@ -75,6 +92,7 @@ class QueueResponseDto {
       return QueueResponseDto(
         isPaused: mapValueOfType<bool>(json, r'isPaused')!,
         lastTriggeredAt: mapDateTime(json, r'lastTriggeredAt', r''),
+        missingCount: mapValueOfType<int>(json, r'missingCount'),
         name: QueueName.fromJson(json[r'name'])!,
         statistics: QueueStatisticsDto.fromJson(json[r'statistics'])!,
       );

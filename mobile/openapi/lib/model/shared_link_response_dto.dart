@@ -15,6 +15,7 @@ class SharedLinkResponseDto {
   SharedLinkResponseDto({
     this.album,
     required this.allowDownload,
+    required this.allowShare,
     required this.allowUpload,
     this.assets = const [],
     required this.createdAt,
@@ -39,6 +40,8 @@ class SharedLinkResponseDto {
   AlbumResponseDto? album;
 
   bool allowDownload;
+
+  bool allowShare;
 
   bool allowUpload;
 
@@ -70,6 +73,7 @@ class SharedLinkResponseDto {
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
     other.album == album &&
     other.allowDownload == allowDownload &&
+    other.allowShare == allowShare &&
     other.allowUpload == allowUpload &&
     _deepEquality.equals(other.assets, assets) &&
     other.createdAt == createdAt &&
@@ -89,6 +93,7 @@ class SharedLinkResponseDto {
     // ignore: unnecessary_parenthesis
     (album == null ? 0 : album!.hashCode) +
     (allowDownload.hashCode) +
+    (allowShare.hashCode) +
     (allowUpload.hashCode) +
     (assets.hashCode) +
     (createdAt.hashCode) +
@@ -104,7 +109,7 @@ class SharedLinkResponseDto {
     (userId.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, slug=$slug, token=$token, type=$type, userId=$userId]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowShare=$allowShare, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, slug=$slug, token=$token, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -114,6 +119,7 @@ class SharedLinkResponseDto {
     //  json[r'album'] = null;
     }
       json[r'allowDownload'] = this.allowDownload;
+      json[r'allowShare'] = this.allowShare;
       json[r'allowUpload'] = this.allowUpload;
       json[r'assets'] = this.assets;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
@@ -161,6 +167,7 @@ class SharedLinkResponseDto {
       return SharedLinkResponseDto(
         album: AlbumResponseDto.fromJson(json[r'album']),
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
+        allowShare: mapValueOfType<bool>(json, r'allowShare')!,
         allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
@@ -222,6 +229,7 @@ class SharedLinkResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'allowDownload',
+    'allowShare',
     'allowUpload',
     'assets',
     'createdAt',

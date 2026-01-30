@@ -124,4 +124,13 @@ export class SessionRepository {
       ]);
     });
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getWithVaultCache(id: string) {
+    return this.db
+      .selectFrom('session')
+      .select(['id', 'encryptedVaultKeyCache', 'vaultKeyExpiresAt'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+  }
 }

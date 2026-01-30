@@ -14759,7 +14759,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/VaultStatusResponseDto"
                 }
               }
             },
@@ -20179,6 +20179,9 @@
           "prefix": {
             "type": "string"
           },
+          "publicEndpoint": {
+            "type": "string"
+          },
           "region": {
             "type": "string"
           },
@@ -23428,6 +23431,9 @@
           "hotBucket": {
             "$ref": "#/components/schemas/S3BucketConfigDto"
           },
+          "publicEndpoint": {
+            "type": "string"
+          },
           "region": {
             "type": "string"
           },
@@ -23442,6 +23448,7 @@
           "endpoint",
           "forcePathStyle",
           "hotBucket",
+          "publicEndpoint",
           "region",
           "secretAccessKey"
         ],
@@ -24659,6 +24666,26 @@
         },
         "required": [
           "pin"
+        ],
+        "type": "object"
+      },
+      "VaultStatusResponseDto": {
+        "properties": {
+          "hasVault": {
+            "type": "boolean"
+          },
+          "isUnlocked": {
+            "type": "boolean"
+          },
+          "vaultVersion": {
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "hasVault",
+          "isUnlocked",
+          "vaultVersion"
         ],
         "type": "object"
       },

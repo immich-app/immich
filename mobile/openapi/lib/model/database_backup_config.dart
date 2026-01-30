@@ -16,6 +16,7 @@ class DatabaseBackupConfig {
     required this.cronExpression,
     required this.enabled,
     required this.keepLastAmount,
+    required this.uploadToS3,
   });
 
   String cronExpression;
@@ -25,27 +26,32 @@ class DatabaseBackupConfig {
   /// Minimum value: 1
   num keepLastAmount;
 
+  bool uploadToS3;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupConfig &&
     other.cronExpression == cronExpression &&
     other.enabled == enabled &&
-    other.keepLastAmount == keepLastAmount;
+    other.keepLastAmount == keepLastAmount &&
+    other.uploadToS3 == uploadToS3;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (cronExpression.hashCode) +
     (enabled.hashCode) +
-    (keepLastAmount.hashCode);
+    (keepLastAmount.hashCode) +
+    (uploadToS3.hashCode);
 
   @override
-  String toString() => 'DatabaseBackupConfig[cronExpression=$cronExpression, enabled=$enabled, keepLastAmount=$keepLastAmount]';
+  String toString() => 'DatabaseBackupConfig[cronExpression=$cronExpression, enabled=$enabled, keepLastAmount=$keepLastAmount, uploadToS3=$uploadToS3]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'cronExpression'] = this.cronExpression;
       json[r'enabled'] = this.enabled;
       json[r'keepLastAmount'] = this.keepLastAmount;
+      json[r'uploadToS3'] = this.uploadToS3;
     return json;
   }
 
@@ -61,6 +67,7 @@ class DatabaseBackupConfig {
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         keepLastAmount: num.parse('${json[r'keepLastAmount']}'),
+        uploadToS3: mapValueOfType<bool>(json, r'uploadToS3')!,
       );
     }
     return null;
@@ -111,6 +118,7 @@ class DatabaseBackupConfig {
     'cronExpression',
     'enabled',
     'keepLastAmount',
+    'uploadToS3',
   };
 }
 
