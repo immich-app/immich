@@ -18,10 +18,13 @@ class AssetIdsResponseDto {
     required this.success,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Error reason if failed
   AssetIdsResponseDtoErrorEnum? error;
 
+  /// Whether operation succeeded
   bool success;
 
   @override
@@ -116,7 +119,7 @@ class AssetIdsResponseDto {
   };
 }
 
-
+/// Error reason if failed
 class AssetIdsResponseDtoErrorEnum {
   /// Instantiate a new enum with the provided [value].
   const AssetIdsResponseDtoErrorEnum._(this.value);

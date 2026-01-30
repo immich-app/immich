@@ -132,7 +132,7 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
     items: { type: 'string' },
-    description: 'Array of file creation timestamps in UTC (ISO 8601 format, without timezone)',
+    description: 'Array of file creation timestamps in UTC',
   })
   fileCreatedAt!: string[];
 

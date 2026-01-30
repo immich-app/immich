@@ -33,6 +33,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { Property, PropertyOptions } from 'src/decorators';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class FileNotEmptyValidator extends FileValidator {
 }
 
 type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+export const ValidateUUID = (options?: UUIDOptions & PropertyOptions) => {
   const { optional, each, nullable, ...apiPropertyOptions } = {
     optional: false,
     each: false,
@@ -75,7 +76,7 @@ export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
   };
   return applyDecorators(
     IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
+    Property({ format: 'uuid', ...apiPropertyOptions }),
     optional ? Optional({ nullable }) : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
@@ -277,10 +278,10 @@ export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => 
 };
 
 type BooleanOptions = { optional?: boolean; nullable?: boolean };
-export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
+export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
   const { optional, nullable, ...apiPropertyOptions } = options || {};
   const decorators = [
-    ApiProperty(apiPropertyOptions),
+    Property(apiPropertyOptions),
     IsBoolean(),
     Transform(({ value }) => {
       if (value == 'true') {

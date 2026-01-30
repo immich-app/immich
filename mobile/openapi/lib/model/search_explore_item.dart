@@ -19,6 +19,7 @@ class SearchExploreItem {
 
   AssetResponseDto data;
 
+  /// Explore value
   String value;
 
   @override

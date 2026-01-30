@@ -17,8 +17,10 @@ class SyncAckDto {
     required this.type,
   });
 
+  /// Acknowledgment ID
   String ack;
 
+  /// Sync entity type
   SyncEntityType type;
 
   @override

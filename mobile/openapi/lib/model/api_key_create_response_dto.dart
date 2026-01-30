@@ -19,6 +19,7 @@ class APIKeyCreateResponseDto {
 
   APIKeyResponseDto apiKey;
 
+  /// API key secret (only shown once)
   String secret;
 
   @override

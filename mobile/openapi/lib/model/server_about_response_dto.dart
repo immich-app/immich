@@ -36,6 +36,7 @@ class ServerAboutResponseDto {
     required this.versionUrl,
   });
 
+  /// Build identifier
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -44,6 +45,7 @@ class ServerAboutResponseDto {
   ///
   String? build;
 
+  /// Build image name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -52,6 +54,7 @@ class ServerAboutResponseDto {
   ///
   String? buildImage;
 
+  /// Build image URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -60,6 +63,7 @@ class ServerAboutResponseDto {
   ///
   String? buildImageUrl;
 
+  /// Build URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -68,6 +72,7 @@ class ServerAboutResponseDto {
   ///
   String? buildUrl;
 
+  /// ExifTool version
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -76,6 +81,7 @@ class ServerAboutResponseDto {
   ///
   String? exiftool;
 
+  /// FFmpeg version
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -84,6 +90,7 @@ class ServerAboutResponseDto {
   ///
   String? ffmpeg;
 
+  /// ImageMagick version
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -92,6 +99,7 @@ class ServerAboutResponseDto {
   ///
   String? imagemagick;
 
+  /// libvips version
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -100,8 +108,10 @@ class ServerAboutResponseDto {
   ///
   String? libvips;
 
+  /// Whether the server is licensed
   bool licensed;
 
+  /// Node.js version
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -110,6 +120,7 @@ class ServerAboutResponseDto {
   ///
   String? nodejs;
 
+  /// Repository name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -118,6 +129,7 @@ class ServerAboutResponseDto {
   ///
   String? repository;
 
+  /// Repository URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -126,6 +138,7 @@ class ServerAboutResponseDto {
   ///
   String? repositoryUrl;
 
+  /// Source commit hash
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -134,6 +147,7 @@ class ServerAboutResponseDto {
   ///
   String? sourceCommit;
 
+  /// Source reference (branch/tag)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -142,6 +156,7 @@ class ServerAboutResponseDto {
   ///
   String? sourceRef;
 
+  /// Source URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -150,6 +165,7 @@ class ServerAboutResponseDto {
   ///
   String? sourceUrl;
 
+  /// Third-party bug/feature URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -158,6 +174,7 @@ class ServerAboutResponseDto {
   ///
   String? thirdPartyBugFeatureUrl;
 
+  /// Third-party documentation URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -166,6 +183,7 @@ class ServerAboutResponseDto {
   ///
   String? thirdPartyDocumentationUrl;
 
+  /// Third-party source URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -174,6 +192,7 @@ class ServerAboutResponseDto {
   ///
   String? thirdPartySourceUrl;
 
+  /// Third-party support URL
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -182,8 +201,10 @@ class ServerAboutResponseDto {
   ///
   String? thirdPartySupportUrl;
 
+  /// Server version
   String version;
 
+  /// URL to version information
   String versionUrl;
 
   @override
