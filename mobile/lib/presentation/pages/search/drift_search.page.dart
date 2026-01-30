@@ -45,6 +45,7 @@ class DriftSearchPage extends HookConsumerWidget {
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
     final availableSearchTypes = useState<List<SearchType>?>(null);
+    final features = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -495,22 +496,18 @@ class DriftSearchPage extends HookConsumerWidget {
       if (availableSearchTypes.value != null) {
         return availableSearchTypes.value!;
       }
-      
-      final serverConfig = ref.watch(serverInfoProvider);
+
       final List<SearchType> available = [SearchType.places];
-      
-      final result = serverConfig.whenData((config) {
-        if (config?.serverFeatures.smartSearch ?? false) {
-          available.add(SearchType.smart);
-        }
-        if (config?.serverFeatures.ocr ?? false) {
-          available.add(SearchType.ocr);
-        }
-        return available;
-      }).value ?? available;
-      
-      availableSearchTypes.value = result;
-      return result;
+
+      if (features?.smartSearch ?? false) {
+        available.add(SearchType.smart);
+      }
+      if (features?.ocr ?? false) {
+        available.add(SearchType.ocr);
+      }
+
+      availableSearchTypes.value = available;
+      return available;
     }
 
     return Scaffold(
