@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { themeManager } from '$lib/managers/theme-manager.svelte';
+
   interface Props {
     variant?: 'icon' | 'inline';
     size?: 'tiny' | 'small' | 'medium' | 'giant';
@@ -16,18 +18,18 @@
   };
 
   const sizeClass = $derived(sizeClasses[size] || sizeClasses.medium);
+
+  const logoSrc = $derived.by(() => {
+    const isDark = themeManager.isDark;
+    const suffix = isDark ? '-dark' : '';
+    if (variant === 'icon') {
+      if (animated) {
+        return `/pixelunion-animated$.svg`;
+      }
+      return `/pixelunion.svg`;
+    }
+    return `/pixelunion-full-no-bg-margin${suffix}.svg`;
+  });
 </script>
 
-{#if variant === 'icon'}
-  {#if animated}
-    <img src="/pixelunion-animated.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
-  {:else}
-    <img src="/pixelunion.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
-  {/if}
-{:else}
-  <img
-    src="/pixelunion-full-no-bg-margin.svg"
-    alt="PixelUnion Logo"
-    class="{sizeClass} w-auto object-contain {className}"
-  />
-{/if}
+<img src={logoSrc} alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
