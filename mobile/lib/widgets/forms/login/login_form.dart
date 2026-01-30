@@ -418,17 +418,17 @@ class LoginForm extends HookConsumerWidget {
                     onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
                   ),
                 ),
-                ImmichTextButton(
-                  labelText: 'settings'.t(context: context),
-                  icon: Icons.settings,
-                  variant: ImmichVariant.ghost,
-                  onPressed: () => context.pushRoute(const SettingsRoute()),
-                ),
                 Padding(
                   padding: const EdgeInsets.only(top: ImmichSpacing.md, bottom: ImmichSpacing.sm),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Icon(
+                        Icons.person_add_outlined,
+                        size: 18,
+                        color: context.primaryColor,
+                      ),
+                      const SizedBox(width: 6),
                       Text(
                         'login_form_no_account'.t(context: context),
                         style: context.textTheme.bodyMedium,
@@ -451,6 +451,13 @@ class LoginForm extends HookConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 200),
+                ImmichTextButton(
+                  labelText: 'settings'.t(context: context),
+                  icon: Icons.settings,
+                  variant: ImmichVariant.ghost,
+                  onPressed: () => context.pushRoute(const SettingsRoute()),
                 ),
               ],
             ),
