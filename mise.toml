@@ -19,7 +19,7 @@ flutter = "3.35.7"
 pnpm = "10.28.0"
 terragrunt = "0.98.0"
 opentofu = "1.11.4"
-java = "25.0.1"
+java = "21.0.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.30.0"
