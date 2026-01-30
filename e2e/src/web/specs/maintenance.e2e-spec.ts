@@ -16,12 +16,12 @@ test.describe('Maintenance', () => {
   test('enter and exit maintenance mode', async ({ context, page }) => {
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await page.goto('/admin/system-settings?isOpen=maintenance');
-    await page.getByRole('button', { name: 'Start maintenance mode' }).click();
+    await page.goto('/admin/maintenance');
+    await page.getByRole('button', { name: 'Switch to maintenance mode' }).click();
 
     await expect(page.getByText('Temporarily Unavailable')).toBeVisible({ timeout: 10_000 });
     await page.getByRole('button', { name: 'End maintenance mode' }).click();
-    await page.waitForURL('**/admin/system-settings*', { timeout: 10_000 });
+    await page.waitForURL('**/admin/maintenance*', { timeout: 10_000 });
   });
 
   test('maintenance shows no options to users until they authenticate', async ({ page }) => {

@@ -48,7 +48,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.checksum.equalsExp(_db.trashedLocalAssetEntity.checksum),
               ),
             ])..where(
-              _db.trashedLocalAssetEntity.albumId.isInQuery(selectedAlbumIds) &
+              _db.trashedLocalAssetEntity.source.equalsValue(TrashOrigin.remoteSync) &
+                  _db.trashedLocalAssetEntity.albumId.isInQuery(selectedAlbumIds) &
                   _db.remoteAssetEntity.deletedAt.isNull(),
             ))
             .get();
@@ -84,6 +85,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             durationInSeconds: Value(item.asset.durationInSeconds),
             isFavorite: Value(item.asset.isFavorite),
             orientation: Value(item.asset.orientation),
+            source: TrashOrigin.localSync,
           );
 
           batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
@@ -124,7 +126,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<void> trashLocalAsset(Map<String, List<LocalAsset>> assetsByAlbums) async {
     if (assetsByAlbums.isEmpty) {
-      return;
+      return Future.value();
     }
 
     final companions = <TrashedLocalAssetEntityCompanion>[];
@@ -147,6 +149,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             orientation: Value(asset.orientation),
             createdAt: Value(asset.createdAt),
             updatedAt: Value(asset.updatedAt),
+            source: const Value(TrashOrigin.remoteSync),
           ),
         );
       }
@@ -165,7 +168,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<void> applyRestoredAssets(List<String> idList) async {
     if (idList.isEmpty) {
-      return;
+      return Future.value();
     }
 
     final trashedAssets = <TrashedLocalAssetEntityData>[];
@@ -201,6 +204,58 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
       }
       for (final slice in idList.slices(kDriftMaxChunk)) {
         await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
+      }
+    });
+  }
+
+  Future<void> applyTrashedAssets(List<String> idList) async {
+    if (idList.isEmpty) {
+      return Future.value();
+    }
+
+    final trashedAssets = <({LocalAssetEntityData asset, String albumId})>[];
+
+    for (final slice in idList.slices(kDriftMaxChunk)) {
+      final rows = await (_db.select(_db.localAlbumAssetEntity).join([
+        innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+      ])..where(_db.localAlbumAssetEntity.assetId.isIn(slice))).get();
+
+      final assetsWithAlbum = rows.map(
+        (row) =>
+            (albumId: row.readTable(_db.localAlbumAssetEntity).albumId, asset: row.readTable(_db.localAssetEntity)),
+      );
+
+      trashedAssets.addAll(assetsWithAlbum);
+    }
+
+    if (trashedAssets.isEmpty) {
+      return;
+    }
+
+    final companions = trashedAssets.map((e) {
+      return TrashedLocalAssetEntityCompanion.insert(
+        id: e.asset.id,
+        name: e.asset.name,
+        type: e.asset.type,
+        createdAt: Value(e.asset.createdAt),
+        updatedAt: Value(e.asset.updatedAt),
+        width: Value(e.asset.width),
+        height: Value(e.asset.height),
+        durationInSeconds: Value(e.asset.durationInSeconds),
+        checksum: Value(e.asset.checksum),
+        isFavorite: Value(e.asset.isFavorite),
+        orientation: Value(e.asset.orientation),
+        source: TrashOrigin.localUser,
+        albumId: e.albumId,
+      );
+    });
+
+    await _db.transaction(() async {
+      for (final companion in companions) {
+        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
+      }
+      for (final slice in idList.slices(kDriftMaxChunk)) {
+        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
   }

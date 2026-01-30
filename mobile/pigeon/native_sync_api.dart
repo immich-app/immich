@@ -90,6 +90,14 @@ class HashResult {
   const HashResult({required this.assetId, this.error, this.hash});
 }
 
+class CloudIdResult {
+  final String assetId;
+  final String? error;
+  final String? cloudId;
+
+  const CloudIdResult({required this.assetId, this.error, this.cloudId});
+}
+
 @HostApi()
 abstract class NativeSyncApi {
   bool shouldFullSync();
@@ -121,4 +129,7 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   Map<String, List<PlatformAsset>> getTrashedAssets();
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
 }

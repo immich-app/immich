@@ -7,3 +7,7 @@ enum AssetVisibilityEnum { timeline, hidden, archive, locked }
 enum SortUserBy { id }
 
 enum ActionSource { timeline, viewer }
+
+enum CleanupStep { selectDate, scan, delete }
+
+enum AssetKeepType { none, photosOnly, videosOnly }

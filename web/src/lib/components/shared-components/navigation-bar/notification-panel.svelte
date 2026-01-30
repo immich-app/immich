@@ -71,7 +71,7 @@
 >
   <Stack class="max-h-125">
     <div class="flex justify-between items-center mt-4 mx-4">
-      <Text size="medium" color="secondary" class="font-semibold">{$t('notifications')}</Text>
+      <Text size="medium" color="secondary" fontWeight="semi-bold">{$t('notifications')}</Text>
       <div>
         <Button
           variant="ghost"

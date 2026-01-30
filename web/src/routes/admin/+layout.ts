@@ -1,8 +1,8 @@
-// Removed systemConfigManager from layout to fix issue with system config not being loaded in the admin page
-// This is because this data is not available for PixelUnion users
-// import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+import { authenticate } from '$lib/utils/auth';
 import type { LayoutLoad } from './$types';
 
-export const load = (async () => {
-  // await systemConfigManager.init();
+export const load = (async ({ url }) => {
+  await authenticate(url, { admin: true });
+  await systemConfigManager.init();
 }) satisfies LayoutLoad;

@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -18,9 +18,9 @@ class MapThemePicker extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 20),
           child: Center(
             child: Text(
-              "map_settings_theme_settings",
-              style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-            ).tr(),
+              "map_settings_theme_settings".t(context: context),
+              style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+            ),
           ),
         ),
         Row(

@@ -1,9 +1,8 @@
 <script lang="ts">
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -25,6 +24,7 @@
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 
   interface Props {
     assetId: string;
@@ -70,8 +70,8 @@
     isShowLoadingPeople = false;
   }
 
-  const onPersonThumbnail = (personId: string) => {
-    assetFaceGenerated.push(personId);
+  const onPersonThumbnailReady = ({ id }: { id: string }) => {
+    assetFaceGenerated.push(id);
     if (
       isEqual(assetFaceGenerated, peopleToCreate) &&
       loaderLoadingDoneTimeout &&
@@ -86,7 +86,6 @@
 
   onMount(() => {
     handlePromiseError(loadPeople());
-    return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
   const isEqual = (a: string[], b: string[]): boolean => {
@@ -184,6 +183,8 @@
   };
 </script>
 
+<OnEvents {onPersonThumbnailReady} />
+
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
   class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
@@ -268,7 +269,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
+                  {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
                     <ImageThumbnail
                       curve
                       shadow

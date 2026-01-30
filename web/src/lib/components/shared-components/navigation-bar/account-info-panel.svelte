@@ -1,9 +1,9 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import { AppRoute } from '$lib/constants';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
+  import { Route } from '$lib/route';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
@@ -63,7 +63,7 @@
 
     <div class="flex flex-col gap-1">
       <Button
-        href={AppRoute.USER_SETTINGS}
+        href={Route.userSettings()}
         onclick={onClose}
         size="small"
         color="secondary"
@@ -78,7 +78,7 @@
       </Button>
       {#if $user.isAdmin}
         <Button
-          href={AppRoute.ADMIN_USERS}
+          href={Route.systemSettings()}
           onclick={onClose}
           shape="round"
           variant="ghost"

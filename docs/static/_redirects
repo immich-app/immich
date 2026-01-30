@@ -34,3 +34,4 @@
 /overview/introduction /overview/quick-start 307
 /overview/welcome /overview/quick-start 307
 /docs/* /:splat 307
+/features/automatic-backup /features/mobile-backup 307

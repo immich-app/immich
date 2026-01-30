@@ -358,7 +358,7 @@ export class DatabaseRepository {
   }
 
   async runMigrations(): Promise<void> {
-    this.logger.debug('Running migrations');
+    this.logger.log('Running migrations');
 
     const migrator = this.createMigrator();
 
@@ -379,7 +379,7 @@ export class DatabaseRepository {
       throw error;
     }
 
-    this.logger.debug('Finished running migrations');
+    this.logger.log('Finished running migrations');
   }
 
   async migrateFilePaths(sourceFolder: string, targetFolder: string): Promise<void> {

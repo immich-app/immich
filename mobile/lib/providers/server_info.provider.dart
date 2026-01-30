@@ -32,10 +32,11 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   final ServerInfoService _serverInfoService;
   final _log = Logger("ServerInfoNotifier");
 
-  Future<void> getServerInfo() async {
+  Future<ServerInfo> getServerInfo() async {
     await getServerVersion();
     await getServerFeatures();
     await getServerConfig();
+    return state;
   }
 
   Future<void> getServerVersion() async {

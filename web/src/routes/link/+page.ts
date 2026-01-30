@@ -1,4 +1,5 @@
-import { AppRoute } from '$lib/constants';
+import { OpenQueryParam } from '$lib/constants';
+import { Route } from '$lib/route';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
@@ -14,17 +15,17 @@ export const load = (({ url }) => {
   const target = queryParams.get('target') as LinkTarget;
   switch (target) {
     case LinkTarget.HOME: {
-      return redirect(302, AppRoute.PHOTOS);
+      return redirect(307, Route.photos());
     }
 
     case LinkTarget.UNSUBSCRIBE: {
-      return redirect(302, `${AppRoute.USER_SETTINGS}?isOpen=notifications`);
+      return redirect(307, Route.userSettings({ isOpen: OpenQueryParam.NOTIFICATIONS }));
     }
 
     case LinkTarget.VIEW_ASSET: {
       const id = queryParams.get('id');
       if (id) {
-        return redirect(302, `${AppRoute.PHOTOS}/${id}`);
+        return redirect(307, Route.viewAsset({ id }));
       }
       break;
     }
@@ -33,7 +34,7 @@ export const load = (({ url }) => {
       // https://my.immich.app/link?target=activate_license&licenseKey=IMCL-9XC3-T4S3-37BU-GGJ5-8MWP-F2Y1-BGEX-AQTF
       const licenseKey = queryParams.get('licenseKey');
       const activationKey = queryParams.get('activationKey');
-      const redirectUrl = new URL(AppRoute.BUY, url.origin);
+      const redirectUrl = new URL(Route.buy(), url.origin);
 
       if (licenseKey) {
         redirectUrl.searchParams.append('licenseKey', licenseKey);
@@ -42,12 +43,12 @@ export const load = (({ url }) => {
           redirectUrl.searchParams.append('activationKey', activationKey);
         }
 
-        return redirect(302, redirectUrl);
+        return redirect(307, redirectUrl);
       }
 
       break;
     }
   }
 
-  return redirect(302, AppRoute.PHOTOS);
+  return redirect(307, Route.photos());
 }) satisfies PageLoad;

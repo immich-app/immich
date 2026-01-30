@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_s
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
@@ -30,6 +31,7 @@ import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dar
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
+import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
@@ -48,6 +50,7 @@ class DriftSearchPage extends HookConsumerWidget {
         camera: preFilter?.camera ?? SearchCameraFilter(),
         date: preFilter?.date ?? SearchDateFilter(),
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        rating: preFilter?.rating ?? SearchRatingFilter(),
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
         assetId: preFilter?.assetId,
@@ -62,9 +65,14 @@ class DriftSearchPage extends HookConsumerWidget {
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
+    final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
     final isSearching = useState(false);
+
+    final isRatingEnabled = ref
+        .watch(userMetadataPreferencesProvider)
+        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     SnackBar searchInfoSnackBar(String message) {
       return SnackBar(
@@ -369,6 +377,35 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
+    // STAR RATING PICKER
+    showStarRatingPicker() {
+      handleOnSelected(SearchRatingFilter rating) {
+        filter.value = filter.value.copyWith(rating: rating);
+
+        ratingCurrentFilterWidget.value = Text(
+          'rating_count'.t(args: {'count': rating.rating!}),
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(rating: SearchRatingFilter(rating: null));
+        ratingCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        child: FilterBottomSheetScaffold(
+          title: 'rating'.t(context: context),
+          onSearch: search,
+          onClear: handleClear,
+          child: StarRatingPicker(onSelect: handleOnSelected, filter: filter.value.rating),
+        ),
+      );
+    }
+
     // DISPLAY OPTION
     showDisplayOptionPicker() {
       handleOnSelect(Map<DisplayOption, bool> value) {
@@ -629,6 +666,14 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
+                    if (isRatingEnabled) ...[
+                      SearchFilterChip(
+                        icon: Icons.star_outline_rounded,
+                        onTap: showStarRatingPicker,
+                        label: 'search_filter_star_rating'.t(context: context),
+                        currentFilter: ratingCurrentFilterWidget.value,
+                      ),
+                    ],
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,

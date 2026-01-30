@@ -10,8 +10,10 @@ import app.alextran.immich.background.BackgroundWorkerLockApi
 import app.alextran.immich.connectivity.ConnectivityApi
 import app.alextran.immich.connectivity.ConnectivityApiImpl
 import app.alextran.immich.core.ImmichPlugin
-import app.alextran.immich.images.ThumbnailApi
-import app.alextran.immich.images.ThumbnailsImpl
+import app.alextran.immich.images.LocalImageApi
+import app.alextran.immich.images.LocalImagesImpl
+import app.alextran.immich.images.RemoteImageApi
+import app.alextran.immich.images.RemoteImagesImpl
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
@@ -36,7 +38,9 @@ class MainActivity : FlutterFragmentActivity() {
           NativeSyncApiImpl30(ctx)
         }
       NativeSyncApi.setUp(messenger, nativeSyncApiImpl)
-      ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
+      LocalImageApi.setUp(messenger, LocalImagesImpl(ctx))
+      RemoteImageApi.setUp(messenger, RemoteImagesImpl(ctx))
+
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
 

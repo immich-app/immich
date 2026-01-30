@@ -93,11 +93,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         Logger("DriftBackupPage").warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
-      await backupNotifier.startBackup(currentUser.id);
+      await backupNotifier.startForegroundBackup(currentUser.id);
     }
 
     Future<void> stopBackup() async {
-      await backupNotifier.cancel();
+      await backupNotifier.stopForegroundBackup();
     }
 
     return Scaffold(

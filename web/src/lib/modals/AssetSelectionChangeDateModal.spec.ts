@@ -17,8 +17,8 @@ describe('DateSelectionModal component', () => {
   const getRelativeInputToggle = () => screen.getByTestId('edit-by-offset-switch');
   const getDateInput = () => screen.getByLabelText('date_and_time') as HTMLInputElement;
   const getTimeZoneInput = () => screen.getByLabelText('timezone') as HTMLInputElement;
-  const getCancelButton = () => screen.getByText('cancel');
-  const getConfirmButton = () => screen.getByText('confirm');
+  const getCancelButton = () => screen.getByRole('button', { name: /cancel/i });
+  const getConfirmButton = () => screen.getByRole('button', { name: /confirm/i });
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());

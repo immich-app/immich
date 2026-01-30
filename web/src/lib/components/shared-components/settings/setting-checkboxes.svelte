@@ -60,7 +60,7 @@
           {disabled}
           onCheckedChange={() => handleCheckboxChange(option.value)}
         />
-        <Label label={option.text} for="{option.value}-checkbox" />
+        <Label label={option.text} for="{option.value}-checkbox" size="small" />
       </div>
     {/each}
   </div>

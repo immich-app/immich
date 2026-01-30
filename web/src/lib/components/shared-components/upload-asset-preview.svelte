@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { AppRoute } from '$lib/constants';
-  import type { UploadAsset } from '$lib/models/upload-asset';
-  import { UploadState } from '$lib/models/upload-asset';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
+  import type { UploadAsset } from '$lib/types';
+  import { UploadState } from '$lib/types';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { Icon } from '@immich/ui';
@@ -33,10 +33,6 @@
   const handleRetry = async (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeItem(uploadAsset.id);
     await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
-  };
-
-  const asLink = (asset: UploadAsset) => {
-    return asset.isTrashed ? `${AppRoute.TRASH}/${asset.assetId}` : `${AppRoute.PHOTOS}/${uploadAsset.assetId}`;
   };
 </script>
 
@@ -69,7 +65,9 @@
     {#if uploadAsset.state === UploadState.DUPLICATED && uploadAsset.assetId}
       <div class="flex items-center justify-between gap-1">
         <a
-          href={asLink(uploadAsset)}
+          href={uploadAsset.isTrashed
+            ? Route.viewTrashedAsset({ id: uploadAsset.assetId })
+            : Route.viewAsset({ id: uploadAsset.assetId })}
           target="_blank"
           rel="noopener noreferrer"
           class=""

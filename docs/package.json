@@ -20,6 +20,7 @@
     "@docusaurus/core": "~3.9.0",
     "@docusaurus/preset-classic": "~3.9.0",
     "@docusaurus/theme-common": "~3.9.0",
+    "@docusaurus/theme-mermaid": "~3.9.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -57,6 +58,6 @@
     "node": ">=20"
   },
   "volta": {
-    "node": "24.11.1"
+    "node": "24.13.0"
   }
 }

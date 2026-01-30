@@ -1,10 +1,6 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
-  import { handleError } from '$lib/utils/handle-error';
-  import { changePassword } from '@immich/sdk';
-  import { Button, toastManager } from '@immich/ui';
+  import { handleChangePassword } from '$lib/services/user.service';
+  import { Button, Field, PasswordInput, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -13,23 +9,14 @@
   let confirmPassword = $state('');
   let invalidateSessions = $state(false);
 
-  const handleChangePassword = async () => {
-    try {
-      await changePassword({ changePasswordDto: { password, newPassword, invalidateSessions } });
-
-      toastManager.success($t('updated_password'));
-
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    const success = await handleChangePassword({ password, newPassword, invalidateSessions });
+    if (success) {
       password = '';
       newPassword = '';
       confirmPassword = '';
-    } catch (error) {
-      console.error('Error [user-profile] [changePassword]', error);
-      handleError(error, $t('errors.unable_to_change_password'));
     }
-  };
-
-  const onsubmit = (event: Event) => {
-    event.preventDefault();
   };
 </script>
 
@@ -37,43 +24,28 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
-        <SettingInputField
-          inputType={SettingInputFieldType.PASSWORD}
-          label={$t('password')}
-          bind:value={password}
-          required={true}
-          passwordAutocomplete="current-password"
-        />
+        <Field label={$t('password')} required>
+          <PasswordInput bind:value={password} autocomplete="current-password" />
+        </Field>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.PASSWORD}
-          label={$t('new_password')}
-          bind:value={newPassword}
-          required={true}
-          passwordAutocomplete="new-password"
-        />
+        <Field label={$t('new_password')} required>
+          <PasswordInput bind:value={newPassword} autocomplete="new-password" />
+        </Field>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.PASSWORD}
-          label={$t('confirm_password')}
-          bind:value={confirmPassword}
-          required={true}
-          passwordAutocomplete="new-password"
-        />
+        <Field label={$t('confirm_password')} required>
+          <PasswordInput bind:value={confirmPassword} autocomplete="new-password" />
+        </Field>
 
-        <SettingSwitch
-          title={$t('log_out_all_devices')}
-          subtitle={$t('change_password_form_log_out_description')}
-          bind:checked={invalidateSessions}
-        />
+        <Field label={$t('log_out_all_devices')} description={$t('change_password_form_log_out_description')} required>
+          <Switch bind:checked={invalidateSessions} />
+        </Field>
 
         <div class="flex justify-end">
           <Button
             shape="round"
             type="submit"
             size="small"
-            disabled={!(password && newPassword && newPassword === confirmPassword)}
-            onclick={() => handleChangePassword()}>{$t('save')}</Button
+            disabled={!(password && newPassword && newPassword === confirmPassword)}>{$t('save')}</Button
           >
         </div>
       </div>

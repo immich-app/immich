@@ -5,7 +5,7 @@ class ServerConfigManager {
   #value?: ServerConfigDto = $state();
 
   constructor() {
-    eventManager.on('SystemConfigUpdate', () => void this.loadServerConfig());
+    eventManager.on('SystemConfigUpdate', () => this.loadServerConfig());
   }
 
   async init() {

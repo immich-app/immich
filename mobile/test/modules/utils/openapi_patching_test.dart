@@ -45,5 +45,17 @@ void main() {
       addDefault(value, keys, defaultValue);
       expect(value['alpha']['beta'], 'gamma');
     });
+
+    test('addDefault with null', () {
+      dynamic value = jsonDecode("""
+{
+  "download": {
+    "archiveSize": 4294967296,
+    "includeEmbeddedVideos": false
+  }
+}
+""");
+      expect(value['download']['unknownKey'], isNull);
+    });
   });
 }

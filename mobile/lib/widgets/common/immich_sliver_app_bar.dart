@@ -50,6 +50,10 @@ class ImmichSliverAppBar extends ConsumerWidget {
       duration: Durations.medium1,
       opacity: isMultiSelectEnabled ? 0 : 1,
       sliver: SliverAppBar(
+        backgroundColor: context.colorScheme.surface,
+        surfaceTintColor: context.colorScheme.surfaceTint,
+        elevation: 0,
+        scrolledUnderElevation: 1.0,
         floating: floating,
         pinned: pinned,
         snap: snap,

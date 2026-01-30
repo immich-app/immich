@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
 import { DB } from 'src/schema';
@@ -121,6 +122,7 @@ export class PersonRepository {
       .$if(!!options.sourceType, (qb) => qb.where('asset_face.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_face.assetId', '=', options.assetId!))
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .stream();
   }
 
@@ -160,6 +162,7 @@ export class PersonRepository {
       )
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
@@ -208,19 +211,23 @@ export class PersonRepository {
       .selectAll('person')
       .leftJoin('asset_face', 'asset_face.personId', 'person.id')
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
       .groupBy('person.id')
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFaces(assetId: string) {
+  getFaces(assetId: string, options?: { isVisible?: boolean }) {
+    const isVisible = options === undefined ? true : options.isVisible;
+
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
       .select(withPerson)
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.deletedAt', 'is', null)
+      .$if(isVisible !== undefined, (qb) => qb.where('asset_face.isVisible', '=', isVisible!))
       .orderBy('asset_face.boundingBoxX1', 'asc')
       .execute();
   }
@@ -350,6 +357,7 @@ export class PersonRepository {
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .executeTakeFirst();
 
     return {
@@ -368,6 +376,7 @@ export class PersonRepository {
             .selectFrom('asset_face')
             .whereRef('asset_face.personId', '=', 'person.id')
             .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', '=', true)
             .where((eb) =>
               eb.exists((eb) =>
                 eb
@@ -495,6 +504,7 @@ export class PersonRepository {
       .selectAll('asset_face')
       .where('asset_face.personId', '=', personId)
       .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', 'is', true)
       .executeTakeFirst();
   }
 
@@ -538,5 +548,38 @@ export class PersonRepository {
       return Promise.resolve([]);
     }
     return this.db.selectFrom('person').select(['id', 'thumbnailPath']).where('id', 'in', ids).execute();
+  }
+
+  @GenerateSql({ params: [[], []] })
+  async updateVisibility(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
+    if (visible.length === 0 && hidden.length === 0) {
+      return;
+    }
+
+    await this.db.transaction().execute(async (trx) => {
+      if (visible.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: true })
+          .where(
+            'asset_face.id',
+            'in',
+            visible.map(({ id }) => id),
+          )
+          .execute();
+      }
+
+      if (hidden.length > 0) {
+        await trx
+          .updateTable('asset_face')
+          .set({ isVisible: false })
+          .where(
+            'asset_face.id',
+            'in',
+            hidden.map(({ id }) => id),
+          )
+          .execute();
+      }
+    });
   }
 }

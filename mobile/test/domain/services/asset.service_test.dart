@@ -166,8 +166,8 @@ void main() {
       expect(result, 1080 / 1920);
     });
 
-    test('handles various flipped EXIF orientations correctly', () async {
-      final flippedOrientations = ['5', '6', '7', '8', '90', '-90'];
+    test('should not flip remote asset dimensions', () async {
+      final flippedOrientations = ['1', '2', '3', '4', '5', '6', '7', '8', '90', '-90'];
 
       for (final orientation in flippedOrientations) {
         final remoteAsset = TestUtils.createRemoteAsset(id: 'remote-$orientation', width: 1920, height: 1080);
@@ -178,23 +178,7 @@ void main() {
 
         final result = await sut.getAspectRatio(remoteAsset);
 
-        expect(result, 1080 / 1920, reason: 'Orientation $orientation should flip dimensions');
-      }
-    });
-
-    test('handles various non-flipped EXIF orientations correctly', () async {
-      final nonFlippedOrientations = ['1', '2', '3', '4'];
-
-      for (final orientation in nonFlippedOrientations) {
-        final remoteAsset = TestUtils.createRemoteAsset(id: 'remote-$orientation', width: 1920, height: 1080);
-
-        final exif = ExifInfo(orientation: orientation);
-
-        when(() => mockRemoteAssetRepository.getExif('remote-$orientation')).thenAnswer((_) async => exif);
-
-        final result = await sut.getAspectRatio(remoteAsset);
-
-        expect(result, 1920 / 1080, reason: 'Orientation $orientation should NOT flip dimensions');
+        expect(result, 1920 / 1080, reason: 'Should not flipped remote asset dimensions for orientation $orientation');
       }
     });
   });

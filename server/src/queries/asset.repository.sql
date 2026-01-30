@@ -49,6 +49,23 @@ returning
   "dateTimeOriginal",
   "timeZone"
 
+-- AssetRepository.unlockProperties
+update "asset_exif"
+set
+  "lockedProperties" = nullif(
+    array(
+      select distinct
+        property
+      from
+        unnest("asset_exif"."lockedProperties") property
+      where
+        not property = any ($1)
+    ),
+    '{}'
+  )
+where
+  "assetId" = $2
+
 -- AssetRepository.getMetadata
 select
   "key",
@@ -75,6 +92,14 @@ delete from "asset_metadata"
 where
   "assetId" = $1
   and "key" = $2
+
+-- AssetRepository.deleteBulkMetadata
+begin
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+commit
 
 -- AssetRepository.getByDayOfYear
 with
@@ -109,8 +134,7 @@ with
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
         where
-          "asset_job_status"."previewAt" is not null
-          and (asset."localDateTime" at time zone 'UTC')::date = today.date
+          (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
           and exists (
@@ -174,6 +198,7 @@ select
         where
           "asset_face"."assetId" = "asset"."id"
           and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" is true
       ) as agg
   ) as "faces",
   (
@@ -260,7 +285,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
@@ -375,14 +401,10 @@ with
       "asset_exif"."projectionType",
       coalesce(
         case
-          when asset_exif."exifImageHeight" = 0
-          or asset_exif."exifImageWidth" = 0 then 1
-          when "asset_exif"."orientation" in ('5', '6', '7', '8', '-90', '90') then round(
-            asset_exif."exifImageHeight"::numeric / asset_exif."exifImageWidth"::numeric,
-            3
-          )
+          when asset."height" = 0
+          or asset."width" = 0 then 1
           else round(
-            asset_exif."exifImageWidth"::numeric / asset_exif."exifImageHeight"::numeric,
+            asset."width"::numeric / asset."height"::numeric,
             3
           )
         end,
@@ -562,3 +584,40 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.getForOriginal
+select
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" = $3
+
+-- AssetRepository.getForThumbnail
+select
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_file"."path" as "path"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
+where
+  "asset"."id" = $2
+order by
+  "asset_file"."isEdited" desc
+
+-- AssetRepository.getForVideo
+select
+  "asset"."encodedVideoPath",
+  "asset"."originalPath"
+from
+  "asset"
+where
+  "asset"."id" = $1
+  and "asset"."type" = $2

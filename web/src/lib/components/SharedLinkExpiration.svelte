@@ -1,7 +1,7 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { minBy } from 'lodash-es';
+  import { minBy, uniqBy } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -68,9 +68,8 @@
   <SettingSelect
     bind:value={expirationOption}
     {onSelect}
-    options={[...new Set([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)])]}
+    options={uniqBy([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)], 'value')}
     label={$t('expire_after')}
-    disabled={expiresAt !== null && DateTime.fromISO(expiresAt) < DateTime.now()}
     number={true}
   />
 </div>

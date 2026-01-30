@@ -21,6 +21,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
+      i0.Value<String?> iCloudId,
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
@@ -38,6 +39,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
+      i0.Value<String?> iCloudId,
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
@@ -105,6 +107,11 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<int> get orientation => $composableBuilder(
     column: $table.orientation,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<String> get iCloudId => $composableBuilder(
+    column: $table.iCloudId,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -188,6 +195,11 @@ class $$LocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<String> get iCloudId => $composableBuilder(
+    column: $table.iCloudId,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i0.ColumnOrderings<DateTime> get adjustmentTime => $composableBuilder(
     column: $table.adjustmentTime,
     builder: (column) => i0.ColumnOrderings(column),
@@ -252,6 +264,9 @@ class $$LocalAssetEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
+  i0.GeneratedColumn<String> get iCloudId =>
+      $composableBuilder(column: $table.iCloudId, builder: (column) => column);
+
   i0.GeneratedColumn<DateTime> get adjustmentTime => $composableBuilder(
     column: $table.adjustmentTime,
     builder: (column) => column,
@@ -315,6 +330,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
+                i0.Value<String?> iCloudId = const i0.Value.absent(),
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
@@ -330,6 +346,7 @@ class $$LocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
+                iCloudId: iCloudId,
                 adjustmentTime: adjustmentTime,
                 latitude: latitude,
                 longitude: longitude,
@@ -347,6 +364,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
+                i0.Value<String?> iCloudId = const i0.Value.absent(),
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
@@ -362,6 +380,7 @@ class $$LocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
+                iCloudId: iCloudId,
                 adjustmentTime: adjustmentTime,
                 latitude: latitude,
                 longitude: longitude,
@@ -532,6 +551,17 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     requiredDuringInsert: false,
     defaultValue: const i4.Constant(0),
   );
+  static const i0.VerificationMeta _iCloudIdMeta = const i0.VerificationMeta(
+    'iCloudId',
+  );
+  @override
+  late final i0.GeneratedColumn<String> iCloudId = i0.GeneratedColumn<String>(
+    'i_cloud_id',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _adjustmentTimeMeta =
       const i0.VerificationMeta('adjustmentTime');
   @override
@@ -578,6 +608,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     checksum,
     isFavorite,
     orientation,
+    iCloudId,
     adjustmentTime,
     latitude,
     longitude,
@@ -661,6 +692,12 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         ),
       );
     }
+    if (data.containsKey('i_cloud_id')) {
+      context.handle(
+        _iCloudIdMeta,
+        iCloudId.isAcceptableOrUnknown(data['i_cloud_id']!, _iCloudIdMeta),
+      );
+    }
     if (data.containsKey('adjustment_time')) {
       context.handle(
         _adjustmentTimeMeta,
@@ -740,6 +777,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
+      iCloudId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}i_cloud_id'],
+      ),
       adjustmentTime: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}adjustment_time'],
@@ -781,6 +822,7 @@ class LocalAssetEntityData extends i0.DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
+  final String? iCloudId;
   final DateTime? adjustmentTime;
   final double? latitude;
   final double? longitude;
@@ -796,6 +838,7 @@ class LocalAssetEntityData extends i0.DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
+    this.iCloudId,
     this.adjustmentTime,
     this.latitude,
     this.longitude,
@@ -826,6 +869,9 @@ class LocalAssetEntityData extends i0.DataClass
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
     map['orientation'] = i0.Variable<int>(orientation);
+    if (!nullToAbsent || iCloudId != null) {
+      map['i_cloud_id'] = i0.Variable<String>(iCloudId);
+    }
     if (!nullToAbsent || adjustmentTime != null) {
       map['adjustment_time'] = i0.Variable<DateTime>(adjustmentTime);
     }
@@ -857,6 +903,7 @@ class LocalAssetEntityData extends i0.DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
+      iCloudId: serializer.fromJson<String?>(json['iCloudId']),
       adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
@@ -879,6 +926,7 @@ class LocalAssetEntityData extends i0.DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
+      'iCloudId': serializer.toJson<String?>(iCloudId),
       'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
@@ -897,6 +945,7 @@ class LocalAssetEntityData extends i0.DataClass
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
     int? orientation,
+    i0.Value<String?> iCloudId = const i0.Value.absent(),
     i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
     i0.Value<double?> latitude = const i0.Value.absent(),
     i0.Value<double?> longitude = const i0.Value.absent(),
@@ -914,6 +963,7 @@ class LocalAssetEntityData extends i0.DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
+    iCloudId: iCloudId.present ? iCloudId.value : this.iCloudId,
     adjustmentTime: adjustmentTime.present
         ? adjustmentTime.value
         : this.adjustmentTime,
@@ -939,6 +989,7 @@ class LocalAssetEntityData extends i0.DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
+      iCloudId: data.iCloudId.present ? data.iCloudId.value : this.iCloudId,
       adjustmentTime: data.adjustmentTime.present
           ? data.adjustmentTime.value
           : this.adjustmentTime,
@@ -961,6 +1012,7 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
+          ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude')
@@ -981,6 +1033,7 @@ class LocalAssetEntityData extends i0.DataClass
     checksum,
     isFavorite,
     orientation,
+    iCloudId,
     adjustmentTime,
     latitude,
     longitude,
@@ -1000,6 +1053,7 @@ class LocalAssetEntityData extends i0.DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
+          other.iCloudId == this.iCloudId &&
           other.adjustmentTime == this.adjustmentTime &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude);
@@ -1018,6 +1072,7 @@ class LocalAssetEntityCompanion
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
+  final i0.Value<String?> iCloudId;
   final i0.Value<DateTime?> adjustmentTime;
   final i0.Value<double?> latitude;
   final i0.Value<double?> longitude;
@@ -1033,6 +1088,7 @@ class LocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
+    this.iCloudId = const i0.Value.absent(),
     this.adjustmentTime = const i0.Value.absent(),
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
@@ -1049,6 +1105,7 @@ class LocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
+    this.iCloudId = const i0.Value.absent(),
     this.adjustmentTime = const i0.Value.absent(),
     this.latitude = const i0.Value.absent(),
     this.longitude = const i0.Value.absent(),
@@ -1067,6 +1124,7 @@ class LocalAssetEntityCompanion
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
     i0.Expression<int>? orientation,
+    i0.Expression<String>? iCloudId,
     i0.Expression<DateTime>? adjustmentTime,
     i0.Expression<double>? latitude,
     i0.Expression<double>? longitude,
@@ -1083,6 +1141,7 @@ class LocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
+      if (iCloudId != null) 'i_cloud_id': iCloudId,
       if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
@@ -1101,6 +1160,7 @@ class LocalAssetEntityCompanion
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
+    i0.Value<String?>? iCloudId,
     i0.Value<DateTime?>? adjustmentTime,
     i0.Value<double?>? latitude,
     i0.Value<double?>? longitude,
@@ -1117,6 +1177,7 @@ class LocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      iCloudId: iCloudId ?? this.iCloudId,
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
@@ -1161,6 +1222,9 @@ class LocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = i0.Variable<int>(orientation.value);
     }
+    if (iCloudId.present) {
+      map['i_cloud_id'] = i0.Variable<String>(iCloudId.value);
+    }
     if (adjustmentTime.present) {
       map['adjustment_time'] = i0.Variable<DateTime>(adjustmentTime.value);
     }
@@ -1187,6 +1251,7 @@ class LocalAssetEntityCompanion
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
+          ..write('iCloudId: $iCloudId, ')
           ..write('adjustmentTime: $adjustmentTime, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude')
@@ -1194,3 +1259,8 @@ class LocalAssetEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxLocalAssetCloudId => i0.Index(
+  'idx_local_asset_cloud_id',
+  'CREATE INDEX IF NOT EXISTS idx_local_asset_cloud_id ON local_asset_entity (i_cloud_id)',
+);

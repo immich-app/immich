@@ -19,6 +19,17 @@ List<Widget> _showcaseBuilder(Function(ImmichVariant variant, ImmichColor color)
   return children;
 }
 
+class _ComponentTitle extends StatelessWidget {
+  final String title;
+
+  const _ComponentTitle(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(title, style: context.textTheme.titleLarge);
+  }
+}
+
 @RoutePage()
 class ImmichUIShowcasePage extends StatelessWidget {
   const ImmichUIShowcasePage({super.key});
@@ -35,13 +46,51 @@ class ImmichUIShowcasePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("IconButton", style: context.textTheme.titleLarge),
+              const _ComponentTitle("IconButton"),
               ..._showcaseBuilder(
                 (variant, color) =>
-                    ImmichIconButton(icon: Icons.favorite, color: color, variant: variant, onTap: () {}),
+                    ImmichIconButton(icon: Icons.favorite, color: color, variant: variant, onPressed: () {}),
               ),
-              Text("CloseButton", style: context.textTheme.titleLarge),
-              ..._showcaseBuilder((variant, color) => ImmichCloseButton(color: color, variant: variant, onTap: () {})),
+              const _ComponentTitle("CloseButton"),
+              ..._showcaseBuilder(
+                (variant, color) => ImmichCloseButton(color: color, variant: variant, onPressed: () {}),
+              ),
+              const _ComponentTitle("TextButton"),
+
+              ImmichTextButton(
+                labelText: "Text Button",
+                onPressed: () {},
+                variant: ImmichVariant.filled,
+                color: ImmichColor.primary,
+              ),
+              ImmichTextButton(
+                labelText: "Text Button",
+                onPressed: () {},
+                variant: ImmichVariant.filled,
+                color: ImmichColor.primary,
+                loading: true,
+              ),
+              ImmichTextButton(
+                labelText: "Text Button",
+                onPressed: () {},
+                variant: ImmichVariant.ghost,
+                color: ImmichColor.primary,
+              ),
+              ImmichTextButton(
+                labelText: "Text Button",
+                onPressed: () {},
+                variant: ImmichVariant.ghost,
+                color: ImmichColor.primary,
+                loading: true,
+              ),
+              const _ComponentTitle("Form"),
+              ImmichForm(
+                onSubmit: () {},
+                child: const Column(
+                  spacing: 10,
+                  children: [ImmichTextInput(label: "Title", hintText: "Enter a title")],
+                ),
+              ),
             ],
           ),
         ),

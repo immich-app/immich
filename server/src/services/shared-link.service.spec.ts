@@ -55,7 +55,8 @@ describe(SharedLinkService.name, () => {
         },
       });
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.readonlyNoMetadata);
+      const response = await sut.getMine(authDto, {});
+      expect(response.assets[0]).toMatchObject({ hasMetadata: false });
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 

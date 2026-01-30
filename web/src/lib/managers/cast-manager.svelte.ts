@@ -1,3 +1,4 @@
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { GCastDestination } from '$lib/utils/cast/gcast-destination.svelte';
 import { createSession, type SessionCreateResponseDto } from '@immich/sdk';
 import { DateTime, Duration } from 'luxon';
@@ -57,9 +58,11 @@ class CastManager {
       new GCastDestination(),
       // Add other cast destinations here (ie FCast)
     ];
+
+    eventManager.on('AppInit', () => void this.initialize());
   }
 
-  async initialize() {
+  private async initialize() {
     // this goes first to prevent multiple calls to initialize
     if (this.initialized) {
       return;

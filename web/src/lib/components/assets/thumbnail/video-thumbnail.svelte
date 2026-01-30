@@ -85,7 +85,9 @@
   ></video>
 {/if}
 
-<div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+<div
+  class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white text-shadow-[1px_1px_6px_rgb(0_0_0)]"
+>
   {#if showTime}
     <span class="pt-2">
       {#if remainingSeconds < 60}
@@ -99,7 +101,7 @@
   {/if}
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <span class="pe-2 pt-2" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
+  <span class="pe-2 pt-2 drop-shadow-[1px_1px_6px_rgb(0_0_0)]" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
     {#if enablePlayback}
       {#if loading}
         <LoadingSpinner />

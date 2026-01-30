@@ -33,7 +33,7 @@
   size="small"
   onClose={handleClose}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <p>
       <FormatMessage key="admin.user_restore_description" values={{ user: user.name }}>
         {#snippet children({ message })}

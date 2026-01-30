@@ -43,6 +43,10 @@ class Permission {
   static const assetPeriodUpload = Permission._(r'asset.upload');
   static const assetPeriodReplace = Permission._(r'asset.replace');
   static const assetPeriodCopy = Permission._(r'asset.copy');
+  static const assetPeriodDerive = Permission._(r'asset.derive');
+  static const assetPeriodEditPeriodGet = Permission._(r'asset.edit.get');
+  static const assetPeriodEditPeriodCreate = Permission._(r'asset.edit.create');
+  static const assetPeriodEditPeriodDelete = Permission._(r'asset.edit.delete');
   static const albumPeriodCreate = Permission._(r'album.create');
   static const albumPeriodRead = Permission._(r'album.read');
   static const albumPeriodUpdate = Permission._(r'album.update');
@@ -58,12 +62,17 @@ class Permission {
   static const authPeriodChangePassword = Permission._(r'auth.changePassword');
   static const authDevicePeriodDelete = Permission._(r'authDevice.delete');
   static const archivePeriodRead = Permission._(r'archive.read');
+  static const backupPeriodList = Permission._(r'backup.list');
+  static const backupPeriodDownload = Permission._(r'backup.download');
+  static const backupPeriodUpload = Permission._(r'backup.upload');
+  static const backupPeriodDelete = Permission._(r'backup.delete');
   static const duplicatePeriodRead = Permission._(r'duplicate.read');
   static const duplicatePeriodDelete = Permission._(r'duplicate.delete');
   static const facePeriodCreate = Permission._(r'face.create');
   static const facePeriodRead = Permission._(r'face.read');
   static const facePeriodUpdate = Permission._(r'face.update');
   static const facePeriodDelete = Permission._(r'face.delete');
+  static const folderPeriodRead = Permission._(r'folder.read');
   static const jobPeriodCreate = Permission._(r'job.create');
   static const jobPeriodRead = Permission._(r'job.read');
   static const libraryPeriodCreate = Permission._(r'library.create');
@@ -74,6 +83,8 @@ class Permission {
   static const timelinePeriodRead = Permission._(r'timeline.read');
   static const timelinePeriodDownload = Permission._(r'timeline.download');
   static const maintenance = Permission._(r'maintenance');
+  static const mapPeriodRead = Permission._(r'map.read');
+  static const mapPeriodSearch = Permission._(r'map.search');
   static const memoryPeriodCreate = Permission._(r'memory.create');
   static const memoryPeriodRead = Permission._(r'memory.read');
   static const memoryPeriodUpdate = Permission._(r'memory.update');
@@ -191,6 +202,10 @@ class Permission {
     assetPeriodUpload,
     assetPeriodReplace,
     assetPeriodCopy,
+    assetPeriodDerive,
+    assetPeriodEditPeriodGet,
+    assetPeriodEditPeriodCreate,
+    assetPeriodEditPeriodDelete,
     albumPeriodCreate,
     albumPeriodRead,
     albumPeriodUpdate,
@@ -206,12 +221,17 @@ class Permission {
     authPeriodChangePassword,
     authDevicePeriodDelete,
     archivePeriodRead,
+    backupPeriodList,
+    backupPeriodDownload,
+    backupPeriodUpload,
+    backupPeriodDelete,
     duplicatePeriodRead,
     duplicatePeriodDelete,
     facePeriodCreate,
     facePeriodRead,
     facePeriodUpdate,
     facePeriodDelete,
+    folderPeriodRead,
     jobPeriodCreate,
     jobPeriodRead,
     libraryPeriodCreate,
@@ -222,6 +242,8 @@ class Permission {
     timelinePeriodRead,
     timelinePeriodDownload,
     maintenance,
+    mapPeriodRead,
+    mapPeriodSearch,
     memoryPeriodCreate,
     memoryPeriodRead,
     memoryPeriodUpdate,
@@ -374,6 +396,10 @@ class PermissionTypeTransformer {
         case r'asset.upload': return Permission.assetPeriodUpload;
         case r'asset.replace': return Permission.assetPeriodReplace;
         case r'asset.copy': return Permission.assetPeriodCopy;
+        case r'asset.derive': return Permission.assetPeriodDerive;
+        case r'asset.edit.get': return Permission.assetPeriodEditPeriodGet;
+        case r'asset.edit.create': return Permission.assetPeriodEditPeriodCreate;
+        case r'asset.edit.delete': return Permission.assetPeriodEditPeriodDelete;
         case r'album.create': return Permission.albumPeriodCreate;
         case r'album.read': return Permission.albumPeriodRead;
         case r'album.update': return Permission.albumPeriodUpdate;
@@ -389,12 +415,17 @@ class PermissionTypeTransformer {
         case r'auth.changePassword': return Permission.authPeriodChangePassword;
         case r'authDevice.delete': return Permission.authDevicePeriodDelete;
         case r'archive.read': return Permission.archivePeriodRead;
+        case r'backup.list': return Permission.backupPeriodList;
+        case r'backup.download': return Permission.backupPeriodDownload;
+        case r'backup.upload': return Permission.backupPeriodUpload;
+        case r'backup.delete': return Permission.backupPeriodDelete;
         case r'duplicate.read': return Permission.duplicatePeriodRead;
         case r'duplicate.delete': return Permission.duplicatePeriodDelete;
         case r'face.create': return Permission.facePeriodCreate;
         case r'face.read': return Permission.facePeriodRead;
         case r'face.update': return Permission.facePeriodUpdate;
         case r'face.delete': return Permission.facePeriodDelete;
+        case r'folder.read': return Permission.folderPeriodRead;
         case r'job.create': return Permission.jobPeriodCreate;
         case r'job.read': return Permission.jobPeriodRead;
         case r'library.create': return Permission.libraryPeriodCreate;
@@ -405,6 +436,8 @@ class PermissionTypeTransformer {
         case r'timeline.read': return Permission.timelinePeriodRead;
         case r'timeline.download': return Permission.timelinePeriodDownload;
         case r'maintenance': return Permission.maintenance;
+        case r'map.read': return Permission.mapPeriodRead;
+        case r'map.search': return Permission.mapPeriodSearch;
         case r'memory.create': return Permission.memoryPeriodCreate;
         case r'memory.read': return Permission.memoryPeriodRead;
         case r'memory.update': return Permission.memoryPeriodUpdate;

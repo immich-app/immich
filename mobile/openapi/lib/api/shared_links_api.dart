@@ -160,7 +160,9 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
-  Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, }) async {
+  ///
+  /// * [String] id:
+  Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
 
@@ -173,6 +175,9 @@ class SharedLinksApi {
 
     if (albumId != null) {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
+    }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
     }
 
     const contentTypes = <String>[];
@@ -196,8 +201,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
-  Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, }) async {
-    final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, );
+  ///
+  /// * [String] id:
+  Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
+    final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

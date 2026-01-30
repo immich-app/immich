@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { resolve } from '$app/paths';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
@@ -65,8 +64,7 @@
     <div class="grid grid-auto-fill-56 gap-y-4" transition:slide={{ duration: 300 }}>
       {#each albums as album, index (album.id)}
         <a
-          data-sveltekit-preload-data="hover"
-          href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}
+          href={Route.viewAlbum(album)}
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}
         >

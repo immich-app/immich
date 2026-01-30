@@ -33,7 +33,7 @@ You can create a public link to share a group of photos or videos, or an album, 
 The public shared link is generated with a random URL, which acts as as a secret to avoid the link being guessed by unwanted parties, for instance.
 
 ```
-https://immich.yourdomain.com/share/JUckRMxlgpo7F9BpyqGk_cZEwDzaU_U5LU5_oNZp1ETIBa9dpQ0b5ghNm_22QVJfn3k
+https://my.immich.app/share/JUckRMxlgpo7F9BpyqGk_cZEwDzaU_U5LU5_oNZp1ETIBa9dpQ0b5ghNm_22QVJfn3k
 ```
 
 ### Creating a public share link

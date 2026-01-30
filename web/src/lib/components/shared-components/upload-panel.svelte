@@ -131,7 +131,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-light"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -140,7 +140,7 @@
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
             onclick={() => (showDetail = true)}
-            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-gray-200"
+            class="absolute -end-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-danger p-5 text-xs text-light"
           >
             {$stats.errors.toLocaleString($locale)}
           </button>

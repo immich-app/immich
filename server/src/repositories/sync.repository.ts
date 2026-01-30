@@ -483,6 +483,7 @@ class AssetFaceSync extends BaseSync {
       ])
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')
       .where('asset.ownerId', '=', options.userId)
+      .where('asset_face.isVisible', '=', true)
       .stream();
   }
 }

@@ -28,6 +28,7 @@ export class MemoryService extends BaseService {
           continue;
         }
 
+        this.logger.log(`Creating memories for ${target.toISO()}`);
         try {
           await Promise.all(users.map((owner) => this.createOnThisDayMemories(owner.id, target)));
         } catch (error) {

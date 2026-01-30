@@ -3,9 +3,9 @@ import { isAbsolute } from 'node:path';
 import { SALT_ROUNDS } from 'src/constants';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { createMaintenanceLoginUrl, generateMaintenanceSecret, sendOneShotAppRestart } from 'src/utils/maintenance';
+import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -55,8 +55,7 @@ export class CliService extends BaseService {
 
     const state = { isMaintenanceMode: false as const };
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
-
-    sendOneShotAppRestart(state);
+    await this.appRepository.sendOneShotAppRestart(state);
 
     return {
       alreadyDisabled: false,
@@ -87,9 +86,12 @@ export class CliService extends BaseService {
     await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
       isMaintenanceMode: true,
       secret,
+      action: {
+        action: MaintenanceAction.Start,
+      },
     });
 
-    sendOneShotAppRestart({
+    await this.appRepository.sendOneShotAppRestart({
       isMaintenanceMode: true,
     });
 

@@ -100,7 +100,7 @@ class AppLogPage extends HookConsumerWidget {
             minLeadingWidth: 10,
             title: Text(
               truncateLogMessage(logMessage.message, 4),
-              style: TextStyle(fontSize: 14.0, color: context.colorScheme.onSurface, fontFamily: "Inconsolata"),
+              style: TextStyle(fontSize: 14.0, color: context.colorScheme.onSurface, fontFamily: "GoogleSansCode"),
             ),
             subtitle: Text(
               "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.logger}",

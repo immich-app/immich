@@ -41,6 +41,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
     database: {
@@ -166,13 +167,15 @@ const updatedConfig = Object.freeze<SystemConfig>({
       size: 250,
       format: ImageFormat.Webp,
       quality: 80,
+      progressive: false,
     },
     preview: {
       size: 1440,
       format: ImageFormat.Jpeg,
       quality: 80,
+      progressive: false,
     },
-    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80 },
+    fullsize: { enabled: false, format: ImageFormat.Jpeg, quality: 80, progressive: false },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },

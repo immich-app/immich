@@ -1,5 +1,5 @@
 import type { Faces } from '$lib/stores/people.store';
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetMediaUrl } from '$lib/utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
@@ -24,11 +24,11 @@ export interface boundingBox {
 export const getBoundingBox = (
   faces: Faces[],
   zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | undefined,
 ): boundingBox[] => {
   const boxes: boundingBox[] = [];
 
-  if (photoViewer === null) {
+  if (!photoViewer) {
     return boxes;
   }
   const clientHeight = photoViewer.clientHeight;
@@ -76,13 +76,13 @@ export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
   assetType: AssetTypeEnum,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | undefined,
 ): Promise<string | null> => {
-  let image: HTMLImageElement | null = null;
+  let image: HTMLImageElement | undefined;
   if (assetType === AssetTypeEnum.Image) {
     image = photoViewer;
   } else if (assetType === AssetTypeEnum.Video) {
-    const data = getAssetThumbnailUrl(assetId);
+    const data = getAssetMediaUrl({ id: assetId });
     const img: HTMLImageElement = new Image();
     img.src = data;
 
@@ -93,7 +93,7 @@ export const zoomImageToBase64 = async (
 
     image = img;
   }
-  if (image === null) {
+  if (!image) {
     return null;
   }
   const { boundingBoxX1: x1, boundingBoxX2: x2, boundingBoxY1: y1, boundingBoxY2: y2, imageWidth, imageHeight } = face;
@@ -121,11 +121,9 @@ export const zoomImageToBase64 = async (
   canvas.height = faceHeight;
 
   const context = canvas.getContext('2d');
-  if (context) {
-    context.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
-
-    return canvas.toDataURL();
-  } else {
+  if (!context) {
     return null;
   }
+  context.drawImage(faceImage, coordinates.x1, coordinates.y1, faceWidth, faceHeight, 0, 0, faceWidth, faceHeight);
+  return canvas.toDataURL();
 };

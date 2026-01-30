@@ -1,0 +1,5 @@
+{
+  "jsonRecursiveSort": true,
+  "jsonSortOrder": "{\"/.*/\": \"lexical\"}",
+  "plugins": ["prettier-plugin-sort-json"]
+}

@@ -270,6 +270,45 @@ class HashResult {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class CloudIdResult {
+  CloudIdResult({required this.assetId, this.error, this.cloudId});
+
+  String assetId;
+
+  String? error;
+
+  String? cloudId;
+
+  List<Object?> _toList() {
+    return <Object?>[assetId, error, cloudId];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static CloudIdResult decode(Object result) {
+    result as List<Object?>;
+    return CloudIdResult(assetId: result[0]! as String, error: result[1] as String?, cloudId: result[2] as String?);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! CloudIdResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -289,6 +328,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is HashResult) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
+    } else if (value is CloudIdResult) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -305,6 +347,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return SyncDelta.decode(readValue(buffer)!);
       case 132:
         return HashResult.decode(readValue(buffer)!);
+      case 133:
+        return CloudIdResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -614,6 +658,34 @@ class NativeSyncApi {
       );
     } else {
       return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, List<PlatformAsset>>();
+    }
+  }
+
+  Future<List<CloudIdResult>> getCloudIdForAssetIds(List<String> assetIds) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<CloudIdResult>();
     }
   }
 }

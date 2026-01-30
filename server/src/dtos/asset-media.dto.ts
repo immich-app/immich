@@ -7,6 +7,7 @@ import { AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
+  Original = 'original',
   /**
    * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
    * or otherwise the original image itself.
@@ -19,6 +20,9 @@ export enum AssetMediaSize {
 export class AssetMediaOptionsDto {
   @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
   size?: AssetMediaSize;
+
+  @ValidateBoolean({ optional: true, default: false })
+  edited?: boolean;
 }
 
 export enum UploadFieldName {
@@ -78,7 +82,7 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @Optional()
   @ValidateNested({ each: true })
   @IsArray()
-  metadata!: AssetMetadataUpsertItemDto[];
+  metadata?: AssetMetadataUpsertItemDto[];
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   [UploadFieldName.SIDECAR_DATA]?: any;

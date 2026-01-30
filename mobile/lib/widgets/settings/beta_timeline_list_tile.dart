@@ -9,6 +9,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
 
 class BetaTimelineListTile extends ConsumerWidget {
   const BetaTimelineListTile({super.key});
@@ -56,8 +57,8 @@ class BetaTimelineListTile extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(left: 4.0),
-      child: ListTile(
-        title: Text("new_timeline".t(context: context)),
+      child: SettingListTile(
+        title: "new_timeline".t(context: context),
         trailing: Switch.adaptive(
           value: betaTimelineValue,
           onChanged: onSwitchChanged,

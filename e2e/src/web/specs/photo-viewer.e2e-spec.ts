@@ -3,7 +3,7 @@ import { Page, expect, test } from '@playwright/test';
 import { utils } from 'src/utils';
 
 function imageLocator(page: Page) {
-  return page.getByAltText('Image taken on').locator('visible=true');
+  return page.getByAltText('Image taken').locator('visible=true');
 }
 test.describe('Photo Viewer', () => {
   let admin: LoginResponseDto;

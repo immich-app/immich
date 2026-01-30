@@ -15,15 +15,7 @@ export class CancellableTask {
     private canceledCallback?: () => void,
     private errorCallback?: (error: unknown) => void,
   ) {
-    this.complete = new Promise<void>((resolve, reject) => {
-      this.loadedSignal = resolve;
-      this.canceledSignal = reject;
-    }).catch(
-      () =>
-        // if no-one waits on complete its rejected a uncaught rejection message is logged.
-        // prevent this message with an empty reject handler, since waiting on a bucket is optional.
-        void 0,
-    );
+    this.init();
   }
 
   get loading() {
@@ -34,11 +26,30 @@ export class CancellableTask {
     if (this.executed) {
       return 'DONE';
     }
-    // if there is a cancel token, task is currently executing, so wait on the promise. If it
-    // isn't, then  the task is in new state, it hasn't been loaded, nor has it been executed.
-    // in either case, we wait on the promise.
-    await this.complete;
-    return 'WAITED';
+    // The `complete` promise resolves when executed, rejects when canceled/errored.
+    try {
+      const complete = this.complete;
+      await complete;
+      return 'WAITED';
+    } catch {
+      // ignore
+    }
+    return 'CANCELED';
+  }
+
+  async waitUntilExecution() {
+    // Keep retrying until the task completes successfully (not canceled)
+    for (;;) {
+      try {
+        if (this.executed) {
+          return 'DONE';
+        }
+        await this.complete;
+        return 'WAITED';
+      } catch {
+        continue;
+      }
+    }
   }
 
   async execute<F extends (abortSignal: AbortSignal) => Promise<void>>(f: F, cancellable: boolean) {
@@ -80,21 +91,14 @@ export class CancellableTask {
   }
 
   private init() {
-    this.cancelToken = null;
-    this.executed = false;
-    // create a promise, and store its resolve/reject callbacks. The loadedSignal callback
-    // will be incoked when a bucket is loaded, fulfilling the promise. The canceledSignal
-    // callback will be called if the bucket is canceled before it was loaded, rejecting the
-    // promise.
     this.complete = new Promise<void>((resolve, reject) => {
+      this.cancelToken = null;
+      this.executed = false;
       this.loadedSignal = resolve;
       this.canceledSignal = reject;
-    }).catch(
-      () =>
-        // if no-one waits on complete its rejected a uncaught rejection message is logged.
-        // prevent this message with an empty reject handler, since waiting on a bucket is optional.
-        void 0,
-    );
+    });
+    // Suppress unhandled rejection warning
+    this.complete.catch(() => {});
   }
 
   // will reset this job back to the initial state (isLoaded=false, no errors, etc)

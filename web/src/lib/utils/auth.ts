@@ -1,4 +1,6 @@
 import { browser } from '$app/environment';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { Route } from '$lib/route';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
 import { userInteraction } from '$lib/stores/user.svelte';
@@ -6,11 +8,10 @@ import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/s
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
-import { AppRoute } from '../constants';
 
 export interface AuthOptions {
   admin?: true;
-  public?: true;
+  public?: boolean;
 }
 
 export const loadUser = async () => {
@@ -23,6 +24,8 @@ export const loadUser = async () => {
       [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
       user$.set(user);
       preferences$.set(preferences);
+
+      eventManager.emit('AuthUserLoaded', user);
 
       // Check for license status
       if (serverInfo.licensed || user.license?.activatedAt) {
@@ -59,11 +62,11 @@ export const authenticate = async (url: URL, options?: AuthOptions) => {
   }
 
   if (!user) {
-    redirect(302, `${AppRoute.AUTH_LOGIN}?continue=${encodeURIComponent(url.pathname + url.search)}`);
+    redirect(307, Route.login({ continue: url.pathname + url.search }));
   }
 
   if (adminRoute && !user.isAdmin) {
-    redirect(302, AppRoute.PHOTOS);
+    redirect(307, Route.photos());
   }
 };
 

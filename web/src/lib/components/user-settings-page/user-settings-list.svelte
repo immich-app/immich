@@ -6,7 +6,7 @@
   import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
   import NotificationsSettings from '$lib/components/user-settings-page/notifications-settings.svelte';
   import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
-  import { OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import { OpenQueryParam, QueryParameter } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
@@ -43,7 +43,7 @@
 
   let oauthOpen =
     oauth.isCallback(globalThis.location) ||
-    $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.OAUTH;
+    $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenQueryParam.OAUTH;
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
@@ -108,7 +108,7 @@
 
   <SettingAccordion
     icon={mdiBellOutline}
-    key="notifications"
+    key={OpenQueryParam.NOTIFICATIONS}
     title={$t('notifications')}
     subtitle={$t('notifications_setting_description')}
   >

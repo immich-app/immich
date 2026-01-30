@@ -53,8 +53,10 @@ import UIKit
   
   public static func registerPlugins(with engine: FlutterEngine) {
     NativeSyncApiImpl.register(with: engine.registrar(forPlugin: NativeSyncApiImpl.name)!)
-    ThumbnailApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ThumbnailApiImpl())
+    LocalImageApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: LocalImageApiImpl())
+    RemoteImageApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: RemoteImageApiImpl())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
+    ConnectivityApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ConnectivityApiImpl())
   }
   
   public static func cancelPlugins(with engine: FlutterEngine) {

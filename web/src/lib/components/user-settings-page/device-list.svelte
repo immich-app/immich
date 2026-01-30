@@ -1,7 +1,7 @@
 <script lang="ts">
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button, modalManager, toastManager } from '@immich/ui';
+  import { Button, modalManager, Text, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import DeviceCard from './device-card.svelte';
 
@@ -52,17 +52,17 @@
 <section class="my-4">
   {#if currentSession}
     <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+      <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">
         {$t('current_device')}
-      </h3>
+      </Text>
       <DeviceCard session={currentSession} />
     </div>
   {/if}
   {#if otherSessions.length > 0}
     <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+      <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">
         {$t('other_devices')}
-      </h3>
+      </Text>
       {#each otherSessions as session, index (session.id)}
         <DeviceCard {session} onDelete={() => handleDelete(session)} />
         {#if index !== otherSessions.length - 1}
@@ -70,9 +70,11 @@
         {/if}
       {/each}
     </div>
-    <h3 class="uppercase mb-2 text-xs font-medium text-primary">
-      {$t('log_out_all_devices')}
-    </h3>
+
+    <div class="my-3">
+      <hr />
+    </div>
+
     <div class="flex justify-end">
       <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
     </div>

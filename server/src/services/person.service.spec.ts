@@ -354,6 +354,7 @@ describe(PersonService.name, () => {
     it('should get the bounding boxes for an asset', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       mocks.person.getFaces.mockResolvedValue([faceStub.primaryFace1]);
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
         mapFaces(faceStub.primaryFace1, authStub.admin),
       ]);

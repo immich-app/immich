@@ -44,7 +44,7 @@ def get_version_from_pubspec
 end
   
   # Helper method to configure code signing for all targets
-  def configure_code_signing(bundle_id_suffix: "")
+  def configure_code_signing(bundle_id_suffix: "", profile_name_main:, profile_name_share:, profile_name_widget:)
     bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
     
     # Runner (main app)
@@ -54,7 +54,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix} AppStore",
+      profile_name: profile_name_main,
       targets: ["Runner"]
     )
     
@@ -65,7 +65,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension AppStore",
+      profile_name: profile_name_share,
       targets: ["ShareExtension"]
     )
     
@@ -76,7 +76,7 @@ end
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
       bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget",
-      profile_name: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget AppStore",
+      profile_name: profile_name_widget,
       targets: ["WidgetExtension"]
     )
   end
@@ -87,7 +87,10 @@ end
     bundle_id_suffix: "",
     configuration: "Release",
     distribute_external: true,
-    version_number: nil
+    version_number: nil,
+    profile_name_main:,
+    profile_name_share:,
+    profile_name_widget:
   )
     bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
     app_identifier = "#{BASE_BUNDLE_ID}#{bundle_suffix}"
@@ -115,9 +118,9 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{app_identifier}" => "#{app_identifier} AppStore",
-          "#{app_identifier}.ShareExtension" => "#{app_identifier}.ShareExtension AppStore",
-          "#{app_identifier}.Widget" => "#{app_identifier}.Widget AppStore"
+          "#{app_identifier}" => profile_name_main,
+          "#{app_identifier}.ShareExtension" => profile_name_share,
+          "#{app_identifier}.Widget" => profile_name_widget
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY
@@ -136,20 +139,35 @@ end
   lane :gha_testflight_dev do
     api_key = get_api_key
     
-    # Install development provisioning profiles
-    install_provisioning_profile(path: "profile_dev.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    # Download and install provisioning profiles from App Store Connect
+    # Certificate is imported by GHA workflow into build.keychain
+    # Capture profile names after each sigh call
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development", force: true)
+    main_profile_name = lane_context[SharedValues::SIGH_NAME]
     
-    # Configure code signing for dev bundle IDs
-    configure_code_signing(bundle_id_suffix: "development")
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.ShareExtension", force: true)
+    share_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.Widget", force: true)
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    # Configure code signing for dev bundle IDs using the downloaded profile names
+    configure_code_signing(
+      bundle_id_suffix: "development",
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
+    )
     
     # Build and upload
     build_and_upload(
       api_key: api_key,
       bundle_id_suffix: "development",
       configuration: "Profile",
-      distribute_external: false
+      distribute_external: false,
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
     )
   end
 
@@ -157,20 +175,33 @@ end
   lane :gha_release_prod do
     api_key = get_api_key
     
-    # Install provisioning profiles
-    install_provisioning_profile(path: "profile.mobileprovision")
-    install_provisioning_profile(path: "profile_share.mobileprovision")
-    install_provisioning_profile(path: "profile_widget.mobileprovision")
+    # Download and install provisioning profiles from App Store Connect
+    # Certificate is imported by GHA workflow into build.keychain
+    sigh(api_key: api_key, app_identifier: BASE_BUNDLE_ID, force: true)
+    main_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.ShareExtension", force: true)
+    share_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.Widget", force: true)
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
     
     
     # Configure code signing for production bundle IDs
-    configure_code_signing
+    configure_code_signing(
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
+    )
 
     # Build and upload with version number
     build_and_upload(
       api_key: api_key,
       version_number: get_version_from_pubspec,
       distribute_external: false,
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
     )
   end
 
@@ -215,13 +246,26 @@ end
     # Use the same build process as production, just skip the upload
     # This ensures PR builds validate the same way as production builds
     
-    # Install provisioning profiles (use development profiles for PR builds)
-    install_provisioning_profile(path: "profile_dev.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
-    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    api_key = get_api_key
+    
+    # Download and install provisioning profiles from App Store Connect
+    # Certificate is imported by GHA workflow into build.keychain
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development", force: true)
+    main_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.ShareExtension", force: true)
+    share_profile_name = lane_context[SharedValues::SIGH_NAME]
+    
+    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.Widget", force: true)
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
     
     # Configure code signing for dev bundle IDs
-    configure_code_signing(bundle_id_suffix: "development")
+    configure_code_signing(
+      bundle_id_suffix: "development",
+      profile_name_main: main_profile_name,
+      profile_name_share: share_profile_name,
+      profile_name_widget: widget_profile_name
+    )
     
     # Build the app (same as gha_testflight_dev but without upload)
     build_app(
@@ -233,9 +277,9 @@ end
       xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "#{BASE_BUNDLE_ID}.development" => "#{BASE_BUNDLE_ID}.development AppStore",
-          "#{BASE_BUNDLE_ID}.development.ShareExtension" => "#{BASE_BUNDLE_ID}.development.ShareExtension AppStore",
-          "#{BASE_BUNDLE_ID}.development.Widget" => "#{BASE_BUNDLE_ID}.development.Widget AppStore"
+          "#{BASE_BUNDLE_ID}.development" => main_profile_name,
+          "#{BASE_BUNDLE_ID}.development.ShareExtension" => share_profile_name,
+          "#{BASE_BUNDLE_ID}.development.Widget" => widget_profile_name
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY

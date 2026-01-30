@@ -322,6 +322,237 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/database-backups": {
+      "delete": {
+        "description": "Delete a backup by its filename",
+        "operationId": "deleteDatabaseBackup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatabaseBackupDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.delete",
+        "x-immich-state": "Alpha"
+      },
+      "get": {
+        "description": "Get the list of the successful and failed backups",
+        "operationId": "listDatabaseBackups",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatabaseBackupListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List database backups",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/start-restore": {
+      "post": {
+        "description": "Put Immich into maintenance mode to restore a backup (Immich must not be configured)",
+        "operationId": "startDatabaseRestoreFlow",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Start database backup restore flow",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/upload": {
+      "post": {
+        "description": "Uploads .sql/.sql.gz file to restore backup from",
+        "operationId": "uploadDatabaseBackup",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DatabaseBackupUploadDto"
+              }
+            }
+          },
+          "description": "Backup Upload",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Upload database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.upload",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/database-backups/{filename}": {
+      "get": {
+        "description": "Downloads the database backup file",
+        "operationId": "downloadDatabaseBackup",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download database backup",
+        "tags": [
+          "Database Backups (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "backup.download",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance": {
       "post": {
         "description": "Put Immich into or take it out of maintenance mode",
@@ -372,6 +603,53 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/admin/maintenance/detect-install": {
+      "get": {
+        "description": "Collect integrity checks and other heuristics about local data.",
+        "operationId": "detectPriorInstall",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceDetectInstallResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Detect existing install",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "maintenance",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/maintenance/login": {
       "post": {
         "description": "Login with maintenance token or cookie to receive current information and perform further actions.",
@@ -410,6 +688,40 @@
           },
           {
             "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/maintenance/status": {
+      "get": {
+        "description": "Fetch information about the currently running maintenance action.",
+        "operationId": "getMaintenanceStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceStatusResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get maintenance mode status",
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
             "state": "Alpha"
           }
         ],
@@ -2528,6 +2840,16 @@
           "required": true
         },
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": "Asset is a duplicate"
+          },
           "201": {
             "content": {
               "application/json": {
@@ -2536,7 +2858,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Asset uploaded successfully"
           }
         },
         "security": [
@@ -2851,6 +3173,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "asset.upload",
         "x-immich-state": "Stable"
       }
     },
@@ -2903,7 +3226,114 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "job.create",
         "x-immich-state": "Stable"
+      }
+    },
+    "/assets/metadata": {
+      "delete": {
+        "description": "Delete metadata key-value pairs for multiple assets.",
+        "operationId": "deleteBulkAssetMetadata",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataBulkDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete asset metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Upsert metadata key-value pairs for multiple assets.",
+        "operationId": "updateBulkAssetMetadata",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataBulkUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataBulkResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Upsert asset metadata",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
       }
     },
     "/assets/random": {
@@ -3187,6 +3617,173 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/{id}/edits": {
+      "delete": {
+        "description": "Removes all edit actions (crop, rotate, mirror) associated with the specified asset.",
+        "operationId": "removeAssetEdits",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Remove edits from an existing asset",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.edit.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.",
+        "operationId": "getAssetEdits",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetEditsDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve edits for an existing asset",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.edit.get",
+        "x-immich-state": "Beta"
+      },
+      "put": {
+        "description": "Apply a series of edit actions (crop, rotate, mirror) to the specified asset.",
+        "operationId": "editAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetEditActionListDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetEditsDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Apply edits to an existing asset",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.5.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.5.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.edit.create",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/{id}/metadata": {
       "get": {
         "description": "Retrieve all metadata key-value pairs associated with the specified asset.",
@@ -3340,7 +3937,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/AssetMetadataKey"
+              "type": "string"
             }
           }
         ],
@@ -3399,7 +3996,7 @@
             "required": true,
             "in": "path",
             "schema": {
-              "$ref": "#/components/schemas/AssetMetadataKey"
+              "type": "string"
             }
           }
         ],
@@ -3516,6 +4113,15 @@
         "description": "Downloads the original file of the specified asset.",
         "operationId": "downloadAsset",
         "parameters": [
+          {
+            "name": "edited",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -3637,7 +4243,7 @@
                 }
               }
             },
-            "description": ""
+            "description": "Asset replaced successfully"
           }
         },
         "security": [
@@ -3673,9 +4279,18 @@
     },
     "/assets/{id}/thumbnail": {
       "get": {
-        "description": "Retrieve the thumbnail image for the specified asset.",
+        "description": "Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.",
         "operationId": "viewAsset",
         "parameters": [
+          {
+            "name": "edited",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
           {
             "name": "id",
             "required": true,
@@ -5692,6 +6307,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.read",
         "x-immich-state": "Stable"
       }
     },
@@ -5763,6 +6379,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "map.search",
         "x-immich-state": "Stable"
       }
     },
@@ -8003,6 +8620,55 @@
           }
         ],
         "summary": "List all plugins",
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.3.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.3.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "plugin.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/plugins/triggers": {
+      "get": {
+        "description": "Retrieve a list of all available plugin triggers.",
+        "operationId": "getPluginTriggers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginTriggerResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all plugin triggers",
         "tags": [
           "Plugins"
         ],
@@ -10328,6 +10994,21 @@
             "name": "albumId",
             "required": false,
             "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": false,
+            "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v2.5.0",
+                "state": "Added"
+              }
+            ],
             "schema": {
               "format": "uuid",
               "type": "string"
@@ -13939,6 +14620,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -13991,6 +14673,7 @@
             "state": "Stable"
           }
         ],
+        "x-immich-permission": "folder.read",
         "x-immich-state": "Stable"
       }
     },
@@ -14268,7 +14951,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.4.1",
+    "version": "2.5.2",
     "contact": {}
   },
   "tags": [
@@ -14295,6 +14978,10 @@
     {
       "name": "Authentication (admin)",
       "description": "Administrative endpoints related to authentication."
+    },
+    {
+      "name": "Database Backups (admin)",
+      "description": "Manage backups of the Immich database."
     },
     {
       "name": "Deprecated",
@@ -15106,6 +15793,128 @@
         ],
         "type": "object"
       },
+      "AssetEditAction": {
+        "enum": [
+          "crop",
+          "rotate",
+          "mirror"
+        ],
+        "type": "string"
+      },
+      "AssetEditActionCrop": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/CropParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionListDto": {
+        "properties": {
+          "edits": {
+            "description": "list of edits",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AssetEditActionCrop"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionRotate"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionMirror"
+                }
+              ]
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "edits"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionMirror": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/MirrorParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionRotate": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/RotateParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditsDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "edits": {
+            "description": "list of edits",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AssetEditActionCrop"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionRotate"
+                },
+                {
+                  "$ref": "#/components/schemas/AssetEditActionMirror"
+                }
+              ]
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "edits"
+        ],
+        "type": "object"
+      },
       "AssetFaceCreateDto": {
         "properties": {
           "assetId": {
@@ -15435,8 +16244,7 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt",
-          "metadata"
+          "fileModifiedAt"
         ],
         "type": "object"
       },
@@ -15497,6 +16305,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "original",
           "fullsize",
           "preview",
           "thumbnail"
@@ -15511,20 +16320,98 @@
         ],
         "type": "string"
       },
-      "AssetMetadataKey": {
-        "enum": [
-          "mobile-app"
+      "AssetMetadataBulkDeleteDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataBulkDeleteItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
         ],
-        "type": "string"
+        "type": "object"
+      },
+      "AssetMetadataBulkDeleteItemDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "key"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkResponseDto": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "updatedAt",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkUpsertDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataBulkUpsertItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataBulkUpsertItemDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "value"
+        ],
+        "type": "object"
       },
       "AssetMetadataResponseDto": {
         "properties": {
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "updatedAt": {
             "format": "date-time",
@@ -15558,11 +16445,7 @@
       "AssetMetadataUpsertItemDto": {
         "properties": {
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "value": {
             "type": "object"
@@ -15706,11 +16589,29 @@
           "hasMetadata": {
             "type": "boolean"
           },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
           "id": {
             "type": "string"
           },
           "isArchived": {
             "type": "boolean"
+          },
+          "isEdited": {
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v2.5.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.5.0",
+                "state": "Beta"
+              }
+            ],
+            "x-immich-state": "Beta"
           },
           "isFavorite": {
             "type": "boolean"
@@ -15826,6 +16727,10 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
           }
         },
         "required": [
@@ -15837,8 +16742,10 @@
           "fileCreatedAt",
           "fileModifiedAt",
           "hasMetadata",
+          "height",
           "id",
           "isArchived",
+          "isEdited",
           "isFavorite",
           "isOffline",
           "isTrashed",
@@ -15849,7 +16756,8 @@
           "thumbhash",
           "type",
           "updatedAt",
-          "visibility"
+          "visibility",
+          "width"
         ],
         "type": "object"
       },
@@ -16213,6 +17121,37 @@
         ],
         "type": "object"
       },
+      "CropParameters": {
+        "properties": {
+          "height": {
+            "description": "Height of the crop",
+            "minimum": 1,
+            "type": "number"
+          },
+          "width": {
+            "description": "Width of the crop",
+            "minimum": 1,
+            "type": "number"
+          },
+          "x": {
+            "description": "Top-Left X coordinate of crop",
+            "minimum": 0,
+            "type": "number"
+          },
+          "y": {
+            "description": "Top-Left Y coordinate of crop",
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "height",
+          "width",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
       "DatabaseBackupConfig": {
         "properties": {
           "cronExpression": {
@@ -16231,6 +17170,58 @@
           "enabled",
           "keepLastAmount"
         ],
+        "type": "object"
+      },
+      "DatabaseBackupDeleteDto": {
+        "properties": {
+          "backups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backups"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupDto": {
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "filesize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "filename",
+          "filesize"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupListResponseDto": {
+        "properties": {
+          "backups": {
+            "items": {
+              "$ref": "#/components/schemas/DatabaseBackupDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backups"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupUploadDto": {
+        "properties": {
+          "file": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -16612,6 +17603,7 @@
           "AssetDetectFaces",
           "AssetDetectDuplicatesQueueAll",
           "AssetDetectDuplicates",
+          "AssetEditThumbnailGeneration",
           "AssetEncodeVideoQueueAll",
           "AssetEncodeVideo",
           "AssetEmptyTrash",
@@ -16899,7 +17891,9 @@
       "MaintenanceAction": {
         "enum": [
           "start",
-          "end"
+          "end",
+          "select_database_restore",
+          "restore_database"
         ],
         "type": "string"
       },
@@ -16914,12 +17908,81 @@
         ],
         "type": "object"
       },
+      "MaintenanceDetectInstallResponseDto": {
+        "properties": {
+          "storage": {
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceDetectInstallStorageFolderDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "storage"
+        ],
+        "type": "object"
+      },
+      "MaintenanceDetectInstallStorageFolderDto": {
+        "properties": {
+          "files": {
+            "type": "number"
+          },
+          "folder": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StorageFolder"
+              }
+            ]
+          },
+          "readable": {
+            "type": "boolean"
+          },
+          "writable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "files",
+          "folder",
+          "readable",
+          "writable"
+        ],
+        "type": "object"
+      },
       "MaintenanceLoginDto": {
         "properties": {
           "token": {
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "MaintenanceStatusResponseDto": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaintenanceAction"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "number"
+          },
+          "task": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "active"
+        ],
         "type": "object"
       },
       "ManualJobName": {
@@ -17365,6 +18428,30 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "MirrorAxis": {
+        "description": "Axis to mirror along",
+        "enum": [
+          "horizontal",
+          "vertical"
+        ],
+        "type": "string"
+      },
+      "MirrorParameters": {
+        "properties": {
+          "axis": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MirrorAxis"
+              }
+            ],
+            "description": "Axis to mirror along"
+          }
+        },
+        "required": [
+          "axis"
+        ],
         "type": "object"
       },
       "NotificationCreateDto": {
@@ -17847,6 +18934,10 @@
           "asset.upload",
           "asset.replace",
           "asset.copy",
+          "asset.derive",
+          "asset.edit.get",
+          "asset.edit.create",
+          "asset.edit.delete",
           "album.create",
           "album.read",
           "album.update",
@@ -17862,12 +18953,17 @@
           "auth.changePassword",
           "authDevice.delete",
           "archive.read",
+          "backup.list",
+          "backup.download",
+          "backup.upload",
+          "backup.delete",
           "duplicate.read",
           "duplicate.delete",
           "face.create",
           "face.read",
           "face.update",
           "face.delete",
+          "folder.read",
           "job.create",
           "job.read",
           "library.create",
@@ -17878,6 +18974,8 @@
           "timeline.read",
           "timeline.download",
           "maintenance",
+          "map.read",
+          "map.search",
           "memory.create",
           "memory.read",
           "memory.update",
@@ -18282,7 +19380,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18301,7 +19399,7 @@
         ],
         "type": "object"
       },
-      "PluginContext": {
+      "PluginContextType": {
         "enum": [
           "asset",
           "album",
@@ -18329,7 +19427,7 @@
           },
           "supportedContexts": {
             "items": {
-              "$ref": "#/components/schemas/PluginContext"
+              "$ref": "#/components/schemas/PluginContextType"
             },
             "type": "array"
           },
@@ -18398,6 +19496,29 @@
           "title",
           "updatedAt",
           "version"
+        ],
+        "type": "object"
+      },
+      "PluginTriggerResponseDto": {
+        "properties": {
+          "contextType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginContextType"
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "contextType",
+          "type"
         ],
         "type": "object"
       },
@@ -18537,7 +19658,8 @@
           "notifications",
           "backupDatabase",
           "ocr",
-          "workflow"
+          "workflow",
+          "editor"
         ],
         "type": "string"
       },
@@ -18644,6 +19766,9 @@
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "editor": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -18691,6 +19816,7 @@
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
+          "editor",
           "faceDetection",
           "facialRecognition",
           "library",
@@ -18900,6 +20026,18 @@
         "required": [
           "lastImportFileName",
           "lastUpdate"
+        ],
+        "type": "object"
+      },
+      "RotateParameters": {
+        "properties": {
+          "angle": {
+            "description": "Rotation angle in degrees",
+            "type": "number"
+          }
+        },
+        "required": [
+          "angle"
         ],
         "type": "object"
       },
@@ -19600,6 +20738,9 @@
                 "$ref": "#/components/schemas/MaintenanceAction"
               }
             ]
+          },
+          "restoreBackupFilename": {
+            "type": "string"
           }
         },
         "required": [
@@ -20172,6 +21313,17 @@
         },
         "type": "object"
       },
+      "StorageFolder": {
+        "enum": [
+          "encoded-video",
+          "library",
+          "upload",
+          "profile",
+          "thumbs",
+          "backups"
+        ],
+        "type": "string"
+      },
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
@@ -20564,11 +21716,7 @@
             "type": "string"
           },
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           }
         },
         "required": [
@@ -20583,11 +21731,7 @@
             "type": "string"
           },
           "key": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetMetadataKey"
-              }
-            ]
+            "type": "string"
           },
           "value": {
             "type": "object"
@@ -20624,8 +21768,15 @@
             "nullable": true,
             "type": "string"
           },
+          "height": {
+            "nullable": true,
+            "type": "integer"
+          },
           "id": {
             "type": "string"
+          },
+          "isEdited": {
+            "type": "boolean"
           },
           "isFavorite": {
             "type": "boolean"
@@ -20670,6 +21821,10 @@
                 "$ref": "#/components/schemas/AssetVisibility"
               }
             ]
+          },
+          "width": {
+            "nullable": true,
+            "type": "integer"
           }
         },
         "required": [
@@ -20678,7 +21833,9 @@
           "duration",
           "fileCreatedAt",
           "fileModifiedAt",
+          "height",
           "id",
+          "isEdited",
           "isFavorite",
           "libraryId",
           "livePhotoVideoId",
@@ -20688,7 +21845,8 @@
           "stackId",
           "thumbhash",
           "type",
-          "visibility"
+          "visibility",
+          "width"
         ],
         "type": "object"
       },
@@ -21466,6 +22624,10 @@
               }
             ]
           },
+          "progressive": {
+            "default": false,
+            "type": "boolean"
+          },
           "quality": {
             "maximum": 100,
             "minimum": 1,
@@ -21487,6 +22649,10 @@
                 "$ref": "#/components/schemas/ImageFormat"
               }
             ]
+          },
+          "progressive": {
+            "default": false,
+            "type": "boolean"
           },
           "quality": {
             "maximum": 100,
@@ -21541,6 +22707,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "editor": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -21580,6 +22749,7 @@
         },
         "required": [
           "backgroundTask",
+          "editor",
           "faceDetection",
           "library",
           "metadataExtraction",
@@ -23316,11 +24486,11 @@
             "type": "string"
           },
           "triggerType": {
-            "enum": [
-              "AssetCreate",
-              "PersonRecognized"
-            ],
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "required": [
@@ -23358,6 +24528,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "type": "object"

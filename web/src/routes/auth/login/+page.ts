@@ -1,5 +1,5 @@
-import { AppRoute } from '$lib/constants';
 import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
@@ -9,7 +9,7 @@ export const load = (async ({ parent, url }) => {
 
   if (!serverConfigManager.value.isInitialized) {
     // Admin not registered
-    redirect(302, AppRoute.AUTH_REGISTER);
+    redirect(307, Route.register());
   }
 
   const $t = await getFormatter();
@@ -17,6 +17,6 @@ export const load = (async ({ parent, url }) => {
     meta: {
       title: $t('login'),
     },
-    continueUrl: url.searchParams.get('continue') || AppRoute.PHOTOS,
+    continueUrl: url.searchParams.get('continue') || Route.photos(),
   };
 }) satisfies PageLoad;

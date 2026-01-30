@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
@@ -22,8 +23,13 @@ class BackgroundSyncManager {
   final SyncCallback? onHashingComplete;
   final SyncErrorCallback? onHashingError;
 
+  final SyncCallback? onCloudIdSyncStart;
+  final SyncCallback? onCloudIdSyncComplete;
+  final SyncErrorCallback? onCloudIdSyncError;
+
   Cancelable<bool?>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
+  Cancelable<void>? _cloudIdSyncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
@@ -38,6 +44,9 @@ class BackgroundSyncManager {
     this.onHashingStart,
     this.onHashingComplete,
     this.onHashingError,
+    this.onCloudIdSyncStart,
+    this.onCloudIdSyncComplete,
+    this.onCloudIdSyncError,
   });
 
   Future<void> cancel() async {
@@ -54,6 +63,12 @@ class BackgroundSyncManager {
     }
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
+
+    if (_cloudIdSyncTask != null) {
+      futures.add(_cloudIdSyncTask!.future);
+    }
+    _cloudIdSyncTask?.cancel();
+    _cloudIdSyncTask = null;
 
     if (_linkedAlbumSyncTask != null) {
       futures.add(_linkedAlbumSyncTask!.future);
@@ -121,7 +136,6 @@ class BackgroundSyncManager {
         });
   }
 
-  // No need to cancel the task, as it can also be run when the user logs out
   Future<void> hashAssets() {
     if (_hashTask != null) {
       return _hashTask!.future;
@@ -182,6 +196,16 @@ class BackgroundSyncManager {
     });
   }
 
+  Future<void> syncWebsocketEditBatch(List<dynamic> batchData) {
+    if (_syncWebsocketTask != null) {
+      return _syncWebsocketTask!.future;
+    }
+    _syncWebsocketTask = _handleWsAssetEditReadyV1Batch(batchData);
+    return _syncWebsocketTask!.whenComplete(() {
+      _syncWebsocketTask = null;
+    });
+  }
+
   Future<void> syncLinkedAlbum() {
     if (_linkedAlbumSyncTask != null) {
       return _linkedAlbumSyncTask!.future;
@@ -192,9 +216,33 @@ class BackgroundSyncManager {
       _linkedAlbumSyncTask = null;
     });
   }
+
+  Future<void> syncCloudIds() {
+    if (_cloudIdSyncTask != null) {
+      return _cloudIdSyncTask!.future;
+    }
+
+    onCloudIdSyncStart?.call();
+
+    _cloudIdSyncTask = runInIsolateGentle(computation: m.syncCloudIds);
+    return _cloudIdSyncTask!
+        .whenComplete(() {
+          onCloudIdSyncComplete?.call();
+          _cloudIdSyncTask = null;
+        })
+        .catchError((error) {
+          onCloudIdSyncError?.call(error.toString());
+          _cloudIdSyncTask = null;
+        });
+  }
 }
 
 Cancelable<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
   computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1Batch(batchData),
   debugLabel: 'websocket-batch',
+);
+
+Cancelable<void> _handleWsAssetEditReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
+  computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetEditReadyV1Batch(batchData),
+  debugLabel: 'websocket-edit',
 );

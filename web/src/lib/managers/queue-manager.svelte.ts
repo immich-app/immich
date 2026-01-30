@@ -19,7 +19,7 @@ export class QueueManager {
   }
 
   constructor() {
-    eventManager.on('QueueUpdate', () => void this.refresh());
+    eventManager.on('QueueUpdate', () => this.refresh());
   }
 
   listen() {
