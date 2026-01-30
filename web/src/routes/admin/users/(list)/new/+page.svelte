@@ -5,14 +5,14 @@
   import { handleCreateUserAdmin } from '$lib/services/user-admin.service';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
-  import { Field, FormModal, HelperText, Input, PasswordInput, Stack, Switch } from '@immich/ui';
+  import { Field, FormModal, HelperText, Input, Stack, Switch } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let success = $state(false);
 
   let email = $state('');
-  let password = $state('');
-  let passwordConfirm = $state('');
+  let password = 'DummyValueNeverUsed';
+  let passwordConfirm = 'DummyValueNeverUsed';
   let name = $state('');
   let shouldChangePassword = $state(true);
   let notify = $state(true);
@@ -76,19 +76,6 @@
         <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
       </Field>
     {/if}
-
-    <Field label={$t('password')} required={!featureFlagsManager.value.oauth}>
-      <PasswordInput id="password" bind:value={password} autocomplete="new-password" />
-    </Field>
-
-    <Field label={$t('confirm_password')} required={!featureFlagsManager.value.oauth}>
-      <PasswordInput id="confirmPassword" bind:value={passwordConfirm} autocomplete="new-password" />
-      <HelperText color="danger">{passwordMismatchMessage}</HelperText>
-    </Field>
-
-    <Field label={$t('admin.require_password_change_on_login')}>
-      <Switch id="require-password-change" bind:checked={shouldChangePassword} class="text-sm text-start" />
-    </Field>
 
     <Field label={$t('name')} required>
       <Input bind:value={name} />
