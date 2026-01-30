@@ -6,7 +6,7 @@
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiServer, mdiTrayFull } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -29,10 +29,10 @@
   >
     <div class="flex flex-col pt-8 pe-4 gap-1">
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
-      <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
+      <!-- <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} /> -->
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
-      <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />
-      <NavbarItem title={$t('admin.maintenance_settings')} href={Route.systemMaintenance()} icon={mdiWrench} />
+      <!-- <NavbarItem title={$t('settings')} href={Route.systemSettings()} icon={mdiCog} />
+      <NavbarItem title={$t('admin.maintenance_settings')} href={Route.systemMaintenance()} icon={mdiWrench} /> -->
       <NavbarItem title={$t('server_stats')} href={Route.systemStatistics()} icon={mdiServer} />
     </div>
 
