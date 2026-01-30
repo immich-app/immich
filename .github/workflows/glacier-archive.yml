@@ -35,7 +35,7 @@ jobs:
   archive:
     name: Archive to Glacier
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hour timeout for large archives
+    timeout-minutes: 360 # 6 hour timeout for large archives
 
     steps:
       - name: Checkout repository

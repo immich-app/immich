@@ -7,7 +7,7 @@
  *   npx ts-node src/google-takeout/test-parser.ts /path/to/extracted/Takeout
  */
 
-import { parseTakeout, getStats, convertToXmp, hasUsefulMetadata } from './index.js';
+import { convertToXmp, getStats, hasUsefulMetadata, parseTakeout } from './index.js';
 import type { TakeoutAsset } from './types.js';
 
 async function main() {
@@ -44,12 +44,12 @@ async function main() {
         console.log(`    Date: ${asset.metadata.photoTakenTime?.formatted || '(none)'}`);
         console.log(`    GPS: ${asset.metadata.geoData?.latitude}, ${asset.metadata.geoData?.longitude}`);
         console.log(`    Favorited: ${asset.metadata.favorited}`);
-        console.log(`    People: ${asset.metadata.people?.map(p => p.name).join(', ') || '(none)'}`);
+        console.log(`    People: ${asset.metadata.people?.map((p) => p.name).join(', ') || '(none)'}`);
 
         if (hasUsefulMetadata(asset.metadata)) {
           console.log(`    XMP Preview (first 500 chars):`);
           const xmp = convertToXmp(asset.metadata);
-          console.log(`    ${xmp.slice(0, 500).replace(/\n/g, '\n    ')}...`);
+          console.log(`    ${xmp.slice(0, 500).replaceAll('\n', '\n    ')}...`);
         }
       }
 
@@ -66,14 +66,16 @@ async function main() {
   console.log('SUMMARY');
   console.log('---');
   console.log(`Total media files: ${stats.totalMediaFiles}`);
-  console.log(`Matched with JSON: ${stats.matchedWithJson} (${((stats.matchedWithJson / stats.totalMediaFiles) * 100).toFixed(1)}%)`);
+  console.log(
+    `Matched with JSON: ${stats.matchedWithJson} (${((stats.matchedWithJson / stats.totalMediaFiles) * 100).toFixed(1)}%)`,
+  );
   console.log(`Missing JSON: ${stats.missingJson}`);
   console.log(`Live Photos: ${stats.livePhotos}`);
   console.log(`Albums found: ${stats.albums}`);
 
   if (albumCounts.size > 0) {
     console.log('\nAlbums:');
-    const sortedAlbums = [...albumCounts.entries()].sort((a, b) => b[1] - a[1]);
+    const sortedAlbums = [...albumCounts.entries()].toSorted((a, b) => b[1] - a[1]);
     for (const [album, count] of sortedAlbums.slice(0, 20)) {
       console.log(`  - ${album}: ${count} assets`);
     }
@@ -90,4 +92,4 @@ async function main() {
   }
 }
 
-main().catch(console.error);
+await main().catch(console.error);

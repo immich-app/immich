@@ -5,10 +5,8 @@
  * matching media files with their JSON metadata sidecars.
  */
 
-import { createReadStream } from 'node:fs';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { Readable } from 'node:stream';
 import { buildJsonFileMap, findMatchingJson, isGooglePhotosJson } from './matcher.js';
 import type { GooglePhotosMetadata, TakeoutAsset, TakeoutParserOptions, TakeoutStats } from './types.js';
 
@@ -83,7 +81,9 @@ export async function* parseTakeout(options: TakeoutParserOptions): AsyncGenerat
     if (pathStat.isDirectory()) {
       yield* parseDirectory(inputPath, excludePatterns, options.includeHidden, stats);
     } else if (inputPath.toLowerCase().endsWith('.zip')) {
-      yield* parseZipFile(inputPath, excludePatterns, stats);
+      for (const asset of await parseZipFile(inputPath, excludePatterns, stats)) {
+        yield asset;
+      }
     } else {
       stats.errors.push(`Unsupported path type: ${inputPath}`);
     }
@@ -172,17 +172,17 @@ async function* parseDirectory(
  * Parse a ZIP file containing Takeout data
  * Note: This is a placeholder - full implementation would use a streaming ZIP library
  */
-async function* parseZipFile(
+async function parseZipFile(
   _zipPath: string,
   _excludePatterns: string[],
   stats: TakeoutStats,
-): AsyncGenerator<TakeoutAsset> {
+): Promise<TakeoutAsset[]> {
   // TODO: Implement ZIP streaming using yauzl or similar
   // For now, recommend extracting the ZIP first
   stats.errors.push(
     'ZIP file processing not yet implemented. Please extract the ZIP file first and point to the extracted directory.',
   );
-  return;
+  return [];
 }
 
 /**
@@ -228,7 +228,7 @@ async function collectFiles(
  */
 function matchPattern(name: string, pattern: string): boolean {
   if (pattern.includes('*')) {
-    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$', 'i');
+    const regex = new RegExp('^' + pattern.replaceAll('*', '.*') + '$', 'i');
     return regex.test(name);
   }
   return name === pattern;
@@ -271,7 +271,7 @@ function extractAlbumName(mediaPath: string, basePath: string): string | undefin
  * Parse Google Photos JSON metadata file
  */
 async function parseJsonMetadata(jsonPath: string): Promise<GooglePhotosMetadata> {
-  const content = await readFile(jsonPath, 'utf-8');
+  const content = await readFile(jsonPath, 'utf8');
   const data = JSON.parse(content);
 
   // Validate and normalize the structure
@@ -293,10 +293,7 @@ async function parseJsonMetadata(jsonPath: string): Promise<GooglePhotosMetadata
 /**
  * Detect if a media file is part of a Live Photo
  */
-function detectLivePhoto(
-  imagePath: string,
-  allMediaFiles: string[],
-): { isLivePhoto: boolean; videoPath?: string } {
+function detectLivePhoto(imagePath: string, allMediaFiles: string[]): { isLivePhoto: boolean; videoPath?: string } {
   const ext = path.extname(imagePath).toLowerCase();
 
   // Only images can be the "main" part of a Live Photo

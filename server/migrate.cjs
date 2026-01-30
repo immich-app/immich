@@ -11,16 +11,22 @@
  *   node migrate.cjs --limit=100
  */
 
-const { S3Client, HeadObjectCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const {
+  S3Client,
+  HeadObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} = require('@aws-sdk/client-s3');
 const { Pool } = require('pg');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes('--dry-run');
 const DELETE_SOURCE = args.includes('--delete-source');
-const BATCH_SIZE = parseInt(args.find(a => a.startsWith('--batch-size='))?.split('=')[1] || '100');
-const LIMIT = parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1] || '0');
-const CONCURRENCY = parseInt(args.find(a => a.startsWith('--concurrency='))?.split('=')[1] || '10');
+const BATCH_SIZE = parseInt(args.find((a) => a.startsWith('--batch-size='))?.split('=')[1] || '100');
+const LIMIT = parseInt(args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0');
+const CONCURRENCY = parseInt(args.find((a) => a.startsWith('--concurrency='))?.split('=')[1] || '10');
 
 // Configuration from environment
 const config = {
@@ -82,10 +88,12 @@ async function getObjectSize(client, bucket, key) {
 
 // Stream copy between buckets
 async function copyObject(sourceClient, destClient, sourceBucket, destBucket, key) {
-  const getResponse = await sourceClient.send(new GetObjectCommand({
-    Bucket: sourceBucket,
-    Key: key,
-  }));
+  const getResponse = await sourceClient.send(
+    new GetObjectCommand({
+      Bucket: sourceBucket,
+      Key: key,
+    }),
+  );
 
   const chunks = [];
   for await (const chunk of getResponse.Body) {
@@ -93,13 +101,15 @@ async function copyObject(sourceClient, destClient, sourceBucket, destBucket, ke
   }
   const body = Buffer.concat(chunks);
 
-  await destClient.send(new PutObjectCommand({
-    Bucket: destBucket,
-    Key: key,
-    Body: body,
-    ContentType: getResponse.ContentType,
-    ContentLength: body.length,
-  }));
+  await destClient.send(
+    new PutObjectCommand({
+      Bucket: destBucket,
+      Key: key,
+      Body: body,
+      ContentType: getResponse.ContentType,
+      ContentLength: body.length,
+    }),
+  );
 
   return body.length;
 }
@@ -180,7 +190,6 @@ async function processAsset(asset, pool, hotClient, archiveClient, totalCount) {
 
     stats.succeeded++;
     stats.totalBytes += sourceSize;
-
   } catch (error) {
     console.log(`[${idx}/${totalCount}] ${key} - ERROR: ${error.message}`);
     stats.failed++;
@@ -195,9 +204,7 @@ async function processBatch(assets, pool, hotClient, archiveClient, totalCount) 
   }
 
   for (const chunk of chunks) {
-    await Promise.all(chunk.map(asset =>
-      processAsset(asset, pool, hotClient, archiveClient, totalCount)
-    ));
+    await Promise.all(chunk.map((asset) => processAsset(asset, pool, hotClient, archiveClient, totalCount)));
   }
 }
 
@@ -221,13 +228,16 @@ async function migrate() {
 
   try {
     // Count total assets to migrate
-    const countResult = await pool.query(`
+    const countResult = await pool.query(
+      `
       SELECT COUNT(*) as count
       FROM asset
       WHERE "storageBackend" = 's3'
         AND "s3Bucket" = $1
         AND "s3Key" IS NOT NULL
-    `, [config.hotBucket.name]);
+    `,
+      [config.hotBucket.name],
+    );
 
     let totalCount = parseInt(countResult.rows[0].count);
     if (LIMIT > 0) totalCount = Math.min(totalCount, LIMIT);
@@ -287,7 +297,9 @@ async function migrate() {
       const elapsed = ((Date.now() - stats.startTime) / 1000).toFixed(0);
       const rate = (stats.succeeded / elapsed).toFixed(1);
       const totalGB = (stats.totalBytes / 1024 / 1024 / 1024).toFixed(2);
-      console.log(`\n--- ${stats.processed}/${totalCount} | OK: ${stats.succeeded} | Skip: ${stats.skipped} | Fail: ${stats.failed} | ${totalGB} GB | ${rate}/s | ${elapsed}s ---\n`);
+      console.log(
+        `\n--- ${stats.processed}/${totalCount} | OK: ${stats.succeeded} | Skip: ${stats.skipped} | Fail: ${stats.failed} | ${totalGB} GB | ${rate}/s | ${elapsed}s ---\n`,
+      );
     }
 
     // Final summary
@@ -308,14 +320,13 @@ async function migrate() {
     if (!DELETE_SOURCE && stats.succeeded > 0) {
       console.log('\nOriginals still exist in hot bucket. Run with --delete-source to remove them.');
     }
-
   } finally {
     await pool.end();
   }
 }
 
 // Run
-migrate().catch(error => {
+migrate().catch((error) => {
   console.error('Migration failed:', error);
   process.exit(1);
 });

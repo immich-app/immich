@@ -21,7 +21,7 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
 
   // Build XMP document
   const xmpParts: string[] = [
-    `<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?>`,
+    `<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>`,
     `<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Google Photos Takeout Converter">`,
     `  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">`,
     `    <rdf:Description rdf:about=""`,
@@ -38,27 +38,33 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
 
   // Title
   if (metadata.title) {
-    xmpParts.push(`      <dc:title>`);
-    xmpParts.push(`        <rdf:Alt>`);
-    xmpParts.push(`          <rdf:li xml:lang="x-default">${escapeXml(metadata.title)}</rdf:li>`);
-    xmpParts.push(`        </rdf:Alt>`);
-    xmpParts.push(`      </dc:title>`);
+    xmpParts.push(
+      `      <dc:title>`,
+      `        <rdf:Alt>`,
+      `          <rdf:li xml:lang="x-default">${escapeXml(metadata.title)}</rdf:li>`,
+      `        </rdf:Alt>`,
+      `      </dc:title>`,
+    );
   }
 
   // Description
   if (metadata.description) {
-    xmpParts.push(`      <dc:description>`);
-    xmpParts.push(`        <rdf:Alt>`);
-    xmpParts.push(`          <rdf:li xml:lang="x-default">${escapeXml(metadata.description)}</rdf:li>`);
-    xmpParts.push(`        </rdf:Alt>`);
-    xmpParts.push(`      </dc:description>`);
+    xmpParts.push(
+      `      <dc:description>`,
+      `        <rdf:Alt>`,
+      `          <rdf:li xml:lang="x-default">${escapeXml(metadata.description)}</rdf:li>`,
+      `        </rdf:Alt>`,
+      `      </dc:description>`,
+    );
   }
 
   // Dates
   if (dateTime) {
-    xmpParts.push(`      <exif:DateTimeOriginal>${dateTime}</exif:DateTimeOriginal>`);
-    xmpParts.push(`      <xmp:CreateDate>${dateTime}</xmp:CreateDate>`);
-    xmpParts.push(`      <photoshop:DateCreated>${dateTime}</photoshop:DateCreated>`);
+    xmpParts.push(
+      `      <exif:DateTimeOriginal>${dateTime}</exif:DateTimeOriginal>`,
+      `      <xmp:CreateDate>${dateTime}</xmp:CreateDate>`,
+      `      <photoshop:DateCreated>${dateTime}</photoshop:DateCreated>`,
+    );
   } else if (createDate) {
     xmpParts.push(`      <xmp:CreateDate>${createDate}</xmp:CreateDate>`);
   }
@@ -67,12 +73,16 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
   if (hasGps) {
     const { latitude, longitude, altitude } = metadata.geoData;
 
-    xmpParts.push(`      <exif:GPSLatitude>${formatGpsCoordinate(latitude, 'lat')}</exif:GPSLatitude>`);
-    xmpParts.push(`      <exif:GPSLongitude>${formatGpsCoordinate(longitude, 'lon')}</exif:GPSLongitude>`);
+    xmpParts.push(
+      `      <exif:GPSLatitude>${formatGpsCoordinate(latitude, 'lat')}</exif:GPSLatitude>`,
+      `      <exif:GPSLongitude>${formatGpsCoordinate(longitude, 'lon')}</exif:GPSLongitude>`,
+    );
 
     if (altitude !== 0) {
-      xmpParts.push(`      <exif:GPSAltitude>${Math.abs(altitude)}/1</exif:GPSAltitude>`);
-      xmpParts.push(`      <exif:GPSAltitudeRef>${altitude >= 0 ? '0' : '1'}</exif:GPSAltitudeRef>`);
+      xmpParts.push(
+        `      <exif:GPSAltitude>${Math.abs(altitude)}/1</exif:GPSAltitude>`,
+        `      <exif:GPSAltitudeRef>${altitude >= 0 ? '0' : '1'}</exif:GPSAltitudeRef>`,
+      );
     }
   }
 
@@ -83,21 +93,18 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
 
   // People/face regions (if available)
   if (metadata.people && metadata.people.length > 0) {
-    xmpParts.push(`      <mwg-rs:Regions>`);
-    xmpParts.push(`        <mwg-rs:RegionList>`);
-    xmpParts.push(`          <rdf:Bag>`);
+    xmpParts.push(`      <mwg-rs:Regions>`, `        <mwg-rs:RegionList>`, `          <rdf:Bag>`);
     for (const person of metadata.people) {
-      xmpParts.push(`            <rdf:li>`);
-      xmpParts.push(`              <rdf:Description>`);
-      xmpParts.push(`                <mwg-rs:Name>${escapeXml(person.name)}</mwg-rs:Name>`);
-      xmpParts.push(`                <mwg-rs:Type>Face</mwg-rs:Type>`);
-      // Note: Google doesn't export face coordinates, only names
-      xmpParts.push(`              </rdf:Description>`);
-      xmpParts.push(`            </rdf:li>`);
+      xmpParts.push(
+        `            <rdf:li>`,
+        `              <rdf:Description>`,
+        `                <mwg-rs:Name>${escapeXml(person.name)}</mwg-rs:Name>`,
+        `                <mwg-rs:Type>Face</mwg-rs:Type>`,
+        `              </rdf:Description>`,
+        `            </rdf:li>`,
+      );
     }
-    xmpParts.push(`          </rdf:Bag>`);
-    xmpParts.push(`        </mwg-rs:RegionList>`);
-    xmpParts.push(`      </mwg-rs:Regions>`);
+    xmpParts.push(`          </rdf:Bag>`, `        </mwg-rs:RegionList>`, `      </mwg-rs:Regions>`);
   }
 
   // Source information
@@ -114,10 +121,7 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
   }
 
   // Close tags
-  xmpParts.push(`    </rdf:Description>`);
-  xmpParts.push(`  </rdf:RDF>`);
-  xmpParts.push(`</x:xmpmeta>`);
-  xmpParts.push(`<?xpacket end="w"?>`);
+  xmpParts.push(`    </rdf:Description>`, `  </rdf:RDF>`, `</x:xmpmeta>`, `<?xpacket end="w"?>`);
 
   return xmpParts.filter((line) => line.length > 0).join('\n');
 }
@@ -128,21 +132,21 @@ export function convertToXmp(metadata: GooglePhotosMetadata): string {
  * @param timestamp - Unix timestamp in seconds (as string)
  * @returns EXIF DateTime format: "YYYY-MM-DDTHH:MM:SS"
  */
-function formatExifDateTime(timestamp?: string): string | null {
+function formatExifDateTime(timestamp?: string): string | undefined {
   if (!timestamp || timestamp === '0') {
-    return null;
+    return undefined;
   }
 
   try {
     const date = new Date(Number.parseInt(timestamp, 10) * 1000);
     if (Number.isNaN(date.getTime())) {
-      return null;
+      return undefined;
     }
 
     // Format as ISO 8601 without milliseconds
     return date.toISOString().slice(0, 19);
   } catch {
-    return null;
+    return undefined;
   }
 }
 
@@ -175,11 +179,11 @@ function formatGpsCoordinate(coordinate: number, type: 'lat' | 'lon'): string {
  */
 function escapeXml(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
 }
 
 /**

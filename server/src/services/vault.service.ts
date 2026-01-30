@@ -2,10 +2,10 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import Redis from 'ioredis';
 import { createHash, scrypt, ScryptOptions } from 'node:crypto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { VaultStatusResponseDto } from 'src/dtos/vault.dto';
+import type { VaultStatusResponseDto } from 'src/dtos/vault.dto';
 import { BaseService } from 'src/services/base.service';
 
-export { VaultStatusResponseDto };
+export type { VaultStatusResponseDto } from 'src/dtos/vault.dto';
 
 function scryptAsync(secret: string | Buffer, salt: Buffer, keylen: number, options: ScryptOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {

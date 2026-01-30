@@ -104,10 +104,7 @@ export const LOCALIZED_METADATA_NAMES = [
 /**
  * Known JSON sidecar filename patterns
  */
-export const JSON_SIDECAR_PATTERNS = [
-  '.supplemental-metadata.json',
-  '.json',
-] as const;
+export const JSON_SIDECAR_PATTERNS = ['.supplemental-metadata.json', '.json'] as const;
 
 /**
  * Maximum filename length for JSON sidecars (Google truncates at 46 chars)

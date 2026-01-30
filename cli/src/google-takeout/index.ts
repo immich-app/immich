@@ -16,33 +16,15 @@
  */
 
 // Types
-export type {
-  GooglePhotosMetadata,
-  TakeoutAsset,
-  TakeoutParserOptions,
-  TakeoutStats,
-} from './types.js';
+export type { GooglePhotosMetadata, TakeoutAsset, TakeoutParserOptions, TakeoutStats } from './types.js';
 
-export {
-  JSON_SIDECAR_PATTERNS,
-  LOCALIZED_METADATA_NAMES,
-  MAX_JSON_FILENAME_LENGTH,
-} from './types.js';
+export { JSON_SIDECAR_PATTERNS, LOCALIZED_METADATA_NAMES, MAX_JSON_FILENAME_LENGTH } from './types.js';
 
 // Parser
-export { parseTakeout, getStats } from './parser.js';
+export { getStats, parseTakeout } from './parser.js';
 
 // Matcher
-export {
-  findMatchingJson,
-  buildJsonFileMap,
-  isGooglePhotosJson,
-  getMediaFilenameFromJson,
-} from './matcher.js';
+export { buildJsonFileMap, findMatchingJson, getMediaFilenameFromJson, isGooglePhotosJson } from './matcher.js';
 
 // XMP Converter
-export {
-  convertToXmp,
-  getXmpSidecarPath,
-  hasUsefulMetadata,
-} from './xmp-converter.js';
+export { convertToXmp, getXmpSidecarPath, hasUsefulMetadata } from './xmp-converter.js';

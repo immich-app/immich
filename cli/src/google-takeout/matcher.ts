@@ -76,10 +76,7 @@ function generateJsonCandidates(baseName: string, nameWithoutExt: string): strin
   // Standard patterns
   for (const pattern of JSON_SIDECAR_PATTERNS) {
     // Full filename: photo.jpg.supplemental-metadata.json
-    candidates.push(`${baseName}${pattern}`);
-
-    // Without extension: photo.supplemental-metadata.json
-    candidates.push(`${nameWithoutExt}${pattern}`);
+    candidates.push(`${baseName}${pattern}`, `${nameWithoutExt}${pattern}`);
   }
 
   // Truncated filenames (Google limits to 46 chars)
@@ -108,19 +105,18 @@ function generateJsonCandidates(baseName: string, nameWithoutExt: string): strin
  * photo(1).jpg -> photo.jpg.supplemental-metadata(1).json
  */
 function generateNumberedCandidates(originalName: string, originalExt: string, number: string): string[] {
-  const candidates: string[] = [];
+  const candidates: string[] = [
+    `${originalName}${originalExt}.supplemental-metadata(${number}).json`,
+    `${originalName}.supplemental-metadata(${number}).json`,
+    `${originalName}(${number}).json`,
+    `${originalName}.json(${number}).json`,
+  ];
 
   // photo.jpg.supplemental-metadata(1).json
-  candidates.push(`${originalName}${originalExt}.supplemental-metadata(${number}).json`);
 
   // photo.supplemental-metadata(1).json
-  candidates.push(`${originalName}.supplemental-metadata(${number}).json`);
-
-  // photo(1).json (simple format)
-  candidates.push(`${originalName}(${number}).json`);
 
   // photo.json(1).json (malformed but sometimes seen)
-  candidates.push(`${originalName}.json(${number}).json`);
 
   return candidates;
 }
@@ -162,7 +158,7 @@ export function isGooglePhotosJson(filename: string): boolean {
       'user-generated-memory-titles.json',
     ];
     const baseName = path.basename(lower);
-    return !excludedPatterns.some((pattern) => baseName === pattern);
+    return !excludedPatterns.includes(baseName);
   }
 
   return false;
