@@ -171,7 +171,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                 ],
               ),
               const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-              Row(
+              if (serverInfoState.latestVersion != null) Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
@@ -201,8 +201,8 @@ class AppBarServerInfo extends HookConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.only(right: 10.0),
                       child: Text(
-                        serverInfoState.latestVersion.major > 0
-                            ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
+                        serverInfoState.latestVersion!.major > 0
+                            ? "${serverInfoState.latestVersion!.major}.${serverInfoState.latestVersion!.minor}.${serverInfoState.latestVersion!.patch}"
                             : "--",
                         style: TextStyle(
                           fontSize: contentFontSize,
