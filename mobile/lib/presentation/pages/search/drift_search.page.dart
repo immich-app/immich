@@ -497,6 +497,8 @@ class DriftSearchPage extends HookConsumerWidget {
         return availableSearchTypes.value!;
       }
 
+      final features = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
+      
       final List<SearchType> available = [SearchType.places];
 
       if (features?.smartSearch ?? false) {
