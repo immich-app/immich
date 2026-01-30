@@ -42,14 +42,17 @@ class LoginForm extends HookConsumerWidget {
 
   final log = Logger('LoginForm');
 
-  String? _validateUrl(String? url) {
-    if (url == null || url.isEmpty) return null;
-
-    final parsedUrl = Uri.tryParse(url);
-    if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
+  String? _validateUsername(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'login_form_err_username_empty'.tr();
+    }
+    final trimmed = value.trim();
+    if (trimmed.contains(' ')) {
       return 'login_form_err_invalid_url'.tr();
     }
-
+    if (!RegExp(r'^[a-zA-Z0-9\-]+$').hasMatch(trimmed)) {
+      return 'login_form_err_invalid_url'.tr();
+    }
     return null;
   }
 
@@ -78,6 +81,8 @@ class LoginForm extends HookConsumerWidget {
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
+    String builtServerUrl() => 'https://${serverEndpointController.text.trim()}.pixelunion.eu';
+
     checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
@@ -101,12 +106,15 @@ class LoginForm extends HookConsumerWidget {
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
     Future<void> getServerAuthSettings() async {
-      final sanitizeServerUrl = sanitizeUrl(serverEndpointController.text);
+      if (serverEndpointController.text.trim().isEmpty) {
+        ImmichToast.show(context: context, msg: "login_form_err_username_empty".tr(), toastType: ToastType.error);
+        return;
+      }
+      final sanitizeServerUrl = sanitizeUrl(builtServerUrl());
       final serverUrl = punycodeEncodeUrl(sanitizeServerUrl);
-
-      // Guard empty URL
       if (serverUrl.isEmpty) {
-        ImmichToast.show(context: context, msg: "login_form_server_empty".tr(), toastType: ToastType.error);
+        ImmichToast.show(context: context, msg: "login_form_server_error".tr(), toastType: ToastType.error);
+        return;
       }
 
       try {
@@ -157,7 +165,20 @@ class LoginForm extends HookConsumerWidget {
     useEffect(() {
       final serverUrl = getServerUrl();
       if (serverUrl != null) {
-        serverEndpointController.text = serverUrl;
+        final uri = Uri.tryParse(serverUrl);
+        if (uri != null &&
+            uri.host.isNotEmpty &&
+            uri.host.endsWith('.pixelunion.eu') &&
+            uri.scheme == 'https') {
+          final subdomain = uri.host.replaceFirst('.pixelunion.eu', '');
+          if (subdomain.isNotEmpty) {
+            serverEndpointController.text = subdomain;
+          } else {
+            serverEndpointController.text = '';
+          }
+        } else {
+          serverEndpointController.text = '';
+        }
       }
       return null;
     }, []);
@@ -165,13 +186,13 @@ class LoginForm extends HookConsumerWidget {
     populateTestLoginInfo() {
       emailController.text = 'demo@immich.app';
       passwordController.text = 'demo';
-      serverEndpointController.text = 'https://demo.immich.app';
+      serverEndpointController.text = 'demo';
     }
 
     populateTestLoginInfo1() {
       emailController.text = 'testuser@email.com';
       passwordController.text = 'password';
-      serverEndpointController.text = 'http://10.1.15.216:2283/api';
+      serverEndpointController.text = 'testuser';
     }
 
     Future<void> handleSyncFlow() async {
@@ -305,7 +326,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         oAuthServerUrl = await oAuthService.getOAuthServerUrl(
-          sanitizeUrl(serverEndpointController.text),
+          sanitizeUrl(builtServerUrl()),
           state,
           codeChallenge,
         );
@@ -407,15 +428,27 @@ class LoginForm extends HookConsumerWidget {
                   submitText: 'next'.t(context: context),
                   submitIcon: Icons.arrow_forward_rounded,
                   onSubmit: getServerAuthSettings,
-                  child: ImmichTextInput(
-                    controller: serverEndpointController,
-                    label: 'login_form_endpoint_url'.t(context: context),
-                    hintText: 'login_form_endpoint_hint'.t(context: context),
-                    validator: _validateUrl,
-                    keyboardAction: TextInputAction.next,
-                    keyboardType: TextInputType.url,
-                    autofillHints: const [AutofillHints.url],
-                    onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
+                  child: Builder(
+                    builder: (ctx) {
+                      final themeData = Theme.of(ctx);
+                      return TextFormField(
+                        controller: serverEndpointController,
+                        decoration: InputDecoration(
+                          labelText: 'login_form_username'.t(context: ctx),
+                          hintText: 'login_form_username_hint'.t(context: ctx),
+                          suffixText: '.pixelunion.eu',
+                          labelStyle: themeData.inputDecorationTheme.labelStyle,
+                          border: themeData.inputDecorationTheme.border,
+                          enabledBorder: themeData.inputDecorationTheme.enabledBorder,
+                          focusedBorder: themeData.inputDecorationTheme.focusedBorder,
+                          errorBorder: themeData.inputDecorationTheme.errorBorder,
+                        ),
+                        validator: _validateUsername,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => ImmichForm.of(ctx).submit(),
+                      );
+                    },
                   ),
                 ),
                 Padding(
@@ -471,7 +504,7 @@ class LoginForm extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: ImmichSpacing.md),
                   child: Text(
-                    sanitizeUrl(serverEndpointController.text),
+                    sanitizeUrl(builtServerUrl()),
                     style: context.textTheme.displaySmall,
                     textAlign: TextAlign.center,
                   ),
