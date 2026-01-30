@@ -24,22 +24,30 @@ class SyncAlbumV1 {
     required this.updatedAt,
   });
 
+  /// Created at
   DateTime createdAt;
 
+  /// Album description
   String description;
 
+  /// Album ID
   String id;
 
+  /// Is activity enabled
   bool isActivityEnabled;
 
+  /// Album name
   String name;
 
   AssetOrder order;
 
+  /// Owner ID
   String ownerId;
 
+  /// Thumbnail asset ID
   String? thumbnailAssetId;
 
+  /// Updated at
   DateTime updatedAt;
 
   @override

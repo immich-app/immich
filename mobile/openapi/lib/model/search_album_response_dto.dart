@@ -19,12 +19,14 @@ class SearchAlbumResponseDto {
     required this.total,
   });
 
+  /// Number of albums in this page
   int count;
 
   List<SearchFacetResponseDto> facets;
 
   List<AlbumResponseDto> items;
 
+  /// Total number of matching albums
   int total;
 
   @override

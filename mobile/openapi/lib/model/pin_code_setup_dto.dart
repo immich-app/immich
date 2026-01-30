@@ -16,6 +16,7 @@ class PinCodeSetupDto {
     required this.pinCode,
   });
 
+  /// PIN code (4-6 digits)
   String pinCode;
 
   @override

@@ -24,22 +24,31 @@ class AssetFaceResponseDto {
     this.sourceType,
   });
 
+  /// Bounding box X1 coordinate
   int boundingBoxX1;
 
+  /// Bounding box X2 coordinate
   int boundingBoxX2;
 
+  /// Bounding box Y1 coordinate
   int boundingBoxY1;
 
+  /// Bounding box Y2 coordinate
   int boundingBoxY2;
 
+  /// Face ID
   String id;
 
+  /// Image height in pixels
   int imageHeight;
 
+  /// Image width in pixels
   int imageWidth;
 
+  /// Person associated with face
   PersonResponseDto? person;
 
+  /// Face detection source type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
