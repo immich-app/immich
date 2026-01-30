@@ -15,7 +15,7 @@ export const load = (async ({ parent, url }) => {
   const $t = await getFormatter();
   return {
     meta: {
-      title: $t('login'),
+      title: "PixelUnion",
     },
     continueUrl: url.searchParams.get('continue') || Route.photos(),
   };

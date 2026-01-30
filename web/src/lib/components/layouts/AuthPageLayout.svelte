@@ -15,11 +15,7 @@
 <section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
   {#if withBackdrop}
     <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
-      <img
-        src="/pixelunion.svg"
-        class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
-        alt="Immich logo"
-      />
+      <img src="/pixelunion.svg" class="mx-auto h-full mb-2 antialiased overflow-hidden" alt="Immich logo" />
       <div
         class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
       ></div>
@@ -30,14 +26,13 @@
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>
-          <PixelunionLogo variant="icon" size="giant" />
+          <PixelunionLogo variant="icon" size="giant" animated />
           <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
         </VStack>
       </CardHeader>
     {/if}
 
     <CardBody class="p-8">
-      <img src="https://pixelunion.eu/images/logo.png" alt="Immich logo" />
       {@render children?.()}
     </CardBody>
   </Card>

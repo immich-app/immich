@@ -3,9 +3,10 @@
     variant?: 'icon' | 'inline';
     size?: 'tiny' | 'small' | 'medium' | 'giant';
     class?: string;
+    animated?: boolean;
   }
 
-  let { variant = 'inline', size = 'medium', class: className = '' }: Props = $props();
+  let { variant = 'inline', size = 'medium', class: className = '', animated = false }: Props = $props();
 
   const sizeClasses = {
     tiny: 'h-6',
@@ -18,7 +19,11 @@
 </script>
 
 {#if variant === 'icon'}
-  <img src="/pixelunion.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
+  {#if animated}
+    <img src="/pixelunion-animated.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
+  {:else}
+    <img src="/pixelunion.svg" alt="PixelUnion Logo" class="{sizeClass} w-auto object-contain {className}" />
+  {/if}
 {:else}
   <img
     src="/pixelunion-full-no-bg-margin.svg"
