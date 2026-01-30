@@ -4,8 +4,8 @@
 # Runs weekly by default, can be triggered manually.
 #
 # Required secrets:
-#   TIGRIS_ACCESS_KEY: Tigris access key
-#   TIGRIS_SECRET_KEY: Tigris secret key
+#   STORAGE_S3_ACCESS_KEY_ID: Tigris access key
+#   STORAGE_S3_SECRET_ACCESS_KEY: Tigris secret key
 #   AWS_ACCESS_KEY_ID: AWS access key with S3/Glacier permissions
 #   AWS_SECRET_ACCESS_KEY: AWS secret key
 #
@@ -66,8 +66,8 @@ jobs:
           type = s3
           provider = Other
           endpoint = https://t3.storage.dev
-          access_key_id = ${{ secrets.TIGRIS_ACCESS_KEY }}
-          secret_access_key = ${{ secrets.TIGRIS_SECRET_KEY }}
+          access_key_id = ${{ secrets.STORAGE_S3_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.STORAGE_S3_SECRET_ACCESS_KEY }}
 
           [glacier]
           type = s3

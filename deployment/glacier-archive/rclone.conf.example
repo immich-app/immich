@@ -13,8 +13,8 @@
 type = s3
 provider = Other
 endpoint = https://fly.storage.tigris.dev
-access_key_id = YOUR_TIGRIS_ACCESS_KEY
-secret_access_key = YOUR_TIGRIS_SECRET_KEY
+access_key_id = YOUR_STORAGE_S3_ACCESS_KEY_ID
+secret_access_key = YOUR_STORAGE_S3_SECRET_ACCESS_KEY
 # No region needed for Tigris
 
 # AWS S3 Glacier Configuration

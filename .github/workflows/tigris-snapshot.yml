@@ -4,13 +4,12 @@
 # Uses the Tigris S3-compatible API directly since flyctl doesn't support snapshots.
 #
 # Required secrets:
-#   TIGRIS_ACCESS_KEY_ID: Tigris access key (same as STORAGE_S3_ACCESS_KEY_ID)
-#   TIGRIS_SECRET_ACCESS_KEY: Tigris secret key (same as STORAGE_S3_SECRET_ACCESS_KEY)
+#   STORAGE_S3_ACCESS_KEY_ID: Tigris access key
+#   STORAGE_S3_SECRET_ACCESS_KEY: Tigris secret key
 #
 # Setup:
 # 1. Go to repo Settings > Secrets and variables > Actions
-# 2. Add TIGRIS_ACCESS_KEY_ID and TIGRIS_SECRET_ACCESS_KEY secrets
-#    (copy values from your Fly.io app secrets)
+# 2. Add STORAGE_S3_ACCESS_KEY_ID and STORAGE_S3_SECRET_ACCESS_KEY secrets
 
 name: Tigris Snapshot
 
@@ -68,8 +67,8 @@ jobs:
       - name: Create Tigris snapshot
         id: create-snapshot
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TIGRIS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TIGRIS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STORAGE_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_S3_SECRET_ACCESS_KEY }}
           BUCKET_NAME: ${{ steps.bucket.outputs.name }}
           SNAPSHOT_NAME: ${{ steps.snapshot-name.outputs.name }}
         run: |
@@ -122,8 +121,8 @@ jobs:
 
       - name: List snapshots
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TIGRIS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TIGRIS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.STORAGE_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_S3_SECRET_ACCESS_KEY }}
           BUCKET_NAME: ${{ steps.bucket.outputs.name }}
         run: |
           python3 << 'EOF'
