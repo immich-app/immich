@@ -91,6 +91,18 @@ class ImmichUIShowcasePage extends StatelessWidget {
                   children: [ImmichTextInput(label: "Title", hintText: "Enter a title")],
                 ),
               ),
+              const _ComponentTitle("HtmlText"),
+              ImmichHtmlText(
+                'This is an <b>example</b> of <test-link>HTML text</test-link> with <b>bold</b> and <link>links</link>.',
+                linkHandlers: {
+                  'link': () {
+                    context.showSnackBar(const SnackBar(content: Text('Link tapped!')));
+                  },
+                  'test-link': () {
+                    context.showSnackBar(const SnackBar(content: Text('Test-link tapped!')));
+                  },
+                },
+              ),
             ],
           ),
         ),
