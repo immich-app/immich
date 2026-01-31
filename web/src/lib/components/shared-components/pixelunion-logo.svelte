@@ -24,7 +24,7 @@
     const suffix = isDark ? '-dark' : '';
     if (variant === 'icon') {
       if (animated) {
-        return `/pixelunion-animated$.svg`;
+        return `/pixelunion-animated.svg`;
       }
       return `/pixelunion.svg`;
     }
