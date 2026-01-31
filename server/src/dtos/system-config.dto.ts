@@ -755,11 +755,13 @@ class SystemConfigStorageS3Dto {
   @ValidateBoolean()
   forcePathStyle!: boolean;
 
+  @ValidateIf(isS3Enabled)
   @Type(() => S3BucketConfigDto)
   @ValidateNested()
   @IsObject()
   archiveBucket!: S3BucketConfigDto;
 
+  @ValidateIf(isS3Enabled)
   @Type(() => S3BucketConfigDto)
   @ValidateNested()
   @IsObject()

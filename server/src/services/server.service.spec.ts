@@ -30,10 +30,10 @@ describe(ServerService.name, () => {
   });
 
   describe('getStorage', () => {
-    it('should return user quota with default 1TB when quotaSizeInBytes is null', async () => {
+    it('should return user quota with default 1TB when quotaSizeInBytes is null', () => {
       const auth = makeAuth(null, 300_000_000_000); // null quota, 300GB used
 
-      await expect(sut.getStorage(auth)).resolves.toEqual({
+      expect(sut.getStorage(auth)).toEqual({
         diskAvailable: '744.6 GiB',
         diskAvailableRaw: ONE_TB - 300_000_000_000,
         diskSize: '1.0 TiB',
@@ -44,10 +44,10 @@ describe(ServerService.name, () => {
       });
     });
 
-    it('should return user quota when quotaSizeInBytes is set', async () => {
+    it('should return user quota when quotaSizeInBytes is set', () => {
       const auth = makeAuth(500_000_000_000, 300_000_000_000); // 500GB quota, 300GB used
 
-      await expect(sut.getStorage(auth)).resolves.toEqual({
+      expect(sut.getStorage(auth)).toEqual({
         diskAvailable: '186.3 GiB',
         diskAvailableRaw: 200_000_000_000,
         diskSize: '465.7 GiB',
@@ -58,10 +58,10 @@ describe(ServerService.name, () => {
       });
     });
 
-    it('should return 0 available when usage exceeds quota', async () => {
+    it('should return 0 available when usage exceeds quota', () => {
       const auth = makeAuth(100_000_000_000, 150_000_000_000); // 100GB quota, 150GB used
 
-      await expect(sut.getStorage(auth)).resolves.toEqual({
+      expect(sut.getStorage(auth)).toEqual({
         diskAvailable: '0 B',
         diskAvailableRaw: 0,
         diskSize: '93.1 GiB',
@@ -72,9 +72,9 @@ describe(ServerService.name, () => {
       });
     });
 
-    it('should use authStub correctly', async () => {
+    it('should use authStub correctly', () => {
       // authStub.user1 has quotaSizeInBytes: null and quotaUsageInBytes: 0
-      await expect(sut.getStorage(authStub.user1)).resolves.toEqual({
+      expect(sut.getStorage(authStub.user1)).toEqual({
         diskAvailable: '1.0 TiB',
         diskAvailableRaw: ONE_TB,
         diskSize: '1.0 TiB',

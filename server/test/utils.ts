@@ -301,7 +301,7 @@ export const getMocks = () => {
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
     assetEncryption: automock(AssetEncryptionRepository, { strict: false }),
-    assetJob: automock(AssetJobRepository),
+    assetJob: automock(AssetJobRepository, { strict: false }),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
@@ -327,7 +327,8 @@ export const getMocks = () => {
     person: automock(PersonRepository, { strict: false }),
     plugin: automock(PluginRepository, { strict: true }),
     process: automock(ProcessRepository),
-    s3Manager: automock(S3StorageManager, { strict: false }),
+    // eslint-disable-next-line no-sparse-arrays
+    s3Manager: automock(S3StorageManager, { args: [, , loggerMock], strict: false }),
     search: automock(SearchRepository, { strict: false }),
     // eslint-disable-next-line no-sparse-arrays
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),

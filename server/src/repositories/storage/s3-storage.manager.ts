@@ -204,15 +204,24 @@ export class S3StorageManager {
       throw new Error('S3 storage is not enabled');
     }
 
+    // Determine which bucket config to use based on the bucket name
+    let bucketConfig: S3BucketConfig | undefined;
+    if (bucket === config.s3.archiveBucket.bucket) {
+      bucketConfig = config.s3.archiveBucket;
+    } else if (bucket === config.s3.hotBucket.bucket) {
+      bucketConfig = config.s3.hotBucket;
+    }
+
+    // Use bucket-specific config if found, otherwise fall back to defaults
     const adapterConfig: S3StorageConfig = {
-      endpoint: config.s3.endpoint || undefined,
-      publicEndpoint: config.s3.publicEndpoint || undefined,
-      region: config.s3.region,
+      endpoint: bucketConfig?.endpoint ?? (config.s3.endpoint || undefined),
+      publicEndpoint: bucketConfig?.publicEndpoint ?? (config.s3.publicEndpoint || undefined),
+      region: bucketConfig?.region ?? config.s3.region,
       bucket,
-      accessKeyId: config.s3.accessKeyId,
-      secretAccessKey: config.s3.secretAccessKey,
+      accessKeyId: bucketConfig?.accessKeyId ?? config.s3.accessKeyId,
+      secretAccessKey: bucketConfig?.secretAccessKey ?? config.s3.secretAccessKey,
       prefix: '', // No prefix for direct bucket access
-      forcePathStyle: config.s3.forcePathStyle,
+      forcePathStyle: bucketConfig?.forcePathStyle ?? config.s3.forcePathStyle,
     };
 
     return this.getOrCreateAdapter(adapterConfig);

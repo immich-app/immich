@@ -93,6 +93,9 @@
     [QueueName.Migration]: {
       missingText: $t('start'),
     },
+    [QueueName.S3Upload]: {
+      missingText: $t('start'),
+    },
   };
 
   let queueList = Object.entries(queueDetails) as [QueueName, QueueDetails][];

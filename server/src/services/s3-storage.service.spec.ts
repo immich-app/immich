@@ -891,7 +891,7 @@ describe(S3StorageService.name, () => {
       mocks.s3Manager.isS3Enabled.mockResolvedValue(true);
       mocks.s3Manager.getDefaultAdapter.mockResolvedValue(mockS3Adapter as any);
       mockS3Adapter.listObjects.mockResolvedValue([
-        { key: 'users/user-1/asset-uuid-1234-5678-9012-345678901234/original.jpg', size: 1000 },
+        { key: 'users/user-1/12345678-1234-5678-9012-345678901234/original.jpg', size: 1000 },
       ]);
       mocks.asset.getById.mockResolvedValue(void 0); // Asset not found = orphan
 
