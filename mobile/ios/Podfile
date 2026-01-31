@@ -121,4 +121,5 @@ post_install do |installer|
     end
     # End of the permission_handler configuration
   end
+  system("defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES")
 end
