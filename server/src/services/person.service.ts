@@ -44,6 +44,7 @@ import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -634,15 +635,50 @@ export class PersonService extends BaseService {
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
+    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+
+    const edits = asset.edits || [];
+
+    let p1: Point = { x: dto.x, y: dto.y };
+    let p2: Point = { x: dto.x + dto.width, y: dto.y + dto.height };
+
+    // the coordinates received from the client are based on the edited preview image
+    // we need to convert them to the coordinate space of the original unedited image
+    if (edits.length > 0) {
+      if (!asset.width || !asset.height || !asset.exifInfo?.exifImageWidth || !asset.exifInfo?.exifImageHeight) {
+        throw new BadRequestException('Asset does not have valid dimensions');
+      }
+
+      // convert from preview to full dimensions
+      const scaleFactor = asset.width / dto.imageWidth;
+      p1 = { x: p1.x * scaleFactor, y: p1.y * scaleFactor };
+      p2 = { x: p2.x * scaleFactor, y: p2.y * scaleFactor };
+
+      const {
+        points: [invertedP1, invertedP2],
+      } = transformPoints([p1, p2], edits, { width: asset.width, height: asset.height }, { inverse: true });
+
+      // make sure p1 is top-left and p2 is bottom-right
+      p1 = { x: Math.min(invertedP1.x, invertedP2.x), y: Math.min(invertedP1.y, invertedP2.y) };
+      p2 = { x: Math.max(invertedP1.x, invertedP2.x), y: Math.max(invertedP1.y, invertedP2.y) };
+
+      // now coordinates are in original image space
+      dto.imageHeight = asset.exifInfo.exifImageHeight;
+      dto.imageWidth = asset.exifInfo.exifImageWidth;
+    }
+
     await this.personRepository.createAssetFace({
       personId: dto.personId,
       assetId: dto.assetId,
       imageHeight: dto.imageHeight,
       imageWidth: dto.imageWidth,
-      boundingBoxX1: dto.x,
-      boundingBoxX2: dto.x + dto.width,
-      boundingBoxY1: dto.y,
-      boundingBoxY2: dto.y + dto.height,
+      boundingBoxX1: Math.round(p1.x),
+      boundingBoxX2: Math.round(p2.x),
+      boundingBoxY1: Math.round(p1.y),
+      boundingBoxY2: Math.round(p2.y),
       sourceType: SourceType.Manual,
     });
   }
