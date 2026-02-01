@@ -50,6 +50,8 @@ const editedFullsizeFile = factory.assetFile({
 
 const files = [fullsizeFile, previewFile, thumbnailFile];
 
+const filesWithoutFullsize = [previewFile, thumbnailFile];
+
 const editedFiles = [
   fullsizeFile,
   previewFile,
@@ -211,6 +213,46 @@ export const assetStub = {
     height: null,
     edits: [],
     isEdited: false,
+  }),
+
+  noFullsize: Object.freeze({
+    id: 'asset-id',
+    status: AssetStatus.Active,
+    deviceAssetId: 'device-asset-id',
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    owner: userStub.user1,
+    ownerId: 'user-id',
+    deviceId: 'device-id',
+    originalPath: '/data/library/IMG_789.jpg',
+    files: filesWithoutFullsize,
+    checksum: Buffer.from('file hash', 'utf8'),
+    type: AssetType.Image,
+    thumbhash: Buffer.from('blablabla', 'base64'),
+    encodedVideoPath: null,
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+    isFavorite: true,
+    duration: null,
+    isExternal: false,
+    livePhotoVideo: null,
+    livePhotoVideoId: null,
+    sharedLinks: [],
+    originalFileName: 'IMG_789.jpg',
+    faces: [],
+    deletedAt: null,
+    duplicateId: null,
+    isOffline: false,
+    libraryId: null,
+    stackId: null,
+    updateId: '42',
+    visibility: AssetVisibility.Timeline,
+    width: null,
+    height: null,
+    edits: [],
+    isEdited: false,
+    exifInfo: {} as Exif,
   }),
 
   primaryImage: Object.freeze({

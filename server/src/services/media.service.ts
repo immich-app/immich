@@ -68,6 +68,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -78,13 +79,22 @@ export class MediaService extends BaseService {
     for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
       const assetFiles = getAssetFiles(asset.files);
 
-      if (!assetFiles.previewFile || !assetFiles.thumbnailFile || !asset.thumbhash || force) {
+      if (
+        !assetFiles.previewFile ||
+        !assetFiles.thumbnailFile ||
+        (config.image.fullsize.enabled && !assetFiles.fullsizeFile) ||
+        !asset.thumbhash ||
+        force
+      ) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
       if (
         asset.edits.length > 0 &&
-        (!assetFiles.editedPreviewFile || !assetFiles.editedThumbnailFile || !assetFiles.editedFullsizeFile || force)
+        (!assetFiles.editedPreviewFile ||
+          !assetFiles.editedThumbnailFile ||
+          (config.image.fullsize.enabled && !assetFiles.editedFullsizeFile) ||
+          force)
       ) {
         jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
       }

@@ -89,6 +89,14 @@ export class AssetJobRepository {
                     .where('asset_file.type', '=', AssetFileType.Thumbnail),
                 ),
               ),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.FullSize),
+                ),
+              ),
               eb('asset.thumbhash', 'is', null),
             ]),
           ),
