@@ -204,6 +204,9 @@ export class QueueService extends BaseService {
       case QueueName.MetadataExtraction: {
         return this.assetJobRepository.countMissingMetadata();
       }
+      case QueueName.VideoConversion: {
+        return this.assetJobRepository.countMissingVideoEncoding();
+      }
       default: {
         return undefined;
       }

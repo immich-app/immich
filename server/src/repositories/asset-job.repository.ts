@@ -149,6 +149,18 @@ export class AssetJobRepository {
     return Number(result?.count ?? 0);
   }
 
+  @GenerateSql({ params: [] })
+  async countMissingVideoEncoding(): Promise<number> {
+    const result = await this.db
+      .selectFrom('asset')
+      .where('asset.type', '=', AssetType.Video)
+      .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
+      .where('asset.deletedAt', 'is', null)
+      .select((eb) => eb.fn.countAll<string>().as('count'))
+      .executeTakeFirst();
+    return Number(result?.count ?? 0);
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getForMigrationJob(id: string) {
     return this.db

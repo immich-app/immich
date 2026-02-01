@@ -30,6 +30,8 @@ export interface EnvData {
   configFile?: string;
   logLevel?: LogLevel;
 
+  queues: QueueName[];
+
   buildMetadata: {
     build?: string;
     buildUrl?: string;
@@ -159,6 +161,29 @@ const getEnv = (): EnvData => {
       throw new Error(`Invalid worker(s) found: ${workers.join(',')}`);
     }
   }
+
+  const allQueues = Object.values(QueueName);
+  const validQueueNames = new Set(allQueues);
+
+  // Parse and validate INCLUDE list before set operations
+  const includeList = (dto.IMMICH_QUEUES_INCLUDE || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
+  for (const queueName of includeList) {
+    if (!validQueueNames.has(queueName as QueueName)) {
+      throw new Error(`Invalid queue in IMMICH_QUEUES_INCLUDE: ${queueName}. Valid queues: ${allQueues.join(', ')}`);
+    }
+  }
+
+  // Parse and validate EXCLUDE list
+  const excludeList = (dto.IMMICH_QUEUES_EXCLUDE || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
+  for (const queueName of excludeList) {
+    if (!validQueueNames.has(queueName as QueueName)) {
+      throw new Error(`Invalid queue in IMMICH_QUEUES_EXCLUDE: ${queueName}. Valid queues: ${allQueues.join(', ')}`);
+    }
+  }
+
+  const includedQueues = new Set(includeList.length === 0 ? allQueues : includeList as QueueName[]);
+  const excludedQueues = new Set(excludeList as QueueName[]);
+  const queues: QueueName[] = [...setDifference(includedQueues, excludedQueues)];
 
   const environment = dto.IMMICH_ENV || ImmichEnvironment.Production;
   const isProd = environment === ImmichEnvironment.Production;
@@ -342,6 +367,8 @@ const getEnv = (): EnvData => {
     },
 
     workers,
+
+    queues,
 
     plugins: {
       external: {

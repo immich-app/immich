@@ -1,4 +1,4 @@
-import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker, QueueName } from 'src/enum';
 import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
@@ -90,6 +90,8 @@ const envData: EnvData = {
   },
 
   workers: [ImmichWorker.Api, ImmichWorker.Microservices],
+
+  queues: Object.values(QueueName),
 
   plugins: {
     external: {

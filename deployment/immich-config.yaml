@@ -7,6 +7,30 @@ storage:
     previews: s3
     encodedVideos: s3
 
+ffmpeg:
+  # Force transcoding all videos - required for S3/Glacier setup
+  # Without this, videos already in acceptable format are skipped
+  # and remain only in Glacier IR (not streamable)
+  transcode: all
+  # Target H.264 for broad compatibility
+  targetVideoCodec: h264
+  acceptedVideoCodecs:
+    - h264
+    - hevc
+  targetAudioCodec: aac
+  acceptedAudioCodecs:
+    - aac
+    - mp3
+    - libopus
+  # 720p is good balance of quality/size for streaming
+  targetResolution: '720'
+  # CRF 23 is default, good quality
+  crf: 23
+  # Fast preset - good balance of encoding speed and file size
+  preset: fast
+  # No hardware acceleration on Fly.io shared CPUs
+  accel: disabled
+
 job:
   backgroundTask:
     concurrency: 15
@@ -29,7 +53,7 @@ job:
   personThumbnailGeneration:
     concurrency: 6
   videoConversion:
-    concurrency: 3
+    concurrency: 6
   notification:
     concurrency: 15
   ocr:

@@ -22,10 +22,35 @@ primary_region = 'ord'
   STORAGE_S3_REGION = 'auto'
   # OAuth config via secrets
 
+# Per-process-group queue assignments
+# Video worker - CPU intensive FFmpeg transcoding
+[[env]]
+  IMMICH_QUEUES_INCLUDE = 'videoConversion'
+  processes = ['worker-video']
+
+# Thumbnail worker - image processing (ImageMagick/Sharp)
+[[env]]
+  IMMICH_QUEUES_INCLUDE = 'assetThumbnailGeneration,personThumbnailGeneration'
+  processes = ['worker-thumb']
+
+# I/O worker - S3 uploads, metadata extraction, sidecar processing
+[[env]]
+  IMMICH_QUEUES_INCLUDE = 's3Upload,encryption,metadataExtraction,sidecar'
+  processes = ['worker-io']
+
+# General worker - background tasks, library scanning, notifications, etc.
+[[env]]
+  IMMICH_QUEUES_INCLUDE = 'backgroundTask,library,search,migration,workflow,notifications,backupDatabase,storageTemplateMigration'
+  processes = ['worker-general']
+
 # Process groups - different startup commands
+# Each worker group processes specific queues via IMMICH_QUEUES_INCLUDE
 [processes]
   web = "start-web.sh"
-  worker = "start-worker.sh"
+  worker-video = "start-worker.sh"
+  worker-thumb = "start-worker.sh"
+  worker-io = "start-worker.sh"
+  worker-general = "start-worker.sh"
 
 # HTTP service - only web machines handle traffic
 [http_service]
@@ -67,12 +92,33 @@ primary_region = 'ord'
   cpus = 2
   cpu_kind = "shared"
 
-# Worker machines - performance CPUs for job processing
+# Video worker - large for FFmpeg transcoding (CPU intensive)
 [[vm]]
-  processes = ["worker"]
+  processes = ["worker-video"]
+  memory = '8gb'
+  cpus = 4
+  cpu_kind = "performance"
+
+# Thumbnail worker - medium for image processing
+[[vm]]
+  processes = ["worker-thumb"]
   memory = '4gb'
   cpus = 2
   cpu_kind = "performance"
+
+# I/O worker - medium, mostly network bound (S3 uploads, metadata)
+[[vm]]
+  processes = ["worker-io"]
+  memory = '4gb'
+  cpus = 2
+  cpu_kind = "shared"
+
+# General worker - small for light background tasks
+[[vm]]
+  processes = ["worker-general"]
+  memory = '2gb'
+  cpus = 1
+  cpu_kind = "shared"
 
 # Give workers time to finish current job before SIGKILL (matches 10-min lock duration)
 # This applies to all process groups but only affects workers (web shuts down quickly)

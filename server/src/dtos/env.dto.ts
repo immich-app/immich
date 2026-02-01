@@ -138,6 +138,14 @@ export class EnvDto {
 
   @IsString()
   @Optional()
+  IMMICH_QUEUES_INCLUDE?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_QUEUES_EXCLUDE?: string;
+
+  @IsString()
+  @Optional()
   DB_DATABASE_NAME?: string;
 
   @IsString()

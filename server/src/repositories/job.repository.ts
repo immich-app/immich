@@ -115,8 +115,8 @@ export class JobRepository implements OnModuleDestroy {
   }
 
   startWorkers() {
-    const { bull } = this.configRepository.getEnv();
-    for (const queueName of Object.values(QueueName)) {
+    const { bull, queues } = this.configRepository.getEnv();
+    for (const queueName of queues) {
       this.logger.debug(`Starting worker for queue: ${queueName}`);
       const workerOptions = this.getWorkerOptions(queueName);
       this.workers[queueName] = new Worker(
