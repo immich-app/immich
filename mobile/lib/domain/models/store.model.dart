@@ -89,7 +89,9 @@ enum StoreKey<T> {
   cleanupKeepMediaType<int>._(1009),
   cleanupKeepAlbumIds<String>._(1010),
   cleanupCutoffDaysAgo<int>._(1011),
-  cleanupDefaultsInitialized<bool>._(1012);
+  cleanupDefaultsInitialized<bool>._(1012),
+
+  syncMigrationStatus<String>._(1013);
 
   const StoreKey._(this.id);
   final int id;

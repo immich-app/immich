@@ -17,9 +17,10 @@ class AssetBulkUploadCheckItem {
     required this.id,
   });
 
-  /// base64 or hex encoded sha1 hash
+  /// Base64 or hex encoded SHA1 hash
   String checksum;
 
+  /// Asset ID
   String id;
 
   @override

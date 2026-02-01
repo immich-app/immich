@@ -20,14 +20,19 @@ class SyncStackV1 {
     required this.updatedAt,
   });
 
+  /// Created at
   DateTime createdAt;
 
+  /// Stack ID
   String id;
 
+  /// Owner ID
   String ownerId;
 
+  /// Primary asset ID
   String primaryAssetId;
 
+  /// Updated at
   DateTime updatedAt;
 
   @override
