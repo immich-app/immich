@@ -792,6 +792,12 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
+    // Skip if already encoded to S3
+    if (asset.s3KeyEncodedVideo) {
+      this.logger.verbose(`Asset ${asset.id} already has S3-encoded video, skipping`);
+      return JobStatus.Skipped;
+    }
+
     // Handle S3-stored originals: download to temp file first
     let tempFilePath: string | undefined;
     let input = asset.originalPath;

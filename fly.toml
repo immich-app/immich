@@ -22,29 +22,8 @@ primary_region = 'ord'
   STORAGE_S3_REGION = 'auto'
   # OAuth config via secrets
 
-# Per-process-group queue assignments
-# Video worker - CPU intensive FFmpeg transcoding
-[[env]]
-  IMMICH_QUEUES_INCLUDE = 'videoConversion'
-  processes = ['worker-video']
-
-# Thumbnail worker - image processing (ImageMagick/Sharp)
-[[env]]
-  IMMICH_QUEUES_INCLUDE = 'assetThumbnailGeneration,personThumbnailGeneration'
-  processes = ['worker-thumb']
-
-# I/O worker - S3 uploads, metadata extraction, sidecar processing
-[[env]]
-  IMMICH_QUEUES_INCLUDE = 's3Upload,encryption,metadataExtraction,sidecar'
-  processes = ['worker-io']
-
-# General worker - background tasks, library scanning, notifications, etc.
-[[env]]
-  IMMICH_QUEUES_INCLUDE = 'backgroundTask,library,search,migration,workflow,notifications,backupDatabase,storageTemplateMigration'
-  processes = ['worker-general']
-
 # Process groups - different startup commands
-# Each worker group processes specific queues via IMMICH_QUEUES_INCLUDE
+# Queue filtering is handled in start-worker.sh based on FLY_PROCESS_GROUP
 [processes]
   web = "start-web.sh"
   worker-video = "start-worker.sh"

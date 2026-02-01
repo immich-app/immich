@@ -155,6 +155,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .where('asset.type', '=', AssetType.Video)
       .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
+      .where((eb) => eb.or([eb('asset.s3KeyEncodedVideo', 'is', null), eb('asset.s3KeyEncodedVideo', '=', '')]))
       .where('asset.deletedAt', 'is', null)
       .select((eb) => eb.fn.countAll<string>().as('count'))
       .executeTakeFirst();
@@ -355,7 +356,9 @@ export class AssetJobRepository {
       .select(['asset.id'])
       .where('asset.type', '=', AssetType.Video)
       .$if(!force, (qb) =>
-        qb.where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')])),
+        qb
+          .where((eb) => eb.or([eb('asset.encodedVideoPath', 'is', null), eb('asset.encodedVideoPath', '=', '')]))
+          .where((eb) => eb.or([eb('asset.s3KeyEncodedVideo', 'is', null), eb('asset.s3KeyEncodedVideo', '=', '')])),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
@@ -371,6 +374,7 @@ export class AssetJobRepository {
         'asset.originalPath',
         'asset.originalFileName',
         'asset.encodedVideoPath',
+        'asset.s3KeyEncodedVideo',
         'asset.storageBackend',
         'asset.s3Bucket',
         'asset.s3Key',
