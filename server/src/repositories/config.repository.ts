@@ -181,7 +181,7 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const includedQueues = new Set(includeList.length === 0 ? allQueues : includeList as QueueName[]);
+  const includedQueues = new Set(includeList.length === 0 ? allQueues : (includeList as QueueName[]));
   const excludedQueues = new Set(excludeList as QueueName[]);
   const queues: QueueName[] = [...setDifference(includedQueues, excludedQueues)];
 
