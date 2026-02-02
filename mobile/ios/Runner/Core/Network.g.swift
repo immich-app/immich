@@ -176,6 +176,35 @@ struct ClientCertPrompt: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct WebSocketTaskResult: Hashable {
+  var taskPointer: Int64
+  var taskProtocol: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> WebSocketTaskResult? {
+    let taskPointer = pigeonVar_list[0] as! Int64
+    let taskProtocol: String? = nilOrValue(pigeonVar_list[1])
+
+    return WebSocketTaskResult(
+      taskPointer: taskPointer,
+      taskProtocol: taskProtocol
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      taskPointer,
+      taskProtocol,
+    ]
+  }
+  static func == (lhs: WebSocketTaskResult, rhs: WebSocketTaskResult) -> Bool {
+    return deepEqualsNetwork(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNetwork(value: toList(), hasher: &hasher)
+  }
+}
+
 private class NetworkPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -183,6 +212,8 @@ private class NetworkPigeonCodecReader: FlutterStandardReader {
       return ClientCertData.fromList(self.readValue() as! [Any?])
     case 130:
       return ClientCertPrompt.fromList(self.readValue() as! [Any?])
+    case 131:
+      return WebSocketTaskResult.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -196,6 +227,9 @@ private class NetworkPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? ClientCertPrompt {
       super.writeByte(130)
+      super.writeValue(value.toList())
+    } else if let value = value as? WebSocketTaskResult {
+      super.writeByte(131)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -224,6 +258,9 @@ protocol NetworkApi {
   func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, Error>) -> Void)
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
   func getClientPointer() throws -> Int64
+  /// iOS only - creates a WebSocket task and waits for connection to be established.
+  func createWebSocketTask(url: String, protocols: [String]?, completion: @escaping (Result<WebSocketTaskResult, Error>) -> Void)
+  func setRequestHeaders(headers: [String: String]) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -293,6 +330,40 @@ class NetworkApiSetup {
       }
     } else {
       getClientPointerChannel.setMessageHandler(nil)
+    }
+    /// iOS only - creates a WebSocket task and waits for connection to be established.
+    let createWebSocketTaskChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.createWebSocketTask\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      createWebSocketTaskChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let urlArg = args[0] as! String
+        let protocolsArg: [String]? = nilOrValue(args[1])
+        api.createWebSocketTask(url: urlArg, protocols: protocolsArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      createWebSocketTaskChannel.setMessageHandler(nil)
+    }
+    let setRequestHeadersChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.setRequestHeaders\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setRequestHeadersChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let headersArg = args[0] as! [String: String]
+        do {
+          try api.setRequestHeaders(headers: headersArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setRequestHeadersChannel.setMessageHandler(nil)
     }
   }
 }

@@ -68,7 +68,7 @@ class AuthService {
 
     try {
       final uri = Uri.parse('$url/users/me');
-      final response = await NetworkRepository.client.get(uri, headers: ApiService.getRequestHeaders());
+      final response = await NetworkRepository.client.get(uri);
       if (response.statusCode == 200) {
         isValid = true;
       }

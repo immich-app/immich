@@ -75,7 +75,6 @@ dependencies:
   share_handler: ^0.0.25
   share_plus: ^10.1.4
   sliver_tools: ^0.2.12
-  socket_io_client: ^2.0.3+1
   stream_transform: ^2.1.1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
@@ -83,16 +82,20 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.3.0
   worker_manager: ^7.2.7
-  # TODO: upstream these changes
+  web_socket: ^1.0.1
+  socket_io_client:
+    git:
+      url: https://github.com/mertalev/socket.io-client-dart
+      ref: 'e1d813a240b5d5b7e2f141b2b605c5429b7cd006' # https://github.com/rikulo/socket.io-client-dart/pull/435
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: '114b2807bdeee641457b5703f411318d722b67b5'
+      ref: '6a28337a5d759bee3d198992e79d9b5c1e80fd3a' # https://github.com/dart-lang/http/pull/1876
       path: pkgs/cupertino_http/
   ok_http:
     git:
       url: https://github.com/mertalev/http
-      ref: '114b2807bdeee641457b5703f411318d722b67b5'
+      ref: 'fc43a0bf108c4705a11511f403802528ab1db716' # https://github.com/dart-lang/http/pull/1877
       path: pkgs/ok_http/
 
 dev_dependencies:

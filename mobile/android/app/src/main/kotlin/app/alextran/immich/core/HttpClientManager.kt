@@ -5,6 +5,7 @@ import app.alextran.immich.BuildConfig
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
+import okhttp3.Headers
 import okhttp3.OkHttpClient
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -39,6 +40,7 @@ object HttpClientManager {
 
   private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
+  var headers: Headers = Headers.headersOf("User-Agent", USER_AGENT)
   val isMtls: Boolean get() = keyStore.containsAlias(CERT_ALIAS)
 
   fun initialize(context: Context) {
@@ -93,6 +95,12 @@ object HttpClientManager {
     synchronized(this) { clientChangedListeners.add(listener) }
   }
 
+  fun setRequestHeaders(headerMap: Map<String, String>) {
+    val builder = Headers.Builder()
+    headerMap.forEach { (key, value) -> builder.add(key, value) }
+    headers = builder.build()
+  }
+
   private fun build(cacheDir: File): OkHttpClient {
     val connectionPool = ConnectionPool(
       maxIdleConnections = KEEP_ALIVE_CONNECTIONS,
@@ -109,8 +117,10 @@ object HttpClientManager {
     HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
 
     return OkHttpClient.Builder()
-      .addInterceptor { chain ->
-        chain.proceed(chain.request().newBuilder().header("User-Agent", USER_AGENT).build())
+      .addInterceptor {
+        val builder = it.request().newBuilder()
+        headers.forEach { (key, value) -> builder.addHeader(key, value) }
+        it.proceed(builder.build())
       }
       .connectionPool(connectionPool)
       .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })

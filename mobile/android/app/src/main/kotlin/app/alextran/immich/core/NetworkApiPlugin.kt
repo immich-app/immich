@@ -104,6 +104,17 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
     return NativeBuffer.createGlobalRef(client)
   }
 
+  // only used on iOS
+  override fun createWebSocketTask(
+    url: String,
+    protocols: List<String>?,
+    callback: (Result<WebSocketTaskResult>) -> Unit
+  ) {}
+
+  override fun setRequestHeaders(headers: Map<String, String>) {
+    HttpClientManager.setRequestHeaders(headers)
+  }
+
   private fun handlePickedFile(uri: Uri) {
     val callback = pendingCallback ?: return
     pendingCallback = null

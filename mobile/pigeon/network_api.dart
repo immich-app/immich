@@ -16,6 +16,13 @@ class ClientCertPrompt {
   ClientCertPrompt(this.title, this.message, this.cancel, this.confirm);
 }
 
+class WebSocketTaskResult {
+  int taskPointer;
+  String? taskProtocol;
+
+  WebSocketTaskResult(this.taskPointer, this.taskProtocol);
+}
+
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/platform/network_api.g.dart',
@@ -40,4 +47,10 @@ abstract class NetworkApi {
   void removeCertificate();
 
   int getClientPointer();
+
+  /// iOS only - creates a WebSocket task and waits for connection to be established.
+  @async
+  WebSocketTaskResult createWebSocketTask(String url, List<String>? protocols);
+
+  void setRequestHeaders(Map<String, String> headers);
 }

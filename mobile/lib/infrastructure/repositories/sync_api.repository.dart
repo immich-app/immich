@@ -36,10 +36,6 @@ class SyncApiRepository {
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
-    final headerParams = <String, String>{};
-    await _api.applyToParams([], headerParams);
-    headers.addAll(headerParams);
-
     final shouldReset = Store.get(StoreKey.shouldResetSync, false);
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
