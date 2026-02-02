@@ -54,6 +54,7 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
   private var activity: Activity? = null
   private var pendingCallback: ((Result<ClientCertData>) -> Unit)? = null
   private var filePicker: ActivityResultLauncher<Array<String>>? = null
+  private var promptText: ClientCertPrompt? = null
 
   fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
@@ -85,9 +86,10 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
     }
   }
 
-  override fun selectCertificate(callback: (Result<ClientCertData>) -> Unit) {
+  override fun selectCertificate(promptText: ClientCertPrompt, callback: (Result<ClientCertData>) -> Unit) {
     val picker = filePicker ?: return callback(Result.failure(IllegalStateException("No activity")))
     pendingCallback = callback
+    this.promptText = promptText
     picker.launch(arrayOf("application/x-pkcs12", "application/x-pem-file"))
   }
 
@@ -106,6 +108,7 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
 
       val activity = activity ?: throw IllegalStateException("No activity")
       promptForPassword(activity) { password ->
+        promptText = null
         if (password == null) {
           callback(Result.failure(OperationCanceledException()))
           return@promptForPassword
@@ -143,12 +146,13 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
 
     val container = FrameLayout(themedContext).apply { addView(textInputLayout) }
 
+    val text = promptText!!
     MaterialAlertDialogBuilder(themedContext)
-      .setTitle("Certificate Password")
-      .setMessage("Enter the password for this certificate")
+      .setTitle(text.title)
+      .setMessage(text.message)
       .setView(container)
-      .setPositiveButton("Import") { _, _ -> callback(editText.text.toString()) }
-      .setNegativeButton("Cancel") { dialog, _ ->
+      .setPositiveButton(text.confirm) { _, _ -> callback(editText.text.toString()) }
+      .setNegativeButton(text.cancel) { dialog, _ ->
         dialog.cancel()
         callback(null)
       }

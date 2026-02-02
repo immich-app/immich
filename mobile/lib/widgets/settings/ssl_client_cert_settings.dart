@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/platform/network_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
@@ -67,7 +68,13 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
 
   Future<void> importCert() async {
     try {
-      final cert = await networkApi.selectCertificate();
+      final styling = ClientCertPrompt(
+        title: "client_cert_password_title".tr(),
+        message: "client_cert_password_message".tr(),
+        cancel: "cancel".tr(),
+        confirm: "confirm".tr(),
+      );
+      final cert = await networkApi.selectCertificate(styling);
       await SSLClientCertStoreVal(cert.data, cert.password).save();
       HttpSSLOptions.apply();
       setState(() => isCertExist = true);

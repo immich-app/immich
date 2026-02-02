@@ -66,6 +66,52 @@ class ClientCertData {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class ClientCertPrompt {
+  ClientCertPrompt({required this.title, required this.message, required this.cancel, required this.confirm});
+
+  String title;
+
+  String message;
+
+  String cancel;
+
+  String confirm;
+
+  List<Object?> _toList() {
+    return <Object?>[title, message, cancel, confirm];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static ClientCertPrompt decode(Object result) {
+    result as List<Object?>;
+    return ClientCertPrompt(
+      title: result[0]! as String,
+      message: result[1]! as String,
+      cancel: result[2]! as String,
+      confirm: result[3]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! ClientCertPrompt || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -75,6 +121,9 @@ class _PigeonCodec extends StandardMessageCodec {
       buffer.putInt64(value);
     } else if (value is ClientCertData) {
       buffer.putUint8(129);
+      writeValue(buffer, value.encode());
+    } else if (value is ClientCertPrompt) {
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -86,6 +135,8 @@ class _PigeonCodec extends StandardMessageCodec {
     switch (type) {
       case 129:
         return ClientCertData.decode(readValue(buffer)!);
+      case 130:
+        return ClientCertPrompt.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -128,7 +179,7 @@ class NetworkApi {
     }
   }
 
-  Future<ClientCertData> selectCertificate() async {
+  Future<ClientCertData> selectCertificate(ClientCertPrompt promptText) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NetworkApi.selectCertificate$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -136,7 +187,7 @@ class NetworkApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[promptText]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);

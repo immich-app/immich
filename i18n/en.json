@@ -782,6 +782,8 @@
   "client_cert_import": "Import",
   "client_cert_import_success_msg": "Client certificate is imported",
   "client_cert_invalid_msg": "Invalid certificate file or wrong password",
+  "client_cert_password_message": "Enter the password for this certificate",
+  "client_cert_password_title": "Certificate Password",
   "client_cert_remove_msg": "Client certificate is removed",
   "client_cert_subtitle": "Supports PKCS12 (.p12, .pfx) format only. Certificate import/removal is available only before login",
   "client_cert_title": "SSL client certificate [EXPERIMENTAL]",

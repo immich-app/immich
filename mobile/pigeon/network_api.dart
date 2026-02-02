@@ -7,6 +7,15 @@ class ClientCertData {
   ClientCertData(this.data, this.password);
 }
 
+class ClientCertPrompt {
+  String title;
+  String message;
+  String cancel;
+  String confirm;
+
+  ClientCertPrompt(this.title, this.message, this.cancel, this.confirm);
+}
+
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/platform/network_api.g.dart',
@@ -25,7 +34,7 @@ abstract class NetworkApi {
   void addCertificate(ClientCertData clientData);
 
   @async
-  ClientCertData selectCertificate();
+  ClientCertData selectCertificate(ClientCertPrompt promptText);
 
   @async
   void removeCertificate();

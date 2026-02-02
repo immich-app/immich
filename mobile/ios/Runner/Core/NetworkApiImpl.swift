@@ -16,8 +16,8 @@ class NetworkApiImpl: NetworkApi {
     self.viewController = viewController
   }
   
-  func selectCertificate(completion: @escaping (Result<ClientCertData, any Error>) -> Void) {
-    let importer = CertImporter(completion: { [weak self] result in
+  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, any Error>) -> Void) {
+    let importer = CertImporter(promptText: promptText, completion: { [weak self] result in
       self?.activeImporter = nil
       completion(result.map { ClientCertData(data: FlutterStandardTypedData(bytes: $0.0), password: $0.1) })
     }, viewController: viewController)
@@ -43,10 +43,12 @@ class NetworkApiImpl: NetworkApi {
 }
 
 private class CertImporter: NSObject, UIDocumentPickerDelegate {
+  private let promptText: ClientCertPrompt
   private var completion: ((Result<(Data, String), Error>) -> Void)
   private weak var viewController: UIViewController?
   
-  init(completion: (@escaping (Result<(Data, String), Error>) -> Void), viewController: UIViewController?) {
+  init(promptText: ClientCertPrompt, completion: (@escaping (Result<(Data, String), Error>) -> Void), viewController: UIViewController?) {
+    self.promptText = promptText
     self.completion = completion
     self.viewController = viewController
   }
@@ -95,18 +97,18 @@ private class CertImporter: NSObject, UIDocumentPickerDelegate {
     
     return await withCheckedContinuation { continuation in
       let alert = UIAlertController(
-        title: "Certificate Password",
-        message: "Enter the password for this certificate",
+        title: promptText.title,
+        message: promptText.message,
         preferredStyle: .alert
       )
       
       alert.addTextField { $0.isSecureTextEntry = true }
       
-      alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+      alert.addAction(UIAlertAction(title: promptText.cancel, style: .cancel) { _ in
         continuation.resume(returning: nil)
       })
       
-      alert.addAction(UIAlertAction(title: "Import", style: .default) { _ in
+      alert.addAction(UIAlertAction(title: promptText.confirm, style: .default) { _ in
         continuation.resume(returning: alert.textFields?.first?.text ?? "")
       })
       

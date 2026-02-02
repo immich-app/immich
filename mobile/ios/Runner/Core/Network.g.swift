@@ -139,11 +139,50 @@ struct ClientCertData: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct ClientCertPrompt: Hashable {
+  var title: String
+  var message: String
+  var cancel: String
+  var confirm: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> ClientCertPrompt? {
+    let title = pigeonVar_list[0] as! String
+    let message = pigeonVar_list[1] as! String
+    let cancel = pigeonVar_list[2] as! String
+    let confirm = pigeonVar_list[3] as! String
+
+    return ClientCertPrompt(
+      title: title,
+      message: message,
+      cancel: cancel,
+      confirm: confirm
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      title,
+      message,
+      cancel,
+      confirm,
+    ]
+  }
+  static func == (lhs: ClientCertPrompt, rhs: ClientCertPrompt) -> Bool {
+    return deepEqualsNetwork(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashNetwork(value: toList(), hasher: &hasher)
+  }
+}
+
 private class NetworkPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
       return ClientCertData.fromList(self.readValue() as! [Any?])
+    case 130:
+      return ClientCertPrompt.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -154,6 +193,9 @@ private class NetworkPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
     if let value = value as? ClientCertData {
       super.writeByte(129)
+      super.writeValue(value.toList())
+    } else if let value = value as? ClientCertPrompt {
+      super.writeByte(130)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -179,7 +221,7 @@ class NetworkPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NetworkApi {
   func addCertificate(clientData: ClientCertData, completion: @escaping (Result<Void, Error>) -> Void)
-  func selectCertificate(completion: @escaping (Result<ClientCertData, Error>) -> Void)
+  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, Error>) -> Void)
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
@@ -208,8 +250,10 @@ class NetworkApiSetup {
     }
     let selectCertificateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.selectCertificate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      selectCertificateChannel.setMessageHandler { _, reply in
-        api.selectCertificate { result in
+      selectCertificateChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let promptTextArg = args[0] as! ClientCertPrompt
+        api.selectCertificate(promptText: promptTextArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))

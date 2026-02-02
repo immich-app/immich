@@ -108,12 +108,54 @@ data class ClientCertData (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class ClientCertPrompt (
+  val title: String,
+  val message: String,
+  val cancel: String,
+  val confirm: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): ClientCertPrompt {
+      val title = pigeonVar_list[0] as String
+      val message = pigeonVar_list[1] as String
+      val cancel = pigeonVar_list[2] as String
+      val confirm = pigeonVar_list[3] as String
+      return ClientCertPrompt(title, message, cancel, confirm)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      title,
+      message,
+      cancel,
+      confirm,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is ClientCertPrompt) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return NetworkPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class NetworkPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           ClientCertData.fromList(it)
+        }
+      }
+      130.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          ClientCertPrompt.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -125,6 +167,10 @@ private open class NetworkPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
+      is ClientCertPrompt -> {
+        stream.write(130)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -134,7 +180,7 @@ private open class NetworkPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NetworkApi {
   fun addCertificate(clientData: ClientCertData, callback: (Result<Unit>) -> Unit)
-  fun selectCertificate(callback: (Result<ClientCertData>) -> Unit)
+  fun selectCertificate(promptText: ClientCertPrompt, callback: (Result<ClientCertData>) -> Unit)
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
 
   companion object {
@@ -168,8 +214,10 @@ interface NetworkApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NetworkApi.selectCertificate$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
-            api.selectCertificate{ result: Result<ClientCertData> ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val promptTextArg = args[0] as ClientCertPrompt
+            api.selectCertificate(promptTextArg) { result: Result<ClientCertData> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(NetworkPigeonUtils.wrapError(error))
