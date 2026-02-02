@@ -4,16 +4,24 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.os.OperationCanceledException
+import android.text.InputType
+import android.view.ContextThemeWrapper
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 
 class NetworkApiPlugin : FlutterPlugin, ActivityAware {
   private var networkApi: NetworkApiImpl? = null
-
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     networkApi = NetworkApiImpl(binding.applicationContext)
@@ -115,16 +123,31 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
   }
 
   private fun promptForPassword(activity: Activity, callback: (String?) -> Unit) {
-    val builder = android.app.AlertDialog.Builder(activity)
-      .setTitle("Certificate Password")
-      .setMessage("Enter the password for this certificate")
+    val themedContext = ContextThemeWrapper(activity, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog)
+    val density = activity.resources.displayMetrics.density
+    val horizontalPadding = (24 * density).toInt()
 
-    val input = android.widget.EditText(activity).apply {
-      inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+    val textInputLayout = TextInputLayout(themedContext).apply {
+      hint = "Password"
+      endIconMode = TextInputLayout.END_ICON_PASSWORD_TOGGLE
+      layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+        setMargins(horizontalPadding, 0, horizontalPadding, 0)
+      }
     }
 
-    builder.setView(input)
-      .setPositiveButton("Import") { _, _ -> callback(input.text.toString()) }
+    val editText = TextInputEditText(textInputLayout.context).apply {
+      inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+      layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+    }
+    textInputLayout.addView(editText)
+
+    val container = FrameLayout(themedContext).apply { addView(textInputLayout) }
+
+    MaterialAlertDialogBuilder(themedContext)
+      .setTitle("Certificate Password")
+      .setMessage("Enter the password for this certificate")
+      .setView(container)
+      .setPositiveButton("Import") { _, _ -> callback(editText.text.toString()) }
       .setNegativeButton("Cancel") { dialog, _ ->
         dialog.cancel()
         callback(null)
