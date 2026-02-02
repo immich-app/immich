@@ -259,6 +259,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> startForegroundBackup(String userId) async {
+    // Cancel any existing backup before starting a new one
+    if (state.cancelToken != null) {
+      await stopForegroundBackup();
+    }
+
     state = state.copyWith(error: BackupError.none);
 
     final cancelToken = CancellationToken();
