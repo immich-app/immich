@@ -24,7 +24,6 @@ const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
 
 /**
  * Manages a shared OkHttpClient with SSL configuration support.
- * The client is shared across all Dart isolates and native code.
  */
 object HttpClientManager {
   private const val CACHE_SIZE_BYTES = 100L * 1024 * 1024  // 100MiB
@@ -37,7 +36,7 @@ object HttpClientManager {
 
   private lateinit var client: OkHttpClient
 
-  private val keyStore =  KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+  private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
   val isMtls: Boolean get() = keyStore.containsAlias(CERT_ALIAS)
 
@@ -123,7 +122,11 @@ object HttpClientManager {
     override fun getClientAliases(keyType: String, issuers: Array<Principal>?): Array<String>? =
       if (isMtls) arrayOf(CERT_ALIAS) else null
 
-    override fun chooseClientAlias(keyTypes: Array<String>, issuers: Array<Principal>?, socket: Socket?): String? =
+    override fun chooseClientAlias(
+      keyTypes: Array<String>,
+      issuers: Array<Principal>?,
+      socket: Socket?
+    ): String? =
       if (isMtls) CERT_ALIAS else null
 
     override fun getCertificateChain(alias: String): Array<X509Certificate>? =
@@ -132,7 +135,13 @@ object HttpClientManager {
     override fun getPrivateKey(alias: String): PrivateKey? =
       keyStore.getKey(alias, null) as? PrivateKey
 
-    override fun getServerAliases(keyType: String, issuers: Array<Principal>?): Array<String>? = null
-    override fun chooseServerAlias(keyType: String, issuers: Array<Principal>?, socket: Socket?): String? = null
+    override fun getServerAliases(keyType: String, issuers: Array<Principal>?): Array<String>? =
+      null
+
+    override fun chooseServerAlias(
+      keyType: String,
+      issuers: Array<Principal>?,
+      socket: Socket?
+    ): String? = null
   }
 }

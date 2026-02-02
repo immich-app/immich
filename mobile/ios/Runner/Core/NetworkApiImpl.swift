@@ -33,7 +33,6 @@ class NetworkApiImpl: NetworkApi {
     completion(.failure(ImportError.keychainError(status)))
   }
   
-  // TODO: remove this method once the app is fully transitioned to native clients
   func addCertificate(clientData: ClientCertData, completion: @escaping (Result<Void, any Error>) -> Void) {
     let status = importCert(clientData: clientData.data.data, password: clientData.password)
     if status == errSecSuccess {

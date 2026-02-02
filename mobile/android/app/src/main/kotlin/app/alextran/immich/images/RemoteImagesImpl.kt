@@ -30,7 +30,6 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
@@ -113,8 +112,6 @@ private object ImageFetcherManager {
       appContext = context.applicationContext
       cacheDir = context.cacheDir
       fetcher = build()
-      // Listen to SharedHttpClientManager instead of SSLConfig directly.
-      // This ensures the shared client is already rebuilt when we invalidate.
       HttpClientManager.addClientChangedListener(::invalidate)
       initialized = true
     }
