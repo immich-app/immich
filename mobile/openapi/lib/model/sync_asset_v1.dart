@@ -18,7 +18,9 @@ class SyncAssetV1 {
     required this.duration,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
+    required this.height,
     required this.id,
+    required this.isEdited,
     required this.isFavorite,
     required this.libraryId,
     required this.livePhotoVideoId,
@@ -29,39 +31,65 @@ class SyncAssetV1 {
     required this.thumbhash,
     required this.type,
     required this.visibility,
+    required this.width,
   });
 
+  /// Checksum
   String checksum;
 
+  /// Deleted at
   DateTime? deletedAt;
 
+  /// Duration
   String? duration;
 
+  /// File created at
   DateTime? fileCreatedAt;
 
+  /// File modified at
   DateTime? fileModifiedAt;
 
+  /// Asset height
+  int? height;
+
+  /// Asset ID
   String id;
 
+  /// Is edited
+  bool isEdited;
+
+  /// Is favorite
   bool isFavorite;
 
+  /// Library ID
   String? libraryId;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
+  /// Local date time
   DateTime? localDateTime;
 
+  /// Original file name
   String originalFileName;
 
+  /// Owner ID
   String ownerId;
 
+  /// Stack ID
   String? stackId;
 
+  /// Thumbhash
   String? thumbhash;
 
+  /// Asset type
   AssetTypeEnum type;
 
+  /// Asset visibility
   AssetVisibility visibility;
+
+  /// Asset width
+  int? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetV1 &&
@@ -70,7 +98,9 @@ class SyncAssetV1 {
     other.duration == duration &&
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
+    other.height == height &&
     other.id == id &&
+    other.isEdited == isEdited &&
     other.isFavorite == isFavorite &&
     other.libraryId == libraryId &&
     other.livePhotoVideoId == livePhotoVideoId &&
@@ -80,7 +110,8 @@ class SyncAssetV1 {
     other.stackId == stackId &&
     other.thumbhash == thumbhash &&
     other.type == type &&
-    other.visibility == visibility;
+    other.visibility == visibility &&
+    other.width == width;
 
   @override
   int get hashCode =>
@@ -90,7 +121,9 @@ class SyncAssetV1 {
     (duration == null ? 0 : duration!.hashCode) +
     (fileCreatedAt == null ? 0 : fileCreatedAt!.hashCode) +
     (fileModifiedAt == null ? 0 : fileModifiedAt!.hashCode) +
+    (height == null ? 0 : height!.hashCode) +
     (id.hashCode) +
+    (isEdited.hashCode) +
     (isFavorite.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
@@ -100,10 +133,11 @@ class SyncAssetV1 {
     (stackId == null ? 0 : stackId!.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
-    (visibility.hashCode);
+    (visibility.hashCode) +
+    (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, id=$id, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility]';
+  String toString() => 'SyncAssetV1[checksum=$checksum, deletedAt=$deletedAt, duration=$duration, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, height=$height, id=$id, isEdited=$isEdited, isFavorite=$isFavorite, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, ownerId=$ownerId, stackId=$stackId, thumbhash=$thumbhash, type=$type, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -128,7 +162,13 @@ class SyncAssetV1 {
     } else {
     //  json[r'fileModifiedAt'] = null;
     }
+    if (this.height != null) {
+      json[r'height'] = this.height;
+    } else {
+    //  json[r'height'] = null;
+    }
       json[r'id'] = this.id;
+      json[r'isEdited'] = this.isEdited;
       json[r'isFavorite'] = this.isFavorite;
     if (this.libraryId != null) {
       json[r'libraryId'] = this.libraryId;
@@ -159,6 +199,11 @@ class SyncAssetV1 {
     }
       json[r'type'] = this.type;
       json[r'visibility'] = this.visibility;
+    if (this.width != null) {
+      json[r'width'] = this.width;
+    } else {
+    //  json[r'width'] = null;
+    }
     return json;
   }
 
@@ -176,7 +221,9 @@ class SyncAssetV1 {
         duration: mapValueOfType<String>(json, r'duration'),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r''),
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r''),
+        height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
+        isEdited: mapValueOfType<bool>(json, r'isEdited')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
@@ -187,6 +234,7 @@ class SyncAssetV1 {
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
+        width: mapValueOfType<int>(json, r'width'),
       );
     }
     return null;
@@ -239,7 +287,9 @@ class SyncAssetV1 {
     'duration',
     'fileCreatedAt',
     'fileModifiedAt',
+    'height',
     'id',
+    'isEdited',
     'isFavorite',
     'libraryId',
     'livePhotoVideoId',
@@ -250,6 +300,7 @@ class SyncAssetV1 {
     'thumbhash',
     'type',
     'visibility',
+    'width',
   };
 }
 

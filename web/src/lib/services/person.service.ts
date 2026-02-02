@@ -4,7 +4,13 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { updatePerson, type PersonResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiCalendarEditOutline } from '@mdi/js';
+import {
+  mdiCalendarEditOutline,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
+  mdiHeartMinusOutline,
+  mdiHeartOutline,
+} from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
 export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto) => {
@@ -14,7 +20,83 @@ export const getPersonActions = ($t: MessageFormatter, person: PersonResponseDto
     onAction: () => modalManager.show(PersonEditBirthDateModal, { person }),
   };
 
-  return { SetDateOfBirth };
+  const Favorite: ActionItem = {
+    title: $t('to_favorite'),
+    icon: mdiHeartOutline,
+    $if: () => !person.isFavorite,
+    onAction: () => handleFavoritePerson(person),
+  };
+
+  const Unfavorite: ActionItem = {
+    title: $t('unfavorite'),
+    icon: mdiHeartMinusOutline,
+    $if: () => !!person.isFavorite,
+    onAction: () => handleUnfavoritePerson(person),
+  };
+
+  const HidePerson: ActionItem = {
+    title: $t('hide_person'),
+    icon: mdiEyeOffOutline,
+    $if: () => !person.isHidden,
+    onAction: () => handleHidePerson(person),
+  };
+
+  const ShowPerson: ActionItem = {
+    title: $t('unhide_person'),
+    icon: mdiEyeOutline,
+    $if: () => !!person.isHidden,
+    onAction: () => handleShowPerson(person),
+  };
+
+  return { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson };
+};
+
+const handleFavoritePerson = async (person: { id: string }) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: true } });
+    eventManager.emit('PersonUpdate', response);
+    toastManager.success($t('added_to_favorites'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
+  }
+};
+
+const handleUnfavoritePerson = async (person: { id: string }) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updatePerson({ id: person.id, personUpdateDto: { isFavorite: false } });
+    eventManager.emit('PersonUpdate', response);
+    toastManager.success($t('removed_from_favorites'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: false } }));
+  }
+};
+
+const handleHidePerson = async (person: { id: string }) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updatePerson({ id: person.id, personUpdateDto: { isHidden: true } });
+    toastManager.success($t('changed_visibility_successfully'));
+    eventManager.emit('PersonUpdate', response);
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_hide_person'));
+  }
+};
+
+const handleShowPerson = async (person: { id: string }) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updatePerson({ id: person.id, personUpdateDto: { isHidden: false } });
+    toastManager.success($t('changed_visibility_successfully'));
+    eventManager.emit('PersonUpdate', response);
+  } catch (error) {
+    handleError(error, $t('errors.something_went_wrong'));
+  }
 };
 
 export const handleUpdatePersonBirthDate = async (person: PersonResponseDto, birthDate: string) => {

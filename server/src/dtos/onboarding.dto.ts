@@ -1,7 +1,7 @@
 import { ValidateBoolean } from 'src/validation';
 
 export class OnboardingDto {
-  @ValidateBoolean()
+  @ValidateBoolean({ description: 'Is user onboarded' })
   isOnboarded!: boolean;
 }
 

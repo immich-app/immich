@@ -19,7 +19,7 @@ String formatBytes(int bytes) {
 
 String formatHumanReadableBytes(int bytes, int decimals) {
   if (bytes <= 0) return "0 B";
-  const suffixes = ["B", "KB", "MB", "GB", "TB"];
+  const suffixes = ["B", "KiB", "MiB", "GiB", "TiB"];
   var i = (log(bytes) / log(1024)).floor();
   return '${(bytes / pow(1024, i)).toStringAsFixed(decimals)} ${suffixes[i]}';
 }

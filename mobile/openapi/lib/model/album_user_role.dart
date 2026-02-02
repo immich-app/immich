@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Album user role
 class AlbumUserRole {
   /// Instantiate a new enum with the provided [value].
   const AlbumUserRole._(this.value);

@@ -28,7 +28,7 @@ import {
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { init, register, t } from 'svelte-i18n';
+import { init, register, t, type MessageFormatter } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -166,6 +166,7 @@ export const getQueueName = derived(t, ($t) => {
       [QueueName.BackupDatabase]: $t('admin.backup_database'),
       [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
       [QueueName.Workflow]: $t('workflows'),
+      [QueueName.Editor]: $t('editor'),
     };
 
     return names[name];
@@ -192,7 +193,7 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-type AssetUrlOptions = { id: string; cacheKey?: string | null };
+type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
 
 export const getAssetUrl = ({
   asset,
@@ -209,12 +210,10 @@ export const getAssetUrl = ({
   const id = asset.id;
   const cacheKey = asset.thumbhash;
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-    return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+    return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   }
-  const targetSize = targetImageSize(asset, forceOriginal);
-  return targetSize === 'original'
-    ? getAssetOriginalUrl({ id, cacheKey })
-    : getAssetThumbnailUrl({ id, size: targetSize, cacheKey });
+  const size = targetImageSize(asset, forceOriginal);
+  return getAssetMediaUrl({ id, size, cacheKey });
 };
 
 const forceUseOriginal = (asset: AssetResponseDto) => {
@@ -223,33 +222,21 @@ const forceUseOriginal = (asset: AssetResponseDto) => {
 
 export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
   if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? 'original' : AssetMediaSize.Fullsize;
+    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
   }
   return AssetMediaSize.Preview;
 };
 
-export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey });
+export const getAssetMediaUrl = (options: AssetUrlOptions) => {
+  const { id, size, cacheKey: c, edited = true } = options;
+  const isOriginal = size === AssetMediaSize.Original;
+  const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
+  return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
 };
 
-export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, size, cacheKey } = options;
-  return createUrl(getAssetThumbnailPath(id), { ...authManager.params, size, c: cacheKey });
-};
-
-export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
-  if (typeof options === 'string') {
-    options = { id: options };
-  }
-  const { id, cacheKey } = options;
-  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c: cacheKey });
+export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
+  const { id, cacheKey: c } = options;
+  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
@@ -258,31 +245,16 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
-export const getAssetJobName = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const names: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refresh_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
-    };
-
-    return names[job];
+export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
   };
-});
 
-export const getAssetJobMessage = derived(t, ($t) => {
-  return (job: AssetJobName) => {
-    const messages: Record<AssetJobName, string> = {
-      [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-      [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-      [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-      [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-    };
-
-    return messages[job];
-  };
-});
+  return messages[job];
+};
 
 export const getAssetJobIcon = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
@@ -445,3 +417,17 @@ export const withoutIcons = (actions: ActionItem[]): ActionItem[] =>
   actions.map((action) => ({ ...action, icon: undefined }));
 
 export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
+
+export const transformToTitleCase = (text: string) => {
+  if (text.length === 0) {
+    return text;
+  } else if (text.length === 1) {
+    return text.charAt(0).toUpperCase();
+  }
+
+  let result = '';
+  for (const word of text.toLowerCase().split(' ')) {
+    result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+  }
+  return result.trim();
+};

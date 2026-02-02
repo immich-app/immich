@@ -4,7 +4,7 @@ import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
-import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -21,13 +21,32 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetFileType, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  Permission,
+  QueueName,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
-import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
+import {
+  getAssetFiles,
+  getDimensions,
+  getMyPartnerIds,
+  isPanorama,
+  onAfterUnlink,
+  onBeforeLink,
+  onBeforeUnlink,
+} from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
+import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -62,6 +81,7 @@ export class AssetService extends BaseService {
       owner: true,
       faces: { person: true },
       stack: { assets: true },
+      edits: true,
       tags: true,
     });
 
@@ -92,7 +112,7 @@ export class AssetService extends BaseService {
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
-    let previousMotion: MapAsset | null = null;
+    let previousMotion: { id: string } | null = null;
     if (rest.livePhotoVideoId) {
       await onBeforeLink(repos, { userId: auth.user.id, livePhotoVideoId: rest.livePhotoVideoId });
     } else if (rest.livePhotoVideoId === null) {
@@ -339,11 +359,19 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile, sidecarFile } = getAssetFiles(asset.files ?? []);
-    const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
+    const assetFiles = getAssetFiles(asset.files ?? []);
+    const files = [
+      assetFiles.thumbnailFile?.path,
+      assetFiles.previewFile?.path,
+      assetFiles.fullsizeFile?.path,
+      assetFiles.editedFullsizeFile?.path,
+      assetFiles.editedPreviewFile?.path,
+      assetFiles.editedThumbnailFile?.path,
+      asset.encodedVideoPath,
+    ];
 
     if (deleteOnDisk && !asset.isOffline) {
-      files.push(sidecarFile?.path, asset.originalPath);
+      files.push(assetFiles.sidecarFile?.path, asset.originalPath);
     }
 
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: files.filter(Boolean) } });
@@ -372,16 +400,46 @@ export class AssetService extends BaseService {
 
   async getOcr(auth: AuthDto, id: string): Promise<AssetOcrResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
-    return this.ocrRepository.getByAssetId(id);
+    const ocr = await this.ocrRepository.getByAssetId(id);
+    const asset = await this.assetRepository.getById(id, { exifInfo: true, edits: true });
+
+    if (!asset || !asset.exifInfo || !asset.edits) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    const dimensions = getDimensions(asset.exifInfo);
+
+    return ocr.map((item) => transformOcrBoundingBox(item, asset.edits!, dimensions));
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.items.map((item) => item.assetId) });
+
+    const uniqueKeys = new Set<string>();
+    for (const item of dto.items) {
+      const key = `(${item.assetId}, ${item.key})`;
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertBulkMetadata(dto.items);
   }
 
   async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+
+    const uniqueKeys = new Set<string>();
+    for (const { key } of dto.items) {
+      if (uniqueKeys.has(key)) {
+        throw new BadRequestException(`Duplicate items are not allowed: "${key}"`);
+      }
+
+      uniqueKeys.add(key);
+    }
+
     return this.assetRepository.upsertMetadata(id, dto.items);
   }
 
@@ -477,5 +535,84 @@ export class AssetService extends BaseService {
       );
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
+  }
+
+  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+    const edits = await this.assetEditRepository.getAll(id);
+    return {
+      assetId: id,
+      edits,
+    };
+  }
+
+  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
+
+    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    if (asset.type !== AssetType.Image) {
+      throw new BadRequestException('Only images can be edited');
+    }
+
+    if (asset.livePhotoVideoId) {
+      throw new BadRequestException('Editing live photos is not supported');
+    }
+
+    if (isPanorama(asset)) {
+      throw new BadRequestException('Editing panorama images is not supported');
+    }
+
+    if (asset.originalPath?.toLowerCase().endsWith('.gif')) {
+      throw new BadRequestException('Editing GIF images is not supported');
+    }
+
+    if (asset.originalPath?.toLowerCase().endsWith('.svg')) {
+      throw new BadRequestException('Editing SVG images is not supported');
+    }
+
+    const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
+    if (cropIndex > 0) {
+      throw new BadRequestException('Crop action must be the first edit action');
+    }
+
+    const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
+    if (crop) {
+      // check that crop parameters will not go out of bounds
+      const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
+
+      if (!assetWidth || !assetHeight) {
+        throw new BadRequestException('Asset dimensions are not available for editing');
+      }
+
+      const { x, y, width, height } = crop.parameters;
+      if (x + width > assetWidth || y + height > assetHeight) {
+        throw new BadRequestException('Crop parameters are out of bounds');
+      }
+    }
+
+    const newEdits = await this.assetEditRepository.replaceAll(id, dto.edits);
+    await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
+
+    // Return the asset and its applied edits
+    return {
+      assetId: id,
+      edits: newEdits,
+    };
+  }
+
+  async removeAssetEdits(auth: AuthDto, id: string): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AssetEditDelete, ids: [id] });
+
+    const asset = await this.assetRepository.getById(id);
+    if (!asset) {
+      throw new BadRequestException('Asset not found');
+    }
+
+    await this.assetEditRepository.replaceAll(id, []);
+    await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
   }
 }

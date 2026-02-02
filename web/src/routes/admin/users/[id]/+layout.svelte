@@ -7,7 +7,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
@@ -87,7 +87,7 @@
 
   const onUserAdminDeleted = async ({ id }: { id: string }) => {
     if (id === user.id) {
-      await goto(AppRoute.ADMIN_USERS);
+      await goto(Route.users());
     }
   };
 </script>
@@ -102,7 +102,7 @@
 <CommandPaletteDefaultProvider name={$t('user')} actions={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
 
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
+  breadcrumbs={[{ title: $t('admin.user_management'), href: Route.users() }, { title: user.name }]}
   actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
 >
   <div>
@@ -198,8 +198,8 @@
               })}
             >
               <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-              <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
+              <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-1.75 rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
               </div>
             </div>
           {/if}

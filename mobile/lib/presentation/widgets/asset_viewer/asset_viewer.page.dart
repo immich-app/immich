@@ -92,7 +92,9 @@ class AssetViewer extends ConsumerStatefulWidget {
     if (asset.isVideo || asset.isMotionPhoto) {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
-      // Hide controls by default for videos and motion photos
+    }
+    // Hide controls by default for videos
+    if (asset.isVideo) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
   }
@@ -118,7 +120,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
   bool assetReloadRequested = false;
-  double? initialScale;
   double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
@@ -147,6 +148,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final asset = ref.read(currentAssetNotifier);
     if (asset != null) {
       _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
+    if (ref.read(assetViewerProvider).showingControls) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    } else {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
     }
   }
 
@@ -264,7 +270,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
       // Apply the zoom effect when the bottom sheet is showing
-      initialScale = controller.scale;
       controller.scale = (controller.scale ?? 1.0) + 0.01;
     }
   }
@@ -316,7 +321,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     hasDraggedDown = null;
     viewController?.animateMultiple(
       position: initialPhotoViewState.position,
-      scale: initialPhotoViewState.scale,
+      scale: viewController?.initialScale ?? initialPhotoViewState.scale,
       rotation: initialPhotoViewState.rotation,
     );
     ref.read(assetViewerProvider.notifier).setOpacity(255);
@@ -366,8 +371,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final maxScaleDistance = ctx.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
     double? updatedScale;
-    if (initialPhotoViewState.scale != null) {
-      updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
+    double? initialScale = viewController?.initialScale ?? initialPhotoViewState.scale;
+    if (initialScale != null) {
+      updatedScale = initialScale * (1.0 - scaleReduction);
     }
 
     final backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
@@ -481,8 +487,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
-    initialScale = viewController?.scale;
-    // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
@@ -504,7 +508,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _handleSheetClose() {
     viewController?.animateMultiple(position: Offset.zero);
-    viewController?.updateMultiple(scale: initialScale);
+    viewController?.updateMultiple(scale: viewController?.initialScale);
     ref.read(assetViewerProvider.notifier).setBottomSheet(false);
     sheetCloseController = null;
     shouldPopOnDrag = false;
@@ -527,7 +531,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
     if (scaleState != PhotoViewScaleState.initial) {
-      ref.read(assetViewerProvider.notifier).setControls(false);
+      if (!dragInProgress) {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      }
       ref.read(videoPlayerControlsProvider.notifier).pause();
       return;
     }
@@ -611,6 +617,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       filterQuality: FilterQuality.high,
       maxScale: 1.0,
       basePosition: Alignment.center,
+      disableScaleGestures: true,
       child: SizedBox(
         width: ctx.width,
         height: ctx.height,

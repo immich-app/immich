@@ -33,6 +33,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
     registerFallbackValue(<String, String>{});
 
+    when(() => mockAssetRepo.reconcileHashesFromCloudId()).thenAnswer((_) async => {});
     when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
   });
 
@@ -190,5 +191,4 @@ void main() {
       verify(() => mockNativeApi.hashAssets([asset2.id], allowNetworkAccess: false)).called(1);
     });
   });
-
 }
