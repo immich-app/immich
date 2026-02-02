@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:openapi/api.dart';
 
 @RoutePage()
 class SharedLinkEditPage extends HookConsumerWidget {
@@ -366,21 +367,32 @@ class SharedLinkEditPage extends HookConsumerWidget {
         changeExpiry = true;
       }
 
-      await ref
-          .read(sharedLinkServiceProvider)
-          .updateSharedLink(
-            existingLink!.id,
-            showMeta: meta,
-            allowDownload: download,
-            allowUpload: upload,
-            description: desc,
-            password: password,
-            expiresAt: expiry,
-            changeExpiry: changeExpiry,
-            slug: slugController.text.isEmpty ? null : slugController.text.trim(),
-          );
-      ref.invalidate(sharedLinksStateProvider);
-      await context.maybePop();
+      try {
+        await ref
+            .read(sharedLinkServiceProvider)
+            .updateSharedLink(
+              existingLink!.id,
+              showMeta: meta,
+              allowDownload: download,
+              allowUpload: upload,
+              description: desc,
+              password: password,
+              expiresAt: expiry,
+              changeExpiry: changeExpiry,
+              slug: slugController.text.isEmpty ? null : slugController.text.trim(),
+            );
+
+        ref.invalidate(sharedLinksStateProvider);
+        await context.maybePop();
+      } on ApiException catch (_) {
+        ImmichToast.show(
+          context: context,
+          gravity: ToastGravity.BOTTOM,
+          toastType: ToastType.error,
+          msg: 'shared_link_update_error'.tr(),
+        );
+        return;
+      }
     }
 
     return Scaffold(

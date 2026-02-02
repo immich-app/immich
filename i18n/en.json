@@ -2088,6 +2088,7 @@
   "shared_link_manage_links": "Manage Shared links",
   "shared_link_options": "Shared link options",
   "shared_link_password_description": "Require a password to access this shared link",
+  "shared_link_update_error": "Error while updating shared link",
   "shared_links": "Shared links",
   "shared_links_description": "Share photos and videos with a link",
   "shared_photos_and_videos_count": "{assetCount, plural, other {# shared photos & videos.}}",

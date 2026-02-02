@@ -113,6 +113,7 @@ class SharedLinkService {
       }
     } catch (e) {
       _log.severe("Failed to update shared link id - $id", e);
+      rethrow; // Handled at UI level
     }
     return null;
   }
