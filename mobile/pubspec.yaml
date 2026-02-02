@@ -26,7 +26,6 @@ dependencies:
   dynamic_color: ^1.8.1
   easy_localization: ^3.0.8
   ffi: ^2.1.4
-  file_picker: ^8.0.0+1
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.4.1
