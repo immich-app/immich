@@ -20,28 +20,28 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   }
 
   Future<List<DriftPerson>> getAllPeople() async {
+    final people = _db.personEntity;
+    final faces = _db.assetFaceEntity;
+    final assets = _db.remoteAssetEntity;
+
     final query =
-        _db.select(_db.personEntity).join([
-            innerJoin(_db.assetFaceEntity, _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id)),
-            innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.assetFaceEntity.assetId)),
+        _db.select(people).join([
+            innerJoin(faces, faces.personId.equalsExp(people.id)),
+            innerJoin(assets, assets.id.equalsExp(faces.assetId)),
           ])
-          ..where(_db.personEntity.isHidden.equals(false))
-          ..where(_db.remoteAssetEntity.deletedAt.isNull())
-          ..where(_db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline))
-          ..groupBy(
-            [_db.personEntity.id],
-            having: Expression.or([
-              _db.assetFaceEntity.id.count().isBiggerOrEqualValue(3),
-              _db.personEntity.name.equals('').not(),
-            ]),
+          ..where(
+            people.isHidden.equals(false) &
+                assets.deletedAt.isNull() &
+                assets.visibility.equalsValue(AssetVisibility.timeline),
           )
+          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(3) | people.name.equals('').not())
           ..orderBy([
-            OrderingTerm(expression: _db.personEntity.name.equals('').not(), mode: OrderingMode.desc),
-            OrderingTerm(expression: _db.assetFaceEntity.id.count(), mode: OrderingMode.desc),
+            OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
+            OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
 
     return query.map((row) {
-      final person = row.readTable(_db.personEntity);
+      final person = row.readTable(people);
       return person.toDto();
     }).get();
   }
