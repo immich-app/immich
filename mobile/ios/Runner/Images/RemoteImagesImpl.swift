@@ -19,7 +19,6 @@ class RemoteImageRequest {
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
   private static var lock = os_unfair_lock()
   private static var requests = [Int64: RemoteImageRequest]()
-  private static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
   private static var rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
@@ -64,45 +63,54 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
 
     if let error = error {
       if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
-        return request.completion(cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
       return request.completion(.failure(error))
     }
 
     if request.isCancelled {
-      return request.completion(cancelledResult)
+      return request.completion(ImageProcessing.cancelledResult)
     }
 
     guard let data = data else {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
 
-    guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
-          let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
-    }
-
-    if request.isCancelled {
-      return request.completion(cancelledResult)
-    }
-
-    do {
-      let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+    ImageProcessing.queue.async {
+      ImageProcessing.semaphore.wait()
+      defer { ImageProcessing.semaphore.signal() }
 
       if request.isCancelled {
-        buffer.free()
-        return request.completion(cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
 
-      request.completion(
-        .success([
-          "pointer": Int64(Int(bitPattern: buffer.data)),
-          "width": Int64(buffer.width),
-          "height": Int64(buffer.height),
-          "rowBytes": Int64(buffer.rowBytes),
-        ]))
-    } catch {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+      guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
+            let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
+      }
+
+      if request.isCancelled {
+        return request.completion(ImageProcessing.cancelledResult)
+      }
+
+      do {
+        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+
+        if request.isCancelled {
+          buffer.free()
+          return request.completion(ImageProcessing.cancelledResult)
+        }
+
+        request.completion(
+          .success([
+            "pointer": Int64(Int(bitPattern: buffer.data)),
+            "width": Int64(buffer.width),
+            "height": Int64(buffer.height),
+            "rowBytes": Int64(buffer.rowBytes),
+          ]))
+      } catch {
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+      }
     }
   }
 
