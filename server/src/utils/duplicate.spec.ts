@@ -29,9 +29,11 @@ const createAsset = (
   isArchived: false,
   isTrashed: false,
   isOffline: false,
+  isEdited: false,
   visibility: AssetVisibility.Timeline,
   checksum: 'checksum',
-  exifInfo: fileSizeInByte !== null || Object.keys(exifFields).length > 0 ? { fileSizeInByte, ...exifFields } : undefined,
+  exifInfo:
+    fileSizeInByte !== null || Object.keys(exifFields).length > 0 ? { fileSizeInByte, ...exifFields } : undefined,
 });
 
 describe('duplicate utils', () => {
