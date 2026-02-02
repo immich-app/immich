@@ -15,7 +15,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     : super(
         const ServerInfo(
           serverVersion: ServerVersion(major: 0, minor: 0, patch: 0),
-          latestVersion: ServerVersion(major: 0, minor: 0, patch: 0),
+          latestVersion: null,
           serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true),
           serverConfig: ServerConfig(
             trashDays: 30,
@@ -32,17 +32,18 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   final ServerInfoService _serverInfoService;
   final _log = Logger("ServerInfoNotifier");
 
-  Future<void> getServerInfo() async {
+  Future<ServerInfo> getServerInfo() async {
     await getServerVersion();
     await getServerFeatures();
     await getServerConfig();
+    return state;
   }
 
   Future<void> getServerVersion() async {
     try {
       final serverVersion = await _serverInfoService.getServerVersion();
 
-      // using isClientOutOfDate since that will show to users reguardless of if they are an admin
+      // using isClientOutOfDate since that will show to users regardless of if they are an admin
       if (serverVersion == null) {
         state = state.copyWith(versionStatus: VersionStatus.error);
         return;
@@ -75,7 +76,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     state = state.copyWith(versionStatus: VersionStatus.upToDate);
   }
 
-  handleReleaseInfo(ServerVersion serverVersion, ServerVersion latestVersion) {
+  handleReleaseInfo(ServerVersion serverVersion, ServerVersion? latestVersion) {
     // Update local server version
     _checkServerVersionMismatch(serverVersion, latestVersion: latestVersion);
   }

@@ -2,6 +2,7 @@ package app.alextran.immich
 
 import android.annotation.SuppressLint
 import android.content.Context
+import app.alextran.immich.core.SSLConfig
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -51,15 +52,18 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       when (call.method) {
         "apply" -> {
           val args = call.arguments<ArrayList<*>>()!!
+          val allowSelfSigned = args[0] as Boolean
+          val serverHost = args[1] as? String
+          val clientCertHash = (args[2] as? ByteArray)
 
           var tm: Array<TrustManager>? = null
-          if (args[0] as Boolean) {
-            tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
+          if (allowSelfSigned) {
+            tm = arrayOf(AllowSelfSignedTrustManager(serverHost))
           }
 
           var km: Array<KeyManager>? = null
-          if (args[2] != null) {
-            val cert = ByteArrayInputStream(args[2] as ByteArray)
+          if (clientCertHash != null) {
+            val cert = ByteArrayInputStream(clientCertHash)
             val password = (args[3] as String).toCharArray()
             val keyStore = KeyStore.getInstance("PKCS12")
             keyStore.load(cert, password)
@@ -68,6 +72,9 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             keyManagerFactory.init(keyStore, null)
             km = keyManagerFactory.keyManagers
           }
+
+          // Update shared SSL config for OkHttp and other HTTP clients
+          SSLConfig.apply(km, tm, allowSelfSigned, serverHost, clientCertHash?.contentHashCode() ?: 0)
 
           val sslContext = SSLContext.getInstance("TLS")
           sslContext.init(km, tm, null)

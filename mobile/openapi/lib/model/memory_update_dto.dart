@@ -18,6 +18,7 @@ class MemoryUpdateDto {
     this.seenAt,
   });
 
+  /// Is memory saved
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,6 +27,7 @@ class MemoryUpdateDto {
   ///
   bool? isSaved;
 
+  /// Memory date
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,6 +36,7 @@ class MemoryUpdateDto {
   ///
   DateTime? memoryAt;
 
+  /// Date when memory was seen
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

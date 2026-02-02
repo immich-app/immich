@@ -1,32 +1,30 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleCreateLibrary } from '$lib/services/library.service';
   import { user } from '$lib/stores/user.store';
-  import { searchUsersAdmin } from '@immich/sdk';
-  import { FormModal, Text } from '@immich/ui';
+  import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { type PageData } from './$types';
+
+  type Props = {
+    data: PageData;
+  };
+
+  const { data }: Props = $props();
 
   let ownerId: string = $state($user.id);
-
-  let userOptions: { value: string; text: string }[] = $state([]);
-
-  onMount(async () => {
-    const users = await searchUsersAdmin({});
-    userOptions = users.map((user) => ({ value: user.id, text: user.name }));
-  });
+  const users = $state(data.allUsers);
 
   const onClose = async () => {
-    await goto(AppRoute.ADMIN_LIBRARIES);
+    await goto(Route.libraries());
   };
 
   const onSubmit = async () => {
     const library = await handleCreateLibrary({ ownerId });
     if (library) {
-      await goto(`${AppRoute.ADMIN_LIBRARIES}/${library.id}`, { replaceState: true });
+      await goto(Route.viewLibrary(library), { replaceState: true });
     }
   };
 </script>
@@ -34,11 +32,13 @@
 <FormModal
   title={$t('create_library')}
   icon={mdiFolderSync}
-  {onClose}
   size="small"
-  {onSubmit}
   submitText={$t('create')}
+  {onClose}
+  {onSubmit}
 >
-  <SettingSelect label={$t('owner')} bind:value={ownerId} options={userOptions} name="user" />
-  <Text color="warning" size="small">{$t('admin.note_cannot_be_changed_later')}</Text>
+  <Field label={$t('owner')}>
+    <Select bind:value={ownerId} options={users.map((user) => ({ label: user.name, value: user.id }))} />
+    <HelperText color="warning">{$t('admin.note_cannot_be_changed_later')}</HelperText>
+  </Field>
 </FormModal>

@@ -4,7 +4,6 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
 typedef _AssetVideoDimension = ({double? width, double? height, bool isFlipped});
 
@@ -99,9 +98,7 @@ class AssetService {
       height = fetched?.height?.toDouble();
     }
 
-    final exif = await getExif(asset);
-    final isFlipped = ExifDtoConverter.isOrientationFlipped(exif?.orientation);
-    return (width: width, height: height, isFlipped: isFlipped);
+    return (width: width, height: height, isFlipped: false);
   }
 
   Future<List<(String, String)>> getPlaces(String userId) {

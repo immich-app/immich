@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -41,12 +40,12 @@
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.id)}
         {@const city = item.exifInfo?.city}
-        <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city })}" draggable="false">
+        <a class="relative" href={Route.search({ city })} draggable="false">
           <div
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-39 justify-center overflow-hidden rounded-xl brightness-75 filter"
           >
             <img
-              src={getAssetThumbnailUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
+              src={getAssetMediaUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
               alt={city}
               class="object-cover w-39 h-39"
               loading="lazy"

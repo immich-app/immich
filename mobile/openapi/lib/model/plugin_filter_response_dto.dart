@@ -22,18 +22,25 @@ class PluginFilterResponseDto {
     required this.title,
   });
 
+  /// Filter description
   String description;
 
+  /// Filter ID
   String id;
 
+  /// Method name
   String methodName;
 
+  /// Plugin ID
   String pluginId;
 
+  /// Filter schema
   Object? schema;
 
+  /// Supported contexts
   List<PluginContextType> supportedContexts;
 
+  /// Filter title
   String title;
 
   @override

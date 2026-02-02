@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Asset type
 class AssetTypeEnum {
   /// Instantiate a new enum with the provided [value].
   const AssetTypeEnum._(this.value);

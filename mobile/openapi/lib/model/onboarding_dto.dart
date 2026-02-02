@@ -16,6 +16,7 @@ class OnboardingDto {
     required this.isOnboarded,
   });
 
+  /// Is user onboarded
   bool isOnboarded;
 
   @override

@@ -3,8 +3,6 @@ export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
-  FAVORITE = 'favorite',
-  UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
   DELETE = 'delete',
   RESTORE = 'restore',
@@ -18,55 +16,10 @@ export enum AssetAction {
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
   SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
+  RATING = 'rating',
 }
 
-export enum AppRoute {
-  ADMIN_USERS = '/admin/users',
-  ADMIN_USERS_NEW = '/admin/users/new',
-  ADMIN_LIBRARIES = '/admin/library-management',
-  ADMIN_LIBRARIES_NEW = '/admin/library-management/new',
-  ADMIN_SETTINGS = '/admin/system-settings',
-  ADMIN_STATS = '/admin/server-status',
-  ADMIN_QUEUES = '/admin/queues',
-  ADMIN_REPAIR = '/admin/repair',
-
-  ALBUMS = '/albums',
-  LIBRARIES = '/libraries',
-  ARCHIVE = '/archive',
-  FAVORITES = '/favorites',
-  PEOPLE = '/people',
-  PLACES = '/places',
-  PHOTOS = '/photos',
-  EXPLORE = '/explore',
-  SHARE = '/share',
-  SHARING = '/sharing',
-  SHARED_LINKS = '/shared-links',
-  SEARCH = '/search',
-  MAP = '/map',
-  USER_SETTINGS = '/user-settings',
-  MEMORY = '/memory',
-  TRASH = '/trash',
-  PARTNERS = '/partners',
-  BUY = '/buy',
-
-  AUTH_LOGIN = '/auth/login',
-  AUTH_REGISTER = '/auth/register',
-  AUTH_CHANGE_PASSWORD = '/auth/change-password',
-  AUTH_ONBOARDING = '/auth/onboarding',
-  AUTH_PIN_PROMPT = '/auth/pin-prompt',
-
-  UTILITIES = '/utilities',
-  DUPLICATES = '/utilities/duplicates',
-  LARGE_FILES = '/utilities/large-files',
-  GEOLOCATION = '/utilities/geolocation',
-  WORKFLOWS = '/utilities/workflows',
-
-  FOLDERS = '/folders',
-  TAGS = '/tags',
-  LOCKED = '/locked',
-
-  MAINTENANCE = '/maintenance',
-}
+export type SharedLinkTab = 'all' | 'album' | 'individual';
 
 export enum ProjectionType {
   EQUIRECTANGULAR = 'EQUIRECTANGULAR',
@@ -96,7 +49,6 @@ export enum QueryParameter {
   ACTION = 'action',
   ID = 'id',
   IS_OPEN = 'isOpen',
-  ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
@@ -111,14 +63,13 @@ export enum SessionStorageKey {
   SCROLL_POSITION = 'scrollPosition',
 }
 
-export enum OpenSettingQueryParameterValue {
+// TODO split into user settings vs system settings
+export enum OpenQueryParam {
   OAUTH = 'oauth',
   JOB = 'job',
   STORAGE_TEMPLATE = 'storage-template',
-}
-
-export enum ActionQueryParameterValue {
-  MERGE = 'merge',
+  NOTIFICATIONS = 'notifications',
+  PURCHASE_SETTINGS = 'user-purchase-settings',
 }
 
 export const maximumLengthSearchPeople = 1000;
@@ -443,6 +394,12 @@ export enum ToggleVisibility {
   HIDE_ALL = 'hide-all',
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
+}
+
+export enum BackupFileStatus {
+  OK,
+  DifferentVersion,
+  UnknownVersion,
 }
 
 export const assetViewerFadeDuration: number = 150;

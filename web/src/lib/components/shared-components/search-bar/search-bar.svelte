@@ -2,12 +2,11 @@
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { AppRoute } from '$lib/constants';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
+  import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -42,11 +41,9 @@
   });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
-    const params = getMetadataSearchQuery(payload);
-
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    await goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(Route.search(payload));
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -111,6 +108,7 @@
     if (close) {
       await close();
       close = undefined;
+      searchStore.isSearchEnabled = false;
       return;
     }
 
@@ -120,6 +118,7 @@
 
     const searchResult = await result.onClose;
     close = undefined;
+    searchStore.isSearchEnabled = false;
 
     // Refresh search type after modal closes
     getSearchType();
@@ -254,7 +253,7 @@
     draggable="false"
     autocomplete="off"
     class="select-text text-sm"
-    action={AppRoute.SEARCH}
+    action={Route.search()}
     onreset={() => (value = '')}
     {onsubmit}
     onfocusin={onFocusIn}
@@ -346,18 +345,6 @@
       </div>
     {/if}
 
-    <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
-      <IconButton
-        aria-label={$t('show_search_options')}
-        shape="round"
-        icon={mdiTune}
-        onclick={onFilterClick}
-        size="medium"
-        color="secondary"
-        variant="ghost"
-      />
-    </div>
-
     {#if showClearIcon}
       <div class="absolute inset-y-0 end-0 flex items-center pe-2">
         <IconButton
@@ -384,4 +371,16 @@
       />
     </div>
   </form>
+
+  <div class="absolute inset-y-0 {showClearIcon ? 'end-14' : 'end-2'} flex items-center ps-6 transition-all">
+    <IconButton
+      aria-label={$t('show_search_options')}
+      shape="round"
+      icon={mdiTune}
+      onclick={onFilterClick}
+      size="medium"
+      color="secondary"
+      variant="ghost"
+    />
+  </div>
 </div>
