@@ -26,7 +26,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@immich/justified-layout-wasm": "^0.4.3",
-    "@immich/sdk": "file:../open-api/typescript-sdk",
+    "@immich/sdk": "workspace:*",
     "@immich/ui": "^0.62.1",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
