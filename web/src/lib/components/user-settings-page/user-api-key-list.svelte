@@ -33,7 +33,7 @@
 <OnEvents {onApiKeyCreate} {onApiKeyUpdate} {onApiKeyDelete} />
 
 <section class="my-4">
-  <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
+  <div class="sm:ms-8 flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
       <Button leadingIcon={Create.icon} shape="round" size="small" onclick={() => Create.onAction(Create)}>
         {Create.title}
