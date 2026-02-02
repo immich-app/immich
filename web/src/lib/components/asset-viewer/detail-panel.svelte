@@ -1,26 +1,26 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
+  import { Route } from '$lib/route';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCamera,
@@ -45,10 +45,9 @@
     asset: AssetResponseDto;
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
-    onClose: () => void;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -73,6 +72,7 @@
     })(),
   );
   let previousId: string | undefined = $state();
+  let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
   $effect(() => {
     if (!previousId) {
@@ -100,11 +100,8 @@
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
-    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
     // Remove the last part of the path to get the parent path
-    const assetParentPath = getParentPath(asset.originalPath);
-    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
-    return folderUrl.href;
+    return Route.folders({ path: getParentPath(asset.originalPath) });
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -114,7 +111,11 @@
       return;
     }
 
-    await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
+    await modalManager.show(AssetChangeDateModal, {
+      asset: toTimelineAsset(asset),
+      initialDate: dateTime,
+      initialTimeZone: timeZone,
+    });
   };
 </script>
 
@@ -123,7 +124,7 @@
     <IconButton
       icon={mdiClose}
       aria-label={$t('close')}
-      onclick={onClose}
+      onclick={() => assetViewerManager.closeDetailPanel()}
       shape="round"
       color="secondary"
       variant="ghost"
@@ -159,7 +160,7 @@
   {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2 class="uppercase">{$t('people')}</h2>
+        <Text size="small" color="muted">{$t('people')}</Text>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <IconButton
@@ -201,11 +202,7 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-22"
-              href={resolve(
-                `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
-                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
-                }`,
-              )}
+              href={Route.viewPerson(person, { previousRoute })}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
@@ -262,10 +259,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2 class="uppercase">{$t('details')}</h2>
+        <Text size="small" color="muted">{$t('details')}</Text>
       </div>
     {:else}
-      <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
+      <Text size="small" color="muted">{$t('no_exif_info_available')}</Text>
     {/if}
 
     {#if dateTime}
@@ -381,12 +378,10 @@
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href={resolve(
-                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({
-                    ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
-                    ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
-                  })}`,
-                )}
+                href={Route.search({
+                  make: asset.exifInfo?.make ?? undefined,
+                  model: asset.exifInfo?.model ?? undefined,
+                })}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
                 class="hover:text-primary"
               >
@@ -417,7 +412,7 @@
           {#if asset.exifInfo?.lensModel}
             <p>
               <a
-                href={resolve(`${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`)}
+                href={Route.search({ lensModel: asset.exifInfo.lensModel })}
                 title="{$t('search_for')} {asset.exifInfo.lensModel}"
                 class="hover:text-primary line-clamp-1"
               >
@@ -470,7 +465,7 @@
         simplified
         useLocationPin
         showSimpleControls={!showEditFaces}
-        onOpenInMapView={() => goto(resolve(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`))}
+        onOpenInMapView={() => goto(Route.map({ ...latlng, zoom: 12.5 }))}
       >
         {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
@@ -492,7 +487,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="uppercase text-sm">{$t('shared_by')}</p>
+    <Text size="small" color="muted">{$t('shared_by')}</Text>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -509,16 +504,18 @@
 
 {#if albums.length > 0}
   <section class="px-6 py-6 dark:text-immich-dark-fg">
-    <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
+    <div class="pb-4">
+      <Text size="small" color="muted">{$t('appears_in')}</Text>
+    </div>
     {#each albums as album (album.id)}
-      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
+      <a href={Route.viewAlbum(album)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
               class="h-12.5 w-12.5 rounded object-cover"
               src={album.albumThumbnailAssetId &&
-                getAssetThumbnailUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
+                getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
               draggable="false"
             />
           </div>

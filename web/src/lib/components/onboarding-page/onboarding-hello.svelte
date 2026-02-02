@@ -1,7 +1,7 @@
 <script lang="ts">
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { OnboardingRole } from '$lib/models/onboarding-role';
   import { user } from '$lib/stores/user.store';
+  import { OnboardingRole } from '$lib/types';
   import { Logo } from '@immich/ui';
   import { t } from 'svelte-i18n';
 

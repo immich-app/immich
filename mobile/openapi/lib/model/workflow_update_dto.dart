@@ -18,10 +18,13 @@ class WorkflowUpdateDto {
     this.enabled,
     this.filters = const [],
     this.name,
+    this.triggerType,
   });
 
+  /// Workflow actions
   List<WorkflowActionItemDto> actions;
 
+  /// Workflow description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -30,6 +33,7 @@ class WorkflowUpdateDto {
   ///
   String? description;
 
+  /// Workflow enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -38,8 +42,10 @@ class WorkflowUpdateDto {
   ///
   bool? enabled;
 
+  /// Workflow filters
   List<WorkflowFilterItemDto> filters;
 
+  /// Workflow name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -48,13 +54,23 @@ class WorkflowUpdateDto {
   ///
   String? name;
 
+  /// Workflow trigger type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  PluginTriggerType? triggerType;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
     _deepEquality.equals(other.actions, actions) &&
     other.description == description &&
     other.enabled == enabled &&
     _deepEquality.equals(other.filters, filters) &&
-    other.name == name;
+    other.name == name &&
+    other.triggerType == triggerType;
 
   @override
   int get hashCode =>
@@ -63,10 +79,11 @@ class WorkflowUpdateDto {
     (description == null ? 0 : description!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
     (filters.hashCode) +
-    (name == null ? 0 : name!.hashCode);
+    (name == null ? 0 : name!.hashCode) +
+    (triggerType == null ? 0 : triggerType!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name]';
+  String toString() => 'WorkflowUpdateDto[actions=$actions, description=$description, enabled=$enabled, filters=$filters, name=$name, triggerType=$triggerType]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +104,11 @@ class WorkflowUpdateDto {
     } else {
     //  json[r'name'] = null;
     }
+    if (this.triggerType != null) {
+      json[r'triggerType'] = this.triggerType;
+    } else {
+    //  json[r'triggerType'] = null;
+    }
     return json;
   }
 
@@ -104,6 +126,7 @@ class WorkflowUpdateDto {
         enabled: mapValueOfType<bool>(json, r'enabled'),
         filters: WorkflowFilterItemDto.listFromJson(json[r'filters']),
         name: mapValueOfType<String>(json, r'name'),
+        triggerType: PluginTriggerType.fromJson(json[r'triggerType']),
       );
     }
     return null;

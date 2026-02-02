@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Sync request types
 class SyncRequestType {
   /// Instantiate a new enum with the provided [value].
   const SyncRequestType._(this.value);

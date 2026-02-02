@@ -25,6 +25,7 @@ class SyncAssetFaceV1 {
     required this.sourceType,
   });
 
+  /// Asset ID
   String assetId;
 
   int boundingBoxX1;
@@ -35,14 +36,17 @@ class SyncAssetFaceV1 {
 
   int boundingBoxY2;
 
+  /// Asset face ID
   String id;
 
   int imageHeight;
 
   int imageWidth;
 
+  /// Person ID
   String? personId;
 
+  /// Source type
   String sourceType;
 
   @override

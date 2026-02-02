@@ -26,26 +26,37 @@ class ServerConfigDto {
     required this.userDeleteDelay,
   });
 
+  /// External domain URL
   String externalDomain;
 
+  /// Whether the server has been initialized
   bool isInitialized;
 
+  /// Whether the admin has completed onboarding
   bool isOnboarded;
 
+  /// Login page message
   String loginPageMessage;
 
+  /// Whether maintenance mode is active
   bool maintenanceMode;
 
+  /// Map dark style URL
   String mapDarkStyleUrl;
 
+  /// Map light style URL
   String mapLightStyleUrl;
 
+  /// OAuth button text
   String oauthButtonText;
 
+  /// Whether public user registration is enabled
   bool publicUsers;
 
+  /// Number of days before trashed assets are permanently deleted
   int trashDays;
 
+  /// Delay in days before deleted users are permanently removed
   int userDeleteDelay;
 
   @override

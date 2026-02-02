@@ -12,14 +12,17 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
+import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -135,6 +138,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         .read(remoteAlbumProvider.notifier)
         .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       sortedAlbums = sorted;
     });
@@ -146,6 +153,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   Future<void> filterAlbums() async {
     if (filter.query == null) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         shownAlbums = sortedAlbums;
       });
@@ -156,6 +167,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final filteredAlbums = ref
         .read(remoteAlbumProvider.notifier)
         .searchAlbums(sortedAlbums, filter.query!, filter.userId, filter.mode);
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       shownAlbums = filteredAlbums;
@@ -308,18 +323,17 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () => onMenuTapped(sortMode),
               style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(16, 16, 32, 16)),
+                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(12, 12, 24, 12)),
                 backgroundColor: WidgetStateProperty.all(
                   albumSortOption == sortMode ? context.colorScheme.primary : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                 ),
               ),
               child: Text(
                 sortMode.label.t(context: context),
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: context.textTheme.labelLarge?.copyWith(
                   color: albumSortOption == sortMode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
@@ -342,15 +356,12 @@ class _SortButtonState extends ConsumerState<_SortButton> {
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: albumSortIsReverse
-                    ? const Icon(Icons.keyboard_arrow_down)
-                    : const Icon(Icons.keyboard_arrow_up_rounded),
+                    ? Icon(Icons.keyboard_arrow_down, color: context.colorScheme.onSurface)
+                    : Icon(Icons.keyboard_arrow_up_rounded, color: context.colorScheme.onSurface),
               ),
               Text(
                 albumSortOption.label.t(context: context),
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: context.colorScheme.onSurface.withAlpha(225),
-                ),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(225)),
               ),
               isSorting
                   ? SizedBox(
@@ -540,7 +551,11 @@ class _QuickSortAndViewMode extends StatelessWidget {
               initialIsReverse: currentIsReverse,
             ),
             IconButton(
-              icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
+              icon: Icon(
+                isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined,
+                size: 24,
+                color: context.colorScheme.onSurface,
+              ),
               onPressed: onToggleViewMode,
             ),
           ],
@@ -660,6 +675,8 @@ class _GridAlbumCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+
     return GestureDetector(
       onTap: () => onAlbumSelected(album),
       child: Card(
@@ -678,12 +695,22 @@ class _GridAlbumCard extends ConsumerWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: SizedBox(
                   width: double.infinity,
-                  child: album.thumbnailAssetId != null
-                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
-                      : Container(
-                          color: context.colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
-                        ),
+                  child: FutureBuilder(
+                    future: albumThumbnailAsset,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return Thumbnail.remote(
+                          remoteId: album.thumbnailAssetId!,
+                          thumbhash: snapshot.data!.thumbHash ?? "",
+                        );
+                      }
+
+                      return Container(
+                        color: context.colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -752,6 +779,71 @@ class AddToAlbumHeader extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // remove internal padding
                 minimumSize: const Size(0, 0), // allow shrinking
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
+              ),
+              onPressed: onCreateAlbum,
+              icon: Icon(Icons.add, color: context.primaryColor),
+              label: Text(
+                "common_create_new_album",
+                style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 14),
+              ).tr(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CreateAlbumButton extends ConsumerWidget {
+  const CreateAlbumButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> onCreateAlbum() async {
+      var albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
+      if (albumName == null) {
+        return;
+      }
+
+      final asset = ref.read(currentAssetNotifier);
+
+      if (asset == null) {
+        ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
+        return;
+      }
+
+      final album = await ref
+          .read(remoteAlbumProvider.notifier)
+          .createAlbum(title: albumName, assetIds: [asset.remoteId!]);
+
+      if (album == null) {
+        ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
+        return;
+      }
+
+      ImmichToast.show(
+        context: context,
+        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+      );
+
+      // Invalidate using the asset's remote ID to refresh the "Appears in" list
+      ref.invalidate(albumsContainingAssetProvider(asset.remoteId!));
+
+      context.pop();
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverToBoxAdapter(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("add_to_album", style: context.textTheme.titleSmall).tr(),
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: const Size(0, 0),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: onCreateAlbum,
               icon: Icon(Icons.add, color: context.primaryColor),

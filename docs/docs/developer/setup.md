@@ -4,6 +4,10 @@ sidebar_position: 2
 
 # Setup
 
+:::warning
+Make sure to read the [`CONTRIBUTING.md`](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md) before you dive into the code.
+:::
+
 :::note
 If there's a feature you're planning to work on, just give us a heads up in [#contributing](https://discord.com/channels/979116623879368755/1071165397228855327) on [our Discord](https://discord.immich.app) so we can:
 
@@ -33,7 +37,8 @@ All the services are packaged to run as with single Docker Compose command.
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
-4. From the root directory, run:
+4. Install dependencies - `pnpm i`
+5. From the root directory, run:
 
 ```bash title="Start development server"
 make dev # required Makefile installed on the system.

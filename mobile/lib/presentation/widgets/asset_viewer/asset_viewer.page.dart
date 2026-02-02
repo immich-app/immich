@@ -93,11 +93,15 @@ class AssetViewer extends ConsumerStatefulWidget {
       ref.read(videoPlaybackValueProvider.notifier).reset();
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
+    // Hide controls by default for videos
+    if (asset.isVideo) {
+      ref.read(assetViewerProvider.notifier).setControls(false);
+    }
   }
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.7;
+const double _kBottomSheetSnapExtent = 0.67;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
@@ -116,7 +120,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
   bool assetReloadRequested = false;
-  double? initialScale;
   double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
@@ -145,6 +148,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final asset = ref.read(currentAssetNotifier);
     if (asset != null) {
       _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
+    if (ref.read(assetViewerProvider).showingControls) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    } else {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
     }
   }
 
@@ -262,7 +270,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
       // Apply the zoom effect when the bottom sheet is showing
-      initialScale = controller.scale;
       controller.scale = (controller.scale ?? 1.0) + 0.01;
     }
   }
@@ -314,7 +321,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     hasDraggedDown = null;
     viewController?.animateMultiple(
       position: initialPhotoViewState.position,
-      scale: initialPhotoViewState.scale,
+      scale: viewController?.initialScale ?? initialPhotoViewState.scale,
       rotation: initialPhotoViewState.rotation,
     );
     ref.read(assetViewerProvider.notifier).setOpacity(255);
@@ -364,8 +371,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final maxScaleDistance = ctx.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
     double? updatedScale;
-    if (initialPhotoViewState.scale != null) {
-      updatedScale = initialPhotoViewState.scale! * (1.0 - scaleReduction);
+    double? initialScale = viewController?.initialScale ?? initialPhotoViewState.scale;
+    if (initialScale != null) {
+      updatedScale = initialScale * (1.0 - scaleReduction);
     }
 
     final backgroundOpacity = (255 * (1.0 - (scaleReduction / dragRatio))).round();
@@ -399,9 +407,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isDraggingDown = currentExtent < previousExtent;
     previousExtent = currentExtent;
     // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.55) {
+    if (isDraggingDown && delta.extent < 0.67) {
       if (dragInProgress) {
         blockGestures = true;
+      }
+      // Jump to a lower position before starting close animation to prevent glitch
+      if (bottomSheetController.isAttached) {
+        bottomSheetController.jumpTo(0.67);
       }
       sheetCloseController?.close();
     }
@@ -475,12 +487,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
-    initialScale = viewController?.scale;
-    // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
-      sheetAnimationStyle: const AnimationStyle(duration: Durations.short4, reverseDuration: Durations.short2),
+      sheetAnimationStyle: const AnimationStyle(duration: Durations.medium2, reverseDuration: Durations.medium2),
       constraints: const BoxConstraints(maxWidth: double.infinity),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
       backgroundColor: ctx.colorScheme.surfaceContainerLowest,
@@ -498,7 +508,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _handleSheetClose() {
     viewController?.animateMultiple(position: Offset.zero);
-    viewController?.updateMultiple(scale: initialScale);
+    viewController?.updateMultiple(scale: viewController?.initialScale);
     ref.read(assetViewerProvider.notifier).setBottomSheet(false);
     sheetCloseController = null;
     shouldPopOnDrag = false;
@@ -521,7 +531,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
     if (scaleState != PhotoViewScaleState.initial) {
+      if (!dragInProgress) {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      }
       ref.read(videoPlayerControlsProvider.notifier).pause();
+      return;
+    }
+
+    if (!showingBottomSheet) {
+      ref.read(assetViewerProvider.notifier).setControls(true);
     }
   }
 
@@ -599,6 +617,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       filterQuality: FilterQuality.high,
       maxScale: 1.0,
       basePosition: Alignment.center,
+      disableScaleGestures: true,
       child: SizedBox(
         width: ctx.width,
         height: ctx.height,
@@ -688,16 +707,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               backgroundDecoration: BoxDecoration(color: backgroundColor),
               enablePanAlways: true,
             ),
+            if (!showingBottomSheet)
+              const Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [AssetStackRow(), ViewerBottomBar()],
+                ),
+              ),
           ],
         ),
-        bottomNavigationBar: showingBottomSheet
-            ? const SizedBox.shrink()
-            : const Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [AssetStackRow(), ViewerBottomBar()],
-              ),
       ),
     );
   }

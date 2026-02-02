@@ -8,27 +8,24 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -48,29 +45,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-    final isOwner = asset is RemoteAsset && asset.ownerId == ref.watch(currentUserProvider)?.id;
-    final isInLockedView = ref.watch(inLockedViewProvider);
-    final currentAlbum = ref.watch(currentRemoteAlbumProvider);
-    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
-    final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
-
-    final buttonContext = ActionButtonContext(
-      asset: asset,
-      isOwner: isOwner,
-      isArchived: isArchived,
-      isTrashEnabled: isTrashEnable,
-      isInLockedView: isInLockedView,
-      isStacked: asset is RemoteAsset && asset.stackId != null,
-      currentAlbum: currentAlbum,
-      advancedTroubleshooting: advancedTroubleshooting,
-      source: ActionSource.viewer,
-    );
-
-    final actions = ActionButtonBuilder.build(buttonContext);
-
     return BaseBottomSheet(
-      actions: actions,
+      actions: [],
       slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
@@ -79,7 +55,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
-      backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+      backgroundColor: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
     );
   }
 }
@@ -191,11 +167,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           children: [
             if (albums.isNotEmpty)
               SheetTile(
-                title: 'appears_in'.t(context: context).toUpperCase(),
-                titleStyle: context.textTheme.labelMedium?.copyWith(
-                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                  fontWeight: FontWeight.w600,
-                ),
+                title: 'appears_in'.t(context: context),
+                titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
             Padding(
               padding: const EdgeInsets.only(left: 24),
@@ -233,6 +206,9 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
+    final isRatingEnabled = ref
+        .watch(userMetadataPreferencesProvider)
+        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     // Build file info tile based on asset type
     Widget buildFileInfoTile() {
@@ -251,9 +227,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                 color: context.textTheme.labelLarge?.color,
               ),
               subtitle: _getFileInfo(asset, exifInfo),
-              subtitleStyle: context.textTheme.labelMedium?.copyWith(
-                color: context.textTheme.labelMedium?.color?.withAlpha(200),
-              ),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             );
           },
         );
@@ -268,9 +242,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             color: context.textTheme.labelLarge?.color,
           ),
           subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-          ),
+          subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         );
       }
     }
@@ -289,11 +261,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         const SheetLocationDetails(),
         // Details header
         SheetTile(
-          title: 'details'.t(context: context).toUpperCase(),
-          titleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            fontWeight: FontWeight.w600,
-          ),
+          title: 'details'.t(context: context),
+          titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         ),
         // File info
         buildFileInfoTile(),
@@ -305,9 +274,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getCameraInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            ),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
         ],
         // Lens info
@@ -318,15 +285,42 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getLensInfoSubtitle(exifInfo),
-            subtitleStyle: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+        ],
+        // Rating bar
+        if (isRatingEnabled) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                Text(
+                  'rating'.t(context: context),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                ),
+                RatingBar(
+                  initialRating: exifInfo?.rating?.toDouble() ?? 0,
+                  filledColor: context.themeData.colorScheme.primary,
+                  unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
+                  itemSize: 40,
+                  onRatingUpdate: (rating) async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+                  },
+                  onClearRating: () async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+                  },
+                ),
+              ],
             ),
           ),
         ],
         // Appears in (Albums)
         Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
         // padding at the bottom to avoid cut-off
-        const SizedBox(height: 100),
+        const SizedBox(height: 60),
       ],
     );
   }

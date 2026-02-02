@@ -1,7 +1,5 @@
-import { AppRoute } from '$lib/constants';
+import { Route } from '$lib/route';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (() => {
-  redirect(302, AppRoute.ADMIN_USERS);
-}) satisfies PageLoad;
+export const load = (() => redirect(307, Route.systemSettings())) satisfies PageLoad;

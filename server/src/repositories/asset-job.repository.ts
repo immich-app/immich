@@ -11,6 +11,7 @@ import {
   asUuid,
   toJson,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withExifInner,
   withFaces,
@@ -41,15 +42,7 @@ export class AssetJobRepository {
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('tag')
-            .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
-            .whereRef('asset.id', '=', 'tag_asset.assetId'),
-        ).as('tags'),
-      )
+      .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();
   }
@@ -71,6 +64,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
       .select(withFiles)
+      .select(withEdits)
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .$if(!force, (qb) =>
@@ -79,8 +73,22 @@ export class AssetJobRepository {
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where((eb) =>
             eb.or([
-              eb('asset_job_status.previewAt', 'is', null),
-              eb('asset_job_status.thumbnailAt', 'is', null),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Preview),
+                ),
+              ),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Thumbnail),
+                ),
+              ),
               eb('asset.thumbhash', 'is', null),
             ]),
           ),
@@ -111,7 +119,16 @@ export class AssetJobRepository {
         'asset.thumbhash',
         'asset.type',
       ])
-      .select(withFiles)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFilesForThumbnail)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize]),
+        ).as('files'),
+      )
+      .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -126,6 +143,16 @@ export class AssetJobRepository {
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLockedPropertiesForMetadataExtraction(assetId: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.lockedProperties')
+      .where('asset_exif.assetId', '=', assetId)
+      .executeTakeFirst()
+      .then((row) => row?.lockedProperties ?? []);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Thumbnail] })
@@ -144,7 +171,14 @@ export class AssetJobRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
-      .where('job_status.previewAt', 'is not', null);
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -189,7 +223,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
       .$call(withExifInner)
-      .select((eb) => withFaces(eb, true))
+      .select((eb) => withFaces(eb, true, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -313,6 +347,9 @@ export class AssetJobRepository {
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.lensModel',
       ])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);
