@@ -1,10 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:logging/logging.dart';
 
 class SslClientCertSettings extends StatefulWidget {
   const SslClientCertSettings({super.key, required this.isLoggedIn});
@@ -16,9 +18,11 @@ class SslClientCertSettings extends StatefulWidget {
 }
 
 class _SslClientCertSettingsState extends State<SslClientCertSettings> {
-  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
+  final _log = Logger("SslClientCertSettings");
 
   bool isCertExist;
+
+  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,10 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: widget.isLoggedIn ? null : importCert, child: Text("client_cert_import".tr())),
-              ElevatedButton(onPressed: widget.isLoggedIn ? null : removeCert, child: Text("remove".tr())),
+              ElevatedButton(
+                onPressed: widget.isLoggedIn || !isCertExist ? null : removeCert,
+                child: Text("remove".tr()),
+              ),
             ],
           ),
         ],
@@ -49,12 +56,11 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     );
   }
 
-  void showMessage(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Text(message),
-        actions: [TextButton(onPressed: () => ctx.pop(), child: Text("client_cert_dialog_msg_confirm".tr()))],
+  void showMessage(String message) {
+    context.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: Text(message, style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor)),
       ),
     );
   }
@@ -64,9 +70,12 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       final cert = await networkApi.selectCertificate();
       await SSLClientCertStoreVal(cert.data, cert.password).save();
       HttpSSLOptions.apply();
-      showMessage(context, "client_cert_import_success_msg".tr());
+      setState(() => isCertExist = true);
+      showMessage("client_cert_import_success_msg".tr());
     } catch (e) {
-      showMessage(context, "client_cert_invalid_msg".tr());
+      if (_isCancellation(e)) return;
+      _log.severe("Error importing client cert", e);
+      showMessage("client_cert_invalid_msg".tr());
     }
   }
 
@@ -75,9 +84,14 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       await networkApi.removeCertificate();
       await SSLClientCertStoreVal.delete();
       HttpSSLOptions.apply();
-      showMessage(context, "client_cert_remove_msg".tr());
+      setState(() => isCertExist = false);
+      showMessage("client_cert_remove_msg".tr());
     } catch (e) {
-      showMessage(context, "client_cert_invalid_msg".tr());
+      if (_isCancellation(e)) return;
+      _log.severe("Error removing client cert", e);
+      showMessage("client_cert_invalid_msg".tr());
     }
   }
+
+  bool _isCancellation(Object e) => e is PlatformException && e.code.toLowerCase().contains("cancel");
 }
