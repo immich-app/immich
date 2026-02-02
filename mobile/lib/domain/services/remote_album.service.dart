@@ -212,6 +212,6 @@ class RemoteAlbumService {
       return aDate.compareTo(bDate);
     });
 
-    return sorted.toList();
+    return sorted;
   }
 }
