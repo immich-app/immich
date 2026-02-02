@@ -145,40 +145,13 @@ private func importCert(clientData: Data, password: String) -> OSStatus {
     kSecAttrService as String: CLIENT_CERT_SERVICE,
     kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
   ]
-  status = SecItemAdd(addQuery as CFDictionary, nil)
-  guard status == errSecSuccess else { return status }
-  
-  // TODO: remove this section below once the app is fully transitioned to native clients
-  addQuery = [
-    kSecClass as String: kSecClassGenericPassword,
-    kSecValueData as String: clientData,
-    kSecAttrAccount as String: CLIENT_CERT_DATA_LABEL,
-    kSecAttrService as String: CLIENT_CERT_SERVICE,
-    kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-  ]
-  status = SecItemAdd(addQuery as CFDictionary, nil)
-  guard status == errSecSuccess else { return status }
-  
-  addQuery = [
-    kSecClass as String: kSecClassGenericPassword,
-    kSecValueData as String: password.data(using: .utf8)!,
-    kSecAttrAccount as String: CLIENT_CERT_PASSWORD_LABEL,
-    kSecAttrService as String: CLIENT_CERT_SERVICE,
-    kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-  ]
-  status = SecItemAdd(addQuery as CFDictionary, nil)
-  return status
+  return SecItemAdd(addQuery as CFDictionary, nil)
 }
 
 @discardableResult private func clearCerts() -> OSStatus {
-  var status = errSecSuccess
-  for secClass in [kSecClassIdentity, kSecClassGenericPassword] {
-    let deleteQuery: [String: Any] = [
-      kSecClass as String: secClass,
-      kSecAttrService as String: CLIENT_CERT_SERVICE,
-    ]
-    status = SecItemDelete(deleteQuery as CFDictionary)
-    guard status == errSecSuccess || status == errSecItemNotFound else { return status }
-  }
-  return status
+  let deleteQuery: [String: Any] = [
+    kSecClass as String: kSecClassIdentity,
+    kSecAttrService as String: CLIENT_CERT_SERVICE,
+  ]
+  return SecItemDelete(deleteQuery as CFDictionary)
 }
