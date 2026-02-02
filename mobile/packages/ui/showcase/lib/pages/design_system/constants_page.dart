@@ -22,7 +22,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
         subtitle: 'Consistent spacing, sizing, and styling constants.',
         expand: true,
         examples: [
-          ExampleCard(
+          const ExampleCard(
             title: 'Spacing',
             description: 'ImmichSpacing (4.0 → 48.0)',
             preview: Column(
@@ -37,7 +37,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
               ],
             ),
           ),
-          ExampleCard(
+          const ExampleCard(
             title: 'Border Radius',
             description: 'ImmichRadius (0.0 → 24.0)',
             preview: Wrap(
@@ -54,7 +54,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
               ],
             ),
           ),
-          ExampleCard(
+          const ExampleCard(
             title: 'Icon Sizes',
             description: 'ImmichIconSize (16.0 → 48.0)',
             preview: Wrap(
@@ -92,7 +92,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
               ],
             ),
           ),
-          ExampleCard(
+          const ExampleCard(
             title: 'Elevation',
             description: 'ImmichElevation (0.0 → 16.0)',
             preview: Wrap(
@@ -109,7 +109,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
               ],
             ),
           ),
-          ExampleCard(
+          const ExampleCard(
             title: 'Border Width',
             description: 'ImmichBorderWidth (0.5 → 4.0)',
             preview: Column(
@@ -125,7 +125,7 @@ class _ConstantsPageState extends State<ConstantsPage> {
               ],
             ),
           ),
-          ExampleCard(
+          const ExampleCard(
             title: 'Animation Durations',
             description: 'ImmichDuration (100ms → 700ms)',
             preview: Column(
@@ -175,7 +175,10 @@ class _SpacingBox extends StatelessWidget {
         children: [
           SizedBox(
             width: 60,
-            child: Text(label, style: const TextStyle(fontFamily: 'GoogleSansCode')),
+            child: Text(
+              label,
+              style: const TextStyle(fontFamily: 'GoogleSansCode'),
+            ),
           ),
           Container(
             width: size,
@@ -281,7 +284,10 @@ class _BorderBox extends StatelessWidget {
         children: [
           SizedBox(
             width: 80,
-            child: Text(label, style: const TextStyle(fontFamily: 'GoogleSansCode')),
+            child: Text(
+              label,
+              style: const TextStyle(fontFamily: 'GoogleSansCode'),
+            ),
           ),
           Expanded(
             child: Container(

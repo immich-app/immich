@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:immich_ui/immich_ui.dart';
+import 'package:showcase/pages/components/examples/html_text_bold_text.dart';
+import 'package:showcase/pages/components/examples/html_text_links.dart';
+import 'package:showcase/pages/components/examples/html_text_nested_tags.dart';
 import 'package:showcase/routes.dart';
 import 'package:showcase/widgets/component_examples.dart';
 import 'package:showcase/widgets/example_card.dart';
@@ -18,55 +20,18 @@ class HtmlTextPage extends StatelessWidget {
         examples: [
           ExampleCard(
             title: 'Bold Text',
-            preview: ImmichHtmlText(
-              'This is <b>bold text</b> and <strong>strong text</strong>.',
-            ),
-            code: '''ImmichHtmlText(
-  'This is <b>bold text</b> and <strong>strong text</strong>.',
-)''',
+            preview: const HtmlTextBoldText(),
+            code: 'html_text_bold_text.dart',
           ),
           ExampleCard(
             title: 'Links',
-            preview: ImmichHtmlText(
-              'Read the <docs-link>documentation</docs-link> or visit <github-link>GitHub</github-link>.',
-              linkHandlers: {
-                'docs-link': () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Docs link clicked!')),
-                  );
-                },
-                'github-link': () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('GitHub link clicked!')),
-                  );
-                },
-              },
-            ),
-            code: '''ImmichHtmlText(
-  'Read the <docs-link>documentation</docs-link>.',
-  linkHandlers: {
-    'docs-link': () => launchUrl(docsUrl),
-  },
-)''',
+            preview: const HtmlTextLinks(),
+            code: 'html_text_links.dart',
           ),
           ExampleCard(
             title: 'Nested Tags',
-            preview: ImmichHtmlText(
-              'You can <b>combine <link>bold and links</link></b> together.',
-              linkHandlers: {
-                'link': () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Nested link clicked!')),
-                  );
-                },
-              },
-            ),
-            code: '''ImmichHtmlText(
-  'You can <b>combine <link>bold and links</link></b>.',
-  linkHandlers: {
-    'link': () => handleClick(),
-  },
-)''',
+            preview: const HtmlTextNestedTags(),
+            code: 'html_text_nested_tags.dart',
           ),
         ],
       ),

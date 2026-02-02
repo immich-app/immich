@@ -82,7 +82,7 @@ class _ComponentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => context.go(route.path),
-      borderRadius: BorderRadius.circular(LayoutConstants.borderRadiusLarge),
+      borderRadius: const BorderRadius.all(Radius.circular(LayoutConstants.borderRadiusLarge)),
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -90,11 +90,7 @@ class _ComponentCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                route.icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              Icon(route.icon, size: 32, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 16),
               Text(
                 route.name,
@@ -107,10 +103,9 @@ class _ComponentCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 route.description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, height: 1.4),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

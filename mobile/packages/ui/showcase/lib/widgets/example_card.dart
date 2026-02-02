@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:showcase/constants.dart';
 import 'package:syntax_highlight/syntax_highlight.dart';
 
@@ -33,6 +34,21 @@ class ExampleCard extends StatefulWidget {
 
 class _ExampleCardState extends State<ExampleCard> {
   bool _showPreview = true;
+  String? code;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.code != null) {
+      rootBundle
+          .loadString('lib/pages/components/examples/${widget.code!}')
+          .then((value) {
+            setState(() {
+              code = value;
+            });
+          });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +85,7 @@ class _ExampleCardState extends State<ExampleCard> {
                     ],
                   ),
                 ),
-                if (widget.code != null) ...[
+                if (code != null) ...[
                   const SizedBox(width: 16),
                   Row(
                     children: [
@@ -112,7 +128,7 @@ class _ExampleCardState extends State<ExampleCard> {
                   ),
                 ),
               ),
-              child: _CodeCard(code: widget.code!),
+              child: _CodeCard(code: code!),
             ),
         ],
       ),
@@ -137,14 +153,14 @@ class _ToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: const BorderRadius.all(Radius.circular(24)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.7)
               : Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: const BorderRadius.all(Radius.circular(24)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
