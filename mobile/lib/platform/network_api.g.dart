@@ -112,6 +112,43 @@ class ClientCertPrompt {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class WebSocketTaskResult {
+  WebSocketTaskResult({required this.taskPointer, this.taskProtocol});
+
+  int taskPointer;
+
+  String? taskProtocol;
+
+  List<Object?> _toList() {
+    return <Object?>[taskPointer, taskProtocol];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static WebSocketTaskResult decode(Object result) {
+    result as List<Object?>;
+    return WebSocketTaskResult(taskPointer: result[0]! as int, taskProtocol: result[1] as String?);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! WebSocketTaskResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -125,6 +162,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is ClientCertPrompt) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
+    } else if (value is WebSocketTaskResult) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -137,6 +177,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return ClientCertData.decode(readValue(buffer)!);
       case 130:
         return ClientCertPrompt.decode(readValue(buffer)!);
+      case 131:
+        return WebSocketTaskResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -255,6 +297,58 @@ class NetworkApi {
       );
     } else {
       return (pigeonVar_replyList[0] as int?)!;
+    }
+  }
+
+  /// iOS only - creates a WebSocket task and waits for connection to be established.
+  Future<WebSocketTaskResult> createWebSocketTask(String url, List<String>? protocols) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NetworkApi.createWebSocketTask$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[url, protocols]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as WebSocketTaskResult?)!;
+    }
+  }
+
+  Future<void> setRequestHeaders(Map<String, String> headers) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NetworkApi.setRequestHeaders$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[headers]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
     }
   }
 }
