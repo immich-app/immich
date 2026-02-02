@@ -18,10 +18,13 @@ class AlbumStatisticsResponseDto {
     required this.shared,
   });
 
+  /// Number of non-shared albums
   int notShared;
 
+  /// Number of owned albums
   int owned;
 
+  /// Number of shared albums
   int shared;
 
   @override

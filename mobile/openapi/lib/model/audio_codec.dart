@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Target audio codec
 class AudioCodec {
   /// Instantiate a new enum with the provided [value].
   const AudioCodec._(this.value);

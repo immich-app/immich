@@ -308,7 +308,6 @@ export class MediaService extends BaseService {
       isEdited: useEdits,
       isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
     });
-    previewFile.isProgressive = !!image.preview.progressive && image.preview.format !== ImageFormat.Webp;
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: image.thumbnail.format,
@@ -349,10 +348,9 @@ export class MediaService extends BaseService {
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
         format: extracted.format,
-        isEdited: useEdits,
+        isEdited: false,
         isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
       });
-      fullsizeFile.isProgressive = !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp;
       this.storageCore.ensureFolders(fullsizeFile.path);
 
       // Write the buffer to disk with essential EXIF data

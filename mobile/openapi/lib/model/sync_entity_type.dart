@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Sync entity type
 class SyncEntityType {
   /// Instantiate a new enum with the provided [value].
   const SyncEntityType._(this.value);

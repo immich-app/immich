@@ -821,8 +821,6 @@
   "editor": "Уредник",
   "editor_close_without_save_prompt": "Промене неће бити сачуване",
   "editor_close_without_save_title": "Затворити уређивач?",
-  "editor_crop_tool_h2_aspect_ratios": "Пропорције (аспецт ратиос)",
-  "editor_crop_tool_h2_rotation": "Ротација",
   "email": "Е-пошта",
   "email_notifications": "Обавештења е-поштом",
   "empty_folder": "Ова мапа је празна",
