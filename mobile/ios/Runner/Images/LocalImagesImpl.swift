@@ -103,7 +103,7 @@ class LocalImageApiImpl: LocalImageApi {
       )
       
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
       guard let image = image,

@@ -127,7 +127,7 @@ private class CertImporter: NSObject, UIDocumentPickerDelegate {
 private func importCert(clientData: Data, password: String) -> OSStatus {
   let options = [kSecImportExportPassphrase: password] as CFDictionary
   var items: CFArray?
-  var status = SecPKCS12Import(clientData as CFData, options, &items)
+  let status = SecPKCS12Import(clientData as CFData, options, &items)
   
   guard status == errSecSuccess,
         let array = items as? [[String: Any]],
@@ -138,11 +138,10 @@ private func importCert(clientData: Data, password: String) -> OSStatus {
   
   clearCerts()
   
-  var addQuery = [
+  let addQuery: [String: Any] = [
     kSecClass as String: kSecClassIdentity,
     kSecValueRef as String: identity,
     kSecAttrLabel as String: CLIENT_CERT_LABEL,
-    kSecAttrService as String: CLIENT_CERT_SERVICE,
     kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
   ]
   return SecItemAdd(addQuery as CFDictionary, nil)
@@ -151,7 +150,7 @@ private func importCert(clientData: Data, password: String) -> OSStatus {
 @discardableResult private func clearCerts() -> OSStatus {
   let deleteQuery: [String: Any] = [
     kSecClass as String: kSecClassIdentity,
-    kSecAttrService as String: CLIENT_CERT_SERVICE,
+    kSecAttrLabel as String: CLIENT_CERT_LABEL,
   ]
   return SecItemDelete(deleteQuery as CFDictionary)
 }

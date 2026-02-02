@@ -1,7 +1,6 @@
 import Foundation
 
-let CLIENT_CERT_SERVICE = "app.alextran.immich.mtls"
-let CLIENT_CERT_LABEL = "client_identity"
+let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 
 /// Manages a shared URLSession with SSL configuration support.
 class URLSessionManager: NSObject {

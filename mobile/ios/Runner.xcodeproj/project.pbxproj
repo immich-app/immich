@@ -33,6 +33,7 @@
 		FE5499F42F1197D8006016CB /* RemoteImages.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F22F1197D8006016CB /* RemoteImages.g.swift */; };
 		FE5499F62F11980E006016CB /* LocalImagesImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F52F11980E006016CB /* LocalImagesImpl.swift */; };
 		FE5499F82F1198E2006016CB /* RemoteImagesImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */; };
+		FE5FE4AE2F30FBC000A71243 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5FE4AD2F30FBC000A71243 /* ImageProcessing.swift */; };
 		FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */; };
 		FEE084F82EC172460045228E /* SQLiteData in Frameworks */ = {isa = PBXBuildFile; productRef = FEE084F72EC172460045228E /* SQLiteData */; };
 		FEE084FB2EC1725A0045228E /* RawStructuredFieldValues in Frameworks */ = {isa = PBXBuildFile; productRef = FEE084FA2EC1725A0045228E /* RawStructuredFieldValues */; };
@@ -124,6 +125,7 @@
 		FE5499F22F1197D8006016CB /* RemoteImages.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImages.g.swift; sourceTree = "<group>"; };
 		FE5499F52F11980E006016CB /* LocalImagesImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalImagesImpl.swift; sourceTree = "<group>"; };
 		FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteImagesImpl.swift; sourceTree = "<group>"; };
+		FE5FE4AD2F30FBC000A71243 /* ImageProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessing.swift; sourceTree = "<group>"; };
 		FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbhash.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -325,6 +327,7 @@
 		FED3B1952E253E9B0030FD97 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				FE5FE4AD2F30FBC000A71243 /* ImageProcessing.swift */,
 				FE5499F72F1198DE006016CB /* RemoteImagesImpl.swift */,
 				FE5499F52F11980E006016CB /* LocalImagesImpl.swift */,
 				FE5499F12F1197D8006016CB /* LocalImages.g.swift */,
@@ -609,6 +612,7 @@
 				FE5499F32F1197D8006016CB /* LocalImages.g.swift in Sources */,
 				FE5499F62F11980E006016CB /* LocalImagesImpl.swift in Sources */,
 				FE5499F42F1197D8006016CB /* RemoteImages.g.swift in Sources */,
+				FE5FE4AE2F30FBC000A71243 /* ImageProcessing.swift in Sources */,
 				B25D377A2E72CA15008B6CA7 /* Connectivity.g.swift in Sources */,
 				FE5499F82F1198E2006016CB /* RemoteImagesImpl.swift in Sources */,
 				FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */,
