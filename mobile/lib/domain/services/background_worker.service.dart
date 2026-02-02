@@ -88,7 +88,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> init() async {
     try {
-      HttpSSLOptions.apply(applyNative: false);
+      await HttpSSLOptions.apply(applyNative: false);
 
       await Future.wait(
         [
