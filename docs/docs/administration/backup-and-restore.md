@@ -151,11 +151,12 @@ docker compose pull             # Update to latest version of Immich (if desired
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
+# Replace <DB_DATABASE_NAME> with the database name from configuration file - usually immich unless you have changed it.
 # Check the database user if you deviated from the default
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 gunzip --stdout "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --dbname=postgres --username=<DB_USERNAME>  # Restore Backup
+| docker exec -i immich_postgres psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
@@ -178,9 +179,10 @@ docker start immich_postgres                      # Start Postgres server
 sleep 10                                          # Wait for Postgres server to start up
 docker exec -it immich_postgres bash              # Enter the Docker shell and run the following command
 # If your backup ends in `.gz`, replace `cat` with `gunzip --stdout`
+# Replace <DB_DATABASE_NAME> with the database name from configuration file - usually immich unless you have changed it.
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 
-cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=postgres --username=<DB_USERNAME>
+cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
