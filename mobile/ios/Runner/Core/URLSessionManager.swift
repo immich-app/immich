@@ -11,7 +11,6 @@ class URLSessionManager: NSObject {
   static let shared = URLSessionManager()
   
   let session: URLSession
-  private var lock = os_unfair_lock()
   private let configuration = {
     let config = URLSessionConfiguration.default
     
@@ -35,8 +34,6 @@ class URLSessionManager: NSObject {
     
     return config
   }()
-  private var initialized = false
-  private var sessionChangedListeners: [() -> Void] = []
   
   private override init() {
     session = URLSession(configuration: configuration, delegate: URLSessionManagerDelegate(), delegateQueue: nil)
