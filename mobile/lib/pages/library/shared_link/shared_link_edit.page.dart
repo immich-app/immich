@@ -90,17 +90,24 @@ class SharedLinkEditPage extends HookConsumerWidget {
               disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5))),
             ),
           ),
-          if (slugController.text.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '/s/${slugController.text.trim()}',
-                  style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+          ValueListenableBuilder(
+            valueListenable: slugController,
+            builder: (context, value, _) {
+              if (value.text.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '/s/${value.text.trim()}',
+                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
+          ),
         ],
       );
     }
