@@ -79,14 +79,35 @@
     --immich-split-viewer-nav: enabled;
 
     /* view transition variables */
+    /* Base animation duration for standard transitions (page fades, info panel) */
     --vt-duration-default: 250ms;
+    /* Duration for hero transitions (thumbnail to full viewer) */
     --vt-duration-hero: 280ms;
+    /* Duration for next/previous photo navigation */
     --vt-duration-viewer-navigation: 270ms;
+    /* Duration for slideshow mode transitions */
     --vt-duration-slideshow: 1s;
+    /* Easing function for slide animations (ease-out) */
     --vt-viewer-slide-easing: cubic-bezier(0.2, 0, 0, 1);
+    /* How far images slide in/out during navigation (% of viewport) */
     --vt-viewer-slide-distance: 15%;
+    /* Starting opacity for fly transitions (slide+fade effect) */
     --vt-viewer-opacity-start: 0.1;
-    --vt-viewer-blur-max: 4px;
+    /* Maximum blur during fly transitions (currently disabled) */
+    --vt-viewer-blur-max: 0px;
+
+    --vt-viewer-next-in: slideInRight;
+    --vt-viewer-next-out: slideOutLeft;
+    --vt-viewer-prev-in: slideInLeft;
+    --vt-viewer-prev-out: slideOutRight;
+    --vt-viewer-old-opacity: 4;
+
+    /* For fly (slide+fade): uncomment these and comment above */
+    --vt-viewer-next-in: flyInRight;
+    --vt-viewer-next-out: flyOutLeft;
+    --vt-viewer-prev-in: flyInLeft;
+    --vt-viewer-prev-out: flyOutRight;
+    --vt-viewer-old-opacity: 1;
   }
 
   button:not(:disabled),
@@ -247,6 +268,7 @@
   ::view-transition-group(letterbox-top),
   ::view-transition-group(letterbox-bottom) {
     animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
     z-index: 4;
   }
 
@@ -304,32 +326,73 @@
   }
   ::view-transition-old(next),
   ::view-transition-old(next-old) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyOutLeft forwards;
+    animation-name: var(--vt-viewer-next-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
     overflow: hidden;
   }
 
   ::view-transition-new(next),
   ::view-transition-new(next-new) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyInRight forwards;
+    animation-name: var(--vt-viewer-next-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
     overflow: hidden;
   }
 
   ::view-transition-old(previous) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyOutRight forwards;
+    animation-name: var(--vt-viewer-prev-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
   }
   ::view-transition-old(previous-old) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyOutRight forwards;
+    animation-name: var(--vt-viewer-prev-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
     overflow: hidden;
     z-index: -1;
   }
 
   ::view-transition-new(previous) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyInLeft forwards;
+    animation-name: var(--vt-viewer-prev-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
   }
 
   ::view-transition-new(previous-new) {
-    animation: var(--vt-duration-viewer-navigation) var(--vt-viewer-slide-easing) flyInLeft forwards;
+    animation-name: var(--vt-viewer-prev-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
     overflow: hidden;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(calc(-1 * var(--vt-viewer-slide-distance)));
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(var(--vt-viewer-slide-distance));
+    }
+  }
+
+  @keyframes slideOutLeft {
+    /* No animation needed, instant hide via opacity */
+  }
+
+  @keyframes slideOutRight {
+    /* No animation needed, instant hide via opacity */
   }
 
   @keyframes flyInLeft {
