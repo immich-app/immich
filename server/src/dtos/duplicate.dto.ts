@@ -103,26 +103,3 @@ export class DuplicateResolveResponseDto {
   @ApiProperty({ type: [DuplicateResolveResultDto], description: 'Per-group results of the resolve operation' })
   results!: DuplicateResolveResultDto[];
 }
-
-// Stack endpoint DTOs
-
-export class DuplicateStackDto {
-  @ValidateUUID()
-  duplicateId!: string;
-
-  @ApiProperty({
-    isArray: true,
-    type: String,
-    description: 'Asset IDs to stack (minimum 2). All must be members of the duplicate group.',
-  })
-  @ValidateUUID({ each: true })
-  @ArrayMinSize(2)
-  assetIds!: string[];
-
-  @ApiProperty({
-    required: false,
-    description: 'Optional primary asset ID. Must be in assetIds if provided. If omitted, first asset becomes primary.',
-  })
-  @ValidateUUID({ optional: true })
-  primaryAssetId?: string;
-}

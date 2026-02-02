@@ -5326,62 +5326,6 @@
         "x-immich-state": "Beta"
       }
     },
-    "/duplicates/stack": {
-      "post": {
-        "description": "Create a stack from assets in a duplicate group and clear their duplicate membership.",
-        "operationId": "stackDuplicates",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DuplicateStackDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StackResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "summary": "Stack duplicates",
-        "tags": [
-          "Duplicates"
-        ],
-        "x-immich-history": [
-          {
-            "version": "v1",
-            "state": "Added"
-          },
-          {
-            "version": "v1",
-            "state": "Beta"
-          }
-        ],
-        "x-immich-permission": "asset.update",
-        "x-immich-state": "Beta"
-      }
-    },
     "/duplicates/{id}": {
       "delete": {
         "description": "Delete a single duplicate asset specified by its ID.",
@@ -17977,33 +17921,6 @@
           "assets",
           "duplicateId",
           "suggestedKeepAssetIds"
-        ],
-        "type": "object"
-      },
-      "DuplicateStackDto": {
-        "properties": {
-          "assetIds": {
-            "description": "Asset IDs to stack (minimum 2). All must be members of the duplicate group.",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "minItems": 2,
-            "type": "array"
-          },
-          "duplicateId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "primaryAssetId": {
-            "description": "Optional primary asset ID. Must be in assetIds if provided. If omitted, first asset becomes primary.",
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetIds",
-          "duplicateId"
         ],
         "type": "object"
       },

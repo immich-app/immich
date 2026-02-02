@@ -167,7 +167,6 @@ part 'model/duplicate_resolve_response_dto.dart';
 part 'model/duplicate_resolve_result_dto.dart';
 part 'model/duplicate_resolve_settings_dto.dart';
 part 'model/duplicate_response_dto.dart';
-part 'model/duplicate_stack_dto.dart';
 part 'model/email_notifications_response.dart';
 part 'model/email_notifications_update.dart';
 part 'model/exif_response_dto.dart';

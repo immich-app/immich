@@ -3,13 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  DuplicateResolveDto,
-  DuplicateResolveResponseDto,
-  DuplicateResponseDto,
-  DuplicateStackDto,
-} from 'src/dtos/duplicate.dto';
-import { StackResponseDto } from 'src/dtos/stack.dto';
+import { DuplicateResolveDto, DuplicateResolveResponseDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
@@ -64,22 +58,7 @@ export class DuplicateController {
       'Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.',
     history: new HistoryBuilder().added('v1').beta('v1'),
   })
-  resolveDuplicates(
-    @Auth() auth: AuthDto,
-    @Body() dto: DuplicateResolveDto,
-  ): Promise<DuplicateResolveResponseDto> {
+  resolveDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateResolveDto): Promise<DuplicateResolveResponseDto> {
     return this.service.resolve(auth, dto);
-  }
-
-  @Post('stack')
-  @HttpCode(HttpStatus.CREATED)
-  @Authenticated({ permission: Permission.AssetUpdate })
-  @Endpoint({
-    summary: 'Stack duplicates',
-    description: 'Create a stack from assets in a duplicate group and clear their duplicate membership.',
-    history: new HistoryBuilder().added('v1').beta('v1'),
-  })
-  stackDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateStackDto): Promise<StackResponseDto> {
-    return this.service.stack(auth, dto);
   }
 }

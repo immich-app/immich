@@ -380,8 +380,6 @@ class ApiClient {
           return DuplicateResolveSettingsDto.fromJson(value);
         case 'DuplicateResponseDto':
           return DuplicateResponseDto.fromJson(value);
-        case 'DuplicateStackDto':
-          return DuplicateStackDto.fromJson(value);
         case 'EmailNotificationsResponse':
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':

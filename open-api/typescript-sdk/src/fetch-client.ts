@@ -1207,21 +1207,6 @@ export type DuplicateResolveResponseDto = {
     /** Overall status of the resolve operation */
     status: Status2;
 };
-export type DuplicateStackDto = {
-    /** Asset IDs to stack (minimum 2). All must be members of the duplicate group. */
-    assetIds: string[];
-    duplicateId: string;
-    /** Optional primary asset ID. Must be in assetIds if provided. If omitted, first asset becomes primary. */
-    primaryAssetId?: string;
-};
-export type StackResponseDto = {
-    /** Stack assets */
-    assets: AssetResponseDto[];
-    /** Stack ID */
-    id: string;
-    /** Primary asset ID */
-    primaryAssetId: string;
-};
 export type PersonResponseDto = {
     /** Person date of birth */
     birthDate: string | null;
@@ -2370,6 +2355,14 @@ export type AssetIdsResponseDto = {
     error?: Error2;
     /** Whether operation succeeded */
     success: boolean;
+};
+export type StackResponseDto = {
+    /** Stack assets */
+    assets: AssetResponseDto[];
+    /** Stack ID */
+    id: string;
+    /** Primary asset ID */
+    primaryAssetId: string;
 };
 export type StackCreateDto = {
     /** Asset IDs (first becomes primary, min 2) */
@@ -4552,21 +4545,6 @@ export function resolveDuplicates({ duplicateResolveDto }: {
         ...opts,
         method: "POST",
         body: duplicateResolveDto
-    })));
-}
-/**
- * Stack duplicates
- */
-export function stackDuplicates({ duplicateStackDto }: {
-    duplicateStackDto: DuplicateStackDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
-        data: StackResponseDto;
-    }>("/duplicates/stack", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: duplicateStackDto
     })));
 }
 /**

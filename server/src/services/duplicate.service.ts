@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -13,9 +13,7 @@ import {
   DuplicateResolveSettingsDto,
   DuplicateResolveStatus,
   DuplicateResponseDto,
-  DuplicateStackDto,
 } from 'src/dtos/duplicate.dto';
-import { mapStack, StackResponseDto } from 'src/dtos/stack.dto';
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
@@ -200,9 +198,7 @@ export class DuplicateService extends BaseService {
 
         if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
           await this.albumRepository.addAssetIdsToAlbums(
-            [...allowedAlbumIds].flatMap((albumId) =>
-              [...allowedShareIds].map((assetId) => ({ albumId, assetId })),
-            ),
+            [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
           );
         }
       }
@@ -269,47 +265,6 @@ export class DuplicateService extends BaseService {
       duplicateId,
       status: DuplicateResolveStatus.Success,
     };
-  }
-
-  async stack(auth: AuthDto, dto: DuplicateStackDto): Promise<StackResponseDto> {
-    const { duplicateId, assetIds, primaryAssetId } = dto;
-
-    // Step 1: Validate duplicate group exists and belongs to user
-    const duplicateGroup = await this.duplicateRepository.getByIdForUser(auth.user.id, duplicateId);
-    if (!duplicateGroup) {
-      throw new BadRequestException(`Duplicate group ${duplicateId} not found or access denied`);
-    }
-
-    const groupAssetIds = new Set(duplicateGroup.assets.map((a) => a.id));
-
-    // Step 2: Validate all assetIds are members of the duplicate group
-    for (const assetId of assetIds) {
-      if (!groupAssetIds.has(assetId)) {
-        throw new BadRequestException(`Asset ${assetId} is not a member of duplicate group ${duplicateId}`);
-      }
-    }
-
-    // Step 3: Pre-check permissions
-    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: assetIds });
-
-    // Step 4: If primaryAssetId provided, validate and reorder
-    let orderedAssetIds = [...assetIds];
-    if (primaryAssetId) {
-      if (!assetIds.includes(primaryAssetId)) {
-        throw new BadRequestException(`primaryAssetId must be in assetIds`);
-      }
-      // Reorder so primary is first
-      orderedAssetIds = [primaryAssetId, ...assetIds.filter((id) => id !== primaryAssetId)];
-    }
-
-    // Step 5: Create stack
-    const stack = await this.stackRepository.create({ ownerId: auth.user.id }, orderedAssetIds);
-    await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: auth.user.id });
-
-    // Step 6: Clear duplicate membership
-    await this.assetRepository.updateAll(assetIds, { duplicateId: null });
-
-    return mapStack(stack, { auth });
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })
