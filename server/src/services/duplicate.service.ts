@@ -1,29 +1,72 @@
 import { Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { mapAsset } from 'src/dtos/asset-response.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
-  DuplicateResolveBatchStatus,
   DuplicateResolveDto,
   DuplicateResolveGroupDto,
-  DuplicateResolveResponseDto,
-  DuplicateResolveResultDto,
-  DuplicateResolveSettingsDto,
-  DuplicateResolveStatus,
   DuplicateResponseDto,
+  DuplicateSyncSettingsDto,
 } from 'src/dtos/duplicate.dto';
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { updateLockedColumns } from 'src/utils/database';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
-import { computeResolvePolicy } from 'src/utils/duplicate-resolve';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
-// Fields that are stored in the exif table rather than the asset table
-const EXIF_FIELDS = ['latitude', 'longitude', 'rating', 'description'] as const;
+type ResolveRequest = {
+  assetUpdate: {
+    isFavorite?: boolean;
+    visibility?: AssetVisibility;
+    description?: string;
+  };
+
+  exifUpdate: {
+    rating?: number;
+    latitude?: number;
+    longitude?: number;
+  };
+
+  mergedAlbumIds: string[];
+
+  mergedTagIds: string[];
+};
+
+const uniqueNonEmptyLines = (values: Array<string | null | undefined>): string[] => {
+  const unique = new Set<string>();
+  const lines: string[] = [];
+  for (const value of values) {
+    if (!value) {
+      continue;
+    }
+    for (const line of value.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || unique.has(trimmed)) {
+        continue;
+      }
+      unique.add(trimmed);
+      lines.push(trimmed);
+    }
+  }
+  return lines;
+};
+
+const getUniqueCoordinate = (assets: MapAsset[], key: 'latitude' | 'longitude'): number | null => {
+  const values = assets
+    .map((asset) => asset.exifInfo?.[key])
+    .filter((value): value is number => Number.isFinite(value));
+
+  if (values.length === 0) {
+    return null;
+  }
+
+  const unique = new Set(values);
+  return unique.size === 1 ? [...unique][0] : null;
+};
 
 @Injectable()
 export class DuplicateService extends BaseService {
@@ -50,221 +93,224 @@ export class DuplicateService extends BaseService {
     await this.duplicateRepository.deleteAll(auth.user.id, dto.ids);
   }
 
-  async resolve(auth: AuthDto, dto: DuplicateResolveDto): Promise<DuplicateResolveResponseDto> {
-    const results: DuplicateResolveResultDto[] = [];
+  async resolve(auth: AuthDto, dto: DuplicateResolveDto) {
+    const duplicateIds = dto.groups.map(({ duplicateId }) => duplicateId);
+
+    await this.requireAccess({ auth, permission: Permission.DuplicateDelete, ids: duplicateIds });
+
+    const results: BulkIdResponseDto[] = [];
 
     for (const group of dto.groups) {
       try {
-        const result = await this.resolveGroup(auth, group, dto.settings);
-        results.push(result);
-      } catch (error) {
-        results.push({
-          duplicateId: group.duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: `Failed to resolve duplicate group: ${error instanceof Error ? error.message : String(error)}`,
-        });
+        results.push(await this.resolveGroup(auth, group, dto.settings || {}));
+      } catch (error: Error | any) {
+        this.logger.error(`Error resolving duplicate group ${group.duplicateId}: ${error}`, error?.stack);
+        results.push({ id: group.duplicateId, success: false, error: BulkIdErrorReason.UNKNOWN });
       }
     }
 
-    return {
-      status: DuplicateResolveBatchStatus.Completed,
-      results,
-    };
+    return results;
   }
 
   private async resolveGroup(
     auth: AuthDto,
     group: DuplicateResolveGroupDto,
-    settings: DuplicateResolveSettingsDto,
-  ): Promise<DuplicateResolveResultDto> {
+    settings: DuplicateSyncSettingsDto,
+  ): Promise<BulkIdResponseDto> {
     const { duplicateId, keepAssetIds, trashAssetIds } = group;
 
-    // Step 1: Validate group ownership and membership
-    const duplicateGroup = await this.duplicateRepository.getByIdForUser(auth.user.id, duplicateId);
+    const duplicateGroup = await this.duplicateRepository.get(duplicateId);
     if (!duplicateGroup) {
-      return {
-        duplicateId,
-        status: DuplicateResolveStatus.Failed,
-        reason: `Duplicate group ${duplicateId} not found or access denied`,
-      };
+      return { id: duplicateId, success: false, error: BulkIdErrorReason.NOT_FOUND };
     }
 
     const groupAssetIds = new Set(duplicateGroup.assets.map((a) => a.id));
-    const mappedAssets = duplicateGroup.assets.map((asset) => mapAsset(asset, { auth }));
 
-    // Validate all keepAssetIds are in the group
-    for (const assetId of keepAssetIds) {
-      if (!groupAssetIds.has(assetId)) {
+    // ignore/skip asset IDs not in the group
+    const idsToKeep = keepAssetIds.filter((id) => groupAssetIds.has(id));
+    const idsToTrash = trashAssetIds.filter((id) => groupAssetIds.has(id));
+
+    for (const assetId of groupAssetIds) {
+      if (idsToKeep.includes(assetId) && idsToTrash.includes(assetId)) {
         return {
-          duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: `Asset ${assetId} is not a member of duplicate group ${duplicateId}`,
+          id: duplicateId,
+          success: false,
+          error: BulkIdErrorReason.VALIDATION,
+          errorMessage: 'An asset cannot be in both keepAssetIds and trashAssetIds',
+        };
+      }
+
+      if (!idsToKeep.includes(assetId) && !idsToTrash.includes(assetId)) {
+        return {
+          id: duplicateId,
+          success: false,
+          error: BulkIdErrorReason.VALIDATION,
+          errorMessage: 'Every asset must be in either keepAssetIds or trashAssetIds',
         };
       }
     }
 
-    // Validate all trashAssetIds are in the group
-    for (const assetId of trashAssetIds) {
-      if (!groupAssetIds.has(assetId)) {
+    if (idsToTrash.length > 0) {
+      const ids = await this.checkAccess({ auth, permission: Permission.AssetDelete, ids: idsToTrash });
+      if (ids.size !== idsToTrash.length) {
         return {
-          duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: `Asset ${assetId} is not a member of duplicate group ${duplicateId}`,
+          id: duplicateId,
+          success: false,
+          error: BulkIdErrorReason.NO_PERMISSION,
+          errorMessage: 'No permission to delete assets',
         };
       }
     }
 
-    // Validate keepAssetIds and trashAssetIds are disjoint
-    const keepSet = new Set(keepAssetIds);
-    for (const assetId of trashAssetIds) {
-      if (keepSet.has(assetId)) {
-        return {
-          duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: 'keepAssetIds and trashAssetIds must be disjoint (no overlap)',
-        };
-      }
-    }
-
-    // Validate keepAssetIds and trashAssetIds cover all assets in the group
-    const coveredAssetIds = new Set([...keepAssetIds, ...trashAssetIds]);
-    if (coveredAssetIds.size !== groupAssetIds.size) {
-      return {
-        duplicateId,
-        status: DuplicateResolveStatus.Failed,
-        reason: 'keepAssetIds and trashAssetIds must cover all assets in the duplicate group',
-      };
-    }
-
-    // Step 2: Compute idsToKeep (validated above to cover all assets)
-    const idsToKeep = keepAssetIds;
-
-    // Step 0 (delayed): Pre-check permissions before any database operations
-    // Check asset update permission for keepers
-    if (idsToKeep.length > 0) {
-      const allowedUpdateIds = await this.checkAccess({
-        auth,
-        permission: Permission.AssetUpdate,
-        ids: idsToKeep,
-      });
-      if (allowedUpdateIds.size !== idsToKeep.length) {
-        return {
-          duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: `Not found or no ${Permission.AssetUpdate} access`,
-        };
-      }
-    }
-
-    // Check asset delete permission for trash assets
-    if (trashAssetIds.length > 0) {
-      const allowedDeleteIds = await this.checkAccess({
-        auth,
-        permission: Permission.AssetDelete,
-        ids: trashAssetIds,
-      });
-      if (allowedDeleteIds.size !== trashAssetIds.length) {
-        return {
-          duplicateId,
-          status: DuplicateResolveStatus.Failed,
-          reason: `Not found or no ${Permission.AssetDelete} access`,
-        };
-      }
-    }
-
-    // Step 3: Fetch album IDs if synchronizeAlbums is enabled
-    const assetAlbumMap = settings.synchronizeAlbums
+    const assetAlbumMap = settings.syncAlbums
       ? await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds])
       : new Map<string, string[]>();
 
-    // Step 4: Run resolve policy
-    const policy = computeResolvePolicy(mappedAssets, idsToKeep, settings, assetAlbumMap);
+    const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds } = this.getSyncMergeResult(
+      duplicateGroup.assets,
+      settings,
+      assetAlbumMap,
+    );
 
-    // Step 5: Apply updates in order
-    if (idsToKeep.length > 0) {
-      // 5a. Synchronize albums
-      if (settings.synchronizeAlbums && policy.mergedAlbumIds.length > 0) {
-        // Pre-check album permissions
-        const allowedAlbumIds = await this.checkAccess({
-          auth,
-          permission: Permission.AlbumAssetCreate,
-          ids: policy.mergedAlbumIds,
-        });
-        const allowedShareIds = await this.checkAccess({
-          auth,
-          permission: Permission.AssetShare,
-          ids: idsToKeep,
-        });
+    if (mergedAlbumIds.length > 0) {
+      const allowedAlbumIds = await this.checkAccess({
+        auth,
+        permission: Permission.AlbumAssetCreate,
+        ids: mergedAlbumIds,
+      });
 
-        if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
-          await this.albumRepository.addAssetIdsToAlbums(
-            [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
-          );
-        }
-      }
+      const allowedShareIds = await this.checkAccess({
+        auth,
+        permission: Permission.AssetShare,
+        ids: idsToKeep,
+      });
 
-      // 5b. Synchronize tags
-      if (settings.synchronizeTags && policy.mergedTagIds.length > 0) {
-        const allowedTagIds = await this.checkAccess({
-          auth,
-          permission: Permission.TagAsset,
-          ids: policy.mergedTagIds,
-        });
-
-        if (allowedTagIds.size > 0) {
-          // Replace tags for each keeper asset to ensure all merged tags are applied
-          await Promise.all(
-            idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])),
-          );
-        }
-      }
-
-      // 5c. Update keeper assets
-      if (policy.assetBulkUpdate.ids.length > 0) {
-        const { ids, duplicateId: _updateDuplicateId, ...assetFields } = policy.assetBulkUpdate;
-        const exifFields: Record<string, unknown> = {};
-        const assetUpdateFields: Record<string, unknown> = {};
-
-        // Separate exif fields from asset fields
-        for (const [key, value] of Object.entries(assetFields)) {
-          if (EXIF_FIELDS.includes(key as (typeof EXIF_FIELDS)[number])) {
-            exifFields[key] = value;
-          } else {
-            assetUpdateFields[key] = value;
-          }
-        }
-
-        // Update exif fields if any
-        if (Object.keys(exifFields).length > 0) {
-          await this.assetRepository.updateAllExif(ids, exifFields);
-        }
-
-        // Update asset fields including duplicateId: null
-        await this.assetRepository.updateAll(ids, { ...assetUpdateFields, duplicateId: null });
+      if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
+        await this.albumRepository.addAssetIdsToAlbums(
+          [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
+        );
       }
     }
 
-    // 5d/5e. Delete/trash assets
-    if (trashAssetIds.length > 0) {
+    if (mergedTagIds.length > 0) {
+      const allowedTagIds = await this.checkAccess({
+        auth,
+        permission: Permission.TagAsset,
+        ids: mergedTagIds,
+      });
+
+      if (allowedTagIds.size > 0) {
+        // Replace tags for each keeper asset to ensure all merged tags are applied
+        await Promise.all(idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])));
+      }
+    }
+
+    if (idsToKeep.length > 0) {
+      if (Object.keys(exifUpdate).length > 0) {
+        await this.assetRepository.updateAllExif(idsToKeep, updateLockedColumns(exifUpdate));
+        await this.jobRepository.queueAll(idsToKeep.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
+      }
+
+      await this.assetRepository.updateAll(idsToKeep, { duplicateId: null, ...assetUpdate });
+    }
+
+    if (idsToTrash.length > 0) {
+      // TODO: this is duplicated with AssetService.deleteAssets
       const { trash } = await this.getConfig({ withCache: true });
       const force = !trash.enabled;
 
-      await this.assetRepository.updateAll(trashAssetIds, {
+      await this.assetRepository.updateAll(idsToTrash, {
         deletedAt: new Date(),
         status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
         duplicateId: null,
       });
 
       await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
-        assetIds: trashAssetIds,
+        assetIds: idsToTrash,
         userId: auth.user.id,
       });
     }
 
-    return {
-      duplicateId,
-      status: DuplicateResolveStatus.Success,
+    return { id: duplicateId, success: true };
+  }
+
+  private getSyncMergeResult(
+    assets: MapAsset[],
+    settings: DuplicateSyncSettingsDto,
+    assetAlbumMap: Map<string, string[]> = new Map(),
+  ): ResolveRequest {
+    const response: ResolveRequest = {
+      mergedAlbumIds: [],
+      mergedTagIds: [],
+      assetUpdate: {},
+      exifUpdate: {},
     };
+
+    if (settings.syncFavorites) {
+      response.assetUpdate.isFavorite = assets.some((asset) => asset.isFavorite);
+    }
+
+    if (settings.syncVisibility) {
+      const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
+      const visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
+      if (!visibility && assets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
+        response.assetUpdate.visibility = visibility;
+      }
+    }
+
+    if (settings.syncRating) {
+      let rating = 0;
+      for (const asset of assets) {
+        const assetRating = asset.exifInfo?.rating ?? 0;
+        if (assetRating > rating) {
+          rating = assetRating;
+        }
+      }
+      response.exifUpdate.rating = rating;
+    }
+
+    if (settings.syncDescription) {
+      const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
+      const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
+      if (description !== null) {
+        response.assetUpdate.description = description;
+      }
+    }
+
+    if (settings.syncLocation) {
+      const latitude = getUniqueCoordinate(assets, 'latitude');
+      const longitude = getUniqueCoordinate(assets, 'longitude');
+      if (latitude !== null && longitude !== null) {
+        response.exifUpdate.latitude = latitude;
+        response.exifUpdate.longitude = longitude;
+      }
+    }
+
+    if (settings.syncAlbums) {
+      const albumIdSet = new Set<string>();
+      for (const [, albumIds] of assetAlbumMap) {
+        for (const albumId of albumIds) {
+          albumIdSet.add(albumId);
+        }
+      }
+      response.mergedAlbumIds = [...albumIdSet];
+    }
+
+    if (settings.syncTags) {
+      const tagIds = [
+        ...new Set(
+          assets
+            .flatMap((asset) => asset.tags ?? [])
+            .map((tag) => tag.id)
+            .filter((id): id is string => !!id),
+        ),
+      ];
+      if (tagIds.length > 0) {
+        response.mergedTagIds = settings.syncTags ? tagIds : [];
+      }
+    }
+
+    return response;
   }
 
   @OnJob({ name: JobName.AssetDetectDuplicatesQueueAll, queue: QueueName.DuplicateDetection })

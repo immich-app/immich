@@ -14,14 +14,20 @@ class DuplicateResolveDto {
   /// Returns a new [DuplicateResolveDto] instance.
   DuplicateResolveDto({
     this.groups = const [],
-    required this.settings,
+    this.settings,
   });
 
   /// List of duplicate groups to resolve
   List<DuplicateResolveGroupDto> groups;
 
   /// Settings for synchronization behavior
-  DuplicateResolveSettingsDto settings;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DuplicateSyncSettingsDto? settings;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DuplicateResolveDto &&
@@ -32,7 +38,7 @@ class DuplicateResolveDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (groups.hashCode) +
-    (settings.hashCode);
+    (settings == null ? 0 : settings!.hashCode);
 
   @override
   String toString() => 'DuplicateResolveDto[groups=$groups, settings=$settings]';
@@ -40,7 +46,11 @@ class DuplicateResolveDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'groups'] = this.groups;
+    if (this.settings != null) {
       json[r'settings'] = this.settings;
+    } else {
+    //  json[r'settings'] = null;
+    }
     return json;
   }
 
@@ -54,7 +64,7 @@ class DuplicateResolveDto {
 
       return DuplicateResolveDto(
         groups: DuplicateResolveGroupDto.listFromJson(json[r'groups']),
-        settings: DuplicateResolveSettingsDto.fromJson(json[r'settings'])!,
+        settings: DuplicateSyncSettingsDto.fromJson(json[r'settings']),
       );
     }
     return null;
@@ -103,7 +113,6 @@ class DuplicateResolveDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'groups',
-    'settings',
   };
 }
 

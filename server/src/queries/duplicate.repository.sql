@@ -81,7 +81,7 @@ from
 where
   "asset"."duplicateId" = "singletons"."duplicateId"
 
--- DuplicateRepository.getByIdForUser
+-- DuplicateRepository.get
 select
   "asset"."duplicateId",
   json_agg(
@@ -121,8 +121,7 @@ from
   ) as "asset2" on true
 where
   "asset"."visibility" in ('archive', 'timeline')
-  and "asset"."ownerId" = $1::uuid
-  and "asset"."duplicateId" = $2::uuid
+  and "asset"."duplicateId" = $1::uuid
   and "asset"."deletedAt" is null
   and "asset"."stackId" is null
 group by

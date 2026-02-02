@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsBoolean, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsArray, ValidateNested } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DuplicateResponseDto {
   @ApiProperty({ description: 'Duplicate group ID' })
@@ -10,96 +10,83 @@ export class DuplicateResponseDto {
   @ApiProperty({ description: 'Duplicate assets' })
   assets!: AssetResponseDto[];
 
-  @ApiProperty({
-    description: 'Suggested asset IDs to keep based on file size and EXIF data',
-    isArray: true,
-    type: String,
-  })
+  @ValidateUUID({ each: true, description: 'Suggested asset IDs to keep based on file size and EXIF data' })
   suggestedKeepAssetIds!: string[];
 }
 
-// Resolve endpoint DTOs
+export class DuplicateSyncSettingsDto {
+  @ValidateBoolean({
+    description: 'Synchronize album membership across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncAlbums?: boolean;
 
-export class DuplicateResolveSettingsDto {
-  @ApiProperty({ type: Boolean, description: 'Synchronize album membership across duplicate group' })
-  @IsBoolean()
-  synchronizeAlbums!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize visibility (archive/timeline) across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncVisibility?: boolean;
 
-  @ApiProperty({ type: Boolean, description: 'Synchronize visibility (archive/timeline) across duplicate group' })
-  @IsBoolean()
-  synchronizeVisibility!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize favorite status across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncFavorites?: boolean;
 
-  @ApiProperty({ type: Boolean, description: 'Synchronize favorite status across duplicate group' })
-  @IsBoolean()
-  synchronizeFavorites!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize EXIF rating across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncRating?: boolean;
 
-  @ApiProperty({ type: Boolean, description: 'Synchronize EXIF rating across duplicate group' })
-  @IsBoolean()
-  synchronizeRating!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize description across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncDescription?: boolean;
 
-  @ApiProperty({ type: Boolean, description: 'Synchronize description across duplicate group' })
-  @IsBoolean()
-  synchronizeDescription!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize GPS location across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncLocation?: boolean;
 
-  @ApiProperty({ type: Boolean, description: 'Synchronize GPS location across duplicate group' })
-  @IsBoolean()
-  synchronizeLocation!: boolean;
-
-  @ApiProperty({ type: Boolean, description: 'Synchronize tags across duplicate group' })
-  @IsBoolean()
-  synchronizeTags!: boolean;
+  @ValidateBoolean({
+    description: 'Synchronize tags across duplicate group',
+    default: false,
+    optional: true,
+  })
+  syncTags?: boolean;
 }
 
 export class DuplicateResolveGroupDto {
   @ValidateUUID()
   duplicateId!: string;
 
-  @ApiProperty({ isArray: true, type: String, description: 'Asset IDs to keep (will have duplicateId cleared)' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs to keep' })
   keepAssetIds!: string[];
 
-  @ApiProperty({ isArray: true, type: String, description: 'Asset IDs to trash or delete' })
-  @ValidateUUID({ each: true })
+  @ValidateUUID({ each: true, description: 'Asset IDs to trash or delete' })
   trashAssetIds!: string[];
 }
 
 export class DuplicateResolveDto {
-  @ApiProperty({ type: [DuplicateResolveGroupDto], description: 'List of duplicate groups to resolve' })
+  @ApiProperty({ description: 'List of duplicate groups to resolve' })
   @ValidateNested({ each: true })
+  @IsArray()
   @Type(() => DuplicateResolveGroupDto)
   @ArrayMinSize(1)
   groups!: DuplicateResolveGroupDto[];
 
-  @ApiProperty({ type: DuplicateResolveSettingsDto, description: 'Settings for synchronization behavior' })
+  @ApiProperty({ description: 'Settings for synchronization behavior' })
   @ValidateNested()
-  @Type(() => DuplicateResolveSettingsDto)
-  settings!: DuplicateResolveSettingsDto;
-}
-
-export enum DuplicateResolveStatus {
-  Success = 'SUCCESS',
-  Failed = 'FAILED',
-}
-
-export class DuplicateResolveResultDto {
-  @ApiProperty({ description: 'The duplicate group ID that was processed' })
-  duplicateId!: string;
-
-  @ApiProperty({ enum: DuplicateResolveStatus, description: 'Status of the resolve operation for this group' })
-  status!: DuplicateResolveStatus;
-
-  @ApiProperty({ required: false, description: 'Error reason if status is FAILED' })
-  reason?: string;
-}
-
-export enum DuplicateResolveBatchStatus {
-  Completed = 'COMPLETED',
-}
-
-export class DuplicateResolveResponseDto {
-  @ApiProperty({ enum: DuplicateResolveBatchStatus, description: 'Overall status of the resolve operation' })
-  status!: DuplicateResolveBatchStatus;
-
-  @ApiProperty({ type: [DuplicateResolveResultDto], description: 'Per-group results of the resolve operation' })
-  results!: DuplicateResolveResultDto[];
+  @Optional()
+  @Type(() => DuplicateSyncSettingsDto)
+  settings?: DuplicateSyncSettingsDto;
 }

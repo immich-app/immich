@@ -13,7 +13,7 @@
   import { duplicateSettings, locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteDuplicates, resolveDuplicates, stackDuplicates, Status } from '@immich/sdk';
+  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -113,9 +113,9 @@
           },
         });
 
-        const result = response.results[0];
-        if (result.status === Status.Failed) {
-          throw new Error(result.reason ?? 'Failed to resolve duplicate group');
+        const { success, error, errorMessage } = response[0];
+        if (!success) {
+          throw new Error(errorMessage || error);
         }
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
@@ -130,12 +130,8 @@
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
     const assetIds = assets.map((asset) => asset.id);
-    await stackDuplicates({
-      duplicateStackDto: {
-        duplicateId,
-        assetIds,
-      },
-    });
+    await createStack({ stackCreateDto: { assetIds } });
+    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);
   };
@@ -174,7 +170,7 @@
         });
 
         // Count failures and show appropriate message
-        const failedCount = response.results.filter((r) => r.status === Status.Failed).length;
+        const failedCount = response.filter(({ success }) => !success).length;
         if (failedCount > 0) {
           toastManager.danger($t('errors.unable_to_resolve_duplicate'));
         }

@@ -105,10 +105,7 @@ export class DuplicateRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async getByIdForUser(
-    userId: string,
-    duplicateId: string,
-  ): Promise<{ duplicateId: string; assets: MapAsset[] } | undefined> {
+  async get(duplicateId: string): Promise<{ duplicateId: string; assets: MapAsset[] } | undefined> {
     const result = await this.db
       .selectFrom('asset')
       .$call(withDefaultVisibility)
@@ -136,10 +133,7 @@ export class DuplicateRepository {
         (join) => join.onTrue(),
       )
       .select('asset.duplicateId')
-      .select((eb) =>
-        eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-      )
-      .where('asset.ownerId', '=', asUuid(userId))
+      .select((eb) => eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'))
       .where('asset.duplicateId', '=', asUuid(duplicateId))
       .where('asset.deletedAt', 'is', null)
       .where('asset.stackId', 'is', null)

@@ -5290,7 +5290,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DuplicateResolveResponseDto"
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -5314,16 +5317,16 @@
         ],
         "x-immich-history": [
           {
-            "version": "v1",
+            "version": "v2.6.0",
             "state": "Added"
           },
           {
-            "version": "v1",
-            "state": "Beta"
+            "version": "v2.6.0",
+            "state": "Alpha"
           }
         ],
         "x-immich-permission": "duplicate.delete",
-        "x-immich-state": "Beta"
+        "x-immich-state": "Alpha"
       }
     },
     "/duplicates/{id}": {
@@ -17242,7 +17245,8 @@
           "duplicate",
           "no_permission",
           "not_found",
-          "unknown"
+          "unknown",
+          "validation"
         ],
         "type": "string"
       },
@@ -17254,8 +17258,12 @@
               "duplicate",
               "no_permission",
               "not_found",
-              "unknown"
+              "unknown",
+              "validation"
             ],
+            "type": "string"
+          },
+          "errorMessage": {
             "type": "string"
           },
           "id": {
@@ -17764,15 +17772,14 @@
           "settings": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/DuplicateResolveSettingsDto"
+                "$ref": "#/components/schemas/DuplicateSyncSettingsDto"
               }
             ],
             "description": "Settings for synchronization behavior"
           }
         },
         "required": [
-          "groups",
-          "settings"
+          "groups"
         ],
         "type": "object"
       },
@@ -17783,7 +17790,7 @@
             "type": "string"
           },
           "keepAssetIds": {
-            "description": "Asset IDs to keep (will have duplicateId cleared)",
+            "description": "Asset IDs to keep",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -17806,96 +17813,6 @@
         ],
         "type": "object"
       },
-      "DuplicateResolveResponseDto": {
-        "properties": {
-          "results": {
-            "description": "Per-group results of the resolve operation",
-            "items": {
-              "$ref": "#/components/schemas/DuplicateResolveResultDto"
-            },
-            "type": "array"
-          },
-          "status": {
-            "description": "Overall status of the resolve operation",
-            "enum": [
-              "COMPLETED"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "results",
-          "status"
-        ],
-        "type": "object"
-      },
-      "DuplicateResolveResultDto": {
-        "properties": {
-          "duplicateId": {
-            "description": "The duplicate group ID that was processed",
-            "type": "string"
-          },
-          "reason": {
-            "description": "Error reason if status is FAILED",
-            "type": "string"
-          },
-          "status": {
-            "description": "Status of the resolve operation for this group",
-            "enum": [
-              "SUCCESS",
-              "FAILED"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "duplicateId",
-          "status"
-        ],
-        "type": "object"
-      },
-      "DuplicateResolveSettingsDto": {
-        "properties": {
-          "synchronizeAlbums": {
-            "description": "Synchronize album membership across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeDescription": {
-            "description": "Synchronize description across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeFavorites": {
-            "description": "Synchronize favorite status across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeLocation": {
-            "description": "Synchronize GPS location across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeRating": {
-            "description": "Synchronize EXIF rating across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeTags": {
-            "description": "Synchronize tags across duplicate group",
-            "type": "boolean"
-          },
-          "synchronizeVisibility": {
-            "description": "Synchronize visibility (archive/timeline) across duplicate group",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "synchronizeAlbums",
-          "synchronizeDescription",
-          "synchronizeFavorites",
-          "synchronizeLocation",
-          "synchronizeRating",
-          "synchronizeTags",
-          "synchronizeVisibility"
-        ],
-        "type": "object"
-      },
       "DuplicateResponseDto": {
         "properties": {
           "assets": {
@@ -17912,6 +17829,7 @@
           "suggestedKeepAssetIds": {
             "description": "Suggested asset IDs to keep based on file size and EXIF data",
             "items": {
+              "format": "uuid",
               "type": "string"
             },
             "type": "array"
@@ -17922,6 +17840,46 @@
           "duplicateId",
           "suggestedKeepAssetIds"
         ],
+        "type": "object"
+      },
+      "DuplicateSyncSettingsDto": {
+        "properties": {
+          "syncAlbums": {
+            "default": false,
+            "description": "Synchronize album membership across duplicate group",
+            "type": "boolean"
+          },
+          "syncDescription": {
+            "default": false,
+            "description": "Synchronize description across duplicate group",
+            "type": "boolean"
+          },
+          "syncFavorites": {
+            "default": false,
+            "description": "Synchronize favorite status across duplicate group",
+            "type": "boolean"
+          },
+          "syncLocation": {
+            "default": false,
+            "description": "Synchronize GPS location across duplicate group",
+            "type": "boolean"
+          },
+          "syncRating": {
+            "default": false,
+            "description": "Synchronize EXIF rating across duplicate group",
+            "type": "boolean"
+          },
+          "syncTags": {
+            "default": false,
+            "description": "Synchronize tags across duplicate group",
+            "type": "boolean"
+          },
+          "syncVisibility": {
+            "default": false,
+            "description": "Synchronize visibility (archive/timeline) across duplicate group",
+            "type": "boolean"
+          }
+        },
         "type": "object"
       },
       "EmailNotificationsResponse": {

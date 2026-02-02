@@ -23,6 +23,7 @@ export enum BulkIdErrorReason {
   NO_PERMISSION = 'no_permission',
   NOT_FOUND = 'not_found',
   UNKNOWN = 'unknown',
+  VALIDATION = 'validation',
 }
 
 export class BulkIdsDto {
@@ -37,4 +38,5 @@ export class BulkIdResponseDto {
   success!: boolean;
   @ApiPropertyOptional({ description: 'Error reason if failed', enum: BulkIdErrorReason })
   error?: BulkIdErrorReason;
+  errorMessage?: string;
 }

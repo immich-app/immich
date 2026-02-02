@@ -205,7 +205,7 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [DuplicateResolveDto] duplicateResolveDto (required):
-  Future<DuplicateResolveResponseDto?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
+  Future<List<BulkIdResponseDto>?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
     final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -214,8 +214,11 @@ class DuplicatesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateResolveResponseDto',) as DuplicateResolveResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<BulkIdResponseDto>') as List)
+        .cast<BulkIdResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

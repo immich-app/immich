@@ -723,6 +723,7 @@ export type BulkIdsDto = {
 export type BulkIdResponseDto = {
     /** Error reason if failed */
     error?: Error;
+    errorMessage?: string;
     /** ID */
     id: string;
     /** Whether operation succeeded */
@@ -1166,46 +1167,32 @@ export type DuplicateResponseDto = {
 };
 export type DuplicateResolveGroupDto = {
     duplicateId: string;
-    /** Asset IDs to keep (will have duplicateId cleared) */
+    /** Asset IDs to keep */
     keepAssetIds: string[];
     /** Asset IDs to trash or delete */
     trashAssetIds: string[];
 };
-export type DuplicateResolveSettingsDto = {
+export type DuplicateSyncSettingsDto = {
     /** Synchronize album membership across duplicate group */
-    synchronizeAlbums: boolean;
+    syncAlbums?: boolean;
     /** Synchronize description across duplicate group */
-    synchronizeDescription: boolean;
+    syncDescription?: boolean;
     /** Synchronize favorite status across duplicate group */
-    synchronizeFavorites: boolean;
+    syncFavorites?: boolean;
     /** Synchronize GPS location across duplicate group */
-    synchronizeLocation: boolean;
+    syncLocation?: boolean;
     /** Synchronize EXIF rating across duplicate group */
-    synchronizeRating: boolean;
+    syncRating?: boolean;
     /** Synchronize tags across duplicate group */
-    synchronizeTags: boolean;
+    syncTags?: boolean;
     /** Synchronize visibility (archive/timeline) across duplicate group */
-    synchronizeVisibility: boolean;
+    syncVisibility?: boolean;
 };
 export type DuplicateResolveDto = {
     /** List of duplicate groups to resolve */
     groups: DuplicateResolveGroupDto[];
     /** Settings for synchronization behavior */
-    settings: DuplicateResolveSettingsDto;
-};
-export type DuplicateResolveResultDto = {
-    /** The duplicate group ID that was processed */
-    duplicateId: string;
-    /** Error reason if status is FAILED */
-    reason?: string;
-    /** Status of the resolve operation for this group */
-    status: Status;
-};
-export type DuplicateResolveResponseDto = {
-    /** Per-group results of the resolve operation */
-    results: DuplicateResolveResultDto[];
-    /** Overall status of the resolve operation */
-    status: Status2;
+    settings?: DuplicateSyncSettingsDto;
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -4540,7 +4527,7 @@ export function resolveDuplicates({ duplicateResolveDto }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DuplicateResolveResponseDto;
+        data: BulkIdResponseDto[];
     }>("/duplicates/resolve", oazapfts.json({
         ...opts,
         method: "POST",
@@ -6890,13 +6877,15 @@ export enum BulkIdErrorReason {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Permission {
     All = "all",
@@ -7089,13 +7078,6 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
-}
-export enum Status {
-    Success = "SUCCESS",
-    Failed = "FAILED"
-}
-export enum Status2 {
-    Completed = "COMPLETED"
 }
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",

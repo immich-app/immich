@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResolveDto, DuplicateResolveResponseDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
+import { DuplicateResolveDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { DuplicateService } from 'src/services/duplicate.service';
@@ -56,9 +56,9 @@ export class DuplicateController {
     summary: 'Resolve duplicate groups',
     description:
       'Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.',
-    history: new HistoryBuilder().added('v1').beta('v1'),
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
-  resolveDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateResolveDto): Promise<DuplicateResolveResponseDto> {
+  resolveDuplicates(@Auth() auth: AuthDto, @Body() dto: DuplicateResolveDto): Promise<BulkIdResponseDto[]> {
     return this.service.resolve(auth, dto);
   }
 }

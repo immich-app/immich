@@ -75,15 +75,6 @@ describe('/duplicates', () => {
         .post('/duplicates/resolve')
         .send({
           groups: [{ duplicateId: uuidDto.dummy, keepAssetIds: [], trashAssetIds: [] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(401);
@@ -96,15 +87,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId: uuidDto.dummy, keepAssetIds: [], trashAssetIds: [] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -135,15 +117,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -182,15 +155,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset1.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -213,15 +177,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [], trashAssetIds: [asset1.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -246,15 +201,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -278,15 +224,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [outsideAsset.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -309,15 +246,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [], trashAssetIds: [asset1.id, asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -357,15 +285,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -394,15 +313,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: true,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
+          settings: { syncFavorites: true },
         });
 
       expect(status).toBe(200);
@@ -432,15 +343,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: true,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
+          settings: { syncVisibility: true },
         });
 
       expect(status).toBe(200);
@@ -473,15 +376,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: true,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
+          settings: { syncRating: true },
         });
 
       expect(status).toBe(200);
@@ -514,15 +409,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: true,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
+          settings: { syncDescription: true },
         });
 
       expect(status).toBe(200);
@@ -555,15 +442,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: true,
-            synchronizeTags: false,
-          },
+          settings: { syncLocation: true },
         });
 
       expect(status).toBe(200);
@@ -601,15 +480,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: true,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
+          settings: { syncAlbums: true },
         });
 
       expect(status).toBe(200);
@@ -657,15 +528,7 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: true,
-          },
+          settings: { syncTags: true },
         });
 
       expect(status).toBe(200);
@@ -701,15 +564,6 @@ describe('/duplicates', () => {
             { duplicateId: duplicateId1, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] },
             { duplicateId: fakeId, keepAssetIds: [], trashAssetIds: [] },
           ],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -751,15 +605,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);
@@ -793,15 +638,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: {
-            synchronizeAlbums: false,
-            synchronizeVisibility: false,
-            synchronizeFavorites: false,
-            synchronizeRating: false,
-            synchronizeDescription: false,
-            synchronizeLocation: false,
-            synchronizeTags: false,
-          },
         });
 
       expect(status).toBe(200);

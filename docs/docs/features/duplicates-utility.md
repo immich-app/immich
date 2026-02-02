@@ -10,11 +10,12 @@ The review duplicates page allows the user to individually select which assets s
 
 Additionally, there are synchronization settings that can be used to synchronize metadata between assets in the group. See the table below for more information about what metadata is available to synchronize.
 
-| Name        | Default | Description                                                                                                                                                  |
-| ----------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Album       | `false` | When enabled, the kept assets will be added to _every_ album that the other assets in the group belong to, including assets that are selected to be trashed. |
-| Favorite    | `false` | When enabled, if any of the assets in the group have been added to favorites, every kept asset will also be added to favorites.                              |
-| Rating      | `false` | When enabled, if one or more assets in the duplicate group have a rating, the highest rating is selected and then synchronized to the kept assets.           |
-| Description | `false` | When enabled, descriptions from each asset are combined together and then synchronized to all the kept assets.                                               |
-| Visibility  | `false` | When enabled, the most restrictive visibility is applied the the kept assets.                                                                                |
-| Location    | `false` | When enabled, latitude and longitude are only copied if among the group there is a single asset with geolocation data.                                       |
+| Name        | Default | Description                                                                                                                                        |
+| ----------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Album       | `false` | When enabled, the kept assets will be added to _every_ album that the other assets in the group belong to.                                         |
+| Favorite    | `false` | When enabled, if any of the assets in the group have been added to favorites, every kept asset will also be added to favorites.                    |
+| Rating      | `false` | When enabled, if one or more assets in the duplicate group have a rating, the highest rating is selected and then synchronized to the kept assets. |
+| Description | `false` | When enabled, descriptions from each asset are combined together and then synchronized to all the kept assets.                                     |
+| Visibility  | `false` | When enabled, the most restrictive visibility is applied the the kept assets.                                                                      |
+| Location    | `false` | When enabled, latitude and longitude are only copied if among the group there is a single asset with geolocation data.                             |
+| Tag         | `false` | When enabled, the kept assets will be tagged with _every_ tag that the other assets in the group were tagged with.                                 |

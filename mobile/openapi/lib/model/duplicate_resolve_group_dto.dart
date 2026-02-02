@@ -20,7 +20,7 @@ class DuplicateResolveGroupDto {
 
   String duplicateId;
 
-  /// Asset IDs to keep (will have duplicateId cleared)
+  /// Asset IDs to keep
   List<String> keepAssetIds;
 
   /// Asset IDs to trash or delete
