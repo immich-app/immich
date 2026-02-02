@@ -40,6 +40,7 @@ class SharedLinkService {
     String? albumId,
     List<String>? assetIds,
     DateTime? expiresAt,
+    String? slug,
   }) async {
     try {
       final type = albumId != null ? SharedLinkType.ALBUM : SharedLinkType.INDIVIDUAL;
@@ -54,6 +55,7 @@ class SharedLinkService {
           expiresAt: expiresAt,
           description: description,
           password: password,
+          slug: slug,
         );
       } else if (assetIds != null) {
         dto = SharedLinkCreateDto(
@@ -65,6 +67,7 @@ class SharedLinkService {
           description: description,
           password: password,
           assetIds: assetIds,
+          slug: slug,
         );
       }
 
@@ -89,6 +92,7 @@ class SharedLinkService {
     String? description,
     String? password,
     DateTime? expiresAt,
+    String? slug,
   }) async {
     try {
       final responseDto = await _apiService.sharedLinksApi.updateSharedLink(
@@ -101,6 +105,7 @@ class SharedLinkService {
           description: description,
           password: password,
           changeExpiryTime: changeExpiry,
+          slug: slug,
         ),
       );
       if (responseDto != null) {

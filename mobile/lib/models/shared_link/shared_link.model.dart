@@ -13,6 +13,7 @@ class SharedLink {
   final DateTime? expiresAt;
   final String key;
   final bool showMetadata;
+  final String? slug;
   final SharedLinkSource type;
 
   const SharedLink({
@@ -26,6 +27,7 @@ class SharedLink {
     required this.expiresAt,
     required this.key,
     required this.showMetadata,
+    required this.slug,
     required this.type,
   });
 
@@ -40,6 +42,7 @@ class SharedLink {
     DateTime? expiresAt,
     String? key,
     bool? showMetadata,
+    String? slug,
     SharedLinkSource? type,
   }) {
     return SharedLink(
@@ -53,6 +56,7 @@ class SharedLink {
       expiresAt: expiresAt ?? this.expiresAt,
       key: key ?? this.key,
       showMetadata: showMetadata ?? this.showMetadata,
+      slug: slug ?? this.slug,
       type: type ?? this.type,
     );
   }
@@ -66,6 +70,7 @@ class SharedLink {
       expiresAt = dto.expiresAt,
       key = dto.key,
       showMetadata = dto.showMetadata,
+      slug = dto.slug,
       type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
       title = dto.type == SharedLinkType.ALBUM
           ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
@@ -78,7 +83,7 @@ class SharedLink {
 
   @override
   String toString() =>
-      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, type=$type)';
+      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, slug=$slug, type=$type)';
 
   @override
   bool operator ==(Object other) =>
@@ -94,6 +99,7 @@ class SharedLink {
           other.expiresAt == expiresAt &&
           other.key == key &&
           other.showMetadata == showMetadata &&
+          other.slug == slug &&
           other.type == type;
 
   @override
@@ -108,5 +114,6 @@ class SharedLink {
       expiresAt.hashCode ^
       key.hashCode ^
       showMetadata.hashCode ^
+      slug.hashCode ^
       type.hashCode;
 }

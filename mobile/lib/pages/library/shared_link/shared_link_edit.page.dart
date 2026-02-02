@@ -26,6 +26,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
     const padding = 20.0;
     final themeData = context.themeData;
     final colorScheme = context.colorScheme;
+    final slugController = useTextEditingController(text: existingLink?.slug ?? "");
     final descriptionController = useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
     final passwordController = useTextEditingController(text: existingLink?.password ?? "");
@@ -69,6 +70,39 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       return const Text("create_link_to_share_description", style: TextStyle(fontWeight: FontWeight.bold)).tr();
+    }
+
+    Widget buildSlugField() {
+      final isDarkMode = colorScheme.brightness == Brightness.dark;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: slugController,
+            enabled: newShareLink.value.isEmpty,
+            decoration: InputDecoration(
+              labelText: 'custom_url'.tr(),
+              labelStyle: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
+              floatingLabelBehavior: FloatingLabelBehavior.always,
+              border: const OutlineInputBorder(),
+              hintText: 'shared_link_custom_url_description'.tr(),
+              hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+              disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5))),
+            ),
+          ),
+          if (slugController.text.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '/s/${slugController.text.trim()}',
+                  style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                ),
+              ),
+            ),
+        ],
+      );
     }
 
     Widget buildDescriptionField() {
@@ -262,6 +296,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
             expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
+            slug: slugController.text.isEmpty ? null : slugController.text.trim(),
           );
       ref.invalidate(sharedLinksStateProvider);
 
@@ -274,7 +309,11 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "${serverUrl}share/${newLink.key}";
+        if (newLink.slug != null && newLink.slug!.isNotEmpty) {
+          newShareLink.value = "${serverUrl}s/${newLink.slug}";
+        } else {
+          newShareLink.value = "${serverUrl}share/${newLink.key}";
+        }
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
@@ -331,6 +370,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             password: password,
             expiresAt: expiry,
             changeExpiry: changeExpiry,
+            slug: slugController.text.isEmpty ? null : slugController.text.trim(),
           );
       ref.invalidate(sharedLinksStateProvider);
       await context.maybePop();
@@ -347,6 +387,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
         child: ListView(
           children: [
             Padding(padding: const EdgeInsets.all(padding), child: buildLinkTitle()),
+            Padding(padding: const EdgeInsets.all(padding), child: buildSlugField()),
             Padding(padding: const EdgeInsets.all(padding), child: buildDescriptionField()),
             Padding(padding: const EdgeInsets.all(padding), child: buildPasswordField()),
             Padding(
