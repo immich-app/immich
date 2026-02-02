@@ -5,7 +5,6 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/extensions/sort_order_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
@@ -47,7 +46,7 @@ class RemoteAlbumService {
       AlbumSortMode.mostRecent => await _sortByNewestAsset(albums),
       AlbumSortMode.mostOldest => await _sortByOldestAsset(albums),
     };
-    final effectiveOrder = isReverse ? sortMode.defaultOrder.opposite : sortMode.defaultOrder;
+    final effectiveOrder = isReverse ? sortMode.defaultOrder.reverse() : sortMode.defaultOrder;
 
     return (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
   }

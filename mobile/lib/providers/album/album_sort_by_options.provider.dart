@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/extensions/sort_order_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -89,7 +88,7 @@ enum AlbumSortMode {
 
   const AlbumSortMode(this.storeIndex, this.label, this.sortFn, this.defaultOrder);
 
-  SortOrder effectiveOrder(bool isReverse) => isReverse ? defaultOrder.opposite : defaultOrder;
+  SortOrder effectiveOrder(bool isReverse) => isReverse ? defaultOrder.reverse() : defaultOrder;
 }
 
 @riverpod
