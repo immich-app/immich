@@ -1,67 +1,46 @@
+import 'dart:ffi';
 import 'dart:io';
 
-import 'package:cronet_http/cronet_http.dart';
 import 'package:cupertino_http/cupertino_http.dart';
 import 'package:http/http.dart' as http;
-import 'package:immich_mobile/utils/user_agent.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:logging/logging.dart';
+import 'package:ok_http/ok_http.dart';
 
 class NetworkRepository {
-  static late Directory _cachePath;
-  static late String _userAgent;
-  static final _clients = <String, http.Client>{};
+  static final _log = Logger('NetworkRepository');
+  static http.Client? _client;
 
-  static Future<void> init() {
-    return (
-      getTemporaryDirectory().then((cachePath) => _cachePath = cachePath),
-      getUserAgentString().then((userAgent) => _userAgent = userAgent),
-    ).wait;
-  }
-
-  static void reset() {
-    Future.microtask(init);
-    for (final client in _clients.values) {
-      client.close();
+  static Future<void> init() async {
+    final pointer = await networkApi.getClientPointer();
+    _client?.close();
+    if (Platform.isIOS) {
+      _client = _createIOSClient(pointer);
+    } else {
+      _client = _createAndroidClient(pointer);
     }
-    _clients.clear();
   }
 
   const NetworkRepository();
 
-  /// Note: when disk caching is enabled, only one client may use a given directory at a time.
-  /// Different isolates or engines must use different directories.
-  http.Client getHttpClient(
-    String directoryName, {
-    CacheMode cacheMode = CacheMode.memory,
-    int diskCapacity = 0,
-    int maxConnections = 6,
-    int memoryCapacity = 10 << 20,
-  }) {
-    final cachedClient = _clients[directoryName];
-    if (cachedClient != null) {
-      return cachedClient;
-    }
+  /// Returns a shared HTTP client that uses native SSL configuration.
+  ///
+  /// On iOS: Uses SharedURLSessionManager's URLSession.
+  /// On Android: Uses SharedHttpClientManager's OkHttpClient.
+  ///
+  /// Must call [init] before using this method.
+  static http.Client get client => _client!;
 
-    final directory = Directory('${_cachePath.path}/$directoryName');
-    directory.createSync(recursive: true);
-    if (Platform.isAndroid) {
-      final engine = CronetEngine.build(
-        cacheMode: cacheMode,
-        cacheMaxSize: diskCapacity,
-        storagePath: directory.path,
-        userAgent: _userAgent,
-      );
-      return _clients[directoryName] = CronetClient.fromCronetEngine(engine, closeEngine: true);
-    }
+  static http.Client _createIOSClient(int address) {
+    final pointer = Pointer.fromAddress(address);
+    final session = URLSession.fromRawPointer(pointer.cast());
+    _log.info('Using shared native URLSession');
+    return CupertinoClient.fromSharedSession(session);
+  }
 
-    final config = URLSessionConfiguration.defaultSessionConfiguration()
-      ..httpMaximumConnectionsPerHost = maxConnections
-      ..cache = URLCache.withCapacity(
-        diskCapacity: diskCapacity,
-        memoryCapacity: memoryCapacity,
-        directory: directory.uri,
-      )
-      ..httpAdditionalHeaders = {'User-Agent': _userAgent};
-    return _clients[directoryName] = CupertinoClient.fromSessionConfiguration(config);
+  static http.Client _createAndroidClient(int address) {
+    final pointer = Pointer<Void>.fromAddress(address);
+    _log.info('Using shared native OkHttpClient');
+    return OkHttpClient.fromJniGlobalRef(pointer);
   }
 }

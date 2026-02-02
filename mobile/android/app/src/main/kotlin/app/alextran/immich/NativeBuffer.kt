@@ -23,6 +23,9 @@ object NativeBuffer {
 
   @JvmStatic
   external fun copy(buffer: ByteBuffer, destAddress: Long, offset: Int, length: Int)
+
+  @JvmStatic
+  external fun createGlobalRef(obj: Any): Long
 }
 
 class NativeByteBuffer(initialCapacity: Int) {

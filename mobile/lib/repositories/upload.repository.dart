@@ -3,20 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:logging/logging.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-
-class UploadTaskWithFile {
-  final File file;
-  final UploadTask task;
-
-  const UploadTaskWithFile({required this.file, required this.task});
-}
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -100,23 +93,26 @@ class UploadRepository {
     required Map<String, String> headers,
     required Map<String, String> fields,
     required Client httpClient,
-    required CancellationToken cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress,
+    required Completer cancelToken,
+    required void Function(int bytes, int totalBytes) onProgress, // TODO: use onProgress
     required String logContext,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final baseRequest = AbortableMultipartRequest(
+      'POST',
+      Uri.parse('$savedEndpoint/assets'),
+      abortTrigger: cancelToken.future,
+    );
 
     try {
       final fileStream = file.openRead();
       final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
 
-      final baseRequest = _CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
-
       baseRequest.headers.addAll(headers);
       baseRequest.fields.addAll(fields);
       baseRequest.files.add(assetRawUploadData);
 
-      final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+      final response = await httpClient.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {
@@ -145,7 +141,7 @@ class UploadRepository {
       } catch (e) {
         return UploadResult.error(errorMessage: 'Failed to parse server response');
       }
-    } on CancelledException {
+    } on RequestAbortedException {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();
     } catch (error, stackTrace) {
@@ -180,28 +176,5 @@ class UploadResult {
 
   factory UploadResult.cancelled() {
     return const UploadResult(isSuccess: false, isCancelled: true);
-  }
-}
-
-class _CustomMultipartRequest extends MultipartRequest {
-  _CustomMultipartRequest(super.method, super.url, {required this.onProgress});
-
-  final void Function(int bytes, int totalBytes) onProgress;
-
-  @override
-  ByteStream finalize() {
-    final byteStream = super.finalize();
-    final total = contentLength;
-    var bytes = 0;
-
-    final t = StreamTransformer.fromHandlers(
-      handleData: (List<int> data, EventSink<List<int>> sink) {
-        bytes += data.length;
-        onProgress.call(bytes, total);
-        sink.add(data);
-      },
-    );
-    final stream = byteStream.transform(t);
-    return ByteStream(stream);
   }
 }

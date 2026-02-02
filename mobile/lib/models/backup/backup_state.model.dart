@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'package:cancellation_token_http/http.dart';
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 
@@ -21,7 +22,7 @@ class BackUpState {
   final DateTime progressInFileSpeedUpdateTime;
   final int progressInFileSpeedUpdateSentBytes;
   final double iCloudDownloadProgress;
-  final CancellationToken cancelToken;
+  final Completer cancelToken;
   final ServerDiskInfo serverInfo;
   final bool autoBackup;
   final bool backgroundBackup;
@@ -78,7 +79,7 @@ class BackUpState {
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
     double? iCloudDownloadProgress,
-    CancellationToken? cancelToken,
+    Completer? cancelToken,
     ServerDiskInfo? serverInfo,
     bool? autoBackup,
     bool? backgroundBackup,

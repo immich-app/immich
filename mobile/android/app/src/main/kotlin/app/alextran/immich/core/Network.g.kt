@@ -182,6 +182,7 @@ interface NetworkApi {
   fun addCertificate(clientData: ClientCertData, callback: (Result<Unit>) -> Unit)
   fun selectCertificate(promptText: ClientCertPrompt, callback: (Result<ClientCertData>) -> Unit)
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
+  fun getClientPointer(): Long
 
   companion object {
     /** The codec used by NetworkApi. */
@@ -243,6 +244,21 @@ interface NetworkApi {
                 reply.reply(NetworkPigeonUtils.wrapResult(null))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NetworkApi.getClientPointer$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.getClientPointer())
+            } catch (exception: Throwable) {
+              NetworkPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

@@ -6,13 +6,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/platform/network_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
 
 class SslClientCertSettings extends StatefulWidget {
-  const SslClientCertSettings({super.key, required this.isLoggedIn});
-
-  final bool isLoggedIn;
+  const SslClientCertSettings({super.key});
 
   @override
   State<StatefulWidget> createState() => _SslClientCertSettingsState();
@@ -45,9 +42,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton(onPressed: widget.isLoggedIn ? null : importCert, child: Text("client_cert_import".tr())),
+              ElevatedButton(onPressed: importCert, child: Text("client_cert_import".tr())),
               ElevatedButton(
-                onPressed: widget.isLoggedIn || !isCertExist ? null : removeCert,
+                onPressed: !isCertExist ? null : removeCert,
                 child: Text("remove".tr()),
               ),
             ],
@@ -76,7 +73,6 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       );
       final cert = await networkApi.selectCertificate(styling);
       await SSLClientCertStoreVal(cert.data, cert.password).save();
-      HttpSSLOptions.apply();
       setState(() => isCertExist = true);
       showMessage("client_cert_import_success_msg".tr());
     } catch (e) {
@@ -92,7 +88,6 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     try {
       await networkApi.removeCertificate();
       await SSLClientCertStoreVal.delete();
-      HttpSSLOptions.apply();
       setState(() => isCertExist = false);
       showMessage("client_cert_remove_msg".tr());
     } catch (e) {

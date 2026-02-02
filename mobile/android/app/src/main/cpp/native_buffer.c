@@ -36,3 +36,17 @@ Java_app_alextran_immich_NativeBuffer_copy(
         memcpy((void *) destAddress, (char *) src + offset, length);
     }
 }
+
+/**
+ * Creates a JNI global reference to the given object and returns its address.
+ * The caller is responsible for deleting the global reference when it's no longer needed.
+ */
+JNIEXPORT jlong JNICALL
+Java_app_alextran_immich_NativeBuffer_createGlobalRef(JNIEnv *env, jobject clazz, jobject obj) {
+    if (obj == NULL) {
+        return 0;
+    }
+
+    jobject globalRef = (*env)->NewGlobalRef(env, obj);
+    return (jlong) globalRef;
+}

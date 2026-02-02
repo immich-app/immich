@@ -31,6 +31,10 @@ class URLSessionManager: NSObject {
     return config
   }()
   
+  var sessionPointer: UnsafeMutableRawPointer {
+    Unmanaged.passUnretained(session).toOpaque()
+  }
+  
   private override init() {
     session = URLSession(configuration: configuration, delegate: URLSessionManagerDelegate(), delegateQueue: nil)
     super.init()
