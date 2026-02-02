@@ -3,9 +3,9 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DuplicateSettingsModal from '$lib/components/utilities-page/duplicates/duplicate-settings-modal.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import DuplicateSettingsModal from '$lib/modals/DuplicateSettingsModal.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
@@ -54,13 +54,6 @@
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
       { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
-  };
-
-  const onShowSettings = async () => {
-    const settings = await modalManager.show(DuplicateSettingsModal, { settings: { ...$duplicateSettings } });
-    if (settings) {
-      $duplicateSettings = settings;
-    }
   };
 
   let duplicates = $state(data.duplicates);
@@ -116,15 +109,7 @@
         const response = await resolveDuplicates({
           duplicateResolveDto: {
             groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }],
-            settings: {
-              synchronizeAlbums: $duplicateSettings.synchronizeAlbums,
-              synchronizeVisibility: $duplicateSettings.synchronizeVisibility,
-              synchronizeFavorites: $duplicateSettings.synchronizeFavorites,
-              synchronizeRating: $duplicateSettings.synchronizeRating,
-              synchronizeDescription: $duplicateSettings.synchronizeDescription,
-              synchronizeLocation: $duplicateSettings.synchronizeLocation,
-              synchronizeTags: $duplicateSettings.synchronizeTags,
-            },
+            settings: duplicateSettings.current,
           },
         });
 
@@ -184,15 +169,7 @@
                 trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
               };
             }),
-            settings: {
-              synchronizeAlbums: $duplicateSettings.synchronizeAlbums,
-              synchronizeVisibility: $duplicateSettings.synchronizeVisibility,
-              synchronizeFavorites: $duplicateSettings.synchronizeFavorites,
-              synchronizeRating: $duplicateSettings.synchronizeRating,
-              synchronizeDescription: $duplicateSettings.synchronizeDescription,
-              synchronizeLocation: $duplicateSettings.synchronizeLocation,
-              synchronizeTags: $duplicateSettings.synchronizeTags,
-            },
+            settings: duplicateSettings.current,
           },
         });
 
@@ -297,7 +274,7 @@
         color="secondary"
         icon={mdiCogOutline}
         title={$t('settings')}
-        onclick={onShowSettings}
+        onclick={() => modalManager.show(DuplicateSettingsModal)}
         aria-label={$t('settings')}
       />
     </HStack>

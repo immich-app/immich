@@ -1,6 +1,8 @@
 import { browser } from '$app/environment';
 import { Theme, defaultLang } from '$lib/constants';
+import type { DuplicateSettings } from '$lib/types';
 import { getPreferredLocale } from '$lib/utils/i18n';
+import { PersistedLocalStorage } from '$lib/utils/persisted';
 import { persisted } from 'svelte-persisted-store';
 
 export interface ThemeSetting {
@@ -150,48 +152,12 @@ export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
 
-export interface DuplicateSettings {
-  synchronizeAlbums: boolean;
-  synchronizeVisibility: boolean;
-  synchronizeFavorites: boolean;
-  synchronizeRating: boolean;
-  synchronizeDescription: boolean;
-  synchronizeLocation: boolean;
-  synchronizeTags: boolean;
-  /** @deprecated typo retained for migration */
-  synchronizeDescpription?: boolean;
-}
-
-const defaultDuplicateSettings: DuplicateSettings = {
-  synchronizeAlbums: true,
-  synchronizeVisibility: true,
-  synchronizeFavorites: true,
-  synchronizeRating: true,
-  synchronizeDescription: true,
-  synchronizeLocation: true,
-  synchronizeTags: true,
-};
-
-const normalizeDuplicateSettings = (
-  settings: Partial<DuplicateSettings> & { synchronizeDescpription?: boolean },
-): DuplicateSettings => {
-  const { synchronizeDescpription: _deprecated, ...rest } = settings;
-  return {
-    ...defaultDuplicateSettings,
-    ...rest,
-    synchronizeDescription:
-      settings.synchronizeDescription ??
-      settings.synchronizeDescpription ??
-      defaultDuplicateSettings.synchronizeDescription,
-  };
-};
-
-export const duplicateSettings = persisted<DuplicateSettings>('duplicate-settings', defaultDuplicateSettings, {
-  serializer: {
-    parse: (text) => {
-      const parsed = text ? JSON.parse(text) : null;
-      return normalizeDuplicateSettings(parsed ?? {});
-    },
-    stringify: JSON.stringify,
-  },
+export const duplicateSettings = new PersistedLocalStorage<DuplicateSettings>('duplicate-settings', {
+  syncAlbums: false,
+  syncVisibility: false,
+  syncFavorites: false,
+  syncRating: false,
+  syncDescription: false,
+  syncLocation: false,
+  syncTags: false,
 });
