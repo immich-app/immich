@@ -63,7 +63,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     try {
       final cert = await networkApi.selectCertificate();
       await SSLClientCertStoreVal(cert.data, cert.password).save();
-      await HttpSSLOptions.apply();
+      HttpSSLOptions.apply();
       showMessage(context, "client_cert_import_success_msg".tr());
     } catch (e) {
       showMessage(context, "client_cert_invalid_msg".tr());
@@ -74,7 +74,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     try {
       await networkApi.removeCertificate();
       await SSLClientCertStoreVal.delete();
-      await HttpSSLOptions.apply();
+      HttpSSLOptions.apply();
       showMessage(context, "client_cert_remove_msg".tr());
     } catch (e) {
       showMessage(context, "client_cert_invalid_msg".tr());
