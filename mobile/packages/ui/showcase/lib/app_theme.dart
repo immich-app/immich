@@ -36,6 +36,7 @@ class AppTheme {
         outlineVariant: _light300,
       ),
       useMaterial3: true,
+      fontFamily: 'GoogleSans',
       scaffoldBackgroundColor: _light50,
       cardTheme: const CardThemeData(
         elevation: 0,
@@ -73,6 +74,7 @@ class AppTheme {
         outlineVariant: Color(0xFF43464F),
       ),
       useMaterial3: true,
+      fontFamily: 'GoogleSans',
       scaffoldBackgroundColor: _darkLight50,
       cardTheme: const CardThemeData(
         elevation: 0,

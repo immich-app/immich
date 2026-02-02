@@ -175,7 +175,7 @@ class _SpacingBox extends StatelessWidget {
         children: [
           SizedBox(
             width: 60,
-            child: Text(label, style: const TextStyle(fontFamily: 'monospace')),
+            child: Text(label, style: const TextStyle(fontFamily: 'GoogleSansCode')),
           ),
           Container(
             width: size,
@@ -281,7 +281,7 @@ class _BorderBox extends StatelessWidget {
         children: [
           SizedBox(
             width: 80,
-            child: Text(label, style: const TextStyle(fontFamily: 'monospace')),
+            child: Text(label, style: const TextStyle(fontFamily: 'GoogleSansCode')),
           ),
           Expanded(
             child: Container(
@@ -338,7 +338,7 @@ class _AnimatedDurationBoxState extends State<_AnimatedDurationBox> {
           width: 90,
           child: Text(
             widget.label,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            style: const TextStyle(fontFamily: 'GoogleSansCode', fontSize: 12),
           ),
         ),
         Expanded(

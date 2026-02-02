@@ -23,12 +23,13 @@ class ShellLayout extends StatelessWidget {
           children: [
             Image.asset('assets/immich_logo.png', height: 32, width: 32),
             const SizedBox(width: 8),
-            Text(
-              'immich',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+            Image.asset(
+              isDark
+                  ? 'assets/immich-text-dark.png'
+                  : 'assets/immich-text-light.png',
+              height: 24,
+              filterQuality: FilterQuality.none,
+              isAntiAlias: true,
             ),
           ],
         ),
