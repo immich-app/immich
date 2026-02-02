@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Maintenance action
 class MaintenanceAction {
   /// Instantiate a new enum with the provided [value].
   const MaintenanceAction._(this.value);

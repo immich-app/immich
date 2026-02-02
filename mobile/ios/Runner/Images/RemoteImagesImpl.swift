@@ -79,6 +79,7 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     kCGImageSourceShouldCache: false,
     kCGImageSourceShouldCacheImmediately: true,
     kCGImageSourceCreateThumbnailWithTransform: true,
+    kCGImageSourceCreateThumbnailFromImageAlways: true
   ] as CFDictionary
   
   func urlSession(
