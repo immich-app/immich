@@ -1,10 +1,11 @@
-import 'package:cancellation_token_http/http.dart';
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 
 class ManualUploadState {
-  final CancellationToken cancelToken;
+  final Completer cancelToken;
 
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
@@ -44,7 +45,7 @@ class ManualUploadState {
     List<double>? progressInFileSpeeds,
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
-    CancellationToken? cancelToken,
+    Completer? cancelToken,
     CurrentUploadAsset? currentUploadAsset,
     int? totalAssetsToUpload,
     int? successfulUploads,

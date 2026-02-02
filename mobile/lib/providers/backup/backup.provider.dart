@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -68,7 +68,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           progressInFileSpeeds: const [],
           progressInFileSpeedUpdateTime: DateTime.now(),
           progressInFileSpeedUpdateSentBytes: 0,
-          cancelToken: CancellationToken(),
+          cancelToken: Completer(),
           autoBackup: Store.get(StoreKey.autoBackup, false),
           backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
           backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
@@ -454,7 +454,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       // Perform Backup
-      state = state.copyWith(cancelToken: CancellationToken());
+      state = state.copyWith(cancelToken: Completer());
 
       final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
@@ -494,7 +494,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.backupProgress != BackUpProgressEnum.inProgress) {
       notifyBackgroundServiceCanRun();
     }
-    state.cancelToken.cancel();
+    state.cancelToken.complete();
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
       progressInPercentage: 0.0,

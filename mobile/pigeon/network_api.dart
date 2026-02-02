@@ -38,4 +38,6 @@ abstract class NetworkApi {
 
   @async
   void removeCertificate();
+
+  int getClientPointer();
 }

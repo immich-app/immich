@@ -223,6 +223,7 @@ protocol NetworkApi {
   func addCertificate(clientData: ClientCertData, completion: @escaping (Result<Void, Error>) -> Void)
   func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, Error>) -> Void)
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
+  func getClientPointer() throws -> Int64
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -279,6 +280,19 @@ class NetworkApiSetup {
       }
     } else {
       removeCertificateChannel.setMessageHandler(nil)
+    }
+    let getClientPointerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.getClientPointer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getClientPointerChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getClientPointer()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getClientPointerChannel.setMessageHandler(nil)
     }
   }
 }

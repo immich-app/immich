@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
+import 'package:http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,6 +12,7 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -82,7 +83,7 @@ class ForegroundUploadService {
   /// Bulk upload of backup candidates from selected albums
   Future<void> uploadCandidates(
     String userId,
-    CancellationToken cancelToken, {
+    Completer cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
     bool useSequentialUpload = false,
   }) async {
@@ -105,7 +106,7 @@ class ForegroundUploadService {
           final requireWifi = _shouldRequireWiFi(asset);
           return requireWifi && !hasWifi;
         },
-        processItem: (asset, httpClient) => _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks),
+        processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
     }
   }
@@ -113,37 +114,32 @@ class ForegroundUploadService {
   /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues
   Future<void> _uploadSequentially({
     required List<LocalAsset> items,
-    required CancellationToken cancelToken,
+    required Completer cancelToken,
     required bool hasWifi,
     required UploadCallbacks callbacks,
   }) async {
-    final httpClient = Client();
     await _storageRepository.clearCache();
     shouldAbortUpload = false;
 
-    try {
-      for (final asset in items) {
-        if (shouldAbortUpload || cancelToken.isCancelled) {
-          break;
-        }
-
-        final requireWifi = _shouldRequireWiFi(asset);
-        if (requireWifi && !hasWifi) {
-          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
-          continue;
-        }
-
-        await _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks);
+    for (final asset in items) {
+      if (shouldAbortUpload || cancelToken.isCompleted) {
+        break;
       }
-    } finally {
-      httpClient.close();
+
+      final requireWifi = _shouldRequireWiFi(asset);
+      if (requireWifi && !hasWifi) {
+        _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+        continue;
+      }
+
+      await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
     }
   }
 
   /// Manually upload picked local assets
   Future<void> uploadManual(
     List<LocalAsset> localAssets,
-    CancellationToken cancelToken, {
+    Completer cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
   }) async {
     if (localAssets.isEmpty) {
@@ -153,14 +149,14 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset, httpClient) => _uploadSingleAsset(asset, httpClient, cancelToken, callbacks: callbacks),
+      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
     );
   }
 
   /// Upload files from shared intent
   Future<void> uploadShareIntent(
     List<File> files, {
-    CancellationToken? cancelToken,
+    Completer? cancelToken,
     void Function(String fileId, int bytes, int totalBytes)? onProgress,
     void Function(String fileId)? onSuccess,
     void Function(String fileId, String errorMessage)? onError,
@@ -168,19 +164,18 @@ class ForegroundUploadService {
     if (files.isEmpty) {
       return;
     }
-
-    final effectiveCancelToken = cancelToken ?? CancellationToken();
+    final effectiveCancelToken = cancelToken ?? Completer();
 
     await _executeWithWorkerPool<File>(
       items: files,
       cancelToken: effectiveCancelToken,
-      processItem: (file, httpClient) async {
+      processItem: (file) async {
         final fileId = p.hash(file.path).toString();
 
         final result = await _uploadSingleFile(
           file,
           deviceAssetId: fileId,
-          httpClient: httpClient,
+          httpClient: NetworkRepository.client,
           cancelToken: effectiveCancelToken,
           onProgress: (bytes, totalBytes) => onProgress?.call(fileId, bytes, totalBytes),
         );
@@ -207,60 +202,47 @@ class ForegroundUploadService {
   /// [concurrentWorkers] - Number of concurrent workers (default: 3)
   Future<void> _executeWithWorkerPool<T>({
     required List<T> items,
-    required CancellationToken cancelToken,
-    required Future<void> Function(T item, Client httpClient) processItem,
+    required Completer cancelToken,
+    required Future<void> Function(T item) processItem,
     bool Function(T item)? shouldSkip,
     int concurrentWorkers = 3,
   }) async {
-    final httpClients = List.generate(concurrentWorkers, (_) => Client());
-
     await _storageRepository.clearCache();
     shouldAbortUpload = false;
 
-    try {
-      int currentIndex = 0;
+    int currentIndex = 0;
 
-      Future<void> worker(Client httpClient) async {
-        while (true) {
-          if (shouldAbortUpload || cancelToken.isCancelled) {
-            break;
-          }
-
-          final index = currentIndex;
-          if (index >= items.length) {
-            break;
-          }
-          currentIndex++;
-
-          final item = items[index];
-
-          if (shouldSkip?.call(item) ?? false) {
-            continue;
-          }
-
-          await processItem(item, httpClient);
+    Future<void> worker() async {
+      while (true) {
+        if (shouldAbortUpload || cancelToken.isCompleted) {
+          break;
         }
-      }
 
-      final workerFutures = <Future<void>>[];
-      for (int i = 0; i < concurrentWorkers; i++) {
-        workerFutures.add(worker(httpClients[i]));
-      }
+        final index = currentIndex;
+        if (index >= items.length) {
+          break;
+        }
+        currentIndex++;
 
-      await Future.wait(workerFutures);
-    } finally {
-      for (final client in httpClients) {
-        client.close();
+        final item = items[index];
+
+        if (shouldSkip?.call(item) ?? false) {
+          continue;
+        }
+
+        await processItem(item);
       }
     }
+
+    final workerFutures = <Future<void>>[];
+    for (int i = 0; i < concurrentWorkers; i++) {
+      workerFutures.add(worker());
+    }
+
+    await Future.wait(workerFutures);
   }
 
-  Future<void> _uploadSingleAsset(
-    LocalAsset asset,
-    Client httpClient,
-    CancellationToken cancelToken, {
-    required UploadCallbacks callbacks,
-  }) async {
+  Future<void> _uploadSingleAsset(LocalAsset asset, Completer cancelToken, {required UploadCallbacks callbacks}) async {
     File? file;
     File? livePhotoFile;
 
@@ -363,7 +345,7 @@ class ForegroundUploadService {
           originalFileName: livePhotoTitle,
           headers: headers,
           fields: fields,
-          httpClient: httpClient,
+          httpClient: NetworkRepository.client,
           cancelToken: cancelToken,
           onProgress: (bytes, totalBytes) =>
               callbacks.onProgress?.call(asset.localId!, livePhotoTitle, bytes, totalBytes),
@@ -400,7 +382,7 @@ class ForegroundUploadService {
         originalFileName: originalFileName,
         headers: headers,
         fields: fields,
-        httpClient: httpClient,
+        httpClient: NetworkRepository.client,
         cancelToken: cancelToken,
         onProgress: (bytes, totalBytes) =>
             callbacks.onProgress?.call(asset.localId!, originalFileName, bytes, totalBytes),
@@ -443,7 +425,7 @@ class ForegroundUploadService {
     File file, {
     required String deviceAssetId,
     required Client httpClient,
-    required CancellationToken cancelToken,
+    required Completer cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
   }) async {
     try {

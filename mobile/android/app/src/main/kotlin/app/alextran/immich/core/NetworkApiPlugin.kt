@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import app.alextran.immich.NativeBuffer
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -96,6 +97,11 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
   override fun removeCertificate(callback: (Result<Unit>) -> Unit) {
     HttpClientManager.deleteKeyEntry()
     callback(Result.success(Unit))
+  }
+
+  override fun getClientPointer(): Long {
+    val client = HttpClientManager.getClient()
+    return NativeBuffer.createGlobalRef(client)
   }
 
   private fun handlePickedFile(uri: Uri) {

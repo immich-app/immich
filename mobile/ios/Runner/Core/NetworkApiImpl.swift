@@ -40,6 +40,11 @@ class NetworkApiImpl: NetworkApi {
     }
     completion(.failure(ImportError.keychainError(status)))
   }
+  
+  func getClientPointer() throws -> Int64 {
+    let pointer = URLSessionManager.shared.sessionPointer
+    return Int64(Int(bitPattern: pointer))
+  }
 }
 
 private class CertImporter: NSObject, UIDocumentPickerDelegate {
