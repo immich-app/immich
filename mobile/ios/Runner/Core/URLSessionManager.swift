@@ -1,9 +1,6 @@
 import Foundation
 
 let CLIENT_CERT_SERVICE = "app.alextran.immich.mtls"
-let CLIENT_CERT_DATA_LABEL = "client_identity_data"
-let CLIENT_CERT_PASSWORD_LABEL = "client_identity_password"
-
 let CLIENT_CERT_LABEL = "client_identity"
 
 /// Manages a shared URLSession with SSL configuration support.
