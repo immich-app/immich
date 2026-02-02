@@ -40,3 +40,12 @@ export enum OnboardingRole {
   SERVER = 'server',
   USER = 'user',
 }
+
+export type DuplicateSettings = {
+  syncAlbums: boolean;
+  syncVisibility: boolean;
+  syncFavorites: boolean;
+  syncRating: boolean;
+  syncDescription: boolean;
+  syncLocation: boolean;
+};

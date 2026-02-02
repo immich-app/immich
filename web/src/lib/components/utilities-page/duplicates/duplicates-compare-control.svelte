@@ -17,7 +17,7 @@
 
   interface Props {
     assets: AssetResponseDto[];
-    onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
+    onResolve: (duplicateAssetIds: AssetResponseDto[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
@@ -77,8 +77,7 @@
 
   const handleResolve = () => {
     const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
-    const duplicateAssetIds = assets.map((asset) => asset.id);
-    onResolve(duplicateAssetIds, trashIds);
+    onResolve(assets, trashIds);
   };
 
   const handleStack = () => {

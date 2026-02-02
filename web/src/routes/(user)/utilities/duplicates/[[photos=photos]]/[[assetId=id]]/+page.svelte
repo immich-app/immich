@@ -3,10 +3,9 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DuplicateSettingsModal from '$lib/components/utilities-page/duplicates/duplicate-settings-modal.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import DuplicateSettingsModal from '$lib/modals/DuplicateSettingsModal.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
@@ -16,7 +15,7 @@
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetBulkUpdateDto, AssetResponseDto } from '@immich/sdk';
-  import { AssetVisibility, copyAsset, deleteAssets, deleteDuplicates, getAssetInfo, updateAssets } from '@immich/sdk';
+  import { AssetVisibility, copyAsset, deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -57,13 +56,6 @@
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
       { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
-  };
-
-  const onShowSettings = async () => {
-    const settings = await modalManager.show(DuplicateSettingsModal, { settings: { ...$duplicateSettings } });
-    if (settings) {
-      $duplicateSettings = settings;
-    }
   };
 
   let duplicates = $state(data.duplicates);
@@ -108,58 +100,65 @@
     toastManager.success(message);
   };
 
-  const getSyncedInfo = async (assetIds: string[]) => {
-    const allAssetsInfo = await Promise.all(
-      assetIds.map((assetId) => getAssetInfo({ ...authManager.params, id: assetId })),
-    );
-    // If any of the assets is favorite, we consider the synced info as favorite
-    const isFavorite = allAssetsInfo.some((asset) => asset.isFavorite);
-    // Choose the most restrictive visibility level among the assets
-    const visibility = [
-      AssetVisibility.Locked,
-      AssetVisibility.Hidden,
-      AssetVisibility.Archive,
-      AssetVisibility.Timeline,
-    ].find((level) => allAssetsInfo.some((asset) => asset.visibility === level));
-    // Choose the highest rating from the exif data of the assets
-    const rating = Math.max(...allAssetsInfo.map((asset) => asset.exifInfo?.rating ?? 0));
-    // Concatenate the single descriptions of the assets
-    const description = allAssetsInfo.map((asset) => asset.exifInfo?.description).join('\n');
-    // Check that only one pair of latitude/longitude exists among the assets
-    const latitudes = new Set(allAssetsInfo.map((asset) => asset.exifInfo?.latitude).filter((lat) => lat !== null));
-    const longitudes = new Set(allAssetsInfo.map((asset) => asset.exifInfo?.longitude).filter((lon) => lon !== null));
+  const getSyncedInfo = (assets: AssetResponseDto[]) => {
+    const latitudes = new Set(assets.map(({ exifInfo }) => exifInfo?.latitude).filter((lat) => lat !== null));
+    const longitudes = new Set(assets.map(({ exifInfo }) => exifInfo?.longitude).filter((lon) => lon !== null));
     const latitude = latitudes.size === 1 ? Array.from(latitudes)[0] : null;
     const longitude = longitudes.size === 1 ? Array.from(longitudes)[0] : null;
 
-    return { isFavorite, visibility, rating, description, latitude, longitude };
+    return {
+      description: assets.map(({ exifInfo }) => exifInfo?.description).join('\n'),
+      rating: Math.max(...assets.map(({ exifInfo }) => exifInfo?.rating ?? 0)),
+      isFavorite: assets.some((asset) => asset.isFavorite),
+      visibility: [
+        AssetVisibility.Locked,
+        AssetVisibility.Hidden,
+        AssetVisibility.Archive,
+        AssetVisibility.Timeline,
+      ].find((level) => assets.some(({ visibility }) => visibility === level)),
+      latitude,
+      longitude,
+    };
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const { syncFavorites, syncVisibility, syncRating, syncDescription, syncLocation, syncAlbums } = $derived(
+    duplicateSettings.current,
+  );
+
+  const handleResolve = async (duplicateId: string, duplicateAssets: AssetResponseDto[], trashIds: string[]) => {
+    const duplicateAssetIds = duplicateAssets.map((asset) => asset.id);
+
     return withConfirmation(
       async () => {
-        const { isFavorite, visibility, rating, description, latitude, longitude } =
-          await getSyncedInfo(duplicateAssetIds);
+        const { isFavorite, visibility, rating, description, latitude, longitude } = getSyncedInfo(duplicateAssets);
+
         let assetBulkUpdate: AssetBulkUpdateDto = {
           ids: duplicateAssetIds,
           duplicateId: null,
         };
-        if ($duplicateSettings.synchronizeFavorites) {
+
+        if (syncFavorites) {
           assetBulkUpdate.isFavorite = isFavorite;
         }
-        if ($duplicateSettings.synchronizeVisibility) {
+
+        if (syncVisibility) {
           assetBulkUpdate.visibility = visibility;
         }
-        if ($duplicateSettings.synchronizeRating) {
+
+        if (syncRating) {
           assetBulkUpdate.rating = rating;
         }
-        if ($duplicateSettings.synchronizeDescpription) {
+
+        if (syncDescription) {
           assetBulkUpdate.description = description;
         }
-        if ($duplicateSettings.synchronizeLocation && latitude !== null && longitude !== null) {
+
+        if (syncLocation && latitude !== null && longitude !== null) {
           assetBulkUpdate.latitude = latitude;
           assetBulkUpdate.longitude = longitude;
         }
-        if ($duplicateSettings.synchronizeAlbums) {
+
+        if (syncAlbums) {
           const idsToKeep = duplicateAssetIds.filter((id) => !trashIds.includes(id));
           for (const sourceId of trashIds) {
             for (const targetId of idsToKeep) {
@@ -309,7 +308,7 @@
         color="secondary"
         icon={mdiCogOutline}
         title={$t('settings')}
-        onclick={onShowSettings}
+        onclick={() => modalManager.show(DuplicateSettingsModal)}
         aria-label={$t('settings')}
       />
     </HStack>

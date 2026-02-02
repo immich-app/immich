@@ -1,6 +1,8 @@
 import { browser } from '$app/environment';
 import { Theme, defaultLang } from '$lib/constants';
+import type { DuplicateSettings } from '$lib/types';
 import { getPreferredLocale } from '$lib/utils/i18n';
+import { PersistedLocalStorage } from '$lib/utils/persisted';
 import { persisted } from 'svelte-persisted-store';
 
 export interface ThemeSetting {
@@ -150,20 +152,11 @@ export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
 
-export interface DuplicateSettings {
-  synchronizeAlbums: boolean;
-  synchronizeVisibility: boolean;
-  synchronizeFavorites: boolean;
-  synchronizeRating: boolean;
-  synchronizeDescpription: boolean;
-  synchronizeLocation: boolean;
-}
-
-export const duplicateSettings = persistedObject<DuplicateSettings>('duplicate-settings', {
-  synchronizeAlbums: false,
-  synchronizeVisibility: false,
-  synchronizeFavorites: false,
-  synchronizeRating: false,
-  synchronizeDescpription: false,
-  synchronizeLocation: false,
+export const duplicateSettings = new PersistedLocalStorage<DuplicateSettings>('duplicate-settings', {
+  syncAlbums: false,
+  syncVisibility: false,
+  syncFavorites: false,
+  syncRating: false,
+  syncDescription: false,
+  syncLocation: false,
 });
