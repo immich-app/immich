@@ -205,7 +205,7 @@ const peopleWithFaces = (
       if (face.person) {
         const existingPersonEntry = result.find((item) => item.id === face.person!.id);
         if (existingPersonEntry) {
-          existingPersonEntry.faces.push(face);
+          existingPersonEntry.faces.push(mapFacesWithoutPerson(face, edits, assetDimensions));
         } else {
           result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
         }
@@ -275,7 +275,9 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
-    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
+    unassignedFaces: entity.faces
+      ?.filter((face) => !face.person)
+      .map((a) => mapFacesWithoutPerson(a, entity.edits, assetDimensions)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
