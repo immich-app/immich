@@ -14,7 +14,6 @@ import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { updateLockedColumns } from 'src/utils/database';
 import { suggestDuplicateKeepAssetIds } from 'src/utils/duplicate';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
@@ -207,7 +206,7 @@ export class DuplicateService extends BaseService {
 
     if (idsToKeep.length > 0) {
       if (Object.keys(exifUpdate).length > 0) {
-        await this.assetRepository.updateAllExif(idsToKeep, updateLockedColumns(exifUpdate));
+        await this.assetRepository.updateAllExif(idsToKeep, exifUpdate);
         await this.jobRepository.queueAll(idsToKeep.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
       }
 
