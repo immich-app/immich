@@ -66,7 +66,6 @@ export const getUserAdminActions = ($t: MessageFormatter, user: UserAdminRespons
     color: 'danger',
     $if: () => get(authUser).id !== user.id && !user.deletedAt,
     onAction: () => modalManager.show(UserDeleteConfirmModal, { user }),
-    shortcuts: { key: 'Backspace' },
   };
 
   const getDeleteDate = (deletedAt: string): Date =>
