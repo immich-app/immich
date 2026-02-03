@@ -751,7 +751,7 @@
   }
 
   .month-group {
-    contain: size paint;
+    contain: layout size paint;
     transform-style: flat;
     backface-visibility: hidden;
     transform-origin: center center;
