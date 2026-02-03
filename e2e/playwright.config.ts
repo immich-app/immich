@@ -14,7 +14,6 @@ export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERV
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
 
 const config: PlaywrightTestConfig = {
-  testDir: './src/web/specs',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 4 : 0,
@@ -28,23 +27,30 @@ const config: PlaywrightTestConfig = {
     },
   },
 
-  testMatch: /.*\.e2e-spec\.ts/,
-
   workers: process.env.CI ? 4 : Math.round(cpus().length * 0.75),
 
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testDir: './src/e2e/web/specs',
       testMatch: /.*\.e2e-spec\.ts/,
       workers: 1,
     },
     {
       name: 'ui',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: /.*\.ui-spec\.ts/,
+      testDir: './src/ui-tests/web/specs',
+      testMatch: /.*\.e2e-spec\.ts/,
       fullyParallel: true,
       workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
+    },
+    {
+      name: 'maintenance-isolated',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: './src/maintenance-tests/web/specs',
+      testMatch: /.*\.e2e-spec\.ts/,
+      workers: 1,
     },
 
     // {
