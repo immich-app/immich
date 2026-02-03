@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
-import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
+import { AssetFace, AssetFile, Exif, Person, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
@@ -193,24 +193,33 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-// TODO: this is inefficient
 const peopleWithFaces = (
   faces?: AssetFace[],
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): PersonWithFacesResponseDto[] => {
-  const result: PersonWithFacesResponseDto[] = [];
-  if (faces) {
-    for (const face of faces) {
-      if (face.person) {
-        const existingPersonEntry = result.find((item) => item.id === face.person!.id);
-        if (existingPersonEntry) {
-          existingPersonEntry.faces.push(mapFacesWithoutPerson(face, edits, assetDimensions));
-        } else {
-          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
-        }
+  if (!faces) {
+    return [];
+  }
+
+  const peopleFaces: Map<Person, AssetFaceWithoutPersonResponseDto[]> = new Map();
+
+  for (const face of faces) {
+    if (face.person) {
+      if (!peopleFaces.has(face.person)) {
+        peopleFaces.set(face.person, []);
       }
+
+      peopleFaces.get(face.person)!.push(mapFacesWithoutPerson(face, edits, assetDimensions));
     }
+  }
+
+  const result: PersonWithFacesResponseDto[] = [];
+  for (const [person, faceDtos] of peopleFaces.entries()) {
+    result.push({
+      ...mapPerson(person),
+      faces: faceDtos,
+    });
   }
 
   return result;
