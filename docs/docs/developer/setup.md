@@ -90,10 +90,13 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 #### Setup
 
-1. Setup Flutter toolchain using FVM.
-2. Run `flutter pub get` to install the dependencies.
-3. Run `make translation` to generate the translation file.
-4. Run `fvm flutter run` to start the app.
+1. [Install mise](https://mise.jdx.dev/installing-mise.html).
+2. Change to the immich (root) directory and trust the mise config with `mise trust`.
+3. Install tools with mise: `mise install`.
+4. Change to the `mobile/` directory.
+5. Run `flutter pub get` to install the dependencies.
+6. Run `make translation` to generate the translation file.
+7. Run `flutter run` to start the app.
 
 #### Translation
 
