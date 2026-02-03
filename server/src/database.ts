@@ -346,6 +346,9 @@ export const columns = {
     'asset.originalPath',
     'asset.ownerId',
     'asset.type',
+    'asset.storageBackend',
+    'asset.s3Bucket',
+    'asset.s3Key',
   ],
   assetFiles: [
     'asset_file.id',

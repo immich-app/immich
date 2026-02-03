@@ -580,11 +580,92 @@ export class AssetMediaService extends BaseService {
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
 
+    // Upload to S3 synchronously BEFORE queueing jobs
+    // This ensures distributed workers can access the file from S3
+    await this.uploadToS3Sync(asset, file);
+
     // Events and jobs are queued AFTER the transaction commits
     await this.eventRepository.emit('AssetCreate', { asset });
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;
+  }
+
+  /**
+   * Upload asset to S3 synchronously during the upload request.
+   * This ensures the file is available in S3 before any jobs run,
+   * allowing distributed workers to access the file.
+   */
+  private async uploadToS3Sync(asset: Asset, file: UploadFile): Promise<void> {
+    const s3Manager = this.s3Manager;
+
+    // Check if S3 is enabled for originals
+    if (!(await s3Manager.isS3EnabledForLocation(StorageLocationType.Originals))) {
+      this.logger.debug(`Sync S3 upload skipped for asset ${asset.id}: S3 not enabled for originals`);
+      return;
+    }
+
+    try {
+      const {
+        adapter: s3Adapter,
+        bucket,
+        storageClass,
+      } = await s3Manager.getConfigForLocation(StorageLocationType.Originals);
+      const localAdapter = s3Manager.getLocalAdapter();
+
+      // Generate S3 key: users/{userId}/{assetId}/original.{ext}
+      const filename = file.originalPath.split('/').pop() || '';
+      const lastDotIndex = filename.lastIndexOf('.');
+      const ext = lastDotIndex > 0 ? filename.slice(lastDotIndex + 1) : '';
+      // Sanitize and limit extension length to prevent issues with excessively long extensions
+      const sanitizedExt = ext.replaceAll(/[^a-zA-Z0-9]/g, '').toLowerCase().slice(0, 10) || 'bin';
+      const s3Key = `users/${asset.ownerId}/${asset.id}/original.${sanitizedExt}`;
+
+      this.logger.log(`Sync uploading asset ${asset.id} to S3 bucket ${bucket}: ${s3Key}`);
+
+      // Stream from local storage to S3
+      const { stream: readStream } = await localAdapter.readStream(file.originalPath);
+
+      try {
+        await s3Adapter.writeStreamAsync(s3Key, readStream, {
+          contentType: mimeTypes.lookup(file.originalPath),
+          storageClass,
+        });
+      } catch (uploadError) {
+        // Ensure stream is closed on error to prevent resource leak
+        readStream.destroy();
+        throw uploadError;
+      }
+
+      // Verify upload succeeded
+      const s3Exists = await s3Adapter.exists(s3Key);
+      if (!s3Exists) {
+        throw new Error(`S3 upload verification failed: ${s3Key} not found after upload`);
+      }
+
+      // Update asset record with S3 metadata
+      await this.assetRepository.update({
+        id: asset.id,
+        storageBackend: StorageBackend.S3,
+        s3Bucket: bucket,
+        s3Key,
+      });
+
+      this.logger.log(`Sync S3 upload complete for asset ${asset.id}: ${bucket}/${s3Key}`);
+
+      // Optionally delete local file to save space (it's now in S3)
+      try {
+        await this.storageRepository.unlink(file.originalPath);
+        this.logger.debug(`Deleted local file after S3 upload: ${file.originalPath}`);
+      } catch (unlinkError: unknown) {
+        // Non-fatal - file will be cleaned up eventually
+        this.logger.warn(`Failed to delete local file after S3 upload: ${file.originalPath}: ${unlinkError}`);
+      }
+    } catch (error) {
+      this.logger.error(`Sync S3 upload failed for asset ${asset.id}: ${error}`);
+      // Don't throw - allow the upload to succeed even if S3 upload fails
+      // The job pipeline will try to upload later via S3UploadAsset job
+    }
   }
 
   private requireQuota(auth: AuthDto, size: number) {

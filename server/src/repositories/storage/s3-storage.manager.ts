@@ -193,6 +193,20 @@ export class S3StorageManager {
   }
 
   /**
+   * Get the archive bucket name (where originals are stored).
+   * Useful for fallback S3 lookups when location config may not be set.
+   */
+  async getArchiveBucketName(): Promise<string> {
+    const config = await this.getStorageConfig();
+
+    if (!config.s3.enabled) {
+      throw new Error('S3 storage is not enabled');
+    }
+
+    return config.s3.archiveBucket.bucket;
+  }
+
+  /**
    * Get an S3 adapter for a specific bucket.
    * Uses the default S3 credentials but with the specified bucket.
    * Useful for deleting files from buckets that may differ from the default.

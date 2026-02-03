@@ -5,6 +5,7 @@ import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { StorageBackend } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AdminRecoveryKeyRepository } from 'src/repositories/admin-recovery-key.repository';
@@ -253,5 +254,106 @@ export class BaseService {
     await this.eventRepository.emit('UserCreate', user);
 
     return user;
+  }
+
+  /**
+   * Ensure a file is available locally for processing.
+   * If the file doesn't exist locally but is in S3, downloads it temporarily.
+   * Also handles assets that are in S3 but missing S3 metadata in the database.
+   * Returns whether the file was downloaded from S3 (for cleanup purposes).
+   */
+  protected async ensureLocalFile(
+    assetId: string,
+    ownerId: string,
+    originalPath: string,
+    storageBackend: string | null,
+    s3Bucket: string | null,
+    s3Key: string | null,
+    context: string,
+  ): Promise<{ downloadedFromS3: boolean }> {
+    const localFileExists = await this.storageRepository.checkFileExists(originalPath);
+
+    if (localFileExists) {
+      return { downloadedFromS3: false };
+    }
+
+    // Try to download from S3 if we have metadata
+    if (storageBackend === StorageBackend.S3 && s3Bucket && s3Key) {
+      this.logger.log(`Downloading asset ${assetId} from S3 for ${context}`);
+      try {
+        const s3Adapter = await this.s3Manager.getAdapterForBucket(s3Bucket);
+        const localAdapter = this.s3Manager.getLocalAdapter();
+        const { stream } = await s3Adapter.readStream(s3Key);
+        await localAdapter.writeStreamAsync(originalPath, stream);
+        this.logger.debug(`Downloaded asset ${assetId} from S3 to ${originalPath}`);
+        return { downloadedFromS3: true };
+      } catch (error) {
+        this.logger.error(`Failed to download asset ${assetId} from S3: ${error}`);
+        throw new Error(`Failed to download from S3 for ${context}: ${error}`);
+      }
+    }
+
+    // Fallback: try to find file in S3 even without metadata (handles migration case)
+    // Use isS3Enabled() instead of isS3EnabledForLocation() because files may have been
+    // uploaded to S3 even if the current location config doesn't specify S3 for originals
+    if (await this.s3Manager.isS3Enabled()) {
+      const generatedS3Key = this.generateFallbackS3Key(ownerId, assetId, originalPath);
+      this.logger.debug(`S3 fallback: checking for asset ${assetId} at key ${generatedS3Key}`);
+
+      try {
+        // Use the default adapter which uses the archive bucket (where originals are stored)
+        const s3Adapter = await this.s3Manager.getDefaultAdapter();
+        const bucket = await this.s3Manager.getArchiveBucketName();
+        const exists = await s3Adapter.exists(generatedS3Key);
+
+        if (exists) {
+          this.logger.log(`Found asset ${assetId} in S3 (missing metadata), downloading for ${context}`);
+          const localAdapter = this.s3Manager.getLocalAdapter();
+          const { stream } = await s3Adapter.readStream(generatedS3Key);
+          await localAdapter.writeStreamAsync(originalPath, stream);
+
+          // Update asset with S3 metadata so future jobs don't need this fallback
+          await this.assetRepository.update({
+            id: assetId,
+            storageBackend: StorageBackend.S3,
+            s3Bucket: bucket,
+            s3Key: generatedS3Key,
+          });
+          this.logger.debug(`Updated asset ${assetId} with S3 metadata and downloaded to ${originalPath}`);
+          return { downloadedFromS3: true };
+        }
+      } catch (error) {
+        this.logger.warn(`S3 fallback check failed for asset ${assetId}: ${error}`);
+        // Continue to throw "local file missing" error
+      }
+    }
+
+    throw new Error(`Local file missing for ${context}: ${originalPath}`);
+  }
+
+  /**
+   * Generate S3 key for an asset fallback lookup (same logic as s3-storage.service.ts)
+   */
+  private generateFallbackS3Key(userId: string, assetId: string, originalPath: string): string {
+    const filename = originalPath.split('/').pop() || '';
+    const lastDotIndex = filename.lastIndexOf('.');
+    const ext = lastDotIndex > 0 ? filename.slice(Math.max(0, lastDotIndex + 1)) : '';
+    const sanitizedExt = ext.replaceAll(/[^a-zA-Z0-9]/g, '');
+    const safeExt = sanitizedExt || 'bin';
+    return `users/${userId}/${assetId}/original.${safeExt}`;
+  }
+
+  /**
+   * Clean up a file that was downloaded from S3 for processing.
+   */
+  protected async cleanupDownloadedFile(assetId: string, originalPath: string, downloadedFromS3: boolean): Promise<void> {
+    if (downloadedFromS3) {
+      try {
+        await this.storageRepository.unlink(originalPath);
+        this.logger.debug(`Cleaned up downloaded S3 file for asset ${assetId}`);
+      } catch (error) {
+        this.logger.warn(`Failed to clean up downloaded S3 file for asset ${assetId}: ${error}`);
+      }
+    }
   }
 }

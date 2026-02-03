@@ -789,8 +789,14 @@ export class MediaService extends BaseService {
   async handleVideoConversion({ id }: JobOf<JobName.AssetEncodeVideo>): Promise<JobStatus> {
     const asset = await this.assetJobRepository.getForVideoConversion(id);
     if (!asset) {
+      this.logger.error(`Video conversion failed for ${id}: asset not found in database`);
       return JobStatus.Failed;
     }
+
+    // Log storage state for debugging
+    this.logger.log(
+      `Video conversion starting for ${id}: storageBackend=${asset.storageBackend}, s3Bucket=${asset.s3Bucket || 'null'}, s3Key=${asset.s3Key ? 'set' : 'null'}, originalPath=${asset.originalPath}`,
+    );
 
     // Skip if already encoded to S3
     if (asset.s3KeyEncodedVideo) {
@@ -798,26 +804,68 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    // Handle S3-stored originals: download to temp file first
+    // Determine input source: prefer local file, fall back to S3
     let tempFilePath: string | undefined;
     let input = asset.originalPath;
 
-    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key && asset.s3Bucket) {
+    // Check if local file exists
+    const localFileExists = await this.storageRepository.checkFileExists(asset.originalPath);
+
+    if (localFileExists) {
+      this.logger.debug(`Using local file for video encoding: ${asset.originalPath}`);
+      input = asset.originalPath;
+    } else {
+      // Local file doesn't exist, try S3
       const s3Manager = this.s3Manager;
-      if (!(await s3Manager.isS3Enabled())) {
-        this.logger.error(`Video conversion failed for ${id}: asset is in S3 but S3 is not enabled`);
+      const s3Enabled = await s3Manager.isS3Enabled();
+      const s3EnabledForOriginals = await s3Manager.isS3EnabledForLocation(StorageLocationType.Originals);
+
+      if (!s3Enabled || !s3EnabledForOriginals) {
+        this.logger.error(
+          `Video conversion failed for ${id}: local file not found at ${asset.originalPath} and S3 is not enabled for originals`,
+        );
         return JobStatus.Failed;
       }
 
+      // Determine S3 key and bucket
+      let s3Key: string;
+      let s3Bucket: string;
+
+      if (asset.s3Key && asset.s3Bucket) {
+        // Use database values if available
+        s3Key = asset.s3Key;
+        s3Bucket = asset.s3Bucket;
+        this.logger.debug(`Using S3 key from database: ${s3Bucket}/${s3Key}`);
+      } else {
+        // Derive S3 key using the same format as s3-storage.service.ts: users/{userId}/{assetId}/original.{ext}
+        const config = await s3Manager.getConfigForLocation(StorageLocationType.Originals);
+        s3Bucket = config.bucket;
+
+        // Extract extension from original filename
+        const filename = asset.originalPath.split('/').pop() || '';
+        const lastDotIndex = filename.lastIndexOf('.');
+        const ext = lastDotIndex > 0 ? filename.slice(lastDotIndex + 1) : '';
+        const sanitizedExt = ext.replaceAll(/[^a-zA-Z0-9]/g, '') || 'bin';
+        s3Key = `users/${asset.ownerId}/${id}/original.${sanitizedExt}`;
+
+        // If there's a prefix configured, prepend it
+        if (config.prefix) {
+          s3Key = `${config.prefix}/${s3Key}`;
+        }
+
+        this.logger.warn(
+          `Asset ${id} missing S3 metadata, deriving S3 key. s3Bucket=${s3Bucket}, s3Key=${s3Key}`,
+        );
+      }
+
       try {
-        this.logger.debug(`Streaming video from S3 for encoding: ${asset.s3Bucket}/${asset.s3Key}`);
-        // Use the bucket stored in the database, not the default config
-        const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
+        this.logger.log(`Streaming video from S3 for encoding: ${s3Bucket}/${s3Key}`);
+        const s3Adapter = await s3Manager.getAdapterForBucket(s3Bucket);
 
         // Stream to temp file to avoid buffering large videos in memory
         const ext = asset.originalFileName.split('.').pop() || 'mp4';
         tempFilePath = `/tmp/immich-video-${id}.${ext}`;
-        const { stream } = await s3Adapter.readStream(asset.s3Key);
+        const { stream } = await s3Adapter.readStream(s3Key);
         await this.storageRepository.createFileFromStream(tempFilePath, stream);
         input = tempFilePath;
         this.logger.debug(`Streamed S3 video to temp file: ${tempFilePath}`);
