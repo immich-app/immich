@@ -33,6 +33,8 @@ type ResolveRequest = {
   mergedAlbumIds: string[];
 
   mergedTagIds: string[];
+
+  mergedTagValues: string[];
 };
 
 const uniqueNonEmptyLines = (values: Array<string | null | undefined>): string[] => {
@@ -165,7 +167,7 @@ export class DuplicateService extends BaseService {
       ? await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds])
       : new Map<string, string[]>();
 
-    const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds } = this.getSyncMergeResult(
+    const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
       duplicateGroup.assets,
       settings,
       assetAlbumMap,
@@ -201,12 +203,22 @@ export class DuplicateService extends BaseService {
       if (allowedTagIds.size > 0) {
         // Replace tags for each keeper asset to ensure all merged tags are applied
         await Promise.all(idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])));
+
+        // Update asset_exif.tags so the subsequent SidecarWrite + MetadataExtraction
+        // cycle preserves the merged tags (updateAllExif locks the property automatically)
+        await this.assetRepository.updateAllExif(idsToKeep, { tags: mergedTagValues });
       }
     }
 
     if (idsToKeep.length > 0) {
-      if (Object.keys(exifUpdate).length > 0) {
+      const hasExifUpdate = Object.keys(exifUpdate).length > 0;
+      const hasTagUpdate = mergedTagIds.length > 0;
+
+      if (hasExifUpdate) {
         await this.assetRepository.updateAllExif(idsToKeep, exifUpdate);
+      }
+
+      if (hasExifUpdate || hasTagUpdate) {
         await this.jobRepository.queueAll(idsToKeep.map((id) => ({ name: JobName.SidecarWrite, data: { id } })));
       }
 
@@ -241,6 +253,7 @@ export class DuplicateService extends BaseService {
     const response: ResolveRequest = {
       mergedAlbumIds: [],
       mergedTagIds: [],
+      mergedTagValues: [],
       assetUpdate: {},
       exifUpdate: {},
     };
@@ -299,16 +312,12 @@ export class DuplicateService extends BaseService {
     }
 
     if (settings.syncTags) {
-      const tagIds = [
-        ...new Set(
-          assets
-            .flatMap((asset) => asset.tags ?? [])
-            .map((tag) => tag.id)
-            .filter((id): id is string => !!id),
-        ),
-      ];
+      const allTags = assets.flatMap((asset) => asset.tags ?? []);
+      const tagIds = [...new Set(allTags.map((tag) => tag.id).filter((id): id is string => !!id))];
+      const tagValues = [...new Set(allTags.map((tag) => tag.value).filter((v): v is string => !!v))];
       if (tagIds.length > 0) {
-        response.mergedTagIds = settings.syncTags ? tagIds : [];
+        response.mergedTagIds = tagIds;
+        response.mergedTagValues = tagValues;
       }
     }
 

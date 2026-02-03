@@ -325,6 +325,53 @@ describe(DuplicateService.name, () => {
       expect(result[0].errorMessage).toContain('Every asset must be in either keepAssetIds or trashAssetIds');
     });
 
+    it('should sync merged tags to asset_exif.tags when syncTags is enabled', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
+      mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [
+          {
+            ...assetStub.image,
+            id: 'asset-1',
+            tags: [{ id: 'tag-1', value: 'Work', createdAt: new Date(), updatedAt: new Date(), userId: 'user-1' }],
+          },
+          {
+            ...assetStub.image,
+            id: 'asset-2',
+            tags: [{ id: 'tag-2', value: 'Travel', createdAt: new Date(), updatedAt: new Date(), userId: 'user-1' }],
+          },
+        ],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: ['asset-1'], trashAssetIds: ['asset-2'] }],
+        settings: {
+          syncAlbums: false,
+          syncVisibility: false,
+          syncFavorites: false,
+          syncRating: false,
+          syncDescription: false,
+          syncLocation: false,
+          syncTags: true,
+        },
+      });
+
+      expect(result[0].success).toBe(true);
+
+      // Verify tags were applied to tag_asset table
+      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith('asset-1', ['tag-1', 'tag-2']);
+
+      // Verify merged tag values were written to asset_exif.tags so SidecarWrite preserves them
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { tags: ['Work', 'Travel'] });
+
+      // Verify SidecarWrite was queued (to write tags to sidecar)
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarWrite, data: { id: 'asset-1' } },
+      ]);
+    });
+
     // NOTE: The following integration-style tests are covered by E2E tests instead
     // to avoid complex mock setup. The validation and error-handling logic above
     // is thoroughly unit tested.
