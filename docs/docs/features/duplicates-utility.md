@@ -17,5 +17,5 @@ Additionally, there are synchronization settings that can be used to synchronize
 | Rating      | `false` | When enabled, if one or more assets in the duplicate group have a rating, the highest rating is selected and then synchronized to the kept assets. |
 | Description | `false` | When enabled, descriptions from each asset are combined together and then synchronized to all the kept assets.                                     |
 | Visibility  | `false` | When enabled, the most restrictive visibility is applied the the kept assets.                                                                      |
-| Location    | `false` | When enabled, latitude and longitude are only copied if among the group there is a single asset with geolocation data.                             |
-| Tag         | `false` | When enabled, the kept assets will be tagged with _every_ tag that the other assets in the group were tagged with.                                 |
+| Location    | `false` | When enabled, latitude and longitude are only copied if all assets with geolocation data in the group share the same coordinates.                  |
+| Tag         | `false` | When enabled, tags from all assets in the group are merged and applied to every kept asset.                                                        |
