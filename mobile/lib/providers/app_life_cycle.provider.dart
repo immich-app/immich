@@ -155,10 +155,14 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
       if (syncSuccess) {
-        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
-        // TODO: Bring back when the soft freeze issue is addressed
-        // await _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds");
-        await _resumeBackup();
+        await Future.wait([
+          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+            _resumeBackup();
+          }),
+          _resumeBackup(),
+          // TODO: Bring back when the soft freeze issue is addressed
+          // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
+        ]);
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
       }
