@@ -152,10 +152,7 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
       .setMessage(text.message)
       .setView(container)
       .setPositiveButton(text.confirm) { _, _ -> callback(editText.text.toString()) }
-      .setNegativeButton(text.cancel) { dialog, _ ->
-        dialog.cancel()
-        callback(null)
-      }
+      .setNegativeButton(text.cancel) { _, _ -> callback(null) }
       .setOnCancelListener { callback(null) }
       .show()
   }
