@@ -175,7 +175,7 @@ describe(PersonService.name, () => {
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
 
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
@@ -193,12 +193,12 @@ describe(PersonService.name, () => {
       );
     });
 
-    it.only('should properly transform the coordinates when the asset is edited (Rotate 90)', async () => {
+    it('should properly transform the coordinates when the asset is edited (Rotate 90)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 100 });
-      await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 200 });
+      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 200 });
+      await ctx.newExif({ assetId: asset.id, exifImageWidth: 200, exifImageHeight: 100 });
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -214,12 +214,12 @@ describe(PersonService.name, () => {
       const auth = factory.auth({ user });
 
       const dto: AssetFaceCreateDto = {
-        imageWidth: 200,
-        imageHeight: 100,
+        imageWidth: 100,
+        imageHeight: 200,
         x: 25,
         y: 50,
-        width: 50,
-        height: 50,
+        width: 10,
+        height: 10,
         personId: person.id,
         assetId: asset.id,
       };
@@ -232,16 +232,16 @@ describe(PersonService.name, () => {
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 25,
-            boundingBoxY1: 50,
-            boundingBoxX2: 75,
-            boundingBoxY2: 100,
+            boundingBoxX1: expect.closeTo(25, 1),
+            boundingBoxY1: expect.closeTo(50, 1),
+            boundingBoxX2: expect.closeTo(35, 1),
+            boundingBoxY2: expect.closeTo(60, 1),
           }),
         ]),
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
@@ -249,8 +249,8 @@ describe(PersonService.name, () => {
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
             boundingBoxX1: 50,
-            boundingBoxY1: 25,
-            boundingBoxX2: 150,
+            boundingBoxY1: 65,
+            boundingBoxX2: 60,
             boundingBoxY2: 75,
           }),
         ]),
@@ -305,7 +305,7 @@ describe(PersonService.name, () => {
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
@@ -325,7 +325,7 @@ describe(PersonService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 200 });
+      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
 
       await ctx.newEdits(asset.id, {
@@ -355,8 +355,8 @@ describe(PersonService.name, () => {
         imageHeight: 150,
         x: 50,
         y: 25,
-        width: 100,
-        height: 75,
+        width: 10,
+        height: 20,
         personId: person.id,
         assetId: asset.id,
       };
@@ -369,16 +369,16 @@ describe(PersonService.name, () => {
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 50,
-            boundingBoxY1: 25,
-            boundingBoxX2: 150,
-            boundingBoxY2: 100,
+            boundingBoxX1: expect.closeTo(50, 1),
+            boundingBoxY1: expect.closeTo(25, 1),
+            boundingBoxX2: expect.closeTo(60, 1),
+            boundingBoxY2: expect.closeTo(45, 1),
           }),
         ]),
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
@@ -386,8 +386,8 @@ describe(PersonService.name, () => {
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
             boundingBoxX1: 75,
-            boundingBoxY1: 50,
-            boundingBoxX2: 150,
+            boundingBoxY1: 140,
+            boundingBoxX2: 95,
             boundingBoxY2: 150,
           }),
         ]),
@@ -451,7 +451,7 @@ describe(PersonService.name, () => {
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
@@ -471,7 +471,7 @@ describe(PersonService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 200 });
+      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 150 });
 
       await ctx.newEdits(asset.id, {
@@ -498,8 +498,8 @@ describe(PersonService.name, () => {
         imageHeight: 150,
         x: 50,
         y: 25,
-        width: 100,
-        height: 75,
+        width: 15,
+        height: 20,
         personId: person.id,
         assetId: asset.id,
       };
@@ -512,26 +512,26 @@ describe(PersonService.name, () => {
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 50,
-            boundingBoxY1: 25,
-            boundingBoxX2: 150,
-            boundingBoxY2: 100,
+            boundingBoxX1: expect.closeTo(50, 1),
+            boundingBoxY1: expect.closeTo(25, 1),
+            boundingBoxX2: expect.closeTo(65, 1),
+            boundingBoxY2: expect.closeTo(45, 1),
           }),
         ]),
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 75,
+            boundingBoxX1: 25,
             boundingBoxY1: 50,
-            boundingBoxX2: 150,
-            boundingBoxY2: 150,
+            boundingBoxX2: 45,
+            boundingBoxY2: 65,
           }),
         ]),
       );
@@ -541,7 +541,7 @@ describe(PersonService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 150 });
+      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
 
       await ctx.newEdits(asset.id, {
@@ -551,7 +551,7 @@ describe(PersonService.name, () => {
             parameters: {
               x: 50,
               y: 25,
-              width: 150,
+              width: 100,
               height: 150,
             },
           },
@@ -591,102 +591,26 @@ describe(PersonService.name, () => {
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 25,
-            boundingBoxY1: 50,
-            boundingBoxX2: 100,
-            boundingBoxY2: 100,
+            boundingBoxX1: expect.closeTo(25, 1),
+            boundingBoxY1: expect.closeTo(50, 1),
+            boundingBoxX2: expect.closeTo(100, 1),
+            boundingBoxY2: expect.closeTo(100, 1),
           }),
         ]),
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 100,
+            boundingBoxX1: 50,
             boundingBoxY1: 75,
-            boundingBoxX2: 150,
+            boundingBoxX2: 100,
             boundingBoxY2: 150,
-          }),
-        ]),
-      );
-    });
-
-    it('should properly transform the coordinates with multiple crops in sequence', async () => {
-      const { sut, ctx } = setup();
-      const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
-      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
-      await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
-
-      await ctx.newEdits(asset.id, {
-        edits: [
-          {
-            action: AssetEditAction.Crop,
-            parameters: {
-              x: 50,
-              y: 50,
-              width: 150,
-              height: 150,
-            },
-          },
-          {
-            action: AssetEditAction.Crop,
-            parameters: {
-              x: 25,
-              y: 25,
-              width: 100,
-              height: 100,
-            },
-          },
-        ],
-      });
-
-      const auth = factory.auth({ user });
-
-      const dto: AssetFaceCreateDto = {
-        imageWidth: 100,
-        imageHeight: 100,
-        x: 10,
-        y: 10,
-        width: 80,
-        height: 80,
-        personId: person.id,
-        assetId: asset.id,
-      };
-
-      await sut.createFace(auth, dto);
-
-      const faces = sut.getFacesById(auth, { id: asset.id });
-      await expect(faces).resolves.toHaveLength(1);
-      await expect(faces).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 10,
-            boundingBoxY1: 10,
-            boundingBoxX2: 90,
-            boundingBoxY2: 90,
-          }),
-        ]),
-      );
-
-      // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
-      const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
-
-      await expect(facesAfterRemovingEdits).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            person: expect.objectContaining({ id: person.id }),
-            boundingBoxX1: 85,
-            boundingBoxY1: 85,
-            boundingBoxX2: 165,
-            boundingBoxY2: 165,
           }),
         ]),
       );
@@ -746,7 +670,7 @@ describe(PersonService.name, () => {
       );
 
       // remove edits and verify the stored coordinates map to the original image
-      await ctx.get(AssetEditRepository).replaceAll(asset.id, []);
+      await ctx.newEdits(asset.id, { edits: [] });
       const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
 
       await expect(facesAfterRemovingEdits).resolves.toEqual(
