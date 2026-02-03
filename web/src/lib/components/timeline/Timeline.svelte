@@ -666,7 +666,12 @@
       {@const absoluteHeight = monthGroup.top}
 
       {#if !monthGroup.isLoaded}
-        <div style:height={monthGroup.height + 'px'} style:position="absolute" style:width="100%">
+        <div
+          style:height={monthGroup.height + 'px'}
+          style:position="absolute"
+          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:width="100%"
+        >
           <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
       {:else if display}
@@ -674,7 +679,7 @@
           class="month-group"
           style:height={monthGroup.height + 'px'}
           style:position="absolute"
-          style:top={`${absoluteHeight}px`}
+          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
           <Month
@@ -747,5 +752,8 @@
 
   .month-group {
     contain: size paint;
+    transform-style: flat;
+    backface-visibility: hidden;
+    transform-origin: center center;
   }
 </style>

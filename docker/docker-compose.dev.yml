@@ -70,36 +70,36 @@ services:
     healthcheck:
       disable: false
 
-  # immich-web:
-  #   container_name: immich_web
-  #   image: immich-web-dev:latest
-  #   build:
-  #     context: ../
-  #     dockerfile: server/Dockerfile.dev
-  #     target: dev
-  #   command: ['immich-web']
-  #   env_file:
-  #     - .env
-  #   ports:
-  #     - 3000:3000
-  #     - 24678:24678
-  #   volumes:
-  #     - ..:/usr/src/app
-  #     - pnpm-store:/usr/src/app/.pnpm-store
-  #     - server-node_modules:/usr/src/app/server/node_modules
-  #     - web-node_modules:/usr/src/app/web/node_modules
-  #     - github-node_modules:/usr/src/app/.github/node_modules
-  #     - cli-node_modules:/usr/src/app/cli/node_modules
-  #     - docs-node_modules:/usr/src/app/docs/node_modules
-  #     - e2e-node_modules:/usr/src/app/e2e/node_modules
-  #     - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
-  #     - app-node_modules:/usr/src/app/node_modules
-  #     - sveltekit:/usr/src/app/web/.svelte-kit
-  #     - coverage:/usr/src/app/web/coverage
-  #   restart: unless-stopped
-  #   depends_on:
-  #     immich-server:
-  #       condition: service_started
+  immich-web:
+    container_name: immich_web
+    image: immich-web-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile.dev
+      target: dev
+    command: ['immich-web']
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+      - 24678:24678
+    volumes:
+      - ..:/usr/src/app
+      - pnpm-store:/usr/src/app/.pnpm-store
+      - server-node_modules:/usr/src/app/server/node_modules
+      - web-node_modules:/usr/src/app/web/node_modules
+      - github-node_modules:/usr/src/app/.github/node_modules
+      - cli-node_modules:/usr/src/app/cli/node_modules
+      - docs-node_modules:/usr/src/app/docs/node_modules
+      - e2e-node_modules:/usr/src/app/e2e/node_modules
+      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app-node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
+    restart: unless-stopped
+    depends_on:
+      immich-server:
+        condition: service_started
 
   immich-machine-learning:
     container_name: immich_machine_learning

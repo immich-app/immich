@@ -62,7 +62,7 @@
       { 'transition-all': !monthGroup.timelineManager.suspendTransitions },
       !monthGroup.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
     ]}
-    data-group={dayGroup.groupTitle}
+    data-group
     style:position="absolute"
     style:left={`${absoluteWidth}px`}
     style:top={`${dayGroup.top}px`}
@@ -73,10 +73,14 @@
     <div
       class="sticky top-0 z-[100] flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm bg-immich-bg dark:bg-immich-dark-bg"
       style:width={dayGroup.width + 'px'}
+      style:will-change="transform"
+      style:transform="translateZ(0)"
     >
       {#if !singleSelect}
         <div
           class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
+          class:w-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+            assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
           onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
         >
