@@ -252,8 +252,11 @@ export class DuplicateService extends BaseService {
 
     if (settings.syncVisibility) {
       const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
-      const visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
+      let visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
       if (!visibility && assets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
+        visibility = AssetVisibility.Hidden;
+      }
+      if (visibility) {
         response.assetUpdate.visibility = visibility;
       }
     }
