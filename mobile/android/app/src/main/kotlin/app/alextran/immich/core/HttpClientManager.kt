@@ -14,6 +14,7 @@ import java.security.Principal
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509KeyManager
@@ -105,6 +106,7 @@ object HttpClientManager {
 
     val sslContext = SSLContext.getInstance("TLS")
       .apply { init(arrayOf(DynamicKeyManager()), arrayOf(trustManager), null) }
+    HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
 
     return OkHttpClient.Builder()
       .addInterceptor { chain ->
