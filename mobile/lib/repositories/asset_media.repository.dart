@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -118,12 +117,12 @@ class AssetMediaRepository {
   }
 
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {CancellationToken? cancelToken}) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) async {
     final downloadedXFiles = <XFile>[];
     final tempFiles = <File>[];
 
     for (var asset in assets) {
-      if (cancelToken != null && cancelToken.isCancelled) {
+      if (cancelCompleter != null && cancelCompleter.isCompleted) {
         // if cancelled, delete any temp files created so far
         await _cleanupTempFiles(tempFiles);
         return 0;
@@ -168,7 +167,7 @@ class AssetMediaRepository {
       return 0;
     }
 
-    if (cancelToken != null && cancelToken.isCancelled) {
+    if (cancelCompleter != null && cancelCompleter.isCompleted) {
       await _cleanupTempFiles(tempFiles);
       return 0;
     }

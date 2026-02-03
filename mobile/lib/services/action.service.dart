@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -233,8 +232,8 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {CancellationToken? cancelToken}) {
-    return _assetMediaRepository.shareAssets(assets, context, cancelToken: cancelToken);
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) {
+    return _assetMediaRepository.shareAssets(assets, context, cancelCompleter: cancelCompleter);
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

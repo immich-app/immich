@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -42,15 +42,15 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
-    final cancelToken = CancellationToken();
-
+    final cancelCompleter = Completer<void>();
+    const preparingDialog = _SharePreparingDialog();
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref.read(actionProvider.notifier).shareAssets(source, context, cancelToken: cancelToken).then((
+        ref.read(actionProvider.notifier).shareAssets(source, context, cancelCompleter: cancelCompleter).then((
           ActionResult result,
         ) {
-          if (cancelToken.isCancelled || !context.mounted) {
+          if (cancelCompleter.isCompleted || !context.mounted) {
             return;
           }
 
@@ -69,12 +69,14 @@ class ShareActionButton extends ConsumerWidget {
         });
 
         // show a loading spinner with a "Preparing" message
-        return const _SharePreparingDialog();
+        return preparingDialog;
       },
       barrierDismissible: false,
       useRootNavigator: false,
     ).then((_) {
-      cancelToken.cancel();
+      if (!cancelCompleter.isCompleted) {
+        cancelCompleter.complete();
+      }
     });
   }
 
