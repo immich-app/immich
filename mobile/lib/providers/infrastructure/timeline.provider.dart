@@ -41,10 +41,3 @@ final timelineUsersProvider = StreamProvider<List<String>>((ref) {
 
   return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
 });
-
-final timelineIsNotEmptyProvider = StreamProvider<bool>((ref) {
-  final timelineService = ref.watch(timelineServiceProvider);
-  return timelineService.watchBuckets().map((buckets) {
-    return buckets.any((bucket) => bucket.assetCount > 0);
-  });
-}, dependencies: [timelineServiceProvider]);
