@@ -296,7 +296,9 @@ export class BaseService {
     // Fallback: try to find file in S3 even without metadata (handles migration case)
     // Use isS3Enabled() instead of isS3EnabledForLocation() because files may have been
     // uploaded to S3 even if the current location config doesn't specify S3 for originals
-    if (await this.s3Manager.isS3Enabled()) {
+    const s3Enabled = await this.s3Manager.isS3Enabled();
+    this.logger.log(`S3 fallback check for asset ${assetId}: isS3Enabled=${s3Enabled}`);
+    if (s3Enabled) {
       const generatedS3Key = this.generateFallbackS3Key(ownerId, assetId, originalPath);
       this.logger.debug(`S3 fallback: checking for asset ${assetId} at key ${generatedS3Key}`);
 
