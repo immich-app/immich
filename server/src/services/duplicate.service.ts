@@ -22,13 +22,13 @@ type ResolveRequest = {
   assetUpdate: {
     isFavorite?: boolean;
     visibility?: AssetVisibility;
-    description?: string;
   };
 
   exifUpdate: {
     rating?: number;
     latitude?: number;
     longitude?: number;
+    description?: string;
   };
 
   mergedAlbumIds: string[];
@@ -276,7 +276,7 @@ export class DuplicateService extends BaseService {
       const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
       const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
       if (description !== null) {
-        response.assetUpdate.description = description;
+        response.exifUpdate.description = description;
       }
     }
 
