@@ -226,55 +226,21 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    // Handle S3-stored assets: download to temp file first
-    let tempFilePath: string | undefined;
-    let effectiveOriginalPath = asset.originalPath;
+    // Ensure local file exists, download from S3 if needed
+    const { downloadedFromS3 } = await this.ensureLocalFile(
+      asset.id,
+      asset.ownerId,
+      asset.originalPath,
+      asset.storageBackend,
+      asset.s3Bucket,
+      asset.s3Key,
+      'metadata extraction',
+    );
 
-    if (asset.storageBackend === StorageBackend.S3 && asset.s3Key && asset.s3Bucket) {
-      const s3Manager = this.s3Manager;
-      if (!(await s3Manager.isS3Enabled())) {
-        this.logger.error(`Metadata extraction failed for ${asset.id}: asset is in S3 but S3 is not enabled`);
-        return JobStatus.Failed;
-      }
-
-      try {
-        this.logger.debug(`Streaming asset from S3 for metadata extraction: ${asset.s3Bucket}/${asset.s3Key}`);
-        const s3Adapter = await s3Manager.getAdapterForBucket(asset.s3Bucket);
-
-        // Stream to temp file
-        const ext = asset.originalFileName?.split('.').pop() || 'tmp';
-        tempFilePath = `/tmp/immich-metadata-${asset.id}.${ext}`;
-        const { stream } = await s3Adapter.readStream(asset.s3Key);
-        await this.storageRepository.createFileFromStream(tempFilePath, stream);
-        effectiveOriginalPath = tempFilePath;
-        this.logger.debug(`Streamed S3 asset to temp file for metadata: ${tempFilePath}`);
-      } catch (error) {
-        this.logger.error(`Could not download asset from S3 for metadata extraction ${asset.id}: ${error}`);
-        return JobStatus.Failed;
-      }
-    }
-
-    // Create an asset-like object with the effective path for exif extraction
-    const assetWithEffectivePath = { ...asset, originalPath: effectiveOriginalPath };
-
-    let exifTags: ImmichTags;
-    let stats: Stats;
-    try {
-      [exifTags, stats] = await Promise.all([
-        this.getExifTags(assetWithEffectivePath),
-        this.storageRepository.stat(effectiveOriginalPath),
-      ]);
-    } finally {
-      // Clean up temp file if created
-      if (tempFilePath) {
-        try {
-          await this.storageRepository.unlink(tempFilePath);
-          this.logger.debug(`Cleaned up temp file: ${tempFilePath}`);
-        } catch (cleanupError: unknown) {
-          this.logger.warn(`Failed to clean up temp file: ${tempFilePath}: ${cleanupError}`);
-        }
-      }
-    }
+    const [exifTags, stats] = await Promise.all([
+      this.getExifTags(asset),
+      this.storageRepository.stat(asset.originalPath),
+    ]);
     this.logger.verbose('Exif Tags', exifTags);
 
     const dates = this.getDates(asset, exifTags, stats);
@@ -367,6 +333,9 @@ export class MetadataService extends BaseService {
       userId: asset.ownerId,
       source: data.source,
     });
+
+    // Clean up downloaded file if it was fetched from S3
+    await this.cleanupDownloadedFile(asset.id, asset.originalPath, downloadedFromS3);
   }
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })

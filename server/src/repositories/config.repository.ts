@@ -30,6 +30,8 @@ export interface EnvData {
   configFile?: string;
   logLevel?: LogLevel;
 
+  machineId: string;
+
   queues: QueueName[];
 
   buildMetadata: {
@@ -255,12 +257,17 @@ const getEnv = (): EnvData => {
     }
   }
 
+  // Machine ID for queue affinity - Fly.io provides FLY_MACHINE_ID, fallback to IMMICH_MACHINE_ID or 'local'
+  const machineId = process.env.FLY_MACHINE_ID || process.env.IMMICH_MACHINE_ID || 'local';
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
     environment,
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
+
+    machineId,
 
     buildMetadata: {
       build: dto.IMMICH_BUILD,

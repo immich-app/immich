@@ -200,6 +200,7 @@ export const personStub = {
 export const personThumbnailStub = {
   newThumbnailStart: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-1',
     x1: 5,
     y1: 5,
     x2: 505,
@@ -216,6 +217,7 @@ export const personThumbnailStub = {
   }),
   newThumbnailMiddle: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-2',
     x1: 100,
     y1: 100,
     x2: 200,
@@ -232,6 +234,7 @@ export const personThumbnailStub = {
   }),
   newThumbnailEnd: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-3',
     x1: 300,
     y1: 300,
     x2: 495,
@@ -248,6 +251,7 @@ export const personThumbnailStub = {
   }),
   rawEmbeddedThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-4',
     x1: 100,
     y1: 100,
     x2: 200,
@@ -264,6 +268,7 @@ export const personThumbnailStub = {
   }),
   negativeCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-5',
     x1: -176,
     y1: -230,
     x2: 193,
@@ -280,6 +285,7 @@ export const personThumbnailStub = {
   }),
   overflowingCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-6',
     x1: 2097,
     y1: 0,
     x2: 2171,
@@ -296,6 +302,7 @@ export const personThumbnailStub = {
   }),
   videoThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
+    assetId: 'asset-id-7',
     x1: 100,
     y1: 100,
     x2: 200,

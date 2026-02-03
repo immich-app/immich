@@ -12,6 +12,7 @@ import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobCounts, JobItem, JobOf } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
+import { getActualQueueName, getMachineIdFromJob, isAffinityQueue } from 'src/utils/queue.util';
 
 type JobMapItem = {
   jobName: JobName;
@@ -22,9 +23,10 @@ type JobMapItem = {
 
 @Injectable()
 export class JobRepository implements OnModuleDestroy {
-  private workers: Partial<Record<QueueName, Worker>> = {};
+  private workers: Record<string, Worker> = {};
   private handlers: Partial<Record<JobName, JobMapItem>> = {};
   private isShuttingDown = false;
+  private dynamicQueueCache: Record<string, Queue> = {};
 
   constructor(
     private moduleRef: ModuleRef,
@@ -61,6 +63,17 @@ export class JobRepository implements OnModuleDestroy {
     });
 
     await Promise.all(closePromises);
+
+    // Close dynamically created queues to release Redis connections
+    const queueClosePromises = Object.entries(this.dynamicQueueCache).map(async ([queueName, queue]) => {
+      try {
+        await queue.close();
+      } catch (error) {
+        this.logger.error(`Error closing dynamic queue ${queueName}: ${error}`);
+      }
+    });
+    await Promise.all(queueClosePromises);
+
     this.logger.log('All job workers shut down');
   }
 
@@ -115,13 +128,15 @@ export class JobRepository implements OnModuleDestroy {
   }
 
   startWorkers() {
-    const { bull, queues } = this.configRepository.getEnv();
-    for (const queueName of queues) {
-      this.logger.debug(`Starting worker for queue: ${queueName}`);
-      const workerOptions = this.getWorkerOptions(queueName);
-      this.workers[queueName] = new Worker(
-        queueName,
-        (job) => this.eventRepository.emit('JobRun', queueName, job as JobItem),
+    const { bull, queues, machineId } = this.configRepository.getEnv();
+    for (const baseQueueName of queues) {
+      // For affinity queues, use machine-prefixed queue name
+      const actualQueueName = getActualQueueName(baseQueueName, machineId);
+      this.logger.log(`Starting worker for queue: ${actualQueueName} (base: ${baseQueueName})`);
+      const workerOptions = this.getWorkerOptions(baseQueueName);
+      this.workers[actualQueueName] = new Worker(
+        actualQueueName,
+        (job) => this.eventRepository.emit('JobRun', baseQueueName, job as JobItem),
         { ...bull.config, concurrency: 1, ...workerOptions },
       );
     }
@@ -177,9 +192,11 @@ export class JobRepository implements OnModuleDestroy {
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {
-    const worker = this.workers[queueName];
+    const { machineId } = this.configRepository.getEnv();
+    const actualQueueName = getActualQueueName(queueName, machineId);
+    const worker = this.workers[actualQueueName];
     if (!worker) {
-      this.logger.warn(`Unable to set queue concurrency, worker not found: '${queueName}'`);
+      this.logger.warn(`Unable to set queue concurrency, worker not found: '${actualQueueName}'`);
       return;
     }
 
@@ -232,27 +249,42 @@ export class JobRepository implements OnModuleDestroy {
       return;
     }
 
+    const { machineId: currentMachineId } = this.configRepository.getEnv();
+
     const promises = [];
     const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
     for (const item of items) {
-      const queueName = this.getQueueName(item.name);
+      const baseQueueName = this.getQueueName(item.name);
+
+      // Use machineId from job data if present (chain propagation)
+      // Otherwise use current machine's ID (initial job from HTTP)
+      const machineId = getMachineIdFromJob(item.data, currentMachineId);
+
+      // For affinity queues, inject machineId into job data if not already present
+      let jobData = item.data || {};
+      if (isAffinityQueue(baseQueueName) && !jobData.machineId) {
+        jobData = { ...jobData, machineId };
+      }
+
+      const actualQueueName = getActualQueueName(baseQueueName, machineId);
+
       const job = {
         name: item.name,
-        data: item.data || {},
+        data: jobData,
         options: this.getJobOptions(item) || undefined,
       } as JobItem & { data: any; options: JobsOptions | undefined };
 
       if (job.options?.jobId) {
         // need to use add() instead of addBulk() for jobId deduplication
-        promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
+        promises.push(this.getDynamicQueue(actualQueueName).add(item.name, jobData, job.options));
       } else {
-        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
-        itemsByQueue[queueName].push(job);
+        itemsByQueue[actualQueueName] = itemsByQueue[actualQueueName] || [];
+        itemsByQueue[actualQueueName].push(job);
       }
     }
 
     for (const [queueName, jobs] of Object.entries(itemsByQueue)) {
-      const queue = this.getQueue(queueName as QueueName);
+      const queue = this.getDynamicQueue(queueName);
       promises.push(queue.addBulk(jobs));
     }
 
@@ -311,6 +343,18 @@ export class JobRepository implements OnModuleDestroy {
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
+  }
+
+  /**
+   * Get or create a queue instance for a given queue name.
+   * Used for machine-prefixed queues that are created dynamically.
+   */
+  private getDynamicQueue(queueName: string): Queue {
+    if (!this.dynamicQueueCache[queueName]) {
+      const { bull } = this.configRepository.getEnv();
+      this.dynamicQueueCache[queueName] = new Queue(queueName, bull.config);
+    }
+    return this.dynamicQueueCache[queueName];
   }
 
   /** @deprecated */

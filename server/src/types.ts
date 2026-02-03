@@ -179,6 +179,8 @@ export type JobOf<T extends JobName> = Jobs[T];
 
 export interface IBaseJob {
   force?: boolean;
+  /** Machine ID for queue affinity - ensures job runs on the correct machine */
+  machineId?: string;
 }
 
 export interface IDelayedJob extends IBaseJob {
@@ -202,6 +204,7 @@ export interface ILibraryFileJob {
   paths: string[];
   progressCounter?: number;
   totalAssets?: number;
+  machineId?: string;
 }
 
 export interface ILibraryBulkIdsJob {
@@ -211,6 +214,7 @@ export interface ILibraryBulkIdsJob {
   assetIds: string[];
   progressCounter: number;
   totalAssets: number;
+  machineId?: string;
 }
 
 export interface IBulkEntityJob {
@@ -252,6 +256,7 @@ export interface IEmailJob {
   html: string;
   text: string;
   imageAttachments?: EmailImageAttachment[];
+  machineId?: string;
 }
 
 export interface INotifySignupJob extends IEntityJob {
@@ -281,6 +286,7 @@ export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
   id: string;
   type: T;
   event: WorkflowData[T];
+  machineId?: string;
 }
 
 export interface JobCounts {

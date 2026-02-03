@@ -8,6 +8,28 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 
+/**
+ * Extract asset/entity ID from job data for logging purposes.
+ */
+const getJobEntityId = (job: JobItem): string | undefined => {
+  const data = job.data as Record<string, unknown> | undefined;
+  return (data?.id as string) || (data?.assetId as string) || undefined;
+};
+
+/**
+ * Structured log context for job lifecycle events.
+ */
+interface JobLogContext {
+  event: 'job_start' | 'job_complete' | 'job_failed';
+  jobName: string;
+  queueName: string;
+  machineId: string;
+  entityId?: string;
+  status?: string;
+  durationMs?: number;
+  error?: string;
+}
+
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
     case ManualJobName.TagCleanup: {
@@ -48,18 +70,104 @@ export class JobService extends BaseService {
 
   @OnEvent({ name: 'JobRun' })
   async onJobRun(...[queueName, job]: ArgsOf<'JobRun'>) {
+    const startTime = Date.now();
+    const { machineId } = this.configRepository.getEnv();
+    const entityId = getJobEntityId(job);
+
+    // Log job start at debug level (visible when LOG_LEVEL=debug)
+    this.logJobEvent({
+      event: 'job_start',
+      jobName: job.name,
+      queueName,
+      machineId,
+      entityId,
+    });
+
+    let response: JobStatus | undefined;
     try {
       await this.eventRepository.emit('JobStart', queueName, job);
-      const response = await this.jobRepository.run(job);
+      response = await this.jobRepository.run(job);
       await this.eventRepository.emit('JobSuccess', { job, response });
       if (response && typeof response === 'string' && [JobStatus.Success, JobStatus.Skipped].includes(response)) {
         await this.onDone(job);
       }
+
+      // Log job complete at verbose level (visible when LOG_LEVEL=verbose)
+      this.logJobEvent({
+        event: 'job_complete',
+        jobName: job.name,
+        queueName,
+        machineId,
+        entityId,
+        status: response,
+        durationMs: Date.now() - startTime,
+      });
     } catch (error: Error | any) {
       await this.eventRepository.emit('JobError', { job, error });
+
+      // Log job failure at error level (always visible)
+      this.logJobEvent({
+        event: 'job_failed',
+        jobName: job.name,
+        queueName,
+        machineId,
+        entityId,
+        status: JobStatus.Failed,
+        durationMs: Date.now() - startTime,
+        error: error?.message || String(error),
+      });
     } finally {
       await this.eventRepository.emit('JobComplete', queueName, job);
     }
+  }
+
+  /**
+   * Log structured job lifecycle events at appropriate log levels.
+   * - job_start: debug level (visible when LOG_LEVEL=debug)
+   * - job_complete: verbose level (visible when LOG_LEVEL=verbose)
+   * - job_failed: error level (always visible)
+   */
+  private logJobEvent(context: JobLogContext): void {
+    const message = this.formatJobLogMessage(context);
+
+    switch (context.event) {
+      case 'job_start':
+        this.logger.debug(message);
+        break;
+      case 'job_complete':
+        this.logger.verbose(message);
+        break;
+      case 'job_failed':
+        this.logger.error(message);
+        break;
+    }
+  }
+
+  /**
+   * Format job log message with structured context for Better Stack searchability.
+   */
+  private formatJobLogMessage(context: JobLogContext): string {
+    const parts = [
+      `[${context.event}]`,
+      `job=${context.jobName}`,
+      `queue=${context.queueName}`,
+      `machine=${context.machineId}`,
+    ];
+
+    if (context.entityId) {
+      parts.push(`entity=${context.entityId}`);
+    }
+    if (context.status) {
+      parts.push(`status=${context.status}`);
+    }
+    if (context.durationMs !== undefined) {
+      parts.push(`duration=${context.durationMs}ms`);
+    }
+    if (context.error) {
+      parts.push(`error="${context.error}"`);
+    }
+
+    return parts.join(' ');
   }
 
   /**
@@ -82,19 +190,15 @@ export class JobService extends BaseService {
 
       case JobName.StorageTemplateMigrationSingle: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
-          // Upload to S3 first so distributed workers can access the file for thumbnail generation
-          // S3UploadAsset will queue AssetGenerateThumbnails after upload completes
-          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+          // Generate thumbnails first while local file exists
+          // S3 upload happens after and may delete local file
+          await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
         }
         break;
       }
 
       case JobName.S3UploadAsset: {
-        // After S3 upload completes, queue thumbnail generation
-        // The file is now in S3 and workers can download it
-        if (item.data.source === 'upload' || item.data.source === 'copy') {
-          await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: item.data });
-        }
+        // S3 upload complete - no further chained jobs needed
         break;
       }
 
@@ -108,6 +212,12 @@ export class JobService extends BaseService {
       }
 
       case JobName.AssetGenerateThumbnails: {
+        // After thumbnails are generated, queue S3 upload for the original file
+        // This order ensures local file exists during thumbnail generation
+        if (item.data.source === 'upload' || item.data.source === 'copy') {
+          await this.jobRepository.queue({ name: JobName.S3UploadAsset, data: item.data });
+        }
+
         if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
@@ -190,8 +300,6 @@ export class JobService extends BaseService {
       case JobName.SmartSearch: {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
-          // S3 upload is now done before thumbnail generation (in StorageTemplateMigrationSingle handler)
-          // so distributed workers can access the file
         }
         break;
       }

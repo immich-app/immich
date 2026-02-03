@@ -299,6 +299,7 @@ export class PersonRepository {
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select([
         'person.ownerId',
+        'asset.id as assetId',
         'asset_face.boundingBoxX1 as x1',
         'asset_face.boundingBoxY1 as y1',
         'asset_face.boundingBoxX2 as x2',

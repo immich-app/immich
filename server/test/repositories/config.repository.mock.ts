@@ -7,6 +7,8 @@ const envData: EnvData = {
   port: 2283,
   environment: ImmichEnvironment.Production,
 
+  machineId: 'local',
+
   buildMetadata: {},
   bull: {
     config: {
