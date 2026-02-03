@@ -327,10 +327,11 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // Replace the parent of the stack children with a new asset
+    // replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
-      if (stackAssetIds.length > 2) {
+      // this only includes timeline visible assets and excludes the primary asset
+      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      if (stackAssetIds.length >= 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
           id: asset.stack.id,
