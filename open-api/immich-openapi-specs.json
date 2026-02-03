@@ -1618,7 +1618,7 @@
             "name": "shared",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = only own, undefined = all",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
             "schema": {
               "type": "boolean"
             }
