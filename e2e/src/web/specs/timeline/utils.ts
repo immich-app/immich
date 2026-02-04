@@ -65,7 +65,7 @@ export const thumbnailUtils = {
     return page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"] button`);
   },
   selectedAsset(page: Page) {
-    return page.locator('[data-thumbnail-focus-container]:has(button[aria-checked])');
+    return page.locator('[data-thumbnail-focus-container][data-selected]');
   },
   async clickAssetId(page: Page, assetId: string) {
     await thumbnailUtils.withAssetId(page, assetId).click();
@@ -103,11 +103,8 @@ export const thumbnailUtils = {
     await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(0);
   },
   async expectSelectedReadonly(page: Page, assetId: string) {
-    // todo - need a data attribute for selected
     await expect(
-      page.locator(
-        `[data-thumbnail-focus-container][data-asset="${assetId}"] > .group.cursor-not-allowed > .rounded-xl`,
-      ),
+      page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"][data-selected]`),
     ).toBeVisible();
   },
   async expectTimelineHasOnScreenAssets(page: Page) {
