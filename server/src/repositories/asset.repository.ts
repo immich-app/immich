@@ -251,8 +251,6 @@ export class AssetRepository {
               duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
-              previewAt: eb.ref('excluded.previewAt'),
-              thumbnailAt: eb.ref('excluded.thumbnailAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
@@ -361,7 +359,6 @@ export class AssetRepository {
                 .selectFrom('asset')
                 .selectAll('asset')
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
-                .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
@@ -904,11 +901,12 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
+  async upsertFile(
+    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>,
+  ): Promise<void> {
     await this.db
       .insertInto('asset_file')
-      .values(value)
+      .values(file)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
@@ -918,19 +916,19 @@ export class AssetRepository {
   }
 
   async upsertFiles(
-    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>[],
   ): Promise<void> {
     if (files.length === 0) {
       return;
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
     await this.db
       .insertInto('asset_file')
-      .values(values)
+      .values(files)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
+          isProgressive: eb.ref('excluded.isProgressive'),
         })),
       )
       .execute();

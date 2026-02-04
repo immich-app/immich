@@ -33,7 +33,6 @@
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -61,7 +60,6 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
-  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
@@ -106,16 +104,13 @@
   });
 
   const handleEscape = async () => {
-    if ($showAssetViewer) {
-      return;
-    }
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
       return;
-    } else {
-      await goto(previousRoute);
-      return;
     }
+
+    await goto(previousRoute);
+    return;
   };
 
   const updateAssetCount = async () => {

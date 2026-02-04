@@ -79,7 +79,7 @@ export class MaintenanceWorkerService {
     this.#secret = state.secret;
     this.#status = {
       active: true,
-      action: state.action.action,
+      action: state.action?.action ?? MaintenanceAction.Start,
     };
 
     StorageCore.setMediaLocation(this.detectMediaLocation());
@@ -88,7 +88,10 @@ export class MaintenanceWorkerService {
     this.maintenanceWebsocketRepository.setStatusUpdateFn((status) => (this.#status = status));
 
     await this.logSecret();
-    void this.runAction(state.action);
+
+    if (state.action) {
+      void this.runAction(state.action);
+    }
   }
 
   /**

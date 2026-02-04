@@ -400,11 +400,12 @@ const assetOcrFactory = (
   ...ocr,
 });
 
-const assetFileFactory = (file: Partial<AssetFile> = {}): AssetFile => ({
+const assetFileFactory = (file: Partial<AssetFile> = {}) => ({
   id: newUuid(),
   type: AssetFileType.Preview,
   path: '/uploads/user-id/thumbs/path.jpg',
   isEdited: false,
+  isProgressive: false,
   ...file,
 });
 

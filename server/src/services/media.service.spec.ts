@@ -388,12 +388,14 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
       ]);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
@@ -426,12 +428,14 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
       ]);
     });
@@ -463,12 +467,14 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
           isEdited: false,
+          isProgressive: false,
         },
       ]);
     });
@@ -673,6 +679,16 @@ describe(MediaService.name, () => {
         }),
         expect.stringContaining('thumbnail.webp'),
       );
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: true,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: false,
+        }),
+      ]);
     });
 
     it('should generate progressive JPEG for thumbnail when enabled', async () => {
@@ -699,6 +715,37 @@ describe(MediaService.name, () => {
         }),
         expect.stringContaining('thumbnail.jpeg'),
       );
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: false,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: true,
+        }),
+      ]);
+    });
+
+    it('should never set isProgressive for videos', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: true }, thumbnail: { progressive: true } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.video.id });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: false,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: false,
+        }),
+      ]);
     });
 
     it('should delete previous thumbnail if different path', async () => {
@@ -3353,14 +3400,38 @@ describe(MediaService.name, () => {
         files: [],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg', isEdited: false },
-        { type: AssetFileType.Thumbnail, newPath: '/new/thumbnail.jpg', isEdited: false },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/new/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview, isEdited: false },
-        { assetId: 'asset-id', path: '/new/thumbnail.jpg', type: AssetFileType.Thumbnail, isEdited: false },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/thumbnail.jpg',
+          type: AssetFileType.Thumbnail,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
@@ -3376,6 +3447,7 @@ describe(MediaService.name, () => {
             type: AssetFileType.Preview,
             path: '/old/preview.jpg',
             isEdited: false,
+            isProgressive: false,
           },
           {
             id: 'file-2',
@@ -3383,18 +3455,43 @@ describe(MediaService.name, () => {
             type: AssetFileType.Thumbnail,
             path: '/old/thumbnail.jpg',
             isEdited: false,
+            isProgressive: false,
           },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg', isEdited: false },
-        { type: AssetFileType.Thumbnail, newPath: '/new/thumbnail.jpg', isEdited: false },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/new/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview, isEdited: false },
-        { assetId: 'asset-id', path: '/new/thumbnail.jpg', type: AssetFileType.Thumbnail, isEdited: false },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/thumbnail.jpg',
+          type: AssetFileType.Thumbnail,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3413,6 +3510,7 @@ describe(MediaService.name, () => {
             type: AssetFileType.Preview,
             path: '/old/preview.jpg',
             isEdited: false,
+            isProgressive: false,
           },
           {
             id: 'file-2',
@@ -3420,24 +3518,30 @@ describe(MediaService.name, () => {
             type: AssetFileType.Thumbnail,
             path: '/old/thumbnail.jpg',
             isEdited: false,
+            isProgressive: false,
           },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, isEdited: false },
-        { type: AssetFileType.Thumbnail, isEdited: false },
-      ]);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
-        { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg', isEdited: false },
+        {
+          id: 'file-1',
+          assetId: 'asset-id',
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
         {
           id: 'file-2',
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: '/old/thumbnail.jpg',
           isEdited: false,
+          isProgressive: false,
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3456,6 +3560,7 @@ describe(MediaService.name, () => {
             type: AssetFileType.Preview,
             path: '/same/preview.jpg',
             isEdited: false,
+            isProgressive: false,
           },
           {
             id: 'file-2',
@@ -3463,13 +3568,26 @@ describe(MediaService.name, () => {
             type: AssetFileType.Thumbnail,
             path: '/same/thumbnail.jpg',
             isEdited: false,
+            isProgressive: false,
           },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/same/preview.jpg', isEdited: false },
-        { type: AssetFileType.Thumbnail, newPath: '/same/thumbnail.jpg', isEdited: false },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/same/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/same/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
@@ -3487,6 +3605,7 @@ describe(MediaService.name, () => {
             type: AssetFileType.Preview,
             path: '/old/preview.jpg',
             isEdited: false,
+            isProgressive: false,
           },
           {
             id: 'file-2',
@@ -3494,19 +3613,43 @@ describe(MediaService.name, () => {
             type: AssetFileType.Thumbnail,
             path: '/old/thumbnail.jpg',
             isEdited: false,
+            isProgressive: false,
           },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg', isEdited: false }, // replace
-        { type: AssetFileType.Thumbnail, isEdited: false }, // delete
-        { type: AssetFileType.FullSize, newPath: '/new/fullsize.jpg', isEdited: false }, // new
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        }, // replace
+        {
+          assetId: asset.id,
+          type: AssetFileType.FullSize,
+          path: '/new/fullsize.jpg',
+          isEdited: false,
+          isProgressive: false,
+        }, // new
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview, isEdited: false },
-        { assetId: 'asset-id', path: '/new/fullsize.jpg', type: AssetFileType.FullSize, isEdited: false },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/fullsize.jpg',
+          type: AssetFileType.FullSize,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
         {
@@ -3515,6 +3658,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Thumbnail,
           path: '/old/thumbnail.jpg',
           isEdited: false,
+          isProgressive: false,
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3529,7 +3673,7 @@ describe(MediaService.name, () => {
         files: [],
       };
 
-      await sut['syncFiles'](asset, []);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
@@ -3546,15 +3690,79 @@ describe(MediaService.name, () => {
             type: AssetFileType.Preview,
             path: '/old/preview.jpg',
             isEdited: false,
+            isProgressive: false,
           },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Thumbnail, isEdited: false }, // file doesn't exist, newPath not provided
-      ]);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
+        {
+          id: 'file-1',
+          assetId: 'asset-id',
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+      ]);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['/old/preview.jpg'] },
+      });
+    });
+
+    it('should update database when isProgressive changes', async () => {
+      const asset = {
+        id: 'asset-id',
+        files: [
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/old/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+        ],
+      };
+
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: true,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/old/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+      ]);
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        {
+          assetId: 'asset-id',
+          path: '/old/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: true,
+        },
+      ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });

@@ -59,7 +59,9 @@ class CastManager {
       // Add other cast destinations here (ie FCast)
     ];
 
-    eventManager.on('AppInit', () => void this.initialize());
+    eventManager.on({
+      AppInit: () => void this.initialize(),
+    });
   }
 
   private async initialize() {

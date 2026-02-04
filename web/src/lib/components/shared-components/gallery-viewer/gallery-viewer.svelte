@@ -302,6 +302,7 @@
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
+        const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         assets.splice(
           assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),
           1,
@@ -309,10 +310,8 @@
         if (assets.length === 0) {
           return await goto(Route.photos());
         }
-        if (assetCursor.nextAsset) {
-          await navigateToAsset(assetCursor.nextAsset);
-        } else if (assetCursor.previousAsset) {
-          await navigateToAsset(assetCursor.previousAsset);
+        if (nextAsset) {
+          await navigateToAsset(nextAsset);
         }
         break;
       }

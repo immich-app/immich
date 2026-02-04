@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.10.8
+        specifier: ^24.10.9
         version: 24.10.9
       '@vitest/coverage-v8':
         specifier: ^3.0.0
@@ -220,7 +220,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^24.10.8
+        specifier: ^24.10.9
         version: 24.10.9
       '@types/pg':
         specifier: ^8.15.1
@@ -320,7 +320,7 @@ importers:
         version: 1.1.0
     devDependencies:
       '@types/node':
-        specifier: ^24.10.8
+        specifier: ^24.10.9
         version: 24.10.9
       typescript:
         specifier: ^5.3.3
@@ -639,7 +639,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@types/node':
-        specifier: ^24.10.8
+        specifier: ^24.10.9
         version: 24.10.9
       '@types/nodemailer':
         specifier: ^7.0.0
@@ -842,6 +842,9 @@ importers:
       thumbhash:
         specifier: ^0.1.1
         version: 0.1.1
+      transformation-matrix:
+        specifier: ^3.1.0
+        version: 3.1.0
       uplot:
         specifier: ^1.6.32
         version: 1.6.32

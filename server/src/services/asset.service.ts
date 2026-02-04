@@ -21,7 +21,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
@@ -327,10 +327,11 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // Replace the parent of the stack children with a new asset
+    // replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
-      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
-      if (stackAssetIds.length > 2) {
+      // this only includes timeline visible assets and excludes the primary asset
+      const stackAssetIds = asset.stack.assets.map((a) => a.id);
+      if (stackAssetIds.length >= 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
         await this.stackRepository.update(asset.stack.id, {
           id: asset.stack.id,
@@ -574,16 +575,21 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Editing SVG images is not supported');
     }
 
-    // check that crop parameters will not go out of bounds
-    const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
-
-    if (!assetWidth || !assetHeight) {
-      throw new BadRequestException('Asset dimensions are not available for editing');
+    const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
+    if (cropIndex > 0) {
+      throw new BadRequestException('Crop action must be the first edit action');
     }
 
-    const crop = dto.edits.find((e) => e.action === AssetEditAction.Crop)?.parameters;
+    const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
     if (crop) {
-      const { x, y, width, height } = crop;
+      // check that crop parameters will not go out of bounds
+      const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
+
+      if (!assetWidth || !assetHeight) {
+        throw new BadRequestException('Asset dimensions are not available for editing');
+      }
+
+      const { x, y, width, height } = crop.parameters;
       if (x + width > assetWidth || y + height > assetHeight) {
         throw new BadRequestException('Crop parameters are out of bounds');
       }

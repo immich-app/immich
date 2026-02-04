@@ -16,6 +16,7 @@ class SyncStackDeleteV1 {
     required this.stackId,
   });
 
+  /// Stack ID
   String stackId;
 
   @override

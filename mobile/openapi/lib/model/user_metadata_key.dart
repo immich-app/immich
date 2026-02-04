@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// User metadata key
 class UserMetadataKey {
   /// Instantiate a new enum with the provided [value].
   const UserMetadataKey._(this.value);
