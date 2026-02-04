@@ -213,7 +213,11 @@
     await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
   };
 
-  let people = $derived(data.people.people);
+  let people = $derived.by(() => {
+    // make deeply reactive
+    const _ = $state(data.people.people);
+    return _;
+  });
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
