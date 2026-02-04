@@ -3,19 +3,19 @@ FROM ghcr.io/immich-app/base-server-dev:202601131104@sha256:8d907eb3fe10dba4a1e0
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
-  COREPACK_HOME=/tmp
+  COREPACK_HOME=/tmp \ 
+  PNPM_HOME=/buildcache/pnpm-store
 
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
+  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
-  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc
+  echo "cache-dir=/buildcache/pnpm-cache" >> /usr/local/etc/npmrc && \
+  echo "# Retry configuration - default is 2" >> /usr/local/etc/npmrc && \
+  echo "fetch-retries=5" >> /usr/local/etc/npmrc && \
+  mkdir -p /buildcache/pnpm-store /buildcache/pnpm-cache /buildcache/node-gyp && \
+  chmod -R o+rw /buildcache
 
-COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
-COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
-COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
-COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
-WORKDIR /tmp/create-dep-cache
-RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
 
 ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \

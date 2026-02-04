@@ -14,6 +14,48 @@
 name: immich-dev
 
 services:
+  immich-init:
+    container_name: immich_init
+    image: immich-server-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile.dev
+      target: dev
+    command:
+      - |
+        rm -f /tmp/init-complete
+
+        if [ -d "node_modules/.pnpm" ] && [ "$(ls -A node_modules/.pnpm 2>/dev/null)" ] && [ -f "pnpm-lock.yaml" ] && pnpm list --silent &>/dev/null; then
+          echo "Dependencies valid, skipping install"
+        else
+          echo "Installing dependencies..."
+          pnpm install
+        fi
+
+        touch /tmp/init-complete
+        exec tail -f /dev/null
+    volumes:
+      - ..:/usr/src/app
+      - pnpm-cache:/buildcache/pnpm-cache
+      - pnpm-store-server:/buildcache/pnpm-store
+      - server-node_modules:/usr/src/app/server/node_modules
+      - web-node_modules:/usr/src/app/web/node_modules
+      - github-node_modules:/usr/src/app/.github/node_modules
+      - cli-node_modules:/usr/src/app/cli/node_modules
+      - docs-node_modules:/usr/src/app/docs/node_modules
+      - e2e-node_modules:/usr/src/app/e2e/node_modules
+      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app-node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
+    restart: 'no'
+    healthcheck:
+      test: ['CMD', 'test', '-f', '/tmp/init-complete']
+      interval: 2s
+      timeout: 3s
+      retries: 300
+      start_period: 300s
+
   immich-server:
     container_name: immich_server
     command: ['immich-dev']
@@ -29,8 +71,11 @@ services:
     volumes:
       - ..:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/data
+      - /LUNA/ALPHA/PERSONAL/git/immich-dev/flickr-search/downloads:/ext-lib
+      - /LUNA/ALPHA/PERSONAL/git/immich-dev/wikimedia-search/downloads:/ext-lib2
       - /etc/localtime:/etc/localtime:ro
-      - pnpm-store:/usr/src/app/.pnpm-store
+      - pnpm-cache:/buildcache/pnpm-cache
+      - pnpm-store-server:/buildcache/pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
@@ -63,6 +108,8 @@ services:
       - 9231:9231
       - 2283:2283
     depends_on:
+      immich-init:
+        condition: service_healthy
       redis:
         condition: service_started
       database:
@@ -85,7 +132,8 @@ services:
       - 24678:24678
     volumes:
       - ..:/usr/src/app
-      - pnpm-store:/usr/src/app/.pnpm-store
+      - pnpm-cache:/buildcache/pnpm-cache
+      - pnpm-store-web:/buildcache/pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
@@ -98,6 +146,8 @@ services:
       - coverage:/usr/src/app/web/coverage
     restart: unless-stopped
     depends_on:
+      immich-init:
+        condition: service_healthy
       immich-server:
         condition: service_started
 
@@ -173,7 +223,9 @@ volumes:
   model-cache:
   prometheus-data:
   grafana-data:
-  pnpm-store:
+  pnpm-cache:
+  pnpm-store-server:
+  pnpm-store-web:
   server-node_modules:
   web-node_modules:
   github-node_modules:
