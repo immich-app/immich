@@ -93,7 +93,7 @@
       {/if}
 
       <span
-        class="w-full truncate first-letter:capitalize transition-transform duration-200 ease-out"
+        class="w-full truncate first-letter:capitalize transition-transform duration-200 ease-out pl-[5px]"
         class:-translate-x-8={(hoveredDayGroup !== dayGroup.groupTitle || !isMouseOverGroup) &&
           !assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
         class:translate-x-0={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
