@@ -1,6 +1,6 @@
 [project]
 name = "immich-ml"
-version = "2.5.2"
+version = "2.5.3"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
 requires-python = ">=3.11,<4.0"
@@ -41,7 +41,6 @@ types = [
     "types-ujson>=5.10.0.20240515",
 ]
 lint = [
-    "black>=23.3.0",
     "mypy>=1.3.0",
     "ruff>=0.0.272",
     { include-group = "types" },
@@ -92,10 +91,6 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 per-file-ignores = { "test_main.py" = ["F403"] }
-
-[tool.black]
-line-length = 120
-target-version = ['py311']
 
 [tool.pytest.ini_options]
 markers = ["providers", "ov_device_ids"]
