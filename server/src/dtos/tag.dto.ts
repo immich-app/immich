@@ -9,7 +9,7 @@ export class TagCreateDto {
   @IsNotEmpty()
   name!: string;
 
-  @ValidateUUID({ optional: true, description: 'Parent tag ID' })
+  @ValidateUUID({ nullable: true, optional: true, description: 'Parent tag ID' })
   parentId?: string | null;
 
   @ApiPropertyOptional({ description: 'Tag color (hex)' })
@@ -20,7 +20,7 @@ export class TagCreateDto {
 
 export class TagUpdateDto {
   @ApiPropertyOptional({ description: 'Tag color (hex)' })
-  @Optional({ emptyToNull: true })
+  @Optional({ nullable: true, emptyToNull: true })
   @ValidateHexColor()
   color?: string | null;
 }

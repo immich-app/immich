@@ -53,7 +53,7 @@ class AssetBulkUpdateDto {
   ///
   String? description;
 
-  /// Duplicate asset ID
+  /// Duplicate ID
   String? duplicateId;
 
   /// Asset IDs to update
