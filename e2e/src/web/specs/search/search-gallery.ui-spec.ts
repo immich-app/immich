@@ -6,6 +6,7 @@ import {
   generateTimelineData,
   TimelineAssetConfig,
   TimelineData,
+  toAssetResponseDto,
 } from 'src/generators/timeline';
 import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
 import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
@@ -53,7 +54,7 @@ test.describe('search gallery-viewer', () => {
             assets: {
               total: searchAssets.length,
               count: searchAssets.length,
-              items: searchAssets,
+              items: searchAssets.map((asset) => toAssetResponseDto(asset)),
               facets: [],
               nextPage: null,
             },
