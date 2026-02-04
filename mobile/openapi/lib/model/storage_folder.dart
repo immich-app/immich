@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Storage folder
 class StorageFolder {
   /// Instantiate a new enum with the provided [value].
   const StorageFolder._(this.value);

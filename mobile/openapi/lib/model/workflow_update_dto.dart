@@ -21,8 +21,10 @@ class WorkflowUpdateDto {
     this.triggerType,
   });
 
+  /// Workflow actions
   List<WorkflowActionItemDto> actions;
 
+  /// Workflow description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,6 +33,7 @@ class WorkflowUpdateDto {
   ///
   String? description;
 
+  /// Workflow enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -39,8 +42,10 @@ class WorkflowUpdateDto {
   ///
   bool? enabled;
 
+  /// Workflow filters
   List<WorkflowFilterItemDto> filters;
 
+  /// Workflow name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -49,6 +54,7 @@ class WorkflowUpdateDto {
   ///
   String? name;
 
+  /// Workflow trigger type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

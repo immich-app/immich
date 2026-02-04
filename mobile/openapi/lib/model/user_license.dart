@@ -18,10 +18,13 @@ class UserLicense {
     required this.licenseKey,
   });
 
+  /// Activation date
   DateTime activatedAt;
 
+  /// Activation key
   String activationKey;
 
+  /// License key
   String licenseKey;
 
   @override

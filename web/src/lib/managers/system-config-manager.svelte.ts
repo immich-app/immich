@@ -7,7 +7,9 @@ class SystemConfigManager {
   #defaultValue?: SystemConfigDto = $state();
 
   constructor() {
-    eventManager.on('SystemConfigUpdate', (config) => (this.#value = config));
+    eventManager.on({
+      SystemConfigUpdate: (config) => (this.#value = config),
+    });
   }
 
   async init() {

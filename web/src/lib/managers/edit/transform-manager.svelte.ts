@@ -38,7 +38,8 @@ type RegionConvertParams = {
 };
 
 class TransformManager implements EditToolManager {
-  hasChanges: boolean = $derived.by(() => this.checkEdits());
+  canReset: boolean = $derived.by(() => this.checkEdits());
+  hasChanges: boolean = $state(false);
 
   darkenLevel = $state(0.65);
   isInteracting = $state(false);
@@ -56,7 +57,7 @@ class TransformManager implements EditToolManager {
   cropAspectRatio = $state('free');
   originalImageSize = $state<ImageDimensions>({ width: 1000, height: 1000 });
   region = $state({ x: 0, y: 0, width: 100, height: 100 });
-  preveiwImgSize = $derived({
+  previewImageSize = $derived({
     width: this.cropImageSize.width * this.cropImageScale,
     height: this.cropImageSize.height * this.cropImageScale,
   });
@@ -73,6 +74,7 @@ class TransformManager implements EditToolManager {
   edits = $derived.by(() => this.getEdits());
 
   setAspectRatio(aspectRatio: string) {
+    this.hasChanges = true;
     this.cropAspectRatio = aspectRatio;
 
     if (!this.imgElement || !this.cropAreaEl) {
@@ -88,8 +90,8 @@ class TransformManager implements EditToolManager {
 
   checkEdits() {
     return (
-      Math.abs(this.preveiwImgSize.width - this.region.width) > 2 ||
-      Math.abs(this.preveiwImgSize.height - this.region.height) > 2 ||
+      Math.abs(this.previewImageSize.width - this.region.width) > 2 ||
+      Math.abs(this.previewImageSize.height - this.region.height) > 2 ||
       this.mirrorHorizontal ||
       this.mirrorVertical ||
       this.normalizedRotation !== 0
@@ -98,8 +100,8 @@ class TransformManager implements EditToolManager {
 
   checkCropEdits() {
     return (
-      Math.abs(this.preveiwImgSize.width - this.region.width) > 2 ||
-      Math.abs(this.preveiwImgSize.height - this.region.height) > 2
+      Math.abs(this.previewImageSize.width - this.region.width) > 2 ||
+      Math.abs(this.previewImageSize.height - this.region.height) > 2
     );
   }
 
@@ -232,9 +234,12 @@ class TransformManager implements EditToolManager {
     this.originalImageSize = { width: 1000, height: 1000 };
     this.cropImageScale = 1;
     this.cropAspectRatio = 'free';
+    this.hasChanges = false;
   }
 
   mirror(axis: 'horizontal' | 'vertical') {
+    this.hasChanges = true;
+
     if (this.imageRotation % 180 !== 0) {
       axis = axis === 'horizontal' ? 'vertical' : 'horizontal';
     }
@@ -247,6 +252,8 @@ class TransformManager implements EditToolManager {
   }
 
   async rotate(angle: number) {
+    this.hasChanges = true;
+
     this.imageRotation += angle;
     await tick();
     this.onImageLoad();
@@ -760,6 +767,7 @@ class TransformManager implements EditToolManager {
       return;
     }
 
+    this.hasChanges = true;
     const newX = Math.max(0, Math.min(mouseX - this.dragOffset.x, cropArea.clientWidth - this.region.width));
     const newY = Math.max(0, Math.min(mouseY - this.dragOffset.y, cropArea.clientHeight - this.region.height));
 
@@ -781,6 +789,7 @@ class TransformManager implements EditToolManager {
     }
     this.fadeOverlay(false);
 
+    this.hasChanges = true;
     const { x, y, width, height } = crop;
     const minSize = 50;
     let newRegion = { ...crop };

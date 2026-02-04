@@ -16,6 +16,7 @@ class TemplateDto {
     required this.template,
   });
 
+  /// Template name
   String template;
 
   @override

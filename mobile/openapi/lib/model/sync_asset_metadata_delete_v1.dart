@@ -17,8 +17,10 @@ class SyncAssetMetadataDeleteV1 {
     required this.key,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Key
   String key;
 
   @override

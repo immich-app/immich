@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal, Icon } from '@immich/ui';
@@ -9,7 +10,7 @@
   import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
 
   interface Props {
-    onClose: (success?: true) => void;
+    onClose: () => void;
     assetIds: string[];
   }
 
@@ -30,8 +31,9 @@
       return;
     }
 
-    await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
-    onClose(true);
+    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    eventManager.emit('AssetsTag', updatedIds);
+    onClose();
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {
@@ -80,7 +82,7 @@
       {#if tag}
         <div class="flex group transition-all">
           <span
-            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
           >
             <p class="text-sm">
               {tag.value}

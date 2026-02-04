@@ -16,6 +16,7 @@ class TagUpdateDto {
     this.color,
   });
 
+  /// Tag color (hex)
   String? color;
 
   @override
