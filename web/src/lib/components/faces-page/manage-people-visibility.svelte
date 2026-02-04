@@ -87,7 +87,15 @@
     }
   };
 
-  let personIsHidden = $state(getPersonIsHidden(people));
+  let personIsHidden = $state<Record<string, boolean>>({});
+
+  $effect(() => {
+    for (const person of people) {
+      if (!(person.id in personIsHidden)) {
+        personIsHidden[person.id] = person.isHidden;
+      }
+    }
+  });
 
   let toggleButtonOptions: Record<ToggleVisibility, { icon: string; label: string }> = $derived({
     [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
