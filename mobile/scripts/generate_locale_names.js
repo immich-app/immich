@@ -3,13 +3,20 @@ import path from 'path';
 
 const i18nDirArg = process.argv[2];
 const i18nDir = path.resolve(i18nDirArg);
-const files = fs.readdirSync(i18nDir);
-const mapping = {};
+const localeNamesMap = {};
+
+const files = fs.readdirSync(i18nDir, { withFileTypes: true })
+  .filter(entry =>
+    entry.isFile() &&
+    entry.name.endsWith('.json') &&
+    entry.name !== 'package.json'
+  )
+  .map(entry => path.join(i18nDir, entry.name));
 
 // Locales not supported by Intl.DisplayNames
 const nonIntlLang = [
   { code: 'mfa', name: 'Malay (Pattani)' },
-  { code: 'bi', name: 'Bislama' }, // Supported but Intl.DisplayNames may not return it
+  { code: 'bi', name: 'Bislama' }, // Intl seems to map it on web, but not in Node.js
 ];
 
 files.forEach(file => {
@@ -18,9 +25,9 @@ files.forEach(file => {
   const isNonIntl = nonIntlLang.find(lang => lang.code === code);
 
   if (isNonIntl) {
-    mapping[code] = isNonIntl.name;
+    localeNamesMap[code] = isNonIntl.name;
   } else if (Intl.DisplayNames.supportedLocalesOf(bcp47Code).length > 0) {
-    mapping[code] = capitalize(new Intl.DisplayNames([bcp47Code], { type: 'language' }).of(bcp47Code));
+    localeNamesMap[code] = capitalize(new Intl.DisplayNames([bcp47Code], { type: 'language' }).of(bcp47Code));
   } else {
     throw new Error(`Unsupported locale: ${code}`);
   }
@@ -33,7 +40,7 @@ let dartContent = `// GENERATED CODE - DO NOT MODIFY BY HAND
 const Map<String, String> localeNames = {
 `;
 
-for (const [code, name] of Object.entries(mapping)) {
+for (const [code, name] of Object.entries(localeNamesMap)) {
   const escapedName = name
     .replace(/\\/g, '\\\\')
     .replace(/'/g, "\\'");
@@ -43,9 +50,11 @@ for (const [code, name] of Object.entries(mapping)) {
 
 dartContent += '};\n';
 
+if (!fs.existsSync('lib/generated')) {
+  fs.mkdirSync('lib/generated', { recursive: true });
+}
 fs.writeFileSync('lib/generated/locale_names.g.dart', dartContent);
 
-// Helper functions
 function capitalize(string) {
   return string
     .split(' ')

@@ -1,6 +1,6 @@
-import { isRtlLang } from '$lib/components/i18n/langs-rtl';
-import { nonIntlLang } from '$lib/constants';
 import { availableLocales } from '$lib/utils/i18n-meta';
+import { isRtlLang } from '$lib/utils/i18n/langs-rtl';
+import { nonIntlLang } from '$lib/utils/i18n/nonIntl';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
 
