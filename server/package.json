@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "2.4.1",
+  "version": "2.5.3",
   "description": "",
   "author": "",
   "private": true,
@@ -135,7 +135,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.10.8",
+    "@types/node": "^24.10.9",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",

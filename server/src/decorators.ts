@@ -171,7 +171,7 @@ export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   return applyDecorators(...decorators);
 };
 
-type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
+export type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
 export const Property = ({ history, ...options }: PropertyOptions) => {
   const extensions = history?.getExtensions() ?? {};
 

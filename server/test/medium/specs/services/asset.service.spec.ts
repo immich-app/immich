@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, AssetMetadataKey, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -244,6 +244,66 @@ describe(AssetService.name, () => {
         name: JobName.FileDelete,
         data: { files: [thumbnailPath, previewPath, sidecarPath, asset.originalPath] },
       });
+    });
+
+    it('should delete a stacked primary asset (2 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
+
+      const stackRepo = ctx.get(StackRepository);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(stackRepo.getById(stack.id)).resolves.toBe(undefined);
+    });
+
+    it('should delete a stacked primary asset (3 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // new primary asset is picked
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toMatchObject({ primaryAssetId: asset2.id });
+    });
+
+    it('should delete a stacked primary asset (3 trashed assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      await ctx.get(AssetRepository).updateAll([asset1.id, asset2.id, asset3.id], {
+        deletedAt: new Date(),
+        status: AssetStatus.Deleted,
+      });
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toBe(undefined);
     });
 
     it('should not delete offline assets', async () => {

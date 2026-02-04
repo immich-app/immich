@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
@@ -27,6 +28,8 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final serverVersion = ref.watch(serverInfoProvider.select((value) => value.serverVersion));
+
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
@@ -135,6 +138,14 @@ class SyncStatusAndActions extends HookConsumerWidget {
             ref.read(backgroundSyncProvider).syncRemote();
           },
         ),
+        if (CurrentPlatform.isIOS && serverVersion.isAtLeast(major: 2, minor: 5))
+          SettingListTile(
+            title: "Sync Cloud Ids".t(context: context),
+            leading: const Icon(Icons.cloud_circle_rounded),
+            subtitle: "tap_to_run_job".t(context: context),
+            trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).cloudIdSyncStatus),
+            onTap: ref.read(backgroundSyncProvider).syncCloudIds,
+          ),
         SettingListTile(
           title: "hash_asset".t(context: context),
           leading: const Icon(Icons.tag),

@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -8,11 +8,13 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 
 void main() {
+  final now = DateTime(2024, 1, 15);
   late Drift db;
   late DriftLocalAssetRepository repository;
 
@@ -25,67 +27,97 @@ void main() {
     await db.close();
   });
 
+  Future<void> insertLocalAsset({
+    required String id,
+    String? checksum,
+    DateTime? createdAt,
+    AssetType type = AssetType.image,
+    bool isFavorite = false,
+    String? iCloudId,
+    DateTime? adjustmentTime,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final created = createdAt ?? now;
+    await db
+        .into(db.localAssetEntity)
+        .insert(
+          LocalAssetEntityCompanion.insert(
+            id: id,
+            name: 'asset_$id.jpg',
+            checksum: Value(checksum),
+            type: type,
+            createdAt: Value(created),
+            updatedAt: Value(created),
+            isFavorite: Value(isFavorite),
+            iCloudId: Value(iCloudId),
+            adjustmentTime: Value(adjustmentTime),
+            latitude: Value(latitude),
+            longitude: Value(longitude),
+          ),
+        );
+  }
+
+  Future<void> insertRemoteAsset({
+    required String id,
+    required String checksum,
+    required String ownerId,
+    DateTime? deletedAt,
+  }) async {
+    await db
+        .into(db.remoteAssetEntity)
+        .insert(
+          RemoteAssetEntityCompanion.insert(
+            id: id,
+            name: 'remote_$id.jpg',
+            checksum: checksum,
+            type: AssetType.image,
+            createdAt: Value(now),
+            updatedAt: Value(now),
+            ownerId: ownerId,
+            visibility: AssetVisibility.timeline,
+            deletedAt: Value(deletedAt),
+          ),
+        );
+  }
+
+  Future<void> insertRemoteAssetCloudId({
+    required String assetId,
+    required String? cloudId,
+    DateTime? createdAt,
+    DateTime? adjustmentTime,
+    double? latitude,
+    double? longitude,
+  }) async {
+    await db
+        .into(db.remoteAssetCloudIdEntity)
+        .insert(
+          RemoteAssetCloudIdEntityCompanion.insert(
+            assetId: assetId,
+            cloudId: Value(cloudId),
+            createdAt: Value(createdAt),
+            adjustmentTime: Value(adjustmentTime),
+            latitude: Value(latitude),
+            longitude: Value(longitude),
+          ),
+        );
+  }
+
+  Future<void> insertUser(String id, String email) async {
+    await db.into(db.userEntity).insert(UserEntityCompanion.insert(id: id, email: email, name: email));
+  }
+
   group('getRemovalCandidates', () {
     final userId = 'user-123';
     final otherUserId = 'user-456';
-    final now = DateTime(2024, 1, 15);
     final cutoffDate = DateTime(2024, 1, 10);
     final beforeCutoff = DateTime(2024, 1, 5);
     final afterCutoff = DateTime(2024, 1, 12);
-
-    Future<void> insertUser(String id, String email) async {
-      await db.into(db.userEntity).insert(UserEntityCompanion.insert(id: id, email: email, name: email));
-    }
 
     setUp(() async {
       await insertUser(userId, 'user@test.com');
       await insertUser(otherUserId, 'other@test.com');
     });
-
-    Future<void> insertLocalAsset({
-      required String id,
-      required String checksum,
-      required DateTime createdAt,
-      required AssetType type,
-      required bool isFavorite,
-    }) async {
-      await db
-          .into(db.localAssetEntity)
-          .insert(
-            LocalAssetEntityCompanion.insert(
-              id: id,
-              name: 'asset_$id.jpg',
-              checksum: Value(checksum),
-              type: type,
-              createdAt: Value(createdAt),
-              updatedAt: Value(createdAt),
-              isFavorite: Value(isFavorite),
-            ),
-          );
-    }
-
-    Future<void> insertRemoteAsset({
-      required String id,
-      required String checksum,
-      required String ownerId,
-      DateTime? deletedAt,
-    }) async {
-      await db
-          .into(db.remoteAssetEntity)
-          .insert(
-            RemoteAssetEntityCompanion.insert(
-              id: id,
-              name: 'remote_$id.jpg',
-              checksum: checksum,
-              type: AssetType.image,
-              createdAt: Value(now),
-              updatedAt: Value(now),
-              ownerId: ownerId,
-              visibility: AssetVisibility.timeline,
-              deletedAt: Value(deletedAt),
-            ),
-          );
-    }
 
     Future<void> insertLocalAlbum({required String id, required String name, required bool isIosSharedAlbum}) async {
       await db
@@ -211,11 +243,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final result = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        keepMediaType: AssetKeepType.photosOnly,
-      );
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepMediaType: AssetKeepType.photosOnly);
 
       expect(result.assets.length, 1);
       expect(result.assets[0].id, 'local-video');
@@ -243,11 +271,7 @@ void main() {
       );
       await insertRemoteAsset(id: 'remote-video', checksum: 'checksum-video', ownerId: userId);
 
-      final result = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        keepMediaType: AssetKeepType.videosOnly,
-      );
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepMediaType: AssetKeepType.videosOnly);
 
       expect(result.assets.length, 1);
       expect(result.assets[0].id, 'local-photo');
@@ -507,11 +531,7 @@ void main() {
       await insertRemoteAsset(id: 'remote-3', checksum: 'checksum-3', ownerId: userId);
       await insertLocalAlbumAsset(albumId: 'album-3', assetId: 'local-3');
 
-      final result = await repository.getRemovalCandidates(
-        userId,
-        cutoffDate,
-        keepAlbumIds: {'album-1', 'album-2'},
-      );
+      final result = await repository.getRemovalCandidates(userId, cutoffDate, keepAlbumIds: {'album-1', 'album-2'});
 
       expect(result.assets.length, 1);
       expect(result.assets[0].id, 'local-3');
@@ -642,6 +662,315 @@ void main() {
 
       expect(result.assets.length, 1);
       expect(result.assets[0].id, 'local-video');
+    });
+  });
+
+  group('reconcileHashesFromCloudId', () {
+    final userId = 'user-123';
+    final createdAt = DateTime(2024, 1, 10);
+    final adjustmentTime = DateTime(2024, 1, 11);
+    const latitude = 37.7749;
+    const longitude = -122.4194;
+
+    setUp(() async {
+      await insertUser(userId, 'user@test.com');
+    });
+
+    test('updates local asset checksum when all metadata matches', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, 'hash-abc123');
+    });
+
+    test('does not update when local asset already has checksum', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: 'existing-checksum',
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, 'existing-checksum');
+    });
+
+    test('does not update when adjustment_time does not match', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: DateTime(2024, 1, 12),
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('does not update when latitude does not match', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: 40.7128,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('does not update when longitude does not match', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: -74.0060,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('does not update when createdAt does not match', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: DateTime(2024, 1, 5),
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('does not update when iCloudId is null', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: null,
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('does not update when cloudId does not match iCloudId', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-456',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('handles partial null metadata fields matching correctly', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: null,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: null,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, 'hash-abc123');
+    });
+
+    test('does not update when one has null and other has value', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: null,
+        longitude: longitude,
+      );
+
+      await insertRemoteAsset(id: 'remote-1', checksum: 'hash-abc123', ownerId: userId);
+
+      await insertRemoteAssetCloudId(
+        assetId: 'remote-1',
+        cloudId: 'cloud-123',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
+    });
+
+    test('handles no matching assets gracefully', () async {
+      await insertLocalAsset(
+        id: 'local-1',
+        checksum: null,
+        iCloudId: 'cloud-999',
+        createdAt: createdAt,
+        adjustmentTime: adjustmentTime,
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      await repository.reconcileHashesFromCloudId();
+
+      final updated = await repository.getById('local-1');
+      expect(updated?.checksum, isNull);
     });
   });
 }

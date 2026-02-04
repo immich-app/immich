@@ -289,6 +289,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
+  ///   Filter by primary asset ID
   Future<Response> searchStacksWithHttpInfo({ String? primaryAssetId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
@@ -325,6 +326,7 @@ class StacksApi {
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
+  ///   Filter by primary asset ID
   Future<List<StackResponseDto>?> searchStacks({ String? primaryAssetId, }) async {
     final response = await searchStacksWithHttpInfo( primaryAssetId: primaryAssetId, );
     if (response.statusCode >= HttpStatus.badRequest) {

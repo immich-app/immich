@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { Asset, columns } from 'src/database';
+import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -14,7 +15,6 @@ import {
   withExif,
   withExifInner,
   withFaces,
-  withFacesAndPeople,
   withFilePath,
   withFiles,
 } from 'src/utils/database';
@@ -72,8 +72,22 @@ export class AssetJobRepository {
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where((eb) =>
             eb.or([
-              eb('asset_job_status.previewAt', 'is', null),
-              eb('asset_job_status.thumbnailAt', 'is', null),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Preview),
+                ),
+              ),
+              eb.not((eb) =>
+                eb.exists((qb) =>
+                  qb
+                    .selectFrom('asset_file')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where('asset_file.type', '=', AssetFileType.Thumbnail),
+                ),
+              ),
               eb('asset.thumbhash', 'is', null),
             ]),
           ),
@@ -104,7 +118,15 @@ export class AssetJobRepository {
         'asset.thumbhash',
         'asset.type',
       ])
-      .select(withFiles)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFilesForThumbnail)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize]),
+        ).as('files'),
+      )
       .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
@@ -148,7 +170,14 @@ export class AssetJobRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
-      .where('job_status.previewAt', 'is not', null);
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -239,23 +268,29 @@ export class AssetJobRepository {
         'asset.isOffline',
       ])
       .$call(withExif)
-      .select(withFacesAndPeople)
       .select(withFiles)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
       .leftJoinLateral(
         (eb) =>
           eb
-            .selectFrom('asset as stacked')
-            .select(['stack.id', 'stack.primaryAssetId'])
-            .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
-            .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '=', AssetVisibility.Timeline)
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
+            .selectFrom('stack')
+            .whereRef('stack.id', '=', 'asset.stackId')
+            .select((eb) => [
+              'stack.id',
+              'stack.primaryAssetId',
+              jsonArrayFrom(
+                eb
+                  .selectFrom('asset as stack_asset')
+                  .select(['stack_asset.id'])
+                  .whereRef('stack_asset.stackId', '=', 'stack.id')
+                  .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
+                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+              ).as('assets'),
+            ])
+            .as('stack_result'),
+        (join) => join.onTrue(),
       )
-      .select((eb) => toJson(eb, 'stacked_assets').as('stack'))
+      .select((eb) => toJson(eb, 'stack_result').as('stack'))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

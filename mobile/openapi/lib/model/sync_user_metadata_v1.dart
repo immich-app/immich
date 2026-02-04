@@ -18,10 +18,13 @@ class SyncUserMetadataV1 {
     required this.value,
   });
 
+  /// User metadata key
   UserMetadataKey key;
 
+  /// User ID
   String userId;
 
+  /// User metadata value
   Object value;
 
   @override

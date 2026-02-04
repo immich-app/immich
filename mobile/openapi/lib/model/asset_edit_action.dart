@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Type of edit action to perform
 class AssetEditAction {
   /// Instantiate a new enum with the provided [value].
   const AssetEditAction._(this.value);

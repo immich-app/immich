@@ -61,26 +61,23 @@ fi
 
 if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   echo "Pumping Server: $CURRENT_SERVER => $NEXT_SERVER"
-  jq --arg version "$NEXT_SERVER" '.version = $version' server/package.json > server/package.json.tmp && mv server/package.json.tmp server/package.json
+
+  pnpm version "$NEXT_SERVER" --no-git-tag-version
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix server
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix i18n
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix cli
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix web
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix e2e
+  pnpm version "$NEXT_SERVER" --no-git-tag-version --prefix open-api/typescript-sdk
+
+  # copy version to open-api spec
   pnpm install --frozen-lockfile --prefix server
   pnpm --prefix server run build
-
   ( cd ./open-api && bash ./bin/generate-open-api.sh )
 
-  jq --arg version "$NEXT_SERVER" '.version = $version' open-api/typescript-sdk/package.json > open-api/typescript-sdk/package.json.tmp && mv open-api/typescript-sdk/package.json.tmp open-api/typescript-sdk/package.json
+  uv version --directory machine-learning "$NEXT_SERVER"
 
-  # TODO use $SERVER_PUMP once we pass 2.2.x
-  CURRENT_CLI_VERSION=$(jq -r '.version' cli/package.json)
-  CLI_PATCH_VERSION=$(echo "$CURRENT_CLI_VERSION" | awk -F. '{print $1"."$2"."($3+1)}')
-  jq --arg version "$CLI_PATCH_VERSION" '.version = $version' cli/package.json > cli/package.json.tmp && mv cli/package.json.tmp cli/package.json
-  pnpm install --frozen-lockfile --prefix cli
-
-  jq --arg version "$NEXT_SERVER" '.version = $version' web/package.json > web/package.json.tmp && mv web/package.json.tmp web/package.json
-  pnpm install --frozen-lockfile --prefix web
-
-  jq --arg version "$NEXT_SERVER" '.version = $version' e2e/package.json > e2e/package.json.tmp && mv e2e/package.json.tmp e2e/package.json
-  pnpm install --frozen-lockfile --prefix e2e
-  uvx --from=toml-cli toml set --toml-path=machine-learning/pyproject.toml project.version "$NEXT_SERVER"
+  ./misc/release/archive-version.js "$NEXT_SERVER"
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then
@@ -92,6 +89,5 @@ sed -i "s/\"android\.injected\.version\.code\" => $CURRENT_MOBILE,/\"android\.in
 sed -i "s/^version: $CURRENT_SERVER+$CURRENT_MOBILE$/version: $NEXT_SERVER+$NEXT_MOBILE/" mobile/pubspec.yaml
 perl -i -p0e "s/(<key>CFBundleShortVersionString<\/key>\s*<string>)$CURRENT_SERVER(<\/string>)/\${1}$NEXT_SERVER\${2}/s" mobile/ios/Runner/Info.plist
 
-./misc/release/archive-version.js "$NEXT_SERVER"
 
 echo "IMMICH_VERSION=v$NEXT_SERVER" >>"$GITHUB_ENV"
