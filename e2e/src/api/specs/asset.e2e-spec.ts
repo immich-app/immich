@@ -473,6 +473,7 @@ describe('/asset', () => {
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
           dateTimeOriginal: '2023-11-20T01:11:00+00:00',
+          timeZone: 'UTC-7',
         }),
       });
       expect(status).toEqual(200);
