@@ -26,11 +26,10 @@ class AlbumActivity extends _$AlbumActivity {
         ref.read(albumActivityProvider(albumId).notifier)._removeFromState(id);
       }
 
-      if (removedActivity.type == ActivityType.comment) {
-        ref.watch(activityStatisticsProvider(albumId, assetId).notifier).removeActivity();
-        if (assetId != null) {
-          ref.watch(activityStatisticsProvider(albumId).notifier).removeActivity();
-        }
+      // Update statistics for both comments and likes
+      ref.watch(activityStatisticsProvider(albumId, assetId).notifier).removeActivity();
+      if (assetId != null) {
+        ref.watch(activityStatisticsProvider(albumId).notifier).removeActivity();
       }
     }
   }
@@ -41,6 +40,11 @@ class AlbumActivity extends _$AlbumActivity {
       _addToState(activity.requireValue);
       if (assetId != null) {
         ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+      }
+      // Update statistics when adding a like
+      ref.watch(activityStatisticsProvider(albumId, assetId).notifier).addActivity();
+      if (assetId != null) {
+        ref.watch(activityStatisticsProvider(albumId).notifier).addActivity();
       }
     }
   }

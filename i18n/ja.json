@@ -11,6 +11,7 @@
   "active_count": "アクティブ: {count}",
   "activity": "アクティビティ",
   "activity_changed": "アクティビティは{enabled, select, true {有効} other {無効}}になりました",
+  "activity_count": "{count, plural, =0 {コメント} other {コメント\n{count}件}}",
   "add": "追加",
   "add_a_description": "説明を追加",
   "add_a_location": "場所を追加",

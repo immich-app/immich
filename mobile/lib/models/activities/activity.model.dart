@@ -62,6 +62,9 @@ class Activity {
 
 class ActivityStats {
   final int comments;
+  final int likes;
 
-  const ActivityStats({required this.comments});
+  const ActivityStats({required this.comments, required this.likes});
+
+  int get total => comments + likes;
 }

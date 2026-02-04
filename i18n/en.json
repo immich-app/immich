@@ -11,6 +11,7 @@
   "active_count": "Active: {count}",
   "activity": "Activity",
   "activity_changed": "Activity is {enabled, select, true {enabled} other {disabled}}",
+  "activity_count": "{count, plural, =0 {Activity} =1 {1 activity} other {{count} activities}}",
   "add": "Add",
   "add_a_description": "Add a description",
   "add_a_location": "Add a location",
