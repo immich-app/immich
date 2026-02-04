@@ -265,6 +265,28 @@ class AssetAccess {
   }
 }
 
+class AssetFileAccess {
+  constructor(private db: Kysely<DB>) {}
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
+  @ChunkedSet({ paramIndex: 1 })
+  async checkOwnerAccess(userId: string, fileIds: Set<string>, hasElevatedPermission: boolean | undefined) {
+    if (fileIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset_file')
+      .select('asset_file.id')
+      .innerJoin('asset', 'asset.id', 'asset_file.assetId')
+      .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
+      .where('asset.ownerId', '=', userId)
+      .where('asset_file.id', 'in', [...fileIds])
+      .execute()
+      .then((files) => new Set(files.map(({ id }) => id)));
+  }
+}
+
 class AuthDeviceAccess {
   constructor(private db: Kysely<DB>) {}
 
@@ -487,6 +509,7 @@ export class AccessRepository {
   activity: ActivityAccess;
   album: AlbumAccess;
   asset: AssetAccess;
+  assetFile: AssetFileAccess;
   authDevice: AuthDeviceAccess;
   memory: MemoryAccess;
   notification: NotificationAccess;
@@ -502,6 +525,7 @@ export class AccessRepository {
     this.activity = new ActivityAccess(db);
     this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(db);
+    this.assetFile = new AssetFileAccess(db);
     this.authDevice = new AuthDeviceAccess(db);
     this.memory = new MemoryAccess(db);
     this.notification = new NotificationAccess(db);
