@@ -357,7 +357,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
 
     if (distanceToOrigin > openThreshold && !showingBottomSheet && !ref.read(readonlyModeProvider)) {
-      _openBottomSheet(ctx);
+      // _openBottomSheet(ctx);
     }
   }
 
