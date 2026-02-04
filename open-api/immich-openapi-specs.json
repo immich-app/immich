@@ -15819,7 +15819,7 @@
             "type": "string"
           },
           "duplicateId": {
-            "description": "Duplicate asset ID",
+            "description": "Duplicate ID",
             "nullable": true,
             "type": "string"
           },
@@ -19205,6 +19205,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -19295,6 +19296,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           },
           "readAt": {
@@ -25234,6 +25236,12 @@
           },
           "password": {
             "description": "User password",
+            "type": "string"
+          },
+          "pinCode": {
+            "description": "PIN code",
+            "example": "123456",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {
