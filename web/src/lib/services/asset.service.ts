@@ -2,6 +2,7 @@ import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
 import { getAssetJobName, getSharedLink, sleep } from '$lib/utils';
@@ -41,6 +42,7 @@ import {
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiShareVariantOutline,
+  mdiTagPlusOutline,
   mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
@@ -49,6 +51,7 @@ import { get } from 'svelte/store';
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
   const sharedLink = getSharedLink();
   const currentAuthUser = get(authUser);
+  const userPreferences = get(preferences);
   const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
 
   const Share: ActionItem = {
@@ -155,7 +158,16 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     type: $t('assets'),
     $if: () => asset.hasMetadata,
     onAction: () => assetViewerManager.toggleDetailPanel(),
-    shortcuts: [{ key: 'i' }],
+    shortcuts: { key: 'i' },
+  };
+
+  const Tag: ActionItem = {
+    title: $t('add_tag'),
+    icon: mdiTagPlusOutline,
+    type: $t('assets'),
+    $if: () => userPreferences.tags.enabled,
+    onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
+    shortcuts: { key: 't' },
   };
 
   const Edit: ActionItem = {
@@ -212,6 +224,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     ZoomIn,
     ZoomOut,
     Copy,
+    Tag,
     Edit,
     RefreshFacesJob,
     RefreshMetadataJob,

@@ -102,7 +102,7 @@ export class UpdateAlbumDto {
 export class GetAlbumsDto {
   @ValidateBoolean({
     optional: true,
-    description: 'Filter by shared status: true = only shared, false = only own, undefined = all',
+    description: 'Filter by shared status: true = only shared, false = not shared, undefined = all owned albums',
   })
   shared?: boolean;
 

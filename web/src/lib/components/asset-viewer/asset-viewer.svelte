@@ -14,6 +14,7 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -36,6 +37,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { CommandPaletteDefaultProvider } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -426,8 +428,11 @@
       !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );
+
+  const { Tag } = $derived(getAssetActions($t, asset));
 </script>
 
+<CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
 <OnEvents {onAssetReplace} {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />

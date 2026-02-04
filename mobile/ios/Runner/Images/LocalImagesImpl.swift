@@ -133,7 +133,6 @@ class LocalImageApiImpl: LocalImageApi {
           "height": Int64(buffer.height),
           "rowBytes": Int64(buffer.rowBytes)
         ]))
-        print("Successful response for \(requestId)")
         Self.remove(requestId: requestId)
       } catch {
         Self.remove(requestId: requestId)

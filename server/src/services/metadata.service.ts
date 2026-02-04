@@ -307,7 +307,6 @@ export class MetadataService extends BaseService {
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
     const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
       this.assetRepository.update({
         id: asset.id,
         duration: this.getDuration(exifTags),
@@ -322,6 +321,7 @@ export class MetadataService extends BaseService {
       }),
     ];
 
+    await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
     await this.applyTagList(asset);
 
     if (this.isMotionPhoto(asset, exifTags)) {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { FormModal, Icon } from '@immich/ui';
@@ -9,7 +10,7 @@
   import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
 
   interface Props {
-    onClose: (success?: true) => void;
+    onClose: () => void;
     assetIds: string[];
   }
 
@@ -30,8 +31,8 @@
       return;
     }
 
-    await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
-    onClose(true);
+    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    eventManager.emit('AssetsTag', updatedIds);
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {

@@ -5,6 +5,14 @@ import type { ZoomImageWheelState } from '@zoom-image/core';
 
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
 
+const createDefaultZoomState = (): ZoomImageWheelState => ({
+  currentRotation: 0,
+  currentZoom: 1,
+  enable: true,
+  currentPositionX: 0,
+  currentPositionY: 0,
+});
+
 export type Events = {
   Zoom: [];
   ZoomChange: [ZoomImageWheelState];
@@ -12,13 +20,7 @@ export type Events = {
 };
 
 export class AssetViewerManager extends BaseEventManager<Events> {
-  #zoomState = $state<ZoomImageWheelState>({
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
-  });
+  #zoomState = $state(createDefaultZoomState());
 
   imgRef = $state<HTMLImageElement | undefined>();
   isShowActivityPanel = $state(false);
@@ -65,6 +67,10 @@ export class AssetViewerManager extends BaseEventManager<Events> {
   onZoomChange(state: ZoomImageWheelState) {
     // bypass event emitter to avoid loop
     this.#zoomState = state;
+  }
+
+  resetZoomState() {
+    this.zoomState = createDefaultZoomState();
   }
 
   toggleActivityPanel() {
