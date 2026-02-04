@@ -4,13 +4,14 @@
   import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
 
   type Props = {
+    transitionName?: string;
     asset: AssetResponseDto;
+    onReady?: () => void;
   };
 
-  let { asset }: Props = $props();
+  let { transitionName, asset, onReady }: Props = $props();
 
   const loadAssetData = async (id: string) => {
     const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
@@ -18,11 +19,16 @@
   };
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div class="flex h-dvh w-dvw select-none place-content-center place-items-center">
   {#await Promise.all([loadAssetData(asset.id), import('./photo-sphere-viewer-adapter.svelte')])}
     <LoadingSpinner />
   {:then [data, { default: PhotoSphereViewer }]}
-    <PhotoSphereViewer panorama={data} originalPanorama={getAssetUrl({ asset, forceOriginal: true })} />
+    <PhotoSphereViewer
+      {transitionName}
+      panorama={data}
+      originalPanorama={getAssetUrl({ asset, forceOriginal: true })}
+      {onReady}
+    />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}

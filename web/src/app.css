@@ -74,6 +74,40 @@
     --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
+
+    /* transitions */
+    --immich-split-viewer-nav: enabled;
+
+    /* view transition variables */
+    /* Base animation duration for standard transitions (page fades, info panel) */
+    --vt-duration-default: 250ms;
+    /* Duration for hero transitions (thumbnail to full viewer) */
+    --vt-duration-hero: 280ms;
+    /* Duration for next/previous photo navigation */
+    --vt-duration-viewer-navigation: 270ms;
+    /* Duration for slideshow mode transitions */
+    --vt-duration-slideshow: 1s;
+    /* Easing function for slide animations (ease-out) */
+    --vt-viewer-slide-easing: cubic-bezier(0.2, 0, 0, 1);
+    /* How far images slide in/out during navigation (% of viewport) */
+    --vt-viewer-slide-distance: 15%;
+    /* Starting opacity for fly transitions (slide+fade effect) */
+    --vt-viewer-opacity-start: 0.1;
+    /* Maximum blur during fly transitions (currently disabled) */
+    --vt-viewer-blur-max: 0px;
+
+    --vt-viewer-next-in: slideInRight;
+    --vt-viewer-next-out: slideOutLeft;
+    --vt-viewer-prev-in: slideInLeft;
+    --vt-viewer-prev-out: slideOutRight;
+    --vt-viewer-old-opacity: 4;
+
+    /* For fly (slide+fade): uncomment these and comment above */
+    --vt-viewer-next-in: flyInRight;
+    --vt-viewer-next-out: flyOutLeft;
+    --vt-viewer-prev-in: flyInLeft;
+    --vt-viewer-prev-out: flyOutRight;
+    --vt-viewer-old-opacity: 1;
   }
 
   button:not(:disabled),
@@ -169,5 +203,362 @@
 
   .maplibregl-popup-content {
     @apply bg-subtle rounded-lg;
+  }
+}
+
+@layer base {
+  ::view-transition {
+    background: var(--color-black);
+    animation-duration: var(--vt-duration-default);
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    mix-blend-mode: normal;
+    animation-duration: inherit;
+  }
+
+  ::view-transition-old(*) {
+    animation-name: fadeOut;
+    animation-fill-mode: forwards;
+  }
+  ::view-transition-new(*) {
+    animation-name: fadeIn;
+    animation-fill-mode: forwards;
+  }
+
+  ::view-transition-old(root) {
+    animation: var(--vt-duration-default) 0s fadeOut forwards;
+  }
+  ::view-transition-new(root) {
+    animation: var(--vt-duration-default) 0s fadeIn forwards;
+  }
+  html:active-view-transition-type(slideshow) {
+    &::view-transition-old(root) {
+      animation: var(--vt-duration-slideshow) 0s fadeOut forwards;
+    }
+    &::view-transition-new(root) {
+      animation: var(--vt-duration-slideshow) 0s fadeIn forwards;
+    }
+  }
+  html:active-view-transition-type(viewer-nav) {
+    &::view-transition-old(root) {
+      animation: var(--vt-duration-hero) 0s fadeOut forwards;
+    }
+    &::view-transition-new(root) {
+      animation: var(--vt-duration-hero) 0s fadeIn forwards;
+    }
+  }
+  ::view-transition-old(info) {
+    animation: var(--vt-duration-default) 0s flyOutRight forwards;
+  }
+  ::view-transition-new(info) {
+    animation: var(--vt-duration-default) 0s flyInRight forwards;
+  }
+
+  ::view-transition-group(detail-panel) {
+    z-index: 1;
+  }
+  ::view-transition-old(detail-panel),
+  ::view-transition-new(detail-panel) {
+    animation: none;
+  }
+  ::view-transition-group(letterbox-left),
+  ::view-transition-group(letterbox-right),
+  ::view-transition-group(letterbox-top),
+  ::view-transition-group(letterbox-bottom) {
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    z-index: 4;
+  }
+
+  ::view-transition-image-pair(letterbox-left),
+  ::view-transition-image-pair(letterbox-right),
+  ::view-transition-image-pair(letterbox-top),
+  ::view-transition-image-pair(letterbox-bottom) {
+    isolation: auto;
+  }
+
+  ::view-transition-old(letterbox-left),
+  ::view-transition-old(letterbox-right),
+  ::view-transition-old(letterbox-top),
+  ::view-transition-old(letterbox-bottom),
+  ::view-transition-new(letterbox-left),
+  ::view-transition-new(letterbox-right),
+  ::view-transition-new(letterbox-top),
+  ::view-transition-new(letterbox-bottom) {
+    animation: none;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    background-color: var(--color-black);
+  }
+
+  ::view-transition-group(exclude-leftbutton),
+  ::view-transition-group(exclude-rightbutton),
+  ::view-transition-group(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+  ::view-transition-old(exclude-leftbutton),
+  ::view-transition-old(exclude-rightbutton),
+  ::view-transition-old(exclude) {
+    visibility: hidden;
+  }
+  ::view-transition-new(exclude-leftbutton),
+  ::view-transition-new(exclude-rightbutton),
+  ::view-transition-new(exclude) {
+    animation: none;
+    z-index: 5;
+  }
+
+  ::view-transition-group(hero) {
+    animation-duration: var(--vt-duration-hero);
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  ::view-transition-old(hero) {
+    animation: none;
+    align-content: center;
+  }
+  ::view-transition-new(hero) {
+    animation: none;
+    align-content: center;
+  }
+  ::view-transition-old(next),
+  ::view-transition-old(next-old) {
+    animation-name: var(--vt-viewer-next-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
+    overflow: hidden;
+  }
+
+  ::view-transition-new(next),
+  ::view-transition-new(next-new) {
+    animation-name: var(--vt-viewer-next-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    overflow: hidden;
+  }
+
+  ::view-transition-old(previous) {
+    animation-name: var(--vt-viewer-prev-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
+  }
+  ::view-transition-old(previous-old) {
+    animation-name: var(--vt-viewer-prev-out);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    opacity: var(--vt-viewer-old-opacity);
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  ::view-transition-new(previous) {
+    animation-name: var(--vt-viewer-prev-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+  }
+
+  ::view-transition-new(previous-new) {
+    animation-name: var(--vt-viewer-prev-in);
+    animation-duration: var(--vt-duration-viewer-navigation);
+    animation-timing-function: var(--vt-viewer-slide-easing);
+    animation-fill-mode: forwards;
+    overflow: hidden;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(calc(-1 * var(--vt-viewer-slide-distance)));
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(var(--vt-viewer-slide-distance));
+    }
+  }
+
+  @keyframes slideOutLeft {
+    /* No animation needed, instant hide via opacity */
+  }
+
+  @keyframes slideOutRight {
+    /* No animation needed, instant hide via opacity */
+  }
+
+  @keyframes flyInLeft {
+    from {
+      transform: translateX(calc(-1 * var(--vt-viewer-slide-distance)));
+      opacity: var(--vt-viewer-opacity-start);
+      filter: blur(var(--vt-viewer-blur-max));
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes flyOutLeft {
+    from {
+      opacity: 1;
+      filter: blur(0);
+    }
+    to {
+      transform: translateX(calc(-1 * var(--vt-viewer-slide-distance)));
+      opacity: var(--vt-viewer-opacity-start);
+      filter: blur(var(--vt-viewer-blur-max));
+    }
+  }
+
+  @keyframes flyInRight {
+    from {
+      transform: translateX(var(--vt-viewer-slide-distance));
+      opacity: var(--vt-viewer-opacity-start);
+      filter: blur(var(--vt-viewer-blur-max));
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  @keyframes flyOutRight {
+    from {
+      opacity: 1;
+      filter: blur(0);
+    }
+    to {
+      transform: translateX(var(--vt-viewer-slide-distance));
+      opacity: var(--vt-viewer-opacity-start);
+      filter: blur(var(--vt-viewer-blur-max));
+    }
+  }
+
+  /* cubic fade curves so combined opacity stays close to 1.0 during crossfade */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.85;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.85;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Reduced motion: when system preference is set */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(hero) {
+      animation-name: none;
+    }
+
+    ::view-transition-old(hero) {
+      animation: none;
+      display: none;
+    }
+
+    ::view-transition-new(hero) {
+      animation: none;
+    }
+
+    html:active-view-transition-type(viewer) {
+      &::view-transition-old(hero) {
+        animation: none;
+        display: none;
+      }
+      &::view-transition-new(hero) {
+        animation: var(--vt-duration-default) 0s fadeIn forwards;
+      }
+    }
+
+    html:active-view-transition-type(timeline) {
+      &::view-transition-old(hero) {
+        animation: var(--vt-duration-default) 0s fadeOut forwards;
+      }
+      &::view-transition-new(hero) {
+        animation: var(--vt-duration-default) 0s fadeIn forwards;
+      }
+    }
+
+    ::view-transition-group(letterbox-left),
+    ::view-transition-group(letterbox-right),
+    ::view-transition-group(letterbox-top),
+    ::view-transition-group(letterbox-bottom) {
+      z-index: 100;
+    }
+
+    ::view-transition-image-pair(letterbox-left),
+    ::view-transition-image-pair(letterbox-right),
+    ::view-transition-image-pair(letterbox-top),
+    ::view-transition-image-pair(letterbox-bottom) {
+      isolation: auto;
+    }
+
+    ::view-transition-old(letterbox-left),
+    ::view-transition-old(letterbox-right),
+    ::view-transition-old(letterbox-top),
+    ::view-transition-old(letterbox-bottom),
+    ::view-transition-new(letterbox-left),
+    ::view-transition-new(letterbox-right),
+    ::view-transition-new(letterbox-top),
+    ::view-transition-new(letterbox-bottom) {
+      animation: none;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
+
+    ::view-transition-group(previous),
+    ::view-transition-group(previous-old),
+    ::view-transition-group(next),
+    ::view-transition-group(next-old) {
+      width: 100% !important;
+      height: 100% !important;
+      transform: none !important;
+    }
+
+    ::view-transition-old(previous),
+    ::view-transition-old(previous-old),
+    ::view-transition-old(next),
+    ::view-transition-old(next-old) {
+      animation: var(--vt-duration-viewer-navigation) fadeOut forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+      overflow: hidden;
+    }
+
+    ::view-transition-new(previous),
+    ::view-transition-new(previous-new),
+    ::view-transition-new(next),
+    ::view-transition-new(next-new) {
+      animation: var(--vt-duration-viewer-navigation) fadeIn forwards;
+      transform-origin: center;
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+    }
   }
 }

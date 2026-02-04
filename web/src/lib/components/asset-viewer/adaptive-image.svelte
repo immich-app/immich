@@ -2,6 +2,7 @@
   import { imageLoader } from '$lib/actions/image-loader.svelte';
   import { thumbhash } from '$lib/actions/thumbhash';
   import { zoomImageAction } from '$lib/actions/zoom-image';
+  import Letterboxes from '$lib/components/asset-viewer/letterboxes.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { SlideshowLook, SlideshowState } from '$lib/stores/slideshow.store';
@@ -25,6 +26,7 @@
     };
     slideshowState: SlideshowState;
     slideshowLook: SlideshowLook;
+    transitionName?: string | null | undefined;
     onImageReady?: () => void;
     onError?: () => void;
     imgElement?: HTMLImageElement;
@@ -40,6 +42,7 @@
     container,
     slideshowState,
     slideshowLook,
+    transitionName,
     onImageReady,
     onError,
     overlays,
@@ -131,9 +134,21 @@
     ></canvas>
   {/if}
 
+  <!-- Letterbox regions (empty space around image) -->
+  <Letterboxes
+    {transitionName}
+    {slideshowState}
+    {slideshowLook}
+    hasThumbhash={!!asset.thumbhash}
+    {scaledDimensions}
+    {container}
+  />
+
   <!-- Main image box with transition -->
   <div
     bind:this={mainImageBox}
+    style:view-transition-name={transitionName}
+    data-transition-name={transitionName}
     class="absolute"
     style:left={renderDimensions.left}
     style:top={renderDimensions.top}
