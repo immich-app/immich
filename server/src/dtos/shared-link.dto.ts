@@ -44,7 +44,7 @@ export class SharedLinkCreateDto {
   @IsString()
   slug?: string | null;
 
-  @ValidateDate({ optional: true, description: 'Expiration date' })
+  @ValidateDate({ optional: true, nullable: true, description: 'Expiration date' })
   expiresAt?: Date | null = null;
 
   @ValidateBoolean({ optional: true, description: 'Allow uploads' })
