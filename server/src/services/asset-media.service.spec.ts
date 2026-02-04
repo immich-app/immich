@@ -373,7 +373,7 @@ describe(AssetMediaService.name, () => {
       );
     });
 
-    it('should handle a duplicate', async () => {
+    it('should handle a duplicate via ON CONFLICT', async () => {
       const file = {
         uuid: 'random-uuid',
         originalPath: 'fake_path/asset_1.jpeg',
@@ -382,10 +382,9 @@ describe(AssetMediaService.name, () => {
         originalName: 'asset_1.jpeg',
         size: 0,
       };
-      const error = new Error('unique key violation');
-      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
-      mocks.asset.create.mockRejectedValue(error);
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      mocks.asset.create.mockResolvedValue(undefined);
       mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
@@ -409,10 +408,11 @@ describe(AssetMediaService.name, () => {
         originalName: 'asset_1.jpeg',
         size: 0,
       };
-      const error = new Error('unique key violation');
-      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
-      mocks.asset.create.mockRejectedValue(error);
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      mocks.asset.create.mockResolvedValue(undefined);
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(undefined);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).rejects.toBeInstanceOf(
         InternalServerErrorException,
@@ -844,7 +844,7 @@ describe(AssetMediaService.name, () => {
       // this is the original file size
       mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
+      mocks.asset.createStrict.mockResolvedValue(copiedAsset);
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.REPLACED,
@@ -858,7 +858,7 @@ describe(AssetMediaService.name, () => {
           originalPath: 'fake_path/photo1.jpeg',
         }),
       );
-      expect(mocks.asset.create).toHaveBeenCalledWith(
+      expect(mocks.asset.createStrict).toHaveBeenCalledWith(
         expect.objectContaining({
           originalFileName: 'existing-filename.jpeg',
           originalPath: 'fake_path/asset_1.jpeg',
@@ -893,7 +893,7 @@ describe(AssetMediaService.name, () => {
       // this is the original file size
       mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
+      mocks.asset.createStrict.mockResolvedValue(copiedAsset);
 
       await expect(
         sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile, sidecarFile),
@@ -931,7 +931,7 @@ describe(AssetMediaService.name, () => {
       // this is the original file size
       mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the copy call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
+      mocks.asset.createStrict.mockResolvedValue(copiedAsset);
 
       await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.REPLACED,
@@ -968,14 +968,14 @@ describe(AssetMediaService.name, () => {
       // this is the original file size
       mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
       // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
+      mocks.asset.createStrict.mockResolvedValue(copiedAsset);
 
       await expect(sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile)).resolves.toEqual({
         status: AssetMediaStatus.DUPLICATE,
         id: sidecarAsset.id,
       });
 
-      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.asset.createStrict).not.toHaveBeenCalled();
       expect(mocks.asset.updateAll).not.toHaveBeenCalled();
       expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
       expect(mocks.asset.deleteFile).not.toHaveBeenCalled();

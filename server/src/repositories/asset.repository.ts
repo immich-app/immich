@@ -327,12 +327,42 @@ export class AssetRepository {
     });
   }
 
+  /**
+   * Insert an asset, gracefully handling duplicate checksums via ON CONFLICT.
+   * Returns `undefined` when the asset already exists for this owner (same checksum,
+   * no library), rather than throwing a constraint violation. Callers must handle
+   * the `undefined` case to look up and return the existing duplicate.
+   */
   create(asset: Insertable<AssetTable>) {
+    return this.db
+      .insertInto('asset')
+      .values(asset)
+      .onConflict((oc) => oc.columns(['ownerId', 'checksum']).where('libraryId', 'is', null).doNothing())
+      .returningAll()
+      .executeTakeFirst();
+  }
+
+  /**
+   * Insert an asset, throwing on any constraint violation (including duplicate checksum).
+   * Use this for operations where a conflict is a real error, such as creating backup
+   * copies during asset replacement.
+   */
+  createStrict(asset: Insertable<AssetTable>) {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
+  /**
+   * Batch-insert assets, skipping any that violate the owner+checksum uniqueness
+   * constraint. The returned array may be shorter than the input when duplicates
+   * are silently skipped.
+   */
   createAll(assets: Insertable<AssetTable>[]) {
-    return this.db.insertInto('asset').values(assets).returningAll().execute();
+    return this.db
+      .insertInto('asset')
+      .values(assets)
+      .onConflict((oc) => oc.columns(['ownerId', 'checksum']).where('libraryId', 'is', null).doNothing())
+      .returningAll()
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { year: 2000, day: 1, month: 1 }] })

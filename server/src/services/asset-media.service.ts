@@ -149,11 +149,20 @@ export class AssetMediaService extends BaseService {
           { userId: auth.user.id, livePhotoVideoId: dto.livePhotoVideoId },
         );
       }
-      const asset = await this.create(auth.user.id, dto, file, sidecarFile);
+
+      const result = await this.create(auth.user.id, dto, file, sidecarFile);
+
+      if (result.duplicate) {
+        await this.jobRepository.queue({
+          name: JobName.FileDelete,
+          data: { files: [file.originalPath, sidecarFile?.originalPath] },
+        });
+        return { id: result.id, status: AssetMediaStatus.DUPLICATE };
+      }
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
 
-      return { id: asset.id, status: AssetMediaStatus.CREATED };
+      return { id: result.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
       return this.handleUploadError(error, auth, file, sidecarFile);
     }
@@ -400,7 +409,7 @@ export class AssetMediaService extends BaseService {
    * and then queues a METADATA_EXTRACTION job.
    */
   private async createCopy(asset: Omit<Asset, 'id'>) {
-    const created = await this.assetRepository.create({
+    const created = await this.assetRepository.createStrict({
       ownerId: asset.ownerId,
       originalPath: asset.originalPath,
       originalFileName: asset.originalFileName,
@@ -424,7 +433,12 @@ export class AssetMediaService extends BaseService {
     return created;
   }
 
-  private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
+  private async create(
+    ownerId: string,
+    dto: AssetMediaCreateDto,
+    file: UploadFile,
+    sidecarFile?: UploadFile,
+  ): Promise<{ id: string; duplicate: boolean }> {
     const asset = await this.assetRepository.create({
       ownerId,
       libraryId: null,
@@ -446,6 +460,15 @@ export class AssetMediaService extends BaseService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
     });
+
+    if (!asset) {
+      const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(ownerId, file.checksum);
+      if (!duplicateId) {
+        this.logger.error(`Error locating duplicate for checksum constraint`);
+        throw new InternalServerErrorException();
+      }
+      return { id: duplicateId, duplicate: true };
+    }
 
     if (dto.metadata?.length) {
       await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
@@ -469,7 +492,7 @@ export class AssetMediaService extends BaseService {
 
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
-    return asset;
+    return { id: asset.id, duplicate: false };
   }
 
   private requireQuota(auth: AuthDto, size: number) {

@@ -5,6 +5,7 @@ import { Mocked, vitest } from 'vitest';
 export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetRepository>> => {
   return {
     create: vitest.fn(),
+    createStrict: vitest.fn(),
     createAll: vitest.fn(),
     upsertExif: vitest.fn(),
     updateAllExif: vitest.fn(),
