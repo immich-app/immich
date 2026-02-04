@@ -78,8 +78,8 @@
     >
       {#if !singleSelect}
         <div
-          class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
-          class:w-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+          class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-8 opacity-0"
+          class:opacity-100={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
             assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
           onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
@@ -92,7 +92,14 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={getDayGroupFullDate(dayGroup)}>
+      <span
+        class="w-full truncate first-letter:capitalize transition-transform duration-200 ease-out"
+        class:-translate-x-8={(hoveredDayGroup !== dayGroup.groupTitle || !isMouseOverGroup) &&
+          !assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
+        class:translate-x-0={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+          assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
+        title={getDayGroupFullDate(dayGroup)}
+      >
         {dayGroup.groupTitle}
       </span>
     </div>
