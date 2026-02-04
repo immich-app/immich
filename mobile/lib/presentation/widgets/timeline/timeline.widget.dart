@@ -29,6 +29,12 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
+typedef TimelineBottomWidgetBuilder = Widget? Function(
+  BuildContext context,
+  bool isSelectionMode,
+  bool isMultiSelectEnabled,
+);
+
 class Timeline extends StatelessWidget {
   const Timeline({
     super.key,
@@ -37,7 +43,7 @@ class Timeline extends StatelessWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet,
+    @Deprecated('Use bottomWidgetBuilder instead') this.bottomSheet,
     this.bottomWidgetBuilder,
     this.groupBy,
     this.withScrubber = true,
@@ -46,15 +52,16 @@ class Timeline extends StatelessWidget {
     this.readOnly = false,
   }) : assert(
          bottomWidgetBuilder == null || bottomSheet == null,
-         'bottomSheet must be null when bottomWidgetBuilder is provided',
+         'Cannot provide both bottomSheet and bottomWidgetBuilder',
        );
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final bool showStorageIndicator;
   final Widget? appBar;
+  @Deprecated('Use bottomWidgetBuilder instead')
   final Widget? bottomSheet;
-  final Widget? Function(BuildContext context, bool isSelectionMode, bool isMultiSelectEnabled)? bottomWidgetBuilder;
+  final TimelineBottomWidgetBuilder? bottomWidgetBuilder;
   final bool withStack;
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
@@ -64,6 +71,14 @@ class Timeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBottomWidgetBuilder =
+        bottomWidgetBuilder ??
+        (_, isSelectionMode, isMultiSelectEnabled) {
+          if (!isSelectionMode && isMultiSelectEnabled) {
+            return bottomSheet ?? const GeneralBottomSheet(minChildSize: 0.23);
+          }
+          return null;
+        };
     return Scaffold(
       resizeToAvoidBottomInset: false,
       floatingActionButton: const DownloadStatusFloatingButton(),
@@ -86,10 +101,7 @@ class Timeline extends StatelessWidget {
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
             appBar: appBar,
-            bottomSheet: bottomWidgetBuilder == null
-                ? (bottomSheet ?? const GeneralBottomSheet(minChildSize: 0.23))
-                : null,
-            bottomWidgetBuilder: bottomWidgetBuilder,
+            bottomWidgetBuilder: effectiveBottomWidgetBuilder,
             withScrubber: withScrubber,
             snapToMonth: snapToMonth,
             initialScrollOffset: initialScrollOffset,
@@ -116,21 +128,16 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.topSliverWidget,
     this.topSliverWidgetHeight,
     this.appBar,
-    this.bottomSheet,
     this.bottomWidgetBuilder,
     this.withScrubber = true,
     this.snapToMonth = true,
     this.initialScrollOffset,
-  }) : assert(
-         bottomWidgetBuilder == null || bottomSheet == null,
-         'bottomSheet must be null when bottomWidgetBuilder is provided',
-       );
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final Widget? appBar;
-  final Widget? bottomSheet;
-  final Widget? Function(BuildContext context, bool isSelectionMode, bool isMultiSelectEnabled)? bottomWidgetBuilder;
+  final TimelineBottomWidgetBuilder? bottomWidgetBuilder;
   final bool withScrubber;
   final bool snapToMonth;
   final double? initialScrollOffset;
@@ -356,7 +363,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           final bottomPadding =
               context.padding.bottom +
               (widget.appBar == null ? 0 : scrubberBottomPadding) +
-              ((isMultiSelectEnabled || bottomWidget != null) ? bottomSheetOpenModifier : 0);
+              (bottomWidget != null ? bottomSheetOpenModifier : 0);
 
           final grid = CustomScrollView(
             primary: true,
@@ -465,7 +472,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                           child: Center(child: _MultiSelectStatusButton()),
                         ),
                       ),
-                      ?widget.bottomSheet,
                     ],
                     ?bottomWidget,
                   ],
