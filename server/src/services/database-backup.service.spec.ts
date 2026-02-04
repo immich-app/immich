@@ -164,7 +164,7 @@ describe(DatabaseBackupService.name, () => {
     beforeEach(() => {
       mocks.storage.readdir.mockResolvedValue([]);
       mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
-      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex()('command', 0, 'data', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
@@ -193,7 +193,7 @@ describe(DatabaseBackupService.name, () => {
       );
 
       mocks.storage.readdir.mockResolvedValue([]);
-      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex()('command', 0, 'data', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
@@ -227,19 +227,19 @@ describe(DatabaseBackupService.name, () => {
     });
 
     it('should fail if pg_dump fails', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('pg_dump', 1, '', 'error'));
       await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
     });
 
     it('should not rename file if pgdump fails and gzip succeeds', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('pg_dump', 1, '', 'error'));
       await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
       expect(mocks.storage.rename).not.toHaveBeenCalled();
     });
 
     it('should fail if gzip fails', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 0, 'data', ''));
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('gzip', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('pg_dump', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('gzip', 1, '', 'error'));
       await expect(sut.handleBackupDatabase()).rejects.toThrow('gzip non-zero exit code (1)');
     });
 
@@ -256,7 +256,7 @@ describe(DatabaseBackupService.name, () => {
     });
 
     it('should ignore unlink failing and still return failed job status', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('pg_dump', 1, '', 'error'));
       mocks.storage.unlink.mockRejectedValue(new Error('error'));
       await expect(sut.handleBackupDatabase()).rejects.toThrow('pg_dump non-zero exit code (1)');
       expect(mocks.storage.unlink).toHaveBeenCalled();
@@ -519,6 +519,47 @@ describe(DatabaseBackupService.name, () => {
         `);
       });
     });
+
+    describe('using bad URL', () => {
+      beforeEach(() => {
+        const dbUrl = 'post://gresql://mypg:myp@wd@myhos:t:1234/myimmich?sslmode=require&uselibpqcompat=true';
+        const configMock = {
+          getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+          getWorker: () => ImmichWorker.Api,
+          isDev: () => false,
+        } as unknown as any;
+
+        sut = new DatabaseBackupService(
+          mocks.logger as never,
+          mocks.storage as never,
+          configMock as never,
+          mocks.systemMetadata as never,
+          mocks.process,
+          mocks.database as never,
+          mocks.cron as never,
+          mocks.job as never,
+          void 0 as never,
+        );
+      });
+
+      it('should fallback to reasonable defaults', async () => {
+        await expect(sut.buildPostgresLaunchArguments('psql')).resolves.toMatchInlineSnapshot(`
+          {
+            "args": [
+              "--dbname",
+              "post://gresql//mypg:myp@wd@myhos:t:1234/myimmich?sslmode=require",
+              "--echo-all",
+              "--output=/dev/null",
+            ],
+            "bin": "/usr/lib/postgresql/14/bin/psql",
+            "databaseMajorVersion": 14,
+            "databasePassword": "",
+            "databaseUsername": "",
+            "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
+          }
+        `);
+      });
+    });
   });
 
   describe('uploadBackup', () => {
@@ -584,13 +625,15 @@ describe(DatabaseBackupService.name, () => {
     });
   });
 
-  describe.todo('cleanupDatabaseBackups');
+  // describe('cleanupDatabaseBackups', () => {
+  //   // gjfidogdfs
+  // });
 
   describe('restoreDatabaseBackup', () => {
     beforeEach(() => {
       mocks.storage.readdir.mockResolvedValue([]);
       mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
-      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex()('command', 0, 'data', ''));
       mocks.process.fork.mockImplementation(() => mockSpawn(0, 'Immich Server is listening', ''));
       mocks.storage.rename.mockResolvedValue();
       mocks.storage.unlink.mockResolvedValue();
@@ -598,6 +641,36 @@ describe(DatabaseBackupService.name, () => {
       mocks.storage.createWriteStream.mockReturnValue(new PassThrough());
       mocks.storage.createGzip.mockReturnValue(new PassThrough());
       mocks.storage.createGunzip.mockReturnValue(new PassThrough());
+
+      const configMock = {
+        getEnv: () => ({
+          database: {
+            config: {
+              connectionType: 'parts',
+              host: 'myhost',
+              port: 1234,
+              username: 'mypg',
+              password: 'mypwd',
+              database: 'myimmich',
+            },
+            skipMigrations: false,
+          },
+        }),
+        getWorker: () => ImmichWorker.Api,
+        isDev: () => false,
+      } as unknown as any;
+
+      sut = new DatabaseBackupService(
+        mocks.logger as never,
+        mocks.storage as never,
+        configMock as never,
+        mocks.systemMetadata as never,
+        mocks.process,
+        mocks.database as never,
+        mocks.cron as never,
+        mocks.job as never,
+        maintenanceHealthRepositoryMock,
+      );
     });
 
     it('should fail to restore invalid backup', async () => {
@@ -606,7 +679,15 @@ describe(DatabaseBackupService.name, () => {
       );
     });
 
-    it('should successfully run a backup', async () => {
+    it('should successfully restore a backup', async () => {
+      let writtenToPsql = '';
+
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => {
+        return mockDuplex((chunk) => (writtenToPsql += chunk))('command', 0, 'data', '');
+      });
+
       const progress = vitest.fn();
       await sut.restoreDatabaseBackup('development-filename.sql', progress);
 
@@ -620,13 +701,13 @@ describe(DatabaseBackupService.name, () => {
         expect.stringMatching('/bin/psql'),
         [
           '--username',
-          'postgres',
+          'mypg',
           '--host',
-          'database',
+          'myhost',
           '--port',
-          '5432',
+          '1234',
           '--dbname',
-          'immich',
+          'myimmich',
           '--single-transaction',
           '--set',
           'ON_ERROR_STOP=on',
@@ -636,14 +717,85 @@ describe(DatabaseBackupService.name, () => {
         expect.objectContaining({
           env: expect.objectContaining({
             PATH: expect.any(String),
-            PGPASSWORD: 'postgres',
+            PGPASSWORD: 'mypwd',
           }),
         }),
       );
+
+      expect(writtenToPsql).toMatchInlineSnapshot(`
+        "
+          -- drop all other database connections
+          SELECT pg_terminate_backend(pid)
+          FROM pg_stat_activity
+          WHERE datname = current_database()
+            AND pid <> pg_backend_pid();
+
+          -- re-create the default schema
+          DROP SCHEMA public CASCADE;
+          CREATE SCHEMA public;
+
+          -- restore access to schema
+          GRANT ALL ON SCHEMA public TO "mypg";
+          GRANT ALL ON SCHEMA public TO public;
+        SELECT 1;"
+      `);
+    });
+
+    it('should generate pg_dumpall specific SQL instructions', async () => {
+      let writtenToPsql = '';
+
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => mockDuplex()('command', 0, 'data', ''));
+      mocks.process.spawnDuplexStream.mockImplementationOnce(() => {
+        return mockDuplex((chunk) => (writtenToPsql += chunk))('command', 0, 'data', '');
+      });
+
+      const progress = vitest.fn();
+      await sut.restoreDatabaseBackup('development-v2.4.0-.sql', progress);
+
+      expect(progress).toHaveBeenCalledWith('backup', 0.05);
+      expect(progress).toHaveBeenCalledWith('migrations', 0.9);
+
+      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(3);
+
+      expect(mocks.process.spawnDuplexStream).toHaveBeenLastCalledWith(
+        expect.stringMatching('/bin/psql'),
+        [
+          '--username',
+          'mypg',
+          '--host',
+          'myhost',
+          '--port',
+          '1234',
+          '--dbname',
+          'myimmich',
+          '--echo-all',
+          '--output=/dev/null',
+        ],
+        expect.objectContaining({
+          env: expect.objectContaining({
+            PATH: expect.any(String),
+            PGPASSWORD: 'mypwd',
+          }),
+        }),
+      );
+
+      expect(writtenToPsql).toMatchInlineSnapshot(String.raw`
+        "
+          -- drop all other database connections
+          SELECT pg_terminate_backend(pid)
+          FROM pg_stat_activity
+          WHERE datname = current_database()
+            AND pid <> pg_backend_pid();
+
+                \c postgres
+              SELECT 1;"
+      `);
     });
 
     it('should fail if backup creation fails', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex()('pg_dump', 1, '', 'error'));
 
       const progress = vitest.fn();
       await expect(sut.restoreDatabaseBackup('development-filename.sql', progress)).rejects
@@ -657,9 +809,9 @@ describe(DatabaseBackupService.name, () => {
 
     it('should fail if restore itself fails', async () => {
       mocks.process.spawnDuplexStream
-        .mockReturnValueOnce(mockDuplex('pg_dump', 0, 'data', ''))
-        .mockReturnValueOnce(mockDuplex('gzip', 0, 'data', ''))
-        .mockReturnValueOnce(mockDuplex('psql', 1, '', 'error'));
+        .mockReturnValueOnce(mockDuplex()('pg_dump', 0, 'data', ''))
+        .mockReturnValueOnce(mockDuplex()('gzip', 0, 'data', ''))
+        .mockReturnValueOnce(mockDuplex()('psql', 1, '', 'error'));
 
       const progress = vitest.fn();
       await expect(sut.restoreDatabaseBackup('development-filename.sql', progress)).rejects
@@ -705,5 +857,5 @@ describe(DatabaseBackupService.name, () => {
 });
 
 function* mockData() {
-  yield '';
+  yield 'SELECT 1;';
 }
