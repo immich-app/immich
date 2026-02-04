@@ -87,6 +87,7 @@ export interface VideoStreamInfo {
   rotation: number;
   codecName?: string;
   frameCount: number;
+  frameRate: string;
   isHDR: boolean;
   bitrate: number;
   pixelFormat: string;

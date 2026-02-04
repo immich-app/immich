@@ -125,7 +125,9 @@ export class BaseConfig implements VideoCodecSWConfig {
       // Makes a second pass moving the moov atom to the
       // beginning of the file for improved playback speed.
       '-movflags faststart',
-      '-fps_mode passthrough',
+      // Force CFR at avg FPS to avoid timestamp/reorder corruption with VFR content and hw accel
+      '-fps_mode cfr',
+      `-r ${videoStream.frameRate || 30}`,
       // explicitly selects the video stream instead of leaving it up to FFmpeg
       `-map 0:${videoStream.index}`,
       // Strip metadata like capture date, camera, and GPS
