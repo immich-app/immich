@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Redirect,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
@@ -71,6 +84,19 @@ export class AlbumController {
     @Query() dto: AlbumInfoDto,
   ): Promise<AlbumResponseDto> {
     return this.service.get(auth, id, dto);
+  }
+
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/thumbnail')
+  @Redirect()
+  @Endpoint({
+    summary: 'Redirect to album thumbnail',
+    description: 'Virtual route that redirects to the thumbnail of the album cover asset.',
+    history: new HistoryBuilder().added('v2.6.0').beta('v2.6.0'),
+  })
+  async getAlbumThumbnailRedirect(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
+    const url = await this.service.getThumbnailRedirectUrl(auth, id);
+    return { url, status: 307 };
   }
 
   @Patch(':id')
