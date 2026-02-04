@@ -23,6 +23,8 @@ Locale _parseLocale(String code) {
 
 const String translationsPath = 'assets/i18n';
 
+const Locale defaultLocale = Locale('en');
+
 const List<Locale> localesNotSupportedByAppFont = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];
 
 final List<Locale> materialSupportedLanguages = [
@@ -82,7 +84,7 @@ final List<Locale> materialSupportedLanguages = [
   const Locale('fr', 'CA'), // French (Canada)
   const Locale('ga'), // Irish
   const Locale('gl'), // Galician
-  const Locale('gsw'), // Swiss German
+  const Locale('gsw'), // Swiss German Alemannic Alsatian
   const Locale('gu'), // Gujarati
   const Locale('he'), // Hebrew
   const Locale('hi'), // Hindi
