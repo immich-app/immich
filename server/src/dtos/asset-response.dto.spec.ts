@@ -170,5 +170,52 @@ describe('mapAsset', () => {
       expect(person2!.faces[0].boundingBoxX1).toBe(500);
       expect(person2!.faces[0].boundingBoxY1).toBe(100);
     });
+
+    it('should combine faces of the same person into a single entry', () => {
+      const face1 = {
+        ...faceStub.primaryFace1,
+        id: 'face-1',
+        person: personStub.withName,
+        personId: personStub.withName.id,
+        boundingBoxX1: 100,
+        boundingBoxY1: 100,
+        boundingBoxX2: 200,
+        boundingBoxY2: 200,
+        imageWidth: 1000,
+        imageHeight: 800,
+      };
+
+      const face2 = {
+        ...faceStub.primaryFace1,
+        id: 'face-2',
+        person: personStub.withName,
+        personId: personStub.withName.id,
+        boundingBoxX1: 300,
+        boundingBoxY1: 300,
+        boundingBoxX2: 400,
+        boundingBoxY2: 400,
+        imageWidth: 1000,
+        imageHeight: 800,
+      };
+
+      const asset = {
+        ...assetStub.withCropEdit,
+        faces: [face1, face2],
+        exifInfo: {
+          exifImageWidth: 1000,
+          exifImageHeight: 800,
+        },
+        edits: [],
+      };
+
+      const result = mapAsset(asset as any);
+
+      expect(result.people).toBeDefined();
+      expect(result.people).toHaveLength(1);
+
+      const person = result.people![0];
+      expect(person.id).toBe(personStub.withName.id);
+      expect(person.faces).toHaveLength(2);
+    });
   });
 });
