@@ -17,10 +17,11 @@
     totalPeopleCount: number;
     titleId?: string | undefined;
     onClose: () => void;
+    onUpdate: (people: PersonResponseDto[]) => void;
     loadNextPage: () => void;
   }
 
-  let { people = $bindable(), totalPeopleCount, titleId = undefined, onClose, loadNextPage }: Props = $props();
+  let { people, totalPeopleCount, titleId = undefined, onClose, onUpdate, loadNextPage }: Props = $props();
 
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
@@ -77,6 +78,7 @@
       }
       overrides.clear();
 
+      onUpdate(people);
       onClose();
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
