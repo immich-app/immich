@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.5.2
+ * 2.5.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -233,6 +233,8 @@ export type UserAdminCreateDto = {
     notify?: boolean;
     /** User password */
     password: string;
+    /** PIN code */
+    pinCode?: string | null;
     /** Storage quota in bytes */
     quotaSizeInBytes?: number | null;
     /** Require password change on next login */
@@ -822,7 +824,7 @@ export type AssetBulkUpdateDto = {
     dateTimeRelative?: number;
     /** Asset description */
     description?: string;
-    /** Duplicate asset ID */
+    /** Duplicate ID */
     duplicateId?: string | null;
     /** Asset IDs to update */
     ids: string[];
