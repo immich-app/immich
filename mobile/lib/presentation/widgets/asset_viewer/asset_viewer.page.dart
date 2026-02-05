@@ -469,6 +469,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       }
     }
 
+    if (index >= totalAssets) {
+      index = totalAssets - 1;
+      pageController.jumpToPage(index);
+    }
+
     if (assetReloadRequested) {
       assetReloadRequested = false;
       _onAssetReloadEvent(index);
