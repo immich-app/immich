@@ -112,6 +112,7 @@ export class AuthController {
     summary: 'Retrieve auth status',
     description:
       'Get information about the current session, including whether the user has a password, and if the session can access locked assets.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   getAuthStatus(@Auth() auth: AuthDto): Promise<AuthStatusResponseDto> {
     return this.service.getAuthStatus(auth);
