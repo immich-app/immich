@@ -5,12 +5,12 @@ const globalSetup: string[] = [];
 try {
   await fetch('http://127.0.0.1:2285/api/server-info/ping');
 } catch {
-  globalSetup.push('src/setup/docker-compose.ts');
+  globalSetup.push('src/e2e/setup/docker-compose.ts');
 }
 
 export default defineConfig({
   test: {
-    include: ['src/{api,cli,immich-admin}/specs/*.e2e-spec.ts'],
+    include: ['src/e2e/{api,cli,immich-admin}/specs/*.e2e-spec.ts'],
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',
