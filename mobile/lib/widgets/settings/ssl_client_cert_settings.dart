@@ -81,7 +81,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       showMessage("client_cert_import_success_msg".tr());
     } catch (e) {
       if (_isCancellation(e)) {
-          return;
+        return;
       }
       _log.severe("Error importing client cert", e);
       showMessage("client_cert_invalid_msg".tr());
@@ -97,7 +97,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       showMessage("client_cert_remove_msg".tr());
     } catch (e) {
       if (_isCancellation(e)) {
-          return;
+        return;
       }
       _log.severe("Error removing client cert", e);
       showMessage("client_cert_invalid_msg".tr());
