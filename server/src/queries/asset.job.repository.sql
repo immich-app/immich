@@ -436,30 +436,6 @@ select
     from
       (
         select
-          "asset_face".*,
-          "person" as "person"
-        from
-          "asset_face"
-          left join lateral (
-            select
-              "person".*
-            from
-              "person"
-            where
-              "asset_face"."personId" = "person"."id"
-          ) as "person" on true
-        where
-          "asset_face"."assetId" = "asset"."id"
-          and "asset_face"."deletedAt" is null
-          and "asset_face"."isVisible" is true
-      ) as agg
-  ) as "faces",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
           "asset_file"."id",
           "asset_file"."path",
           "asset_file"."type",
@@ -470,27 +446,37 @@ select
           "asset_file"."assetId" = "asset"."id"
       ) as agg
   ) as "files",
-  to_json("stacked_assets") as "stack"
+  to_json("stack_result") as "stack"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
   left join lateral (
     select
       "stack"."id",
       "stack"."primaryAssetId",
-      array_agg("stacked") as "assets"
+      (
+        select
+          coalesce(json_agg(agg), '[]')
+        from
+          (
+            select
+              "stack_asset"."id"
+            from
+              "asset" as "stack_asset"
+            where
+              "stack_asset"."stackId" = "stack"."id"
+              and "stack_asset"."id" != "stack"."primaryAssetId"
+              and "stack_asset"."visibility" = $1
+              and "stack_asset"."status" != $2
+          ) as agg
+      ) as "assets"
     from
-      "asset" as "stacked"
+      "stack"
     where
-      "stacked"."deletedAt" is not null
-      and "stacked"."visibility" = $1
-      and "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
+      "stack"."id" = "asset"."stackId"
+  ) as "stack_result" on true
 where
-  "asset"."id" = $2
+  "asset"."id" = $3
 
 -- AssetJobRepository.streamForVideoConversion
 select
