@@ -56,6 +56,12 @@
         circle
         preload={false}
       />
+
+      {#if person.assetCount !== undefined && person.assetCount > 0}
+        <div class="absolute bottom-4 end-4 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+          {person.assetCount}
+        </div>
+      {/if}
       {#if person.isFavorite}
         <div class="absolute top-4 start-4">
           <Icon icon={mdiHeart} size="24" class="text-white" />
