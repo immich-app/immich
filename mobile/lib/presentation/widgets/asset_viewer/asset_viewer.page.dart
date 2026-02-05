@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'package:flutter/rendering.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -15,6 +17,7 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -135,11 +138,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   KeepAliveLink? _stackChildrenKeepAlive;
 
+  final ScrollController _scrollController = ScrollController();
+  double _assetDetailsOpacity = 0.0;
+
   @override
   void initState() {
     super.initState();
     assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
+    _scrollController.addListener(_onScroll);
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
@@ -156,8 +163,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
+  void _onScroll() {
+    setState(() {
+      _assetDetailsOpacity = (_scrollController.offset / 50).clamp(0.0, 1.0);
+    });
+  }
+
   @override
   void dispose() {
+    _scrollController.dispose();
     pageController.dispose();
     bottomSheetController.dispose();
     _cancelTimers();
@@ -690,38 +704,129 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
             child: const DownloadStatusFloatingButton(),
           ),
         ),
-        body: Stack(
-          children: [
-            PhotoViewGallery.builder(
-              gaplessPlayback: true,
-              loadingBuilder: _placeholderBuilder,
-              pageController: pageController,
-              scrollPhysics: CurrentPlatform.isIOS
-                  ? const FastScrollPhysics() // Use bouncing physics for iOS
-                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
-              itemCount: totalAssets,
-              onPageChanged: _onPageChanged,
-              onPageBuild: _onPageBuild,
-              scaleStateChangedCallback: _onScaleStateChanged,
-              builder: _assetBuilder,
-              backgroundDecoration: BoxDecoration(color: backgroundColor),
-              enablePanAlways: true,
-            ),
-            if (!showingBottomSheet)
-              const Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [AssetStackRow(), ViewerBottomBar()],
-                ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final imageHeight = 200.0; // Your image's height
+            final viewportHeight = constraints.maxHeight;
+
+            // Calculate padding to center the image in the viewport
+            final topPadding = (viewportHeight - imageHeight) / 2;
+            final snapOffset = math.min(topPadding + (imageHeight / 2), viewportHeight / 3);
+
+            return SingleChildScrollView(
+              controller: _scrollController,
+              physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: topPadding),
+                  // Center(child: Image.asset('assets/immich-logo.png', height: imageHeight)),
+                  SizedBox(
+                    height: viewportHeight,
+                    child: PhotoViewGallery.builder(
+                      gaplessPlayback: true,
+                      loadingBuilder: _placeholderBuilder,
+                      pageController: pageController,
+                      scrollPhysics: CurrentPlatform.isIOS
+                          ? const FastScrollPhysics() // Use bouncing physics for iOS
+                          : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                      itemCount: totalAssets,
+                      onPageChanged: _onPageChanged,
+                      onPageBuild: _onPageBuild,
+                      scaleStateChangedCallback: _onScaleStateChanged,
+                      builder: _assetBuilder,
+                      backgroundDecoration: BoxDecoration(color: backgroundColor),
+                      enablePanAlways: true,
+                    ),
+                  ),
+                  Opacity(
+                    opacity: _assetDetailsOpacity,
+                    child: AssetDetails(minHeight: viewportHeight / 3 * 2),
+                  ),
+
+                  // Stack(
+                  //   children: [
+                  //     PhotoViewGallery.builder(
+                  //       gaplessPlayback: true,
+                  //       loadingBuilder: _placeholderBuilder,
+                  //       pageController: pageController,
+                  //       scrollPhysics: CurrentPlatform.isIOS
+                  //           ? const FastScrollPhysics() // Use bouncing physics for iOS
+                  //           : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                  //       itemCount: totalAssets,
+                  //       onPageChanged: _onPageChanged,
+                  //       onPageBuild: _onPageBuild,
+                  //       scaleStateChangedCallback: _onScaleStateChanged,
+                  //       builder: _assetBuilder,
+                  //       backgroundDecoration: BoxDecoration(color: backgroundColor),
+                  //       enablePanAlways: true,
+                  //     ),
+                  //     if (!showingBottomSheet)
+                  //       const Positioned(
+                  //         bottom: 0,
+                  //         left: 0,
+                  //         right: 0,
+                  //         child: Column(
+                  //           mainAxisSize: MainAxisSize.min,
+                  //           mainAxisAlignment: MainAxisAlignment.end,
+                  //           crossAxisAlignment: CrossAxisAlignment.stretch,
+                  //           children: [AssetStackRow(), ViewerBottomBar()],
+                  //         ),
+                  //       ),
+                  //   ],
+                  // ),
+                ],
               ),
-          ],
+            );
+          },
         ),
       ),
     );
+  }
+}
+
+class VariableHeightSnappingPhysics extends ScrollPhysics {
+  final double snapStart;
+  final double snapEnd;
+  final double snapOffset;
+
+  const VariableHeightSnappingPhysics({
+    required this.snapStart,
+    required this.snapEnd,
+    required this.snapOffset,
+    super.parent,
+  });
+
+  @override
+  VariableHeightSnappingPhysics applyTo(ScrollPhysics? ancestor) {
+    return VariableHeightSnappingPhysics(
+      parent: buildParent(ancestor),
+      snapStart: snapStart,
+      snapEnd: snapEnd,
+      snapOffset: snapOffset,
+    );
+  }
+
+  @override
+  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+    final tolerance = toleranceFor(position);
+
+    if (position.pixels >= snapStart && position.pixels <= snapEnd) {
+      double targetPixels;
+
+      if (velocity < -tolerance.velocity) {
+        targetPixels = 0;
+      } else if (velocity > tolerance.velocity) {
+        targetPixels = snapOffset;
+      } else {
+        targetPixels = (position.pixels < snapOffset / 2) ? 0 : snapOffset;
+      }
+
+      if ((position.pixels - targetPixels).abs() > tolerance.distance) {
+        return ScrollSpringSimulation(spring, position.pixels, targetPixels, velocity, tolerance: tolerance);
+      }
+    }
+
+    return super.createBallisticSimulation(position, velocity);
   }
 }
