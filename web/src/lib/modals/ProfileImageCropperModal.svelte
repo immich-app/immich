@@ -61,9 +61,14 @@
       const containerSize = cropContainer.offsetWidth;
 
       // Capture the crop container which maintains 1:1 aspect ratio
+      // Override border-radius and border to avoid transparent corners from rounded-full
       const blob = await domtoimage.toBlob(cropContainer, {
         width: containerSize,
         height: containerSize,
+        style: {
+          borderRadius: '0',
+          border: 'none',
+        },
       });
 
       if (await hasTransparentPixels(blob)) {
