@@ -30,6 +30,11 @@ class ExifInfo {
   final String? description;
   final String? orientation;
 
+  // Ultra HDR fields
+  final bool? isUltraHdr;
+  final String? hdrImageType;
+  final String? gainmapVersion;
+
   const ExifInfo({
     this.id,
     this.fileSize,
@@ -49,6 +54,9 @@ class ExifInfo {
     this.country,
     this.description,
     this.orientation,
+    this.isUltraHdr = false,
+    this.hdrImageType,
+    this.gainmapVersion,
   });
 
   static ExifInfo fromDto(domain.ExifInfo dto) => ExifInfo(
@@ -70,6 +78,9 @@ class ExifInfo {
     country: dto.country,
     description: dto.description,
     orientation: dto.orientation,
+    isUltraHdr: dto.isUltraHdr,
+    hdrImageType: dto.hdrImageType,
+    gainmapVersion: dto.gainmapVersion,
   );
 
   domain.ExifInfo toDto() => domain.ExifInfo(
@@ -92,6 +103,9 @@ class ExifInfo {
     mm: mm,
     iso: iso?.toInt(),
     exposureSeconds: exposureSeconds,
+    isUltraHdr: isUltraHdr,
+    hdrImageType: hdrImageType,
+    gainmapVersion: gainmapVersion,
   );
 }
 
@@ -143,6 +157,13 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get projectionType => text().nullable()();
 
+  // Ultra HDR columns
+  BoolColumn get isUltraHdr => boolean().nullable()();
+
+  TextColumn get hdrImageType => text().nullable()();
+
+  TextColumn get gainmapVersion => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {assetId};
 }
@@ -168,5 +189,8 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
     lens: lens,
     isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
     exposureSeconds: ExifDtoConverter.exposureTimeToSeconds(exposureTime),
+    isUltraHdr: isUltraHdr,
+    hdrImageType: hdrImageType,
+    gainmapVersion: gainmapVersion,
   );
 }

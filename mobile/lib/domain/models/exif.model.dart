@@ -24,6 +24,11 @@ class ExifInfo {
   final int? iso;
   final double? exposureSeconds;
 
+  // Ultra HDR
+  final bool? isUltraHdr;
+  final String? hdrImageType;
+  final String? gainmapVersion;
+
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   String get exposureTime {
@@ -61,6 +66,9 @@ class ExifInfo {
     this.mm,
     this.iso,
     this.exposureSeconds,
+    this.isUltraHdr = false,
+    this.hdrImageType,
+    this.gainmapVersion,
   });
 
   @override
@@ -86,7 +94,10 @@ class ExifInfo {
         other.mm == mm &&
         other.iso == iso &&
         other.exposureSeconds == exposureSeconds &&
-        other.assetId == assetId;
+        other.assetId == assetId &&
+        other.isUltraHdr == isUltraHdr &&
+        other.hdrImageType == hdrImageType &&
+        other.gainmapVersion == gainmapVersion;
   }
 
   @override
@@ -110,7 +121,10 @@ class ExifInfo {
         mm.hashCode ^
         iso.hashCode ^
         exposureSeconds.hashCode ^
-        assetId.hashCode;
+        assetId.hashCode ^
+        isUltraHdr.hashCode ^
+        hdrImageType.hashCode ^
+        gainmapVersion.hashCode;
   }
 
   @override
@@ -135,6 +149,9 @@ f: ${f ?? 'NA'},
 mm: ${mm ?? '<NA>'},
 iso: ${iso ?? 'NA'},
 exposureSeconds: ${exposureSeconds ?? 'NA'},
+isUltraHdr: ${isUltraHdr ?? 'NA'},
+hdrImageType: ${hdrImageType ?? 'NA'},
+gainmapVersion: ${gainmapVersion ?? 'NA'},
 }''';
   }
 
@@ -159,6 +176,9 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
     double? mm,
     int? iso,
     double? exposureSeconds,
+    bool? isUltraHdr,
+    String? hdrImageType,
+    String? gainmapVersion,
   }) {
     return ExifInfo(
       assetId: assetId ?? this.assetId,
@@ -181,6 +201,9 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
       mm: mm ?? this.mm,
       iso: iso ?? this.iso,
       exposureSeconds: exposureSeconds ?? this.exposureSeconds,
+      isUltraHdr: isUltraHdr ?? this.isUltraHdr,
+      hdrImageType: hdrImageType ?? this.hdrImageType,
+      gainmapVersion: gainmapVersion ?? this.gainmapVersion,
     );
   }
 }

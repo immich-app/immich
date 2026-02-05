@@ -23,6 +23,9 @@ abstract final class ExifDtoConverter {
       mm: dto.focalLength?.toDouble(),
       iso: dto.iso?.toInt(),
       exposureSeconds: exposureTimeToSeconds(dto.exposureTime),
+      isUltraHdr: dto.isUltraHdr,
+      hdrImageType: dto.hdrImageType,
+      gainmapVersion: dto.gainmapVersion,
     );
   }
 
