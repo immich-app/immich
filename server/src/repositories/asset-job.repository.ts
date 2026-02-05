@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { Asset, columns } from 'src/database';
+import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -15,7 +15,6 @@ import {
   withExif,
   withExifInner,
   withFaces,
-  withFacesAndPeople,
   withFilePath,
   withFiles,
 } from 'src/utils/database';
@@ -269,23 +268,29 @@ export class AssetJobRepository {
         'asset.isOffline',
       ])
       .$call(withExif)
-      .select(withFacesAndPeople)
       .select(withFiles)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
       .leftJoinLateral(
         (eb) =>
           eb
-            .selectFrom('asset as stacked')
-            .select(['stack.id', 'stack.primaryAssetId'])
-            .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
-            .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '=', AssetVisibility.Timeline)
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
+            .selectFrom('stack')
+            .whereRef('stack.id', '=', 'asset.stackId')
+            .select((eb) => [
+              'stack.id',
+              'stack.primaryAssetId',
+              jsonArrayFrom(
+                eb
+                  .selectFrom('asset as stack_asset')
+                  .select(['stack_asset.id'])
+                  .whereRef('stack_asset.stackId', '=', 'stack.id')
+                  .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
+                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+              ).as('assets'),
+            ])
+            .as('stack_result'),
+        (join) => join.onTrue(),
       )
-      .select((eb) => toJson(eb, 'stacked_assets').as('stack'))
+      .select((eb) => toJson(eb, 'stack_result').as('stack'))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }

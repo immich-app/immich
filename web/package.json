@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -27,7 +27,7 @@
     "@formatjs/icu-messageformat-parser": "^3.0.0",
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.59.0",
+    "@immich/ui": "^0.61.3",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.14.0",

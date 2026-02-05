@@ -16,6 +16,7 @@
   let { asset, onClose }: Props = $props();
 
   let imgElement: HTMLDivElement | undefined = $state();
+  let cropContainer: HTMLDivElement | undefined = $state();
 
   onMount(() => {
     if (!imgElement) {
@@ -51,16 +52,18 @@
   };
 
   const onSubmit = async () => {
-    if (!imgElement) {
+    if (!cropContainer) {
       return;
     }
 
     try {
-      const imgElementHeight = imgElement.offsetHeight;
-      const imgElementWidth = imgElement.offsetWidth;
-      const blob = await domtoimage.toBlob(imgElement, {
-        width: imgElementWidth,
-        height: imgElementHeight,
+      // Get the container dimensions (which is always square due to aspect-square class)
+      const containerSize = cropContainer.offsetWidth;
+
+      // Capture the crop container which maintains 1:1 aspect ratio
+      const blob = await domtoimage.toBlob(cropContainer, {
+        width: containerSize,
+        height: containerSize,
       });
 
       if (await hasTransparentPixels(blob)) {
@@ -83,6 +86,7 @@
 <FormModal size="small" title={$t('set_profile_picture')} {onClose} {onSubmit}>
   <div class="flex place-items-center items-center justify-center">
     <div
+      bind:this={cropContainer}
       class="relative flex aspect-square w-62.5 overflow-hidden rounded-full border-4 border-immich-primary bg-immich-dark-primary dark:border-immich-dark-primary dark:bg-immich-primary"
     >
       <PhotoViewer bind:element={imgElement} cursor={{ current: asset }} />

@@ -32,6 +32,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
+import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -307,7 +308,6 @@ export class MetadataService extends BaseService {
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
     const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
       this.assetRepository.update({
         id: asset.id,
         duration: this.getDuration(exifTags),
@@ -322,6 +322,7 @@ export class MetadataService extends BaseService {
       }),
     ];
 
+    await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
     await this.applyTagList(asset);
 
     if (this.isMotionPhoto(asset, exifTags)) {
@@ -431,14 +432,16 @@ export class MetadataService extends BaseService {
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, tags } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
       {
         description: asset.exifInfo.description,
-        dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
+        // the kysely type is wrong here; fixed in 0.28.3
+        dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
         rating: asset.exifInfo.rating,
         tags: asset.exifInfo.tags,
+        timeZone: asset.exifInfo.timeZone,
       },
       lockedProperties,
     );
@@ -447,7 +450,7 @@ export class MetadataService extends BaseService {
       <Tags>{
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: dateTimeOriginal ? String(dateTimeOriginal) : undefined,
+        DateTimeOriginal: mergeTimeZone(dateTimeOriginal, timeZone)?.toISO(),
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,

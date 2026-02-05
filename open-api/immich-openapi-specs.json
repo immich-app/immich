@@ -1618,7 +1618,7 @@
             "name": "shared",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = only own, undefined = all",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
             "schema": {
               "type": "boolean"
             }
@@ -15057,7 +15057,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.5.2",
+    "version": "2.5.3",
     "contact": {}
   },
   "tags": [
@@ -15760,7 +15760,7 @@
             "type": "string"
           },
           "duplicateId": {
-            "description": "Duplicate asset ID",
+            "description": "Duplicate ID",
             "nullable": true,
             "type": "string"
           },
@@ -19038,6 +19038,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -19128,6 +19129,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           },
           "readAt": {
@@ -25067,6 +25069,12 @@
           },
           "password": {
             "description": "User password",
+            "type": "string"
+          },
+          "pinCode": {
+            "description": "PIN code",
+            "example": "123456",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {

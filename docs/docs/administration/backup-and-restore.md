@@ -140,7 +140,8 @@ For advanced users or automated recovery scenarios, you can restore a database b
 
 ```bash title='Backup'
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> | gzip > "/path/to/backup/dump.sql.gz"
+# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.
+docker exec -t immich_postgres pg_dump --clean --if-exists --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME> | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
 ```bash title='Restore'
@@ -153,9 +154,10 @@ docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
 # Check the database user if you deviated from the default
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
+# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.
 gunzip --stdout "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --dbname=postgres --username=<DB_USERNAME>  # Restore Backup
+| docker exec -i immich_postgres psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME> --single-transaction --set ON_ERROR_STOP=on  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
@@ -164,7 +166,8 @@ docker compose up -d            # Start remainder of Immich apps
 
 ```powershell title='Backup'
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
-[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME>))
+# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.
+[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dump --clean --if-exists --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>))
 ```
 
 ```powershell title='Restore'
@@ -179,8 +182,9 @@ sleep 10                                          # Wait for Postgres server to 
 docker exec -it immich_postgres bash              # Enter the Docker shell and run the following command
 # If your backup ends in `.gz`, replace `cat` with `gunzip --stdout`
 # Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
+# Replace <DB_DATABASE_NAME> with the database name - usually immich unless you have changed it.
 
-cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=postgres --username=<DB_USERNAME>
+cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>  --single-transaction --set ON_ERROR_STOP=on
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
@@ -188,12 +192,20 @@ docker compose up -d                              # Start remainder of Immich ap
   </TabItem>
 </Tabs>
 
+:::warning
+The backup and restore process changed in v2.5.0, if you have a backup created with an older version of Immich, use the documentation version selector to find manual restore instructions for your backup.
+:::
+
 :::note
 For the database restore to proceed properly, it requires a completely fresh install (i.e., the Immich server has never run since creating the Docker containers). If the Immich app has run, you may encounter Postgres conflicts (relation already exists, violated foreign key constraints, etc.). In this case, delete the `DB_DATA_LOCATION` folder to reset the database.
 :::
 
 :::tip
 Some deployment methods make it difficult to start the database without also starting the server. In these cases, set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This prevents the server from running migrations that interfere with the restore process. Remove this variable and restart services after the database is restored.
+:::
+
+:::tip
+The provided restore process ensures your database is never in a broken state by committing all changes in one transaction. This may be undesirable behaviour in some circumstances, you can disable it by removing `--single-transaction --set ON_ERROR_STOP=on` from the command.
 :::
 
 ## Filesystem
