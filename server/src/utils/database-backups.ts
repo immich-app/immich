@@ -98,14 +98,7 @@ export async function buildPostgresLaunchArguments(
   } else {
     databaseUsername = databaseConfig.username;
 
-    args.push(
-      '--username',
-      databaseConfig.username,
-      '--host',
-      databaseConfig.host,
-      '--port',
-      databaseConfig.port.toString(),
-    );
+    args.push('--username', databaseUsername, '--host', databaseConfig.host, '--port', databaseConfig.port.toString());
 
     switch (bin) {
       case 'pg_dumpall': {
