@@ -22,7 +22,6 @@ import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.da
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -491,7 +490,7 @@ class DriftSearchPage extends HookConsumerWidget {
       TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
-    List<SearchType> _getAvailableSearchTypes() {
+    List<SearchType> getAvailableSearchTypes() {
       if (availableSearchTypes.value != null) {
         return availableSearchTypes.value!;
       }
@@ -500,10 +499,10 @@ class DriftSearchPage extends HookConsumerWidget {
       
       final List<SearchType> available = [SearchType.places];
 
-      if (features?.smartSearch ?? false) {
+      if (features.smartSearch) {
         available.add(SearchType.smart);
       }
-      if (features?.ocr ?? false) {
+      if (features.ocr) {
         available.add(SearchType.ocr);
       }
 
@@ -540,7 +539,7 @@ class DriftSearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                if (_getAvailableSearchTypes().contains(SearchType.smart)) ...{
+                if (getAvailableSearchTypes().contains(SearchType.smart)) ...{
                   MenuItemButton(
                     child: ListTile(
                       leading: const Icon(Icons.image_search_rounded),
@@ -596,7 +595,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
                 ),
-                if (_getAvailableSearchTypes().contains(SearchType.ocr)) ...{
+                if (getAvailableSearchTypes().contains(SearchType.ocr)) ...{
                   MenuItemButton(
                     child: ListTile(
                       leading: const Icon(Icons.document_scanner_outlined),

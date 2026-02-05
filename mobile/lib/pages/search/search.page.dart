@@ -418,26 +418,23 @@ class SearchPage extends HookConsumerWidget {
       TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
-    List<SearchType> _getAvailableSearchTypes() {
+    List<SearchType> getAvailableSearchTypes() {
       if (availableSearchTypes.value != null) {
         return availableSearchTypes.value!;
       }
       
-      final serverConfig = ref.watch(serverInfoProvider);
+      final serverInfo = ref.watch(serverInfoProvider);
       final List<SearchType> available = [SearchType.places];
       
-      final result = serverConfig.whenData((config) {
-        if (config?.serverFeatures.smartSearch ?? false) {
-          available.add(SearchType.smart);
-        }
-        if (config?.serverFeatures.ocr ?? false) {
-          available.add(SearchType.ocr);
-        }
-        return available;
-      }).value ?? available;
+      if (serverInfo.serverFeatures.smartSearch) {
+        available.add(SearchType.smart);
+      }
+      if (serverInfo.serverFeatures.ocr) {
+        available.add(SearchType.ocr);
+      }
       
-      availableSearchTypes.value = result;
-      return result;
+      availableSearchTypes.value = available;
+      return available;
     }
 
     return Scaffold(
@@ -469,7 +466,7 @@ class SearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                if (_getAvailableSearchTypes().contains(SearchType.smart)) ...{
+                if (getAvailableSearchTypes().contains(SearchType.smart)) ...{
                   MenuItemButton(
                     child: ListTile(
                       leading: const Icon(Icons.image_search_rounded),
@@ -525,7 +522,7 @@ class SearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.tr();
                   },
                 ),
-                if (_getAvailableSearchTypes().contains(SearchType.ocr)) ...{
+                if (getAvailableSearchTypes().contains(SearchType.ocr)) ...{
                   MenuItemButton(
                     child: ListTile(
                       leading: const Icon(Icons.document_scanner_outlined),
