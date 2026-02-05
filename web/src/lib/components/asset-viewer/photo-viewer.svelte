@@ -55,13 +55,10 @@
 
   let loader = $state<HTMLImageElement>();
 
-  assetViewerManager.zoomState = {
-    currentRotation: 0,
-    currentZoom: 1,
-    enable: true,
-    currentPositionX: 0,
-    currentPositionY: 0,
-  };
+  $effect.pre(() => {
+    void asset.id;
+    untrack(() => assetViewerManager.resetZoomState());
+  });
 
   onDestroy(() => {
     $boundingBoxesArray = [];
