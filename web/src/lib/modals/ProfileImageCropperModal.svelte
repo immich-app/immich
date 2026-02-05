@@ -59,7 +59,7 @@
     try {
       // Get the container dimensions (which is always square due to aspect-square class)
       const containerSize = cropContainer.offsetWidth;
-      
+
       // Capture the crop container which maintains 1:1 aspect ratio
       const blob = await domtoimage.toBlob(cropContainer, {
         width: containerSize,
