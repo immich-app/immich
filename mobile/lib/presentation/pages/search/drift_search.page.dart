@@ -45,7 +45,6 @@ class DriftSearchPage extends HookConsumerWidget {
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
     final availableSearchTypes = useState<List<SearchType>?>(null);
-    final features = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},

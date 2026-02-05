@@ -36,9 +36,8 @@ class SearchPage extends HookConsumerWidget {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
     final searchHintText = useState<String>('sunrise_on_the_beach'.tr());
     final textSearchController = useTextEditingController();
-    final availableSearchTypes = useState<List<SearchType>?>
-(null);
-    
+    final availableSearchTypes = useState<List<SearchType>?>(null);
+
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: prefilter?.people ?? {},

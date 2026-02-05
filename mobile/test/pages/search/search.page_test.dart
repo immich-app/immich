@@ -1,4 +1,3 @@
-@Skip('currently failing due to mock HTTP client to download ISAR binaries')
 @Tags(['pages'])
 library;
 
