@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
-import { AssetFace, AssetFile, Exif, Person, Stack, Tag, User } from 'src/database';
+import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
@@ -202,29 +202,21 @@ const peopleWithFaces = (
     return [];
   }
 
-  const peopleFaces: Map<Person, AssetFaceWithoutPersonResponseDto[]> = new Map();
+  const peopleFaces: Map<string, PersonWithFacesResponseDto> = new Map();
 
   for (const face of faces) {
     if (!face.person) {
       continue;
     }
 
-    if (!peopleFaces.has(face.person)) {
-      peopleFaces.set(face.person, []);
+    if (!peopleFaces.has(face.person.id)) {
+      peopleFaces.set(face.person.id, { ...mapPerson(face.person), faces: [] });
     }
-
-    peopleFaces.get(face.person)!.push(mapFacesWithoutPerson(face, edits, assetDimensions));
+    const mappedFace = mapFacesWithoutPerson(face, edits, assetDimensions);
+    peopleFaces.get(face.person.id)!.faces.push(mappedFace);
   }
 
-  const result: PersonWithFacesResponseDto[] = [];
-  for (const [person, faceDtos] of peopleFaces.entries()) {
-    result.push({
-      ...mapPerson(person),
-      faces: faceDtos,
-    });
-  }
-
-  return result;
+  return [...peopleFaces.values()];
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {
