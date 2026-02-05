@@ -76,25 +76,18 @@ export class MediaService extends BaseService {
       jobs = [];
     };
 
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
-      const assetFiles = getAssetFiles(asset.files);
+    const fullsizeEnabled = config.image.fullsize.enabled;
+    for await (const asset of this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled })) {
+      const { previewFile, thumbnailFile, fullsizeFile, editedPreviewFile, editedThumbnailFile, editedFullsizeFile } =
+        getAssetFiles(asset.files);
 
-      if (
-        !assetFiles.previewFile ||
-        !assetFiles.thumbnailFile ||
-        (config.image.fullsize.enabled && !assetFiles.fullsizeFile) ||
-        !asset.thumbhash ||
-        force
-      ) {
+      if (force || !previewFile || !thumbnailFile || !asset.thumbhash || (fullsizeEnabled && !fullsizeFile)) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
       if (
         asset.edits.length > 0 &&
-        (!assetFiles.editedPreviewFile ||
-          !assetFiles.editedThumbnailFile ||
-          (config.image.fullsize.enabled && !assetFiles.editedFullsizeFile) ||
-          force)
+        (force || !editedPreviewFile || !editedThumbnailFile || (fullsizeEnabled && !editedFullsizeFile))
       ) {
         jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
       }
