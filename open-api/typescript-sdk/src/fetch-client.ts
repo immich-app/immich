@@ -517,6 +517,8 @@ export type AssetFaceWithoutPersonResponseDto = {
     sourceType?: SourceType;
 };
 export type PersonWithFacesResponseDto = {
+    /** Number of assets with this person */
+    assetCount?: number;
     /** Person date of birth */
     birthDate: string | null;
     /** Person color (hex) */
@@ -1163,6 +1165,8 @@ export type DuplicateResponseDto = {
     duplicateId: string;
 };
 export type PersonResponseDto = {
+    /** Number of assets with this person */
+    assetCount?: number;
     /** Person date of birth */
     birthDate: string | null;
     /** Person color (hex) */

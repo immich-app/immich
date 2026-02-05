@@ -19686,6 +19686,21 @@
       },
       "PersonResponseDto": {
         "properties": {
+          "assetCount": {
+            "description": "Number of assets with this person",
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1.127.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
           "birthDate": {
             "description": "Person date of birth",
             "format": "date",
@@ -19811,6 +19826,21 @@
       },
       "PersonWithFacesResponseDto": {
         "properties": {
+          "assetCount": {
+            "description": "Number of assets with this person",
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1.127.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
           "birthDate": {
             "description": "Person date of birth",
             "format": "date",

@@ -1,10 +1,10 @@
 <script lang="ts">
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { type PersonResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
+  import { mdiSwapVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import FaceThumbnail from './face-thumbnail.svelte';
-  import { mdiSwapVertical } from '@mdi/js';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     screenHeight: number;

@@ -256,6 +256,7 @@ export type Person = {
   faceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
+  assetCount?: number;
 };
 
 export type AssetFace = {
