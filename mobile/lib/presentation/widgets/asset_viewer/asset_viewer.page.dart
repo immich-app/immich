@@ -165,7 +165,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onScroll() {
     setState(() {
-      _assetDetailsOpacity = (_scrollController.offset / 50).clamp(0.0, 1.0);
+      // _assetDetailsOpacity = (_scrollController.offset / 50).clamp(0.0, 1.0);
+      _assetDetailsOpacity = _scrollController.offset > 10 ? 1 : 0;
+
+      if (_assetDetailsOpacity == 0) {
+        ref.read(assetViewerProvider.notifier).setControls(true);
+      } else {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      }
     });
   }
 
@@ -706,12 +713,26 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final imageHeight = 200.0; // Your image's height
+            final viewportWidth = constraints.maxWidth;
             final viewportHeight = constraints.maxHeight;
 
+            // Calculate image display height from asset dimensions
+            final asset = ref.read(currentAssetNotifier);
+            final assetWidth = asset?.width;
+            final assetHeight = asset?.height;
+
+            // should probably get this value from the actual size of the image
+            // rather than calculating it. It could lead to very slight
+            // misalignments.
+            double imageHeight = viewportHeight;
+            if (assetWidth != null && assetHeight != null && assetWidth > 0 && assetHeight > 0) {
+              final aspectRatio = assetWidth / assetHeight;
+              imageHeight = math.min(viewportWidth / aspectRatio, viewportHeight);
+            }
+
             // Calculate padding to center the image in the viewport
-            final topPadding = (viewportHeight - imageHeight) / 2;
-            final snapOffset = math.min(topPadding + (imageHeight / 2), viewportHeight / 3);
+            final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
+            final snapOffset = math.min(topPadding + (imageHeight / 2), (viewportHeight / 3) * 2);
 
             return SingleChildScrollView(
               controller: _scrollController,
@@ -719,62 +740,62 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: topPadding),
-                  // Center(child: Image.asset('assets/immich-logo.png', height: imageHeight)),
                   SizedBox(
-                    height: viewportHeight,
-                    child: PhotoViewGallery.builder(
-                      gaplessPlayback: true,
-                      loadingBuilder: _placeholderBuilder,
-                      pageController: pageController,
-                      scrollPhysics: CurrentPlatform.isIOS
-                          ? const FastScrollPhysics() // Use bouncing physics for iOS
-                          : const FastClampingScrollPhysics(), // Use heavy physics for Android
-                      itemCount: totalAssets,
-                      onPageChanged: _onPageChanged,
-                      onPageBuild: _onPageBuild,
-                      scaleStateChangedCallback: _onScaleStateChanged,
-                      builder: _assetBuilder,
-                      backgroundDecoration: BoxDecoration(color: backgroundColor),
-                      enablePanAlways: true,
+                    height: imageHeight + topPadding,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Column(
+                          children: [
+                            SizedBox(height: topPadding),
+                            SizedBox(
+                              height: imageHeight,
+                              child: PhotoViewGallery.builder(
+                                gaplessPlayback: true,
+                                loadingBuilder: _placeholderBuilder,
+                                pageController: pageController,
+                                scrollPhysics: CurrentPlatform.isIOS
+                                    ? const FastScrollPhysics() // Use bouncing physics for iOS
+                                    : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                                itemCount: totalAssets,
+                                onPageChanged: _onPageChanged,
+                                onPageBuild: _onPageBuild,
+                                scaleStateChangedCallback: _onScaleStateChanged,
+                                builder: _assetBuilder,
+                                backgroundDecoration: BoxDecoration(color: backgroundColor),
+                                enablePanAlways: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Positioned(
+                          height: viewportHeight,
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: const IgnorePointer(
+                            // TODO: Sync with whether it's visible?
+                            // TODO: Hide on scroll
+                            ignoring: true,
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [AssetStackRow(), ViewerBottomBar()],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Opacity(
+                  AnimatedOpacity(
                     opacity: _assetDetailsOpacity,
+                    duration: kThemeAnimationDuration,
                     child: AssetDetails(minHeight: viewportHeight / 3 * 2),
                   ),
-
-                  // Stack(
-                  //   children: [
-                  //     PhotoViewGallery.builder(
-                  //       gaplessPlayback: true,
-                  //       loadingBuilder: _placeholderBuilder,
-                  //       pageController: pageController,
-                  //       scrollPhysics: CurrentPlatform.isIOS
-                  //           ? const FastScrollPhysics() // Use bouncing physics for iOS
-                  //           : const FastClampingScrollPhysics(), // Use heavy physics for Android
-                  //       itemCount: totalAssets,
-                  //       onPageChanged: _onPageChanged,
-                  //       onPageBuild: _onPageBuild,
-                  //       scaleStateChangedCallback: _onScaleStateChanged,
-                  //       builder: _assetBuilder,
-                  //       backgroundDecoration: BoxDecoration(color: backgroundColor),
-                  //       enablePanAlways: true,
-                  //     ),
-                  //     if (!showingBottomSheet)
-                  //       const Positioned(
-                  //         bottom: 0,
-                  //         left: 0,
-                  //         right: 0,
-                  //         child: Column(
-                  //           mainAxisSize: MainAxisSize.min,
-                  //           mainAxisAlignment: MainAxisAlignment.end,
-                  //           crossAxisAlignment: CrossAxisAlignment.stretch,
-                  //           children: [AssetStackRow(), ViewerBottomBar()],
-                  //         ),
-                  //       ),
-                  //   ],
-                  // ),
                 ],
               ),
             );
