@@ -96,7 +96,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       setState(() => isCertExist = false);
       showMessage("client_cert_remove_msg".tr());
     } catch (e) {
-      if (_isCancellation(e)) return;
+      if (_isCancellation(e)) {
+          return;
+      }
       _log.severe("Error removing client cert", e);
       showMessage("client_cert_invalid_msg".tr());
     }
