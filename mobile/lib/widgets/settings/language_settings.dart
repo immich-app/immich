@@ -86,13 +86,14 @@ class LanguageSettings extends HookConsumerWidget {
                     itemExtent: 64.0,
                     cacheExtent: 100,
                     itemBuilder: (context, index) {
-                      final countryName = filteredLocaleEntries.value[index].key;
+                      final localeNativeName = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
+
                       final bool isSelected = selectedLocale.value == localeValue;
 
                       return _LanguageItem(
                         key: ValueKey(localeValue.toString()),
-                        countryName: countryName,
+                        langName: localeNativeName,
                         localeValue: localeValue,
                         isSelected: isSelected,
                         onTap: () {
@@ -223,13 +224,13 @@ class _LanguageApplyButton extends StatelessWidget {
 class _LanguageItem extends StatelessWidget {
   const _LanguageItem({
     super.key,
-    required this.countryName,
+    required this.langName,
     required this.localeValue,
     required this.isSelected,
     required this.onTap,
   });
 
-  final String countryName;
+  final String langName;
   final Locale localeValue;
   final bool isSelected;
   final VoidCallback onTap;
@@ -246,7 +247,7 @@ class _LanguageItem extends StatelessWidget {
         ),
         child: ListTile(
           title: Text(
-            countryName,
+            langName,
             style: context.textTheme.titleSmall?.copyWith(
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,

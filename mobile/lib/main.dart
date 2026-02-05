@@ -258,7 +258,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         debugShowCheckedModeBanner: true,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
-        locale: context.locale,
+        locale: materialSupportedLanguages.contains(context.locale) ? context.locale : defaultLocale,
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
@@ -287,7 +287,8 @@ class MainWidget extends StatelessWidget {
       supportedLocales: locales.values.toList(),
       path: translationsPath,
       useFallbackTranslations: true,
-      fallbackLocale: locales.values.first,
+      useFallbackTranslationsForEmptyResources: true,
+      fallbackLocale: defaultLocale,
       assetLoader: const CodegenLoader(),
       child: const ImmichApp(),
     );

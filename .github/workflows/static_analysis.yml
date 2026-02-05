@@ -69,6 +69,11 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: './mobile/.nvmrc'
+
       - name: Install DCM
         uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:
@@ -77,7 +82,7 @@ jobs:
           working-directory: ./mobile
 
       - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart && node scripts/generate_locale_names.js ../i18n
 
       - name: Run Build Runner
         run: make build

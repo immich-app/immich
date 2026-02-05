@@ -1,8 +1,9 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { defaultLang, langs, Theme } from '$lib/constants';
+  import { defaultLang, Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import { lang } from '$lib/stores/preferences.store';
+  import { langs } from '$lib/utils/i18n';
   import { ThemeSwitcher } from '@immich/ui';
   import { get } from 'svelte/store';
 
