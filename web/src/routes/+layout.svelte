@@ -4,21 +4,19 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import type { ReleaseEvent } from '$lib/types';
-  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
+  import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import {
@@ -97,27 +95,6 @@
     }
   });
 
-  const onReleaseEvent = async (release: ReleaseEvent) => {
-    if (!release.isAvailable || !$user.isAdmin) {
-      return;
-    }
-
-    const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
-    const type = getReleaseType(release.serverVersion, release.releaseVersion);
-
-    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
-      return;
-    }
-
-    try {
-      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-      localStorage.setItem('appVersion', releaseVersion);
-    } catch (error) {
-      console.error('Error [VersionAnnouncementBox]:', error);
-    }
-  };
-
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
       return;
@@ -187,8 +164,8 @@
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
-<OnEvents {onReleaseEvent} />
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
+<VersionAnnouncement />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
