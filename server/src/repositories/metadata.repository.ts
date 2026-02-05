@@ -43,6 +43,18 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   Description?: StringOrNumber;
   ImageDescription?: StringOrNumber;
 
+  // Ultra HDR specific tags
+  HdrImageType?: string;
+  HDRGainmapOrientation?: string;
+  HDRGainmapVersion?: string;
+  RelativeLuminanceMin?: number;
+  RelativeLuminanceMax?: number;
+  ColorTonality?: string;
+  SceneType?: string;
+  Gainmap?: string;
+  GainmapImage?: string;
+  GainmapSettings?: string;
+
   // Extended properties for image regions, such as faces
   RegionInfo?: {
     AppliedToDimensions: {

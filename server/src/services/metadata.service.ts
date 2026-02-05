@@ -301,6 +301,11 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
 
       tags: tags.length > 0 ? tags : null,
+
+      // Ultra HDR
+      isUltraHdr: this.isUltraHdr(exifTags),
+      hdrImageType: exifTags.HdrImageType ?? null,
+      gainmapVersion: exifTags.HDRGainmapVersion ?? null,
     };
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
@@ -960,6 +965,45 @@ export class MetadataService extends BaseService {
       return null;
     }
     return tags.BurstID ?? tags.BurstUUID ?? tags.CameraBurstID ?? tags.MediaUniqueID ?? null;
+  }
+
+  /**
+   * Detect Ultra HDR images based on XMP metadata
+   * Ultra HDR images contain gainmap information stored in XMP tags
+   */
+  private isUltraHdr(tags: ImmichTags): boolean {
+    // Check for explicit Ultra HDR type
+    if (tags.HdrImageType) {
+      const hdrType = String(tags.HdrImageType).toLowerCase();
+      if (hdrType.includes('ultra') || hdrType.includes('hdr') || hdrType === '1') {
+        return true;
+      }
+    }
+
+    // Check for gainmap-related tags
+    if (tags.Gainmap || tags.GainmapImage || tags.GainmapSettings) {
+      return true;
+    }
+
+    // Check for HDR-specific XMP tags
+    if (tags.HDRGainmapVersion || tags.HDRGainmapOrientation) {
+      return true;
+    }
+
+    // Check for high bit depth with specific image type indicators
+    if (tags.ImagePixelDepth) {
+      const bitDepth = parseInt(String(tags.ImagePixelDepth).split(' ')[0]) || 0;
+      if (bitDepth >= 30 && (tags.RelativeLuminanceMin !== undefined || tags.RelativeLuminanceMax !== undefined)) {
+        return true;
+      }
+    }
+
+    // Check for ColorTonality which is often set in Ultra HDR
+    if (tags.ColorTonality && tags.SceneType) {
+      return true;
+    }
+
+    return false;
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {

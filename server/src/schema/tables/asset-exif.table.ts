@@ -96,6 +96,16 @@ export class AssetExifTable {
   @Column({ type: 'character varying', array: true, nullable: true })
   tags!: string[] | null;
 
+  // Ultra HDR / HDR image information
+  @Column({ type: 'boolean', nullable: true, default: false })
+  isUltraHdr!: boolean | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  hdrImageType!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  gainmapVersion!: string | null;
+
   @UpdateDateColumn({ default: () => 'clock_timestamp()' })
   updatedAt!: Generated<Date>;
 
