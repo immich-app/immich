@@ -533,6 +533,7 @@ export const factory = {
   assetEdit: assetEditFactory,
   tag: tagFactory,
   uuid: newUuid,
+  buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,
   responses: {
     badRequest: (message: any = null) => ({
