@@ -44,22 +44,26 @@ RUN git apply /tmp/*.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 
+ARG ORT_BUILD_FLAGS=""
 ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
+ENV CCACHE_DIR="/ccache"
 # Note: the `parallel` setting uses a substantial amount of RAM
-RUN ./build.sh \
+RUN --mount=type=cache,target=/ccache,id=rocm-ccache \
+    ./build.sh \
     --allow_running_as_root \
     --config Release \
     --build_wheel \
     --update \
     --build \
-    --parallel 21 \
+    --parallel 17 \
     --cmake_extra_defines \
     ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
     CMAKE_HIP_ARCHITECTURES="gfx900;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
     --skip_tests \
     --use_rocm \
     --rocm_home=/opt/rocm \
-    --compile_no_warning_as_error
+    --compile_no_warning_as_error \
+    $ORT_BUILD_FLAGS
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
