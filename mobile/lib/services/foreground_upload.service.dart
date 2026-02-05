@@ -340,6 +340,7 @@ class ForegroundUploadService {
       if (entity.isLivePhoto && livePhotoFile != null) {
         final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
 
+        final onProgress = callbacks.onProgress;
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
@@ -347,8 +348,9 @@ class ForegroundUploadService {
           fields: fields,
           httpClient: NetworkRepository.client,
           cancelToken: cancelToken,
-          onProgress: (bytes, totalBytes) =>
-              callbacks.onProgress?.call(asset.localId!, livePhotoTitle, bytes, totalBytes),
+          onProgress: onProgress != null
+              ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)
+              : null,
           logContext: 'livePhotoVideo[${asset.localId}]',
         );
 
@@ -377,6 +379,7 @@ class ForegroundUploadService {
         ]);
       }
 
+      final onProgress = callbacks.onProgress;
       final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
@@ -384,8 +387,9 @@ class ForegroundUploadService {
         fields: fields,
         httpClient: NetworkRepository.client,
         cancelToken: cancelToken,
-        onProgress: (bytes, totalBytes) =>
-            callbacks.onProgress?.call(asset.localId!, originalFileName, bytes, totalBytes),
+        onProgress: onProgress != null
+            ? (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes)
+            : null,
         logContext: 'asset[${asset.localId}]',
       );
 
@@ -453,7 +457,7 @@ class ForegroundUploadService {
         fields: fields,
         httpClient: httpClient,
         cancelToken: cancelToken,
-        onProgress: onProgress ?? (_, __) {},
+        onProgress: onProgress,
         logContext: 'shareIntent[$deviceAssetId]',
       );
     } catch (e) {

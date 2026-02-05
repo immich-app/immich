@@ -11,6 +11,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -237,7 +238,7 @@ class BackupService {
     bool isBackground = false,
     PMProgressHandler? pmProgressHandler,
     required void Function(SuccessUploadAsset result) onSuccess,
-    required void Function(int bytes, int totalBytes) onProgress, // TODO: use onProgress
+    required void Function(int bytes, int totalBytes) onProgress,
     required void Function(CurrentUploadAsset asset) onCurrentAsset,
     required void Function(ErrorUploadAsset error) onError,
   }) async {
@@ -313,10 +314,11 @@ class BackupService {
             filename: originalFileName,
           );
 
-          final baseRequest = AbortableMultipartRequest(
+          final baseRequest = ProgressMultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
             abortTrigger: cancelToken.future,
+            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
 
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
@@ -442,10 +444,9 @@ class BackupService {
       livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
     );
-    final livePhotoReq =
-        AbortableMultipartRequest(baseRequest.method, baseRequest.url, abortTrigger: cancelToken.future)
-          ..headers.addAll(baseRequest.headers)
-          ..fields.addAll(baseRequest.fields);
+    final livePhotoReq = ProgressMultipartRequest(baseRequest.method, baseRequest.url, abortTrigger: cancelToken.future)
+      ..headers.addAll(baseRequest.headers)
+      ..fields.addAll(baseRequest.fields);
 
     livePhotoReq.files.add(livePhotoRawUploadData);
 

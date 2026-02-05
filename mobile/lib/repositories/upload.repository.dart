@@ -94,14 +94,15 @@ class UploadRepository {
     required Map<String, String> fields,
     required Client httpClient,
     required Completer cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress, // TODO: use onProgress
+    void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    final baseRequest = AbortableMultipartRequest(
+    final baseRequest = ProgressMultipartRequest(
       'POST',
       Uri.parse('$savedEndpoint/assets'),
       abortTrigger: cancelToken.future,
+      onProgress: onProgress,
     );
 
     try {
@@ -148,6 +149,34 @@ class UploadRepository {
       logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
       return UploadResult.error(errorMessage: error.toString());
     }
+  }
+}
+
+class ProgressMultipartRequest extends MultipartRequest with Abortable {
+  ProgressMultipartRequest(super.method, super.url, {this.abortTrigger, this.onProgress});
+
+  @override
+  final Future<void>? abortTrigger;
+
+  final void Function(int bytes, int totalBytes)? onProgress;
+
+  @override
+  ByteStream finalize() {
+    final byteStream = super.finalize();
+    if (onProgress == null) return byteStream;
+
+    final total = contentLength;
+    var bytes = 0;
+    final stream = byteStream.transform(
+      StreamTransformer.fromHandlers(
+        handleData: (List<int> data, EventSink<List<int>> sink) {
+          bytes += data.length;
+          onProgress!(bytes, total);
+          sink.add(data);
+        },
+      ),
+    );
+    return ByteStream(stream);
   }
 }
 
