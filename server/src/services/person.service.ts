@@ -642,8 +642,8 @@ export class PersonService extends BaseService {
 
     const edits = asset.edits || [];
 
-    let p1: Point = { x: dto.x, y: dto.y };
-    let p2: Point = { x: dto.x + dto.width, y: dto.y + dto.height };
+    let topLeft: Point = { x: dto.x, y: dto.y };
+    let bottomRight: Point = { x: dto.x + dto.width, y: dto.y + dto.height };
 
     // the coordinates received from the client are based on the edited preview image
     // we need to convert them to the coordinate space of the original unedited image
@@ -654,16 +654,27 @@ export class PersonService extends BaseService {
 
       // convert from preview to full dimensions
       const scaleFactor = asset.width / dto.imageWidth;
-      p1 = { x: p1.x * scaleFactor, y: p1.y * scaleFactor };
-      p2 = { x: p2.x * scaleFactor, y: p2.y * scaleFactor };
+      topLeft = { x: topLeft.x * scaleFactor, y: topLeft.y * scaleFactor };
+      bottomRight = { x: bottomRight.x * scaleFactor, y: bottomRight.y * scaleFactor };
 
       const {
-        points: [invertedP1, invertedP2],
-      } = transformPoints([p1, p2], edits, { width: asset.width, height: asset.height }, { inverse: true });
+        points: [invertedTopLeft, invertedBottomRight],
+      } = transformPoints(
+        [topLeft, bottomRight],
+        edits,
+        { width: asset.width, height: asset.height },
+        { inverse: true },
+      );
 
-      // make sure p1 is top-left and p2 is bottom-right
-      p1 = { x: Math.min(invertedP1.x, invertedP2.x), y: Math.min(invertedP1.y, invertedP2.y) };
-      p2 = { x: Math.max(invertedP1.x, invertedP2.x), y: Math.max(invertedP1.y, invertedP2.y) };
+      // make sure topLeft is top-left and bottomRight is bottom-right
+      topLeft = {
+        x: Math.min(invertedTopLeft.x, invertedBottomRight.x),
+        y: Math.min(invertedTopLeft.y, invertedBottomRight.y),
+      };
+      bottomRight = {
+        x: Math.max(invertedTopLeft.x, invertedBottomRight.x),
+        y: Math.max(invertedTopLeft.y, invertedBottomRight.y),
+      };
 
       // now coordinates are in original image space
       dto.imageHeight = asset.exifInfo.exifImageHeight;
@@ -675,10 +686,10 @@ export class PersonService extends BaseService {
       assetId: dto.assetId,
       imageHeight: dto.imageHeight,
       imageWidth: dto.imageWidth,
-      boundingBoxX1: Math.round(p1.x),
-      boundingBoxX2: Math.round(p2.x),
-      boundingBoxY1: Math.round(p1.y),
-      boundingBoxY2: Math.round(p2.y),
+      boundingBoxX1: Math.round(topLeft.x),
+      boundingBoxX2: Math.round(bottomRight.x),
+      boundingBoxY1: Math.round(topLeft.y),
+      boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
   }

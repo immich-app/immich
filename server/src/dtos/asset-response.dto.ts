@@ -205,13 +205,15 @@ const peopleWithFaces = (
   const peopleFaces: Map<Person, AssetFaceWithoutPersonResponseDto[]> = new Map();
 
   for (const face of faces) {
-    if (face.person) {
-      if (!peopleFaces.has(face.person)) {
-        peopleFaces.set(face.person, []);
-      }
-
-      peopleFaces.get(face.person)!.push(mapFacesWithoutPerson(face, edits, assetDimensions));
+    if (!face.person) {
+      continue;
     }
+
+    if (!peopleFaces.has(face.person)) {
+      peopleFaces.set(face.person, []);
+    }
+
+    peopleFaces.get(face.person)!.push(mapFacesWithoutPerson(face, edits, assetDimensions));
   }
 
   const result: PersonWithFacesResponseDto[] = [];
