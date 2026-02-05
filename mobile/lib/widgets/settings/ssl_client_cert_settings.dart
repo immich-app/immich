@@ -43,10 +43,7 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: importCert, child: Text("client_cert_import".tr())),
-              ElevatedButton(
-                onPressed: !isCertExist ? null : removeCert,
-                child: Text("remove".tr()),
-              ),
+              ElevatedButton(onPressed: !isCertExist ? null : removeCert, child: Text("remove".tr())),
             ],
           ),
         ],

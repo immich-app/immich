@@ -444,8 +444,8 @@ class BackupService {
     );
     final livePhotoReq =
         AbortableMultipartRequest(baseRequest.method, baseRequest.url, abortTrigger: cancelToken.future)
-      ..headers.addAll(baseRequest.headers)
-      ..fields.addAll(baseRequest.fields);
+          ..headers.addAll(baseRequest.headers)
+          ..fields.addAll(baseRequest.fields);
 
     livePhotoReq.files.add(livePhotoRawUploadData);
 
