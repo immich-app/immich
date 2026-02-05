@@ -49,7 +49,7 @@ analyze:
 
 format:
 	@# Format Dart files, ignoring exit code when files were changed
-	dart format --set-exit-if-changed $(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \)) || true
+	dart format --set-exit-if-changed $$(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \)) || true
 
 test:
 	flutter test
