@@ -5,12 +5,11 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import DuplicateSettingsModal from '$lib/modals/DuplicateSettingsModal.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { duplicateSettings, locale } from '$lib/stores/preferences.store';
+  import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
@@ -19,7 +18,6 @@
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
-    mdiCogOutline,
     mdiInformationOutline,
     mdiKeyboard,
     mdiPageFirst,
@@ -109,7 +107,6 @@
         const response = await resolveDuplicates({
           duplicateResolveDto: {
             groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }],
-            settings: duplicateSettings.current,
           },
         });
 
@@ -165,7 +162,6 @@
                 trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
               };
             }),
-            settings: duplicateSettings.current,
           },
         });
 
@@ -263,15 +259,6 @@
         title={$t('show_keyboard_shortcuts')}
         onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
         aria-label={$t('show_keyboard_shortcuts')}
-      />
-      <IconButton
-        shape="round"
-        variant="ghost"
-        color="secondary"
-        icon={mdiCogOutline}
-        title={$t('settings')}
-        onclick={() => modalManager.show(DuplicateSettingsModal)}
-        aria-label={$t('settings')}
       />
     </HStack>
   {/snippet}

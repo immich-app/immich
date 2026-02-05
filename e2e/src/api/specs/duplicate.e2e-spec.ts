@@ -313,7 +313,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncFavorites: true },
         });
 
       expect(status).toBe(200);
@@ -343,7 +342,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncVisibility: true },
         });
 
       expect(status).toBe(200);
@@ -376,7 +374,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncRating: true },
         });
 
       expect(status).toBe(200);
@@ -409,7 +406,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncDescription: true },
         });
 
       expect(status).toBe(200);
@@ -442,7 +438,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncLocation: true },
         });
 
       expect(status).toBe(200);
@@ -480,7 +475,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncAlbums: true },
         });
 
       expect(status).toBe(200);
@@ -528,7 +522,6 @@ describe('/duplicates', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({
           groups: [{ duplicateId, keepAssetIds: [asset1.id], trashAssetIds: [asset2.id] }],
-          settings: { syncTags: true },
         });
 
       expect(status).toBe(200);

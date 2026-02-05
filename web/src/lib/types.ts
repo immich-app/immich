@@ -41,12 +41,3 @@ export enum OnboardingRole {
   USER = 'user',
 }
 
-export type DuplicateSettings = {
-  syncAlbums: boolean;
-  syncVisibility: boolean;
-  syncFavorites: boolean;
-  syncRating: boolean;
-  syncDescription: boolean;
-  syncLocation: boolean;
-  syncTags: boolean;
-};

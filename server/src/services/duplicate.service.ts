@@ -4,12 +4,7 @@ import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  DuplicateResolveDto,
-  DuplicateResolveGroupDto,
-  DuplicateResponseDto,
-  DuplicateSyncSettingsDto,
-} from 'src/dtos/duplicate.dto';
+import { DuplicateResolveDto, DuplicateResolveGroupDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
@@ -103,7 +98,7 @@ export class DuplicateService extends BaseService {
 
     for (const group of dto.groups) {
       try {
-        results.push(await this.resolveGroup(auth, group, dto.settings || {}));
+        results.push(await this.resolveGroup(auth, group));
       } catch (error: Error | any) {
         this.logger.error(`Error resolving duplicate group ${group.duplicateId}: ${error}`, error?.stack);
         results.push({ id: group.duplicateId, success: false, error: BulkIdErrorReason.UNKNOWN });
@@ -113,11 +108,7 @@ export class DuplicateService extends BaseService {
     return results;
   }
 
-  private async resolveGroup(
-    auth: AuthDto,
-    group: DuplicateResolveGroupDto,
-    settings: DuplicateSyncSettingsDto,
-  ): Promise<BulkIdResponseDto> {
+  private async resolveGroup(auth: AuthDto, group: DuplicateResolveGroupDto): Promise<BulkIdResponseDto> {
     const { duplicateId, keepAssetIds, trashAssetIds } = group;
 
     const duplicateGroup = await this.duplicateRepository.get(duplicateId);
@@ -163,13 +154,10 @@ export class DuplicateService extends BaseService {
       }
     }
 
-    const assetAlbumMap = settings.syncAlbums
-      ? await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds])
-      : new Map<string, string[]>();
+    const assetAlbumMap = await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds]);
 
     const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
       duplicateGroup.assets,
-      settings,
       assetAlbumMap,
     );
 
@@ -245,11 +233,7 @@ export class DuplicateService extends BaseService {
     return { id: duplicateId, success: true };
   }
 
-  private getSyncMergeResult(
-    assets: MapAsset[],
-    settings: DuplicateSyncSettingsDto,
-    assetAlbumMap: Map<string, string[]> = new Map(),
-  ): ResolveRequest {
+  private getSyncMergeResult(assets: MapAsset[], assetAlbumMap: Map<string, string[]> = new Map()): ResolveRequest {
     const response: ResolveRequest = {
       mergedAlbumIds: [],
       mergedTagIds: [],
@@ -258,67 +242,53 @@ export class DuplicateService extends BaseService {
       exifUpdate: {},
     };
 
-    if (settings.syncFavorites) {
-      response.assetUpdate.isFavorite = assets.some((asset) => asset.isFavorite);
+    response.assetUpdate.isFavorite = assets.some((asset) => asset.isFavorite);
+
+    const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
+    let visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
+    if (!visibility && assets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
+      visibility = AssetVisibility.Hidden;
+    }
+    if (visibility) {
+      response.assetUpdate.visibility = visibility;
     }
 
-    if (settings.syncVisibility) {
-      const visibilityOrder = [AssetVisibility.Locked, AssetVisibility.Archive, AssetVisibility.Timeline];
-      let visibility = visibilityOrder.find((level) => assets.some((asset) => asset.visibility === level));
-      if (!visibility && assets.some((asset) => asset.visibility === AssetVisibility.Hidden)) {
-        visibility = AssetVisibility.Hidden;
-      }
-      if (visibility) {
-        response.assetUpdate.visibility = visibility;
+    let rating = 0;
+    for (const asset of assets) {
+      const assetRating = asset.exifInfo?.rating ?? 0;
+      if (assetRating > rating) {
+        rating = assetRating;
       }
     }
+    response.exifUpdate.rating = rating;
 
-    if (settings.syncRating) {
-      let rating = 0;
-      for (const asset of assets) {
-        const assetRating = asset.exifInfo?.rating ?? 0;
-        if (assetRating > rating) {
-          rating = assetRating;
-        }
-      }
-      response.exifUpdate.rating = rating;
+    const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
+    const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
+    if (description !== null) {
+      response.exifUpdate.description = description;
     }
 
-    if (settings.syncDescription) {
-      const descriptionLines = uniqueNonEmptyLines(assets.map((asset) => asset.exifInfo?.description));
-      const description = descriptionLines.length > 0 ? descriptionLines.join('\n') : null;
-      if (description !== null) {
-        response.exifUpdate.description = description;
-      }
+    const latitude = getUniqueCoordinate(assets, 'latitude');
+    const longitude = getUniqueCoordinate(assets, 'longitude');
+    if (latitude !== null && longitude !== null) {
+      response.exifUpdate.latitude = latitude;
+      response.exifUpdate.longitude = longitude;
     }
 
-    if (settings.syncLocation) {
-      const latitude = getUniqueCoordinate(assets, 'latitude');
-      const longitude = getUniqueCoordinate(assets, 'longitude');
-      if (latitude !== null && longitude !== null) {
-        response.exifUpdate.latitude = latitude;
-        response.exifUpdate.longitude = longitude;
+    const albumIdSet = new Set<string>();
+    for (const [, albumIds] of assetAlbumMap) {
+      for (const albumId of albumIds) {
+        albumIdSet.add(albumId);
       }
     }
+    response.mergedAlbumIds = [...albumIdSet];
 
-    if (settings.syncAlbums) {
-      const albumIdSet = new Set<string>();
-      for (const [, albumIds] of assetAlbumMap) {
-        for (const albumId of albumIds) {
-          albumIdSet.add(albumId);
-        }
-      }
-      response.mergedAlbumIds = [...albumIdSet];
-    }
-
-    if (settings.syncTags) {
-      const allTags = assets.flatMap((asset) => asset.tags ?? []);
-      const tagIds = [...new Set(allTags.map((tag) => tag.id).filter((id): id is string => !!id))];
-      const tagValues = [...new Set(allTags.map((tag) => tag.value).filter((v): v is string => !!v))];
-      if (tagIds.length > 0) {
-        response.mergedTagIds = tagIds;
-        response.mergedTagValues = tagValues;
-      }
+    const allTags = assets.flatMap((asset) => asset.tags ?? []);
+    const tagIds = [...new Set(allTags.map((tag) => tag.id).filter((id): id is string => !!id))];
+    const tagValues = [...new Set(allTags.map((tag) => tag.value).filter((v): v is string => !!v))];
+    if (tagIds.length > 0) {
+      response.mergedTagIds = tagIds;
+      response.mergedTagValues = tagValues;
     }
 
     return response;

@@ -5272,7 +5272,7 @@
     },
     "/duplicates/resolve": {
       "post": {
-        "description": "Resolve duplicate groups by synchronizing metadata across assets and optionally deleting/trashing duplicates.",
+        "description": "Resolve duplicate groups by synchronizing metadata across assets and deleting/trashing duplicates.",
         "operationId": "resolveDuplicates",
         "parameters": [],
         "requestBody": {
@@ -17768,14 +17768,6 @@
             },
             "minItems": 1,
             "type": "array"
-          },
-          "settings": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/DuplicateSyncSettingsDto"
-              }
-            ],
-            "description": "Settings for synchronization behavior"
           }
         },
         "required": [
@@ -17840,46 +17832,6 @@
           "duplicateId",
           "suggestedKeepAssetIds"
         ],
-        "type": "object"
-      },
-      "DuplicateSyncSettingsDto": {
-        "properties": {
-          "syncAlbums": {
-            "default": false,
-            "description": "Synchronize album membership across duplicate group",
-            "type": "boolean"
-          },
-          "syncDescription": {
-            "default": false,
-            "description": "Synchronize description across duplicate group",
-            "type": "boolean"
-          },
-          "syncFavorites": {
-            "default": false,
-            "description": "Synchronize favorite status across duplicate group",
-            "type": "boolean"
-          },
-          "syncLocation": {
-            "default": false,
-            "description": "Synchronize GPS location across duplicate group",
-            "type": "boolean"
-          },
-          "syncRating": {
-            "default": false,
-            "description": "Synchronize EXIF rating across duplicate group",
-            "type": "boolean"
-          },
-          "syncTags": {
-            "default": false,
-            "description": "Synchronize tags across duplicate group",
-            "type": "boolean"
-          },
-          "syncVisibility": {
-            "default": false,
-            "description": "Synchronize visibility (archive/timeline) across duplicate group",
-            "type": "boolean"
-          }
-        },
         "type": "object"
       },
       "EmailNotificationsResponse": {
