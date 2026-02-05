@@ -57,6 +57,7 @@ import UIKit
     RemoteImageApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: RemoteImageApiImpl())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
     ConnectivityApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ConnectivityApiImpl())
+    ViewIntentHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ViewIntentApiImpl())
   }
   
   public static func cancelPlugins(with engine: FlutterEngine) {

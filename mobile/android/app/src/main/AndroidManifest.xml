@@ -92,6 +92,22 @@
         <data android:mimeType="video/*" />
       </intent-filter>
 
+      <!-- Allow Immich to act as an image viewer -->
+      <intent-filter android:label="View in Immich">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <!-- Allow Immich to act as a video viewer -->
+      <intent-filter android:label="View in Immich">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:mimeType="video/*" />
+      </intent-filter>
+
       <!-- immich:// URL scheme handling -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
