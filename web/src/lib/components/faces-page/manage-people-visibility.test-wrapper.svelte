@@ -8,12 +8,13 @@
     totalPeopleCount: number;
     titleId?: string | undefined;
     onClose: () => void;
+    onUpdate: (people: PersonResponseDto[]) => void;
     loadNextPage: () => void;
   }
 
-  let { people, totalPeopleCount, titleId = undefined, onClose, loadNextPage }: Props = $props();
+  let props: Props = $props();
 </script>
 
 <TooltipProvider>
-  <ManagePeopleVisibility {people} {totalPeopleCount} {titleId} {onClose} {loadNextPage} />
+  <ManagePeopleVisibility {...props} />
 </TooltipProvider>

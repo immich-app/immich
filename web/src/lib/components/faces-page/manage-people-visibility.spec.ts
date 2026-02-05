@@ -12,6 +12,7 @@ describe('ManagePeopleVisibility component', () => {
 
   it('keeps toggled hidden state when loading more people', async () => {
     const onClose = vi.fn();
+    const onUpdate = vi.fn();
     const loadNextPage = vi.fn();
 
     const [personA, personB, personC] = [
@@ -25,6 +26,7 @@ describe('ManagePeopleVisibility component', () => {
         people: [personA, personB],
         totalPeopleCount: 3,
         onClose,
+        onUpdate,
         loadNextPage,
       },
     });
@@ -40,6 +42,7 @@ describe('ManagePeopleVisibility component', () => {
       people: [personA, personB, personC],
       totalPeopleCount: 3,
       onClose,
+      onUpdate,
       loadNextPage,
     });
 
@@ -51,6 +54,7 @@ describe('ManagePeopleVisibility component', () => {
 
   it('shows newly loaded hidden people as hidden', async () => {
     const onClose = vi.fn();
+    const onUpdate = vi.fn();
     const loadNextPage = vi.fn();
 
     const [personA, personB, personC] = [
@@ -64,6 +68,7 @@ describe('ManagePeopleVisibility component', () => {
         people: [personA, personB],
         totalPeopleCount: 3,
         onClose,
+        onUpdate,
         loadNextPage,
       },
     });
@@ -72,6 +77,7 @@ describe('ManagePeopleVisibility component', () => {
       people: [personA, personB, personC],
       totalPeopleCount: 3,
       onClose,
+      onUpdate,
       loadNextPage,
     });
 
