@@ -31,7 +31,7 @@ import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
-import { isAssetChecksumConstraint } from 'src/utils/database';
+
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -641,34 +641,31 @@ export class MetadataService extends BaseService {
       let isNewMotionAsset = false;
 
       if (!motionAsset) {
-        try {
-          const motionAssetId = this.cryptoRepository.randomUUID();
-          motionAsset = await this.assetRepository.create({
-            id: motionAssetId,
-            libraryId: asset.libraryId,
-            type: AssetType.Video,
-            fileCreatedAt: dates.dateTimeOriginal,
-            fileModifiedAt: stats.mtime,
-            localDateTime: dates.localDateTime,
-            checksum,
-            ownerId: asset.ownerId,
-            originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-            originalFileName: `${parse(asset.originalFileName).name}.mp4`,
-            visibility: AssetVisibility.Hidden,
-            deviceAssetId: 'NONE',
-            deviceId: 'NONE',
-          });
+        const motionAssetId = this.cryptoRepository.randomUUID();
+        const created = await this.assetRepository.create({
+          id: motionAssetId,
+          libraryId: asset.libraryId,
+          type: AssetType.Video,
+          fileCreatedAt: dates.dateTimeOriginal,
+          fileModifiedAt: stats.mtime,
+          localDateTime: dates.localDateTime,
+          checksum,
+          ownerId: asset.ownerId,
+          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+          originalFileName: `${parse(asset.originalFileName).name}.mp4`,
+          visibility: AssetVisibility.Hidden,
+          deviceAssetId: 'NONE',
+          deviceId: 'NONE',
+        });
 
+        if (created) {
+          motionAsset = created;
           isNewMotionAsset = true;
 
           if (!asset.isExternal) {
             await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
           }
-        } catch (error) {
-          if (!isAssetChecksumConstraint(error)) {
-            throw error;
-          }
-
+        } else {
           motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
           if (!motionAsset) {
             this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${asset.originalPath}`);
