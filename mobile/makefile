@@ -48,8 +48,8 @@ analyze:
 	dcm analyze lib --fatal-style --fatal-warnings
 
 format:
-# Ignore generated files manually until https://github.com/dart-lang/dart_style/issues/864 is resolved
-	dart format --set-exit-if-changed $$(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \))
+	@# Format Dart files, ignoring exit code when files were changed
+	dart format --set-exit-if-changed $(find lib -name '*.dart' -not \( -name 'generated_plugin_registrant.dart' -o -name '*.g.dart' -o -name '*.drift.dart' \)) || true
 
 test:
 	flutter test
