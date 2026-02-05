@@ -63,10 +63,7 @@ describe('TimelineManager', () => {
         { count: 3, timeBucket: '2024-01-01' },
       ]);
 
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => {
-        const key = timeBucket.includes('T') ? timeBucket : `${timeBucket}T00:00:00.000Z`;
-        return Promise.resolve(bucketAssetsResponse[key]);
-      });
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
       await tick();
     });
@@ -100,7 +97,7 @@ describe('TimelineManager', () => {
   describe('loadMonthGroup', () => {
     let timelineManager: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
-      '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+      '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
           fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
@@ -130,7 +127,6 @@ describe('TimelineManager', () => {
         return bucketAssetsResponse[timeBucket];
       });
       await timelineManager.updateViewport({ width: 1588, height: 0 });
-      await tick();
     });
 
     it('loads a month', async () => {
@@ -678,10 +674,7 @@ describe('TimelineManager', () => {
         { count: 3, timeBucket: '2024-01-01' },
       ]);
 
-      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => {
-        const key = timeBucket.includes('T') ? timeBucket : `${timeBucket}T00:00:00.000Z`;
-        return Promise.resolve(bucketAssetsResponse[key]);
-      });
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await timelineManager.updateViewport({ width: 1588, height: 0 });
     });
 
