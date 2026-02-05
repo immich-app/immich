@@ -80,7 +80,9 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
       setState(() => isCertExist = true);
       showMessage("client_cert_import_success_msg".tr());
     } catch (e) {
-      if (_isCancellation(e)) return;
+      if (_isCancellation(e)) {
+          return;
+      }
       _log.severe("Error importing client cert", e);
       showMessage("client_cert_invalid_msg".tr());
     }
