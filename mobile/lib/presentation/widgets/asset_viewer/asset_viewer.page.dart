@@ -16,13 +16,11 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -103,14 +101,9 @@ class AssetViewer extends ConsumerStatefulWidget {
   }
 }
 
-const double _kBottomSheetMinimumExtent = 0.4;
-const double _kBottomSheetSnapExtent = 0.67;
-
 class _AssetViewerState extends ConsumerState<AssetViewer> {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
   late PageController pageController;
-  late DraggableScrollableController bottomSheetController;
-  PersistentBottomSheetController? sheetCloseController;
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
@@ -123,7 +116,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
   bool assetReloadRequested = false;
-  double previousExtent = _kBottomSheetMinimumExtent;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
   int stackIndex = 0;
@@ -141,6 +133,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   final ScrollController _scrollController = ScrollController();
   double _assetDetailsOpacity = 0.0;
 
+  final _assetDetailsSnap = 5;
+
   @override
   void initState() {
     super.initState();
@@ -148,7 +142,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     pageController = PageController(initialPage: widget.initialIndex);
     _scrollController.addListener(_onScroll);
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
-    bottomSheetController = DraggableScrollableController();
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
@@ -180,7 +173,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void dispose() {
     _scrollController.dispose();
     pageController.dispose();
-    bottomSheetController.dispose();
     _cancelTimers();
     reloadSubscription?.cancel();
     _prevPreCacheStream?.removeListener(_dummyListener);
@@ -190,7 +182,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.dispose();
   }
 
-  bool get showingBottomSheet => ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
+  bool get showingBottomSheet => _scrollController.offset > 0;
 
   Color get backgroundColor {
     final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
@@ -203,9 +195,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
     _delayedOperations.clear();
   }
-
-  double _getVerticalOffsetForBottomSheet(double extent) =>
-      (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
 
   ImageStream _precacheImage(BaseAsset asset) {
     final provider = getFullImageProvider(asset, size: context.sizeData);
@@ -284,17 +273,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onPageBuild(PhotoViewControllerBase controller) {
-    viewController ??= controller;
-    if (showingBottomSheet && bottomSheetController.isAttached) {
-      final verticalOffset =
-          (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
-      controller.position = Offset(0, -verticalOffset);
-      // Apply the zoom effect when the bottom sheet is showing
-      controller.scale = (controller.scale ?? 1.0) + 0.01;
-    }
-  }
-
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
@@ -328,7 +306,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // Do not reset the state if the bottom sheet is showing
     if (showingBottomSheet) {
-      _snapBottomSheet();
       return;
     }
 
@@ -357,32 +334,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final delta = details.localPosition - dragDownPosition;
     hasDraggedDown ??= delta.dy > 0;
     if (!hasDraggedDown! || showingBottomSheet) {
-      _handleDragUp(ctx, delta);
       return;
     }
 
     _handleDragDown(ctx, delta);
   }
 
-  void _handleDragUp(BuildContext ctx, Offset delta) {
-    const double openThreshold = 50;
-
-    final position = initialPhotoViewState.position + Offset(0, delta.dy);
-    final distanceToOrigin = position.distance;
-
-    viewController?.updateMultiple(position: position);
-    // Moves the bottom sheet when the asset is being dragged up
-    if (showingBottomSheet && bottomSheetController.isAttached) {
-      final centre = (ctx.height * _kBottomSheetMinimumExtent);
-      bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
-    }
-
-    if (distanceToOrigin > openThreshold && !showingBottomSheet && !ref.read(readonlyModeProvider)) {
-      // _openBottomSheet(ctx);
-    }
-  }
-
   void _handleDragDown(BuildContext ctx, Offset delta) {
+    print("drag down");
     const double dragRatio = 0.2;
     const double popThreshold = 75;
 
@@ -409,48 +368,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  bool _onNotification(Notification delta) {
-    if (delta is DraggableScrollableNotification) {
-      _handleDraggableNotification(delta);
-    }
-
-    // Handle sheet snap manually so that the it snaps only at _kBottomSheetSnapExtent but not after
-    // the isSnapping guard is to prevent the notification from recursively handling the
-    // notification, eventually resulting in a heap overflow
-    if (!isSnapping && delta is ScrollEndNotification) {
-      _snapBottomSheet();
-    }
-    return false;
-  }
-
-  void _handleDraggableNotification(DraggableScrollableNotification delta) {
-    final currentExtent = delta.extent;
-    final isDraggingDown = currentExtent < previousExtent;
-    previousExtent = currentExtent;
-    // Closes the bottom sheet if the user is dragging down
-    if (isDraggingDown && delta.extent < 0.67) {
-      if (dragInProgress) {
-        blockGestures = true;
-      }
-      // Jump to a lower position before starting close animation to prevent glitch
-      if (bottomSheetController.isAttached) {
-        bottomSheetController.jumpTo(0.67);
-      }
-      sheetCloseController?.close();
-    }
-
-    // If the asset is being dragged down, we do not want to update the asset position again
-    if (dragInProgress) {
-      return;
-    }
-
-    final verticalOffset = _getVerticalOffsetForBottomSheet(delta.extent);
-    // Moves the asset when the bottom sheet is being dragged
-    if (verticalOffset > 0) {
-      viewController?.position = Offset(0, -verticalOffset);
-    }
-  }
-
   void _onEvent(Event event) {
     if (event is TimelineReloadEvent) {
       _onTimelineReloadEvent();
@@ -459,14 +376,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (event is ViewerReloadAssetEvent) {
       assetReloadRequested = true;
-      return;
-    }
-
-    if (event is ViewerOpenBottomSheetEvent) {
-      final extent = _kBottomSheetMinimumExtent + 0.3;
-      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode);
-      final offset = _getVerticalOffsetForBottomSheet(extent);
-      viewController?.position = Offset(0, -offset);
       return;
     }
   }
@@ -502,48 +411,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     setState(() {
       _onAssetChanged(pageController.page!.round());
-      sheetCloseController?.close();
     });
-  }
-
-  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
-    ref.read(assetViewerProvider.notifier).setBottomSheet(true);
-    previousExtent = _kBottomSheetMinimumExtent;
-    sheetCloseController = showBottomSheet(
-      context: ctx,
-      sheetAnimationStyle: const AnimationStyle(duration: Durations.medium2, reverseDuration: Durations.medium2),
-      constraints: const BoxConstraints(maxWidth: double.infinity),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.0))),
-      backgroundColor: ctx.colorScheme.surfaceContainerLowest,
-      builder: (_) {
-        return NotificationListener<Notification>(
-          onNotification: _onNotification,
-          child: activitiesMode
-              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent)
-              : AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
-        );
-      },
-    );
-    sheetCloseController?.closed.then((_) => _handleSheetClose());
-  }
-
-  void _handleSheetClose() {
-    viewController?.animateMultiple(position: Offset.zero);
-    viewController?.updateMultiple(scale: viewController?.initialScale);
-    ref.read(assetViewerProvider.notifier).setBottomSheet(false);
-    sheetCloseController = null;
-    shouldPopOnDrag = false;
-    hasDraggedDown = null;
-  }
-
-  void _snapBottomSheet() {
-    if (!bottomSheetController.isAttached ||
-        bottomSheetController.size > _kBottomSheetSnapExtent ||
-        bottomSheetController.size < 0.4) {
-      return;
-    }
-    isSnapping = true;
-    bottomSheetController.animateTo(_kBottomSheetSnapExtent, duration: Durations.short3, curve: Curves.easeOut);
   }
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
@@ -666,7 +534,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Widget build(BuildContext context) {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
-    ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
@@ -734,70 +601,54 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
             final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
             final snapOffset = math.min(topPadding + (imageHeight / 2), (viewportHeight / 3) * 2);
 
-            return SingleChildScrollView(
-              controller: _scrollController,
-              physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    height: imageHeight + topPadding,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(height: topPadding),
-                            SizedBox(
-                              height: imageHeight,
-                              child: PhotoViewGallery.builder(
-                                gaplessPlayback: true,
-                                loadingBuilder: _placeholderBuilder,
-                                pageController: pageController,
-                                scrollPhysics: CurrentPlatform.isIOS
-                                    ? const FastScrollPhysics() // Use bouncing physics for iOS
-                                    : const FastClampingScrollPhysics(), // Use heavy physics for Android
-                                itemCount: totalAssets,
-                                onPageChanged: _onPageChanged,
-                                onPageBuild: _onPageBuild,
-                                scaleStateChangedCallback: _onScaleStateChanged,
-                                builder: _assetBuilder,
-                                backgroundDecoration: BoxDecoration(color: backgroundColor),
-                                enablePanAlways: true,
-                              ),
-                            ),
-                          ],
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(height: topPadding),
+                      SizedBox(
+                        height: imageHeight,
+                        child: PhotoViewGallery.builder(
+                          gaplessPlayback: true,
+                          loadingBuilder: _placeholderBuilder,
+                          pageController: pageController,
+                          scrollPhysics: CurrentPlatform.isIOS
+                              ? const FastScrollPhysics() // Use bouncing physics for iOS
+                              : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                          itemCount: totalAssets,
+                          onPageChanged: _onPageChanged,
+                          scaleStateChangedCallback: _onScaleStateChanged,
+                          builder: _assetBuilder,
+                          backgroundDecoration: BoxDecoration(color: backgroundColor),
+                          enablePanAlways: true,
                         ),
-                        Positioned(
-                          height: viewportHeight,
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: const IgnorePointer(
-                            // TODO: Sync with whether it's visible?
-                            // TODO: Hide on scroll
-                            ignoring: true,
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [AssetStackRow(), ViewerBottomBar()],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      AnimatedOpacity(
+                        opacity: _assetDetailsOpacity,
+                        duration: kThemeAnimationDuration,
+                        child: AssetDetails(minHeight: viewportHeight / 3 * 2),
+                      ),
+                    ],
                   ),
-                  AnimatedOpacity(
-                    opacity: _assetDetailsOpacity,
-                    duration: kThemeAnimationDuration,
-                    child: AssetDetails(minHeight: viewportHeight / 3 * 2),
+                ),
+                Positioned(
+                  height: viewportHeight,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [AssetStackRow(), ViewerBottomBar()],
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
