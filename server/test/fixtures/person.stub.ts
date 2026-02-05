@@ -20,6 +20,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   hidden: Object.freeze({
     id: 'person-1',
@@ -36,6 +37,7 @@ export const personStub = {
     isHidden: true,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   withName: Object.freeze({
     id: 'person-1',
@@ -52,6 +54,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   withBirthDate: Object.freeze({
     id: 'person-1',
@@ -68,6 +71,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   noThumbnail: Object.freeze({
     id: 'person-1',
@@ -84,6 +88,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   newThumbnail: Object.freeze({
     id: 'person-1',
@@ -100,6 +105,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   primaryPerson: Object.freeze({
     id: 'person-1',
@@ -116,6 +122,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   mergePerson: Object.freeze({
     id: 'person-2',
@@ -132,6 +139,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   randomPerson: Object.freeze({
     id: 'person-3',
@@ -148,6 +156,7 @@ export const personStub = {
     isHidden: false,
     isFavorite: false,
     color: 'red',
+    assetCount: 0,
   }),
   isFavorite: Object.freeze({
     id: 'person-4',
@@ -164,6 +173,24 @@ export const personStub = {
     isHidden: false,
     isFavorite: true,
     color: 'red',
+    assetCount: 0,
+  }),
+  withAssetCount5: Object.freeze({
+    id: 'person-4',
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2021-01-01'),
+    updateId,
+    ownerId: userStub.admin.id,
+    name: 'Person 1',
+    birthDate: null,
+    thumbnailPath: '/path/to/thumbnail.jpg',
+    faces: [],
+    faceAssetId: 'assetFaceId',
+    faceAsset: null,
+    isHidden: false,
+    isFavorite: false,
+    color: 'red',
+    assetCount: 5,
   }),
 };
 
