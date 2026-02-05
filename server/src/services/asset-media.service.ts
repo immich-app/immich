@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { extname } from 'node:path';
+import Redis from 'ioredis';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset } from 'src/database';
@@ -53,8 +54,43 @@ export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
 }
 
+// Redis key prefix for upload rate tracking (used by autoscaler)
+const UPLOAD_COUNTER_KEY_PREFIX = 'immich:scaling:uploads:';
+const UPLOAD_COUNTER_TTL_SECONDS = 180; // 3 minutes (covers 2-min window + buffer)
+
 @Injectable()
 export class AssetMediaService extends BaseService {
+  private redis?: Redis;
+
+  /**
+   * Get Redis client for upload rate tracking (lazy initialized)
+   */
+  private async getRedis(): Promise<Redis> {
+    if (!this.redis) {
+      const { redis } = this.configRepository.getEnv();
+      this.redis = new Redis({ ...redis, lazyConnect: true });
+      await this.redis.connect();
+    }
+    return this.redis;
+  }
+
+  /**
+   * Increment upload counter for autoscaler rate-based scaling.
+   * Uses minute buckets with TTL for sliding window calculation.
+   */
+  private async trackUploadForScaling(): Promise<void> {
+    try {
+      const redis = await this.getRedis();
+      const bucket = Math.floor(Date.now() / 60000); // minute bucket
+      const key = `${UPLOAD_COUNTER_KEY_PREFIX}${bucket}`;
+      await redis.incr(key);
+      await redis.expire(key, UPLOAD_COUNTER_TTL_SECONDS);
+    } catch (error) {
+      // Non-critical - log and continue (don't fail upload due to scaling metrics)
+      this.logger.warn(`Failed to track upload for scaling: ${error}`);
+    }
+  }
+
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
     if (!checksum) {
       return;
@@ -160,6 +196,9 @@ export class AssetMediaService extends BaseService {
       const asset = await this.create(auth.user.id, dto, file, sidecarFile);
 
       await this.userRepository.updateUsage(auth.user.id, file.size);
+
+      // Track upload for autoscaler rate-based scaling
+      await this.trackUploadForScaling();
 
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
@@ -522,69 +561,160 @@ export class AssetMediaService extends BaseService {
   }
 
   private async create(ownerId: string, dto: AssetMediaCreateDto, file: UploadFile, sidecarFile?: UploadFile) {
-    // All DB operations are wrapped in a transaction for atomicity.
-    // If any operation fails, all changes are rolled back.
-    const asset = await this.databaseRepository.withTransaction(async (tx) => {
-      const newAsset = await this.assetRepository.create(
-        {
-          ownerId,
-          libraryId: null,
+    const assetId = this.cryptoRepository.randomUUID();
+    const localPath = file.originalPath;
 
-          checksum: file.checksum,
-          originalPath: file.originalPath,
+    // Step 1: Upload to S3 FIRST (S3 is source of truth)
+    // This ensures the file is durably stored before we create the DB record
+    let s3Key: string | undefined;
+    let s3Bucket: string | undefined;
+    let storageBackend = StorageBackend.Local;
+    let originalPathForDb = localPath;
 
-          deviceAssetId: dto.deviceAssetId,
-          deviceId: dto.deviceId,
+    const s3Enabled = await this.s3Manager.isS3EnabledForLocation(StorageLocationType.Originals);
+    if (s3Enabled) {
+      try {
+        const {
+          adapter: s3Adapter,
+          bucket,
+          storageClass,
+        } = await this.s3Manager.getConfigForLocation(StorageLocationType.Originals);
 
-          fileCreatedAt: dto.fileCreatedAt,
-          fileModifiedAt: dto.fileModifiedAt,
-          localDateTime: dto.fileCreatedAt,
+        // Generate S3 key
+        const rawExt = getFilenameExtension(localPath).replace('.', '') || 'bin';
+        const ext = rawExt.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'bin';
+        s3Key = `users/${ownerId}/${assetId}/original.${ext}`;
 
-          type: mimeTypes.assetType(file.originalPath),
-          isFavorite: dto.isFavorite,
-          duration: dto.duration || null,
-          visibility: dto.visibility ?? AssetVisibility.Timeline,
-          livePhotoVideoId: dto.livePhotoVideoId,
-          originalFileName: dto.filename || file.originalName,
-        },
-        tx,
-      );
+        this.logger.log(`Uploading asset ${assetId} to S3 synchronously: ${s3Key}`);
 
-      if (dto.metadata) {
-        await this.assetRepository.upsertMetadata(newAsset.id, dto.metadata, tx);
+        // Stream local file to S3
+        const { stream } = await this.storageRepository.createReadStream(localPath);
+        try {
+          await s3Adapter.writeStreamAsync(s3Key, stream, {
+            contentType: mimeTypes.lookup(localPath),
+            storageClass,
+          });
+        } finally {
+          stream.destroy?.();
+        }
+
+        // Verify upload succeeded by comparing sizes
+        const s3Stat = await s3Adapter.stat(s3Key);
+        if (s3Stat.size !== file.size) {
+          // Size mismatch - delete the corrupted S3 object and fall back to local
+          this.logger.error(`S3 upload size mismatch for ${assetId}: local=${file.size}, s3=${s3Stat.size}`);
+          try {
+            await s3Adapter.delete(s3Key);
+          } catch (deleteError) {
+            this.logger.warn(`Failed to delete invalid S3 upload at ${s3Key}`, deleteError);
+          }
+          throw new Error(`S3 upload verification failed: expected ${file.size} bytes, got ${s3Stat.size} bytes`);
+        }
+
+        // S3 upload succeeded - use S3 as storage backend
+        s3Bucket = bucket;
+        storageBackend = StorageBackend.S3;
+        originalPathForDb = s3Key; // Store S3 key as originalPath
+
+        this.logger.log(`Successfully uploaded asset ${assetId} to S3`);
+      } catch (error) {
+        // S3 upload failed - fall back to local storage
+        this.logger.warn(`S3 upload failed for ${assetId}, falling back to local storage: ${error}`);
+        s3Key = undefined;
+        s3Bucket = undefined;
+        storageBackend = StorageBackend.Local;
+        originalPathForDb = localPath;
       }
+    }
 
-      if (sidecarFile) {
-        await this.assetRepository.upsertFile(
+    // Step 2: Create DB record with S3 path (or local path as fallback)
+    const asset = await this.databaseRepository.withTransaction(async (tx) => {
+      try {
+        const newAsset = await this.assetRepository.create(
           {
-            assetId: newAsset.id,
-            path: sidecarFile.originalPath,
-            type: AssetFileType.Sidecar,
+            id: assetId,
+            ownerId,
+            libraryId: null,
+
+            checksum: file.checksum,
+            originalPath: originalPathForDb,
+
+            // S3 storage fields
+            storageBackend,
+            s3Bucket: s3Bucket ?? null,
+            s3Key: s3Key ?? null,
+
+            deviceAssetId: dto.deviceAssetId,
+            deviceId: dto.deviceId,
+
+            fileCreatedAt: dto.fileCreatedAt,
+            fileModifiedAt: dto.fileModifiedAt,
+            localDateTime: dto.fileCreatedAt,
+
+            type: mimeTypes.assetType(localPath),
+            isFavorite: dto.isFavorite,
+            duration: dto.duration || null,
+            visibility: dto.visibility ?? AssetVisibility.Timeline,
+            livePhotoVideoId: dto.livePhotoVideoId,
+            originalFileName: dto.filename || file.originalName,
           },
           tx,
         );
+
+        if (dto.metadata) {
+          await this.assetRepository.upsertMetadata(newAsset.id, dto.metadata, tx);
+        }
+
+        if (sidecarFile) {
+          await this.assetRepository.upsertFile(
+            {
+              assetId: newAsset.id,
+              path: sidecarFile.originalPath,
+              type: AssetFileType.Sidecar,
+            },
+            tx,
+          );
+        }
+
+        await this.assetRepository.upsertExif(
+          { assetId: newAsset.id, fileSizeInByte: file.size },
+          { lockedPropertiesBehavior: 'override' },
+          tx,
+        );
+
+        return newAsset;
+      } catch (error) {
+        // DB transaction failed - clean up S3 object if we uploaded one
+        if (s3Key && s3Bucket) {
+          this.logger.warn(`DB transaction failed for ${assetId}, cleaning up S3 object`);
+          try {
+            const s3Adapter = await this.s3Manager.getAdapterForBucket(s3Bucket);
+            await s3Adapter.delete(s3Key);
+          } catch (s3Error) {
+            this.logger.error(`Failed to clean up S3 object ${s3Key} in bucket ${s3Bucket} after DB failure`, s3Error);
+          }
+        }
+        throw error;
       }
-
-      await this.assetRepository.upsertExif(
-        { assetId: newAsset.id, fileSizeInByte: file.size },
-        { lockedPropertiesBehavior: 'override' },
-        tx,
-      );
-
-      return newAsset;
     });
 
     // FS operations happen AFTER the transaction commits successfully
     if (sidecarFile) {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    await this.storageRepository.utimes(localPath, new Date(), new Date(dto.fileModifiedAt));
 
-    // With machine-prefixed queues, jobs run on the same machine that received the upload.
-    // Files stay local until processing completes and S3Upload job runs.
-    // Events and jobs are queued AFTER the transaction commits
+    // Step 3: Queue jobs with LOCAL temp path for processing (machine affinity)
+    // Jobs use the local file while it exists; it will be cleaned up after all jobs complete
     await this.eventRepository.emit('AssetCreate', { asset });
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
+    await this.jobRepository.queue({
+      name: JobName.AssetExtractMetadata,
+      data: {
+        id: asset.id,
+        source: 'upload',
+        localPath, // Pass temp file path to jobs
+      },
+    });
 
     return asset;
   }
