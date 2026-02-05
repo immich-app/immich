@@ -451,21 +451,36 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onTimelineReloadEvent() {
-    totalAssets = ref.read(timelineServiceProvider).totalAssets;
+    final timelineService = ref.read(timelineServiceProvider);
+    totalAssets = timelineService.totalAssets;
+
     if (totalAssets == 0) {
       context.maybePop();
       return;
     }
 
+    var index = pageController.page?.round() ?? 0;
+    final currentAsset = ref.read(currentAssetNotifier);
+    if (currentAsset != null) {
+      final newIndex = timelineService.getIndex(currentAsset.heroTag);
+      if (newIndex != null && newIndex != index) {
+        index = newIndex;
+        pageController.jumpToPage(index);
+      }
+    }
+
+    if (index >= totalAssets) {
+      index = totalAssets - 1;
+      pageController.jumpToPage(index);
+    }
+
     if (assetReloadRequested) {
       assetReloadRequested = false;
-      _onAssetReloadEvent();
-      return;
+      _onAssetReloadEvent(index);
     }
   }
 
-  void _onAssetReloadEvent() async {
-    final index = pageController.page?.round() ?? 0;
+  void _onAssetReloadEvent(int index) async {
     final timelineService = ref.read(timelineServiceProvider);
     final newAsset = await timelineService.getAssetAsync(index);
 

@@ -27,7 +27,7 @@ class Thumbnail extends StatefulWidget {
     this.fit = BoxFit.cover,
     Size size = kThumbnailResolution,
     super.key,
-  }) : imageProvider = RemoteThumbProvider(assetId: remoteId, thumbhash: thumbhash),
+  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash),
        thumbhashProvider = null;
 
   Thumbnail.fromAsset({

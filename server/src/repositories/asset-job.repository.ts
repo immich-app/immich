@@ -57,8 +57,8 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [false], stream: true })
-  streamForThumbnailJob(force: boolean) {
+  @GenerateSql({ params: [{ force: false, fullsizeEnabled: true }], stream: true })
+  streamForThumbnailJob(options: { force: boolean | undefined; fullsizeEnabled: boolean }) {
     return this.db
       .selectFrom('asset')
       .select(['asset.id', 'asset.thumbhash'])
@@ -66,12 +66,12 @@ export class AssetJobRepository {
       .select(withEdits)
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .$if(!force, (qb) =>
+      .$if(!options.force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-          .where((eb) =>
-            eb.or([
+          .where((eb) => {
+            const conditions = [
               eb.not((eb) =>
                 eb.exists((qb) =>
                   qb
@@ -88,9 +88,25 @@ export class AssetJobRepository {
                     .where('asset_file.type', '=', AssetFileType.Thumbnail),
                 ),
               ),
-              eb('asset.thumbhash', 'is', null),
-            ]),
-          ),
+            ];
+
+            if (options.fullsizeEnabled) {
+              conditions.push(
+                eb.not((eb) =>
+                  eb.exists((qb) =>
+                    qb
+                      .selectFrom('asset_file')
+                      .whereRef('assetId', '=', 'asset.id')
+                      .where('asset_file.type', '=', AssetFileType.FullSize),
+                  ),
+                ),
+              );
+            }
+
+            conditions.push(eb('asset.thumbhash', 'is', null));
+
+            return eb.or(conditions);
+          }),
       )
       .stream();
   }

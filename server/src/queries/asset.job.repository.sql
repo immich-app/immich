@@ -132,6 +132,14 @@ where
         "assetId" = "asset"."id"
         and "asset_file"."type" = $3
     )
+    or not exists (
+      select
+      from
+        "asset_file"
+      where
+        "assetId" = "asset"."id"
+        and "asset_file"."type" = $4
+    )
     or "asset"."thumbhash" is null
   )
 
