@@ -37,77 +37,116 @@ class _ImmichUIShowcasePageState extends State<ImmichUIShowcasePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final imageHeight = 200.0; // Your image's height
-          final viewportHeight = constraints.maxHeight;
-
-          // Calculate padding to center the image in the viewport
-          final topPadding = (viewportHeight - imageHeight) / 2;
-          final snapOffset = topPadding + (imageHeight * 2 / 3);
-
-          return SingleChildScrollView(
-            controller: _scrollController,
-            physics: SnapToPartialPhysics(snapOffset: snapOffset),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: topPadding), // Push image to center
-                Center(child: Image.asset('assets/immich-logo.png', height: imageHeight)),
-                Opacity(
-                  opacity: _opacity,
-                  child: Container(
-                    constraints: BoxConstraints(minHeight: snapOffset + 100),
-                    color: Colors.blue,
-                    height: 100 + imageHeight * (1 / 3),
-                    child: const Text('Some content'),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+      body: StackedScrollView(
+        bottomPeekHeight: 100,
+        topChild: Container(
+          color: Colors.blue,
+          child: const Center(
+            child: Text('Top', style: TextStyle(color: Colors.white, fontSize: 32)),
+          ),
+        ),
+        bottomChild: Container(
+          height: 800,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -2))],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: const Text('Bottom sheet content'),
+        ),
       ),
     );
   }
 }
 
-class SnapToPartialPhysics extends ScrollPhysics {
-  final double snapOffset;
+class StackedScrollView extends StatefulWidget {
+  final Widget topChild;
+  final Widget bottomChild;
+  final double bottomPeekHeight;
 
-  const SnapToPartialPhysics({super.parent, required this.snapOffset});
-
-  @override
-  SnapToPartialPhysics applyTo(ScrollPhysics? ancestor) {
-    return SnapToPartialPhysics(parent: buildParent(ancestor), snapOffset: snapOffset);
-  }
+  const StackedScrollView({super.key, required this.topChild, required this.bottomChild, this.bottomPeekHeight = 80});
 
   @override
-  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
-    final tolerance = toleranceFor(position);
-
-    // If already at a snap point, let it settle naturally
-    if ((position.pixels - 0).abs() < tolerance.distance || (position.pixels - snapOffset).abs() < tolerance.distance) {
-      return super.createBallisticSimulation(position, velocity);
-    }
-
-    // Determine snap target based on position and velocity
-    double target;
-    if (velocity > 0) {
-      // Scrolling down
-      target = snapOffset;
-    } else if (velocity < 0) {
-      // Scrolling up
-      target = 0;
-    } else {
-      // No velocity, snap to nearest
-      target = position.pixels < snapOffset / 2 ? 0 : snapOffset;
-    }
-
-    return ScrollSpringSimulation(spring, position.pixels, target, velocity, tolerance: tolerance);
-  }
+  State<StackedScrollView> createState() => _StackedScrollViewState();
 }
 
+class _StackedScrollViewState extends State<StackedScrollView> with SingleTickerProviderStateMixin {
+  double _offset = 0;
+  late double _maxOffset;
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController.unbounded(vsync: this)..addListener(_onAnimate);
+  }
+
+  void _onAnimate() {
+    final clamped = _controller.value.clamp(0.0, _maxOffset);
+    if (clamped != _offset) {
+      setState(() => _offset = clamped);
+    }
+    // Stop the controller if we've hit a boundary
+    if (_controller.value <= 0 || _controller.value >= _maxOffset) {
+      _controller.stop();
+    }
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    _controller.stop();
+    setState(() {
+      _offset = (_offset - details.delta.dy).clamp(0.0, _maxOffset);
+    });
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    final velocity = -(details.primaryVelocity ?? 0);
+    final simulation = ClampingScrollSimulation(position: _offset, velocity: velocity);
+    _controller.animateWith(simulation);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewportHeight = constraints.maxHeight;
+        _maxOffset = viewportHeight - widget.bottomPeekHeight;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onVerticalDragUpdate: _onDragUpdate,
+          onVerticalDragEnd: _onDragEnd,
+          child: ClipRect(
+            child: SizedBox(
+              height: viewportHeight,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Top child — fills the screen, scrolls up
+                  Positioned(top: -_offset, left: 0, right: 0, height: viewportHeight, child: widget.topChild),
+                  // Bottom child — overlaps, peeks from bottom
+                  Positioned(
+                    top: viewportHeight - widget.bottomPeekHeight - _offset,
+                    left: 0,
+                    right: 0,
+                    child: widget.bottomChild,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 // class _ImmichUIShowcasePageState extends State<ImmichUIShowcasePage> {
 //   final ScrollController _scrollController = ScrollController();
 //   double _opacity = 0.0;

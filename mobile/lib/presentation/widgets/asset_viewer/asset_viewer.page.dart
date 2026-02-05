@@ -111,7 +111,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
-  bool isSnapping = false;
   bool blockGestures = false;
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
@@ -133,7 +132,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   final ScrollController _scrollController = ScrollController();
   double _assetDetailsOpacity = 0.0;
 
-  final _assetDetailsSnap = 5;
+  // final _assetDetailsSnap = 5;
 
   @override
   void initState() {
@@ -278,12 +277,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
   }
 
+  bool onScrollNotification(ScrollNotification notification) {
+    if (notification is ScrollStartNotification) {
+      // Drag started
+      print('Scroll/drag started');
+      // final dragDetails = notification.dragDetails;
+      // _onDragStart(_, notification.dragDetails, controller, scaleStateController)
+    } else if (notification is ScrollUpdateNotification) {
+      // Drag is ongoing
+      print('Scroll offset: ${notification.metrics.pixels}');
+    } else if (notification is ScrollEndNotification) {
+      // Drag ended
+      print('Scroll/drag ended');
+    }
+    return false; // return false to allow the notification to continue propagating
+  }
+
   void _onDragStart(
     _,
     DragStartDetails details,
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
+    print("photoview drag start");
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
@@ -560,6 +576,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       }
     });
 
+    // debugPaintSizeEnabled = true;
+
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
     // TODO: Add a custom scrum builder once the fix lands on stable
@@ -599,41 +617,54 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
             // Calculate padding to center the image in the viewport
             final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
-            final snapOffset = math.min(topPadding + (imageHeight / 2), (viewportHeight / 3) * 2);
+            final snapOffset = math.max(topPadding + (imageHeight / 2), viewportHeight / 3 * 2);
 
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                SingleChildScrollView(
-                  controller: _scrollController,
-                  physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(height: topPadding),
-                      SizedBox(
-                        height: imageHeight,
-                        child: PhotoViewGallery.builder(
-                          gaplessPlayback: true,
-                          loadingBuilder: _placeholderBuilder,
-                          pageController: pageController,
-                          scrollPhysics: CurrentPlatform.isIOS
-                              ? const FastScrollPhysics() // Use bouncing physics for iOS
-                              : const FastClampingScrollPhysics(), // Use heavy physics for Android
-                          itemCount: totalAssets,
-                          onPageChanged: _onPageChanged,
-                          scaleStateChangedCallback: _onScaleStateChanged,
-                          builder: _assetBuilder,
-                          backgroundDecoration: BoxDecoration(color: backgroundColor),
-                          enablePanAlways: true,
+                NotificationListener<ScrollNotification>(
+                  onNotification: onScrollNotification,
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Container(
+                        //   height: topPadding,
+                        //   decoration: const BoxDecoration(color: Colors.green),
+                        // ),
+                        SizedOverflowBox(
+                          size: Size(double.infinity, topPadding + imageHeight - (kMinInteractiveDimension / 2)),
+                          alignment: Alignment.topCenter,
+                          child: SizedBox(
+                            height: viewportHeight,
+                            child: PhotoViewGallery.builder(
+                              gaplessPlayback: true,
+                              loadingBuilder: _placeholderBuilder,
+                              pageController: pageController,
+                              scrollPhysics: CurrentPlatform.isIOS
+                                  ? const FastScrollPhysics() // Use bouncing physics for iOS
+                                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                              itemCount: totalAssets,
+                              onPageChanged: _onPageChanged,
+                              scaleStateChangedCallback: _onScaleStateChanged,
+                              builder: _assetBuilder,
+                              backgroundDecoration: BoxDecoration(color: backgroundColor),
+                              enablePanAlways: true,
+                            ),
+                          ),
                         ),
-                      ),
-                      AnimatedOpacity(
-                        opacity: _assetDetailsOpacity,
-                        duration: kThemeAnimationDuration,
-                        child: AssetDetails(minHeight: viewportHeight / 3 * 2),
-                      ),
-                    ],
+
+                        // TODO: if zooming, this should be hidden, and we should
+                        // probably disable the scroll physics
+                        AnimatedOpacity(
+                          opacity: _assetDetailsOpacity,
+                          duration: kThemeAnimationDuration,
+                          child: AssetDetails(minHeight: snapOffset),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Positioned(
@@ -677,6 +708,14 @@ class VariableHeightSnappingPhysics extends ScrollPhysics {
       snapEnd: snapEnd,
       snapOffset: snapOffset,
     );
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    if (value < position.pixels && position.pixels <= position.minScrollExtent) {
+      return 0.0;
+    }
+    return super.applyBoundaryConditions(position, value);
   }
 
   @override

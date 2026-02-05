@@ -224,86 +224,85 @@ class AssetDetails extends ConsumerWidget {
 
     return Container(
       constraints: BoxConstraints(minHeight: minHeight),
-      decoration: BoxDecoration(color: context.isDarkTheme ? context.colorScheme.surface : Colors.white),
-      child: Stack(
+      decoration: BoxDecoration(
+        color: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
         children: [
           const _DragHandle(),
-          Column(
-            children: [
-              // Asset Date and Time
-              SheetTile(
-                title: _getDateTime(context, asset, exifInfo),
-                titleStyle: context.textTheme.labelLarge,
-                trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
-                onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
-              ),
-              if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
-              const SheetPeopleDetails(),
-              const SheetLocationDetails(),
-              // Details header
-              SheetTile(
-                title: 'details'.t(context: context),
-                titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-              ),
-              // File info
-              buildFileInfoTile(),
-              // Camera info
-              if (cameraTitle != null) ...[
-                const SizedBox(height: 16),
-                SheetTile(
-                  title: cameraTitle,
-                  titleStyle: context.textTheme.labelLarge,
-                  leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
-                  subtitle: _getCameraInfoSubtitle(exifInfo),
-                  subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                ),
-              ],
-              // Lens info
-              if (lensTitle != null) ...[
-                const SizedBox(height: 16),
-                SheetTile(
-                  title: lensTitle,
-                  titleStyle: context.textTheme.labelLarge,
-                  leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
-                  subtitle: _getLensInfoSubtitle(exifInfo),
-                  subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                ),
-              ],
-              // Rating bar
-              if (isRatingEnabled) ...[
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 8,
-                    children: [
-                      Text(
-                        'rating'.t(context: context),
-                        style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                      ),
-                      RatingBar(
-                        initialRating: exifInfo?.rating?.toDouble() ?? 0,
-                        filledColor: context.themeData.colorScheme.primary,
-                        unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
-                        itemSize: 40,
-                        onRatingUpdate: (rating) async {
-                          await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
-                        },
-                        onClearRating: () async {
-                          await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              // Appears in (Albums)
-              Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
-              // padding at the bottom to avoid cut-off
-              const SizedBox(height: 60),
-            ],
+          // Asset Date and Time
+          SheetTile(
+            title: _getDateTime(context, asset, exifInfo),
+            titleStyle: context.textTheme.labelLarge,
+            trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
+            onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
           ),
+          if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
+          const SheetPeopleDetails(),
+          const SheetLocationDetails(),
+          // Details header
+          SheetTile(
+            title: 'details'.t(context: context),
+            titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+          // File info
+          buildFileInfoTile(),
+          // Camera info
+          if (cameraTitle != null) ...[
+            const SizedBox(height: 16),
+            SheetTile(
+              title: cameraTitle,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(Icons.camera_alt_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+              subtitle: _getCameraInfoSubtitle(exifInfo),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            ),
+          ],
+          // Lens info
+          if (lensTitle != null) ...[
+            const SizedBox(height: 16),
+            SheetTile(
+              title: lensTitle,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
+              subtitle: _getLensInfoSubtitle(exifInfo),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            ),
+          ],
+          // Rating bar
+          if (isRatingEnabled) ...[
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 8,
+                children: [
+                  Text(
+                    'rating'.t(context: context),
+                    style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                  ),
+                  RatingBar(
+                    initialRating: exifInfo?.rating?.toDouble() ?? 0,
+                    filledColor: context.themeData.colorScheme.primary,
+                    unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
+                    itemSize: 40,
+                    onRatingUpdate: (rating) async {
+                      await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+                    },
+                    onClearRating: () async {
+                      await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+          // Appears in (Albums)
+          Padding(padding: const EdgeInsets.only(top: 16.0), child: _buildAppearsInList(ref, context)),
+          // padding at the bottom to avoid cut-off
+          const SizedBox(height: 60),
         ],
       ),
     );
@@ -408,14 +407,9 @@ class _DragHandle extends StatelessWidget {
       label: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       container: true,
       button: true,
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.isDarkTheme ? context.colorScheme.surface : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+      child: SizedBox(
         width: double.infinity,
         height: math.max(handleSize.height, kMinInteractiveDimension),
-        transform: Matrix4.translationValues(0, -kMinInteractiveDimension, 0),
         child: Center(
           child: Container(
             height: handleSize.height,
