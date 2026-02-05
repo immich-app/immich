@@ -176,6 +176,7 @@
     }
 
     activityManager.reset();
+    assetViewerManager.closeEditor();
   });
 
   const handleGetAllAlbums = async () => {

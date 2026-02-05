@@ -27,17 +27,19 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 void configureFileDownloaderNotifications() {
+  final fileName = 'file_name'.t(args: {'file_name': '{filename}'});
+
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupImage,
-    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), fileName),
+    complete: TaskNotification('download_finished'.t(), fileName),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupVideo,
-    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), fileName),
+    complete: TaskNotification('download_finished'.t(), fileName),
     progressBar: true,
   );
 

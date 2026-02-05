@@ -223,6 +223,10 @@ class TransformManager implements EditToolManager {
     this.dragOffset = { x: 0, y: 0 };
     this.resizeSide = '';
     this.imgElement = null;
+    if (this.cropAreaEl) {
+      this.cropAreaEl.style.cursor = '';
+    }
+    document.body.style.cursor = '';
     this.cropAreaEl = null;
     this.isDragging = false;
     this.overlayEl = null;
