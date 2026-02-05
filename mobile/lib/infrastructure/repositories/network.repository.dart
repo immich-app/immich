@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:cupertino_http/cupertino_http.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:logging/logging.dart';
 import 'package:ok_http/ok_http.dart';
 import 'package:web_socket/web_socket.dart';
 
 class NetworkRepository {
-  static final _log = Logger('NetworkRepository');
   static http.Client? _client;
   static late int _clientPointer;
 
@@ -45,13 +43,11 @@ class NetworkRepository {
   static http.Client _createIOSClient(int address) {
     final pointer = Pointer.fromAddress(address);
     final session = URLSession.fromRawPointer(pointer.cast());
-    _log.info('Using shared native URLSession');
     return CupertinoClient.fromSharedSession(session);
   }
 
   static http.Client _createAndroidClient(int address) {
     final pointer = Pointer<Void>.fromAddress(address);
-    _log.info('Using shared native OkHttpClient');
     return OkHttpClient.fromJniGlobalRef(pointer);
   }
 
