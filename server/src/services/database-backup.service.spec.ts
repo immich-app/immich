@@ -625,10 +625,6 @@ describe(DatabaseBackupService.name, () => {
     });
   });
 
-  // describe('cleanupDatabaseBackups', () => {
-  //   // gjfidogdfs
-  // });
-
   describe('restoreDatabaseBackup', () => {
     beforeEach(() => {
       mocks.storage.readdir.mockResolvedValue([]);
