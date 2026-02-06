@@ -1,7 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { getAssetJobIcon, getAssetJobName } from '$lib/utils';
+  import { getAssetJobIcon, getAssetJobName, getAssetJobMessage } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, runAssetJobs } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
@@ -22,7 +22,7 @@
     try {
       const ids = [...getOwnedAssets()].map(({ id }) => id);
       await runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
-      toastManager.success(getAssetJobName($t, name));
+      toastManager.success(getAssetJobMessage($t, name));
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));

@@ -246,6 +246,17 @@ export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: str
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
 
 export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
+  const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refresh_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('regenerate_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refresh_encoded_video'),
+  };
+
+  return names[job];
+};
+
+export const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
   const messages: Record<AssetJobName, string> = {
     [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
     [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
