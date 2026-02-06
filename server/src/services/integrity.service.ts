@@ -497,9 +497,9 @@ export class IntegrityService extends BaseService {
       for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
         processed++;
 
-        try {
-          const hash = createHash('sha1');
+        const hash = createHash('sha1');
 
+        try {
           await pipeline([
             this.storageRepository.createPlainReadStream(originalPath),
             new Writable({
@@ -571,9 +571,9 @@ export class IntegrityService extends BaseService {
           return reportId;
         }
 
-        try {
-          const hash = createHash('sha1');
+        const hash = createHash('sha1');
 
+        try {
           await pipeline([
             this.storageRepository.createPlainReadStream(path),
             new Writable({
@@ -583,14 +583,14 @@ export class IntegrityService extends BaseService {
               },
             }),
           ]);
-
-          if (Buffer.from(checksum, 'hex').equals(hash.digest())) {
-            return reportId;
-          }
         } catch (error) {
           if ((error as { code?: string }).code === 'ENOENT') {
             return reportId;
           }
+        }
+
+        if (Buffer.from(checksum, 'hex').equals(hash.digest())) {
+          return reportId;
         }
       }),
     );
