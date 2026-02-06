@@ -191,7 +191,7 @@
       lensModel: $t('lens_model'),
       personIds: $t('people'),
       tagIds: $t('tags'),
-      originalFileName: $t('file_name'),
+      originalFileName: $t('file_name_text'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),

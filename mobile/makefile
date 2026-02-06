@@ -12,6 +12,7 @@ pigeon:
 	dart run pigeon --input pigeon/background_worker_api.dart
 	dart run pigeon --input pigeon/background_worker_lock_api.dart
 	dart run pigeon --input pigeon/connectivity_api.dart
+	dart run pigeon --input pigeon/network_api.dart
 	dart run pigeon --input pigeon/view_intent_api.dart
 	dart format lib/platform/native_sync_api.g.dart
 	dart format lib/platform/local_image_api.g.dart
@@ -19,6 +20,7 @@ pigeon:
 	dart format lib/platform/background_worker_api.g.dart
 	dart format lib/platform/background_worker_lock_api.g.dart
 	dart format lib/platform/connectivity_api.g.dart
+	dart format lib/platform/network_api.g.dart
 	dart format lib/platform/view_intent_api.g.dart
 
 watch:
@@ -37,7 +39,7 @@ migration:
 	dart run drift_dev make-migrations
 
 translation:
-	npm --prefix ../i18n run format:fix
+	pnpm --prefix ../i18n run format:fix
 	dart run easy_localization:generate -S ../i18n
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart
