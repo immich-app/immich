@@ -39,28 +39,16 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [] })
-  getIntegrityReportSummary() {
-    return this.db
+  async getIntegrityReportSummary() {
+    const counts = await this.db
       .selectFrom('integrity_report')
-      .select((eb) =>
-        eb.fn
-          .countAll<number>()
-          .filterWhere('type', '=', IntegrityReportType.ChecksumFail)
-          .as(IntegrityReportType.ChecksumFail),
-      )
-      .select((eb) =>
-        eb.fn
-          .countAll<number>()
-          .filterWhere('type', '=', IntegrityReportType.MissingFile)
-          .as(IntegrityReportType.MissingFile),
-      )
-      .select((eb) =>
-        eb.fn
-          .countAll<number>()
-          .filterWhere('type', '=', IntegrityReportType.UntrackedFile)
-          .as(IntegrityReportType.UntrackedFile),
-      )
-      .executeTakeFirstOrThrow();
+      .select(['type', this.db.fn.countAll<number>().as('count')])
+      .groupBy('type')
+      .execute();
+
+    return Object.fromEntries(
+      Object.values(IntegrityReportType).map((type) => [type, counts.find((count) => count.type === type)?.count || 0]),
+    ) as Record<IntegrityReportType, number>;
   }
 
   @GenerateSql({ params: [{ cursor: DummyValue.NUMBER, limit: 100 }, DummyValue.STRING] })
