@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -173,8 +171,7 @@ class AssetDetails extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(currentAssetNotifier);
     if (asset == null) {
-      print("null asset");
-      return const SliverToBoxAdapter(child: SizedBox.shrink());
+      return const SizedBox.shrink();
     }
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
@@ -230,7 +227,18 @@ class AssetDetails extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const _DragHandle(),
+          const SizedBox(height: 16),
+          Center(
+            child: Container(
+              width: 32,
+              height: 4,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(2),
+                color: context.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           // Asset Date and Time
           SheetTile(
             title: _getDateTime(context, asset, exifInfo),
@@ -391,67 +399,3 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
   }
 }
 
-class _DragHandle extends StatelessWidget {
-  const _DragHandle({this.dragHandleColor, this.dragHandleSize});
-
-  final Color? dragHandleColor;
-  final Size? dragHandleSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final BottomSheetThemeData bottomSheetTheme = Theme.of(context).bottomSheetTheme;
-    final BottomSheetThemeData m3Defaults = _BottomSheetDefaultsM3(context);
-    final Size handleSize = dragHandleSize ?? bottomSheetTheme.dragHandleSize ?? m3Defaults.dragHandleSize!;
-
-    return Semantics(
-      label: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      container: true,
-      button: true,
-      child: SizedBox(
-        width: double.infinity,
-        height: math.max(handleSize.height, kMinInteractiveDimension),
-        child: Center(
-          child: Container(
-            height: handleSize.height,
-            width: handleSize.width,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(handleSize.height / 2),
-              color: m3Defaults.dragHandleColor,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomSheetDefaultsM3 extends BottomSheetThemeData {
-  _BottomSheetDefaultsM3(this.context)
-    : super(
-        elevation: 1.0,
-        modalElevation: 1.0,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28.0))),
-        constraints: const BoxConstraints(maxWidth: 640),
-      );
-
-  final BuildContext context;
-  late final ColorScheme _colors = Theme.of(context).colorScheme;
-
-  @override
-  Color? get backgroundColor => _colors.surfaceContainerLow;
-
-  @override
-  Color? get surfaceTintColor => Colors.transparent;
-
-  @override
-  Color? get shadowColor => Colors.transparent;
-
-  @override
-  Color? get dragHandleColor => _colors.onSurfaceVariant;
-
-  @override
-  Size? get dragHandleSize => const Size(32, 4);
-
-  @override
-  BoxConstraints? get constraints => const BoxConstraints(maxWidth: 640.0);
-}
