@@ -9,8 +9,6 @@ import 'package:flutter/painting.dart';
 
 /// An ImageStreamCompleter with support for loading multiple images.
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
-  void Function()? _onDispose;
-
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
   /// The [initialImage] is an optional image that will be emitted synchronously
@@ -19,12 +17,11 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     Stream<ImageInfo> images, {
     ImageInfo? initialImage,
     InformationCollector? informationCollector,
-    void Function()? onDispose,
+    void Function()? onLastListenerRemoved,
   }) {
     if (initialImage != null) {
       setImage(initialImage);
     }
-    _onDispose = onDispose;
     images.listen(
       setImage,
       onError: (Object error, StackTrace stack) {
@@ -37,15 +34,11 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
         );
       },
     );
-  }
 
-  @override
-  void onDisposed() {
-    final onDispose = _onDispose;
-    if (onDispose != null) {
-      _onDispose = null;
-      onDispose();
-    }
-    super.onDisposed();
+    addOnLastListenerRemovedCallback(() {
+      if (onLastListenerRemoved != null) {
+        onLastListenerRemoved();
+      }
+    });
   }
 }
