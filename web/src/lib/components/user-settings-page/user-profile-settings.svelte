@@ -1,14 +1,13 @@
 <script lang="ts">
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { updateMyUser } from '@immich/sdk';
   import { Button, Field, Input, toastManager } from '@immich/ui';
-  import { cloneDeep } from 'lodash-es';
+  import { updateMyUser } from '@server/sdk';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
 
-  let editedUser = $state(cloneDeep($user));
+  let editedUser = $state(structuredClone($user));
   const bubble = createBubbler();
 
   const handleSaveProfile = async () => {
@@ -44,10 +43,6 @@
 
         <Field label={$t('name')} required>
           <Input bind:value={editedUser.name} />
-        </Field>
-
-        <Field label={$t('storage_label')} disabled>
-          <Input value={editedUser.storageLabel || ''} />
         </Field>
 
         <div class="flex justify-end">

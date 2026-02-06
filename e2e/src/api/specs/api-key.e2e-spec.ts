@@ -1,4 +1,4 @@
-import { LoginResponseDto, Permission, createApiKey } from '@immich/sdk';
+import { LoginResponseDto, Permission, createApiKey } from '@server/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';

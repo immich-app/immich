@@ -13,33 +13,33 @@ part of openapi.api;
 class APIKeyCreateResponseDto {
   /// Returns a new [APIKeyCreateResponseDto] instance.
   APIKeyCreateResponseDto({
-    required this.apiKey,
     required this.secret,
+    required this.apiKey,
   });
-
-  APIKeyResponseDto apiKey;
 
   /// API key secret (only shown once)
   String secret;
 
+  APIKeyResponseDto apiKey;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyCreateResponseDto &&
-    other.apiKey == apiKey &&
-    other.secret == secret;
+    other.secret == secret &&
+    other.apiKey == apiKey;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (apiKey.hashCode) +
-    (secret.hashCode);
+    (secret.hashCode) +
+    (apiKey.hashCode);
 
   @override
-  String toString() => 'APIKeyCreateResponseDto[apiKey=$apiKey, secret=$secret]';
+  String toString() => 'APIKeyCreateResponseDto[secret=$secret, apiKey=$apiKey]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'apiKey'] = this.apiKey;
       json[r'secret'] = this.secret;
+      json[r'apiKey'] = this.apiKey;
     return json;
   }
 
@@ -52,8 +52,8 @@ class APIKeyCreateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyCreateResponseDto(
-        apiKey: APIKeyResponseDto.fromJson(json[r'apiKey'])!,
         secret: mapValueOfType<String>(json, r'secret')!,
+        apiKey: APIKeyResponseDto.fromJson(json[r'apiKey'])!,
       );
     }
     return null;
@@ -101,8 +101,8 @@ class APIKeyCreateResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'apiKey',
     'secret',
+    'apiKey',
   };
 }
 

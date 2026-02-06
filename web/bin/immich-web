@@ -2,7 +2,7 @@
 
 cd /usr/src/app || exit
 
-pnpm --filter @immich/sdk build
+pnpm --filter @server/sdk build
 
 COUNT=0
 UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"

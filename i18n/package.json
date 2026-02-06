@@ -1,6 +1,6 @@
 {
-  "name": "immich-i18n",
-  "version": "2.5.5",
+  "name": "i18n",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "format": "prettier --check .",

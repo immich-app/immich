@@ -13,97 +13,41 @@ part of openapi.api;
 class ServerConfigDto {
   /// Returns a new [ServerConfigDto] instance.
   ServerConfigDto({
-    required this.externalDomain,
-    required this.isInitialized,
-    required this.isOnboarded,
     required this.loginPageMessage,
-    required this.maintenanceMode,
-    required this.mapDarkStyleUrl,
-    required this.mapLightStyleUrl,
-    required this.oauthButtonText,
-    required this.publicUsers,
-    required this.trashDays,
     required this.userDeleteDelay,
+    required this.isInitialized,
   });
-
-  /// External domain URL
-  String externalDomain;
-
-  /// Whether the server has been initialized
-  bool isInitialized;
-
-  /// Whether the admin has completed onboarding
-  bool isOnboarded;
 
   /// Login page message
   String loginPageMessage;
 
-  /// Whether maintenance mode is active
-  bool maintenanceMode;
-
-  /// Map dark style URL
-  String mapDarkStyleUrl;
-
-  /// Map light style URL
-  String mapLightStyleUrl;
-
-  /// OAuth button text
-  String oauthButtonText;
-
-  /// Whether public user registration is enabled
-  bool publicUsers;
-
-  /// Number of days before trashed assets are permanently deleted
-  int trashDays;
-
   /// Delay in days before deleted users are permanently removed
   int userDeleteDelay;
 
+  /// Whether the server has been initialized
+  bool isInitialized;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerConfigDto &&
-    other.externalDomain == externalDomain &&
-    other.isInitialized == isInitialized &&
-    other.isOnboarded == isOnboarded &&
     other.loginPageMessage == loginPageMessage &&
-    other.maintenanceMode == maintenanceMode &&
-    other.mapDarkStyleUrl == mapDarkStyleUrl &&
-    other.mapLightStyleUrl == mapLightStyleUrl &&
-    other.oauthButtonText == oauthButtonText &&
-    other.publicUsers == publicUsers &&
-    other.trashDays == trashDays &&
-    other.userDeleteDelay == userDeleteDelay;
+    other.userDeleteDelay == userDeleteDelay &&
+    other.isInitialized == isInitialized;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (externalDomain.hashCode) +
-    (isInitialized.hashCode) +
-    (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
-    (maintenanceMode.hashCode) +
-    (mapDarkStyleUrl.hashCode) +
-    (mapLightStyleUrl.hashCode) +
-    (oauthButtonText.hashCode) +
-    (publicUsers.hashCode) +
-    (trashDays.hashCode) +
-    (userDeleteDelay.hashCode);
+    (userDeleteDelay.hashCode) +
+    (isInitialized.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, maintenanceMode=$maintenanceMode, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
+  String toString() => 'ServerConfigDto[loginPageMessage=$loginPageMessage, userDeleteDelay=$userDeleteDelay, isInitialized=$isInitialized]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'externalDomain'] = this.externalDomain;
-      json[r'isInitialized'] = this.isInitialized;
-      json[r'isOnboarded'] = this.isOnboarded;
       json[r'loginPageMessage'] = this.loginPageMessage;
-      json[r'maintenanceMode'] = this.maintenanceMode;
-      json[r'mapDarkStyleUrl'] = this.mapDarkStyleUrl;
-      json[r'mapLightStyleUrl'] = this.mapLightStyleUrl;
-      json[r'oauthButtonText'] = this.oauthButtonText;
-      json[r'publicUsers'] = this.publicUsers;
-      json[r'trashDays'] = this.trashDays;
       json[r'userDeleteDelay'] = this.userDeleteDelay;
+      json[r'isInitialized'] = this.isInitialized;
     return json;
   }
 
@@ -116,17 +60,9 @@ class ServerConfigDto {
       final json = value.cast<String, dynamic>();
 
       return ServerConfigDto(
-        externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
-        isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
-        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
-        maintenanceMode: mapValueOfType<bool>(json, r'maintenanceMode')!,
-        mapDarkStyleUrl: mapValueOfType<String>(json, r'mapDarkStyleUrl')!,
-        mapLightStyleUrl: mapValueOfType<String>(json, r'mapLightStyleUrl')!,
-        oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
-        publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
-        trashDays: mapValueOfType<int>(json, r'trashDays')!,
         userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
+        isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
       );
     }
     return null;
@@ -174,17 +110,9 @@ class ServerConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'externalDomain',
-    'isInitialized',
-    'isOnboarded',
     'loginPageMessage',
-    'maintenanceMode',
-    'mapDarkStyleUrl',
-    'mapLightStyleUrl',
-    'oauthButtonText',
-    'publicUsers',
-    'trashDays',
     'userDeleteDelay',
+    'isInitialized',
   };
 }
 

@@ -14,40 +14,40 @@ class SignUpDto {
   /// Returns a new [SignUpDto] instance.
   SignUpDto({
     required this.email,
-    required this.name,
     required this.password,
+    required this.name,
   });
 
   /// User email
   String email;
 
-  /// User name
-  String name;
-
   /// User password
   String password;
+
+  /// User name
+  String name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
     other.email == email &&
-    other.name == name &&
-    other.password == password;
+    other.password == password &&
+    other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (name.hashCode) +
-    (password.hashCode);
+    (password.hashCode) +
+    (name.hashCode);
 
   @override
-  String toString() => 'SignUpDto[email=$email, name=$name, password=$password]';
+  String toString() => 'SignUpDto[email=$email, password=$password, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
-      json[r'name'] = this.name;
       json[r'password'] = this.password;
+      json[r'name'] = this.name;
     return json;
   }
 
@@ -61,8 +61,8 @@ class SignUpDto {
 
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,
-        name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
+        name: mapValueOfType<String>(json, r'name')!,
       );
     }
     return null;
@@ -111,8 +111,8 @@ class SignUpDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
-    'name',
     'password',
+    'name',
   };
 }
 

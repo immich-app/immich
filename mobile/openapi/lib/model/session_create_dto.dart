@@ -13,28 +13,10 @@ part of openapi.api;
 class SessionCreateDto {
   /// Returns a new [SessionCreateDto] instance.
   SessionCreateDto({
-    this.deviceOS,
-    this.deviceType,
     this.duration,
+    this.deviceType,
+    this.deviceOS,
   });
-
-  /// Device OS
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? deviceOS;
-
-  /// Device type
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? deviceType;
 
   /// Session duration in seconds
   ///
@@ -47,38 +29,56 @@ class SessionCreateDto {
   ///
   num? duration;
 
+  /// Device type
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? deviceType;
+
+  /// Device OS
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? deviceOS;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SessionCreateDto &&
-    other.deviceOS == deviceOS &&
+    other.duration == duration &&
     other.deviceType == deviceType &&
-    other.duration == duration;
+    other.deviceOS == deviceOS;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (deviceOS == null ? 0 : deviceOS!.hashCode) +
+    (duration == null ? 0 : duration!.hashCode) +
     (deviceType == null ? 0 : deviceType!.hashCode) +
-    (duration == null ? 0 : duration!.hashCode);
+    (deviceOS == null ? 0 : deviceOS!.hashCode);
 
   @override
-  String toString() => 'SessionCreateDto[deviceOS=$deviceOS, deviceType=$deviceType, duration=$duration]';
+  String toString() => 'SessionCreateDto[duration=$duration, deviceType=$deviceType, deviceOS=$deviceOS]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.deviceOS != null) {
-      json[r'deviceOS'] = this.deviceOS;
+    if (this.duration != null) {
+      json[r'duration'] = this.duration;
     } else {
-    //  json[r'deviceOS'] = null;
+    //  json[r'duration'] = null;
     }
     if (this.deviceType != null) {
       json[r'deviceType'] = this.deviceType;
     } else {
     //  json[r'deviceType'] = null;
     }
-    if (this.duration != null) {
-      json[r'duration'] = this.duration;
+    if (this.deviceOS != null) {
+      json[r'deviceOS'] = this.deviceOS;
     } else {
-    //  json[r'duration'] = null;
+    //  json[r'deviceOS'] = null;
     }
     return json;
   }
@@ -92,9 +92,9 @@ class SessionCreateDto {
       final json = value.cast<String, dynamic>();
 
       return SessionCreateDto(
-        deviceOS: mapValueOfType<String>(json, r'deviceOS'),
-        deviceType: mapValueOfType<String>(json, r'deviceType'),
         duration: num.parse('${json[r'duration']}'),
+        deviceType: mapValueOfType<String>(json, r'deviceType'),
+        deviceOS: mapValueOfType<String>(json, r'deviceOS'),
       );
     }
     return null;

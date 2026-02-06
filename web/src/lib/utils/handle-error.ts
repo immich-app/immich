@@ -1,5 +1,5 @@
-import { isHttpError } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
+import { isHttpError } from '@server/sdk';
 
 export function getServerErrorMessage(error: unknown) {
   if (!isHttpError(error)) {

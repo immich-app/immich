@@ -1,9 +1,8 @@
 <script lang="ts">
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import type { SystemConfigDto } from '@immich/sdk';
   import { Button, toastManager } from '@immich/ui';
-  import { isEqual, pick } from 'lodash-es';
+  import type { SystemConfigDto } from '@server/sdk';
   import { t } from 'svelte-i18n';
 
   type Props = {

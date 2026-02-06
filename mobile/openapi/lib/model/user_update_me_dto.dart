@@ -13,14 +13,9 @@ part of openapi.api;
 class UserUpdateMeDto {
   /// Returns a new [UserUpdateMeDto] instance.
   UserUpdateMeDto({
-    this.avatarColor,
     this.email,
     this.name,
-    this.password,
   });
-
-  /// Avatar color
-  UserAvatarColor? avatarColor;
 
   /// User email
   ///
@@ -40,40 +35,22 @@ class UserUpdateMeDto {
   ///
   String? name;
 
-  /// User password (deprecated, use change password endpoint)
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? password;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserUpdateMeDto &&
-    other.avatarColor == avatarColor &&
     other.email == email &&
-    other.name == name &&
-    other.password == password;
+    other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (email == null ? 0 : email!.hashCode) +
-    (name == null ? 0 : name!.hashCode) +
-    (password == null ? 0 : password!.hashCode);
+    (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'UserUpdateMeDto[avatarColor=$avatarColor, email=$email, name=$name, password=$password]';
+  String toString() => 'UserUpdateMeDto[email=$email, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.avatarColor != null) {
-      json[r'avatarColor'] = this.avatarColor;
-    } else {
-    //  json[r'avatarColor'] = null;
-    }
     if (this.email != null) {
       json[r'email'] = this.email;
     } else {
@@ -83,11 +60,6 @@ class UserUpdateMeDto {
       json[r'name'] = this.name;
     } else {
     //  json[r'name'] = null;
-    }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
     }
     return json;
   }
@@ -101,10 +73,8 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
-        password: mapValueOfType<String>(json, r'password'),
       );
     }
     return null;

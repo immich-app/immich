@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Permission } from '@immich/sdk';
+  import { Permission } from '@server/sdk';
   import { Checkbox, Label } from '@immich/ui';
 
   interface Props {

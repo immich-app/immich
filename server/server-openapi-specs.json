@@ -1,0 +1,1863 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api-keys": {
+      "post": {
+        "description": "Creates a new API key. It will be limited to the permissions specified.",
+        "operationId": "createApiKey",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyCreateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.create",
+        "x-immich-state": "Stable"
+      },
+      "get": {
+        "description": "Retrieve all API keys of the current user.",
+        "operationId": "getApiKeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/APIKeyResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List all API keys",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.read",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/api-keys/me": {
+      "get": {
+        "description": "Retrieve the API key that is used to access this endpoint.",
+        "operationId": "getMyApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve the current API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/api-keys/{id}": {
+      "get": {
+        "description": "Retrieve an API key by its ID. The current user must own this API key.",
+        "operationId": "getApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.read",
+        "x-immich-state": "Stable"
+      },
+      "put": {
+        "description": "Updates the name and permissions of an API key by its ID. The current user must own this API key.",
+        "operationId": "updateApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.update",
+        "x-immich-state": "Stable"
+      },
+      "delete": {
+        "description": "Deletes an API key identified by its ID. The current user must own this API key.",
+        "operationId": "deleteApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "apiKey.delete",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Login with username and password and receive a session token.",
+        "operationId": "login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCredentialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/auth/admin-sign-up": {
+      "post": {
+        "description": "Create the first admin user in the system.",
+        "operationId": "signUpAdmin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register admin",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/auth/validateToken": {
+      "post": {
+        "description": "Validate the current authorization method is still valid.",
+        "operationId": "validateAccessToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateAccessTokenResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Validate access token",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/auth/change-password": {
+      "post": {
+        "description": "Change the password of the current user.",
+        "operationId": "changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Change password",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "auth.changePassword",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Logout the current user and invalidate the session token.",
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Logout",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/server/about": {
+      "get": {
+        "description": "Retrieve a list of information about the server.",
+        "operationId": "getAboutInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerAboutResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get server information",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "server.about",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/server/ping": {
+      "get": {
+        "description": "Pong",
+        "operationId": "pingServer",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerPingResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ping",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/server/version": {
+      "get": {
+        "description": "Retrieve the current server version in semantic versioning (semver) format.",
+        "operationId": "getServerVersion",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerVersionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get server version",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/server/features": {
+      "get": {
+        "description": "Retrieve available features supported by this server.",
+        "operationId": "getServerFeatures",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerFeaturesDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get features",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/server/config": {
+      "get": {
+        "description": "Retrieve the current server configuration.",
+        "operationId": "getServerConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get config",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
+      }
+    },
+    "/sessions": {
+      "post": {
+        "description": "Create a session as a child to the current session. This endpoint is used for casting.",
+        "operationId": "createSession",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCreateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create a session",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.create",
+        "x-immich-state": "Stable"
+      },
+      "get": {
+        "description": "Retrieve a list of sessions for the user.",
+        "operationId": "getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve sessions",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.read",
+        "x-immich-state": "Stable"
+      },
+      "delete": {
+        "description": "Delete all sessions for the user. This will not delete the current session.",
+        "operationId": "deleteAllSessions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete all sessions",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.delete",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/sessions/{id}": {
+      "delete": {
+        "description": "Delete a specific session by id.",
+        "operationId": "deleteSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete a session",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "session.delete",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/users": {
+      "get": {
+        "description": "Retrieve a list of all users on the server.",
+        "operationId": "searchUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get all users",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/users/me": {
+      "get": {
+        "description": "Retrieve information about the user making the API request.",
+        "operationId": "getMyUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get current user",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      },
+      "put": {
+        "description": "Update the current user making the API request.",
+        "operationId": "updateMyUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update current user",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.update",
+        "x-immich-state": "Stable"
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "description": "Retrieve a specific user by their ID.",
+        "operationId": "getUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a user",
+        "tags": [
+          "Users"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-permission": "user.read",
+        "x-immich-state": "Stable"
+      }
+    }
+  },
+  "info": {
+    "title": "App API",
+    "description": "App API",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "Bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "in": "header"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "immich_access_token"
+      },
+      "api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    },
+    "schemas": {
+      "Permission": {
+        "type": "string",
+        "enum": [
+          "all",
+          "apiKey.create",
+          "apiKey.read",
+          "apiKey.update",
+          "apiKey.delete",
+          "auth.changePassword",
+          "authDevice.delete",
+          "session.create",
+          "session.read",
+          "session.update",
+          "session.delete",
+          "systemMetadata.read",
+          "systemMetadata.update",
+          "user.read",
+          "user.update",
+          "server.about",
+          "adminUser.create",
+          "adminUser.read",
+          "adminUser.update",
+          "adminUser.delete"
+        ],
+        "description": "List of permissions"
+      },
+      "APIKeyCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "API key name"
+          },
+          "permissions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "description": "List of permissions"
+          }
+        },
+        "required": [
+          "permissions"
+        ]
+      },
+      "APIKeyResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "API key ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "API key name"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update date"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "description": "List of permissions"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt",
+          "permissions"
+        ]
+      },
+      "APIKeyCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "description": "API key secret (only shown once)"
+          },
+          "apiKey": {
+            "$ref": "#/components/schemas/APIKeyResponseDto"
+          }
+        },
+        "required": [
+          "secret",
+          "apiKey"
+        ]
+      },
+      "APIKeyUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "API key name"
+          },
+          "permissions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "description": "List of permissions"
+          }
+        }
+      },
+      "LoginCredentialDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "testuser@email.com",
+            "description": "User email"
+          },
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "User password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Access token"
+          },
+          "userId": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "userEmail": {
+            "type": "string",
+            "description": "User email"
+          },
+          "name": {
+            "type": "string",
+            "description": "User name"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "Is admin user"
+          },
+          "shouldChangePassword": {
+            "type": "boolean",
+            "description": "Should change password"
+          }
+        },
+        "required": [
+          "accessToken",
+          "userId",
+          "userEmail",
+          "name",
+          "isAdmin",
+          "shouldChangePassword"
+        ]
+      },
+      "SignUpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "testuser@email.com",
+            "description": "User email"
+          },
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "User password"
+          },
+          "name": {
+            "type": "string",
+            "example": "Admin",
+            "description": "User name"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name"
+        ]
+      },
+      "UserStatus": {
+        "type": "string",
+        "enum": [
+          "active",
+          "removing",
+          "deleted"
+        ],
+        "description": "User status"
+      },
+      "UserAdminResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User name"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email"
+          },
+          "shouldChangePassword": {
+            "type": "boolean",
+            "description": "Require password change on next login"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "Is admin user"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation date"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true,
+            "description": "Deletion date"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update date"
+          },
+          "status": {
+            "description": "User status",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "shouldChangePassword",
+          "isAdmin",
+          "createdAt",
+          "deletedAt",
+          "updatedAt",
+          "status"
+        ]
+      },
+      "ValidateAccessTokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "authStatus": {
+            "type": "boolean",
+            "description": "Authentication status"
+          }
+        },
+        "required": [
+          "authStatus"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "example": "password",
+            "description": "Current password"
+          },
+          "newPassword": {
+            "type": "string",
+            "minLength": 8,
+            "example": "password",
+            "description": "New password (min 8 characters)"
+          },
+          "invalidateSessions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Invalidate all other sessions"
+          }
+        },
+        "required": [
+          "password",
+          "newPassword"
+        ]
+      },
+      "LogoutResponseDto": {
+        "type": "object",
+        "properties": {
+          "successful": {
+            "type": "boolean",
+            "description": "Logout successful"
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "Redirect URI"
+          }
+        },
+        "required": [
+          "successful",
+          "redirectUri"
+        ]
+      },
+      "ServerAboutResponseDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Server version"
+          },
+          "versionUrl": {
+            "type": "string",
+            "description": "URL to version information"
+          },
+          "repository": {
+            "type": "string",
+            "description": "Repository name"
+          },
+          "repositoryUrl": {
+            "type": "string",
+            "description": "Repository URL"
+          },
+          "sourceRef": {
+            "type": "string",
+            "description": "Source reference (branch/tag)"
+          },
+          "sourceCommit": {
+            "type": "string",
+            "description": "Source commit hash"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "description": "Source URL"
+          },
+          "build": {
+            "type": "string",
+            "description": "Build identifier"
+          },
+          "buildUrl": {
+            "type": "string",
+            "description": "Build URL"
+          },
+          "nodejs": {
+            "type": "string",
+            "description": "Node.js version"
+          }
+        },
+        "required": [
+          "version",
+          "versionUrl"
+        ]
+      },
+      "ServerPingResponse": {
+        "type": "object",
+        "properties": {
+          "res": {
+            "type": "string",
+            "readOnly": true,
+            "example": "pong"
+          }
+        },
+        "required": [
+          "res"
+        ]
+      },
+      "ServerVersionResponseDto": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "type": "integer",
+            "description": "Major version number"
+          },
+          "minor": {
+            "type": "integer",
+            "description": "Minor version number"
+          },
+          "patch": {
+            "type": "integer",
+            "description": "Patch version number"
+          }
+        },
+        "required": [
+          "major",
+          "minor",
+          "patch"
+        ]
+      },
+      "ServerFeaturesDto": {
+        "type": "object",
+        "properties": {
+          "passwordLogin": {
+            "type": "boolean",
+            "description": "Whether password login is enabled"
+          }
+        },
+        "required": [
+          "passwordLogin"
+        ]
+      },
+      "ServerConfigDto": {
+        "type": "object",
+        "properties": {
+          "loginPageMessage": {
+            "type": "string",
+            "description": "Login page message"
+          },
+          "userDeleteDelay": {
+            "type": "integer",
+            "description": "Delay in days before deleted users are permanently removed"
+          },
+          "isInitialized": {
+            "type": "boolean",
+            "description": "Whether the server has been initialized"
+          }
+        },
+        "required": [
+          "loginPageMessage",
+          "userDeleteDelay",
+          "isInitialized"
+        ]
+      },
+      "SessionCreateDto": {
+        "type": "object",
+        "properties": {
+          "duration": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Session duration in seconds"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "Device type"
+          },
+          "deviceOS": {
+            "type": "string",
+            "description": "Device OS"
+          }
+        }
+      },
+      "SessionCreateResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session ID"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update date"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Expiration date"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "Is current session"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "Device type"
+          },
+          "deviceOS": {
+            "type": "string",
+            "description": "Device OS"
+          },
+          "appVersion": {
+            "type": "string",
+            "nullable": true,
+            "description": "App version"
+          },
+          "isPendingSyncReset": {
+            "type": "boolean",
+            "description": "Is pending sync reset"
+          },
+          "token": {
+            "type": "string",
+            "description": "Session token"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "current",
+          "deviceType",
+          "deviceOS",
+          "appVersion",
+          "isPendingSyncReset",
+          "token"
+        ]
+      },
+      "SessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Session ID"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update date"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Expiration date"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "Is current session"
+          },
+          "deviceType": {
+            "type": "string",
+            "description": "Device type"
+          },
+          "deviceOS": {
+            "type": "string",
+            "description": "Device OS"
+          },
+          "appVersion": {
+            "type": "string",
+            "nullable": true,
+            "description": "App version"
+          },
+          "isPendingSyncReset": {
+            "type": "boolean",
+            "description": "Is pending sync reset"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "updatedAt",
+          "current",
+          "deviceType",
+          "deviceOS",
+          "appVersion",
+          "isPendingSyncReset"
+        ]
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User name"
+          },
+          "email": {
+            "type": "string",
+            "description": "User email"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email"
+        ]
+      },
+      "UserUpdateMeDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email"
+          },
+          "name": {
+            "type": "string",
+            "description": "User name"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,8 +2,8 @@
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { user } from '$lib/stores/user.store';
-  import { updateMyUser } from '@immich/sdk';
   import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
+  import { updateMyUser } from '@server/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

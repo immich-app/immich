@@ -13,31 +13,25 @@ part of openapi.api;
 class SessionResponseDto {
   /// Returns a new [SessionResponseDto] instance.
   SessionResponseDto({
-    required this.appVersion,
-    required this.createdAt,
-    required this.current,
-    required this.deviceOS,
-    required this.deviceType,
-    this.expiresAt,
     required this.id,
-    required this.isPendingSyncReset,
+    required this.createdAt,
     required this.updatedAt,
+    this.expiresAt,
+    required this.current,
+    required this.deviceType,
+    required this.deviceOS,
+    required this.appVersion,
+    required this.isPendingSyncReset,
   });
 
-  /// App version
-  String? appVersion;
+  /// Session ID
+  String id;
 
   /// Creation date
   String createdAt;
 
-  /// Is current session
-  bool current;
-
-  /// Device OS
-  String deviceOS;
-
-  /// Device type
-  String deviceType;
+  /// Last update date
+  String updatedAt;
 
   /// Expiration date
   ///
@@ -48,62 +42,68 @@ class SessionResponseDto {
   ///
   String? expiresAt;
 
-  /// Session ID
-  String id;
+  /// Is current session
+  bool current;
+
+  /// Device type
+  String deviceType;
+
+  /// Device OS
+  String deviceOS;
+
+  /// App version
+  String? appVersion;
 
   /// Is pending sync reset
   bool isPendingSyncReset;
 
-  /// Last update date
-  String updatedAt;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SessionResponseDto &&
-    other.appVersion == appVersion &&
-    other.createdAt == createdAt &&
-    other.current == current &&
-    other.deviceOS == deviceOS &&
-    other.deviceType == deviceType &&
-    other.expiresAt == expiresAt &&
     other.id == id &&
-    other.isPendingSyncReset == isPendingSyncReset &&
-    other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.updatedAt == updatedAt &&
+    other.expiresAt == expiresAt &&
+    other.current == current &&
+    other.deviceType == deviceType &&
+    other.deviceOS == deviceOS &&
+    other.appVersion == appVersion &&
+    other.isPendingSyncReset == isPendingSyncReset;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (appVersion == null ? 0 : appVersion!.hashCode) +
-    (createdAt.hashCode) +
-    (current.hashCode) +
-    (deviceOS.hashCode) +
-    (deviceType.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
-    (isPendingSyncReset.hashCode) +
-    (updatedAt.hashCode);
+    (createdAt.hashCode) +
+    (updatedAt.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
+    (current.hashCode) +
+    (deviceType.hashCode) +
+    (deviceOS.hashCode) +
+    (appVersion == null ? 0 : appVersion!.hashCode) +
+    (isPendingSyncReset.hashCode);
 
   @override
-  String toString() => 'SessionResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
+  String toString() => 'SessionResponseDto[id=$id, createdAt=$createdAt, updatedAt=$updatedAt, expiresAt=$expiresAt, current=$current, deviceType=$deviceType, deviceOS=$deviceOS, appVersion=$appVersion, isPendingSyncReset=$isPendingSyncReset]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.appVersion != null) {
-      json[r'appVersion'] = this.appVersion;
-    } else {
-    //  json[r'appVersion'] = null;
-    }
+      json[r'id'] = this.id;
       json[r'createdAt'] = this.createdAt;
-      json[r'current'] = this.current;
-      json[r'deviceOS'] = this.deviceOS;
-      json[r'deviceType'] = this.deviceType;
+      json[r'updatedAt'] = this.updatedAt;
     if (this.expiresAt != null) {
       json[r'expiresAt'] = this.expiresAt;
     } else {
     //  json[r'expiresAt'] = null;
     }
-      json[r'id'] = this.id;
+      json[r'current'] = this.current;
+      json[r'deviceType'] = this.deviceType;
+      json[r'deviceOS'] = this.deviceOS;
+    if (this.appVersion != null) {
+      json[r'appVersion'] = this.appVersion;
+    } else {
+    //  json[r'appVersion'] = null;
+    }
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
-      json[r'updatedAt'] = this.updatedAt;
     return json;
   }
 
@@ -116,15 +116,15 @@ class SessionResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SessionResponseDto(
-        appVersion: mapValueOfType<String>(json, r'appVersion'),
-        createdAt: mapValueOfType<String>(json, r'createdAt')!,
-        current: mapValueOfType<bool>(json, r'current')!,
-        deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
-        deviceType: mapValueOfType<String>(json, r'deviceType')!,
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
-        isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
+        createdAt: mapValueOfType<String>(json, r'createdAt')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
+        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        current: mapValueOfType<bool>(json, r'current')!,
+        deviceType: mapValueOfType<String>(json, r'deviceType')!,
+        deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
+        appVersion: mapValueOfType<String>(json, r'appVersion'),
+        isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
       );
     }
     return null;
@@ -172,14 +172,14 @@ class SessionResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'appVersion',
-    'createdAt',
-    'current',
-    'deviceOS',
-    'deviceType',
     'id',
-    'isPendingSyncReset',
+    'createdAt',
     'updatedAt',
+    'current',
+    'deviceType',
+    'deviceOS',
+    'appVersion',
+    'isPendingSyncReset',
   };
 }
 

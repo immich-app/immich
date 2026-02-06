@@ -14,75 +14,61 @@ class LoginResponseDto {
   /// Returns a new [LoginResponseDto] instance.
   LoginResponseDto({
     required this.accessToken,
-    required this.isAdmin,
-    required this.isOnboarded,
-    required this.name,
-    required this.profileImagePath,
-    required this.shouldChangePassword,
-    required this.userEmail,
     required this.userId,
+    required this.userEmail,
+    required this.name,
+    required this.isAdmin,
+    required this.shouldChangePassword,
   });
 
   /// Access token
   String accessToken;
 
-  /// Is admin user
-  bool isAdmin;
-
-  /// Is onboarded
-  bool isOnboarded;
-
-  /// User name
-  String name;
-
-  /// Profile image path
-  String profileImagePath;
-
-  /// Should change password
-  bool shouldChangePassword;
+  /// User ID
+  String userId;
 
   /// User email
   String userEmail;
 
-  /// User ID
-  String userId;
+  /// User name
+  String name;
+
+  /// Is admin user
+  bool isAdmin;
+
+  /// Should change password
+  bool shouldChangePassword;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
     other.accessToken == accessToken &&
-    other.isAdmin == isAdmin &&
-    other.isOnboarded == isOnboarded &&
-    other.name == name &&
-    other.profileImagePath == profileImagePath &&
-    other.shouldChangePassword == shouldChangePassword &&
+    other.userId == userId &&
     other.userEmail == userEmail &&
-    other.userId == userId;
+    other.name == name &&
+    other.isAdmin == isAdmin &&
+    other.shouldChangePassword == shouldChangePassword;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accessToken.hashCode) +
-    (isAdmin.hashCode) +
-    (isOnboarded.hashCode) +
-    (name.hashCode) +
-    (profileImagePath.hashCode) +
-    (shouldChangePassword.hashCode) +
+    (userId.hashCode) +
     (userEmail.hashCode) +
-    (userId.hashCode);
+    (name.hashCode) +
+    (isAdmin.hashCode) +
+    (shouldChangePassword.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, isOnboarded=$isOnboarded, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, userId=$userId, userEmail=$userEmail, name=$name, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accessToken'] = this.accessToken;
-      json[r'isAdmin'] = this.isAdmin;
-      json[r'isOnboarded'] = this.isOnboarded;
-      json[r'name'] = this.name;
-      json[r'profileImagePath'] = this.profileImagePath;
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'userEmail'] = this.userEmail;
       json[r'userId'] = this.userId;
+      json[r'userEmail'] = this.userEmail;
+      json[r'name'] = this.name;
+      json[r'isAdmin'] = this.isAdmin;
+      json[r'shouldChangePassword'] = this.shouldChangePassword;
     return json;
   }
 
@@ -96,13 +82,11 @@ class LoginResponseDto {
 
       return LoginResponseDto(
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        userEmail: mapValueOfType<String>(json, r'userEmail')!,
         userId: mapValueOfType<String>(json, r'userId')!,
+        userEmail: mapValueOfType<String>(json, r'userEmail')!,
+        name: mapValueOfType<String>(json, r'name')!,
+        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
       );
     }
     return null;
@@ -151,13 +135,11 @@ class LoginResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accessToken',
-    'isAdmin',
-    'isOnboarded',
-    'name',
-    'profileImagePath',
-    'shouldChangePassword',
-    'userEmail',
     'userId',
+    'userEmail',
+    'name',
+    'isAdmin',
+    'shouldChangePassword',
   };
 }
 

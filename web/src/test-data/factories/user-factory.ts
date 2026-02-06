@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { UserAvatarColor, UserStatus, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
+import { UserAvatarColor, UserStatus, type UserAdminResponseDto, type UserResponseDto } from '@server/sdk';
 import { Sync } from 'factory.ts';
 
 export const userFactory = Sync.makeFactory<UserResponseDto>({

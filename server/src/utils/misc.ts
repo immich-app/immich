@@ -1,21 +1,10 @@
 import { INestApplication } from '@nestjs/common';
-import {
-  DocumentBuilder,
-  OpenAPIObject,
-  SwaggerCustomOptions,
-  SwaggerDocumentOptions,
-  SwaggerModule,
-} from '@nestjs/swagger';
-import {
-  OperationObject,
-  ReferenceObject,
-  SchemaObject,
-} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
-import _ from 'lodash';
+import { DocumentBuilder, SwaggerCustomOptions, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
+import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { endpointTags, serverVersion } from 'src/constants';
-import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
+import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export class ImmichStartupError extends Error {}
@@ -79,7 +68,9 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   for (const path of Object.values(specification.paths)) {
     for (const key of ['get', 'post', 'put', 'delete', 'patch'] as const) {
       const operation = path?.[key] as OperationObject;
-      if (!operation) continue;
+      if (!operation) {
+        continue;
+      }
 
       // Set operationId to method name
       if (operation.operationId) {
@@ -98,7 +89,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   SwaggerModule.setup('doc', app, specification, customOptions);
 
   if (write) {
-    const outputPath = path.resolve(process.cwd(), 'immich-openapi-specs.json');
+    const outputPath = path.resolve(process.cwd(), 'server-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(specification, null, 2), { encoding: 'utf8' });
   }
 };

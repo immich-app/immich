@@ -30,8 +30,14 @@ export class UserRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAdmin(id: string) {
-    return this.db.selectFrom('user').select(columns.userAdmin).where('user.id', '=', id).executeTakeFirst();
+  getAdmin(id?: string) {
+    return this.db
+      .selectFrom('user')
+      .select(columns.userAdmin)
+      .$if(!!id, (eb) => eb.where('user.id', '=', id!))
+      .$if(!id, (eb) => eb.where('user.isAdmin', '=', true))
+      .where('user.deletedAt', 'is', null)
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.EMAIL] })

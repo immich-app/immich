@@ -22,7 +22,7 @@ export class ServerService extends BaseService {
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
     return {
       version: serverVersion.toString(),
-      versionUrl: `https://github.com/immich-app/immich/releases/tag/v${serverVersion.toString()}`,
+      versionUrl: '',
       nodejs: process.version,
     };
   }

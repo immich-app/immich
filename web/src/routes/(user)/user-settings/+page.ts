@@ -1,6 +1,6 @@
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getApiKeys, getSessions } from '@immich/sdk';
+import { getApiKeys, getSessions } from '@server/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {

@@ -13,41 +13,41 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
-    this.invalidateSessions = false,
-    required this.newPassword,
     required this.password,
+    required this.newPassword,
+    this.invalidateSessions = false,
   });
-
-  /// Invalidate all other sessions
-  bool invalidateSessions;
-
-  /// New password (min 8 characters)
-  String newPassword;
 
   /// Current password
   String password;
 
+  /// New password (min 8 characters)
+  String newPassword;
+
+  /// Invalidate all other sessions
+  bool invalidateSessions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-    other.invalidateSessions == invalidateSessions &&
+    other.password == password &&
     other.newPassword == newPassword &&
-    other.password == password;
+    other.invalidateSessions == invalidateSessions;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (invalidateSessions.hashCode) +
+    (password.hashCode) +
     (newPassword.hashCode) +
-    (password.hashCode);
+    (invalidateSessions.hashCode);
 
   @override
-  String toString() => 'ChangePasswordDto[invalidateSessions=$invalidateSessions, newPassword=$newPassword, password=$password]';
+  String toString() => 'ChangePasswordDto[password=$password, newPassword=$newPassword, invalidateSessions=$invalidateSessions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'invalidateSessions'] = this.invalidateSessions;
-      json[r'newPassword'] = this.newPassword;
       json[r'password'] = this.password;
+      json[r'newPassword'] = this.newPassword;
+      json[r'invalidateSessions'] = this.invalidateSessions;
     return json;
   }
 
@@ -60,9 +60,9 @@ class ChangePasswordDto {
       final json = value.cast<String, dynamic>();
 
       return ChangePasswordDto(
-        invalidateSessions: mapValueOfType<bool>(json, r'invalidateSessions') ?? false,
-        newPassword: mapValueOfType<String>(json, r'newPassword')!,
         password: mapValueOfType<String>(json, r'password')!,
+        newPassword: mapValueOfType<String>(json, r'newPassword')!,
+        invalidateSessions: mapValueOfType<bool>(json, r'invalidateSessions') ?? false,
       );
     }
     return null;
@@ -110,8 +110,8 @@ class ChangePasswordDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'newPassword',
     'password',
+    'newPassword',
   };
 }
 

@@ -4,13 +4,10 @@
 
 <script lang="ts">
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/user-sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
+  import { Button, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
-  import { t } from 'svelte-i18n';
 
   interface Props {
     hideNavbar?: boolean;
@@ -46,11 +43,6 @@
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
-<header>
-  {#if !hideNavbar}
-    <NavigationBar onUploadClick={() => openFileUploadDialog()} />
-  {/if}
-</header>
 <div
   tabindex="-1"
   class="relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden sidebar:grid-cols-[--spacing(64)_auto]
@@ -99,8 +91,6 @@
               {/each}
             </HStack>
           </div>
-
-          <ContextMenuButton aria-label={$t('open')} items={actions} class="md:hidden" />
         {/if}
       </div>
     {/if}

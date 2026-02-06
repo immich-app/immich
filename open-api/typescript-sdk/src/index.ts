@@ -48,15 +48,5 @@ const assertNoApiKey = (headerKey: string) => {
   }
 };
 
-export const getAssetOriginalPath = (id: string) => `/assets/${id}/original`;
-
-export const getAssetThumbnailPath = (id: string) => `/assets/${id}/thumbnail`;
-
-export const getAssetPlaybackPath = (id: string) =>
-  `/assets/${id}/video/playback`;
-
 export const getUserProfileImagePath = (userId: string) =>
   `/users/${userId}/profile-image`;
-
-export const getPeopleThumbnailPath = (personId: string) =>
-  `/people/${personId}/thumbnail`;

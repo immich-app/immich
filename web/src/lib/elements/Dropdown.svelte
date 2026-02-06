@@ -14,7 +14,7 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import { Button, Icon, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
-  import { isEqual } from 'lodash-es';
+  const isEqual = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
   import { fly } from 'svelte/transition';
 
   interface Props {

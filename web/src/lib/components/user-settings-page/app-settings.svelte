@@ -4,16 +4,8 @@
   import SettingsLanguageSelector from '$lib/components/shared-components/settings/settings-language-selector.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
-  import {
-    alwaysLoadOriginalFile,
-    alwaysLoadOriginalVideo,
-    autoPlayVideo,
-    locale,
-    loopVideo,
-    playVideoThumbnailOnHover,
-    showDeleteModal,
-  } from '$lib/stores/preferences.store';
-  import { createDateFormatter, findLocale } from '$lib/utils';
+  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
+  import { findLocale } from '$lib/utils';
   import { Field, Switch, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -49,8 +41,20 @@
       $locale = newLocale;
     }
   };
+
+  const formatDateTime = (loc: string, date: Date) => {
+    try {
+      return new Intl.DateTimeFormat(loc, {
+        dateStyle: 'medium',
+        timeStyle: 'medium',
+      }).format(date);
+    } catch {
+      return date.toLocaleString();
+    }
+  };
+
   let editedLocale = $derived(findLocale($locale).code);
-  let selectedDate: string = $derived(createDateFormatter(editedLocale).formatDateTime(time));
+  let selectedDate: string = $derived(formatDateTime(editedLocale, time));
   let selectedOption = $derived({
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,
@@ -81,29 +85,6 @@
           onSelect={(combobox) => handleLocaleChange(combobox?.value)}
         />
       {/if}
-
-      <Field label={$t('display_original_photos')} description={$t('display_original_photos_setting_description')}>
-        <Switch bind:checked={$alwaysLoadOriginalFile} />
-      </Field>
-
-      <Field label={$t('video_hover_setting')} description={$t('video_hover_setting_description')}>
-        <Switch bind:checked={$playVideoThumbnailOnHover} />
-      </Field>
-
-      <Field
-        label={$t('setting_video_viewer_auto_play_title')}
-        description={$t('setting_video_viewer_auto_play_subtitle')}
-      >
-        <Switch bind:checked={$autoPlayVideo} />
-      </Field>
-
-      <Field label={$t('loop_videos')} description={$t('loop_videos_description')}>
-        <Switch bind:checked={$loopVideo} />
-      </Field>
-
-      <Field label={$t('play_original_video')} description={$t('play_original_video_setting_description')}>
-        <Switch bind:checked={$alwaysLoadOriginalVideo} />
-      </Field>
 
       <Field label={$t('permanent_deletion_warning')} description={$t('permanent_deletion_warning_setting_description')}
         ><Switch bind:checked={$showDeleteModal} />

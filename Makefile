@@ -10,10 +10,10 @@ dev:
 	docker compose -f $(DOCKER_COMPOSE_FILE) up -d
 	@echo "Waiting for services to be healthy..."
 	@sleep 3
-	@echo "Starting web dev server (background)..."
-	pnpm --filter web dev &
+# 	@echo "Starting web dev server (background)..."
+# 	pnpm --filter web dev &
 	@echo "Starting NestJS server with hot reload..."
-	pnpm --filter immich start:dev
+	DB_HOSTNAME=localhost DB_PORT=5435 DB_DATABASE_NAME=app REDIS_HOSTNAME=localhost pnpm --filter immich start:dev
 
 dev-down:
 	docker compose -f $(DOCKER_COMPOSE_FILE) down --remove-orphans
@@ -23,13 +23,13 @@ dev-down:
 
 # OpenAPI SDK generation
 open-api:
-	./open-api/bin/generate-open-api.sh
+	cd open-api && ./bin/generate-open-api.sh
 
 open-api-dart:
-	cd open-api && npx --yes @openapitools/openapi-generator-cli generate -g dart -i ../server/immich-openapi-specs.json -o ../mobile/openapi
+	cd open-api && npx --yes @openapitools/openapi-generator-cli generate -g dart -i ../server/server-openapi-specs.json -o ../mobile/openapi
 
 open-api-typescript:
-	cd open-api && npx --yes oazapfts ../server/immich-openapi-specs.json --optimistic > typescript-sdk/src/fetch-client.ts
+	cd open-api && npx --yes oazapfts ../server/server-openapi-specs.json --optimistic > typescript-sdk/src/fetch-client.ts
 
 # Build targets
 build-server:

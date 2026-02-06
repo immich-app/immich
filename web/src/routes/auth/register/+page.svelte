@@ -4,8 +4,8 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
-  import { signUpAdmin } from '@immich/sdk';
   import { Alert, Button, Field, Input, PasswordInput, Text } from '@immich/ui';
+  import { signUpAdmin } from '@server/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 

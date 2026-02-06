@@ -1,12 +1,9 @@
 import { browser } from '$app/environment';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
-import { purchaseStore } from '$lib/stores/purchase.store';
-import { preferences as preferences$, user as user$ } from '$lib/stores/user.store';
-import { userInteraction } from '$lib/stores/user.svelte';
-import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
+import { user as user$ } from '$lib/stores/user.store';
+import { getMyUser } from '@server/sdk';
 import { redirect } from '@sveltejs/kit';
-import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export interface AuthOptions {
@@ -17,20 +14,12 @@ export interface AuthOptions {
 export const loadUser = async () => {
   try {
     let user = get(user$);
-    let preferences = get(preferences$);
-    let serverInfo;
 
-    if ((!user || !preferences) && hasAuthCookie()) {
-      [user, preferences, serverInfo] = await Promise.all([getMyUser(), getMyPreferences(), getAboutInfo()]);
+    if (!user && hasAuthCookie()) {
+      user = await getMyUser();
       user$.set(user);
-      preferences$.set(preferences);
 
       eventManager.emit('AuthUserLoaded', user);
-
-      // Check for license status
-      if (serverInfo.licensed || user.license?.activatedAt) {
-        purchaseStore.setPurchaseStatus(true);
-      }
     }
     return user;
   } catch {
@@ -66,27 +55,6 @@ export const authenticate = async (url: URL, options?: AuthOptions) => {
   }
 
   if (adminRoute && !user.isAdmin) {
-    redirect(307, Route.photos());
+    redirect(307, Route.userSettings());
   }
-};
-
-export const requestServerInfo = async () => {
-  if (get(user$)) {
-    const data = await getStorage();
-    userInteraction.serverInfo = data;
-  }
-};
-
-export const getAccountAge = (): number => {
-  const user = get(user$);
-
-  if (!user) {
-    return 0;
-  }
-
-  const createdDate = DateTime.fromISO(user.createdAt);
-  const now = DateTime.now();
-  const accountAge = now.diff(createdDate, 'days').days.toFixed(0);
-
-  return Number(accountAge);
 };

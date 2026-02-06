@@ -13,15 +13,12 @@ part of openapi.api;
 class APIKeyResponseDto {
   /// Returns a new [APIKeyResponseDto] instance.
   APIKeyResponseDto({
-    required this.createdAt,
     required this.id,
     required this.name,
-    this.permissions = const [],
+    required this.createdAt,
     required this.updatedAt,
+    this.permissions = const [],
   });
-
-  /// Creation date
-  DateTime createdAt;
 
   /// API key ID
   String id;
@@ -29,39 +26,42 @@ class APIKeyResponseDto {
   /// API key name
   String name;
 
-  /// List of permissions
-  List<Permission> permissions;
+  /// Creation date
+  DateTime createdAt;
 
   /// Last update date
   DateTime updatedAt;
 
+  /// List of permissions
+  List<Permission> permissions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
-    other.createdAt == createdAt &&
     other.id == id &&
     other.name == name &&
-    _deepEquality.equals(other.permissions, permissions) &&
-    other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.updatedAt == updatedAt &&
+    _deepEquality.equals(other.permissions, permissions);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (permissions.hashCode) +
-    (updatedAt.hashCode);
+    (createdAt.hashCode) +
+    (updatedAt.hashCode) +
+    (permissions.hashCode);
 
   @override
-  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
+  String toString() => 'APIKeyResponseDto[id=$id, name=$name, createdAt=$createdAt, updatedAt=$updatedAt, permissions=$permissions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'permissions'] = this.permissions;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'permissions'] = this.permissions;
     return json;
   }
 
@@ -74,11 +74,11 @@ class APIKeyResponseDto {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        permissions: Permission.listFromJson(json[r'permissions']),
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
       );
     }
     return null;
@@ -126,11 +126,11 @@ class APIKeyResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'createdAt',
     'id',
     'name',
-    'permissions',
+    'createdAt',
     'updatedAt',
+    'permissions',
   };
 }
 

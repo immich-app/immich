@@ -1,35 +1,10 @@
 import { defaultLang, langs, locales } from '$lib/constants';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
-import { isWebCompatibleImage } from '$lib/utils/asset-utils';
+import { lang } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
-import {
-  AssetJobName,
-  AssetMediaSize,
-  AssetTypeEnum,
-  MemoryType,
-  QueueName,
-  finishOAuth,
-  getAssetOriginalPath,
-  getAssetPlaybackPath,
-  getAssetThumbnailPath,
-  getBaseUrl,
-  getPeopleThumbnailPath,
-  getUserProfileImagePath,
-  linkOAuthAccount,
-  startOAuth,
-  unlinkOAuthAccount,
-  type AssetResponseDto,
-  type MemoryResponseDto,
-  type PersonResponseDto,
-  type ServerVersionResponseDto,
-  type SharedLinkResponseDto,
-  type UserResponseDto,
-} from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
-import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { init, register, t, type MessageFormatter } from 'svelte-i18n';
-import { derived, get } from 'svelte/store';
+import { type ServerVersionResponseDto } from '@server/sdk';
+import { init, register, t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -39,10 +14,11 @@ interface DownloadRequestOptions<T = unknown> {
   onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
-interface DateFormatter {
-  formatDate: (date: Date) => string;
-  formatTime: (date: Date) => string;
-  formatDateTime: (date: Date) => string;
+interface UploadRequestOptions {
+  url: string;
+  method?: 'POST' | 'PUT';
+  data: FormData;
+  onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
 }
 
 export const initLanguage = async () => {
@@ -53,13 +29,6 @@ export const initLanguage = async () => {
 
   await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
 };
-
-interface UploadRequestOptions {
-  url: string;
-  method?: 'POST' | 'PUT';
-  data: FormData;
-  onUploadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
-}
 
 export class AbortError extends Error {
   override name = 'AbortError';
@@ -146,127 +115,6 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
-export const getQueueName = derived(t, ($t) => {
-  return (name: QueueName) => {
-    const names: Record<QueueName, string> = {
-      [QueueName.ThumbnailGeneration]: $t('admin.thumbnail_generation_job'),
-      [QueueName.MetadataExtraction]: $t('admin.metadata_extraction_job'),
-      [QueueName.Sidecar]: $t('admin.sidecar_job'),
-      [QueueName.SmartSearch]: $t('admin.machine_learning_smart_search'),
-      [QueueName.DuplicateDetection]: $t('admin.machine_learning_duplicate_detection'),
-      [QueueName.FaceDetection]: $t('admin.face_detection'),
-      [QueueName.FacialRecognition]: $t('admin.machine_learning_facial_recognition'),
-      [QueueName.VideoConversion]: $t('admin.video_conversion_job'),
-      [QueueName.StorageTemplateMigration]: $t('admin.storage_template_migration'),
-      [QueueName.Migration]: $t('admin.migration_job'),
-      [QueueName.BackgroundTask]: $t('admin.background_task_job'),
-      [QueueName.Search]: $t('search'),
-      [QueueName.Library]: $t('external_libraries'),
-      [QueueName.Notifications]: $t('notifications'),
-      [QueueName.BackupDatabase]: $t('admin.backup_database'),
-      [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
-      [QueueName.Workflow]: $t('workflows'),
-      [QueueName.Editor]: $t('editor'),
-    };
-
-    return names[name];
-  };
-});
-
-let _sharedLink: SharedLinkResponseDto | undefined;
-
-export const setSharedLink = (sharedLink: SharedLinkResponseDto) => (_sharedLink = sharedLink);
-export const getSharedLink = (): SharedLinkResponseDto | undefined => _sharedLink;
-
-const createUrl = (path: string, parameters?: Record<string, unknown>) => {
-  const searchParameters = new URLSearchParams();
-  for (const key in parameters) {
-    const value = parameters[key];
-    if (value !== undefined && value !== null) {
-      searchParameters.set(key, value.toString());
-    }
-  }
-
-  const url = new URL(path, 'https://example.com');
-  url.search = searchParameters.toString();
-
-  return getBaseUrl() + url.pathname + url.search + url.hash;
-};
-
-type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
-
-export const getAssetUrl = ({
-  asset,
-  sharedLink,
-  forceOriginal = false,
-}: {
-  asset: AssetResponseDto | undefined;
-  sharedLink?: SharedLinkResponseDto;
-  forceOriginal?: boolean;
-}) => {
-  if (!asset) {
-    return;
-  }
-  const id = asset.id;
-  const cacheKey = asset.thumbhash;
-  if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-    return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
-  }
-  const size = targetImageSize(asset, forceOriginal);
-  return getAssetMediaUrl({ id, size, cacheKey });
-};
-
-const forceUseOriginal = (asset: AssetResponseDto) => {
-  return asset.type === AssetTypeEnum.Image && asset.duration && !asset.duration.includes('0:00:00.000');
-};
-
-export const targetImageSize = (asset: AssetResponseDto, forceOriginal: boolean) => {
-  if (forceOriginal || get(alwaysLoadOriginalFile) || forceUseOriginal(asset)) {
-    return isWebCompatibleImage(asset) ? AssetMediaSize.Original : AssetMediaSize.Fullsize;
-  }
-  return AssetMediaSize.Preview;
-};
-
-export const getAssetMediaUrl = (options: AssetUrlOptions) => {
-  const { id, size, cacheKey: c, edited = true } = options;
-  const isOriginal = size === AssetMediaSize.Original;
-  const path = isOriginal ? getAssetOriginalPath(id) : getAssetThumbnailPath(id);
-  return createUrl(path, { ...authManager.params, size: isOriginal ? undefined : size, c, edited });
-};
-
-export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
-  const { id, cacheKey: c } = options;
-  return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
-};
-
-export const getProfileImageUrl = (user: UserResponseDto) =>
-  createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
-
-export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
-  createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
-
-export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
-  const messages: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-  };
-
-  return messages[job];
-};
-
-export const getAssetJobIcon = (job: AssetJobName) => {
-  const names: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: mdiHeadSyncOutline,
-    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
-    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
-    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
-  };
-
-  return names[job];
-};
-
 export const copyToClipboard = async (secret: string) => {
   const $t = get(t);
 
@@ -276,47 +124,6 @@ export const copyToClipboard = async (secret: string) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }
-};
-
-export const oauth = {
-  isCallback: (location: Location) => {
-    const search = location.search;
-    return search.includes('code=') || search.includes('error=');
-  },
-  isAutoLaunchDisabled: (location: Location) => {
-    const values = ['autoLaunch=0', 'password=1', 'password=true'];
-    for (const value of values) {
-      if (location.search.includes(value)) {
-        return true;
-      }
-    }
-    return false;
-  },
-  isAutoLaunchEnabled: (location: Location) => {
-    const value = 'autoLaunch=1';
-    return location.search.includes(value);
-  },
-  authorize: async (location: Location) => {
-    const $t = get(t);
-    try {
-      const redirectUri = location.href.split('?')[0];
-      const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.href = url;
-      return true;
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_login_with_oauth'));
-      return false;
-    }
-  },
-  login: (location: Location) => {
-    return finishOAuth({ oAuthCallbackDto: { url: location.href } });
-  },
-  link: (location: Location) => {
-    return linkOAuthAccount({ oAuthCallbackDto: { url: location.href } });
-  },
-  unlink: () => {
-    return unlinkOAuthAccount();
-  },
 };
 
 export const findLocale = (code: string | undefined) => {
@@ -337,17 +144,6 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
   promise.catch((error) => console.error(`[utils.ts]:handlePromiseError ${error}`, error));
 };
 
-export const memoryLaneTitle = derived(t, ($t) => {
-  return (memory: MemoryResponseDto) => {
-    const now = new Date();
-    if (memory.type === MemoryType.OnThisDay) {
-      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
-    }
-
-    return $t('unknown');
-  };
-});
-
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
   try {
     const result = await fn();
@@ -359,38 +155,6 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
 
 // eslint-disable-next-line unicorn/prefer-code-point
 export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
-
-export function createDateFormatter(localeCode: string | undefined): DateFormatter {
-  return {
-    formatDate: (date: Date): string =>
-      date.toLocaleString(localeCode, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      }),
-
-    formatTime: (date: Date): string =>
-      date.toLocaleString(localeCode, {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }),
-
-    formatDateTime: (date: Date): string => {
-      const formattedDate = date.toLocaleString(localeCode, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-      const formattedTime = date.toLocaleString(localeCode, {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      });
-      return `${formattedDate} ${formattedTime}`;
-    },
-  };
-}
 
 export const getReleaseType = (
   current: ServerVersionResponseDto,

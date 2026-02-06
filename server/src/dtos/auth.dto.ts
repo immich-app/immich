@@ -94,8 +94,3 @@ export class ValidateAccessTokenResponseDto {
   @ApiProperty({ description: 'Authentication status' })
   authStatus!: boolean;
 }
-
-export class AuthStatusResponseDto {
-  @ApiProperty({ description: 'Has password set' })
-  password!: boolean;
-}

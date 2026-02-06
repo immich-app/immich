@@ -1,6 +1,6 @@
 <script lang="ts">
   import ApiKeyGrid from '$lib/components/user-settings-page/user-api-key-grid.svelte';
-  import { Permission } from '@immich/sdk';
+  import { Permission } from '@server/sdk';
   import { Checkbox, IconButton, Input, Label } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';

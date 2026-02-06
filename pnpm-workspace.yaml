@@ -6,10 +6,8 @@ packages:
   - web
 ignoredBuiltDependencies:
   - '@nestjs/core'
-  - '@parcel/watcher'
   - '@swc/core'
   - esbuild
-  - protobufjs
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - bcrypt

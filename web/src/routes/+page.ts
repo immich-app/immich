@@ -13,17 +13,12 @@ export const load = (async ({ fetch }) => {
   try {
     await init(fetch);
 
-    if (serverConfigManager.value.maintenanceMode) {
-      redirect(307, Route.maintenanceMode());
-    }
-
     const authenticated = await loadUser();
     if (authenticated) {
-      redirect(307, Route.photos());
+      redirect(307, Route.userSettings());
     }
 
     if (serverConfigManager.value.isInitialized) {
-      // Redirect to login page if there exists an admin account (i.e. server is initialized)
       redirect(307, Route.login());
     }
 
@@ -39,7 +34,7 @@ export const load = (async ({ fetch }) => {
   return {
     meta: {
       title: $t('welcome') + ' 🎉',
-      description: $t('immich_web_interface'),
+      description: 'Web Interface',
     },
   };
 }) satisfies PageLoad;

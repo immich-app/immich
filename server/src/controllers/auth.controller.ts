@@ -1,10 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
-  AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
   LoginResponseDto,
@@ -99,16 +98,5 @@ export class AuthController {
       ImmichCookie.AuthType,
       ImmichCookie.IsAuthenticated,
     ]);
-  }
-
-  @Get('status')
-  @Authenticated()
-  @Endpoint({
-    summary: 'Retrieve auth status',
-    description: 'Get information about the current session.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  getAuthStatus(@Auth() auth: AuthDto): Promise<AuthStatusResponseDto> {
-    return this.service.getAuthStatus(auth);
   }
 }

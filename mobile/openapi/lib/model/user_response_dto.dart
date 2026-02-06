@@ -13,19 +13,10 @@ part of openapi.api;
 class UserResponseDto {
   /// Returns a new [UserResponseDto] instance.
   UserResponseDto({
-    required this.avatarColor,
-    required this.email,
     required this.id,
     required this.name,
-    required this.profileChangedAt,
-    required this.profileImagePath,
+    required this.email,
   });
-
-  /// Avatar color
-  UserAvatarColor avatarColor;
-
-  /// User email
-  String email;
 
   /// User ID
   String id;
@@ -33,42 +24,30 @@ class UserResponseDto {
   /// User name
   String name;
 
-  /// Profile change date
-  DateTime profileChangedAt;
-
-  /// Profile image path
-  String profileImagePath;
+  /// User email
+  String email;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-    other.avatarColor == avatarColor &&
-    other.email == email &&
     other.id == id &&
     other.name == name &&
-    other.profileChangedAt == profileChangedAt &&
-    other.profileImagePath == profileImagePath;
+    other.email == email;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (avatarColor.hashCode) +
-    (email.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode);
+    (email.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
+  String toString() => 'UserResponseDto[id=$id, name=$name, email=$email]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'avatarColor'] = this.avatarColor;
-      json[r'email'] = this.email;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
-      json[r'profileImagePath'] = this.profileImagePath;
+      json[r'email'] = this.email;
     return json;
   }
 
@@ -81,12 +60,9 @@ class UserResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
-        email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        email: mapValueOfType<String>(json, r'email')!,
       );
     }
     return null;
@@ -134,12 +110,9 @@ class UserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'avatarColor',
-    'email',
     'id',
     'name',
-    'profileChangedAt',
-    'profileImagePath',
+    'email',
   };
 }
 

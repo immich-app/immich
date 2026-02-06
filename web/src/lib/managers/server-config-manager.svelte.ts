@@ -1,5 +1,5 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import { getServerConfig, type ServerConfigDto } from '@immich/sdk';
+import { getServerConfig, type ServerConfigDto } from '@server/sdk';
 
 class ServerConfigManager {
   #value?: ServerConfigDto = $state();

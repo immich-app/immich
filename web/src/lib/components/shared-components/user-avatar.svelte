@@ -4,7 +4,7 @@
 
 <script lang="ts">
   import { getProfileImageUrl } from '$lib/utils';
-  import { type UserAvatarColor } from '@immich/sdk';
+  import { type UserAvatarColor } from '@server/sdk';
   import { t } from 'svelte-i18n';
 
   interface User {

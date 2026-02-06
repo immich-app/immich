@@ -1,4 +1,4 @@
-import { LoginResponseDto, getSessions, login, signUpAdmin } from '@immich/sdk';
+import { LoginResponseDto, getSessions, login, signUpAdmin } from '@server/sdk';
 import { loginDto, signupDto, uuidDto } from 'src/fixtures';
 import { deviceDto, errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';

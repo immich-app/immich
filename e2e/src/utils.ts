@@ -1,3 +1,4 @@
+import { BrowserContext } from '@playwright/test';
 import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
@@ -53,8 +54,7 @@ import {
   updateMyPreferences,
   upsertTags,
   validate,
-} from '@immich/sdk';
-import { BrowserContext } from '@playwright/test';
+} from '@server/sdk';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';

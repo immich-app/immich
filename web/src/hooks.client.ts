@@ -1,4 +1,4 @@
-import { isHttpError, type ApiHttpError } from '@immich/sdk';
+import { isHttpError, type ApiHttpError } from '@server/sdk';
 import type { HandleClientError } from '@sveltejs/kit';
 
 const DEFAULT_MESSAGE = 'Hmm, not sure about that. Check the logs or open a ticket?';

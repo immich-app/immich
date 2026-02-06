@@ -1,5 +1,4 @@
 import { init } from '$lib/utils/server';
-import { commandPaletteManager } from '@immich/ui';
 import type { LayoutLoad } from './$types';
 
 export const ssr = false;
@@ -13,12 +12,10 @@ export const load = (async ({ fetch }) => {
     error = initError;
   }
 
-  commandPaletteManager.enable();
-
   return {
     error,
     meta: {
-      title: 'Immich',
+      title: 'App',
     },
   };
 }) satisfies LayoutLoad;

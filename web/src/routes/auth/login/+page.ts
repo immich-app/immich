@@ -17,6 +17,6 @@ export const load = (async ({ parent, url }) => {
     meta: {
       title: $t('login'),
     },
-    continueUrl: url.searchParams.get('continue') || Route.photos(),
+    continueUrl: url.searchParams.get('continue') || Route.userSettings(),
   };
 }) satisfies PageLoad;

@@ -78,7 +78,7 @@ class Workers {
 }
 
 function main() {
-  process.title = 'immich';
+  process.title = 'server';
   void new Workers().bootstrap();
 }
 
