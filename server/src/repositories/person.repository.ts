@@ -160,7 +160,7 @@ export class PersonRepository {
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
-      .select((eb) => eb.fn.count<number>(eb.fn('distinct', ['asset.id'])).as('assetCount'))
+      .select((eb) => eb.fn.count<number>('asset_face.assetId').distinct().as('assetCount'))
       .where('person.ownerId', '=', userId)
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
@@ -193,7 +193,7 @@ export class PersonRepository {
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])), 'desc')
+          .orderBy((eb) => eb.fn.count('asset_face.assetId').distinct(), 'desc')
           .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
