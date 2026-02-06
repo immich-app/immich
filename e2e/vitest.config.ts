@@ -19,5 +19,8 @@ export default defineConfig({
         singleThread: true,
       },
     },
+    env: {
+      TZ: 'UTC',
+    },
   },
 });

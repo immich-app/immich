@@ -164,6 +164,29 @@ describe('/people', () => {
       expect(people.some((p) => p.id === hiddenPerson.id)).toBe(false);
     });
 
+    it('should return correct asset counts', async () => {
+      const { status, body } = await request(app).get('/people').set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.hasNextPage).toBe(false);
+      expect(body.total).toBe(11); // All persons
+      expect(body.hidden).toBe(1); // 'hidden_person'
+
+      const people = body.people as PersonResponseDto[];
+
+      expect(people.map((p) => ({ id: p.id, assetCount: p.assetCount }))).toEqual([
+        { id: nameFreddyPersonFavourite.id, assetCount: 2 }, // name: 'Freddy', count: 2
+        { id: nameBillPersonFavourite.id, assetCount: 1 }, // name: 'Bill', count: 1
+        { id: multipleAssetsPerson.id, assetCount: 3 }, // name: 'multiple_assets_person', count: 3
+        { id: nameBobPerson.id, assetCount: 2 }, // name: 'Bob', count: 2
+        { id: nameAlicePerson.id, assetCount: 1 }, // name: 'Alice', count: 1
+        { id: nameCharliePerson.id, assetCount: 1 }, // name: 'Charlie', count: 1
+        { id: visiblePerson.id, assetCount: 1 }, // name: 'visible_person', count: 1
+        { id: nameNullPerson4Assets.id, assetCount: 4 }, // name: '', count: 4
+        { id: nameNullPerson3Assets.id, assetCount: 3 }, // name: '', count: 3
+      ]);
+    });
+
     it('should return only visible people', async () => {
       const { status, body } = await request(app).get('/people').set('Authorization', `Bearer ${admin.accessToken}`);
 
