@@ -11,14 +11,10 @@ export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository
     empty: vitest.fn(),
     pause: vitest.fn(),
     resume: vitest.fn(),
-    searchJobs: vitest.fn(),
     queue: vitest.fn().mockImplementation(() => Promise.resolve()),
     queueAll: vitest.fn().mockImplementation(() => Promise.resolve()),
     isActive: vitest.fn(),
     isPaused: vitest.fn(),
-    getJobCounts: vitest.fn(),
-    clear: vitest.fn(),
     waitForQueueCompletion: vitest.fn(),
-    removeJob: vitest.fn(),
   };
 };

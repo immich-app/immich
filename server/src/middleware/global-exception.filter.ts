@@ -2,7 +2,6 @@ import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/co
 import { Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { logGlobalError } from 'src/utils/logger';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
@@ -30,7 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   private fromError(error: Error) {
-    logGlobalError(this.logger, error);
+    this.logger.error(`Unhandled exception: ${error}`, error instanceof Error ? error.stack : undefined);
 
     if (error instanceof HttpException) {
       const status = error.getStatus();

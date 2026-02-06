@@ -5,18 +5,17 @@ import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
-import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto';
-import { JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum';
+import { JobName, JobStatus, MetadataKey, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobCounts, JobItem, JobOf } from 'src/types';
+import { JobItem } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
   jobName: JobName;
   queueName: QueueName;
-  handler: (job: JobOf<any>) => Promise<JobStatus>;
+  handler: (data: any) => Promise<JobStatus>;
   label: string;
 };
 
@@ -138,21 +137,6 @@ export class JobRepository {
     return this.getQueue(name).drain();
   }
 
-  clear(name: QueueName, type: QueueCleanType) {
-    return this.getQueue(name).clean(0, 1000, type);
-  }
-
-  getJobCounts(name: QueueName): Promise<JobCounts> {
-    return this.getQueue(name).getJobCounts(
-      'active',
-      'completed',
-      'failed',
-      'delayed',
-      'waiting',
-      'paused',
-    ) as unknown as Promise<JobCounts>;
-  }
-
   private getQueueName(name: JobName) {
     return (this.handlers[name] as JobMapItem).queueName;
   }
@@ -162,25 +146,19 @@ export class JobRepository {
       return;
     }
 
-    const promises = [];
-    const itemsByQueue = {} as Record<string, (JobItem & { data: any; options: JobsOptions | undefined })[]>;
+    const itemsByQueue = {} as Record<string, { name: string; data: any; options?: JobsOptions }[]>;
     for (const item of items) {
       const queueName = this.getQueueName(item.name);
       const job = {
         name: item.name,
         data: item.data || {},
-        options: this.getJobOptions(item) || undefined,
-      } as JobItem & { data: any; options: JobsOptions | undefined };
+      };
 
-      if (job.options?.jobId) {
-        // need to use add() instead of addBulk() for jobId deduplication
-        promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
-      } else {
-        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
-        itemsByQueue[queueName].push(job);
-      }
+      itemsByQueue[queueName] = itemsByQueue[queueName] || [];
+      itemsByQueue[queueName].push(job);
     }
 
+    const promises = [];
     for (const [queueName, jobs] of Object.entries(itemsByQueue)) {
       const queue = this.getQueue(queueName as QueueName);
       promises.push(queue.addBulk(jobs));
@@ -208,47 +186,7 @@ export class JobRepository {
     }
   }
 
-  async searchJobs(name: QueueName, dto: QueueJobSearchDto): Promise<QueueJobResponseDto[]> {
-    const jobs = await this.getQueue(name).getJobs(dto.status ?? Object.values(QueueJobStatus), 0, 1000);
-    return jobs.map((job) => {
-      const { id, name, timestamp, data } = job;
-      return { id, name: name as JobName, timestamp, data };
-    });
-  }
-
-  private getJobOptions(item: JobItem): JobsOptions | null {
-    switch (item.name) {
-      case JobName.NotifyAlbumUpdate: {
-        return {
-          jobId: `${item.data.id}/${item.data.recipientId}`,
-          delay: item.data?.delay,
-        };
-      }
-      case JobName.StorageTemplateMigrationSingle: {
-        return { jobId: item.data.id };
-      }
-      case JobName.PersonGenerateThumbnail: {
-        return { priority: 1 };
-      }
-      case JobName.FacialRecognitionQueueAll: {
-        return { jobId: JobName.FacialRecognitionQueueAll };
-      }
-      default: {
-        return null;
-      }
-    }
-  }
-
   private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
-  }
-
-  /** @deprecated */
-  // todo: remove this when asset notifications no longer need it.
-  public async removeJob(name: JobName, jobID: string): Promise<void> {
-    const existingJob = await this.getQueue(this.getQueueName(name)).getJob(jobID);
-    if (existingJob) {
-      await existingJob.remove();
-    }
   }
 }

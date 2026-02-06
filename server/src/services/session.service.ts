@@ -1,16 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { OnEvent, OnJob } from 'src/decorators';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SessionCreateDto,
   SessionCreateResponseDto,
   SessionResponseDto,
-  SessionUpdateDto,
   mapSession,
 } from 'src/dtos/session.dto';
-import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
+import { JobName, JobStatus, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -21,9 +19,7 @@ export class SessionService extends BaseService {
     for (const session of sessions) {
       this.logger.verbose(`Deleted expired session token: ${session.deviceOS}/${session.deviceType}`);
     }
-
     this.logger.log(`Deleted ${sessions.length} expired session tokens`);
-
     return JobStatus.Success;
   }
 
@@ -51,38 +47,13 @@ export class SessionService extends BaseService {
     return sessions.map((session) => mapSession(session, auth.session?.id));
   }
 
-  async update(auth: AuthDto, id: string, dto: SessionUpdateDto): Promise<SessionResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.SessionUpdate, ids: [id] });
-
-    if (Object.values(dto).filter((prop) => prop !== undefined).length === 0) {
-      throw new BadRequestException('No fields to update');
-    }
-
-    const session = await this.sessionRepository.update(id, {
-      isPendingSyncReset: dto.isPendingSyncReset,
-    });
-
-    return mapSession(session);
-  }
-
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.AuthDeviceDelete, ids: [id] });
     await this.sessionRepository.delete(id);
   }
 
   async deleteAll(auth: AuthDto): Promise<void> {
     const userId = auth.user.id;
     const currentSessionId = auth.session?.id;
-    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
-  }
-
-  async lock(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.SessionLock, ids: [id] });
-    await this.sessionRepository.update(id, { pinExpiresAt: null });
-  }
-
-  @OnEvent({ name: 'AuthChangePassword' })
-  async onAuthChangePassword({ userId, currentSessionId }: ArgOf<'AuthChangePassword'>): Promise<void> {
     await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
   }
 }

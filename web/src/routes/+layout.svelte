@@ -1,56 +1,27 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
-  import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
-  import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
-  import { themeManager } from '$lib/managers/theme-manager.svelte';
-  import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
-  import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
+
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import {
-    CommandPaletteDefaultProvider,
-    TooltipProvider,
-    modalManager,
-    setTranslations,
-    toastManager,
-    type ActionItem,
-  } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
+  import { TooltipProvider, toastManager } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
-  import { t } from 'svelte-i18n';
   import '../app.css';
 
   interface Props {
     children?: Snippet;
   }
-
-  $effect(() => {
-    setTranslations({
-      close: $t('close'),
-      show_password: $t('show_password'),
-      hide_password: $t('hide_password'),
-      confirm: $t('confirm'),
-      cancel: $t('cancel'),
-      toast_success_title: $t('success'),
-      toast_info_title: $t('info'),
-      toast_warning_title: $t('warning'),
-      toast_danger_title: $t('error'),
-      navigate_next: $t('next'),
-      navigate_previous: $t('previous'),
-    });
-  });
 
   let { children }: Props = $props();
 
@@ -99,72 +70,9 @@
     if (!isRestarting) {
       return;
     }
-
-    if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
-      modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
-
-      // we will be disconnected momentarily
-      // wait for reconnect then reload
-      let waiting = false;
-      websocketStore.connected.subscribe((connected) => {
-        if (!connected) {
-          waiting = true;
-        } else if (connected && waiting) {
-          location.reload();
-        }
-      });
-    }
   });
-
-  const userCommands: ActionItem[] = [
-    {
-      title: $t('theme'),
-      description: $t('toggle_theme_description'),
-      type: $t('command'),
-      icon: mdiThemeLightDark,
-      onAction: () => themeManager.toggleTheme(),
-      shortcuts: { shift: true, key: 't' },
-    },
-  ];
-
-  const adminCommands: ActionItem[] = [
-    {
-      title: $t('users'),
-      description: $t('admin.users_page_description'),
-      icon: mdiAccountMultipleOutline,
-      onAction: () => goto(Route.users()),
-    },
-    {
-      title: $t('settings'),
-      description: $t('admin.settings_page_description'),
-      icon: mdiCog,
-      onAction: () => goto(Route.systemSettings()),
-    },
-    {
-      title: $t('admin.queues'),
-      description: $t('admin.queues_page_description'),
-      icon: mdiSync,
-      type: $t('page'),
-      onAction: () => goto(Route.queues()),
-    },
-    {
-      title: $t('external_libraries'),
-      description: $t('admin.external_libraries_page_description'),
-      icon: mdiBookshelf,
-      onAction: () => goto(Route.libraries()),
-    },
-    {
-      title: $t('server_stats'),
-      description: $t('admin.server_stats_page_description'),
-      icon: mdiServer,
-      onAction: () => goto(Route.systemStatistics()),
-    },
-  ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
-
-  const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
-<CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />
 
 <svelte:head>
@@ -223,7 +131,4 @@
   {#if showNavigationLoadingBar}
     <NavigationLoadingBar />
   {/if}
-
-  <DownloadPanel />
-  <UploadPanel />
 </TooltipProvider>

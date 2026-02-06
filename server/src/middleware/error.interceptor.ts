@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Observable, catchError, throwError } from 'rxjs';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { logGlobalError } from 'src/utils/logger';
 import { routeToErrorMessage } from 'src/utils/misc';
 
 @Injectable()
@@ -25,7 +24,7 @@ export class ErrorInterceptor implements NestInterceptor {
             return error;
           }
 
-          logGlobalError(this.logger, error);
+          this.logger.error(`Error in handler: ${error}`, error instanceof Error ? error.stack : undefined);
 
           const message = routeToErrorMessage(context.getHandler().name);
           return new InternalServerErrorException(message);

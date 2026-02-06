@@ -48,7 +48,6 @@ export type ValidateRequest = {
   headers: IncomingHttpHeaders;
   queryParams: Record<string, string>;
   metadata: {
-    sharedLinkRoute: boolean;
     adminRoute: boolean;
     /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
     permission?: Permission | false;
@@ -188,16 +187,11 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const { adminRoute, uri } = metadata;
     const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
-      throw new ForbiddenException('Forbidden');
-    }
-
-    if (authDto.sharedLink && !sharedLinkRoute) {
-      this.logger.warn(`Denied access to non-shared route: ${uri}`);
       throw new ForbiddenException('Forbidden');
     }
 

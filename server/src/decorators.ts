@@ -1,7 +1,7 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
 import _ from 'lodash';
-import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
+import { ApiCustomExtension, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions';
 import { BeforeUpdateTrigger, Column, ColumnOptions } from 'src/sql-tools';
@@ -163,7 +163,6 @@ export const Endpoint = ({ history, ...options }: EndpointOptions) => {
 
   if (history?.isDeprecated()) {
     options.deprecated = true;
-    decorators.push(ApiTags(ApiTag.Deprecated));
   }
 
   decorators.push(ApiOperation({ ...options, ...extensions }));

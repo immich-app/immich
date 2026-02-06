@@ -7,7 +7,6 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { SessionTable } from 'src/schema/tables/session.table';
-import { asUuid } from 'src/utils/database';
 
 export type SessionSearchOptions = { updatedBefore: Date };
 
@@ -91,14 +90,14 @@ export class SessionRepository {
     return this.db
       .updateTable('session')
       .set(dto)
-      .where('session.id', '=', asUuid(id))
+      .where('session.id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
-    await this.db.deleteFrom('session').where('id', '=', asUuid(id)).execute();
+    await this.db.deleteFrom('session').where('id', '=', id).execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })
@@ -113,15 +112,5 @@ export class SessionRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async lockAll(userId: string) {
     await this.db.updateTable('session').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async resetSyncProgress(sessionId: string) {
-    await this.db.transaction().execute((tx) => {
-      return Promise.all([
-        tx.updateTable('session').set({ isPendingSyncReset: false }).where('id', '=', sessionId).execute(),
-        tx.deleteFrom('session_sync_checkpoint').where('sessionId', '=', sessionId).execute(),
-      ]);
-    });
   }
 }
