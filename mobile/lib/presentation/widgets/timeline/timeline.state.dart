@@ -28,26 +28,6 @@ class TimelineArgs {
     this.groupBy,
   });
 
-  TimelineArgs copyWith({
-    double? maxWidth,
-    double? maxHeight,
-    double? spacing,
-    int? columnCount,
-    bool? showStorageIndicator,
-    bool? withStack,
-    GroupAssetsBy? groupBy,
-  }) {
-    return TimelineArgs(
-      maxWidth: maxWidth ?? this.maxWidth,
-      maxHeight: maxHeight ?? this.maxHeight,
-      spacing: spacing ?? this.spacing,
-      columnCount: columnCount ?? this.columnCount,
-      showStorageIndicator: showStorageIndicator ?? this.showStorageIndicator,
-      withStack: withStack ?? this.withStack,
-      groupBy: groupBy ?? this.groupBy,
-    );
-  }
-
   @override
   bool operator ==(covariant TimelineArgs other) {
     return spacing == other.spacing &&
