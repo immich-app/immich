@@ -185,7 +185,7 @@ export class MediaService extends BaseService {
 
     const generated = await this.generateEditedThumbnails(asset, config);
     await this.syncFiles(
-      asset.files.filter((asset) => asset.isEdited),
+      asset.files.filter((file) => file.isEdited),
       generated?.files ?? [],
     );
 

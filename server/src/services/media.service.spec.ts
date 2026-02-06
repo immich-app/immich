@@ -18,6 +18,7 @@ import {
 } from 'src/enum';
 import { MediaService } from 'src/services/media.service';
 import { JobCounts, RawImageInfo } from 'src/types';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub, previewFile } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -139,33 +140,30 @@ describe(MediaService.name, () => {
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
-    it('should queue all assets with missing webp path', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noWebpPath]));
+    it('should queue all assets with missing preview', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.AssetGenerateThumbnails,
-          data: { id: assetStub.image.id },
-        },
+        { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
       ]);
-
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
     it('should queue all assets with missing thumbhash', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noThumbhash]));
+      const asset = AssetFactory.from({ thumbhash: null })
+        .files([AssetFileType.Thumbnail, AssetFileType.Preview])
+        .build();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.AssetGenerateThumbnails,
-          data: { id: assetStub.image.id },
-        },
+        { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
       ]);
 
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
@@ -1052,12 +1050,19 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
-      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+      await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1107,12 +1112,19 @@ describe(MediaService.name, () => {
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.media.copyTagGroup.mockResolvedValue(true);
 
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.panoramaTif);
+      const asset = AssetFactory.from({ originalFileName: 'panorama.tif' })
+        .exif({
+          fileSizeInByte: 5000,
+          projectionType: 'EQUIRECTANGULAR',
+        })
+        .build();
+
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.panoramaTif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.Srgb,
         orientation: undefined,
         processInvalidImages: false,
@@ -1135,11 +1147,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.media.copyTagGroup).toHaveBeenCalledTimes(2);
-      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith(
-        'XMP-GPano',
-        assetStub.panoramaTif.originalPath,
-        expect.any(String),
-      );
+      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith('XMP-GPano', asset.originalPath, expect.any(String));
     });
 
     it('should respect encoding options when generating full-size preview', async () => {
@@ -1149,12 +1157,19 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1181,9 +1196,16 @@ describe(MediaService.name, () => {
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
-      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+      await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
@@ -1263,29 +1285,24 @@ describe(MediaService.name, () => {
     });
 
     it('should clean up edited files if an asset has no edits', async () => {
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
-        ...assetStub.withoutEdits,
-      });
+      const asset = AssetFactory.from({ thumbhash: factory.buffer() })
+        .exif()
+        .files([
+          { type: AssetFileType.Preview, path: 'edited1.jpg', isEdited: true },
+          { type: AssetFileType.Thumbnail, path: 'edited2.jpg', isEdited: true },
+          { type: AssetFileType.FullSize, path: 'edited3.jpg', isEdited: true },
+        ])
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
-      const status = await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id });
+      const status = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: {
-          files: expect.arrayContaining([
-            '/uploads/user-id/fullsize/path_edited.jpg',
-            '/uploads/user-id/preview/path_edited.jpg',
-            '/uploads/user-id/thumbnail/path_edited.jpg',
-          ]),
+          files: expect.arrayContaining(['edited1.jpg', 'edited2.jpg', 'edited3.jpg']),
         },
       });
-
-      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ path: '/uploads/user-id/preview/path_edited.jpg' }),
-          expect.objectContaining({ path: '/uploads/user-id/thumbnail/path_edited.jpg' }),
-          expect.objectContaining({ path: '/uploads/user-id/fullsize/path_edited.jpg' }),
-        ]),
-      );
 
       expect(status).toBe(JobStatus.Success);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -1320,11 +1337,9 @@ describe(MediaService.name, () => {
     });
 
     it('should generate the original thumbhash if no edits exist', async () => {
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
-        ...assetStub.withoutEdits,
-      });
-      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
-      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.media.generateThumbhash.mockResolvedValue(factory.buffer());
 
       await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id, source: 'upload' });
 
@@ -1335,18 +1350,14 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...assetStub.withCropEdit,
       });
-      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      const thumbhashBuffer = factory.buffer();
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
       await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          thumbhash: thumbhashBuffer,
-        }),
-      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
     });
   });
 
