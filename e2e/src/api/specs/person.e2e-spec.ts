@@ -13,6 +13,7 @@ describe('/people', () => {
 
   let nameAlicePerson: PersonResponseDto;
   let nameBobPerson: PersonResponseDto;
+  let nameZPerson: PersonResponseDto;
   let nameCharliePerson: PersonResponseDto;
   let nameNullPerson4Assets: PersonResponseDto;
   let nameNullPerson3Assets: PersonResponseDto;
@@ -27,6 +28,7 @@ describe('/people', () => {
     [
       visiblePerson,
       hiddenPerson,
+      nameZPerson,
       multipleAssetsPerson,
       nameCharliePerson,
       nameBobPerson,
@@ -43,6 +45,9 @@ describe('/people', () => {
       utils.createPerson(admin.accessToken, {
         name: 'hidden_person',
         isHidden: true,
+      }),
+      utils.createPerson(admin.accessToken, {
+        name: 'Z',
       }),
       utils.createPerson(admin.accessToken, {
         name: 'multiple_assets_person',
@@ -87,12 +92,17 @@ describe('/people', () => {
       utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
       utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
       utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset3.id, personId: multipleAssetsPerson.id }), // 4 assets
+      utils.createFace({ assetId: asset3.id, personId: multipleAssetsPerson.id }), // 4 assets, 3 unique
       // Named persons
       utils.createFace({ assetId: asset1.id, personId: nameCharliePerson.id }), // 1 asset
       utils.createFace({ assetId: asset1.id, personId: nameBobPerson.id }),
       utils.createFace({ assetId: asset2.id, personId: nameBobPerson.id }), // 2 assets
       utils.createFace({ assetId: asset1.id, personId: nameAlicePerson.id }), // 1 asset
+      // Distict face order test
+      utils.createFace({ assetId: asset1.id, personId: nameZPerson.id }),
+      utils.createFace({ assetId: asset2.id, personId: nameZPerson.id }),
+      utils.createFace({ assetId: asset3.id, personId: nameZPerson.id }),
+      utils.createFace({ assetId: asset4.id, personId: nameZPerson.id }), // 4 assets
       // Null-named person 4 assets
       utils.createFace({ assetId: asset1.id, personId: nameNullPerson4Assets.id }),
       utils.createFace({ assetId: asset2.id, personId: nameNullPerson4Assets.id }),
@@ -122,11 +132,12 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 11,
+        total: 12,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
           expect.objectContaining({ name: 'Bill' }),
+          expect.objectContaining({ name: 'Z' }),
           expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'Bob' }),
           expect.objectContaining({ name: 'Alice' }),
@@ -144,7 +155,7 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body.hasNextPage).toBe(false);
-      expect(body.total).toBe(11); // All persons
+      expect(body.total).toBe(12); // All persons
       expect(body.hidden).toBe(1); // 'hidden_person'
 
       const people = body.people as PersonResponseDto[];
@@ -152,6 +163,7 @@ describe('/people', () => {
       expect(people.map((p) => p.id)).toEqual([
         nameFreddyPersonFavourite.id, // name: 'Freddy', count: 2
         nameBillPersonFavourite.id, // name: 'Bill', count: 1
+        nameZPerson.id, // name: 'Z', count: 4 
         multipleAssetsPerson.id, // name: 'multiple_assets_person', count: 3
         nameBobPerson.id, // name: 'Bob', count: 2
         nameAlicePerson.id, // name: 'Alice', count: 1
@@ -169,22 +181,39 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body.hasNextPage).toBe(false);
-      expect(body.total).toBe(11); // All persons
-      expect(body.hidden).toBe(1); // 'hidden_person'
+      expect(body.total).toBe(12); // All persons
 
       const people = body.people as PersonResponseDto[];
 
-      expect(people.map((p) => ({ id: p.id, assetCount: p.assetCount }))).toEqual([
-        { id: nameFreddyPersonFavourite.id, assetCount: 2 }, // name: 'Freddy', count: 2
-        { id: nameBillPersonFavourite.id, assetCount: 1 }, // name: 'Bill', count: 1
-        { id: multipleAssetsPerson.id, assetCount: 3 }, // name: 'multiple_assets_person', count: 3
-        { id: nameBobPerson.id, assetCount: 2 }, // name: 'Bob', count: 2
-        { id: nameAlicePerson.id, assetCount: 1 }, // name: 'Alice', count: 1
-        { id: nameCharliePerson.id, assetCount: 1 }, // name: 'Charlie', count: 1
-        { id: visiblePerson.id, assetCount: 1 }, // name: 'visible_person', count: 1
-        { id: nameNullPerson4Assets.id, assetCount: 4 }, // name: '', count: 4
-        { id: nameNullPerson3Assets.id, assetCount: 3 }, // name: '', count: 3
-      ]);
+      const personByName = (name: string) => people.find((p) => p.name === name);
+      const personById = (id: string) => people.find((p) => p.id === id);
+
+      expect(personByName('Freddy')?.assetCount).toBe(2);
+      expect(personByName('Bill')?.assetCount).toBe(1);
+      expect(personByName('Z')?.assetCount).toBe(4);
+      expect(personByName('multiple_assets_person')?.assetCount).toBe(3);
+      expect(personByName('Bob')?.assetCount).toBe(2);
+      expect(personByName('Alice')?.assetCount).toBe(1);
+      expect(personByName('Charlie')?.assetCount).toBe(1);
+      expect(personByName('visible_person')?.assetCount).toBe(1);
+      expect(personById(nameNullPerson4Assets.id)?.assetCount).toBe(4);
+      expect(personById(nameNullPerson3Assets.id)?.assetCount).toBe(3);
+    });
+
+    it('should distinct count assets', async () => {
+      const { status, body } = await request(app).get('/people').set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.hasNextPage).toBe(false);
+      expect(body.total).toBe(12); 
+
+      const people = body.people as PersonResponseDto[];
+
+      // 'Z' has 4 faces with 4 unique assets, 'multiple_assets_person' has 4 faces but only 3 unique assets. 
+      // When the distinct count isn't working Z would be ranked below 'multiple_assets_person' because of name ordering. 
+      const nameZPersonIndex = people.findIndex((p) => p.id === nameZPerson.id);
+      const multipleAssetsPersonIndex = people.findIndex((p) => p.id === multipleAssetsPerson.id);
+      expect(nameZPersonIndex).toBeLessThan(multipleAssetsPersonIndex);
     });
 
     it('should return only visible people', async () => {
@@ -193,11 +222,12 @@ describe('/people', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: false,
-        total: 11,
+        total: 12,
         hidden: 1,
         people: [
           expect.objectContaining({ name: 'Freddy' }),
           expect.objectContaining({ name: 'Bill' }),
+          expect.objectContaining({ name: 'Z' }),
           expect.objectContaining({ name: 'multiple_assets_person' }),
           expect.objectContaining({ name: 'Bob' }),
           expect.objectContaining({ name: 'Alice' }),
@@ -213,12 +243,12 @@ describe('/people', () => {
       const { status, body } = await request(app)
         .get('/people')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .query({ withHidden: true, page: 5, size: 1 });
+        .query({ withHidden: true, page: 6, size: 1 });
 
       expect(status).toBe(200);
       expect(body).toEqual({
         hasNextPage: true,
-        total: 11,
+        total: 12,
         hidden: 1,
         people: [expect.objectContaining({ name: 'Alice' })],
       });
