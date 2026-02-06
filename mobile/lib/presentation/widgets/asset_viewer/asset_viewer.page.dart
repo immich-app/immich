@@ -101,7 +101,9 @@ class AssetViewer extends ConsumerStatefulWidget {
   }
 }
 
-class _AssetViewerState extends ConsumerState<AssetViewer> {
+enum _DragMode { undecided, dismiss, scroll }
+
+class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderStateMixin {
   static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
   late PageController pageController;
   // PhotoViewGallery takes care of disposing it's controllers
@@ -110,10 +112,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
-  bool? hasDraggedDown;
   bool blockGestures = false;
   bool dragInProgress = false;
   bool shouldPopOnDrag = false;
+  _DragMode _dragMode = _DragMode.undecided;
+  Offset _dragStartGlobalPosition = Offset.zero;
   bool assetReloadRequested = false;
   Offset dragDownPosition = Offset.zero;
   int totalAssets = 0;
@@ -130,9 +133,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   KeepAliveLink? _stackChildrenKeepAlive;
 
   final ScrollController _scrollController = ScrollController();
+  late final AnimationController _ballisticAnimController;
   double _assetDetailsOpacity = 0.0;
-
-  // final _assetDetailsSnap = 5;
+  double _currentSnapOffset = 0.0;
 
   @override
   void initState() {
@@ -140,6 +143,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
     _scrollController.addListener(_onScroll);
+    _ballisticAnimController = AnimationController.unbounded(vsync: this)..addListener(_onBallisticTick);
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
@@ -156,20 +160,106 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onScroll() {
-    setState(() {
-      // _assetDetailsOpacity = (_scrollController.offset / 50).clamp(0.0, 1.0);
-      _assetDetailsOpacity = _scrollController.offset > 10 ? 1 : 0;
-
+    final newOpacity = _scrollController.offset > 5 ? 1.0 : 0.0;
+    if (newOpacity != _assetDetailsOpacity) {
+      setState(() {
+        _assetDetailsOpacity = newOpacity;
+      });
       if (_assetDetailsOpacity == 0) {
         ref.read(assetViewerProvider.notifier).setControls(true);
       } else {
         ref.read(assetViewerProvider.notifier).setControls(false);
       }
-    });
+    }
+  }
+
+  static const _scrollTolerance = Tolerance(distance: 0.5, velocity: 10.0);
+
+  void _onBallisticTick() {
+    if (!_scrollController.hasClients) return;
+    final raw = _ballisticAnimController.value;
+    final max = _scrollController.position.maxScrollExtent;
+    final offset = raw.clamp(0.0, max);
+    final prevOffset = _scrollController.offset;
+
+    // Stop at bounds
+    if (raw != offset) {
+      _ballisticAnimController.stop();
+      _scrollController.jumpTo(offset);
+      return;
+    }
+
+    // During free-scroll deceleration, don't cross into the snap zone.
+    // Stop at snapOffset so the user can release there cleanly.
+    final snap = _currentSnapOffset;
+    if (prevOffset >= snap && offset < snap) {
+      _ballisticAnimController.stop();
+      _scrollController.jumpTo(snap);
+      return;
+    }
+
+    _scrollController.jumpTo(offset);
+  }
+
+  void _snapScroll(double velocity) {
+    if (!_scrollController.hasClients) return;
+    final offset = _scrollController.offset;
+    final snap = _currentSnapOffset;
+    if (snap <= 0) return;
+
+    // Above snap offset: free scroll with deceleration
+    if (offset >= snap) {
+      if (velocity.abs() < 10) return;
+      // Scrolling down towards snap zone: snap
+      if (velocity < -50) {
+        _ballisticAnimController.value = offset;
+        _ballisticAnimController.animateWith(
+          ScrollSpringSimulation(
+            SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
+            offset,
+            snap,
+            velocity,
+            tolerance: _scrollTolerance,
+          ),
+        );
+        return;
+      }
+      // Scrolling up: decelerate naturally
+      _ballisticAnimController.value = offset;
+      _ballisticAnimController.animateWith(
+        ClampingScrollSimulation(position: offset, velocity: velocity, tolerance: _scrollTolerance),
+      );
+      return;
+    }
+
+    // In snap zone (0 → snapOffset): snap to nearest target
+    double target;
+    if (velocity.abs() > 50) {
+      target = velocity > 0 ? snap : 0;
+    } else {
+      target = (offset < snap / 2) ? 0 : snap;
+    }
+
+    if ((offset - target).abs() < 0.5) {
+      _scrollController.jumpTo(target);
+      return;
+    }
+
+    _ballisticAnimController.value = offset;
+    _ballisticAnimController.animateWith(
+      ScrollSpringSimulation(
+        SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
+        offset,
+        target,
+        velocity,
+        tolerance: _scrollTolerance,
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _ballisticAnimController.dispose();
     _scrollController.dispose();
     pageController.dispose();
     _cancelTimers();
@@ -229,6 +319,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetChanged(int index) async {
+    _ballisticAnimController.stop();
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
     final timelineService = ref.read(timelineServiceProvider);
     final asset = await timelineService.getAssetAsync(index);
     if (asset == null) {
@@ -299,10 +391,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    print("photoview drag start");
+    _ballisticAnimController.stop();
     viewController = controller;
     dragDownPosition = details.localPosition;
+    _dragStartGlobalPosition = details.globalPosition;
     initialPhotoViewState = controller.value;
+    _dragMode = showingBottomSheet ? _DragMode.scroll : _DragMode.undecided;
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
         scaleStateController.scaleState == PhotoViewScaleState.covering;
@@ -311,28 +405,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onDragEnd(BuildContext ctx, _, __) {
+  void _onDragEnd(BuildContext ctx, DragEndDetails details, _) {
     dragInProgress = false;
+    final mode = _dragMode;
+    _dragMode = _DragMode.undecided;
+
+    if (mode == _DragMode.scroll) {
+      // Convert finger velocity to scroll velocity (inverted)
+      final scrollVelocity = -details.velocity.pixelsPerSecond.dy;
+      _snapScroll(scrollVelocity);
+      return;
+    }
 
     if (shouldPopOnDrag) {
-      // Dismiss immediately without state updates to avoid rebuilds
       ctx.maybePop();
       return;
     }
 
-    // Do not reset the state if the bottom sheet is showing
-    if (showingBottomSheet) {
-      return;
-    }
-
-    // If the gestures are blocked, do not reset the state
     if (blockGestures) {
       blockGestures = false;
       return;
     }
 
     shouldPopOnDrag = false;
-    hasDraggedDown = null;
     viewController?.animateMultiple(
       position: initialPhotoViewState.position,
       scale: viewController?.initialScale ?? initialPhotoViewState.scale,
@@ -342,18 +437,34 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, _) {
-    if (blockGestures) {
-      return;
-    }
-
+    if (blockGestures) return;
     dragInProgress = true;
-    final delta = details.localPosition - dragDownPosition;
-    hasDraggedDown ??= delta.dy > 0;
-    if (!hasDraggedDown! || showingBottomSheet) {
+
+    if (_dragMode == _DragMode.undecided) {
+      final globalDelta = details.globalPosition - _dragStartGlobalPosition;
+      if (globalDelta.dy > 1) {
+        _dragMode = _DragMode.dismiss;
+      } else if (globalDelta.dy < -1) {
+        _dragMode = _DragMode.scroll;
+      } else {
+        return;
+      }
+      // Fall through to process this update immediately
+    }
+
+    if (_dragMode == _DragMode.dismiss) {
+      final delta = details.localPosition - dragDownPosition;
+      _handleDragDown(ctx, delta);
       return;
     }
 
-    _handleDragDown(ctx, delta);
+    // Scroll mode: drive the scroll controller with incremental delta
+    if (!_scrollController.hasClients) return;
+    final newOffset = (_scrollController.offset - details.delta.dy).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.jumpTo(newOffset);
   }
 
   void _handleDragDown(BuildContext ctx, Offset delta) {
@@ -384,6 +495,24 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
+  void _onDetailsDragStart(DragStartDetails details) {
+    _ballisticAnimController.stop();
+  }
+
+  void _onDetailsDragUpdate(DragUpdateDetails details) {
+    if (!_scrollController.hasClients) return;
+    final newOffset = (_scrollController.offset - details.delta.dy).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.jumpTo(newOffset);
+  }
+
+  void _onDetailsDragEnd(DragEndDetails details) {
+    final scrollVelocity = -details.velocity.pixelsPerSecond.dy;
+    _snapScroll(scrollVelocity);
+  }
+
   void _onEvent(Event event) {
     if (event is TimelineReloadEvent) {
       _onTimelineReloadEvent();
@@ -394,6 +523,26 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       assetReloadRequested = true;
       return;
     }
+
+    if (event is ViewerOpenBottomSheetEvent) {
+      _openDetails();
+      return;
+    }
+  }
+
+  void _openDetails() {
+    if (!_scrollController.hasClients || _currentSnapOffset <= 0) return;
+    _ballisticAnimController.stop();
+    _ballisticAnimController.value = _scrollController.offset;
+    _ballisticAnimController.animateWith(
+      ScrollSpringSimulation(
+        SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
+        _scrollController.offset,
+        _currentSnapOffset,
+        0,
+        tolerance: _scrollTolerance,
+      ),
+    );
   }
 
   void _onTimelineReloadEvent() {
@@ -617,7 +766,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
             // Calculate padding to center the image in the viewport
             final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
-            final snapOffset = math.max(topPadding + (imageHeight / 2), viewportHeight / 3 * 2);
+            final snapOffset = (topPadding + (imageHeight / 2)).clamp(viewportHeight / 3, viewportHeight / 2);
+            _currentSnapOffset = snapOffset;
 
             return Stack(
               clipBehavior: Clip.none,
@@ -626,7 +776,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                   onNotification: onScrollNotification,
                   child: SingleChildScrollView(
                     controller: _scrollController,
-                    physics: VariableHeightSnappingPhysics(snapStart: 0, snapEnd: snapOffset, snapOffset: snapOffset),
+                    physics: const NeverScrollableScrollPhysics(),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
@@ -656,12 +806,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                           ),
                         ),
 
-                        // TODO: if zooming, this should be hidden, and we should
-                        // probably disable the scroll physics
-                        AnimatedOpacity(
-                          opacity: _assetDetailsOpacity,
-                          duration: kThemeAnimationDuration,
-                          child: AssetDetails(minHeight: snapOffset),
+                        GestureDetector(
+                          onVerticalDragStart: _onDetailsDragStart,
+                          onVerticalDragUpdate: _onDetailsDragUpdate,
+                          onVerticalDragEnd: _onDetailsDragEnd,
+                          child: AnimatedOpacity(
+                            opacity: _assetDetailsOpacity,
+                            duration: kThemeAnimationDuration,
+                            child: AssetDetails(minHeight: viewportHeight - snapOffset),
+                          ),
                         ),
                       ],
                     ),
