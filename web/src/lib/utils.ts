@@ -249,8 +249,8 @@ export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
     [AssetJobName.RefreshFaces]: $t('refresh_faces'),
     [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
-    [AssetJobName.RegenerateThumbnail]: $t('regenerate_thumbnails'),
-    [AssetJobName.TranscodeVideo]: $t('refresh_encoded_video'),
+    [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
   };
 
   return names[job];
