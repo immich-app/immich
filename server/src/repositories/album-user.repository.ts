@@ -25,14 +25,13 @@ export class AlbumUserRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }, { role: AlbumUserRole.Viewer }] })
-  update({ userId, albumId }: AlbumPermissionId, dto: Updateable<AlbumUserTable>) {
-    return this.db
+  async update({ userId, albumId }: AlbumPermissionId, dto: Updateable<AlbumUserTable>) {
+    await this.db
       .updateTable('album_user')
       .set(dto)
       .where('userId', '=', userId)
       .where('albumId', '=', albumId)
-      .returningAll()
-      .executeTakeFirstOrThrow();
+      .execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
