@@ -46,6 +46,22 @@ export class IntegrityController {
     return this.service.getIntegrityReport(dto);
   }
 
+  @Get('report/:id/file')
+  @Endpoint({
+    summary: 'Download flagged file',
+    description: 'Download the untracked/broken file if one exists',
+    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
+  })
+  @FileResponse()
+  @Authenticated({ permission: Permission.Maintenance, admin: true })
+  async getIntegrityReportFile(
+    @Param() { id }: UUIDv7ParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ): Promise<void> {
+    await sendFile(res, next, () => this.service.getIntegrityReportFile(id), this.logger);
+  }
+
   @Delete('report/:id')
   @Endpoint({
     summary: 'Delete integrity report item',
@@ -71,21 +87,5 @@ export class IntegrityController {
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(`${Date.now()}-${type}.csv`)}"`);
 
     this.service.getIntegrityReportCsv(type).pipe(res);
-  }
-
-  @Get('report/:id/file')
-  @Endpoint({
-    summary: 'Download flagged file',
-    description: 'Download the untracked/broken file if one exists',
-    history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
-  })
-  @FileResponse()
-  @Authenticated({ permission: Permission.Maintenance, admin: true })
-  async getIntegrityReportFile(
-    @Param() { id }: UUIDv7ParamDto,
-    @Res() res: Response,
-    @Next() next: NextFunction,
-  ): Promise<void> {
-    await sendFile(res, next, () => this.service.getIntegrityReportFile(id), this.logger);
   }
 }
