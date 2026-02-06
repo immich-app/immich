@@ -18,6 +18,11 @@ import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/memories/memory_lane.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/widgets/common/immich_search_bar.dart';
 
 @RoutePage()
 class PhotosPage extends HookConsumerWidget {
@@ -104,7 +109,17 @@ class PhotosPage extends HookConsumerWidget {
     return Stack(
       children: [
         MultiselectGrid(
-          topWidget: (currentUser != null && currentUser.memoryEnabled) ? const MemoryLane() : const SizedBox(),
+          topWidget: Padding(
+            padding: EdgeInsets.only(top: kToolbarHeight + context.padding.top + 12.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ImmichSearchBar(onSubmitted: (query) => onSearchSubmitted(context, ref, query)),
+                if (currentUser != null && currentUser.memoryEnabled) const MemoryLane(),
+              ],
+            ),
+          ),
           renderListProvider: timelineUsers.length > 1
               ? multiUsersTimelineProvider(timelineUsers)
               : singleUserTimelineProvider(currentUser?.id),
@@ -127,5 +142,27 @@ class PhotosPage extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  void onSearchSubmitted(BuildContext context, WidgetRef ref, String query) {
+    if (query.isEmpty) {
+      return;
+    }
+    final preFilter = SearchFilter(
+      filename: '',
+      description: '',
+      ocr: '',
+      context: query,
+      people: {},
+      display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+      location: SearchLocationFilter(),
+      mediaType: AssetType.other,
+      rating: SearchRatingFilter(),
+      camera: SearchCameraFilter(),
+      date: SearchDateFilter(),
+    );
+
+    ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
+    context.pushRoute(const DriftSearchRoute());
   }
 }

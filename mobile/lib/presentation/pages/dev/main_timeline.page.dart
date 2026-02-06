@@ -5,6 +5,12 @@ import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dar
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 
+import 'package:immich_mobile/widgets/common/immich_search_bar.dart';
+import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+
 @RoutePage()
 class MainTimelinePage extends ConsumerWidget {
   const MainTimelinePage({super.key});
@@ -12,9 +18,39 @@ class MainTimelinePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hasMemories = ref.watch(driftMemoryFutureProvider.select((state) => state.value?.isNotEmpty ?? false));
+
+    void onSearchSubmitted(String query) {
+      if (query.isEmpty) {
+        return;
+      }
+      final preFilter = SearchFilter(
+        filename: '',
+        description: '',
+        ocr: '',
+        context: query,
+        people: {},
+        display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        location: SearchLocationFilter(),
+        mediaType: AssetType.other,
+        rating: SearchRatingFilter(),
+        camera: SearchCameraFilter(),
+        date: SearchDateFilter(),
+      );
+
+      ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
+      context.pushRoute(const DriftSearchRoute());
+    }
+
     return Timeline(
-      topSliverWidget: const SliverToBoxAdapter(child: DriftMemoryLane()),
-      topSliverWidgetHeight: hasMemories ? 200 : 0,
+      topSliverWidget: SliverToBoxAdapter(
+        child: Column(
+          children: [
+            ImmichSearchBar(onSubmitted: onSearchSubmitted),
+            if (hasMemories) const DriftMemoryLane(),
+          ],
+        ),
+      ),
+      topSliverWidgetHeight: (hasMemories ? 200 : 0) + 80,
       showStorageIndicator: true,
     );
   }

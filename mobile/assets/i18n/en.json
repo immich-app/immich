@@ -2412,5 +2412,6 @@
   "hide_album_carousel_subtitle": "Hide the carousel of albums at the top",
   "start_on_albums_page_subtitle": "Open the app on the Albums page by default",
   "prevent_sync_duplicates_title": "Prevent Sync Duplicates",
-  "prevent_sync_duplicates_subtitle": "When you move a photo between albums in Immich, it won't reappear in the original album on next sync"
+  "prevent_sync_duplicates_subtitle": "When you move a photo between albums in Immich, it won't reappear in the original album on next sync",
+  "search_bar_hint": "Search your photos"
 }

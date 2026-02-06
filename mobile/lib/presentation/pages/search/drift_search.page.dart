@@ -54,6 +54,10 @@ class DriftSearchPage extends HookConsumerWidget {
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
         assetId: preFilter?.assetId,
+        context: preFilter?.context,
+        filename: preFilter?.filename,
+        description: preFilter?.description,
+        ocr: preFilter?.ocr,
       ),
     );
 
@@ -130,6 +134,9 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     useEffect(() {
+      if (preFilter?.context != null) {
+        textSearchController.text = preFilter!.context!;
+      }
       Future.microtask(() => ref.invalidate(paginatedSearchProvider));
       searchPreFilter();
 

@@ -20,7 +20,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
   final List<Widget>? actions;
   final bool showUploadButton;
-
   const ImmichAppBar({super.key, this.actions, this.showUploadButton = true});
 
   @override

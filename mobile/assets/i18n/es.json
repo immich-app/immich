@@ -2408,5 +2408,6 @@
   "hide_album_carousel_subtitle": "Ocultar el carrusel de álbumes en la parte superior",
   "start_on_albums_page_subtitle": "Abrir la aplicación en la página de Álbumes por defecto",
   "prevent_sync_duplicates_title": "Prevenir duplicados en sincronización",
-  "prevent_sync_duplicates_subtitle": "Cuando mueves una foto entre álbumes en Immich, no volverá a aparecer en el álbum original en la próxima sincronización"
+  "prevent_sync_duplicates_subtitle": "Cuando mueves una foto entre álbumes en Immich, no volverá a aparecer en el álbum original en la próxima sincronización",
+  "search_bar_hint": "Buscar en tus fotos"
 }
