@@ -24,6 +24,8 @@ import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
+import 'package:immich_mobile/domain/utils/background_sync.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
@@ -43,6 +45,7 @@ final backupProvider = StateNotifierProvider<BackupNotifier, BackUpState>((ref) 
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(backupAlbumServiceProvider),
+    ref.watch(backgroundSyncProvider),
     ref,
   );
 });
@@ -57,6 +60,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._albumMediaRepository,
     this._fileMediaRepository,
     this._backupAlbumService,
+    this._backgroundSyncManager,
     this.ref,
   ) : super(
         BackUpState(
@@ -101,6 +105,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final AlbumMediaRepository _albumMediaRepository;
   final FileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
+  final BackgroundSyncManager _backgroundSyncManager;
   final Ref ref;
 
   ///
@@ -534,6 +539,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         progressInFileSpeedUpdateSentBytes: 0,
       );
       await _updatePersistentAlbumsSelection();
+      await _backgroundSyncManager.syncLinkedAlbum();
     }
 
     await updateDiskInfo();

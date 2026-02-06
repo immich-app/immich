@@ -6,6 +6,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -72,8 +74,10 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
         const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
     ];
 
+    final hideCarousel = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.hideAlbumCarousel);
+
     return SliverAppBar(
-      expandedHeight: 400.0,
+      expandedHeight: hideCarousel ? null : 400.0,
       floating: false,
       pinned: true,
       snap: false,
@@ -83,15 +87,19 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
           : IconButton(
               icon: Icon(
                 Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-                color: actionIconColor,
-                shadows: actionIconShadows,
+                color: hideCarousel ? context.colorScheme.onSurface : actionIconColor,
+                shadows: hideCarousel ? null : actionIconShadows,
               ),
               onPressed: () => context.maybePop(),
             ),
       actions: [
         if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
           IconButton(
-            icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
+            icon: Icon(
+              Icons.chat_outlined,
+              color: hideCarousel ? context.colorScheme.onSurface : actionIconColor,
+              shadows: hideCarousel ? null : actionIconShadows,
+            ),
             onPressed: widget.onActivity,
           ),
         widget.kebabMenu,
@@ -99,7 +107,8 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       title: Builder(
         builder: (context) {
           final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-          final scrollProgress = _calculateScrollProgress(settings);
+          // If hiding carousel, always show title
+          final scrollProgress = hideCarousel ? 1.0 : _calculateScrollProgress(settings);
 
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
@@ -112,29 +121,31 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
           );
         },
       ),
-      flexibleSpace: Builder(
-        builder: (context) {
-          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-          final scrollProgress = _calculateScrollProgress(settings);
+      flexibleSpace: hideCarousel
+          ? null
+          : Builder(
+              builder: (context) {
+                final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+                final scrollProgress = _calculateScrollProgress(settings);
 
-          // Update scroll progress for the leading button
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && _scrollProgress != scrollProgress) {
-              setState(() {
-                _scrollProgress = scrollProgress;
-              });
-            }
-          });
+                // Update scroll progress for the leading button
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && _scrollProgress != scrollProgress) {
+                    setState(() {
+                      _scrollProgress = scrollProgress;
+                    });
+                  }
+                });
 
-          return FlexibleSpaceBar(
-            background: _ExpandedBackground(
-              scrollProgress: scrollProgress,
-              icon: widget.icon,
-              onEditTitle: widget.onEditTitle,
+                return FlexibleSpaceBar(
+                  background: _ExpandedBackground(
+                    scrollProgress: scrollProgress,
+                    icon: widget.icon,
+                    onEditTitle: widget.onEditTitle,
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

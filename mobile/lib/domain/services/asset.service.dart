@@ -75,7 +75,7 @@ class AssetService {
     double? height = asset.height?.toDouble();
     int orientation = asset.orientation;
 
-    if (width == null || height == null) {
+    if (height == null) {
       final fetched = await _localAssetRepository.get(asset.id);
       width = fetched?.width?.toDouble();
       height = fetched?.height?.toDouble();
@@ -92,7 +92,7 @@ class AssetService {
     double? width = asset.width?.toDouble();
     double? height = asset.height?.toDouble();
 
-    if (width == null || height == null) {
+    if (height == null) {
       final fetched = await _remoteAssetRepository.get(asset.id);
       width = fetched?.width?.toDouble();
       height = fetched?.height?.toDouble();

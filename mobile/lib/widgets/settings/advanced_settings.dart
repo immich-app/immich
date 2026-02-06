@@ -155,6 +155,11 @@ class AdvancedSettings extends HookConsumerWidget {
             );
           },
         ),
+      SettingsSwitchListTile(
+        valueNotifier: useAppSettingsState(AppSettingsEnum.enableSyncExclusions),
+        title: "prevent_sync_duplicates_title".tr(),
+        subtitle: "prevent_sync_duplicates_subtitle".tr(),
+      ),
       ListTile(
         title: Text("advanced_settings_clear_image_cache".tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
         leading: const Icon(Icons.playlist_remove_rounded),

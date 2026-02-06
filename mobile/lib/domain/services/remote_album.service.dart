@@ -98,11 +98,19 @@ class RemoteAlbumService {
     bool? isActivityEnabled,
     AlbumAssetOrder? order,
   }) async {
+    String? effectiveThumbnailId = thumbnailAssetId;
+    if (thumbnailAssetId == "") {
+      final newest = await _repository.getNewestAsset(albumId);
+      if (newest != null) {
+        effectiveThumbnailId = newest.remoteId;
+      }
+    }
+
     final updatedAlbum = await _albumApiRepository.updateAlbum(
       albumId,
       name: name,
       description: description,
-      thumbnailAssetId: thumbnailAssetId,
+      thumbnailAssetId: effectiveThumbnailId,
       isActivityEnabled: isActivityEnabled,
       order: order,
     );
@@ -129,12 +137,56 @@ class RemoteAlbumService {
     return _repository.getAssets(albumId);
   }
 
+  Future<RemoteAsset?> getNewestAsset(String albumId) {
+    return _repository.getNewestAsset(albumId);
+  }
+
   Future<int> addAssets({required String albumId, required List<String> assetIds}) async {
     final album = await _albumApiRepository.addAssets(albumId, assetIds);
 
     await _repository.addAssets(albumId, album.added);
 
+    // Auto-update cover to newest to mock dynamic behavior (server restriction workaround)
+    if (album.added.isNotEmpty) {
+      // Small delay to ensure DB write is visible
+      await Future.delayed(const Duration(milliseconds: 300));
+      try {
+        final newest = await _repository.getNewestAsset(albumId);
+        print("DEBUG: Auto-updating cover. Newest found: ${newest?.remoteId}");
+        if (newest != null) {
+          await updateAlbum(albumId, thumbnailAssetId: newest.remoteId);
+        }
+      } catch (e) {
+        // Ignore cover update error
+        print("Failed to auto-update album cover: $e");
+      }
+    }
+
     return album.added.length;
+  }
+
+  Future<void> removeAssets({required String albumId, required List<String> assetIds}) async {
+    final result = await _albumApiRepository.removeAssets(albumId, assetIds);
+
+    if (result.removed.isNotEmpty) {
+      await _repository.removeAssets(albumId, result.removed);
+    }
+
+    if (result.failed.isNotEmpty) {
+      print("Failed to remove assets from remote: ${result.failed}");
+    }
+
+    // Auto-update cover to newest to mock dynamic behavior
+    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      final newest = await _repository.getNewestAsset(albumId);
+      print("DEBUG: Auto-updating cover after removal. Newest found: ${newest?.remoteId}");
+      if (newest != null) {
+        await updateAlbum(albumId, thumbnailAssetId: newest.remoteId);
+      }
+    } catch (e) {
+      print("Error updating cover after removal: $e");
+    }
   }
 
   Future<void> deleteAlbum(String albumId) async {
@@ -167,6 +219,10 @@ class RemoteAlbumService {
 
   Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) {
     return _repository.getAlbumsContainingAsset(assetId);
+  }
+
+  Future<List<RemoteAlbum>> getAlbumsContainingAssetFromServer(String assetId) {
+    return _albumApiRepository.getAlbumsContainingAsset(assetId);
   }
 
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {

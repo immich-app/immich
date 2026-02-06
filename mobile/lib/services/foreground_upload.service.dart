@@ -302,32 +302,11 @@ class ForegroundUploadService {
       } else {
         // Get files locally
         file = await _storageRepository.getFileForAsset(asset.id);
-        if (file == null) {
-          _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
-          callbacks.onError?.call(
-            asset.localId!,
-            CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-          );
-          return;
-        }
 
         // For live photos, get the motion video file
         if (entity.isLivePhoto) {
           livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
-          if (livePhotoFile == null) {
-            _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-            callbacks.onError?.call(
-              asset.localId!,
-              CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-            );
-          }
         }
-      }
-
-      if (file == null) {
-        _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
-        callbacks.onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
-        return;
       }
 
       String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
@@ -340,7 +319,9 @@ class ForegroundUploadService {
         fileName = p.setExtension(fileName, p.extension(asset.name));
       }
 
-      final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
+      final originalFileName = entity.isLivePhoto && file != null
+          ? p.setExtension(fileName, p.extension(file.path))
+          : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
 
       final headers = ApiService.getRequestHeaders();
@@ -396,7 +377,7 @@ class ForegroundUploadService {
       }
 
       final result = await _uploadRepository.uploadFile(
-        file: file,
+        file: file!,
         originalFileName: originalFileName,
         headers: headers,
         fields: fields,

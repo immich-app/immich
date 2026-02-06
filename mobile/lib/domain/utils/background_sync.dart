@@ -26,6 +26,7 @@ class BackgroundSyncManager {
   final SyncCallback? onCloudIdSyncStart;
   final SyncCallback? onCloudIdSyncComplete;
   final SyncErrorCallback? onCloudIdSyncError;
+  final SyncCallback? onLinkedAlbumSyncComplete;
 
   Cancelable<bool?>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
@@ -47,6 +48,7 @@ class BackgroundSyncManager {
     this.onCloudIdSyncStart,
     this.onCloudIdSyncComplete,
     this.onCloudIdSyncError,
+    this.onLinkedAlbumSyncComplete,
   });
 
   Future<void> cancel() async {
@@ -214,6 +216,7 @@ class BackgroundSyncManager {
     _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated, debugLabel: 'linked-album-sync');
     return _linkedAlbumSyncTask!.whenComplete(() {
       _linkedAlbumSyncTask = null;
+      onLinkedAlbumSyncComplete?.call();
     });
   }
 

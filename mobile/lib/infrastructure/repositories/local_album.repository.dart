@@ -440,4 +440,13 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     final query = _db.localAlbumEntity.update()..where((row) => row.id.equals(localAlbumId));
     await query.write(LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(remoteAlbumId)));
   }
+
+  /// Get the local album that is linked to the given remote album ID
+  /// Returns null if no local album is linked to the remote album
+  Future<LocalAlbum?> getByLinkedRemoteAlbumId(String remoteAlbumId) async {
+    final query = _db.localAlbumEntity.select()..where((row) => row.linkedRemoteAlbumId.equals(remoteAlbumId));
+
+    final result = await query.getSingleOrNull();
+    return result?.toDto();
+  }
 }

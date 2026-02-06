@@ -13,7 +13,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
@@ -91,10 +92,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
-
           if (ownsAlbum) ...[
             const ArchiveActionButton(source: ActionSource.timeline),
             const FavoriteActionButton(source: ActionSource.timeline),
@@ -113,6 +112,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         ],
         if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
         if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum) SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum) MoveToAlbumActionButton(source: ActionSource.timeline, sourceAlbumId: widget.album.id),
       ],
       slivers: ownsAlbum
           ? [

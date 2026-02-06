@@ -14,6 +14,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     this.onCreateSharedLink,
     this.onToggleAlbumOrder,
     this.onEditAlbum,
+    this.onRemoveAlbumCover,
     this.onShowOptions,
     this.iconColor,
     this.iconShadows,
@@ -26,6 +27,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
+  final VoidCallback? onRemoveAlbumCover;
   final VoidCallback? onShowOptions;
   final Color? iconColor;
   final List<Shadow>? iconShadows;
@@ -41,6 +43,17 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
           label: 'edit_album'.t(context: context),
           iconData: Icons.edit,
           onPressed: onEditAlbum,
+          menuItem: true,
+        ),
+      );
+    }
+
+    if (onRemoveAlbumCover != null) {
+      menuChildren.add(
+        BaseActionButton(
+          label: 'remove_album_cover'.t(context: context),
+          iconData: Icons.no_photography_outlined,
+          onPressed: onRemoveAlbumCover,
           menuItem: true,
         ),
       );

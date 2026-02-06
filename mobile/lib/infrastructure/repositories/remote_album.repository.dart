@@ -238,6 +238,20 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
 
+  Future<RemoteAsset?> getNewestAsset(String albumId) {
+    final query =
+        _db.remoteAlbumAssetEntity.select().join([
+            innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+          ])
+          ..where(
+            _db.remoteAlbumAssetEntity.albumId.equals(albumId) & _db.remoteAssetEntity.deletedAt.isNull(),
+          ) // Exclude trashed assets
+          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+          ..limit(1);
+
+    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).getSingleOrNull();
+  }
+
   Future<int> addAssets(String albumId, List<String> assetIds) async {
     final albumAssets = assetIds.map(
       (assetId) => RemoteAlbumAssetEntityCompanion(albumId: Value(albumId), assetId: Value(assetId)),

@@ -32,7 +32,9 @@ class ShareService {
         if (asset.isLocal) {
           // Prefer local assets to share
           File? f = await asset.local!.originFile;
-          downloadedXFiles.add(XFile(f!.path));
+          if (f != null) {
+            downloadedXFiles.add(XFile(f.path));
+          }
         } else if (asset.isRemote) {
           // Download remote asset otherwise
           final tempDir = await getTemporaryDirectory();

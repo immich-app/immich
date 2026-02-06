@@ -171,6 +171,26 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     unawaited(context.pushRoute(DriftActivitiesRoute(album: _album)));
   }
 
+  Future<void> removeAlbumCover() async {
+    try {
+      await ref.read(remoteAlbumProvider.notifier).updateAlbum(_album.id, thumbnailAssetId: "");
+      setState(() {
+        _album = _album.copyWith(thumbnailAssetId: null);
+      });
+      if (mounted) {
+        ImmichToast.show(
+          context: context,
+          msg: 'album_cover_removed'.t(context: context),
+          toastType: ToastType.success,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ImmichToast.show(context: context, msg: 'Error: $e', toastType: ToastType.error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -186,6 +206,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         currentRemoteAlbumScopedProvider.overrideWithValue(_album),
       ],
       child: Timeline(
+        showStorageIndicator: true,
         appBar: RemoteAlbumSliverAppBar(
           icon: Icons.photo_album_outlined,
           kebabMenu: _AlbumKebabMenu(
@@ -195,6 +216,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             onAddPhotos: () => addAssets(context),
             onToggleAlbumOrder: () => toggleAlbumOrder(),
             onEditAlbum: () => showEditTitleAndDescription(context),
+            onRemoveAlbumCover: isOwner && _album.thumbnailAssetId != null && _album.thumbnailAssetId!.isNotEmpty
+                ? () => removeAlbumCover()
+                : null,
             onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
             onShowOptions: () => context.pushRoute(DriftAlbumOptionsRoute(album: _album)),
           ),
@@ -369,6 +393,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
   final VoidCallback? onAddPhotos;
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
+  final VoidCallback? onRemoveAlbumCover;
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onShowOptions;
 
@@ -379,6 +404,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
     this.onAddPhotos,
     this.onToggleAlbumOrder,
     this.onEditAlbum,
+    this.onRemoveAlbumCover,
     this.onCreateSharedLink,
     this.onShowOptions,
   });
@@ -428,6 +454,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
           onAddPhotos: isOwner || canAddPhotos ? onAddPhotos : null,
           onToggleAlbumOrder: isOwner ? onToggleAlbumOrder : null,
           onEditAlbum: isOwner ? onEditAlbum : null,
+          onRemoveAlbumCover: isOwner ? onRemoveAlbumCover : null,
           onCreateSharedLink: isOwner ? onCreateSharedLink : null,
           onShowOptions: onShowOptions,
         );

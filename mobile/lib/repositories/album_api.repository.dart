@@ -105,15 +105,18 @@ class AlbumApiRepository extends ApiRepository {
   }
 
   Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
+    print("DEBUG: AlbumApiRepository removing $assetIds from $albumId");
     final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> removed = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
         removed.add(dto.id);
       } else {
+        print("DEBUG: Failure for ${dto.id}: Success=${dto.success}");
         failed.add(dto.id);
       }
     }
+    print("DEBUG: API Result - Removed: ${removed.length}, Failed: ${failed.length}");
     return (removed: removed, failed: failed);
   }
 

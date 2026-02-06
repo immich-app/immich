@@ -22,6 +22,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -64,31 +65,61 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         return;
       }
 
-      final remoteAssets = selectedAssets.whereType<RemoteAsset>();
-      final addedCount = await ref
-          .read(remoteAlbumProvider.notifier)
-          .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
-
-      if (selectedAssets.length != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_some_local_assets'.t(context: context),
-        );
+      final remoteAssetIds = <String>[];
+      for (final asset in selectedAssets) {
+        if (asset is RemoteAsset) {
+          remoteAssetIds.add(asset.remoteId!);
+        } else if (asset is LocalAsset && asset.remoteId != null) {
+          remoteAssetIds.add(asset.remoteId!);
+        }
       }
 
-      if (addedCount != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
-        );
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
-        );
-      }
+      try {
+        final addedCount = await ref.read(remoteAlbumProvider.notifier).addAssets(album.id, remoteAssetIds);
 
-      ref.read(multiSelectProvider.notifier).reset();
+        if (addedCount > 0) {
+          final remoteAlbumService = ref.read(remoteAlbumServiceProvider);
+          for (final assetId in remoteAssetIds) {
+            try {
+              final containingAlbums = await remoteAlbumService.getAlbumsContainingAssetFromServer(assetId);
+              for (final sourceAlbum in containingAlbums) {
+                if (sourceAlbum.id != album.id) {
+                  await ref.read(remoteAlbumProvider.notifier).removeAssets(sourceAlbum.id, [assetId]);
+                }
+              }
+            } catch (e) {
+              debugPrint("Error moving asset $assetId: $e");
+              if (mounted) {
+                ImmichToast.show(context: context, msg: 'Error moving from old album: $e', toastType: ToastType.error);
+              }
+            }
+          }
+        }
+
+        if (selectedAssets.length != remoteAssetIds.length) {
+          // Some selected assets were local-only and not synced
+          ImmichToast.show(
+            context: context,
+            msg: 'add_to_album_bottom_sheet_some_local_assets'.t(context: context),
+          );
+        }
+
+        if (addedCount < remoteAssetIds.length) {
+          ImmichToast.show(
+            context: context,
+            msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
+          );
+        } else {
+          ImmichToast.show(
+            context: context,
+            msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
+          );
+        }
+
+        ref.read(multiSelectProvider.notifier).reset();
+      } catch (e) {
+        ImmichToast.show(context: context, msg: 'Error adding assets: $e', toastType: ToastType.error);
+      }
     }
 
     Future<void> onKeyboardExpand() {
@@ -123,6 +154,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         ],
         if (multiselect.hasLocal || multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
         if (multiselect.hasLocal) const UploadActionButton(source: ActionSource.timeline),
+        if (multiselect.hasRemote) const MoveToAlbumActionButton(source: ActionSource.timeline),
       ],
       slivers: multiselect.hasRemote
           ? [

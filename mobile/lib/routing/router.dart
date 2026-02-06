@@ -80,7 +80,7 @@ import 'package:immich_mobile/pages/settings/sync_status.page.dart';
 import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
-import 'package:immich_mobile/presentation/pages/dev/ui_showcase.page.dart';
+
 import 'package:immich_mobile/presentation/pages/download_info.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
@@ -338,7 +338,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftBackupAssetDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: AssetTroubleshootRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DownloadInfoRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: ImmichUIShowcaseRoute.page, guards: [_authGuard, _duplicateGuard]),
+
     AutoRoute(page: CleanupPreviewRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722

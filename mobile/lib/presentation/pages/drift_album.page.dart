@@ -51,8 +51,9 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
           showUploadButton: false,
         ),
         AlbumSelector(
-          onAlbumSelected: (album) {
-            context.router.push(RemoteAlbumRoute(album: album));
+          onAlbumSelected: (album) async {
+            await context.router.push(RemoteAlbumRoute(album: album));
+            await ref.read(remoteAlbumProvider.notifier).refresh();
           },
         ),
       ],

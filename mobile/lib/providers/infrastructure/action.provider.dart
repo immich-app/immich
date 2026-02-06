@@ -275,7 +275,6 @@ class ActionNotifier extends Notifier<void> {
           );
 
     if (backedUpOnly == null) {
-      // User cancelled the dialog
       return null;
     }
 

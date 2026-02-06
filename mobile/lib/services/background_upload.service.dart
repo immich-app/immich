@@ -286,15 +286,14 @@ class BackgroundUploadService {
       file = await _storageRepository.getFileForAsset(asset.id);
     }
 
-    if (file == null) {
-      _logger.warning("Failed to get file for asset ${asset.id} - ${asset.name}");
-      return null;
-    }
-
     String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
     final hasExtension = p.extension(fileName).isNotEmpty;
     if (!hasExtension) {
       fileName = p.setExtension(fileName, p.extension(asset.name));
+    }
+
+    if (file == null) {
+      return null;
     }
 
     final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;

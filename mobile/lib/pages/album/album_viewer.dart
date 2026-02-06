@@ -85,9 +85,7 @@ class AlbumViewer extends HookConsumerWidget {
 
       if (sharedUserIds != null) {
         isProcessing.value = true;
-
         await ref.watch(albumProvider.notifier).addUsers(album, sharedUserIds);
-
         isProcessing.value = false;
       }
     }

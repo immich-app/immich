@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_acti
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -156,6 +157,22 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         context: context,
         msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
       );
+
+      // Global Move: Remove from all current albums
+      final remoteAlbumService = ref.read(remoteAlbumServiceProvider);
+      try {
+        final containingAlbums = await remoteAlbumService.getAlbumsContainingAssetFromServer(latest.remoteId!);
+        for (final sourceAlbum in containingAlbums) {
+          if (sourceAlbum.id != album.id) {
+            await ref.read(remoteAlbumProvider.notifier).removeAssets(sourceAlbum.id, [latest.remoteId!]);
+          }
+        }
+      } catch (e) {
+        debugPrint("Error moving asset ${latest.remoteId}: $e");
+        if (context.mounted) {
+          ImmichToast.show(context: context, msg: 'Error moving from old album: $e', toastType: ToastType.error);
+        }
+      }
 
       // Invalidate using the asset's remote ID to refresh the "Appears in" list
       ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));

@@ -2,6 +2,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
+import 'dart:convert';
+// ignore: import_rule_openapi
+import 'package:http/http.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart';
 
@@ -23,15 +26,18 @@ class DriftAlbumApiRepository extends ApiRepository {
   }
 
   Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
+    print("DEBUG: Requesting removal of assets from album $albumId: $assetIds");
     final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> removed = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
         removed.add(dto.id);
       } else {
+        print("DEBUG: Failed to remove asset ${dto.id}. Success: ${dto.success}");
         failed.add(dto.id);
       }
     }
+    print("DEBUG: Removal Result - Removed: ${removed.length}, Failed: ${failed.length}");
     return (removed: removed, failed: failed);
   }
 
@@ -62,20 +68,41 @@ class DriftAlbumApiRepository extends ApiRepository {
       apiOrder = order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc;
     }
 
-    final responseDto = await checkNull(
-      _api.updateAlbumInfo(
-        albumId,
-        UpdateAlbumDto(
-          albumName: name,
-          description: description,
-          albumThumbnailAssetId: thumbnailAssetId,
-          isActivityEnabled: isActivityEnabled,
-          order: apiOrder,
-        ),
-      ),
+    final postBody = UpdateAlbumDto(
+      albumName: name,
+      description: description,
+      albumThumbnailAssetId: thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled,
+      order: apiOrder,
     );
 
+    final response = await _api.apiClient.invokeAPI(
+      r'/albums/{id}'.replaceAll('{id}', albumId),
+      'PATCH',
+      [],
+      postBody,
+      {},
+      {},
+      'application/json',
+    );
+
+    if (response.statusCode >= 400) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+
+    final responseDto =
+        await _api.apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto') as AlbumResponseDto;
+
     return responseDto.toRemoteAlbum();
+  }
+
+  Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) async {
+    final response = await checkNull(_api.getAllAlbums(assetId: assetId));
+    return response.map((dto) => dto.toRemoteAlbum()).toList();
+  }
+
+  Future<String> _decodeBodyBytes(Response response) async {
+    return utf8.decode(response.bodyBytes);
   }
 
   Future<void> deleteAlbum(String albumId) {

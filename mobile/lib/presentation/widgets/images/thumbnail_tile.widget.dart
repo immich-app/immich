@@ -165,7 +165,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                         alignment: Alignment.bottomRight,
                         child: Padding(
                           padding: EdgeInsets.only(right: 10.0, bottom: 6.0),
-                          child: _TileOverlayIcon(Icons.cloud_done_outlined),
+                          child: _TileOverlayIcon(Icons.cloud_done),
                         ),
                       ),
                     },

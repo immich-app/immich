@@ -17,7 +17,7 @@ import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/generated/codegen_loader.g.dart';
+
 import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
@@ -210,22 +210,27 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   initState() {
     super.initState();
     initApp().then((_) => dPrint(() => "App Init Completed"));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.setLocale(const Locale('es'));
+      dPrint(() => "FORCED LOCALE TO SPANISH");
+
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
         ref.read(backgroundWorkerFgServiceProvider).enable();
         if (Platform.isAndroid) {
-          ref
-              .read(backgroundWorkerFgServiceProvider)
-              .saveNotificationMessage(
-                IntlKeys.uploading_media.t(),
-                IntlKeys.backup_background_service_default_notification.t(),
-              );
+          unawaited(
+            ref
+                .read(backgroundWorkerFgServiceProvider)
+                .saveNotificationMessage(
+                  IntlKeys.uploading_media.t(),
+                  IntlKeys.backup_background_service_default_notification.t(),
+                ),
+          );
         }
       } else {
         ref.read(backgroundWorkerFgServiceProvider).disable();
-        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+        unawaited(ref.read(backgroundServiceProvider).resumeServiceIfEnabled());
       }
     });
 
@@ -288,7 +293,7 @@ class MainWidget extends StatelessWidget {
       path: translationsPath,
       useFallbackTranslations: true,
       fallbackLocale: locales.values.first,
-      assetLoader: const CodegenLoader(),
+      startLocale: const Locale('es'),
       child: const ImmichApp(),
     );
   }

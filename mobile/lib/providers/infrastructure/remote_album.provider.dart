@@ -144,8 +144,23 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) {
-    return _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+  Future<int> addAssets(String albumId, List<String> assetIds) async {
+    final count = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    // Refresh album to get updated cover
+    final updatedAlbum = await _remoteAlbumService.get(albumId);
+    if (updatedAlbum != null) {
+      state = state.copyWith(albums: state.albums.map((e) => e.id == albumId ? updatedAlbum : e).toList());
+    }
+    return count;
+  }
+
+  Future<void> removeAssets(String albumId, List<String> assetIds) async {
+    await _remoteAlbumService.removeAssets(albumId: albumId, assetIds: assetIds);
+    // Refresh album to get updated cover
+    final updatedAlbum = await _remoteAlbumService.get(albumId);
+    if (updatedAlbum != null) {
+      state = state.copyWith(albums: state.albums.map((e) => e.id == albumId ? updatedAlbum : e).toList());
+    }
   }
 
   Future<void> addUsers(String albumId, List<String> userIds) {

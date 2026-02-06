@@ -295,108 +295,111 @@ class BackupService {
           }
         }
 
-        if (file != null) {
-          String? originalFileName = await _assetMediaRepository.getOriginalFilename(asset.localId!);
-          originalFileName ??= asset.fileName;
+        String? originalFileName = await _assetMediaRepository.getOriginalFilename(asset.localId!);
+        originalFileName ??= asset.fileName;
 
-          if (asset.local!.isLivePhoto) {
-            if (livePhotoFile == null) {
-              _log.warning("Failed to obtain motion part of the livePhoto - $originalFileName");
-            }
+        if (asset.local!.isLivePhoto) {
+          if (livePhotoFile == null) {
+            _log.warning("Failed to obtain motion part of the livePhoto - $originalFileName");
           }
+        }
 
-          final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
-            filename: originalFileName,
+        if (file == null) {
+          _log.warning("Original file not found for asset ${asset.localId}");
+          continue;
+        }
+
+        final fileStream = file.openRead();
+        final assetRawUploadData = http.MultipartFile(
+          "assetData",
+          fileStream,
+          file.lengthSync(),
+          filename: originalFileName,
+        );
+
+        final baseRequest = MultipartRequest(
+          'POST',
+          Uri.parse('$savedEndpoint/assets'),
+          onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
+        );
+
+        baseRequest.headers.addAll(ApiService.getRequestHeaders());
+        baseRequest.fields['deviceAssetId'] = asset.localId!;
+        baseRequest.fields['deviceId'] = deviceId;
+        baseRequest.fields['fileCreatedAt'] = asset.fileCreatedAt.toUtc().toIso8601String();
+        baseRequest.fields['fileModifiedAt'] = asset.fileModifiedAt.toUtc().toIso8601String();
+        baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
+        baseRequest.fields['duration'] = asset.duration.toString();
+        baseRequest.files.add(assetRawUploadData);
+
+        onCurrentAsset(
+          CurrentUploadAsset(
+            id: asset.localId!,
+            fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
+            fileName: originalFileName,
+            fileType: _getAssetType(asset.type),
+            fileSize: file.lengthSync(),
+            iCloudAsset: false,
+          ),
+        );
+
+        String? livePhotoVideoId;
+        if (asset.local!.isLivePhoto && livePhotoFile != null) {
+          livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, cancelToken);
+        }
+
+        if (livePhotoVideoId != null) {
+          baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
+        }
+
+        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+
+        final responseBody = jsonDecode(await response.stream.bytesToString());
+
+        if (![200, 201].contains(response.statusCode)) {
+          final error = responseBody;
+          final errorMessage = error['message'] ?? error['error'];
+
+          dPrint(
+            () =>
+                "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
           );
 
-          final baseRequest = MultipartRequest(
-            'POST',
-            Uri.parse('$savedEndpoint/assets'),
-            onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
-          );
-
-          baseRequest.headers.addAll(ApiService.getRequestHeaders());
-          baseRequest.fields['deviceAssetId'] = asset.localId!;
-          baseRequest.fields['deviceId'] = deviceId;
-          baseRequest.fields['fileCreatedAt'] = asset.fileCreatedAt.toUtc().toIso8601String();
-          baseRequest.fields['fileModifiedAt'] = asset.fileModifiedAt.toUtc().toIso8601String();
-          baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
-          baseRequest.fields['duration'] = asset.duration.toString();
-          baseRequest.files.add(assetRawUploadData);
-
-          onCurrentAsset(
-            CurrentUploadAsset(
+          onError(
+            ErrorUploadAsset(
+              asset: asset,
               id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970 ? asset.fileModifiedAt : asset.fileCreatedAt,
+              fileCreatedAt: asset.fileCreatedAt,
               fileName: originalFileName,
-              fileType: _getAssetType(asset.type),
-              fileSize: file.lengthSync(),
-              iCloudAsset: false,
+              fileType: _getAssetType(candidate.asset.type),
+              errorMessage: errorMessage,
             ),
           );
 
-          String? livePhotoVideoId;
-          if (asset.local!.isLivePhoto && livePhotoFile != null) {
-            livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, cancelToken);
+          if (errorMessage == "Quota has been exceeded!") {
+            anyErrors = true;
+            break;
           }
 
-          if (livePhotoVideoId != null) {
-            baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
-          }
+          continue;
+        }
 
-          final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+        bool isDuplicate = false;
+        if (response.statusCode == 200) {
+          isDuplicate = true;
+          duplicatedAssetIds.add(asset.localId!);
+        }
 
-          final responseBody = jsonDecode(await response.stream.bytesToString());
+        onSuccess(
+          SuccessUploadAsset(
+            candidate: candidate,
+            remoteAssetId: responseBody['id'] as String,
+            isDuplicate: isDuplicate,
+          ),
+        );
 
-          if (![200, 201].contains(response.statusCode)) {
-            final error = responseBody;
-            final errorMessage = error['message'] ?? error['error'];
-
-            dPrint(
-              () =>
-                  "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
-            );
-
-            onError(
-              ErrorUploadAsset(
-                asset: asset,
-                id: asset.localId!,
-                fileCreatedAt: asset.fileCreatedAt,
-                fileName: originalFileName,
-                fileType: _getAssetType(candidate.asset.type),
-                errorMessage: errorMessage,
-              ),
-            );
-
-            if (errorMessage == "Quota has been exceeded!") {
-              anyErrors = true;
-              break;
-            }
-
-            continue;
-          }
-
-          bool isDuplicate = false;
-          if (response.statusCode == 200) {
-            isDuplicate = true;
-            duplicatedAssetIds.add(asset.localId!);
-          }
-
-          onSuccess(
-            SuccessUploadAsset(
-              candidate: candidate,
-              remoteAssetId: responseBody['id'] as String,
-              isDuplicate: isDuplicate,
-            ),
-          );
-
-          if (shouldSyncAlbums) {
-            await _albumService.syncUploadAlbums(candidate.albumNames, [responseBody['id'] as String]);
-          }
+        if (shouldSyncAlbums) {
+          await _albumService.syncUploadAlbums(candidate.albumNames, [responseBody['id'] as String]);
         }
       } on http.CancelledException {
         dPrint(() => "Backup was cancelled by the user");

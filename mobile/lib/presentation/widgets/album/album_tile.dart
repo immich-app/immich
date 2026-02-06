@@ -7,8 +7,11 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
-class AlbumTile extends ConsumerWidget {
+import 'package:flutter_hooks/flutter_hooks.dart';
+
+class AlbumTile extends HookConsumerWidget {
   const AlbumTile({super.key, required this.album, required this.isOwner, this.onAlbumSelected});
 
   final RemoteAlbum album;
@@ -17,7 +20,19 @@ class AlbumTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+    final albumThumbnailAssetFuture = useMemoized(() async {
+      if (album.thumbnailAssetId != null && album.thumbnailAssetId!.isNotEmpty) {
+        final thumbnailAsset = await ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId!);
+        // If the thumbnail asset is trashed (deletedAt != null), fallback to newest non-trashed asset
+        if (thumbnailAsset != null && thumbnailAsset.deletedAt == null) {
+          return thumbnailAsset;
+        }
+      }
+      // Fallback: get newest non-trashed asset (getNewestAsset already filters trashed)
+      return ref.read(remoteAlbumServiceProvider).getNewestAsset(album.id);
+    }, [album.id, album.thumbnailAssetId, album.assetCount, album.updatedAt]);
+
+    final albumThumbnailAsset = useFuture(albumThumbnailAssetFuture);
 
     return LargeLeadingTile(
       title: Text(
@@ -33,35 +48,23 @@ class AlbumTile extends ConsumerWidget {
       ),
       onTap: () => onAlbumSelected?.call(album),
       leadingPadding: const EdgeInsets.only(right: 16),
-      leading: FutureBuilder(
-        future: albumThumbnailAsset,
-        builder: (context, snapshot) {
-          return snapshot.hasData && snapshot.data != null
-              ? ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(15)),
-                  child: SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: Thumbnail.remote(
-                      remoteId: album.thumbnailAssetId!,
-                      thumbhash: snapshot.data!.thumbHash ?? "",
-                    ),
-                  ),
-                )
-              : SizedBox(
-                  width: 80,
-                  height: 80,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
-                    ),
-                    child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
-                  ),
-                );
-        },
-      ),
+      leading: albumThumbnailAsset.hasData && albumThumbnailAsset.data != null
+          ? ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(15)),
+              child: SizedBox(width: 80, height: 80, child: Thumbnail.fromAsset(asset: albumThumbnailAsset.data!)),
+            )
+          : SizedBox(
+              width: 80,
+              height: 80,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surfaceContainer,
+                  borderRadius: const BorderRadius.all(Radius.circular(16)),
+                  border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
+                ),
+                child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
+              ),
+            ),
     );
   }
 }

@@ -289,6 +289,12 @@ class AlbumService {
   Future<bool> removeAsset(Album album, Iterable<Asset> assets) async {
     try {
       final result = await _albumApiRepository.removeAssets(album.remoteId!, assets.map((asset) => asset.remoteId!));
+
+      if (result.failed.isNotEmpty) {
+        dPrint(() => "Partially failed to remove assets: ${result.failed}");
+        return false;
+      }
+
       final toRemove = result.removed.map((id) => assets.firstWhere((asset) => asset.remoteId == id));
       await _updateAssets(album.id, remove: toRemove.toList());
       return true;

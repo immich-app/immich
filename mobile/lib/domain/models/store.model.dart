@@ -91,7 +91,10 @@ enum StoreKey<T> {
   cleanupCutoffDaysAgo<int>._(1011),
   cleanupDefaultsInitialized<bool>._(1012),
 
-  syncMigrationStatus<String>._(1013);
+  syncMigrationStatus<String>._(1013),
+  defaultLandingPage<String>._(1014),
+  hideAlbumCarousel<bool>._(1015),
+  enableSyncExclusions<bool>._(1016);
 
   const StoreKey._(this.id);
   final int id;

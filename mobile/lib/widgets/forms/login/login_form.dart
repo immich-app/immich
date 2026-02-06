@@ -323,56 +323,50 @@ class LoginForm extends HookConsumerWidget {
         return;
       }
 
-      if (oAuthServerUrl != null) {
-        try {
-          final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
+      try {
+        if (oAuthServerUrl == null) {
+          ImmichToast.show(context: context, msg: "OAuth server URL is missing", toastType: ToastType.error);
+          return;
+        }
+        final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
 
-          if (loginResponseDto == null) {
+        if (loginResponseDto == null) {
+          return;
+        }
+
+        log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
+
+        final isSuccess = await ref
+            .watch(authProvider.notifier)
+            .saveAuthInfo(accessToken: loginResponseDto.accessToken);
+
+        if (isSuccess) {
+          final permission = ref.watch(galleryPermissionNotifier);
+          final isBeta = Store.isBetaTimelineEnabled;
+          if (!isBeta && (permission.isGranted || permission.isLimited)) {
+            unawaited(ref.watch(backupProvider.notifier).resumeBackup());
+          }
+          if (isBeta) {
+            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+            if (isSyncRemoteDeletionsMode()) {
+              await getManageMediaPermission();
+            }
+            unawaited(handleSyncFlow());
+            unawaited(context.replaceRoute(const TabShellRoute()));
             return;
           }
+          unawaited(context.replaceRoute(const TabControllerRoute()));
+        }
+      } catch (error, stack) {
+        log.severe('Error logging in with OAuth: $error', stack);
 
-          log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
-
-          final isSuccess = await ref
-              .watch(authProvider.notifier)
-              .saveAuthInfo(accessToken: loginResponseDto.accessToken);
-
-          if (isSuccess) {
-            final permission = ref.watch(galleryPermissionNotifier);
-            final isBeta = Store.isBetaTimelineEnabled;
-            if (!isBeta && (permission.isGranted || permission.isLimited)) {
-              unawaited(ref.watch(backupProvider.notifier).resumeBackup());
-            }
-            if (isBeta) {
-              await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              if (isSyncRemoteDeletionsMode()) {
-                await getManageMediaPermission();
-              }
-              unawaited(handleSyncFlow());
-              unawaited(context.replaceRoute(const TabShellRoute()));
-              return;
-            }
-            unawaited(context.replaceRoute(const TabControllerRoute()));
-          }
-        } catch (error, stack) {
-          log.severe('Error logging in with OAuth: $error', stack);
-
-          ImmichToast.show(
-            context: context,
-            msg: error.toString(),
-            toastType: ToastType.error,
-            gravity: ToastGravity.TOP,
-          );
-        } finally {}
-      } else {
         ImmichToast.show(
           context: context,
-          msg: "login_form_failed_get_oauth_server_disable".tr(),
-          toastType: ToastType.info,
+          msg: error.toString(),
+          toastType: ToastType.error,
           gravity: ToastGravity.TOP,
         );
-        return;
-      }
+      } finally {}
     }
 
     buildVersionCompatWarning() {

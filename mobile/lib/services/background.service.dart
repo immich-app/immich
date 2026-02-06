@@ -222,35 +222,33 @@ class BackgroundService {
 
   Future<void> _checkLockReleasedWithHeartbeat(final int lockTime) async {
     SendPort? other = IsolateNameServer.lookupPortByName(_portNameLock);
-    if (other != null) {
-      final ReceivePort tempRp = ReceivePort();
-      final SendPort tempSp = tempRp.sendPort;
-      final bs = tempRp.asBroadcastStream();
-      while (_wantsLockTime == lockTime) {
-        other.send(tempSp);
-        final dynamic answer = await bs.first.timeout(const Duration(seconds: 3), onTimeout: () => null);
-        if (_wantsLockTime != lockTime) {
-          break;
-        }
-        if (answer == null) {
-          // other isolate failed to answer, assuming it exited without releasing the lock
-          if (other == IsolateNameServer.lookupPortByName(_portNameLock)) {
-            IsolateNameServer.removePortNameMapping(_portNameLock);
-          }
-          break;
-        } else if (answer == true) {
-          // other isolate released the lock
-          break;
-        } else if (answer == false) {
-          // other isolate is still active
-        }
-        final dynamic isFinished = await bs.first.timeout(const Duration(seconds: 3), onTimeout: () => false);
-        if (isFinished == true) {
-          break;
-        }
+    final ReceivePort tempRp = ReceivePort();
+    final SendPort tempSp = tempRp.sendPort;
+    final bs = tempRp.asBroadcastStream();
+    while (_wantsLockTime == lockTime) {
+      other?.send(tempSp);
+      final dynamic answer = await bs.first.timeout(const Duration(seconds: 3), onTimeout: () => null);
+      if (_wantsLockTime != lockTime) {
+        break;
       }
-      tempRp.close();
+      if (answer == null) {
+        // other isolate failed to answer, assuming it exited without releasing the lock
+        if (other == IsolateNameServer.lookupPortByName(_portNameLock)) {
+          IsolateNameServer.removePortNameMapping(_portNameLock);
+        }
+        break;
+      } else if (answer == true) {
+        // other isolate released the lock
+        break;
+      } else if (answer == false) {
+        // other isolate is still active
+      }
+      final dynamic isFinished = await bs.first.timeout(const Duration(seconds: 3), onTimeout: () => false);
+      if (isFinished == true) {
+        break;
+      }
     }
+    tempRp.close();
   }
 
   void _heartbeatListener(dynamic msg) {

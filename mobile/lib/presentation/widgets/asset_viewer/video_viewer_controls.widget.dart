@@ -17,7 +17,11 @@ class VideoViewerControls extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assetIsVideo = ref.watch(currentAssetNotifier.select((asset) => asset != null && asset.isVideo));
+    final asset = ref.watch(currentAssetNotifier);
+    if (asset == null || !asset.isVideo) {
+      return const SizedBox.shrink();
+    }
+
     bool showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final showBottomSheet = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     if (showBottomSheet) {
@@ -35,7 +39,7 @@ class VideoViewerControls extends HookConsumerWidget {
       final state = ref.read(videoPlaybackValueProvider).state;
 
       // Do not hide on paused
-      if (state != VideoPlaybackState.paused && state != VideoPlaybackState.completed && assetIsVideo) {
+      if (state != VideoPlaybackState.paused && state != VideoPlaybackState.completed) {
         ref.read(assetViewerProvider.notifier).setControls(false);
       }
     });
@@ -63,11 +67,6 @@ class VideoViewerControls extends HookConsumerWidget {
           ref.read(castProvider.notifier).play();
         } else if (cast.castState == CastState.idle) {
           // resend the play command since its finished
-          final asset = ref.read(currentAssetNotifier);
-          if (asset == null) {
-            return;
-          }
-          // ref.read(castProvider.notifier).loadMedia(asset, true);
         }
         return;
       }
@@ -81,27 +80,35 @@ class VideoViewerControls extends HookConsumerWidget {
       }
     }
 
+    void toggleControlsVisibility() {
+      if (showBuffering) {
+        return;
+      }
+      if (showControls) {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      } else {
+        showControlsAndStartHideTimer();
+      }
+    }
+
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: showControlsAndStartHideTimer,
-      child: AbsorbPointer(
-        absorbing: !showControls,
+      behavior: HitTestBehavior.translucent,
+      onTap: toggleControlsVisibility,
+      child: IgnorePointer(
+        ignoring: !showControls,
         child: Stack(
           children: [
             if (showBuffering)
               const Center(child: DelayedLoadingIndicator(fadeInDuration: Duration(milliseconds: 400)))
             else
-              GestureDetector(
-                onTap: () => ref.read(assetViewerProvider.notifier).setControls(false),
-                child: CenterPlayButton(
-                  backgroundColor: Colors.black54,
-                  iconColor: Colors.white,
-                  isFinished: state == VideoPlaybackState.completed,
-                  isPlaying:
-                      state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
-                  show: assetIsVideo && showControls,
-                  onPressed: togglePlay,
-                ),
+              CenterPlayButton(
+                backgroundColor: Colors.black54,
+                iconColor: Colors.white,
+                isFinished: state == VideoPlaybackState.completed,
+                isPlaying:
+                    state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
+                show: asset.isVideo && showControls,
+                onPressed: togglePlay,
               ),
           ],
         ),

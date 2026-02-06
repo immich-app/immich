@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -17,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.da
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -27,6 +31,10 @@ class TabShellPage extends ConsumerStatefulWidget {
 }
 
 class _TabShellPageState extends ConsumerState<TabShellPage> {
+  bool _initialTabSet = false;
+  DateTime? _lastBackPressTime;
+  int? _lastHomeIndex; // Track the last homeIndex to detect setting changes
+
   @override
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
@@ -77,15 +85,59 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       );
     }
 
+    final defaultPage = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.defaultLandingPage);
+    // Use dynamic homeIndex based on setting - this controls AutoTabsRouter's internal back navigation
+    final homeIndex = defaultPage == "albums" ? 2 : 0;
+
     return AutoTabsRouter(
+      homeIndex: homeIndex, // Dynamic: Albums(2) if setting enabled, Photos(0) if not
       routes: const [MainTimelineRoute(), DriftSearchRoute(), DriftAlbumsRoute(), DriftLibraryRoute()],
       duration: const Duration(milliseconds: 600),
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
+
+        // Handle initial tab and setting changes
+        if (!_initialTabSet) {
+          // First load - set to home tab
+          _initialTabSet = true;
+          _lastHomeIndex = homeIndex;
+          if (homeIndex != 0) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              tabsRouter.setActiveIndex(homeIndex);
+              ref.read(tabProvider.notifier).state = TabEnum.values[homeIndex];
+            });
+          }
+        } else if (_lastHomeIndex != null && _lastHomeIndex != homeIndex) {
+          // Setting changed - navigate to new home tab
+          _lastHomeIndex = homeIndex;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            tabsRouter.setActiveIndex(homeIndex);
+            ref.read(tabProvider.notifier).state = TabEnum.values[homeIndex];
+          });
+        }
+
+        // PopScope handles back button - we control the behavior
         return PopScope(
-          canPop: tabsRouter.activeIndex == 0,
-          onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
+          canPop: tabsRouter.activeIndex == homeIndex, // Only allow pop (to show exit dialog) when on home tab
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) {
+              // Not on home tab - navigate to home tab
+              tabsRouter.setActiveIndex(homeIndex);
+              ref.read(tabProvider.notifier).state = TabEnum.values[homeIndex];
+            } else {
+              // On home tab and pop happened - check for double tap
+              final now = DateTime.now();
+              if (_lastBackPressTime != null && now.difference(_lastBackPressTime!) < const Duration(seconds: 2)) {
+                // Double tap - exit
+                SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+              } else {
+                // First tap - show toast
+                _lastBackPressTime = now;
+                ImmichToast.show(context: context, msg: 'Pulsa atrás de nuevo para salir', toastType: ToastType.info);
+              }
+            }
+          },
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape

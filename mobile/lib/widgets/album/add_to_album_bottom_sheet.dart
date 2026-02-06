@@ -17,7 +17,10 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
   /// The asset to add to an album
   final List<Asset> assets;
 
-  const AddToAlbumBottomSheet({super.key, required this.assets});
+  final bool moveMode;
+  final VoidCallback? onMoveSuccess;
+
+  const AddToAlbumBottomSheet({super.key, required this.assets, this.moveMode = false, this.onMoveSuccess});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,16 +38,24 @@ class AddToAlbumBottomSheet extends HookConsumerWidget {
       final result = await albumService.addAssets(album, assets);
 
       if (result != null) {
-        if (result.alreadyInAlbum.isNotEmpty) {
+        if (result.alreadyInAlbum.isNotEmpty && !moveMode) {
           ImmichToast.show(
             context: context,
             msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
           );
         } else {
-          ImmichToast.show(
-            context: context,
-            msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
-          );
+          if (moveMode && onMoveSuccess != null) {
+            onMoveSuccess!();
+            ImmichToast.show(
+              context: context,
+              msg: 'Moved to ${album.name}', // TODO: Add translation key 'moved_to_album'
+            );
+          } else {
+            ImmichToast.show(
+              context: context,
+              msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
+            );
+          }
         }
       }
       context.pop();

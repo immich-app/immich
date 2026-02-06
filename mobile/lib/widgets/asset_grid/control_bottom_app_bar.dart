@@ -105,13 +105,13 @@ class ControlBottomAppBar extends HookConsumerWidget {
     }
 
     /// Show existing AddToAlbumBottomSheet
-    void showAddToAlbumBottomSheet() {
+    void showAddToAlbumBottomSheet({bool move = false}) {
       showModalBottomSheet(
         elevation: 0,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
         context: context,
         builder: (BuildContext _) {
-          return AddToAlbumBottomSheet(assets: selectedAssets);
+          return AddToAlbumBottomSheet(assets: selectedAssets, moveMode: move, onMoveSuccess: onRemoveFromAlbum);
         },
       );
     }
@@ -137,7 +137,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
             label: "share_link".tr(),
             onPressed: enabled ? () => onShare(false) : null,
           ),
-        if (!isInLockedView && hasRemote && albums.isNotEmpty)
+        if (!isInLockedView && hasRemote && albums.isNotEmpty) ...[
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 100),
             child: ControlBoxButton(
@@ -146,6 +146,20 @@ class ControlBottomAppBar extends HookConsumerWidget {
               onPressed: enabled ? showAddToAlbumBottomSheet : null,
             ),
           ),
+          if (onRemoveFromAlbum != null)
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 100),
+              child: ControlBoxButton(
+                iconData: Icons.drive_file_move_outline,
+                label: "move_to_album".tr(),
+                // We reuse showAddToAlbumBottomSheet but we need to pass a flag 'move'
+                // However, showAddToAlbumBottomSheet creates AddToAlbumBottomSheet.
+                // We need to modify it to accept 'onMove'.
+                // For now, let's just trigger it and we will modify the sheet next.
+                onPressed: enabled ? () => showAddToAlbumBottomSheet(move: true) : null,
+              ),
+            ),
+        ],
         if (hasRemote && onArchive != null)
           ControlBoxButton(
             iconData: unarchive ? Icons.unarchive_outlined : Icons.archive_outlined,

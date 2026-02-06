@@ -114,9 +114,11 @@ class AssetMediaRepository {
           : null;
       if (localId != null && !asset.isEdited) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
-        downloadedXFiles.add(XFile(f!.path));
-        if (CurrentPlatform.isIOS) {
-          tempFiles.add(f);
+        if (f != null) {
+          downloadedXFiles.add(XFile(f.path));
+          if (CurrentPlatform.isIOS) {
+            tempFiles.add(f);
+          }
         }
       } else {
         final remoteId = (asset is RemoteAsset) ? asset.id : asset.remoteId;

@@ -59,7 +59,10 @@ enum AppSettingsEnum<T> {
   cleanupKeepMediaType<int>(StoreKey.cleanupKeepMediaType, null, 0),
   cleanupKeepAlbumIds<String>(StoreKey.cleanupKeepAlbumIds, null, ""),
   cleanupCutoffDaysAgo<int>(StoreKey.cleanupCutoffDaysAgo, null, -1),
-  cleanupDefaultsInitialized<bool>(StoreKey.cleanupDefaultsInitialized, null, false);
+  cleanupDefaultsInitialized<bool>(StoreKey.cleanupDefaultsInitialized, null, false),
+  defaultLandingPage<String>(StoreKey.defaultLandingPage, "defaultLandingPage", "photos"),
+  hideAlbumCarousel<bool>(StoreKey.hideAlbumCarousel, "hideAlbumCarousel", false),
+  enableSyncExclusions<bool>(StoreKey.enableSyncExclusions, "enableSyncExclusions", true);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 
