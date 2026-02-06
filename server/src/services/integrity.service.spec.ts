@@ -3,7 +3,7 @@ import { Readable } from 'node:stream';
 import { text } from 'node:stream/consumers';
 import { AssetStatus, IntegrityReportType, JobName, JobStatus } from 'src/enum';
 import { IntegrityService } from 'src/services/integrity.service';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 describe(IntegrityService.name, () => {
   let sut: IntegrityService;
@@ -46,16 +46,16 @@ describe(IntegrityService.name, () => {
   describe('getIntegrityReportCsv', () => {
     it('gets report as csv', async () => {
       mocks.integrityReport.streamIntegrityReports.mockReturnValue(
-        (function* () {
-          yield {
+        makeStream([
+          {
             id: 'id',
             createdAt: new Date(0),
             path: '/path/to/file',
             type: IntegrityReportType.ChecksumFail,
             assetId: null,
             fileAssetId: null,
-          };
-        })() as never,
+          },
+        ]),
       );
 
       await expect(text(sut.getIntegrityReportCsv(IntegrityReportType.ChecksumFail))).resolves.toMatchInlineSnapshot(`
