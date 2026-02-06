@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:flutter/rendering.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -31,7 +30,6 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -174,6 +172,27 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
   }
 
   static const _scrollTolerance = Tolerance(distance: 0.5, velocity: 10.0);
+  static final _snapSpring = SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0);
+
+  /// Drive the scroll controller by [dy] pixels (positive = scroll down).
+  void _scrollBy(double dy) {
+    if (!_scrollController.hasClients) return;
+    final newOffset = (_scrollController.offset - dy).clamp(0.0, _scrollController.position.maxScrollExtent);
+    _scrollController.jumpTo(newOffset);
+  }
+
+  /// Animate the scroll position to [target] using a spring simulation.
+  void _animateScrollTo(double target, double velocity) {
+    final offset = _scrollController.offset;
+    if ((offset - target).abs() < 0.5) {
+      _scrollController.jumpTo(target);
+      return;
+    }
+    _ballisticAnimController.value = offset;
+    _ballisticAnimController.animateWith(
+      ScrollSpringSimulation(_snapSpring, offset, target, velocity, tolerance: _scrollTolerance),
+    );
+  }
 
   void _onBallisticTick() {
     if (!_scrollController.hasClients) return;
@@ -207,21 +226,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     final snap = _currentSnapOffset;
     if (snap <= 0) return;
 
-    // Above snap offset: free scroll with deceleration
+    // Above snap offset: free scroll or spring back to snap
     if (offset >= snap) {
       if (velocity.abs() < 10) return;
-      // Scrolling down towards snap zone: snap
       if (velocity < -50) {
-        _ballisticAnimController.value = offset;
-        _ballisticAnimController.animateWith(
-          ScrollSpringSimulation(
-            SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
-            offset,
-            snap,
-            velocity,
-            tolerance: _scrollTolerance,
-          ),
-        );
+        _animateScrollTo(snap, velocity);
         return;
       }
       // Scrolling up: decelerate naturally
@@ -233,28 +242,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     }
 
     // In snap zone (0 → snapOffset): snap to nearest target
-    double target;
+    final double target;
     if (velocity.abs() > 50) {
       target = velocity > 0 ? snap : 0;
     } else {
       target = (offset < snap / 2) ? 0 : snap;
     }
-
-    if ((offset - target).abs() < 0.5) {
-      _scrollController.jumpTo(target);
-      return;
-    }
-
-    _ballisticAnimController.value = offset;
-    _ballisticAnimController.animateWith(
-      ScrollSpringSimulation(
-        SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
-        offset,
-        target,
-        velocity,
-        tolerance: _scrollTolerance,
-      ),
-    );
+    _animateScrollTo(target, velocity);
   }
 
   @override
@@ -369,22 +363,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     viewController = controller;
   }
 
-  bool onScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollStartNotification) {
-      // Drag started
-      print('Scroll/drag started');
-      // final dragDetails = notification.dragDetails;
-      // _onDragStart(_, notification.dragDetails, controller, scaleStateController)
-    } else if (notification is ScrollUpdateNotification) {
-      // Drag is ongoing
-      print('Scroll offset: ${notification.metrics.pixels}');
-    } else if (notification is ScrollEndNotification) {
-      // Drag ended
-      print('Scroll/drag ended');
-    }
-    return false; // return false to allow the notification to continue propagating
-  }
-
   void _onDragStart(
     _,
     DragStartDetails details,
@@ -458,17 +436,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       return;
     }
 
-    // Scroll mode: drive the scroll controller with incremental delta
-    if (!_scrollController.hasClients) return;
-    final newOffset = (_scrollController.offset - details.delta.dy).clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
-    _scrollController.jumpTo(newOffset);
+    _scrollBy(details.delta.dy);
   }
 
   void _handleDragDown(BuildContext ctx, Offset delta) {
-    print("drag down");
     const double dragRatio = 0.2;
     const double popThreshold = 75;
 
@@ -495,24 +466,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     }
   }
 
-  void _onDetailsDragStart(DragStartDetails details) {
-    _ballisticAnimController.stop();
-  }
-
-  void _onDetailsDragUpdate(DragUpdateDetails details) {
-    if (!_scrollController.hasClients) return;
-    final newOffset = (_scrollController.offset - details.delta.dy).clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
-    _scrollController.jumpTo(newOffset);
-  }
-
-  void _onDetailsDragEnd(DragEndDetails details) {
-    final scrollVelocity = -details.velocity.pixelsPerSecond.dy;
-    _snapScroll(scrollVelocity);
-  }
-
   void _onEvent(Event event) {
     if (event is TimelineReloadEvent) {
       _onTimelineReloadEvent();
@@ -533,16 +486,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
   void _openDetails() {
     if (!_scrollController.hasClients || _currentSnapOffset <= 0) return;
     _ballisticAnimController.stop();
-    _ballisticAnimController.value = _scrollController.offset;
-    _ballisticAnimController.animateWith(
-      ScrollSpringSimulation(
-        SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0),
-        _scrollController.offset,
-        _currentSnapOffset,
-        0,
-        tolerance: _scrollTolerance,
-      ),
-    );
+    _animateScrollTo(_currentSnapOffset, 0);
   }
 
   void _onTimelineReloadEvent() {
@@ -725,11 +669,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       }
     });
 
-    // debugPaintSizeEnabled = true;
-
-    // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
-    // Issue: https://github.com/flutter/flutter/issues/109037
-    // TODO: Add a custom scrum builder once the fix lands on stable
     return PopScope(
       onPopInvokedWithResult: _onPop,
       child: Scaffold(
@@ -766,58 +705,51 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
 
             // Calculate padding to center the image in the viewport
             final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
-            final snapOffset = (topPadding + (imageHeight / 2)).clamp(viewportHeight / 3, viewportHeight / 2);
+            final snapOffset = (topPadding + (imageHeight / 2)).clamp(viewportHeight / 2, viewportHeight / 3 * 2);
             _currentSnapOffset = snapOffset;
 
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                NotificationListener<ScrollNotification>(
-                  onNotification: onScrollNotification,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Container(
-                        //   height: topPadding,
-                        //   decoration: const BoxDecoration(color: Colors.green),
-                        // ),
-                        SizedOverflowBox(
-                          size: Size(double.infinity, topPadding + imageHeight - (kMinInteractiveDimension / 2)),
-                          alignment: Alignment.topCenter,
-                          child: SizedBox(
-                            height: viewportHeight,
-                            child: PhotoViewGallery.builder(
-                              gaplessPlayback: true,
-                              loadingBuilder: _placeholderBuilder,
-                              pageController: pageController,
-                              scrollPhysics: CurrentPlatform.isIOS
-                                  ? const FastScrollPhysics() // Use bouncing physics for iOS
-                                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
-                              itemCount: totalAssets,
-                              onPageChanged: _onPageChanged,
-                              scaleStateChangedCallback: _onScaleStateChanged,
-                              builder: _assetBuilder,
-                              backgroundDecoration: BoxDecoration(color: backgroundColor),
-                              enablePanAlways: true,
-                            ),
+                SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedOverflowBox(
+                        size: Size(double.infinity, topPadding + imageHeight - (kMinInteractiveDimension / 2)),
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          height: viewportHeight,
+                          child: PhotoViewGallery.builder(
+                            gaplessPlayback: true,
+                            loadingBuilder: _placeholderBuilder,
+                            pageController: pageController,
+                            scrollPhysics: CurrentPlatform.isIOS
+                                ? const FastScrollPhysics() // Use bouncing physics for iOS
+                                : const FastClampingScrollPhysics(), // Use heavy physics for Android
+                            itemCount: totalAssets,
+                            onPageChanged: _onPageChanged,
+                            scaleStateChangedCallback: _onScaleStateChanged,
+                            builder: _assetBuilder,
+                            backgroundDecoration: BoxDecoration(color: backgroundColor),
+                            enablePanAlways: true,
                           ),
                         ),
+                      ),
 
-                        GestureDetector(
-                          onVerticalDragStart: _onDetailsDragStart,
-                          onVerticalDragUpdate: _onDetailsDragUpdate,
-                          onVerticalDragEnd: _onDetailsDragEnd,
-                          child: AnimatedOpacity(
-                            opacity: _assetDetailsOpacity,
-                            duration: kThemeAnimationDuration,
-                            child: AssetDetails(minHeight: viewportHeight - snapOffset),
-                          ),
+                      GestureDetector(
+                        onVerticalDragStart: (_) => _ballisticAnimController.stop(),
+                        onVerticalDragUpdate: (details) => _scrollBy(details.delta.dy),
+                        onVerticalDragEnd: (details) => _snapScroll(-details.velocity.pixelsPerSecond.dy),
+                        child: AnimatedOpacity(
+                          opacity: _assetDetailsOpacity,
+                          duration: kThemeAnimationDuration,
+                          child: AssetDetails(minHeight: viewportHeight / 4 * 3),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 Positioned(
@@ -838,59 +770,5 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
         ),
       ),
     );
-  }
-}
-
-class VariableHeightSnappingPhysics extends ScrollPhysics {
-  final double snapStart;
-  final double snapEnd;
-  final double snapOffset;
-
-  const VariableHeightSnappingPhysics({
-    required this.snapStart,
-    required this.snapEnd,
-    required this.snapOffset,
-    super.parent,
-  });
-
-  @override
-  VariableHeightSnappingPhysics applyTo(ScrollPhysics? ancestor) {
-    return VariableHeightSnappingPhysics(
-      parent: buildParent(ancestor),
-      snapStart: snapStart,
-      snapEnd: snapEnd,
-      snapOffset: snapOffset,
-    );
-  }
-
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if (value < position.pixels && position.pixels <= position.minScrollExtent) {
-      return 0.0;
-    }
-    return super.applyBoundaryConditions(position, value);
-  }
-
-  @override
-  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
-    final tolerance = toleranceFor(position);
-
-    if (position.pixels >= snapStart && position.pixels <= snapEnd) {
-      double targetPixels;
-
-      if (velocity < -tolerance.velocity) {
-        targetPixels = 0;
-      } else if (velocity > tolerance.velocity) {
-        targetPixels = snapOffset;
-      } else {
-        targetPixels = (position.pixels < snapOffset / 2) ? 0 : snapOffset;
-      }
-
-      if ((position.pixels - targetPixels).abs() > tolerance.distance) {
-        return ScrollSpringSimulation(spring, position.pixels, targetPixels, velocity, tolerance: tolerance);
-      }
-    }
-
-    return super.createBallisticSimulation(position, velocity);
   }
 }
