@@ -30,7 +30,7 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
-      onDispose: cancel,
+      onLastListenerRemoved: cancel,
     );
   }
 
@@ -78,7 +78,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
-      onDispose: cancel,
+      onLastListenerRemoved: cancel,
     );
   }
 
