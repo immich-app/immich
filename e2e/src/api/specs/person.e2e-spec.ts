@@ -163,7 +163,7 @@ describe('/people', () => {
       expect(people.map((p) => p.id)).toEqual([
         nameFreddyPersonFavourite.id, // name: 'Freddy', count: 2
         nameBillPersonFavourite.id, // name: 'Bill', count: 1
-        nameZPerson.id, // name: 'Z', count: 4 
+        nameZPerson.id, // name: 'Z', count: 4
         multipleAssetsPerson.id, // name: 'multiple_assets_person', count: 3
         nameBobPerson.id, // name: 'Bob', count: 2
         nameAlicePerson.id, // name: 'Alice', count: 1
@@ -205,12 +205,12 @@ describe('/people', () => {
 
       expect(status).toBe(200);
       expect(body.hasNextPage).toBe(false);
-      expect(body.total).toBe(12); 
+      expect(body.total).toBe(12);
 
       const people = body.people as PersonResponseDto[];
 
-      // 'Z' has 4 faces with 4 unique assets, 'multiple_assets_person' has 4 faces but only 3 unique assets. 
-      // When the distinct count isn't working Z would be ranked below 'multiple_assets_person' because of name ordering. 
+      // 'Z' has 4 faces with 4 unique assets, 'multiple_assets_person' has 4 faces but only 3 unique assets.
+      // When the distinct count isn't working Z would be ranked below 'multiple_assets_person' because of name ordering.
       const nameZPersonIndex = people.findIndex((p) => p.id === nameZPerson.id);
       const multipleAssetsPersonIndex = people.findIndex((p) => p.id === multipleAssetsPerson.id);
       expect(nameZPersonIndex).toBeLessThan(multipleAssetsPersonIndex);
