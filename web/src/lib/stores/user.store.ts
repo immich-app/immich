@@ -16,4 +16,6 @@ export const resetSavedUser = () => {
   purchaseStore.setPurchaseStatus(false);
 };
 
-eventManager.on('AuthLogout', () => resetSavedUser());
+eventManager.on({
+  AuthLogout: () => resetSavedUser(),
+});

@@ -17,8 +17,6 @@ set
 where
   "userId" = $2
   and "albumId" = $3
-returning
-  *
 
 -- AlbumUserRepository.delete
 delete from "album_user"

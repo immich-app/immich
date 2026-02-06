@@ -19,14 +19,19 @@ class SystemConfigGeneratedImageDto {
     required this.size,
   });
 
+  /// Image format
   ImageFormat format;
 
   bool progressive;
 
+  /// Quality
+  ///
   /// Minimum value: 1
   /// Maximum value: 100
   int quality;
 
+  /// Size
+  ///
   /// Minimum value: 1
   int size;
 

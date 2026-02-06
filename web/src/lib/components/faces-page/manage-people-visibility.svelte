@@ -10,27 +10,22 @@
   import { Button, IconButton, toastManager } from '@immich/ui';
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
 
   interface Props {
     people: PersonResponseDto[];
     totalPeopleCount: number;
     titleId?: string | undefined;
     onClose: () => void;
+    onUpdate: (people: PersonResponseDto[]) => void;
     loadNextPage: () => void;
   }
 
-  let { people = $bindable(), totalPeopleCount, titleId = undefined, onClose, loadNextPage }: Props = $props();
+  let { people, totalPeopleCount, titleId = undefined, onClose, onUpdate, loadNextPage }: Props = $props();
 
   let toggleVisibility = $state(ToggleVisibility.SHOW_ALL);
   let showLoadingSpinner = $state(false);
-
-  const getPersonIsHidden = (people: PersonResponseDto[]) => {
-    const personIsHidden: Record<string, boolean> = {};
-    for (const person of people) {
-      personIsHidden[person.id] = person.isHidden;
-    }
-    return personIsHidden;
-  };
+  const overrides = new SvelteMap<string, boolean>();
 
   const getNextVisibility = (toggleVisibility: ToggleVisibility) => {
     if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
@@ -46,23 +41,23 @@
     toggleVisibility = getNextVisibility(toggleVisibility);
 
     for (const person of people) {
+      let isHidden = overrides.get(person.id) ?? person.isHidden;
+
       if (toggleVisibility === ToggleVisibility.HIDE_ALL) {
-        personIsHidden[person.id] = true;
+        isHidden = true;
       } else if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
-        personIsHidden[person.id] = false;
+        isHidden = false;
       } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD && !person.name) {
-        personIsHidden[person.id] = true;
+        isHidden = true;
       }
+
+      setHiddenOverride(person, isHidden);
     }
   };
 
-  const handleResetVisibility = () => (personIsHidden = getPersonIsHidden(people));
-
   const handleSaveVisibility = async () => {
     showLoadingSpinner = true;
-    const changed = people
-      .filter((person) => person.isHidden !== personIsHidden[person.id])
-      .map((person) => ({ id: person.id, isHidden: personIsHidden[person.id] }));
+    const changed = Array.from(overrides, ([id, isHidden]) => ({ id, isHidden }));
 
     try {
       if (changed.length > 0) {
@@ -76,9 +71,14 @@
       }
 
       for (const person of people) {
-        person.isHidden = personIsHidden[person.id];
+        const isHidden = overrides.get(person.id);
+        if (isHidden !== undefined) {
+          person.isHidden = isHidden;
+        }
       }
+      overrides.clear();
 
+      onUpdate(people);
       onClose();
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_visibility', { values: { count: changed.length } }));
@@ -87,7 +87,13 @@
     }
   };
 
-  let personIsHidden = $state(getPersonIsHidden(people));
+  const setHiddenOverride = (person: PersonResponseDto, isHidden: boolean) => {
+    if (isHidden === person.isHidden) {
+      overrides.delete(person.id);
+      return;
+    }
+    overrides.set(person.id, isHidden);
+  };
 
   let toggleButtonOptions: Record<ToggleVisibility, { icon: string; label: string }> = $derived({
     [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
@@ -124,7 +130,7 @@
         variant="ghost"
         aria-label={$t('reset_people_visibility')}
         icon={mdiRestart}
-        onclick={handleResetVisibility}
+        onclick={() => overrides.clear()}
       />
       <IconButton
         shape="round"
@@ -142,11 +148,11 @@
 <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8 mt-16">
   <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
     {#snippet children({ person })}
-      {@const hidden = personIsHidden[person.id]}
+      {@const hidden = overrides.get(person.id) ?? person.isHidden}
       <button
         type="button"
         class="group relative w-full h-full"
-        onclick={() => (personIsHidden[person.id] = !hidden)}
+        onclick={() => setHiddenOverride(person, !hidden)}
         aria-pressed={hidden}
         aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
       >

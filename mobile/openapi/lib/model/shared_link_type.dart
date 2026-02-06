@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Shared link type
 class SharedLinkType {
   /// Instantiate a new enum with the provided [value].
   const SharedLinkType._(this.value);

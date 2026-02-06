@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PositionedAssetMarkerIcon extends StatelessWidget {
@@ -53,7 +52,6 @@ class _AssetMarkerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageUrl = getThumbnailUrlForRemoteId(id);
-    final cacheKey = getThumbnailCacheKeyForRemoteId(id, thumbhash);
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(
@@ -79,12 +77,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                 backgroundColor: context.colorScheme.onSurface,
                 child: CircleAvatar(
                   radius: constraints.maxHeight * 0.37,
-                  backgroundImage: CachedNetworkImageProvider(
-                    imageUrl,
-                    cacheKey: cacheKey,
-                    headers: ApiService.getRequestHeaders(),
-                    errorListener: (_) => const Icon(Icons.image_not_supported_outlined),
-                  ),
+                  backgroundImage: RemoteImageProvider(url: imageUrl),
                 ),
               ),
             ),
