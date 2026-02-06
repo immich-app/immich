@@ -152,7 +152,7 @@ export class DatabaseBackupService {
 
       args.push(
         '--username',
-        databaseConfig.username,
+        databaseUsername,
         '--host',
         databaseConfig.host,
         '--port',

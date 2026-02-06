@@ -1766,13 +1766,14 @@ describe(MetadataService.name, () => {
       const asset = factory.jobAssets.sidecarWrite();
       const description = 'this is a description';
       const gps = 12;
-      const date = '2023-11-22T04:56:12.196Z';
+      const date = '2023-11-21T22:56:12.196-06:00';
 
       mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([
         'description',
         'latitude',
         'longitude',
         'dateTimeOriginal',
+        'timeZone',
       ]);
       mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
       await expect(
@@ -1792,6 +1793,7 @@ describe(MetadataService.name, () => {
         'latitude',
         'longitude',
         'dateTimeOriginal',
+        'timeZone',
       ]);
     });
   });

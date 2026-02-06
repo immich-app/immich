@@ -473,7 +473,7 @@ class AlbumsApi {
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = only own, undefined = all
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
   Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
@@ -516,7 +516,7 @@ class AlbumsApi {
   ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
-  ///   Filter by shared status: true = only shared, false = only own, undefined = all
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
   Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
     final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
