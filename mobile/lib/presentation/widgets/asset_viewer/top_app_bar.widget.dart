@@ -55,7 +55,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
+            EventStream.shared.emit(const ViewerShowDetailsEvent(activitiesMode: true));
           },
         ),
 

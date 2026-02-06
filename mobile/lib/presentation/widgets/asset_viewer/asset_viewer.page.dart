@@ -107,6 +107,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
+  StreamSubscription? _scaleBoundarySub;
 
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -171,8 +172,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     }
   }
 
-  static const _scrollTolerance = Tolerance(distance: 0.5, velocity: 10.0);
-  static final _snapSpring = SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.0);
+  // Match Flutter's ScrollPhysics defaults
+  static final _snapSpring = SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.1);
+  static const _minFlingVelocity = 50.0; // px/s, matches ScrollPhysics.minFlingVelocity
+
+  Tolerance get _scrollTolerance {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    return Tolerance(velocity: 1.0 / (0.050 * dpr), distance: 1.0 / dpr);
+  }
 
   /// Drive the scroll controller by [dy] pixels (positive = scroll down).
   void _scrollBy(double dy) {
@@ -184,14 +191,31 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
   /// Animate the scroll position to [target] using a spring simulation.
   void _animateScrollTo(double target, double velocity) {
     final offset = _scrollController.offset;
-    if ((offset - target).abs() < 0.5) {
+    final tolerance = _scrollTolerance;
+    if ((offset - target).abs() < tolerance.distance) {
       _scrollController.jumpTo(target);
       return;
     }
     _ballisticAnimController.value = offset;
     _ballisticAnimController.animateWith(
-      ScrollSpringSimulation(_snapSpring, offset, target, velocity, tolerance: _scrollTolerance),
+      ScrollSpringSimulation(_snapSpring, offset, target, velocity, tolerance: tolerance),
     );
+  }
+
+  /// Create a platform-appropriate fling simulation (clamping on Android, bouncing on iOS).
+  Simulation _createFlingSimulation(double offset, double velocity) {
+    final tolerance = _scrollTolerance;
+    if (CurrentPlatform.isIOS) {
+      return BouncingScrollSimulation(
+        position: offset,
+        velocity: velocity,
+        leadingExtent: _currentSnapOffset,
+        trailingExtent: _scrollController.position.maxScrollExtent,
+        spring: _snapSpring,
+        tolerance: tolerance,
+      );
+    }
+    return ClampingScrollSimulation(position: offset, velocity: velocity, tolerance: tolerance);
   }
 
   void _onBallisticTick() {
@@ -228,22 +252,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
 
     // Above snap offset: free scroll or spring back to snap
     if (offset >= snap) {
-      if (velocity.abs() < 10) return;
-      if (velocity < -50) {
+      if (velocity.abs() < _minFlingVelocity) return;
+      if (velocity < -_minFlingVelocity) {
         _animateScrollTo(snap, velocity);
         return;
       }
-      // Scrolling up: decelerate naturally
+      // Scrolling up: decelerate with platform-native physics
       _ballisticAnimController.value = offset;
-      _ballisticAnimController.animateWith(
-        ClampingScrollSimulation(position: offset, velocity: velocity, tolerance: _scrollTolerance),
-      );
+      _ballisticAnimController.animateWith(_createFlingSimulation(offset, velocity));
       return;
     }
 
     // In snap zone (0 → snapOffset): snap to nearest target
     final double target;
-    if (velocity.abs() > 50) {
+    if (velocity.abs() > _minFlingVelocity) {
       target = velocity > 0 ? snap : 0;
     } else {
       target = (offset < snap / 2) ? 0 : snap;
@@ -258,6 +280,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     pageController.dispose();
     _cancelTimers();
     reloadSubscription?.cancel();
+    _scaleBoundarySub?.cancel();
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -265,7 +288,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     super.dispose();
   }
 
-  bool get showingBottomSheet => _scrollController.offset > 0;
+  bool get showingDetails => _scrollController.offset > 0;
 
   Color get backgroundColor {
     final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
@@ -361,6 +384,20 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
+    _listenForScaleBoundaries(controller);
+  }
+
+  void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
+    _scaleBoundarySub?.cancel();
+    _scaleBoundarySub = null;
+    if (controller == null || controller.scaleBoundaries != null) return;
+    _scaleBoundarySub = controller.outputStateStream.listen((_) {
+      if (controller.scaleBoundaries != null) {
+        _scaleBoundarySub?.cancel();
+        _scaleBoundarySub = null;
+        if (mounted) setState(() {});
+      }
+    });
   }
 
   void _onDragStart(
@@ -374,11 +411,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     dragDownPosition = details.localPosition;
     _dragStartGlobalPosition = details.globalPosition;
     initialPhotoViewState = controller.value;
-    _dragMode = showingBottomSheet ? _DragMode.scroll : _DragMode.undecided;
+    _dragMode = showingDetails ? _DragMode.scroll : _DragMode.undecided;
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
         scaleStateController.scaleState == PhotoViewScaleState.covering;
-    if (!showingBottomSheet && isZoomed) {
+    if (!showingDetails && isZoomed) {
       blockGestures = true;
     }
   }
@@ -460,8 +497,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     ref.read(assetViewerProvider.notifier).setOpacity(backgroundOpacity);
   }
 
-  void _onTapDown(_, __, ___) {
-    if (!showingBottomSheet) {
+  void _onTapUp(_, __, ___) {
+    if (!showingDetails) {
       ref.read(assetViewerProvider.notifier).toggleControls();
     }
   }
@@ -477,13 +514,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       return;
     }
 
-    if (event is ViewerOpenBottomSheetEvent) {
-      _openDetails();
+    if (event is ViewerShowDetailsEvent) {
+      _showDetails();
       return;
     }
   }
 
-  void _openDetails() {
+  void _showDetails() {
     if (!_scrollController.hasClients || _currentSnapOffset <= 0) return;
     _ballisticAnimController.stop();
     _animateScrollTo(_currentSnapOffset, 0);
@@ -513,7 +550,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
     }
 
     final currentAsset = ref.read(currentAssetNotifier);
-    // Do not reload / close the bottom sheet if the asset has not changed
+    // Do not reload if the asset has not changed
     if (newAsset.heroTag == currentAsset?.heroTag) {
       return;
     }
@@ -536,7 +573,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       return;
     }
 
-    if (!showingBottomSheet) {
+    if (!showingDetails) {
       ref.read(assetViewerProvider.notifier).setControls(true);
     }
   }
@@ -585,11 +622,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
-      disableScaleGestures: showingBottomSheet,
+      disableScaleGestures: showingDetails,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
-      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
       onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
       errorBuilder: (_, __, ___) => Container(
         width: size.width,
@@ -610,7 +647,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
-      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       maxScale: 1.0,
@@ -689,23 +726,26 @@ class _AssetViewerState extends ConsumerState<AssetViewer> with TickerProviderSt
             final viewportWidth = constraints.maxWidth;
             final viewportHeight = constraints.maxHeight;
 
-            // Calculate image display height from asset dimensions
-            final asset = ref.read(currentAssetNotifier);
-            final assetWidth = asset?.width;
-            final assetHeight = asset?.height;
-
-            // should probably get this value from the actual size of the image
-            // rather than calculating it. It could lead to very slight
-            // misalignments.
-            double imageHeight = viewportHeight;
-            if (assetWidth != null && assetHeight != null && assetWidth > 0 && assetHeight > 0) {
-              final aspectRatio = assetWidth / assetHeight;
-              imageHeight = math.min(viewportWidth / aspectRatio, viewportHeight);
+            // Use the actual rendered image size from PhotoView when available,
+            // falling back to a calculation from asset metadata.
+            final sb = viewController?.scaleBoundaries;
+            double imageHeight;
+            if (sb != null) {
+              imageHeight = sb.childSize.height * sb.initialScale;
+            } else {
+              final asset = ref.read(currentAssetNotifier);
+              final assetWidth = asset?.width;
+              final assetHeight = asset?.height;
+              imageHeight = viewportHeight;
+              if (assetWidth != null && assetHeight != null && assetWidth > 0 && assetHeight > 0) {
+                final aspectRatio = assetWidth / assetHeight;
+                imageHeight = math.min(viewportWidth / aspectRatio, viewportHeight);
+              }
             }
 
             // Calculate padding to center the image in the viewport
             final topPadding = math.max((viewportHeight - imageHeight) / 2, 0.0);
-            final snapOffset = (topPadding + (imageHeight / 2)).clamp(viewportHeight / 2, viewportHeight / 3 * 2);
+            final snapOffset = math.max(topPadding + (imageHeight / 2), viewportHeight / 4 * 3);
             _currentSnapOffset = snapOffset;
 
             return Stack(
