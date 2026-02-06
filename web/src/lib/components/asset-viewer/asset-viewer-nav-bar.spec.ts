@@ -1,3 +1,4 @@
+import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
 import { preferences as preferencesStore, resetSavedUser, user as userStore } from '$lib/stores/user.store';
 import { renderWithTooltips } from '$tests/helpers';
 import { assetFactory } from '@test-data/factories/asset-factory';
@@ -8,15 +9,8 @@ import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
 
 describe('AssetViewerNavBar component', () => {
   const additionalProps = {
-    showCopyButton: false,
-    showZoomButton: false,
-    showDownloadButton: false,
-    showMotionPlayButton: false,
-    showShareButton: false,
     preAction: () => {},
-    onZoomImage: () => {},
     onAction: () => {},
-    onEdit: () => {},
     onPlaySlideshow: () => {},
     onClose: () => {},
     playOriginalVideo: false,
@@ -27,10 +21,7 @@ describe('AssetViewerNavBar component', () => {
     Element.prototype.animate = vi.fn().mockImplementation(() => ({
       cancel: () => {},
     }));
-    vi.stubGlobal(
-      'ResizeObserver',
-      vi.fn(() => ({ observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() })),
-    );
+    vi.stubGlobal('ResizeObserver', getResizeObserverMock());
     vi.mock(import('$lib/managers/feature-flags-manager.svelte'), () => {
       return {
         featureFlagsManager: {

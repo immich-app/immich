@@ -87,7 +87,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   }
 
   void onSearch(String searchTerm, QuickFilterMode filterMode) {
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.read(currentUserProvider)?.id;
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
     filterAlbums();
@@ -138,6 +138,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         .read(remoteAlbumProvider.notifier)
         .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       sortedAlbums = sorted;
     });
@@ -149,6 +153,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   Future<void> filterAlbums() async {
     if (filter.query == null) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         shownAlbums = sortedAlbums;
       });
@@ -159,6 +167,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final filteredAlbums = ref
         .read(remoteAlbumProvider.notifier)
         .searchAlbums(sortedAlbums, filter.query!, filter.userId, filter.mode);
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       shownAlbums = filteredAlbums;
@@ -174,7 +186,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
 
     // refilter and sort when albums change
     ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {

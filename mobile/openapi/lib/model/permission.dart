@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// List of permissions
 class Permission {
   /// Instantiate a new enum with the provided [value].
   const Permission._(this.value);
@@ -72,6 +72,7 @@ class Permission {
   static const facePeriodRead = Permission._(r'face.read');
   static const facePeriodUpdate = Permission._(r'face.update');
   static const facePeriodDelete = Permission._(r'face.delete');
+  static const folderPeriodRead = Permission._(r'folder.read');
   static const jobPeriodCreate = Permission._(r'job.create');
   static const jobPeriodRead = Permission._(r'job.read');
   static const libraryPeriodCreate = Permission._(r'library.create');
@@ -230,6 +231,7 @@ class Permission {
     facePeriodRead,
     facePeriodUpdate,
     facePeriodDelete,
+    folderPeriodRead,
     jobPeriodCreate,
     jobPeriodRead,
     libraryPeriodCreate,
@@ -423,6 +425,7 @@ class PermissionTypeTransformer {
         case r'face.read': return Permission.facePeriodRead;
         case r'face.update': return Permission.facePeriodUpdate;
         case r'face.delete': return Permission.facePeriodDelete;
+        case r'folder.read': return Permission.folderPeriodRead;
         case r'job.create': return Permission.jobPeriodCreate;
         case r'job.read': return Permission.jobPeriodRead;
         case r'library.create': return Permission.libraryPeriodCreate;

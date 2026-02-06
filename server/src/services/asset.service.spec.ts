@@ -2,12 +2,12 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { faceStub } from 'test/fixtures/face.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -564,12 +564,11 @@ describe(AssetService.name, () => {
   });
 
   describe('handleAssetDeletion', () => {
-    it('should remove faces', async () => {
-      const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
+    it('should clean up files', async () => {
+      const asset = assetStub.image;
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
 
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetWithFace);
-
-      await sut.handleAssetDeletion({ id: assetWithFace.id, deleteOnDisk: true });
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
       expect(mocks.job.queue.mock.calls).toEqual([
         [
@@ -580,38 +579,29 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
-                assetWithFace.originalPath,
+                asset.originalPath,
               ],
             },
           },
         ],
       ]);
-
-      expect(mocks.asset.remove).toHaveBeenCalledWith(assetWithFace);
-    });
-
-    it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
-      mocks.stack.update.mockResolvedValue(factory.stack() as any);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.primaryImage);
-
-      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
-
-      expect(mocks.stack.update).toHaveBeenCalledWith('stack-1', {
-        id: 'stack-1',
-        primaryAssetId: 'stack-child-asset-1',
-      });
+      expect(mocks.asset.remove).toHaveBeenCalledWith(asset);
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
       mocks.stack.delete.mockResolvedValue();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue({
         ...assetStub.primaryImage,
-        stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
+        stack: {
+          id: 'stack-id',
+          primaryAssetId: assetStub.primaryImage.id,
+          assets: [{ id: 'one-asset' }],
+        },
       });
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
-      expect(mocks.stack.delete).toHaveBeenCalledWith('stack-1');
+      expect(mocks.stack.delete).toHaveBeenCalledWith('stack-id');
     });
 
     it('should delete a live photo', async () => {
@@ -811,6 +801,27 @@ describe(AssetService.name, () => {
       );
 
       expect(mocks.asset.upsertBulkMetadata).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('editAsset', () => {
+    it('should enforce crop first', async () => {
+      await expect(
+        sut.editAsset(authStub.admin, 'asset-1', {
+          edits: [
+            {
+              action: AssetEditAction.Rotate,
+              parameters: { angle: 90 },
+            },
+            {
+              action: AssetEditAction.Crop,
+              parameters: { x: 0, y: 0, width: 100, height: 100 },
+            },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
     });
   });
 });

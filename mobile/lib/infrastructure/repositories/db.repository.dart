@@ -97,7 +97,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -193,7 +193,13 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
           },
           from14To15: (m, v15) async {
-            await m.addColumn(v15.trashedLocalAssetEntity, v15.trashedLocalAssetEntity.source);
+            await m.alterTable(
+              TableMigration(
+                v15.trashedLocalAssetEntity,
+                columnTransformer: {v15.trashedLocalAssetEntity.source: Constant(TrashOrigin.localSync.index)},
+                newColumns: [v15.trashedLocalAssetEntity.source],
+              ),
+            );
           },
           from15To16: (m, v16) async {
             // Add i_cloud_id to local and remote asset tables
@@ -203,6 +209,9 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from16To17: (m, v17) async {
             await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.isEdited);
+          },
+          from17To18: (m, v18) async {
+            await m.createIndex(v18.idxRemoteAssetCloudId);
           },
         ),
       );
@@ -219,7 +228,9 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 30000');
+      await customStatement('PRAGMA busy_timeout = 30000'); // 30s
+      await customStatement('PRAGMA cache_size = -32000'); // 32MB
+      await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
 }

@@ -15,13 +15,21 @@ class SystemConfigGeneratedFullsizeImageDto {
   SystemConfigGeneratedFullsizeImageDto({
     required this.enabled,
     required this.format,
+    this.progressive = false,
     required this.quality,
   });
 
+  /// Enabled
   bool enabled;
 
+  /// Image format
   ImageFormat format;
 
+  /// Progressive
+  bool progressive;
+
+  /// Quality
+  ///
   /// Minimum value: 1
   /// Maximum value: 100
   int quality;
@@ -30,6 +38,7 @@ class SystemConfigGeneratedFullsizeImageDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigGeneratedFullsizeImageDto &&
     other.enabled == enabled &&
     other.format == format &&
+    other.progressive == progressive &&
     other.quality == quality;
 
   @override
@@ -37,15 +46,17 @@ class SystemConfigGeneratedFullsizeImageDto {
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
     (format.hashCode) +
+    (progressive.hashCode) +
     (quality.hashCode);
 
   @override
-  String toString() => 'SystemConfigGeneratedFullsizeImageDto[enabled=$enabled, format=$format, quality=$quality]';
+  String toString() => 'SystemConfigGeneratedFullsizeImageDto[enabled=$enabled, format=$format, progressive=$progressive, quality=$quality]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
       json[r'format'] = this.format;
+      json[r'progressive'] = this.progressive;
       json[r'quality'] = this.quality;
     return json;
   }
@@ -61,6 +72,7 @@ class SystemConfigGeneratedFullsizeImageDto {
       return SystemConfigGeneratedFullsizeImageDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         format: ImageFormat.fromJson(json[r'format'])!,
+        progressive: mapValueOfType<bool>(json, r'progressive') ?? false,
         quality: mapValueOfType<int>(json, r'quality')!,
       );
     }

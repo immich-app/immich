@@ -134,8 +134,7 @@ with
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
         where
-          "asset_job_status"."previewAt" is not null
-          and (asset."localDateTime" at time zone 'UTC')::date = today.date
+          (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
           and exists (
@@ -585,3 +584,40 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+-- AssetRepository.getForOriginal
+select
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" = $3
+
+-- AssetRepository.getForThumbnail
+select
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_file"."path" as "path"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."type" = $1
+where
+  "asset"."id" = $2
+order by
+  "asset_file"."isEdited" desc
+
+-- AssetRepository.getForVideo
+select
+  "asset"."encodedVideoPath",
+  "asset"."originalPath"
+from
+  "asset"
+where
+  "asset"."id" = $1
+  and "asset"."type" = $2

@@ -146,6 +146,8 @@ export enum Permission {
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
 
+  FolderRead = 'folder.read',
+
   JobCreate = 'job.create',
   JobRead = 'job.read',
 

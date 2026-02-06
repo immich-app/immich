@@ -66,7 +66,7 @@ export class AssetController {
   }
 
   @Post('jobs')
-  @Authenticated()
+  @Authenticated({ permission: Permission.JobCreate })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Run an asset job',

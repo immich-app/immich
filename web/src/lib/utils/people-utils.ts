@@ -1,5 +1,5 @@
 import type { Faces } from '$lib/stores/people.store';
-import { getAssetThumbnailUrl } from '$lib/utils';
+import { getAssetMediaUrl } from '$lib/utils';
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
 import type { ZoomImageWheelState } from '@zoom-image/core';
 
@@ -76,13 +76,13 @@ export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
   assetType: AssetTypeEnum,
-  photoViewer: HTMLImageElement | null,
+  photoViewer: HTMLImageElement | undefined,
 ): Promise<string | null> => {
-  let image: HTMLImageElement | null = null;
+  let image: HTMLImageElement | undefined;
   if (assetType === AssetTypeEnum.Image) {
     image = photoViewer;
   } else if (assetType === AssetTypeEnum.Video) {
-    const data = getAssetThumbnailUrl(assetId);
+    const data = getAssetMediaUrl({ id: assetId });
     const img: HTMLImageElement = new Image();
     img.src = data;
 
