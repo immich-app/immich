@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
 
 class GalleryStackedChildren extends HookConsumerWidget {
   final ValueNotifier<int> stackIndex;
@@ -70,7 +70,7 @@ class GalleryStackedChildren extends HookConsumerWidget {
                       borderRadius: const BorderRadius.all(Radius.circular(4)),
                       child: Image(
                         fit: BoxFit.cover,
-                        image: ImmichRemoteImageProvider(assetId: assetId),
+                        image: RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: asset.thumbhash ?? ""),
                       ),
                     ),
                   ),

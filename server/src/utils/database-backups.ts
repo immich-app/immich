@@ -59,6 +59,7 @@ export async function buildPostgresLaunchArguments(
 ): Promise<{
   bin: string;
   args: string[];
+  databaseUsername: string;
   databasePassword: string;
   databaseVersion: string;
   databaseMajorVersion?: number;
@@ -73,6 +74,7 @@ export async function buildPostgresLaunchArguments(
   const databaseMajorVersion = databaseSemver?.major;
 
   const args: string[] = [];
+  let databaseUsername;
 
   if (isUrlConnection) {
     if (bin !== 'pg_dump') {
@@ -85,23 +87,18 @@ export async function buildPostgresLaunchArguments(
       // remove known bad parameters
       parsedUrl.searchParams.delete('uselibpqcompat');
 
-      if (options.username) {
-        parsedUrl.username = options.username;
-      }
-
+      databaseUsername = parsedUrl.username;
       url = parsedUrl.toString();
     }
 
+    // assume typical values if we can't parse URL or not present
+    databaseUsername ??= 'postgres';
+
     args.push(url);
   } else {
-    args.push(
-      '--username',
-      options.username ?? databaseConfig.username,
-      '--host',
-      databaseConfig.host,
-      '--port',
-      databaseConfig.port.toString(),
-    );
+    databaseUsername = databaseConfig.username;
+
+    args.push('--username', databaseUsername, '--host', databaseConfig.host, '--port', databaseConfig.port.toString());
 
     switch (bin) {
       case 'pg_dumpall': {
@@ -151,6 +148,7 @@ export async function buildPostgresLaunchArguments(
   return {
     bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
     args,
+    databaseUsername,
     databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
     databaseVersion,
     databaseMajorVersion,
@@ -207,44 +205,35 @@ const SQL_DROP_CONNECTIONS = `
     AND pid <> pg_backend_pid();
 `;
 
-const SQL_RESET_SCHEMA = `
+const SQL_RESET_SCHEMA = (username: string) => `
   -- re-create the default schema
   DROP SCHEMA public CASCADE;
   CREATE SCHEMA public;
 
   -- restore access to schema
-  GRANT ALL ON SCHEMA public TO postgres;
+  GRANT ALL ON SCHEMA public TO "${username}";
   GRANT ALL ON SCHEMA public TO public;
 `;
 
-async function* sql(inputStream: Readable, isPgClusterDump: boolean) {
+async function* sql(inputStream: Readable, databaseUsername: string, isPgClusterDump: boolean) {
   yield SQL_DROP_CONNECTIONS;
   yield isPgClusterDump
-    ? String.raw`
+    ? // it is likely the dump contains SQL to try to drop the currently active
+      // database to ensure we have a fresh slate; if the `postgres` database exists
+      // then prefer to switch before continuing otherwise this will just silently fail
+      String.raw`
         \c postgres
       `
-    : SQL_RESET_SCHEMA;
+    : SQL_RESET_SCHEMA(databaseUsername);
 
   for await (const chunk of inputStream) {
     yield chunk;
   }
 }
 
-async function* sqlRollback(inputStream: Readable, isPgClusterDump: boolean) {
+async function* sqlRollback(inputStream: Readable, databaseUsername: string) {
   yield SQL_DROP_CONNECTIONS;
-
-  if (isPgClusterDump) {
-    yield String.raw`
-      -- try to create database
-      -- may fail but script will continue running
-      CREATE DATABASE immich;
-
-      -- switch to database / newly created database
-      \c immich
-    `;
-  }
-
-  yield SQL_RESET_SCHEMA;
+  yield SQL_RESET_SCHEMA(databaseUsername);
 
   for await (const chunk of inputStream) {
     yield chunk;
@@ -273,12 +262,11 @@ export async function restoreDatabaseBackup(
       isPgClusterDump = true;
     }
 
-    const { bin, args, databasePassword, databaseMajorVersion } = await buildPostgresLaunchArguments(
+    const { bin, args, databaseUsername, databasePassword, databaseMajorVersion } = await buildPostgresLaunchArguments(
       { logger, database: databaseRepository, ...pgRepos },
       'psql',
       {
         singleTransaction: !isPgClusterDump,
-        username: isPgClusterDump ? 'postgres' : undefined,
       },
     );
 
@@ -301,7 +289,7 @@ export async function restoreDatabaseBackup(
       inputStream = storage.createPlainReadStream(backupFilePath);
     }
 
-    const sqlStream = Readable.from(sql(inputStream, isPgClusterDump));
+    const sqlStream = Readable.from(sql(inputStream, databaseUsername, isPgClusterDump));
     const psql = processRepository.spawnDuplexStream(bin, args, {
       env: {
         PATH: process.env.PATH,
@@ -332,7 +320,7 @@ export async function restoreDatabaseBackup(
       fileStream.pipe(gunzip);
       inputStream = gunzip;
 
-      const sqlStream = Readable.from(sqlRollback(inputStream, isPgClusterDump));
+      const sqlStream = Readable.from(sqlRollback(inputStream, databaseUsername));
       const psql = processRepository.spawnDuplexStream(bin, args, {
         env: {
           PATH: process.env.PATH,

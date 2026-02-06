@@ -3,17 +3,15 @@ package app.alextran.immich.images
 import android.content.Context
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
-import app.alextran.immich.BuildConfig
 import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
-import app.alextran.immich.core.SSLConfig
+import app.alextran.immich.core.HttpClientManager
+import app.alextran.immich.core.USER_AGENT
 import kotlinx.coroutines.*
 import okhttp3.Cache
 import okhttp3.Call
 import okhttp3.Callback
-import okhttp3.ConnectionPool
-import okhttp3.Dispatcher
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -32,15 +30,8 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLSocketFactory
-import javax.net.ssl.X509TrustManager
 
 
-private const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
-private const val MAX_REQUESTS_PER_HOST = 64
-private const val KEEP_ALIVE_CONNECTIONS = 10
-private const val KEEP_ALIVE_DURATION_MINUTES = 5L
 private const val CACHE_SIZE_BYTES = 1024L * 1024 * 1024
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
@@ -121,7 +112,7 @@ private object ImageFetcherManager {
       appContext = context.applicationContext
       cacheDir = context.cacheDir
       fetcher = build()
-      SSLConfig.addListener(::invalidate)
+      HttpClientManager.addClientChangedListener(::invalidate)
       initialized = true
     }
   }
@@ -143,18 +134,14 @@ private object ImageFetcherManager {
   private fun invalidate() {
     synchronized(this) {
       val oldFetcher = fetcher
-      if (oldFetcher is OkHttpImageFetcher && SSLConfig.requiresCustomSSL) {
-        fetcher = oldFetcher.reconfigure(SSLConfig.sslSocketFactory, SSLConfig.trustManager)
-        return
-      }
       fetcher = build()
       oldFetcher.drain()
     }
   }
 
   private fun build(): ImageFetcher {
-    return if (SSLConfig.requiresCustomSSL) {
-      OkHttpImageFetcher.create(cacheDir, SSLConfig.sslSocketFactory, SSLConfig.trustManager)
+    return if (HttpClientManager.isMtls) {
+      OkHttpImageFetcher.create(cacheDir)
     } else {
       CronetImageFetcher(appContext, cacheDir)
     }
@@ -380,49 +367,15 @@ private class OkHttpImageFetcher private constructor(
   private var draining = false
 
   companion object {
-    fun create(
-      cacheDir: File,
-      sslSocketFactory: SSLSocketFactory?,
-      trustManager: X509TrustManager?,
-    ): OkHttpImageFetcher {
+    fun create(cacheDir: File): OkHttpImageFetcher {
       val dir = File(cacheDir, "okhttp")
-      val connectionPool = ConnectionPool(
-        maxIdleConnections = KEEP_ALIVE_CONNECTIONS,
-        keepAliveDuration = KEEP_ALIVE_DURATION_MINUTES,
-        timeUnit = TimeUnit.MINUTES
-      )
 
-      val builder = OkHttpClient.Builder()
-        .addInterceptor { chain ->
-          chain.proceed(
-            chain.request().newBuilder()
-              .header("User-Agent", USER_AGENT)
-              .build()
-          )
-        }
-        .dispatcher(Dispatcher().apply { maxRequestsPerHost = MAX_REQUESTS_PER_HOST })
-        .connectionPool(connectionPool)
+      val client = HttpClientManager.getClient().newBuilder()
         .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+        .build()
 
-      if (sslSocketFactory != null && trustManager != null) {
-        builder.sslSocketFactory(sslSocketFactory, trustManager)
-      }
-
-      return OkHttpImageFetcher(builder.build())
+      return OkHttpImageFetcher(client)
     }
-  }
-
-  fun reconfigure(
-    sslSocketFactory: SSLSocketFactory?,
-    trustManager: X509TrustManager?,
-  ): OkHttpImageFetcher {
-    val builder = client.newBuilder()
-    if (sslSocketFactory != null && trustManager != null) {
-      builder.sslSocketFactory(sslSocketFactory, trustManager)
-    }
-    // Evict idle connections using old SSL config
-    client.connectionPool.evictAll()
-    return OkHttpImageFetcher(builder.build())
   }
 
   private fun onComplete() {
@@ -512,7 +465,6 @@ private class OkHttpImageFetcher private constructor(
       draining = true
       activeCount == 0
     }
-    client.connectionPool.evictAll()
     if (shouldClose) {
       client.cache?.close()
     }

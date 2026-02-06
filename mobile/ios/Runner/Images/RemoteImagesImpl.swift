@@ -7,64 +7,18 @@ class RemoteImageRequest {
   weak var task: URLSessionDataTask?
   let id: Int64
   var isCancelled = false
-  var data: CFMutableData?
   let completion: (Result<[String: Int64]?, any Error>) -> Void
   
   init(id: Int64, task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     self.id = id
     self.task = task
-    self.data = nil
     self.completion = completion
   }
 }
 
 class RemoteImageApiImpl: NSObject, RemoteImageApi {
-  private static let delegate = RemoteImageApiDelegate()
-  static let session = {
-    let cacheDir = FileManager.default.temporaryDirectory.appendingPathComponent("thumbnails", isDirectory: true)
-    let config = URLSessionConfiguration.default
-    config.requestCachePolicy = .returnCacheDataElseLoad
-    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
-    config.httpAdditionalHeaders = ["User-Agent": "Immich_iOS_\(version)"]
-    try! FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-    config.urlCache = URLCache(
-      memoryCapacity: 0,
-      diskCapacity: 1 << 30,
-      directory: cacheDir
-    )
-    config.httpMaximumConnectionsPerHost = 64
-    return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
-  }()
-  
-  func requestImage(url: String, headers: [String : String], requestId: Int64, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
-    var urlRequest = URLRequest(url: URL(string: url)!)
-    for (key, value) in headers {
-      urlRequest.setValue(value, forHTTPHeaderField: key)
-    }
-    let task = Self.session.dataTask(with: urlRequest)
-    
-    let imageRequest = RemoteImageRequest(id: requestId, task: task, completion: completion)
-    Self.delegate.add(taskId: task.taskIdentifier, request: imageRequest)
-    
-    task.resume()
-  }
-  
-  func cancelRequest(requestId: Int64) {
-    Self.delegate.cancel(requestId: requestId)
-  }
-  
-  func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
-    Task {
-      let cache = Self.session.configuration.urlCache!
-      let cacheSize = Int64(cache.currentDiskUsage)
-      cache.removeAllCachedResponses()
-      completion(.success(cacheSize))
-    }
-  }
-}
-
-class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
-  private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated, attributes: .concurrent)
+  private static var lock = os_unfair_lock()
+  private static var requests = [Int64: RemoteImageRequest]()
   private static var rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
     bitsPerPixel: 32,
@@ -72,9 +26,6 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
     renderingIntent: .perceptual
   )!
-  private static var requestByTaskId = [Int: RemoteImageRequest]()
-  private static var taskIdByRequestId = [Int64: Int]()
-  private static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
   private static let decodeOptions = [
     kCGImageSourceShouldCache: false,
     kCGImageSourceShouldCacheImmediately: true,
@@ -82,105 +33,103 @@ class RemoteImageApiDelegate: NSObject, URLSessionDataDelegate {
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ] as CFDictionary
   
-  func urlSession(
-    _ session: URLSession, dataTask: URLSessionDataTask,
-    didReceive response: URLResponse,
-    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void
-  ) {
-    guard let request = get(taskId: dataTask.taskIdentifier)
-    else {
-      return completionHandler(.cancel)
+  func requestImage(url: String, headers: [String : String], requestId: Int64, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
+    var urlRequest = URLRequest(url: URL(string: url)!)
+    urlRequest.cachePolicy = .returnCacheDataElseLoad
+    for (key, value) in headers {
+      urlRequest.setValue(value, forHTTPHeaderField: key)
     }
     
-    let capacity = max(Int(response.expectedContentLength), 0)
-    request.data = CFDataCreateMutable(nil, capacity)
-    
-    completionHandler(.allow)
-  }
-  
-  func urlSession(_ session: URLSession, dataTask: URLSessionDataTask,
-                  didReceive data: Data) {
-    guard let request = get(taskId: dataTask.taskIdentifier) else { return }
-    
-    data.withUnsafeBytes { bytes in
-      CFDataAppendBytes(request.data, bytes.bindMemory(to: UInt8.self).baseAddress, data.count)
+    let task = URLSessionManager.shared.session.dataTask(with: urlRequest) { data, response, error in
+      Self.handleCompletion(requestId: requestId, data: data, response: response, error: error)
     }
+    
+    let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
+    
+    os_unfair_lock_lock(&Self.lock)
+    Self.requests[requestId] = request
+    os_unfair_lock_unlock(&Self.lock)
+    
+    task.resume()
   }
   
-  func urlSession(_ session: URLSession, task: URLSessionTask,
-                  didCompleteWithError error: Error?) {
-    guard let request = get(taskId: task.taskIdentifier) else { return }
-        
-    defer { remove(taskId: task.taskIdentifier, requestId: request.id) }
+  private static func handleCompletion(requestId: Int64, data: Data?, response: URLResponse?, error: Error?) {
+    os_unfair_lock_lock(&Self.lock)
+    guard let request = requests[requestId] else {
+      return os_unfair_lock_unlock(&Self.lock)
+    }
+    requests[requestId] = nil
+    os_unfair_lock_unlock(&Self.lock)
     
     if let error = error {
       if request.isCancelled || (error as NSError).code == NSURLErrorCancelled {
-        return request.completion(Self.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
       return request.completion(.failure(error))
     }
     
     if request.isCancelled {
-      return request.completion(Self.cancelledResult)
+      return request.completion(ImageProcessing.cancelledResult)
     }
     
-    guard let data = request.data else {
+    guard let data = data else {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
     }
     
-    guard let imageSource = CGImageSourceCreateWithData(data, nil),
-          let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, Self.decodeOptions) else {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
-    }
-    
-    if request.isCancelled {
-      return request.completion(Self.cancelledResult)
-    }
-    
-    do {
-      let buffer = try vImage_Buffer(cgImage: cgImage, format: Self.rgbaFormat)
+    ImageProcessing.queue.async {
+      ImageProcessing.semaphore.wait()
+      defer { ImageProcessing.semaphore.signal() }
       
       if request.isCancelled {
-        buffer.free()
-        return request.completion(Self.cancelledResult)
+        return request.completion(ImageProcessing.cancelledResult)
       }
       
-      request.completion(
-        .success([
-          "pointer": Int64(Int(bitPattern: buffer.data)),
-          "width": Int64(buffer.width),
-          "height": Int64(buffer.height),
-          "rowBytes": Int64(buffer.rowBytes),
-        ]))
-    } catch {
-      return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+      guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
+            let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
+      }
+      
+      if request.isCancelled {
+        return request.completion(ImageProcessing.cancelledResult)
+      }
+      
+      do {
+        let buffer = try vImage_Buffer(cgImage: cgImage, format: rgbaFormat)
+        
+        if request.isCancelled {
+          buffer.free()
+          return request.completion(ImageProcessing.cancelledResult)
+        }
+        
+        request.completion(
+          .success([
+            "pointer": Int64(Int(bitPattern: buffer.data)),
+            "width": Int64(buffer.width),
+            "height": Int64(buffer.height),
+            "rowBytes": Int64(buffer.rowBytes),
+          ]))
+      } catch {
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
+      }
     }
   }
   
-  @inline(__always) func get(taskId: Int) -> RemoteImageRequest? {
-    Self.requestQueue.sync { Self.requestByTaskId[taskId] }
-  }
-  
-  @inline(__always) func add(taskId: Int, request: RemoteImageRequest) -> Void {
-    Self.requestQueue.async(flags: .barrier) {
-      Self.requestByTaskId[taskId] = request
-      Self.taskIdByRequestId[request.id] = taskId
-    }
-  }
-  
-  @inline(__always) func remove(taskId: Int, requestId: Int64) -> Void {
-    Self.requestQueue.async(flags: .barrier) {
-      Self.taskIdByRequestId[requestId] = nil
-      Self.requestByTaskId[taskId] = nil
-    }
-  }
-  
-  @inline(__always) func cancel(requestId: Int64) -> Void {
-    guard let request: RemoteImageRequest = (Self.requestQueue.sync {
-      guard let taskId = Self.taskIdByRequestId[requestId] else { return nil }
-      return Self.requestByTaskId[taskId]
-    }) else { return }
+  func cancelRequest(requestId: Int64) {
+    os_unfair_lock_lock(&Self.lock)
+    let request = Self.requests[requestId]
+    os_unfair_lock_unlock(&Self.lock)
+    
+    guard let request = request else { return }
     request.isCancelled = true
     request.task?.cancel()
+  }
+  
+  func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
+    Task {
+      let cache = URLSessionManager.shared.session.configuration.urlCache!
+      let cacheSize = Int64(cache.currentDiskUsage)
+      cache.removeAllCachedResponses()
+      completion(.success(cacheSize))
+    }
   }
 }
