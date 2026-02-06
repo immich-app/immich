@@ -50,9 +50,7 @@ describe('/admin/integrity', () => {
         command: QueueCommand.Pause,
       });
     }
-  });
-
-  beforeAll(async () => {
+    
     asset = await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'asset.jpg',
