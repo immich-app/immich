@@ -232,19 +232,20 @@ export const ValidateHexColor = () => {
   return applyDecorators(...decorators);
 };
 
-type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
+type DateOptions = OptionalOptions & { optional?: boolean; format?: 'date' | 'date-time' };
 export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
-  const { optional, nullable, format, ...apiPropertyOptions } = {
-    optional: false,
-    nullable: false,
-    format: 'date-time',
-    ...options,
-  };
+  const {
+    optional,
+    nullable = false,
+    emptyToNull = false,
+    format = 'date-time',
+    ...apiPropertyOptions
+  } = options || {};
 
-  const decorators = [
+  return applyDecorators(
     ApiProperty({ format, ...apiPropertyOptions }),
     IsDate(),
-    optional ? Optional({ nullable: true }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
     Transform(({ key, value }) => {
       if (value === null || value === undefined) {
         return value;
@@ -256,19 +257,17 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
 
       return new Date(value as string);
     }),
-  ];
-
-  if (optional) {
-    decorators.push(Optional({ nullable }));
-  }
-
-  return applyDecorators(...decorators);
+  );
 };
 
-type StringOptions = { optional?: boolean; nullable?: boolean; trim?: boolean };
+type StringOptions = OptionalOptions & { optional?: boolean; trim?: boolean };
 export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
-  const { optional, nullable, trim, ...apiPropertyOptions } = options || {};
-  const decorators = [ApiProperty(apiPropertyOptions), IsString(), optional ? Optional({ nullable }) : IsNotEmpty()];
+  const { optional, nullable, emptyToNull, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [
+    ApiProperty(apiPropertyOptions),
+    IsString(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
+  ];
 
   if (trim) {
     decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
@@ -277,9 +276,9 @@ export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => 
   return applyDecorators(...decorators);
 };
 
-type BooleanOptions = { optional?: boolean; nullable?: boolean };
+type BooleanOptions = OptionalOptions & { optional?: boolean };
 export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
-  const { optional, nullable, ...apiPropertyOptions } = options || {};
+  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = options || {};
   const decorators = [
     Property(apiPropertyOptions),
     IsBoolean(),
@@ -291,7 +290,7 @@ export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
       }
       return value;
     }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
   ];
 
   return applyDecorators(...decorators);
