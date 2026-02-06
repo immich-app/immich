@@ -137,8 +137,34 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   BackupToggleButton(
                     onStart: () async => await startBackup(),
                     onStop: () async {
-                      syncSuccess = null;
-                      await stopBackup();
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text("backup_controller_page_stop_backup_dialog_title".tr(defaultValue: "Disable backup")),
+                          content: Text(
+                            "backup_controller_page_stop_backup_dialog_content".tr(
+                              defaultValue: "Are you sure you want to disable backup? This will clear the current progress and cache.",
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text("cancel".tr()),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text(
+                                "confirm".tr(),
+                                style: TextStyle(color: context.colorScheme.error),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        syncSuccess = null;
+                        await stopBackup();
+                      }
                     },
                   ),
                   switch (error) {
