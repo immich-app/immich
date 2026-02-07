@@ -1,5 +1,6 @@
 import Foundation
 import UniformTypeIdentifiers
+import native_video_player
 
 enum ImportError: Error {
   case noFile
@@ -28,6 +29,7 @@ class NetworkApiImpl: NetworkApi {
   func removeCertificate(completion: @escaping (Result<Void, any Error>) -> Void) {
     let status = clearCerts()
     if status == errSecSuccess || status == errSecItemNotFound {
+      VideoResourceLoader.shared.clientCredential = nil
       return completion(.success(()))
     }
     completion(.failure(ImportError.keychainError(status)))
