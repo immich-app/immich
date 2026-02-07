@@ -637,6 +637,115 @@ void main() {
       });
     });
 
+    group('setAlbumCover button', () {
+      test('should show when owner, not locked, has album, and selectedCount is 1', () {
+        final album = createRemoteAlbum();
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 1,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not owner', () {
+        final album = createRemoteAlbum();
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: false,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 1,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+      });
+
+      test('should not show when in locked view', () {
+        final album = createRemoteAlbum();
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 1,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+      });
+
+      test('should not show when no current album', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 1,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+      });
+
+      test('should not show when selectedCount is not 1', () {
+        final album = createRemoteAlbum();
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 0,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+      });
+
+      test('should not show when selectedCount is greater than 1', () {
+        final album = createRemoteAlbum();
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: album,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          selectedCount: 2,
+        );
+
+        expect(ActionButtonType.setAlbumCover.shouldShow(context), isFalse);
+      });
+    });
+
     group('likeActivity button', () {
       test('should show when not locked, has album, activity enabled, and shared', () {
         final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
