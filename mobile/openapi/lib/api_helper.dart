@@ -61,6 +61,9 @@ String parameterToString(dynamic value) {
   if (value is AssetEditAction) {
     return AssetEditActionTypeTransformer().encode(value).toString();
   }
+  if (value is AssetFileType) {
+    return AssetFileTypeTypeTransformer().encode(value).toString();
+  }
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }

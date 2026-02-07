@@ -108,6 +108,10 @@ export enum Permission {
   AssetCopy = 'asset.copy',
   AssetDerive = 'asset.derive',
 
+  AssetFileRead = 'assetFile.read',
+  AssetFileDelete = 'assetFile.delete',
+  AssetFileDownload = 'assetFile.download',
+
   AssetEditGet = 'asset.edit.get',
   AssetEditCreate = 'asset.edit.create',
   AssetEditDelete = 'asset.edit.delete',
@@ -852,6 +856,7 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  AssetFiles = 'Asset files',
   DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',
