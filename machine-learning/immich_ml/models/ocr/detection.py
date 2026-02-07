@@ -67,6 +67,7 @@ class TextDetector(InferenceModel):
         w, h = inputs.size
         if w < 32 or h < 32:
             return self._empty
+        log.info(f"Detecting text boxes in image of size {w}x{h}...")
         out = self.session.run(None, {"x": self._transform(inputs)})[0]
         boxes, scores = self.postprocess(out, (h, w))
         if len(boxes) == 0:
@@ -75,7 +76,7 @@ class TextDetector(InferenceModel):
             "boxes": self.sorted_boxes(boxes),
             "scores": np.array(scores, dtype=np.float32),
         }
-
+    
     # adapted from RapidOCR
     def _transform(self, img: Image.Image) -> NDArray[np.float32]:
         if img.height < img.width:
@@ -89,14 +90,32 @@ class TextDetector(InferenceModel):
 
         resize_h = int(round(resize_h / 32) * 32)
         resize_w = int(round(resize_w / 32) * 32)
+        
+        # Calculate target size (fixed shape for padding)
+        target_h = int(round(self.max_resolution / 32) * 32)
+        target_w = int(round(self.max_resolution / 32) * 32)
+        
+        # Ensure resize dimensions don't exceed target dimensions
+        # This can happen when rounding to 32 multiples causes overflow
+        resize_h = min(resize_h, target_h)
+        resize_w = min(resize_w, target_w)
+        
         resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
 
         img_np: NDArray[np.float32] = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)  # type: ignore
+        
+        # Pad to fixed shape to enable batch inference and reduce memory usage
+        # Padding with 127.5 (normalized to 0.5, which becomes 0 after subtracting mean)
+        # Create padded image with padding value 127.5 (becomes 0 after normalization)
+        padded_img = np.full((target_h, target_w, 3), 127.5, dtype=np.float32)
+        padded_img[:resize_h, :resize_w] = img_np
+        
+        img_np = padded_img
         img_np -= self.mean
         img_np *= self.std_inv
         img_np = np.transpose(img_np, (2, 0, 1))
         return np.expand_dims(img_np, axis=0)
-
+    
     def sorted_boxes(self, dt_boxes: NDArray[np.float32]) -> NDArray[np.float32]:
         if len(dt_boxes) == 0:
             return dt_boxes
