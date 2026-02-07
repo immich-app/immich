@@ -1,0 +1,12 @@
+# Build artifacts
+build/
+
+# Platform-specific files are not needed as this is a Flutter UI package
+android/
+ios/
+
+# Test cache and generated files
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
