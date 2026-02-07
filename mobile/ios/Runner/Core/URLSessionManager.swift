@@ -1,4 +1,5 @@
 import Foundation
+import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 
@@ -162,6 +163,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       let credential = URLCredential(identity: identity as! SecIdentity,
                                      certificates: nil,
                                      persistence: .forSession)
+      VideoResourceLoader.shared.clientCredential = credential
       return completion(.useCredential, credential)
     }
     completion(.performDefaultHandling, nil)
