@@ -1,3 +1,4 @@
+import { DebugMigrations, DebugSchema } from 'src/commands/debug-migrations.command';
 import { GrantAdminCommand, PromptEmailQuestion, RevokeAdminCommand } from 'src/commands/grant-admin';
 import { ListUsersCommand } from 'src/commands/list-users.command';
 import { DisableMaintenanceModeCommand, EnableMaintenanceModeCommand } from 'src/commands/maintenance-mode';
@@ -28,4 +29,6 @@ export const commandsAndQuestions = [
   ChangeMediaLocationCommand,
   PromptMediaLocationQuestions,
   PromptConfirmMoveQuestions,
+  DebugMigrations,
+  DebugSchema,
 ];

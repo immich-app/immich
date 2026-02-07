@@ -1,15 +1,80 @@
 import { Injectable } from '@nestjs/common';
-import { isAbsolute } from 'node:path';
+import { isAbsolute, join } from 'node:path';
+import postgres from 'postgres';
 import { SALT_ROUNDS } from 'src/constants';
 import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import { asPostgresConnectionConfig } from 'src/utils/database';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
+export type MigrationReport = {
+  files: string[];
+  rows: Array<{ name: string; timestamp: string }>;
+  results: MigrationStatus[];
+};
+type MigrationStatus = {
+  name: string;
+  status: 'applied' | 'missing' | 'deleted';
+};
+
 @Injectable()
 export class CliService extends BaseService {
+  async debugMigrations(): Promise<MigrationReport> {
+    // eslint-disable-next-line unicorn/prefer-module
+    const allFiles = await this.storageRepository.readdir(join(__dirname, '../schema/migrations'));
+    const files = allFiles.filter((file) => file.endsWith('.js')).map((file) => file.slice(0, -3));
+    const rows = await this.databaseRepository.getMigrations();
+    const filesSet = new Set(files);
+    const rowsSet = new Set(rows.map((item) => item.name));
+    const combined = [...filesSet, ...rowsSet].toSorted();
+
+    const results: MigrationStatus[] = [];
+
+    for (const name of combined) {
+      if (filesSet.has(name) && rowsSet.has(name)) {
+        results.push({ name, status: 'applied' });
+        continue;
+      }
+
+      if (filesSet.has(name) && !rowsSet.has(name)) {
+        results.push({ name, status: 'missing' });
+        continue;
+      }
+
+      if (!filesSet.has(name) && rowsSet.has(name)) {
+        results.push({ name, status: 'deleted' });
+        continue;
+      }
+    }
+
+    return { files, rows, results };
+  }
+
+  async debugSchema() {
+    const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
+    const { database } = this.configRepository.getEnv();
+    const db = postgres(asPostgresConnectionConfig(database.config));
+    const target = await schemaFromDatabase(db, {});
+
+    console.log(source.warnings.join('\n'));
+
+    const up = schemaDiff(source, target, {
+      tables: { ignoreExtra: true },
+      functions: { ignoreExtra: false },
+      parameters: { ignoreExtra: true },
+    });
+
+    if (up.items.length === 0) {
+      return [];
+    }
+
+    return up.asSql();
+  }
+
   async listUsers(): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: true });
     return users.map((user) => mapUserAdmin(user));

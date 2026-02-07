@@ -281,6 +281,14 @@ export class DatabaseRepository {
     return rows[0].db;
   }
 
+  async getMigrations() {
+    const { rows } = await sql<{
+      name: string;
+      timestamp: string;
+    }>`SELECT * FROM kysely_migrations ORDER BY name ASC`.execute(this.db);
+    return rows;
+  }
+
   async getDimensionSize(table: string, column = 'embedding'): Promise<number> {
     const { rows } = await sql<{ dimsize: number }>`
       SELECT atttypmod as dimsize
