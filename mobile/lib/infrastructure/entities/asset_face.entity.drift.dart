@@ -588,9 +588,9 @@ typedef $$AssetFaceEntityTableProcessedTableManager =
       i1.AssetFaceEntityData,
       i0.PrefetchHooks Function({bool assetId, bool personId})
     >;
-i0.Index get idxAssetFacePersonAsset => i0.Index(
-  'idx_asset_face_person_asset',
-  'CREATE INDEX IF NOT EXISTS idx_asset_face_person_asset ON asset_face_entity (person_id, asset_id)',
+i0.Index get idxAssetFacePersonId => i0.Index(
+  'idx_asset_face_person_id',
+  'CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)',
 );
 
 class $AssetFaceEntityTable extends i2.AssetFaceEntity

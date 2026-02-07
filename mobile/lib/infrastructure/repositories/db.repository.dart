@@ -214,7 +214,7 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createIndex(v18.idxRemoteAssetCloudId);
           },
           from18To19: (m, v19) async {
-            await m.createIndex(v19.idxAssetFacePersonAsset);
+            await m.createIndex(v19.idxAssetFacePersonId);
             await m.createIndex(v19.idxAssetFaceAssetId);
             await m.createIndex(v19.idxLocalAlbumAssetAlbumAsset);
             await m.createIndex(v19.idxPartnerSharedWithId);

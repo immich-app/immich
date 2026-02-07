@@ -7898,7 +7898,7 @@ final class Schema19 extends i0.VersionedSchema {
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
-    idxAssetFacePersonAsset,
+    idxAssetFacePersonId,
     idxAssetFaceAssetId,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
@@ -8342,9 +8342,9 @@ final class Schema19 extends i0.VersionedSchema {
     'idx_person_owner_id',
     'CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)',
   );
-  final i1.Index idxAssetFacePersonAsset = i1.Index(
-    'idx_asset_face_person_asset',
-    'CREATE INDEX IF NOT EXISTS idx_asset_face_person_asset ON asset_face_entity (person_id, asset_id)',
+  final i1.Index idxAssetFacePersonId = i1.Index(
+    'idx_asset_face_person_id',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)',
   );
   final i1.Index idxAssetFaceAssetId = i1.Index(
     'idx_asset_face_asset_id',

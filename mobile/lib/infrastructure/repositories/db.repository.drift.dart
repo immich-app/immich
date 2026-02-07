@@ -130,7 +130,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     i12.idxRemoteAlbumAssetAlbumAsset,
     i14.idxRemoteAssetCloudId,
     i17.idxPersonOwnerId,
-    i18.idxAssetFacePersonAsset,
+    i18.idxAssetFacePersonId,
     i18.idxAssetFaceAssetId,
     i20.idxTrashedLocalAssetChecksum,
     i20.idxTrashedLocalAssetAlbum,

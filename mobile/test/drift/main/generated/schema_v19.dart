@@ -8326,9 +8326,9 @@ class DatabaseAtV19 extends GeneratedDatabase {
     'idx_person_owner_id',
     'CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)',
   );
-  late final Index idxAssetFacePersonAsset = Index(
-    'idx_asset_face_person_asset',
-    'CREATE INDEX IF NOT EXISTS idx_asset_face_person_asset ON asset_face_entity (person_id, asset_id)',
+  late final Index idxAssetFacePersonId = Index(
+    'idx_asset_face_person_id',
+    'CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)',
   );
   late final Index idxAssetFaceAssetId = Index(
     'idx_asset_face_asset_id',
@@ -8384,7 +8384,7 @@ class DatabaseAtV19 extends GeneratedDatabase {
     idxRemoteAlbumAssetAlbumAsset,
     idxRemoteAssetCloudId,
     idxPersonOwnerId,
-    idxAssetFacePersonAsset,
+    idxAssetFacePersonId,
     idxAssetFaceAssetId,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
