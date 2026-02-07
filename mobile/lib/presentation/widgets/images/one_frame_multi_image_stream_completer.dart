@@ -9,6 +9,10 @@ import 'package:flutter/painting.dart';
 
 /// An ImageStreamCompleter with support for loading multiple images.
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
+  void Function()? _onLastListenerRemoved;
+  int _listenerCount = 0;
+
+
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
   /// The [initialImage] is an optional image that will be emitted synchronously
@@ -22,6 +26,7 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     if (initialImage != null) {
       setImage(initialImage);
     }
+    _onLastListenerRemoved = onLastListenerRemoved;
     images.listen(
       setImage,
       onError: (Object error, StackTrace stack) {
@@ -34,11 +39,28 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
         );
       },
     );
+  }
 
-    addOnLastListenerRemovedCallback(() {
-      if (onLastListenerRemoved != null) {
-        onLastListenerRemoved();
-      }
-    });
+  @override
+  void addListener(ImageStreamListener listener) {
+    super.addListener(listener);
+    _listenerCount++;
+  }
+
+  @override
+  void removeListener(ImageStreamListener listener) {
+    super.removeListener(listener);
+    _listenerCount--;
+    if (_listenerCount == 0) {
+      onLastListenerRemovedImmediately();
+    }
+  }
+
+  void onLastListenerRemovedImmediately() {
+    final onLastListenerRemoved = _onLastListenerRemoved;
+    if (onLastListenerRemoved != null) {
+      _onLastListenerRemoved = null;
+      onLastListenerRemoved();
+    }
   }
 }
