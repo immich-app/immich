@@ -12,7 +12,6 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   void Function()? _onLastListenerRemoved;
   int _listenerCount = 0;
 
-
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
   /// The [initialImage] is an optional image that will be emitted synchronously
