@@ -10,8 +10,8 @@ import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 
@@ -108,8 +108,6 @@ class _PeopleAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headers = ApiService.getRequestHeaders();
-
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -127,7 +125,7 @@ class _PeopleAvatar extends StatelessWidget {
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
+                    backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                   ),
                 ),
               ),

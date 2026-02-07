@@ -6,9 +6,10 @@ import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -45,35 +46,33 @@ describe(AssetService.name, () => {
 
   describe('getStatistics', () => {
     it('should get the statistics for a user, excluding archived assets', async () => {
+      const auth = AuthFactory.create();
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.Timeline })).resolves.toEqual(
-        statResponse,
-      );
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
-        visibility: AssetVisibility.Timeline,
-      });
+      await expect(sut.getStatistics(auth, { visibility: AssetVisibility.Timeline })).resolves.toEqual(statResponse);
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, { visibility: AssetVisibility.Timeline });
     });
 
     it('should get the statistics for a user for archived assets', async () => {
+      const auth = AuthFactory.create();
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { visibility: AssetVisibility.Archive })).resolves.toEqual(
-        statResponse,
-      );
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {
+      await expect(sut.getStatistics(auth, { visibility: AssetVisibility.Archive })).resolves.toEqual(statResponse);
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, {
         visibility: AssetVisibility.Archive,
       });
     });
 
     it('should get the statistics for a user for favorite assets', async () => {
+      const auth = AuthFactory.create();
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, { isFavorite: true })).resolves.toEqual(statResponse);
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, { isFavorite: true });
+      await expect(sut.getStatistics(auth, { isFavorite: true })).resolves.toEqual(statResponse);
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, { isFavorite: true });
     });
 
     it('should get the statistics for a user for all assets', async () => {
+      const auth = AuthFactory.create();
       mocks.asset.getStatistics.mockResolvedValue(stats);
-      await expect(sut.getStatistics(authStub.admin, {})).resolves.toEqual(statResponse);
-      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(authStub.admin.user.id, {});
+      await expect(sut.getStatistics(auth, {})).resolves.toEqual(statResponse);
+      expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, {});
     });
   });
 
@@ -249,10 +248,11 @@ describe(AssetService.name, () => {
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
 
       await expect(
-        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+        sut.update(auth, assetStub.livePhotoStillAsset.id, {
           livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -267,11 +267,12 @@ describe(AssetService.name, () => {
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
-        userId: userStub.admin.id,
+        userId: auth.user.id,
       });
     });
 
     it('should fail linking a live video if the motion part is not a video', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
       mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
 
@@ -291,16 +292,17 @@ describe(AssetService.name, () => {
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
-        userId: userStub.admin.id,
+        userId: auth.user.id,
       });
     });
 
     it('should fail linking a live video if the motion part has a different owner', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
       mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
 
       await expect(
-        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
+        sut.update(auth, assetStub.livePhotoStillAsset.id, {
           livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -315,52 +317,41 @@ describe(AssetService.name, () => {
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
-        userId: userStub.admin.id,
+        userId: auth.user.id,
       });
     });
 
     it('should link a live video', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      mocks.asset.getById.mockResolvedValueOnce({
-        ...assetStub.livePhotoMotionAsset,
-        ownerId: authStub.admin.user.id,
-        visibility: AssetVisibility.Timeline,
-      });
-      mocks.asset.getById.mockResolvedValueOnce(assetStub.image);
-      mocks.asset.update.mockResolvedValue(assetStub.image);
+      const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Timeline });
+      const stillAsset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([stillAsset.id]));
+      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.getById.mockResolvedValueOnce(stillAsset);
+      mocks.asset.update.mockResolvedValue(stillAsset);
+      const auth = AuthFactory.from(motionAsset.owner).build();
 
-      await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
-      });
+      await sut.update(auth, stillAsset.id, { livePhotoVideoId: motionAsset.id });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.livePhotoMotionAsset.id,
-        visibility: AssetVisibility.Hidden,
-      });
-      expect(mocks.event.emit).toHaveBeenCalledWith('AssetHide', {
-        assetId: assetStub.livePhotoMotionAsset.id,
-        userId: userStub.admin.id,
-      });
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
-      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: motionAsset.id, visibility: AssetVisibility.Hidden });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetHide', { assetId: motionAsset.id, userId: auth.user.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: stillAsset.id, livePhotoVideoId: motionAsset.id });
     });
 
     it('should throw an error if asset could not be found after update', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      await expect(sut.update(authStub.admin, 'asset-1', { isFavorite: true })).rejects.toBeInstanceOf(
+      await expect(sut.update(AuthFactory.create(), 'asset-1', { isFavorite: true })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('should unlink a live video', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
       mocks.asset.getById.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
       mocks.asset.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
       mocks.asset.update.mockResolvedValueOnce(assetStub.image);
 
-      await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null });
+      await sut.update(auth, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null });
 
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
@@ -372,7 +363,7 @@ describe(AssetService.name, () => {
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetShow', {
         assetId: assetStub.livePhotoMotionAsset.id,
-        userId: userStub.admin.id,
+        userId: auth.user.id,
       });
     });
 
@@ -392,17 +383,15 @@ describe(AssetService.name, () => {
 
   describe('updateAll', () => {
     it('should require asset write access for all ids', async () => {
-      await expect(
-        sut.updateAll(authStub.admin, {
-          ids: ['asset-1'],
-        }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      const auth = AuthFactory.create();
+      await expect(sut.updateAll(auth, { ids: ['asset-1'] })).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should update all assets', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
 
-      await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.Archive });
+      await sut.updateAll(auth, { ids: ['asset-1', 'asset-2'], visibility: AssetVisibility.Archive });
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], {
         visibility: AssetVisibility.Archive,
@@ -410,9 +399,10 @@ describe(AssetService.name, () => {
     });
 
     it('should not update Assets table if no relevant fields are provided', async () => {
+      const auth = AuthFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
 
-      await sut.updateAll(authStub.admin, {
+      await sut.updateAll(auth, {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,

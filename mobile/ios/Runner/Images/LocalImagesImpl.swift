@@ -34,7 +34,6 @@ class LocalImageApiImpl: LocalImageApi {
   private static let assetQueue = DispatchQueue(label: "thumbnail.assets", qos: .userInitiated)
   private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated)
   private static let cancelQueue = DispatchQueue(label: "thumbnail.cancellation", qos: .default)
-  private static let processingQueue = DispatchQueue(label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
   
   private static var rgbaFormat = vImage_CGImageFormat(
     bitsPerComponent: 8,
@@ -44,8 +43,6 @@ class LocalImageApiImpl: LocalImageApi {
     renderingIntent: .defaultIntent
   )!
   private static var requests = [Int64: LocalImageRequest]()
-  private static let cancelledResult = Result<[String: Int64]?, any Error>.success(nil)
-  private static let concurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount * 2)
   private static let assetCache = {
     let assetCache = NSCache<NSString, PHAsset>()
     assetCache.countLimit = 10000
@@ -53,7 +50,7 @@ class LocalImageApiImpl: LocalImageApi {
   }()
   
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
-    Self.processingQueue.async {
+    ImageProcessing.queue.async {
       guard let data = Data(base64Encoded: thumbhash)
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
       
@@ -71,16 +68,16 @@ class LocalImageApiImpl: LocalImageApi {
     let request = LocalImageRequest(callback: completion)
     let item = DispatchWorkItem {
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
-      Self.concurrencySemaphore.wait()
+      ImageProcessing.semaphore.wait()
       defer {
-        Self.concurrencySemaphore.signal()
+        ImageProcessing.semaphore.signal()
       }
       
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
       guard let asset = Self.requestAsset(assetId: assetId)
@@ -91,7 +88,7 @@ class LocalImageApiImpl: LocalImageApi {
       }
       
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
       var image: UIImage?
@@ -106,7 +103,7 @@ class LocalImageApiImpl: LocalImageApi {
       )
       
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
       guard let image = image,
@@ -116,7 +113,7 @@ class LocalImageApiImpl: LocalImageApi {
       }
       
       if request.isCancelled {
-        return completion(Self.cancelledResult)
+        return completion(ImageProcessing.cancelledResult)
       }
       
       do {
@@ -124,7 +121,7 @@ class LocalImageApiImpl: LocalImageApi {
         
         if request.isCancelled {
           buffer.free()
-          return completion(Self.cancelledResult)
+          return completion(ImageProcessing.cancelledResult)
         }
         
         request.callback(.success([
@@ -142,7 +139,7 @@ class LocalImageApiImpl: LocalImageApi {
     
     request.workItem = item
     Self.add(requestId: requestId, request: request)
-    Self.processingQueue.async(execute: item)
+    ImageProcessing.queue.async(execute: item)
   }
   
   func cancelRequest(requestId: Int64) {
@@ -163,7 +160,7 @@ class LocalImageApiImpl: LocalImageApi {
       request.isCancelled = true
       guard let item = request.workItem else { return }
       if item.isCancelled {
-        cancelQueue.async { request.callback(Self.cancelledResult) }
+        cancelQueue.async { request.callback(ImageProcessing.cancelledResult) }
       }
     }
   }

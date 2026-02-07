@@ -4959,7 +4959,22 @@
         "summary": "Retrieve auth status",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/validateToken": {
@@ -15057,7 +15072,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.5.3",
+    "version": "2.5.5",
     "contact": {}
   },
   "tags": [
