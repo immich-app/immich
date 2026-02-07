@@ -10,6 +10,10 @@ class DriftPeopleService {
 
   const DriftPeopleService(this._repository, this._personApiRepository);
 
+  Future<DriftPerson?> get(String personId) {
+    return _repository.get(personId);
+  }
+
   Future<List<DriftPerson>> getAssetPeople(String assetId) {
     return _repository.getAssetPeople(assetId);
   }

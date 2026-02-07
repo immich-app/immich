@@ -7,6 +7,13 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftPeopleRepository(this._db) : super(_db);
 
+  Future<DriftPerson?> get(String personId) async {
+    final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    final result = await query.getSingleOrNull();
+    return result?.toDto();
+  }
+
   Future<List<DriftPerson>> getAssetPeople(String assetId) async {
     final query = _db.select(_db.assetFaceEntity).join([
       innerJoin(_db.personEntity, _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId)),
