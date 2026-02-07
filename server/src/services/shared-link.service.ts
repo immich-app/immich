@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PostgresError } from 'postgres';
-import { SharedLink } from 'src/database';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -8,7 +7,7 @@ import {
   mapSharedLink,
   SharedLinkCreateDto,
   SharedLinkEditDto,
-  SharedLinkPasswordDto,
+  SharedLinkLoginDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
@@ -24,18 +23,41 @@ export class SharedLinkService extends BaseService {
       .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
   }
 
-  async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
+  async login(auth: AuthDto, dto: SharedLinkLoginDto) {
     if (!auth.sharedLink) {
       throw new ForbiddenException();
     }
 
     const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
-    const response = mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
-    if (sharedLink.password) {
-      response.token = this.validateAndRefreshToken(sharedLink, dto);
+    const { id, password } = sharedLink;
+
+    if (!password) {
+      throw new BadRequestException('Shared link is not password protected');
     }
 
-    return response;
+    if (password !== dto.password) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    return {
+      sharedLink: mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
+      token: this.asToken({ id, password }),
+    };
+  }
+
+  async getMine(auth: AuthDto, authTokens: string[]) {
+    if (!auth.sharedLink) {
+      throw new ForbiddenException();
+    }
+
+    const sharedLink = await this.findOrFail(auth.user.id, auth.sharedLink.id);
+    const { id, password } = sharedLink;
+
+    if (password && !authTokens.includes(this.asToken({ id, password }))) {
+      throw new UnauthorizedException('Password required');
+    }
+
+    return mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
@@ -213,16 +235,7 @@ export class SharedLinkService extends BaseService {
     };
   }
 
-  private validateAndRefreshToken(sharedLink: SharedLink, dto: SharedLinkPasswordDto): string {
-    const token = this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`);
-    const sharedLinkTokens = dto.token?.split(',') || [];
-    if (sharedLink.password !== dto.password && !sharedLinkTokens.includes(token)) {
-      throw new UnauthorizedException('Invalid password');
-    }
-
-    if (!sharedLinkTokens.includes(token)) {
-      sharedLinkTokens.push(token);
-    }
-    return sharedLinkTokens.join(',');
+  private asToken(sharedLink: { id: string; password: string }) {
+    return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`);
   }
 }

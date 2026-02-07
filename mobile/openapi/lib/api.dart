@@ -292,6 +292,7 @@ part 'model/session_update_dto.dart';
 part 'model/set_maintenance_mode_dto.dart';
 part 'model/shared_link_create_dto.dart';
 part 'model/shared_link_edit_dto.dart';
+part 'model/shared_link_login_dto.dart';
 part 'model/shared_link_response_dto.dart';
 part 'model/shared_link_type.dart';
 part 'model/shared_links_response.dart';

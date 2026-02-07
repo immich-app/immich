@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { SharedLink } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 export class SharedLinkSearchDto {
   @ValidateUUID({ optional: true, description: 'Filter by album ID' })
@@ -94,6 +94,11 @@ export class SharedLinkEditDto {
   changeExpiryTime?: boolean;
 }
 
+export class SharedLinkLoginDto {
+  @ValidateString({ description: 'Shared link password', example: 'password' })
+  password!: string;
+}
+
 export class SharedLinkPasswordDto {
   @ApiPropertyOptional({ example: 'password', description: 'Link password' })
   @IsString()
@@ -112,7 +117,10 @@ export class SharedLinkResponseDto {
   description!: string | null;
   @ApiProperty({ description: 'Has password' })
   password!: string | null;
-  @ApiPropertyOptional({ description: 'Access token' })
+  @Property({
+    description: 'Access token',
+    history: new HistoryBuilder().added('v1').stable('v2').deprecated('v2.6.0'),
+  })
   token?: string | null;
   @ApiProperty({ description: 'Owner user ID' })
   userId!: string;

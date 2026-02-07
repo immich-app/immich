@@ -239,7 +239,7 @@ describe('/shared-links', () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithPassword.key });
 
       expect(status).toBe(401);
-      expect(body).toEqual(errorDto.invalidSharePassword);
+      expect(body).toEqual(errorDto.passwordRequired);
     });
 
     it('should get data for correct password protected link', async () => {

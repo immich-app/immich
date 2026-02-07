@@ -2287,6 +2287,10 @@ export type SharedLinkCreateDto = {
     /** Shared link type */
     "type": SharedLinkType;
 };
+export type SharedLinkLoginDto = {
+    /** Shared link password */
+    password: string;
+};
 export type SharedLinkEditDto = {
     /** Allow downloads */
     allowDownload?: boolean;
@@ -5859,6 +5863,26 @@ export function createSharedLink({ sharedLinkCreateDto }: {
         ...opts,
         method: "POST",
         body: sharedLinkCreateDto
+    })));
+}
+/**
+ * Shared link login
+ */
+export function sharedLinkLogin({ key, slug, sharedLinkLoginDto }: {
+    key?: string;
+    slug?: string;
+    sharedLinkLoginDto: SharedLinkLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SharedLinkResponseDto;
+    }>(`/shared-links/login${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sharedLinkLoginDto
     })));
 }
 /**

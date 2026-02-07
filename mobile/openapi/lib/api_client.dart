@@ -630,6 +630,8 @@ class ApiClient {
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
           return SharedLinkEditDto.fromJson(value);
+        case 'SharedLinkLoginDto':
+          return SharedLinkLoginDto.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
