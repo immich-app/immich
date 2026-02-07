@@ -340,7 +340,6 @@
 
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
-        <AddToAlbum shared />
       </ButtonContextMenu>
 
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
