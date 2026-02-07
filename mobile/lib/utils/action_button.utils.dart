@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
@@ -27,6 +28,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -42,6 +45,7 @@ class ActionButtonContext {
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
   final ThemeData? originalTheme;
+  final ButtonPosition buttonPosition;
 
   const ActionButtonContext({
     required this.asset,
@@ -56,13 +60,34 @@ class ActionButtonContext {
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
     this.originalTheme,
+    this.buttonPosition = ButtonPosition.other,
   });
+
+  ActionButtonContext withButtonPosition(ButtonPosition position) {
+    return ActionButtonContext(
+      asset: asset,
+      isOwner: isOwner,
+      isArchived: isArchived,
+      isTrashEnabled: isTrashEnabled,
+      isStacked: isStacked,
+      isInLockedView: isInLockedView,
+      currentAlbum: currentAlbum,
+      advancedTroubleshooting: advancedTroubleshooting,
+      source: source,
+      isCasting: isCasting,
+      timelineOrigin: timelineOrigin,
+      originalTheme: originalTheme,
+      buttonPosition: position,
+    );
+  }
 }
 
 enum ActionButtonType {
   openInfo,
+  openActivity,
   likeActivity,
   share,
+  editImage,
   shareLink,
   cast,
   similarPhotos,
@@ -79,6 +104,7 @@ enum ActionButtonType {
   deleteLocal,
   deletePermanent,
   delete,
+  addTo,
   advancedInfo;
 
   bool shouldShow(ActionButtonContext context) {
@@ -156,10 +182,22 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.editImage =>
+        !context.isInLockedView && //
+            context.asset.type == AssetType.image &&
+            !(context.buttonPosition == ButtonPosition.bottomBar && context.currentAlbum?.isShared == true),
+      ActionButtonType.addTo =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.openActivity =>
+        !context.isInLockedView &&
+            context.currentAlbum != null &&
+            context.currentAlbum!.isActivityEnabled &&
+            context.currentAlbum!.isShared,
     };
   }
 
-  ConsumerWidget buildButton(
+  Widget buildButton(
     ActionButtonContext context, [
     BuildContext? buildContext,
     bool iconOnly = false,
@@ -242,6 +280,9 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.editImage => EditImageActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
+      ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
     };
   }
 
@@ -272,39 +313,77 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
   static const List<ActionButtonType> defaultViewerKebabMenuOrder = _actionTypes;
-  static const Set<ActionButtonType> defaultViewerBottomBarButtons = {
+  static const List<ActionButtonType> _defaultViewerBottomBarOrder = [
     ActionButtonType.share,
-    ActionButtonType.moveToLockFolder,
     ActionButtonType.upload,
+    ActionButtonType.editImage,
+    ActionButtonType.addTo,
+    ActionButtonType.openActivity,
+    ActionButtonType.likeActivity,
+    ActionButtonType.deleteLocal,
     ActionButtonType.delete,
-    ActionButtonType.archive,
-    ActionButtonType.unarchive,
-  };
+    ActionButtonType.removeFromLockFolder,
+    ActionButtonType.deletePermanent,
+  ];
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
-    final visibleButtons = defaultViewerKebabMenuOrder
-        .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
-        .toList();
+  static List<ActionButtonType> getViewerKebabMenuTypes(ActionButtonContext context) {
+    final visibleBottomBarButtons = getViewerBottomBarTypes(context);
+    final excludedTypes = <ActionButtonType>{...visibleBottomBarButtons, ActionButtonType.addTo};
 
-    if (visibleButtons.isEmpty) {
+    if (visibleBottomBarButtons.contains(ActionButtonType.addTo)) {
+      excludedTypes.addAll([ActionButtonType.moveToLockFolder, ActionButtonType.archive, ActionButtonType.unarchive]);
+    }
+
+    return defaultViewerKebabMenuOrder
+        .where((type) => !excludedTypes.contains(type) && type.shouldShow(context))
+        .toList();
+  }
+
+  static List<ActionButtonType> getViewerBottomBarTypes(ActionButtonContext context) {
+    final bottomBarContext = context.withButtonPosition(ButtonPosition.bottomBar);
+    return _defaultViewerBottomBarOrder.where((type) => type.shouldShow(bottomBarContext)).take(4).toList();
+  }
+
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    final visibleButtons = getViewerKebabMenuTypes(context);
+    return visibleButtons.toKebabMenuWidgets(context, buildContext, ref);
+  }
+
+  static List<Widget> buildViewerBottomBar(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    final visibleButtons = getViewerBottomBarTypes(context);
+    return visibleButtons.toBottomBarWidgets(context, buildContext, ref);
+  }
+}
+
+extension ActionButtonTypeListExtension on List<ActionButtonType> {
+  List<Widget> toKebabMenuWidgets(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    if (isEmpty) {
       return [];
     }
 
     final List<Widget> result = [];
     int? lastGroup;
 
-    for (final type in visibleButtons) {
+    for (final type in this) {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
+      final widget = type.buildButton(context, buildContext, false, true);
+      result.add(widget is ConsumerWidget ? widget.build(buildContext, ref) : widget);
       lastGroup = type.kebabMenuGroup;
     }
 
     return result;
+  }
+
+  List<Widget> toBottomBarWidgets(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+    return map((type) {
+      final widget = type.buildButton(context, buildContext, false, false);
+      return widget is ConsumerWidget ? widget.build(buildContext, ref) : widget;
+    }).toList();
   }
 }
