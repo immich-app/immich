@@ -741,8 +741,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.61.3
-        version: 0.61.3(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)
+        specifier: ^0.61.4
+        version: 0.61.4(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -3131,8 +3131,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/ui@0.61.3':
-    resolution: {integrity: sha512-9cz/7kc/CSmJ37gH5nIZNiHxw5OlBCGbdlSGkCOtaMJ458wmcdUFVmF5arjGioaOa4NMwseOVyln7rMhkNU7ww==}
+  '@immich/ui@0.61.4':
+    resolution: {integrity: sha512-32nrY7GW6BdBQ12ZI/E4VgrgY40Yn2K31vSO6GPiOvmNgt8h3s3TSKUXbh7pY4yJgfnr7f2QL2EYRV9KkjRybQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -15762,7 +15762,7 @@ snapshots:
       node-emoji: 2.2.0
       svelte: 5.48.0
 
-  '@immich/ui@0.61.3(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)':
+  '@immich/ui@0.61.4(@sveltejs/kit@2.49.5(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.48.0)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.9)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.97.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)))(svelte@5.48.0)':
     dependencies:
       '@immich/svelte-markdown-preprocess': 0.2.1(svelte@5.48.0)
       '@internationalized/date': 3.10.0
