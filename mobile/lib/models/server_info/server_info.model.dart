@@ -28,7 +28,7 @@ class ServerInfo {
 
   const ServerInfo({
     required this.serverVersion,
-    required this.latestVersion,
+    this.latestVersion,
     required this.serverFeatures,
     required this.serverConfig,
     required this.serverDiskInfo,
