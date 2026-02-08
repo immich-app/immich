@@ -233,16 +233,6 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
-    final imageProvider = widget.imageProvider;
-    if (imageProvider is CancellableImageProvider) {
-      imageProvider.cancel();
-    }
-
-    final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider is CancellableImageProvider) {
-      thumbhashProvider.cancel();
-    }
-
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();
