@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)')
 class PartnerEntity extends Table with DriftDefaultsMixin {
   const PartnerEntity();
 

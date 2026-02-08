@@ -566,6 +566,10 @@ typedef $$RemoteAlbumEntityTableProcessedTableManager =
       i1.RemoteAlbumEntityData,
       i0.PrefetchHooks Function({bool ownerId, bool thumbnailAssetId})
     >;
+i0.Index get idxRemoteAlbumOwnerId => i0.Index(
+  'idx_remote_album_owner_id',
+  'CREATE INDEX IF NOT EXISTS idx_remote_album_owner_id ON remote_album_entity (owner_id)',
+);
 
 class $RemoteAlbumEntityTable extends i3.RemoteAlbumEntity
     with i0.TableInfo<$RemoteAlbumEntityTable, i1.RemoteAlbumEntityData> {
