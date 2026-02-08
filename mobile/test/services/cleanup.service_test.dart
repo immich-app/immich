@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -41,8 +42,9 @@ void main() {
       verify(() => localAssetRepository.delete(ids)).called(1);
     });
 
-    test('deletes in 1000-item batches when over limit', () async {
-      final ids = List.generate(2501, (i) => 'asset-$i');
+    test('deletes in platform-specific batches when over limit', () async {
+      final batchSize = CurrentPlatform.isAndroid ? 2000 : 10000;
+      final ids = List.generate(batchSize * 2 + 501, (i) => 'asset-$i');
       final capturedBatches = <List<String>>[];
 
       when(() => assetMediaRepository.deleteAll(any())).thenAnswer((invocation) async {
@@ -56,15 +58,15 @@ void main() {
 
       expect(result, ids.length);
       expect(capturedBatches.length, 3);
-      expect(capturedBatches[0].length, 1000);
-      expect(capturedBatches[1].length, 1000);
+      expect(capturedBatches[0].length, batchSize);
+      expect(capturedBatches[1].length, batchSize);
       expect(capturedBatches[2].length, 501);
       expect(capturedBatches[0].first, 'asset-0');
-      expect(capturedBatches[0].last, 'asset-999');
-      expect(capturedBatches[1].first, 'asset-1000');
-      expect(capturedBatches[1].last, 'asset-1999');
-      expect(capturedBatches[2].first, 'asset-2000');
-      expect(capturedBatches[2].last, 'asset-2500');
+      expect(capturedBatches[0].last, 'asset-${batchSize - 1}');
+      expect(capturedBatches[1].first, 'asset-$batchSize');
+      expect(capturedBatches[1].last, 'asset-${batchSize * 2 - 1}');
+      expect(capturedBatches[2].first, 'asset-${batchSize * 2}');
+      expect(capturedBatches[2].last, 'asset-${batchSize * 2 + 500}');
       verify(() => localAssetRepository.delete(any())).called(3);
     });
   });

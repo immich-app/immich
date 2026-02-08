@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -9,7 +10,7 @@ final cleanupServiceProvider = Provider<CleanupService>((ref) {
 });
 
 class CleanupService {
-  static const int _deleteBatchSize = 3000;
+  static final int _deleteBatchSize = CurrentPlatform.isAndroid ? 2000 : 10000;
 
   final DriftLocalAssetRepository _localAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
