@@ -41,11 +41,28 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
-    state = SearchResult(
-      assets: [...state.assets, ...result.assets],
-      nextPage: result.nextPage,
-      scrollOffset: state.scrollOffset,
-    );
+    final newAssets = result.assets;
+    final Map<String, dynamic> seenIds = {};
+    final deduplicatedAssets = [...state.assets];
+
+    for (var asset in deduplicatedAssets) {
+      final id = asset.remoteId ?? asset.localId;
+      if (id != null) {
+        seenIds[id] = true;
+      }
+    }
+
+    for (var asset in newAssets) {
+      final id = asset.remoteId ?? asset.localId;
+      if (id == null || !seenIds.containsKey(id)) {
+        deduplicatedAssets.add(asset);
+        if (id != null) {
+          seenIds[id] = true;
+        }
+      }
+    }
+
+    state = SearchResult(assets: deduplicatedAssets, nextPage: result.nextPage, scrollOffset: state.scrollOffset);
 
     return true;
   }

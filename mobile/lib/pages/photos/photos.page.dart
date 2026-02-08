@@ -23,6 +23,7 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_search_bar.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 
 @RoutePage()
 class PhotosPage extends HookConsumerWidget {
@@ -115,7 +116,10 @@ class PhotosPage extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ImmichSearchBar(onSubmitted: (query) => onSearchSubmitted(context, ref, query)),
+                ImmichSearchBar(
+                  onSubmitted: (query) => onSearchSubmitted(context, ref, query),
+                  onPeopleSubmitted: (people) => onPeopleSubmitted(context, ref, people),
+                ),
                 if (currentUser != null && currentUser.memoryEnabled) const MemoryLane(),
               ],
             ),
@@ -163,6 +167,25 @@ class PhotosPage extends HookConsumerWidget {
     );
 
     ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
-    context.pushRoute(const DriftSearchRoute());
+    context.navigateTo(const DriftSearchRoute());
+  }
+
+  void onPeopleSubmitted(BuildContext context, WidgetRef ref, Set<PersonDto> people) {
+    final preFilter = SearchFilter(
+      filename: '',
+      description: '',
+      ocr: '',
+      context: '',
+      people: people,
+      display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+      location: SearchLocationFilter(),
+      mediaType: AssetType.other,
+      rating: SearchRatingFilter(),
+      camera: SearchCameraFilter(),
+      date: SearchDateFilter(),
+    );
+
+    ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
+    context.navigateTo(const DriftSearchRoute());
   }
 }

@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 
 @RoutePage()
 class MainTimelinePage extends ConsumerWidget {
@@ -38,14 +39,33 @@ class MainTimelinePage extends ConsumerWidget {
       );
 
       ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
-      context.pushRoute(const DriftSearchRoute());
+      context.navigateTo(const DriftSearchRoute());
+    }
+
+    void onPeopleSubmitted(Set<PersonDto> people) {
+      final preFilter = SearchFilter(
+        filename: '',
+        description: '',
+        ocr: '',
+        context: '',
+        people: people,
+        display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        location: SearchLocationFilter(),
+        mediaType: AssetType.other,
+        rating: SearchRatingFilter(),
+        camera: SearchCameraFilter(),
+        date: SearchDateFilter(),
+      );
+
+      ref.read(searchPreFilterProvider.notifier).setFilter(preFilter);
+      context.navigateTo(const DriftSearchRoute());
     }
 
     return Timeline(
       topSliverWidget: SliverToBoxAdapter(
         child: Column(
           children: [
-            ImmichSearchBar(onSubmitted: onSearchSubmitted),
+            ImmichSearchBar(onSubmitted: onSearchSubmitted, onPeopleSubmitted: onPeopleSubmitted),
             if (hasMemories) const DriftMemoryLane(),
           ],
         ),

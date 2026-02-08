@@ -14,6 +14,8 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 
 class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
@@ -135,16 +137,17 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   height: 40,
                 ),
               ),
-              const Tooltip(
-                triggerMode: TooltipTriggerMode.tap,
-                showDuration: Duration(seconds: 4),
-                message:
-                    "The old timeline is deprecated and will be removed in a future release. Kindly switch to the new timeline under Advanced Settings.",
-                child: Padding(
-                  padding: EdgeInsets.only(top: 3.0),
-                  child: Icon(Icons.error_rounded, fill: 1, color: Colors.amber, size: 20),
+              if (!ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.betaTimeline))
+                const Tooltip(
+                  triggerMode: TooltipTriggerMode.tap,
+                  showDuration: Duration(seconds: 4),
+                  message:
+                      "The old timeline is deprecated and will be removed in a future release. Kindly switch to the new timeline under Advanced Settings.",
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 3.0),
+                    child: Icon(Icons.error_rounded, fill: 1, color: Colors.amber, size: 20),
+                  ),
                 ),
-              ),
             ],
           );
         },

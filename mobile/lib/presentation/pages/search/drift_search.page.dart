@@ -32,6 +32,7 @@ import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
+import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
@@ -43,6 +44,7 @@ class DriftSearchPage extends HookConsumerWidget {
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
+    print("[DEBUG] DriftSearchPage: build preFilter='${preFilter?.context}'");
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -88,17 +90,18 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     searchFilter(SearchFilter filter) async {
-      if (filter.isEmpty) {
-        return;
-      }
+      print("[DEBUG] searchFilter called with context: '${filter.context}'");
 
       if (preFilter == null && filter == previousFilter.value) {
+        print("[DEBUG] filter matches previous, and preFilter is null, returning");
         return;
       }
 
+      print("[DEBUG] Executing search with context: '${filter.context}'");
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
       final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter);
+      print("[DEBUG] Search result: $hasResult");
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_result'.t(context: context)));
@@ -498,139 +501,152 @@ class DriftSearchPage extends HookConsumerWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: MenuAnchor(
-              style: MenuStyle(
-                elevation: const WidgetStatePropertyAll(1),
-                shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
-                ),
-                padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
-              ),
-              builder: (BuildContext context, MenuController controller, Widget? child) {
-                return IconButton(
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
-                  icon: const Icon(Icons.more_vert_rounded),
-                  tooltip: 'show_text_search_menu'.tr(),
-                );
-              },
-              menuChildren: [
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.image_search_rounded),
-                    title: Text(
-                      'search_by_context'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
-                      ),
-                    ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.context,
-                  ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
-                  },
-                ),
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.abc_rounded),
-                    title: Text(
-                      'search_filter_filename'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.filename ? context.colorScheme.primary : null,
-                      ),
-                    ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.filename,
-                  ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.filename;
-                    searchHintText.value = 'file_name_or_extension'.t(context: context);
-                  },
-                ),
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.text_snippet_outlined),
-                    title: Text(
-                      'search_by_description'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.description ? context.colorScheme.primary : null,
-                      ),
-                    ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.description,
-                  ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.description;
-                    searchHintText.value = 'search_by_description_example'.t(context: context);
-                  },
-                ),
-                FeatureCheck(
-                  feature: (features) => features.ocr,
-                  child: MenuItemButton(
-                    child: ListTile(
-                      leading: const Icon(Icons.document_scanner_outlined),
-                      title: Text(
-                        'search_by_ocr'.t(context: context),
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
-                          color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
-                        ),
-                      ),
-                      selectedColor: context.colorScheme.primary,
-                      selected: textSearchType.value == TextSearchType.ocr,
-                    ),
-                    onPressed: () {
-                      textSearchType.value = TextSearchType.ocr;
-                      searchHintText.value = 'search_by_ocr_example'.t(context: context);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-        title: Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
-            borderRadius: const BorderRadius.all(Radius.circular(24)),
-            gradient: LinearGradient(
-              colors: [
-                context.colorScheme.primary.withValues(alpha: 0.075),
-                context.colorScheme.primary.withValues(alpha: 0.09),
-                context.colorScheme.primary.withValues(alpha: 0.075),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SearchField(
-            hintText: searchHintText.value,
-            key: const Key('search_text_field'),
-            controller: textSearchController,
-            contentPadding: preFilter != null ? const EdgeInsets.only(left: 24) : const EdgeInsets.all(8),
-            prefixIcon: preFilter != null ? null : Icon(getSearchPrefixIcon(), color: context.colorScheme.primary),
-            onSubmitted: handleTextSubmitted,
-            focusNode: ref.watch(searchInputFocusProvider),
-          ),
-        ),
-      ),
+      appBar: const ImmichAppBar(showUploadButton: false),
       body: CustomScrollView(
         slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12.0, left: 16, right: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
+                        borderRadius: const BorderRadius.all(Radius.circular(24)),
+                        gradient: LinearGradient(
+                          colors: [
+                            context.colorScheme.primary.withValues(alpha: 0.075),
+                            context.colorScheme.primary.withValues(alpha: 0.09),
+                            context.colorScheme.primary.withValues(alpha: 0.075),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: SearchField(
+                        hintText: searchHintText.value,
+                        key: const Key('search_text_field'),
+                        controller: textSearchController,
+                        contentPadding: preFilter != null ? const EdgeInsets.only(left: 24) : const EdgeInsets.all(8),
+                        prefixIcon: preFilter != null
+                            ? null
+                            : Icon(getSearchPrefixIcon(), color: context.colorScheme.primary),
+                        onSubmitted: handleTextSubmitted,
+                        focusNode: ref.watch(searchInputFocusProvider),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  MenuAnchor(
+                    style: MenuStyle(
+                      elevation: const WidgetStatePropertyAll(1),
+                      shape: WidgetStateProperty.all(
+                        const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+                      ),
+                      padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
+                    ),
+                    builder: (BuildContext context, MenuController controller, Widget? child) {
+                      return IconButton(
+                        onPressed: () {
+                          if (controller.isOpen) {
+                            controller.close();
+                          } else {
+                            controller.open();
+                          }
+                        },
+                        icon: const Icon(Icons.more_vert_rounded),
+                        tooltip: 'show_text_search_menu'.tr(),
+                      );
+                    },
+                    menuChildren: [
+                      MenuItemButton(
+                        child: ListTile(
+                          leading: const Icon(Icons.image_search_rounded),
+                          title: Text(
+                            'search_by_context'.t(context: context),
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: textSearchType.value == TextSearchType.context
+                                  ? context.colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                          selectedColor: context.colorScheme.primary,
+                          selected: textSearchType.value == TextSearchType.context,
+                        ),
+                        onPressed: () {
+                          textSearchType.value = TextSearchType.context;
+                          searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
+                        },
+                      ),
+                      MenuItemButton(
+                        child: ListTile(
+                          leading: const Icon(Icons.abc_rounded),
+                          title: Text(
+                            'search_filter_filename'.t(context: context),
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: textSearchType.value == TextSearchType.filename
+                                  ? context.colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                          selectedColor: context.colorScheme.primary,
+                          selected: textSearchType.value == TextSearchType.filename,
+                        ),
+                        onPressed: () {
+                          textSearchType.value = TextSearchType.filename;
+                          searchHintText.value = 'file_name_or_extension'.t(context: context);
+                        },
+                      ),
+                      MenuItemButton(
+                        child: ListTile(
+                          leading: const Icon(Icons.text_snippet_outlined),
+                          title: Text(
+                            'search_by_description'.t(context: context),
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: textSearchType.value == TextSearchType.description
+                                  ? context.colorScheme.primary
+                                  : null,
+                            ),
+                          ),
+                          selectedColor: context.colorScheme.primary,
+                          selected: textSearchType.value == TextSearchType.description,
+                        ),
+                        onPressed: () {
+                          textSearchType.value = TextSearchType.description;
+                          searchHintText.value = 'search_by_description_example'.t(context: context);
+                        },
+                      ),
+                      FeatureCheck(
+                        feature: (features) => features.ocr,
+                        child: MenuItemButton(
+                          child: ListTile(
+                            leading: const Icon(Icons.document_scanner_outlined),
+                            title: Text(
+                              'search_by_ocr'.t(context: context),
+                              style: context.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                              ),
+                            ),
+                            selectedColor: context.colorScheme.primary,
+                            selected: textSearchType.value == TextSearchType.ocr,
+                          ),
+                          onPressed: () {
+                            textSearchType.value = TextSearchType.ocr;
+                            searchHintText.value = 'search_by_ocr_example'.t(context: context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
             sliver: SliverToBoxAdapter(

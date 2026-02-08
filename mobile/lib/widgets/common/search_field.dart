@@ -38,7 +38,15 @@ class SearchField extends StatelessWidget {
       focusNode: focusNode,
       onChanged: onChanged,
       onTapOutside: onTapOutside ?? (_) => focusNode?.unfocus(),
-      onSubmitted: onSubmitted,
+      onSubmitted: (value) {
+        onSubmitted?.call(value);
+      },
+      textInputAction: TextInputAction.search,
+      onEditingComplete: () {
+        print("[DEBUG] SearchField internal onEditingComplete");
+        onSubmitted?.call(controller?.text ?? "");
+        focusNode?.unfocus();
+      },
       decoration: InputDecoration(
         contentPadding: contentPadding,
         filled: filled,

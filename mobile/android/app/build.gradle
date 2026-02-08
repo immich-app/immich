@@ -80,7 +80,8 @@ android {
     }
 
     release {
-      signingConfig signingConfigs.release
+      applicationIdSuffix '.debug'
+      signingConfig signingConfigs.debug
     }
   }
   namespace 'app.alextran.immich'

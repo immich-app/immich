@@ -11,7 +11,6 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
@@ -168,7 +167,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   }
 
   if (router.activeIndex != kSearchTabIndex && index == kSearchTabIndex) {
-    ref.read(searchPreFilterProvider.notifier).clear();
+    // ref.read(searchPreFilterProvider.notifier).clear();
   }
 
   // On Search page tapped
