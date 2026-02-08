@@ -23,6 +23,7 @@ const responseDto: PersonResponseDto = {
   updatedAt: expect.any(Date),
   isFavorite: false,
   color: expect.any(String),
+  assetCount: 0,
 };
 
 const statistics = { assets: 3 };
@@ -90,6 +91,37 @@ describe(PersonService.name, () => {
             isFavorite: false,
             updatedAt: expect.any(Date),
             color: expect.any(String),
+            assetCount: 0,
+          },
+        ],
+      });
+      expect(mocks.person.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
+        minimumFaceCount: 3,
+        withHidden: true,
+      });
+    });
+
+    it('should return the correct asset count', async () => {
+      mocks.person.getAllForUser.mockResolvedValue({
+        items: [personStub.withAssetCount5],
+        hasNextPage: false,
+      });
+      mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      await expect(sut.getAll(authStub.admin, { withHidden: true, page: 1, size: 10 })).resolves.toEqual({
+        hasNextPage: false,
+        total: 2,
+        hidden: 1,
+        people: [
+          {
+            id: 'person-4',
+            name: 'Person 1',
+            birthDate: null,
+            thumbnailPath: '/path/to/thumbnail.jpg',
+            isHidden: false,
+            isFavorite: false,
+            updatedAt: expect.any(Date),
+            color: expect.any(String),
+            assetCount: 5,
           },
         ],
       });
@@ -119,6 +151,7 @@ describe(PersonService.name, () => {
             isFavorite: true,
             updatedAt: expect.any(Date),
             color: personStub.isFavorite.color,
+            assetCount: personStub.isFavorite.assetCount,
           },
           responseDto,
         ],
@@ -231,6 +264,7 @@ describe(PersonService.name, () => {
         isFavorite: false,
         updatedAt: expect.any(Date),
         color: expect.any(String),
+        assetCount: 0,
       });
       expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
       expect(mocks.job.queue).not.toHaveBeenCalled();
@@ -401,6 +435,7 @@ describe(PersonService.name, () => {
         thumbnailPath: personStub.noName.thumbnailPath,
         updatedAt: expect.any(Date),
         color: personStub.noName.color,
+        assetCount: personStub.noName.assetCount,
       });
 
       expect(mocks.job.queue).not.toHaveBeenCalledWith();

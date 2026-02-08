@@ -111,6 +111,11 @@ export class PersonResponseDto {
   isFavorite?: boolean;
   @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
   color?: string;
+  @Property({
+    description: 'Number of assets with this person',
+    history: new HistoryBuilder().added('v1.127.0').stable('v2'),
+  })
+  assetCount?: number;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -232,6 +237,7 @@ export function mapPerson(person: Person): PersonResponseDto {
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
     updatedAt: person.updatedAt,
+    assetCount: person.assetCount,
   };
 }
 

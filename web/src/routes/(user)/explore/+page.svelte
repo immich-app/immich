@@ -66,6 +66,13 @@
                   <Icon icon={mdiHeart} size="24" class="text-white" />
                 </div>
               {/if}
+              {#if person.assetCount !== undefined && person.assetCount > 0}
+                <div
+                  class="absolute top-2 end-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm"
+                >
+                  {person.assetCount}
+                </div>
+              {/if}
               <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
             </a>
           {/each}

@@ -25,7 +25,8 @@ limit
 
 -- PersonRepository.getAllForUser
 select
-  "person".*
+  "person".*,
+  count(distinct "asset_face"."assetId") as "assetCount"
 from
   "person"
   inner join "asset_face" on "asset_face"."personId" = "person"."id"
@@ -48,7 +49,7 @@ order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
   NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
+  count(distinct "asset_face"."assetId") desc,
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
