@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Code, Icon, Text } from '@immich/ui';
+  import { Icon, Text } from '@immich/ui';
 
   interface Props {
     icon: string;
@@ -29,7 +29,7 @@
   <div class="mx-auto font-mono text-2xl font-medium">
     <span class="text-gray-300 dark:text-gray-600">{zeros()}</span><span>{value}</span>
     {#if unit}
-      <Code color="muted" class="font-mono font-light p-0 ml-1">{unit}</Code>
+      <code class="font-mono text-base font-normal">{unit}</code>
     {/if}
   </div>
 </div>
