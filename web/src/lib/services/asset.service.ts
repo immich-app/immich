@@ -5,7 +5,7 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
-import { getAssetJobName, getSharedLink, sleep } from '$lib/utils';
+import { getAssetJobName, getAssetJobMessage, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
@@ -318,7 +318,7 @@ const handleRunAssetJob = async (dto: AssetJobsDto) => {
 
   try {
     await runAssetJobs({ assetJobsDto: dto });
-    toastManager.success(getAssetJobName($t, dto.name));
+    toastManager.success(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }
