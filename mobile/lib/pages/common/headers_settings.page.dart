@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 
 class SettingsHeader {
   String key = "";
@@ -75,7 +76,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ],
       ),
       body: PopScope(
-        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value),
+        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value, ref),
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,
@@ -87,7 +88,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     );
   }
 
-  saveHeaders(List<SettingsHeader> headers) {
+  Future<void> saveHeaders(List<SettingsHeader> headers, WidgetRef ref) async {
     final headersMap = {};
     for (var header in headers) {
       final key = header.key.trim();
@@ -97,8 +98,14 @@ class HeaderSettingsPage extends HookConsumerWidget {
       headersMap[key] = value;
     }
 
-    var encoded = jsonEncode(headersMap);
-    Store.put(StoreKey.customHeaders, encoded);
+    final customHeaders = headersMap.isNotEmpty ? jsonEncode(headersMap) : "";
+    await Store.put(StoreKey.customHeaders, customHeaders);
+
+    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+    final accessToken = Store.tryGet(StoreKey.accessToken);
+    if (serverEndpoint != null && accessToken != null) {
+      await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, customHeaders);
+    }
   }
 }
 
