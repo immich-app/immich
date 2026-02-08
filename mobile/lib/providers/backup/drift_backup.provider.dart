@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -109,7 +108,7 @@ class DriftBackupState {
   final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
-  final CancellationToken? cancelToken;
+  final Completer? cancelToken;
 
   final Map<String, double> iCloudDownloadProgress;
 
@@ -133,7 +132,7 @@ class DriftBackupState {
     bool? isSyncing,
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
-    CancellationToken? cancelToken,
+    Completer? cancelToken,
     Map<String, double>? iCloudDownloadProgress,
   }) {
     return DriftBackupState(
@@ -266,7 +265,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     state = state.copyWith(error: BackupError.none);
 
-    final cancelToken = CancellationToken();
+    final cancelToken = Completer();
     state = state.copyWith(cancelToken: cancelToken);
 
     return _foregroundUploadService.uploadCandidates(
@@ -282,7 +281,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> stopForegroundBackup() async {
-    state.cancelToken?.cancel();
+    state.cancelToken?.complete();
     _uploadSpeedManager.clear();
     state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
   }

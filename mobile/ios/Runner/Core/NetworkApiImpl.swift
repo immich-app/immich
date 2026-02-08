@@ -1,5 +1,6 @@
 import Foundation
 import UniformTypeIdentifiers
+import native_video_player
 
 enum ImportError: Error {
   case noFile
@@ -28,6 +29,7 @@ class NetworkApiImpl: NetworkApi {
   func removeCertificate(completion: @escaping (Result<Void, any Error>) -> Void) {
     let status = clearCerts()
     if status == errSecSuccess || status == errSecItemNotFound {
+      VideoResourceLoader.shared.clientCredential = nil
       return completion(.success(()))
     }
     completion(.failure(ImportError.keychainError(status)))
@@ -39,6 +41,37 @@ class NetworkApiImpl: NetworkApi {
       return completion(.success(()))
     }
     completion(.failure(ImportError.keychainError(status)))
+  }
+  
+  func getClientPointer() throws -> Int64 {
+    let pointer = URLSessionManager.shared.sessionPointer
+    return Int64(Int(bitPattern: pointer))
+  }
+  
+  func createWebSocketTask(
+    url: String,
+    protocols: [String]?,
+    completion: @escaping (Result<WebSocketTaskResult, any Error>) -> Void
+  ) {
+    guard let wsUrl = URL(string: url) else {
+      completion(.failure(WebSocketError.invalidURL(url)))
+      return
+    }
+    
+    URLSessionManager.shared.createWebSocketTask(url: wsUrl, protocols: protocols) { result in
+      switch result {
+      case .success(let (task, proto)):
+        let pointer = Unmanaged.passUnretained(task).toOpaque()
+        let address = Int64(Int(bitPattern: pointer))
+        completion(.success(WebSocketTaskResult(taskPointer: address, taskProtocol: proto)))
+      case .failure(let error):
+        completion(.failure(error))
+      }
+    }
+  }
+  
+  func setRequestHeaders(headers: [String : String]) throws {
+    URLSessionManager.shared.session.configuration.httpAdditionalHeaders = headers
   }
 }
 

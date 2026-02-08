@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -437,7 +436,7 @@ class ActionNotifier extends Notifier<void> {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
-    final cancelToken = CancellationToken();
+    final cancelToken = Completer();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
 
     // Initialize progress for all assets
