@@ -247,6 +247,17 @@ export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: str
 
 export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
   const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refresh_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
+  };
+
+  return messages[job];
+};
+
+export const getAssetJobSucessName = ($t: MessageFormatter, job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
     [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
     [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
     [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
