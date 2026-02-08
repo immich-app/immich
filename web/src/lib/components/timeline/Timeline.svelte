@@ -669,7 +669,7 @@
         <div
           style:height={monthGroup.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:top={`${absoluteHeight}px`}
           style:width="100%"
         >
           <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
@@ -679,7 +679,7 @@
           class="month-group"
           style:height={monthGroup.height + 'px'}
           style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+          style:top={`${absoluteHeight}px`}
           style:width="100%"
         >
           <Month

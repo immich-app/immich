@@ -64,19 +64,22 @@
     ]}
     data-group
     style:position="absolute"
-    style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
+    style:left={`${absoluteWidth}px`}
+    style:top={`${dayGroup.top}px`}
     onmouseenter={() => (hoveredDayGroup = dayGroup.groupTitle)}
     onmouseleave={() => (hoveredDayGroup = null)}
   >
     <!-- Month title -->
     <div
-      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+      class="sticky top-0 z-[100] flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm bg-immich-bg dark:bg-immich-dark-bg"
       style:width={dayGroup.width + 'px'}
+      style:will-change="transform"
+      style:transform="translateZ(0)"
     >
       {#if !singleSelect}
         <div
-          class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
-          class:w-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+          class="absolute hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-8 opacity-0"
+          class:opacity-100={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
             assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
           onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
@@ -89,7 +92,12 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={getDayGroupFullDate(dayGroup)}>
+      <span
+        class="w-full truncate first-letter:capitalize transition-transform duration-200 ease-out"
+        class:translate-x-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+          assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
+        title={getDayGroupFullDate(dayGroup)}
+      >
         {dayGroup.groupTitle}
       </span>
     </div>
@@ -111,5 +119,6 @@
 <style>
   section {
     contain: layout paint style;
+    will-change: transform;
   }
 </style>
