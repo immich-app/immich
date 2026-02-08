@@ -33,7 +33,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   @override
   Widget build(BuildContext context) {
     final albumCount = ref.watch(remoteAlbumProvider.select((state) => state.albums.length));
-    final showScrollbar = albumCount > 10;
+    final showScrollbar = albumCount > 20;
 
     final scrollView = CustomScrollView(
       controller: _scrollController,

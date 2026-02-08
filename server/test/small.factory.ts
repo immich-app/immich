@@ -361,6 +361,7 @@ const assetSidecarWriteFactory = () => {
       latitude: 12,
       longitude: 12,
       dateTimeOriginal: '2023-11-22T04:56:12.196Z',
+      timeZone: 'UTC-6',
     } as unknown as Exif,
   };
 };
@@ -532,6 +533,7 @@ export const factory = {
   assetEdit: assetEditFactory,
   tag: tagFactory,
   uuid: newUuid,
+  buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,
   responses: {
     badRequest: (message: any = null) => ({

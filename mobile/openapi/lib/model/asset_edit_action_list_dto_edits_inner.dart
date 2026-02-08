@@ -17,6 +17,7 @@ class AssetEditActionListDtoEditsInner {
     required this.parameters,
   });
 
+  /// Type of edit action to perform
   AssetEditAction action;
 
   MirrorParameters parameters;

@@ -10,50 +10,48 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
-class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
-    with CancellableImageProviderMixin<RemoteThumbProvider> {
-  final String assetId;
-  final String thumbhash;
+class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
+    with CancellableImageProviderMixin<RemoteImageProvider> {
+  final String url;
 
-  RemoteThumbProvider({required this.assetId, required this.thumbhash});
+  RemoteImageProvider({required this.url});
+
+  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash})
+    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash);
 
   @override
-  Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
+  Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
+  ImageStreamCompleter loadImage(RemoteImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
-        DiagnosticsProperty<String>('Asset Id', key.assetId),
+        DiagnosticsProperty<String>('URL', key.url),
       ],
       onDispose: cancel,
     );
   }
 
-  Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    final request = this.request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(key.assetId, thumbhash: key.thumbhash),
-      headers: ApiService.getRequestHeaders(),
-    );
+  Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
+    final request = this.request = RemoteImageRequest(uri: key.url, headers: ApiService.getRequestHeaders());
     return loadRequest(request, decode);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is RemoteThumbProvider) {
-      return assetId == other.assetId && thumbhash == other.thumbhash;
+    if (other is RemoteImageProvider) {
+      return url == other.url;
     }
-
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
+  int get hashCode => url.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
@@ -73,7 +71,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId, thumbhash: key.thumbhash)),
+      initialImage: getInitialImage(RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),

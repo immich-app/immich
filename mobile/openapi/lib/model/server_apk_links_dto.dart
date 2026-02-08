@@ -19,12 +19,16 @@ class ServerApkLinksDto {
     required this.x8664,
   });
 
+  /// APK download link for ARM64 v8a architecture
   String arm64v8a;
 
+  /// APK download link for ARM EABI v7a architecture
   String armeabiv7a;
 
+  /// APK download link for universal architecture
   String universal;
 
+  /// APK download link for x86_64 architecture
   String x8664;
 
   @override

@@ -16,6 +16,7 @@ class SystemConfigReverseGeocodingDto {
     required this.enabled,
   });
 
+  /// Enabled
   bool enabled;
 
   @override

@@ -37,8 +37,32 @@ describe(NotificationController.name, () => {
 
   describe('PUT /notifications', () => {
     it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/notifications');
+      await request(ctx.getHttpServer()).put('/notifications');
       expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    describe('ids', () => {
+      it('should require a list', async () => {
+        const { status, body } = await request(ctx.getHttpServer()).put(`/notifications`).send({ ids: true });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['ids must be an array'])));
+      });
+
+      it('should require uuids', async () => {
+        const { status, body } = await request(ctx.getHttpServer())
+          .put(`/notifications`)
+          .send({ ids: [true] });
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest(['each value in ids must be a UUID']));
+      });
+
+      it('should accept valid uuids', async () => {
+        const id = factory.uuid();
+        await request(ctx.getHttpServer())
+          .put(`/notifications`)
+          .send({ ids: [id] });
+        expect(service.updateAll).toHaveBeenCalledWith(undefined, expect.objectContaining({ ids: [id] }));
+      });
     });
   });
 
@@ -59,6 +83,12 @@ describe(NotificationController.name, () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).put(`/notifications/${factory.uuid()}`).send({ readAt: factory.date() });
       expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should accept a null readAt', async () => {
+      const id = factory.uuid();
+      await request(ctx.getHttpServer()).put(`/notifications/${id}`).send({ readAt: null });
+      expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ readAt: null }));
     });
   });
 });

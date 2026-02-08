@@ -138,6 +138,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
+  ///   Partner direction
   Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/partners';
@@ -172,6 +173,7 @@ class PartnersApi {
   /// Parameters:
   ///
   /// * [PartnerDirection] direction (required):
+  ///   Partner direction
   Future<List<PartnerResponseDto>?> getPartners(PartnerDirection direction,) async {
     final response = await getPartnersWithHttpInfo(direction,);
     if (response.statusCode >= HttpStatus.badRequest) {

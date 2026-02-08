@@ -1,8 +1,9 @@
-type EventMap = Record<string, unknown[]>;
+type EventsBase = Record<string, unknown[]>;
 type PromiseLike<T> = Promise<T> | T;
 
-export type EventCallback<E extends EventMap, T extends keyof E> = (...args: E[T]) => PromiseLike<unknown>;
-export type EventItem<E extends EventMap, T extends keyof E = keyof E> = {
+export type EventMap<E extends EventsBase> = { [K in keyof E]?: EventCallback<E, K> };
+export type EventCallback<E extends EventsBase, T extends keyof E> = (...args: E[T]) => PromiseLike<unknown>;
+export type EventItem<E extends EventsBase, T extends keyof E = keyof E> = {
   id: number;
   event: T;
   callback: EventCallback<E, T>;
@@ -13,10 +14,22 @@ const nextId = () => count++;
 
 const noop = () => {};
 
-export class BaseEventManager<Events extends EventMap> {
+export class BaseEventManager<Events extends EventsBase> {
   #callbacks: EventItem<Events>[] = $state([]);
 
-  on<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {
+  on(subscriptions: EventMap<Events>): () => void {
+    const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
+      this.#onEvent(event as keyof Events, callback as EventCallback<Events, keyof Events>),
+    );
+
+    return () => {
+      for (const cleanup of cleanups) {
+        cleanup();
+      }
+    };
+  }
+
+  #onEvent<T extends keyof Events>(event: T, callback?: EventCallback<Events, T>) {
     if (!callback) {
       return noop;
     }
@@ -27,17 +40,6 @@ export class BaseEventManager<Events extends EventMap> {
 
     return () => {
       this.#callbacks = this.#callbacks.filter((current) => current.id !== item.id);
-    };
-  }
-
-  onMany(subscriptions: { [T in keyof Events]?: EventCallback<Events, T> }) {
-    const cleanups = Object.entries(subscriptions).map(([event, callback]) =>
-      this.on(event as keyof Events, callback as EventCallback<Events, keyof Events>),
-    );
-    return () => {
-      for (const cleanup of cleanups) {
-        cleanup();
-      }
     };
   }
 

@@ -1,14 +1,13 @@
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/platform/network_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:logging/logging.dart';
 
 class SslClientCertSettings extends StatefulWidget {
   const SslClientCertSettings({super.key, required this.isLoggedIn});
@@ -20,9 +19,11 @@ class SslClientCertSettings extends StatefulWidget {
 }
 
 class _SslClientCertSettingsState extends State<SslClientCertSettings> {
-  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
+  final _log = Logger("SslClientCertSettings");
 
   bool isCertExist;
+
+  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
 
   @override
   Widget build(BuildContext context) {
@@ -41,16 +42,12 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
           const SizedBox(height: 6),
           Row(
             mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              ElevatedButton(onPressed: widget.isLoggedIn ? null : importCert, child: Text("client_cert_import".tr())),
               ElevatedButton(
-                onPressed: widget.isLoggedIn ? null : () => importCert(context),
-                child: Text("client_cert_import".tr()),
-              ),
-              const SizedBox(width: 15),
-              ElevatedButton(
-                onPressed: widget.isLoggedIn || !isCertExist ? null : () async => await removeCert(context),
+                onPressed: widget.isLoggedIn || !isCertExist ? null : removeCert,
                 child: Text("remove".tr()),
               ),
             ],
@@ -60,71 +57,52 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     );
   }
 
-  void showMessage(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Text(message),
-        actions: [TextButton(onPressed: () => ctx.pop(), child: Text("client_cert_dialog_msg_confirm".tr()))],
+  void showMessage(String message) {
+    context.showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 3),
+        content: Text(message, style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor)),
       ),
     );
   }
 
-  Future<void> storeCert(BuildContext context, Uint8List data, String? password) async {
-    if (password != null && password.isEmpty) {
-      password = null;
-    }
-    final cert = SSLClientCertStoreVal(data, password);
-    // Test whether the certificate is valid
-    final isCertValid = HttpSSLCertOverride.setClientCert(SecurityContext(withTrustedRoots: true), cert);
-    if (!isCertValid) {
-      showMessage(context, "client_cert_invalid_msg".tr());
-      return;
-    }
-    await cert.save();
-    HttpSSLOptions.apply();
-    setState(() => isCertExist = true);
-    showMessage(context, "client_cert_import_success_msg".tr());
-  }
-
-  void setPassword(BuildContext context, Uint8List data) {
-    final password = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        content: TextField(
-          controller: password,
-          obscureText: true,
-          obscuringCharacter: "*",
-          decoration: InputDecoration(hintText: "client_cert_enter_password".tr()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async => {ctx.pop(), await storeCert(context, data, password.text)},
-            child: Text("client_cert_dialog_msg_confirm".tr()),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> importCert(BuildContext ctx) async {
-    FilePickerResult? res = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['p12', 'pfx'],
-    );
-    if (res != null) {
-      File file = File(res.files.single.path!);
-      final bytes = await file.readAsBytes();
-      setPassword(ctx, bytes);
+  Future<void> importCert() async {
+    try {
+      final styling = ClientCertPrompt(
+        title: "client_cert_password_title".tr(),
+        message: "client_cert_password_message".tr(),
+        cancel: "cancel".tr(),
+        confirm: "confirm".tr(),
+      );
+      final cert = await networkApi.selectCertificate(styling);
+      await SSLClientCertStoreVal(cert.data, cert.password).save();
+      HttpSSLOptions.apply();
+      setState(() => isCertExist = true);
+      showMessage("client_cert_import_success_msg".tr());
+    } catch (e) {
+      if (_isCancellation(e)) {
+        return;
+      }
+      _log.severe("Error importing client cert", e);
+      showMessage("client_cert_invalid_msg".tr());
     }
   }
 
-  Future<void> removeCert(BuildContext context) async {
-    await SSLClientCertStoreVal.delete();
-    HttpSSLOptions.apply();
-    setState(() => isCertExist = false);
-    showMessage(context, "client_cert_remove_msg".tr());
+  Future<void> removeCert() async {
+    try {
+      await networkApi.removeCertificate();
+      await SSLClientCertStoreVal.delete();
+      HttpSSLOptions.apply();
+      setState(() => isCertExist = false);
+      showMessage("client_cert_remove_msg".tr());
+    } catch (e) {
+      if (_isCancellation(e)) {
+        return;
+      }
+      _log.severe("Error removing client cert", e);
+      showMessage("client_cert_invalid_msg".tr());
+    }
   }
+
+  bool _isCancellation(Object e) => e is PlatformException && e.code.toLowerCase().contains("cancel");
 }

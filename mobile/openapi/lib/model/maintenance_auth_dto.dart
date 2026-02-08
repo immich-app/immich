@@ -16,6 +16,7 @@ class MaintenanceAuthDto {
     required this.username,
   });
 
+  /// Maintenance username
   String username;
 
   @override

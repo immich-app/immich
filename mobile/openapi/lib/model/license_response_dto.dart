@@ -18,10 +18,13 @@ class LicenseResponseDto {
     required this.licenseKey,
   });
 
+  /// Activation date
   DateTime activatedAt;
 
+  /// Activation key
   String activationKey;
 
+  /// License key (format: IM(SV|CL)(-XXXX){8})
   String licenseKey;
 
   @override

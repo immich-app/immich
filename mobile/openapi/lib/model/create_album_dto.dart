@@ -19,12 +19,16 @@ class CreateAlbumDto {
     this.description,
   });
 
+  /// Album name
   String albumName;
 
+  /// Album users
   List<AlbumUserCreateDto> albumUsers;
 
+  /// Initial asset IDs
   List<String> assetIds;
 
+  /// Album description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

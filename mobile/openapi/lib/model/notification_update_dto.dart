@@ -16,6 +16,7 @@ class NotificationUpdateDto {
     this.readAt,
   });
 
+  /// Date when notification was read
   DateTime? readAt;
 
   @override

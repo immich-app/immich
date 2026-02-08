@@ -17,8 +17,10 @@ class NotificationUpdateAllDto {
     this.readAt,
   });
 
+  /// Notification IDs to update
   List<String> ids;
 
+  /// Date when notifications were read
   DateTime? readAt;
 
   @override

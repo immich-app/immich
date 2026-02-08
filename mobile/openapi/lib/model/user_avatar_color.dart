@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Avatar color
 class UserAvatarColor {
   /// Instantiate a new enum with the provided [value].
   const UserAvatarColor._(this.value);

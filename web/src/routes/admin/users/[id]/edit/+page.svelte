@@ -16,12 +16,10 @@
 
   let { data }: Props = $props();
 
-  const user = $state(data.user);
-  let isAdmin = $state(user.isAdmin);
-  let name = $state(user.name);
-  let email = $state(user.email);
-  let storageLabel = $state(user.storageLabel || '');
-  const previousQuota = $state(user.quotaSizeInBytes);
+  const user = $derived(data.user);
+  let { isAdmin, name, email } = $derived(user);
+  let storageLabel = $derived(user.storageLabel || '');
+  const previousQuota = $derived(user.quotaSizeInBytes);
 
   let quotaSize = $derived(
     typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,

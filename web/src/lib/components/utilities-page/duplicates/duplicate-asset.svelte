@@ -171,7 +171,7 @@
     <InfoRow
       icon={mdiImageOutline}
       highlight={hasDifferentValues.fileName}
-      title={$t('file_name', { values: { file_name: asset.originalFileName ?? '' } })}
+      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
     >
       {asset.originalFileName}
     </InfoRow>

@@ -214,6 +214,7 @@
   };
 
   let people = $derived(data.people.people);
+
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
@@ -388,10 +389,11 @@
     use:focusTrap
   >
     <ManagePeopleVisibility
-      bind:people
+      {people}
       totalPeopleCount={data.people.total}
       titleId="manage-visibility-title"
       onClose={() => (selectHidden = false)}
+      onUpdate={(updatedPeople) => (people = updatedPeople.slice())}
       {loadNextPage}
     />
   </dialog>

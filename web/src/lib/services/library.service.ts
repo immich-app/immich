@@ -67,6 +67,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     color: 'danger',
     onAction: () => handleDeleteLibrary(library),
     shortcuts: { key: 'Backspace' },
+    shortcutOptions: { ignoreInputFields: true },
   };
 
   const AddFolder: ActionItem = {

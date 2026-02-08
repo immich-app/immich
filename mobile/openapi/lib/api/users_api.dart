@@ -25,6 +25,7 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
+  ///   Profile image file
   Future<Response> createProfileImageWithHttpInfo(MultipartFile file,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/users/profile-image';
@@ -67,6 +68,7 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [MultipartFile] file (required):
+  ///   Profile image file
   Future<CreateProfileImageResponseDto?> createProfileImage(MultipartFile file,) async {
     final response = await createProfileImageWithHttpInfo(file,);
     if (response.statusCode >= HttpStatus.badRequest) {

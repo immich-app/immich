@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Asset sort order
 class AssetOrder {
   /// Instantiate a new enum with the provided [value].
   const AssetOrder._(this.value);

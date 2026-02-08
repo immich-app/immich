@@ -18,6 +18,7 @@ class MachineLearningAvailabilityChecksDto {
     required this.timeout,
   });
 
+  /// Enabled
   bool enabled;
 
   num interval;

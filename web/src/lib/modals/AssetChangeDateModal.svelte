@@ -59,12 +59,7 @@
   size="small"
 >
   <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
-  <DateInput
-    class="immich-form-input text-gray-700 w-full mb-2"
-    id="datetime"
-    type="datetime-local"
-    bind:value={selectedDate}
-  />
+  <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
   {#if timezoneInput}
     <div class="w-full">
       <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />

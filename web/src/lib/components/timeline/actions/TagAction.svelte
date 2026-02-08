@@ -20,11 +20,8 @@
 
   const handleTagAssets = async () => {
     const assets = [...getOwnedAssets()];
-    const success = await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
-
-    if (success) {
-      clearSelect();
-    }
+    await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
+    clearSelect();
   };
 </script>
 

@@ -20,7 +20,7 @@ enum VersionStatus {
 
 class ServerInfo {
   final ServerVersion serverVersion;
-  final ServerVersion latestVersion;
+  final ServerVersion? latestVersion;
   final ServerFeatures serverFeatures;
   final ServerConfig serverConfig;
   final ServerDiskInfo serverDiskInfo;

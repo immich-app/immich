@@ -16,6 +16,7 @@ class AssetIdsDto {
     this.assetIds = const [],
   });
 
+  /// Asset IDs
   List<String> assetIds;
 
   @override

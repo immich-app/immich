@@ -12,6 +12,7 @@ class ImmichTextInput extends StatefulWidget {
   final List<String>? autofillHints;
   final Widget? suffixIcon;
   final bool obscureText;
+  final bool autoCorrect;
 
   const ImmichTextInput({
     super.key,
@@ -26,6 +27,7 @@ class ImmichTextInput extends StatefulWidget {
     this.autofillHints,
     this.suffixIcon,
     this.obscureText = false,
+    this.autoCorrect = true,
   });
 
   @override
@@ -79,6 +81,7 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
       validator: _validateInput,
       keyboardType: widget.keyboardType,
       textInputAction: widget.keyboardAction,
+      autocorrect: widget.autoCorrect,
       autofillHints: widget.autofillHints,
       onTap: () => setState(() => _error = null),
       onTapOutside: (_) => _focusNode.unfocus(),

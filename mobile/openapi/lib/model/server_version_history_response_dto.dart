@@ -18,10 +18,13 @@ class ServerVersionHistoryResponseDto {
     required this.version,
   });
 
+  /// When this version was first seen
   DateTime createdAt;
 
+  /// Version history entry ID
   String id;
 
+  /// Version string
   String version;
 
   @override

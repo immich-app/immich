@@ -170,50 +170,52 @@ class AppBarServerInfo extends HookConsumerWidget {
                   ),
                 ],
               ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Row(
-                        children: [
-                          if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate)
-                            const Padding(
-                              padding: EdgeInsets.only(right: 5.0),
-                              child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),
+              if (serverInfoState.latestVersion != null) ...[
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 10.0),
+                        child: Row(
+                          children: [
+                            if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 5.0),
+                                child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),
+                              ),
+                            Text(
+                              "latest_version".tr(),
+                              style: TextStyle(
+                                fontSize: titleFontSize,
+                                color: context.textTheme.labelSmall?.color,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          Text(
-                            "latest_version".tr(),
-                            style: TextStyle(
-                              fontSize: titleFontSize,
-                              color: context.textTheme.labelSmall?.color,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        serverInfoState.latestVersion.major > 0
-                            ? "${serverInfoState.latestVersion.major}.${serverInfoState.latestVersion.minor}.${serverInfoState.latestVersion.patch}"
-                            : "--",
-                        style: TextStyle(
-                          fontSize: contentFontSize,
-                          color: context.colorScheme.onSurfaceSecondary,
-                          fontWeight: FontWeight.bold,
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    Expanded(
+                      flex: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10.0),
+                        child: Text(
+                          serverInfoState.latestVersion!.major > 0
+                              ? "${serverInfoState.latestVersion!.major}.${serverInfoState.latestVersion!.minor}.${serverInfoState.latestVersion!.patch}"
+                              : "--",
+                          style: TextStyle(
+                            fontSize: contentFontSize,
+                            color: context.colorScheme.onSurfaceSecondary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),

@@ -18,10 +18,13 @@ class AssetStatsResponseDto {
     required this.videos,
   });
 
+  /// Number of images
   int images;
 
+  /// Total number of assets
   int total;
 
+  /// Number of videos
   int videos;
 
   @override

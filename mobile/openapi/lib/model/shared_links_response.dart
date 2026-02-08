@@ -17,8 +17,10 @@ class SharedLinksResponse {
     this.sidebarWeb = false,
   });
 
+  /// Whether shared links are enabled
   bool enabled;
 
+  /// Whether shared links appear in web sidebar
   bool sidebarWeb;
 
   @override

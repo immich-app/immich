@@ -166,10 +166,7 @@ class LoginForm extends HookConsumerWidget {
       final serverUrl = getServerUrl();
       if (serverUrl != null) {
         final uri = Uri.tryParse(serverUrl);
-        if (uri != null &&
-            uri.host.isNotEmpty &&
-            uri.host.endsWith('.pixelunion.eu') &&
-            uri.scheme == 'https') {
+        if (uri != null && uri.host.isNotEmpty && uri.host.endsWith('.pixelunion.eu') && uri.scheme == 'https') {
           final subdomain = uri.host.replaceFirst('.pixelunion.eu', '');
           if (subdomain.isNotEmpty) {
             serverEndpointController.text = subdomain;
@@ -325,11 +322,7 @@ class LoginForm extends HookConsumerWidget {
       final codeChallenge = await generatePKCECodeChallenge(codeVerifier);
 
       try {
-        oAuthServerUrl = await oAuthService.getOAuthServerUrl(
-          sanitizeUrl(builtServerUrl()),
-          state,
-          codeChallenge,
-        );
+        oAuthServerUrl = await oAuthService.getOAuthServerUrl(sanitizeUrl(builtServerUrl()), state, codeChallenge);
 
         // Invalidate all api repository provider instance to take into account new access token
         invalidateAllApiRepositoryProviders(ref);
@@ -456,16 +449,9 @@ class LoginForm extends HookConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.person_add_outlined,
-                        size: 18,
-                        color: context.primaryColor,
-                      ),
+                      Icon(Icons.person_add_outlined, size: 18, color: context.primaryColor),
                       const SizedBox(width: 6),
-                      Text(
-                        'login_form_no_account'.t(context: context),
-                        style: context.textTheme.bodyMedium,
-                      ),
+                      Text('login_form_no_account'.t(context: context), style: context.textTheme.bodyMedium),
                       GestureDetector(
                         onTap: () async {
                           final uri = Uri.parse('https://pixelunion.eu/#pricing');
@@ -557,10 +543,7 @@ class LoginForm extends HookConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        'login_form_no_account'.t(context: context),
-                        style: context.textTheme.bodyMedium,
-                      ),
+                      Text('login_form_no_account'.t(context: context), style: context.textTheme.bodyMedium),
                       GestureDetector(
                         onTap: () async {
                           final uri = Uri.parse('https://pixelunion.eu/#pricing');

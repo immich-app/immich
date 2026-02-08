@@ -18,10 +18,13 @@ class AssetDeltaSyncResponseDto {
     this.upserted = const [],
   });
 
+  /// Deleted asset IDs
   List<String> deleted;
 
+  /// Whether full sync is needed
   bool needsFullSync;
 
+  /// Upserted assets
   List<AssetResponseDto> upserted;
 
   @override

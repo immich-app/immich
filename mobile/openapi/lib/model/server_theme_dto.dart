@@ -16,6 +16,7 @@ class ServerThemeDto {
     required this.customCss,
   });
 
+  /// Custom CSS for theming
   String customCss;
 
   @override

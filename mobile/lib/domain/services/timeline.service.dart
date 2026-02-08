@@ -227,6 +227,13 @@ class TimelineService {
     return _buffer.elementAt(index - _bufferOffset);
   }
 
+  /// Finds the index of an asset by its heroTag within the current buffer.
+  /// Returns null if the asset is not found in the buffer.
+  int? getIndex(String heroTag) {
+    final index = _buffer.indexWhere((a) => a.heroTag == heroTag);
+    return index >= 0 ? _bufferOffset + index : null;
+  }
+
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;

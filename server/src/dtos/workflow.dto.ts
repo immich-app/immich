@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { WorkflowAction, WorkflowFilter } from 'src/database';
@@ -6,68 +7,85 @@ import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class WorkflowFilterItemDto {
+  @ApiProperty({ description: 'Plugin filter ID' })
   @IsUUID()
   pluginFilterId!: string;
 
+  @ApiPropertyOptional({ description: 'Filter configuration' })
   @IsObject()
   @Optional()
   filterConfig?: FilterConfig;
 }
 
 export class WorkflowActionItemDto {
+  @ApiProperty({ description: 'Plugin action ID' })
   @IsUUID()
   pluginActionId!: string;
 
+  @ApiPropertyOptional({ description: 'Action configuration' })
   @IsObject()
   @Optional()
   actionConfig?: ActionConfig;
 }
 
 export class WorkflowCreateDto {
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Workflow trigger type' })
   triggerType!: PluginTriggerType;
 
+  @ApiProperty({ description: 'Workflow name' })
   @IsString()
   @IsNotEmpty()
   name!: string;
 
+  @ApiPropertyOptional({ description: 'Workflow description' })
   @IsString()
   @Optional()
   description?: string;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Workflow enabled' })
   enabled?: boolean;
 
+  @ApiProperty({ description: 'Workflow filters' })
   @ValidateNested({ each: true })
   @Type(() => WorkflowFilterItemDto)
   filters!: WorkflowFilterItemDto[];
 
+  @ApiProperty({ description: 'Workflow actions' })
   @ValidateNested({ each: true })
   @Type(() => WorkflowActionItemDto)
   actions!: WorkflowActionItemDto[];
 }
 
 export class WorkflowUpdateDto {
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', optional: true })
+  @ValidateEnum({
+    enum: PluginTriggerType,
+    name: 'PluginTriggerType',
+    optional: true,
+    description: 'Workflow trigger type',
+  })
   triggerType?: PluginTriggerType;
 
+  @ApiPropertyOptional({ description: 'Workflow name' })
   @IsString()
   @IsNotEmpty()
   @Optional()
   name?: string;
 
+  @ApiPropertyOptional({ description: 'Workflow description' })
   @IsString()
   @Optional()
   description?: string;
 
-  @ValidateBoolean({ optional: true })
+  @ValidateBoolean({ optional: true, description: 'Workflow enabled' })
   enabled?: boolean;
 
+  @ApiPropertyOptional({ description: 'Workflow filters' })
   @ValidateNested({ each: true })
   @Type(() => WorkflowFilterItemDto)
   @Optional()
   filters?: WorkflowFilterItemDto[];
 
+  @ApiPropertyOptional({ description: 'Workflow actions' })
   @ValidateNested({ each: true })
   @Type(() => WorkflowActionItemDto)
   @Optional()
@@ -75,31 +93,49 @@ export class WorkflowUpdateDto {
 }
 
 export class WorkflowResponseDto {
+  @ApiProperty({ description: 'Workflow ID' })
   id!: string;
+  @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Workflow trigger type' })
   triggerType!: PluginTriggerType;
+  @ApiProperty({ description: 'Workflow name' })
   name!: string | null;
+  @ApiProperty({ description: 'Workflow description' })
   description!: string;
+  @ApiProperty({ description: 'Creation date' })
   createdAt!: string;
+  @ApiProperty({ description: 'Workflow enabled' })
   enabled!: boolean;
+  @ApiProperty({ description: 'Workflow filters' })
   filters!: WorkflowFilterResponseDto[];
+  @ApiProperty({ description: 'Workflow actions' })
   actions!: WorkflowActionResponseDto[];
 }
 
 export class WorkflowFilterResponseDto {
+  @ApiProperty({ description: 'Filter ID' })
   id!: string;
+  @ApiProperty({ description: 'Workflow ID' })
   workflowId!: string;
+  @ApiProperty({ description: 'Plugin filter ID' })
   pluginFilterId!: string;
+  @ApiProperty({ description: 'Filter configuration' })
   filterConfig!: FilterConfig | null;
+  @ApiProperty({ description: 'Filter order', type: 'number' })
   order!: number;
 }
 
 export class WorkflowActionResponseDto {
+  @ApiProperty({ description: 'Action ID' })
   id!: string;
+  @ApiProperty({ description: 'Workflow ID' })
   workflowId!: string;
+  @ApiProperty({ description: 'Plugin action ID' })
   pluginActionId!: string;
+  @ApiProperty({ description: 'Action configuration' })
   actionConfig!: ActionConfig | null;
+  @ApiProperty({ description: 'Action order', type: 'number' })
   order!: number;
 }
 

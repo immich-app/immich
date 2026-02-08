@@ -17,8 +17,10 @@ class SyncMemoryAssetV1 {
     required this.memoryId,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Memory ID
   String memoryId;
 
   @override

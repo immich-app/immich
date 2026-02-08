@@ -2,15 +2,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/hooks/blurhash_hook.dart';
 import 'package:immich_mobile/utils/thumbnail_utils.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/thumbhash_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as base_asset;
 
 class ImmichThumbnail extends HookConsumerWidget {
   const ImmichThumbnail({this.asset, this.width = 250, this.height = 250, this.fit = BoxFit.cover, super.key});
@@ -24,26 +24,29 @@ class ImmichThumbnail extends HookConsumerWidget {
   /// either by using the asset ID or the asset itself
   /// [asset] is the Asset to request, or else use [assetId] to get a remote
   /// image provider
-  static ImageProvider imageProvider({Asset? asset, String? assetId, String? userId, int thumbnailSize = 256}) {
+  static ImageProvider imageProvider({Asset? asset, String? assetId, int thumbnailSize = 256}) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
     }
 
     if (asset == null) {
-      return ImmichRemoteThumbnailProvider(assetId: assetId!);
+      return RemoteImageProvider.thumbnail(assetId: assetId!, thumbhash: "");
     }
 
     if (ImmichImage.useLocal(asset)) {
-      return ImmichLocalThumbnailProvider(asset: asset, height: thumbnailSize, width: thumbnailSize, userId: userId);
+      return LocalThumbProvider(
+        id: asset.localId!,
+        assetType: base_asset.AssetType.video,
+        size: Size(thumbnailSize.toDouble(), thumbnailSize.toDouble()),
+      );
     } else {
-      return ImmichRemoteThumbnailProvider(assetId: asset.remoteId!, height: thumbnailSize, width: thumbnailSize);
+      return RemoteImageProvider.thumbnail(assetId: asset.remoteId!, thumbhash: asset.thumbhash ?? "");
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Uint8List? blurhash = useBlurHashRef(asset).value;
-    final userId = ref.watch(currentUserProvider)?.id;
 
     if (asset == null) {
       return Container(
@@ -56,7 +59,7 @@ class ImmichThumbnail extends HookConsumerWidget {
 
     final assetAltText = getAltText(asset!.exifInfo, asset!.fileCreatedAt, asset!.type, []);
 
-    final thumbnailProviderInstance = ImmichThumbnail.imageProvider(asset: asset, userId: userId);
+    final thumbnailProviderInstance = ImmichThumbnail.imageProvider(asset: asset);
 
     customErrorBuilder(BuildContext ctx, Object error, StackTrace? stackTrace) {
       thumbnailProviderInstance.evict();

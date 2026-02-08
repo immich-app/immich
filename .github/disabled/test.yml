@@ -591,9 +591,9 @@ jobs:
       - name: Lint with ruff
         run: |
           uv run ruff check --output-format=github immich_ml
-      - name: Check black formatting
+      - name: Format with ruff
         run: |
-          uv run black --check immich_ml
+          uv run ruff format --check immich_ml
       - name: Run mypy type checking
         run: |
           uv run mypy --strict immich_ml/

@@ -16,6 +16,7 @@ class SystemConfigThemeDto {
     required this.customCss,
   });
 
+  /// Custom CSS for theming
   String customCss;
 
   @override

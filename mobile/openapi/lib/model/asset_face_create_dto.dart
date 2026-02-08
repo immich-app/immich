@@ -23,20 +23,28 @@ class AssetFaceCreateDto {
     required this.y,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// Face bounding box height
   int height;
 
+  /// Image height in pixels
   int imageHeight;
 
+  /// Image width in pixels
   int imageWidth;
 
+  /// Person ID
   String personId;
 
+  /// Face bounding box width
   int width;
 
+  /// Face bounding box X coordinate
   int x;
 
+  /// Face bounding box Y coordinate
   int y;
 
   @override

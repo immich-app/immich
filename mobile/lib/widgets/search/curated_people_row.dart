@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_curated_content.model.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class CuratedPeopleRow extends StatelessWidget {
@@ -29,7 +29,6 @@ class CuratedPeopleRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(content.length, (index) {
             final person = content[index];
-            final headers = ApiService.getRequestHeaders();
             return Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Column(
@@ -44,7 +43,7 @@ class CuratedPeopleRow extends StatelessWidget {
                         elevation: 3,
                         child: CircleAvatar(
                           maxRadius: imageSize / 2,
-                          backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
+                          backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                         ),
                       ),
                     ),

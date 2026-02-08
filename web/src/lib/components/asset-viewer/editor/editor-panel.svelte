@@ -75,7 +75,7 @@
     <Button
       variant="outline"
       onclick={() => editManager.resetAllChanges()}
-      disabled={!editManager.hasChanges}
+      disabled={!editManager.canReset}
       class="self-start"
       shape="round"
       size="small"

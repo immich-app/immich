@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import SharedLinkExpiration from '$lib/components/SharedLinkExpiration.svelte';
+  import SharedLinkFormFields from '$lib/components/SharedLinkFormFields.svelte';
   import { Route } from '$lib/route';
   import { handleUpdateSharedLink } from '$lib/services/shared-link.service';
   import { SharedLinkType } from '@immich/sdk';
-  import { Field, FormModal, Input, PasswordInput, Switch, Text } from '@immich/ui';
+  import { FormModal } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -61,36 +61,14 @@
     </div>
   {/if}
 
-  <div class="flex flex-col gap-4 mt-4">
-    <div>
-      <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
-        <Input bind:value={slug} autocomplete="off" />
-      </Field>
-      {#if slug}
-        <Text size="tiny" color="muted" class="pt-2">/s/{encodeURIComponent(slug)}</Text>
-      {/if}
-    </div>
-
-    <Field label={$t('password')} description={$t('shared_link_password_description')}>
-      <PasswordInput bind:value={password} autocomplete="new-password" />
-    </Field>
-
-    <Field label={$t('description')}>
-      <Input bind:value={description} autocomplete="off" />
-    </Field>
-
-    <SharedLinkExpiration createdAt={sharedLink.createdAt} bind:expiresAt />
-
-    <Field label={$t('show_metadata')}>
-      <Switch bind:checked={showMetadata} />
-    </Field>
-
-    <Field label={$t('allow_public_user_to_download')} disabled={!showMetadata}>
-      <Switch bind:checked={allowDownload} />
-    </Field>
-
-    <Field label={$t('allow_public_user_to_upload')}>
-      <Switch bind:checked={allowUpload} />
-    </Field>
-  </div>
+  <SharedLinkFormFields
+    bind:slug
+    bind:password
+    bind:description
+    bind:allowDownload
+    bind:allowUpload
+    bind:showMetadata
+    bind:expiresAt
+    createdAt={sharedLink.createdAt}
+  />
 </FormModal>

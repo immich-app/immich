@@ -19,12 +19,17 @@ class SystemConfigGeneratedFullsizeImageDto {
     required this.quality,
   });
 
+  /// Enabled
   bool enabled;
 
+  /// Image format
   ImageFormat format;
 
+  /// Progressive
   bool progressive;
 
+  /// Quality
+  ///
   /// Minimum value: 1
   /// Maximum value: 100
   int quality;

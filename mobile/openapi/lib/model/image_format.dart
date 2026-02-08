@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Image format
 class ImageFormat {
   /// Instantiate a new enum with the provided [value].
   const ImageFormat._(this.value);

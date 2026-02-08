@@ -183,7 +183,7 @@ For example to get a list of files that would be uploaded for further
 processing:
 
 ```bash
-immich upload --dry-run . | tail -n +6 | jq .newFiles[]
+immich upload --dry-run --json-output . | tail -n +6 | jq .newFiles[]
 ```
 
 ### Obtain the API Key

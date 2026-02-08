@@ -16,6 +16,7 @@ class TrashResponseDto {
     required this.count,
   });
 
+  /// Number of items in trash
   int count;
 
   @override

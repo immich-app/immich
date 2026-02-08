@@ -77,11 +77,7 @@
   </Field>
   {#if showRelative}
     <Label for="relativedatetime" class="block mb-1">{$t('offset')}</Label>
-    <DurationInput
-      class="immich-form-input w-full text-gray-700 mb-2"
-      id="relativedatetime"
-      bind:value={selectedDuration}
-    />
+    <DurationInput class="immich-form-input w-full mb-2" id="relativedatetime" bind:value={selectedDuration} />
   {:else}
     <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
     <DateInput class="immich-form-input w-full mb-2" id="datetime" type="datetime-local" bind:value={selectedDate} />
