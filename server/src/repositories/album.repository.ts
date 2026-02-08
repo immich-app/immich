@@ -88,6 +88,16 @@ export class AlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getForThumbnailRedirect(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('album', 'album.albumThumbnailAssetId', 'asset.id')
+      .where('album.id', '=', id)
+      .select(['asset.id', 'asset.thumbhash'])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async getByAssetId(ownerId: string, assetId: string) {
     return this.db
       .selectFrom('album')
