@@ -47,8 +47,9 @@
 
     const left = Math.max(8, Math.min(window.innerWidth - rect.width, x - directionWidth));
     const top = Math.max(8, Math.min(window.innerHeight - menuHeight, y));
+    const maxHeight = window.innerHeight - top - 8;
 
-    return { left, top };
+    return { left, top, maxHeight };
   });
 
   // We need to bind clientHeight since the bounding box may return a height
@@ -78,11 +79,10 @@
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
-    class="{isVisible
-      ? 'max-h-dvh'
-      : 'max-h-0'} flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned
+    class="flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned
       ? 'overflow-auto'
       : ''}"
+    style:max-height={isVisible ? `${position.maxHeight}px` : '0px'}
     role="menu"
     tabindex="-1"
   >
