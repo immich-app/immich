@@ -5,6 +5,7 @@ import { user } from '$lib/stores/user.store';
 import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
 import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+import { chunkedUpload, shouldUseChunkedUpload } from '$lib/utils/chunked-upload';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
@@ -189,20 +190,42 @@ async function fileUploader({
     }
 
     if (!responseData) {
-      const queryParams = asQueryString(authManager.params);
+      // Use chunked upload for large files to bypass reverse proxy limits
+      // (e.g. Cloudflare 100MB limit causing "413 Request Entity Too Large")
+      if (shouldUseChunkedUpload(assetFile)) {
+        uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') + ' (chunked)' });
+        const chunkedResult = await chunkedUpload({
+          file: assetFile,
+          deviceAssetId,
+          deviceId: 'WEB',
+          fileCreatedAt,
+          fileModifiedAt: new Date(assetFile.lastModified).toISOString(),
+          isFavorite: false,
+          duration: '0:00:00.000000',
+          visibility: isLockedAssets ? AssetVisibility.Locked : undefined,
+          onProgress: (loaded, total) => uploadAssetsStore.updateProgress(deviceAssetId, loaded, total),
+        });
 
-      uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
-      const response = await uploadRequest<AssetMediaResponseDto>({
-        url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
-        data: formData,
-        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-      });
+        responseData = {
+          id: chunkedResult.id,
+          status: chunkedResult.status === 'duplicate' ? AssetMediaStatus.Duplicate : AssetMediaStatus.Created,
+        };
+      } else {
+        const queryParams = asQueryString(authManager.params);
 
-      if (![200, 201].includes(response.status)) {
-        throw new Error($t('errors.unable_to_upload_file'));
+        uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
+          data: formData,
+          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+        });
+
+        if (![200, 201].includes(response.status)) {
+          throw new Error($t('errors.unable_to_upload_file'));
+        }
+
+        responseData = response.data;
       }
-
-      responseData = response.data;
     }
 
     if (responseData.status === AssetMediaStatus.Duplicate) {

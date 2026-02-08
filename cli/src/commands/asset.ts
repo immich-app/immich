@@ -359,7 +359,113 @@ export const uploadFiles = async (
   return newAssets;
 };
 
+/** Chunk size for chunked uploads: 50 MB */
+const CHUNKED_UPLOAD_CHUNK_SIZE = 50 * 1024 * 1024;
+
+/**
+ * Threshold for using chunked upload: 50 MB.
+ * Files larger than this will be uploaded in chunks to bypass reverse proxy
+ * body size limits (e.g. Cloudflare 100MB "413 Request Entity Too Large").
+ */
+const CHUNKED_UPLOAD_THRESHOLD = 50 * 1024 * 1024;
+
+const uploadFileChunked = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
+  const { baseUrl, headers } = defaults;
+  const authHeaders = headers as Record<string, string>;
+
+  const deviceAssetId = `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, '');
+
+  // Step 1: Create upload session
+  const sessionResponse = await fetch(`${baseUrl}/assets/chunked-upload`, {
+    method: 'POST',
+    redirect: 'error',
+    headers: { ...authHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: basename(input),
+      fileSize: stats.size,
+      chunkSize: CHUNKED_UPLOAD_CHUNK_SIZE,
+      deviceAssetId,
+      deviceId: 'CLI',
+      fileCreatedAt: stats.mtime.toISOString(),
+      fileModifiedAt: stats.mtime.toISOString(),
+      isFavorite: false,
+    }),
+  });
+
+  if (!sessionResponse.ok) {
+    throw new Error(`Failed to create upload session: ${await sessionResponse.text()}`);
+  }
+
+  const session = (await sessionResponse.json()) as {
+    sessionId: string;
+    chunkSize: number;
+    totalChunks: number;
+  };
+
+  // Step 2: Upload chunks
+  const { sessionId, chunkSize, totalChunks } = session;
+  const { createReadStream: createRS } = await import('node:fs');
+  const { open } = await import('node:fs/promises');
+
+  const fileHandle = await open(input, 'r');
+  try {
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, stats.size);
+      const length = end - start;
+
+      const buffer = Buffer.alloc(length);
+      await fileHandle.read(buffer, 0, length, start);
+
+      const chunkResponse = await fetch(
+        `${baseUrl}/assets/chunked-upload/${sessionId}/chunks/${i}`,
+        {
+          method: 'POST',
+          redirect: 'error',
+          headers: {
+            ...authHeaders,
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': String(length),
+          },
+          body: buffer,
+        },
+      );
+
+      if (!chunkResponse.ok) {
+        throw new Error(`Failed to upload chunk ${i}: ${await chunkResponse.text()}`);
+      }
+    }
+  } finally {
+    await fileHandle.close();
+  }
+
+  // Step 3: Finish upload
+  const finishResponse = await fetch(
+    `${baseUrl}/assets/chunked-upload/${sessionId}/finish`,
+    {
+      method: 'POST',
+      redirect: 'error',
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
+    },
+  );
+
+  if (!finishResponse.ok) {
+    throw new Error(`Failed to finish chunked upload: ${await finishResponse.text()}`);
+  }
+
+  const result = (await finishResponse.json()) as { assetId: string; isDuplicate: boolean };
+  return {
+    id: result.assetId,
+    status: result.isDuplicate ? AssetMediaStatus.Duplicate : AssetMediaStatus.Created,
+  };
+};
+
 const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
+  // Use chunked upload for large files to bypass reverse proxy body size limits
+  if (stats.size > CHUNKED_UPLOAD_THRESHOLD) {
+    return uploadFileChunked(input, stats);
+  }
+
   const { baseUrl, headers } = defaults;
 
   const assetPath = path.parse(input);
