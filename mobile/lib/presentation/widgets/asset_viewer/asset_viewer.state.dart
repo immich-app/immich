@@ -4,14 +4,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class AssetViewerState {
   final int backgroundOpacity;
-  final bool showingBottomSheet;
+  final bool showingDetails;
   final bool showingControls;
   final BaseAsset? currentAsset;
   final int stackIndex;
 
   const AssetViewerState({
     this.backgroundOpacity = 255,
-    this.showingBottomSheet = false,
+    this.showingDetails = false,
     this.showingControls = true,
     this.currentAsset,
     this.stackIndex = 0,
@@ -19,14 +19,14 @@ class AssetViewerState {
 
   AssetViewerState copyWith({
     int? backgroundOpacity,
-    bool? showingBottomSheet,
+    bool? showingDetails,
     bool? showingControls,
     BaseAsset? currentAsset,
     int? stackIndex,
   }) {
     return AssetViewerState(
       backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
-      showingBottomSheet: showingBottomSheet ?? this.showingBottomSheet,
+      showingDetails: showingDetails ?? this.showingDetails,
       showingControls: showingControls ?? this.showingControls,
       currentAsset: currentAsset ?? this.currentAsset,
       stackIndex: stackIndex ?? this.stackIndex,
@@ -35,7 +35,7 @@ class AssetViewerState {
 
   @override
   String toString() {
-    return 'AssetViewerState(opacity: $backgroundOpacity, bottomSheet: $showingBottomSheet, controls: $showingControls)';
+    return 'AssetViewerState(opacity: $backgroundOpacity, showingDetails: $showingDetails, controls: $showingControls)';
   }
 
   @override
@@ -44,7 +44,7 @@ class AssetViewerState {
     if (other.runtimeType != runtimeType) return false;
     return other is AssetViewerState &&
         other.backgroundOpacity == backgroundOpacity &&
-        other.showingBottomSheet == showingBottomSheet &&
+        other.showingDetails == showingDetails &&
         other.showingControls == showingControls &&
         other.currentAsset == currentAsset &&
         other.stackIndex == stackIndex;
@@ -53,7 +53,7 @@ class AssetViewerState {
   @override
   int get hashCode =>
       backgroundOpacity.hashCode ^
-      showingBottomSheet.hashCode ^
+      showingDetails.hashCode ^
       showingControls.hashCode ^
       currentAsset.hashCode ^
       stackIndex.hashCode;
@@ -83,11 +83,11 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     state = state.copyWith(backgroundOpacity: opacity, showingControls: opacity == 255 ? true : state.showingControls);
   }
 
-  void setBottomSheet(bool showing) {
-    if (showing == state.showingBottomSheet) {
+  void setShowingDetails(bool showing) {
+    if (showing == state.showingDetails) {
       return;
     }
-    state = state.copyWith(showingBottomSheet: showing, showingControls: showing ? true : state.showingControls);
+    state = state.copyWith(showingDetails: showing, showingControls: showing ? true : state.showingControls);
     if (showing) {
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }

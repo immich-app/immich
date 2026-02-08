@@ -19,8 +19,8 @@ class VideoViewerControls extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetIsVideo = ref.watch(currentAssetNotifier.select((asset) => asset != null && asset.isVideo));
     bool showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final showBottomSheet = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    if (showBottomSheet) {
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
+    if (showingDetails) {
       showControls = false;
     }
     final VideoPlaybackState state = ref.watch(videoPlaybackValueProvider.select((value) => value.state));

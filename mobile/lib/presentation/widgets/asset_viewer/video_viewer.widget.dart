@@ -205,7 +205,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       final videoPlayback = VideoPlaybackValue.fromNativeController(videoController);
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
 
-      if (ref.read(assetViewerProvider.select((s) => s.showingBottomSheet))) {
+      if (ref.read(assetViewerProvider.select((s) => s.showingDetails))) {
         return;
       }
 

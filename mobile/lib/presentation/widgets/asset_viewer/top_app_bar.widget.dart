@@ -35,7 +35,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
+    final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
@@ -55,7 +55,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
+            EventStream.shared.emit(const ViewerShowDetailsEvent(activitiesMode: true));
           },
         ),
 
@@ -75,12 +75,12 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         opacity: opacity / 255,
         duration: Durations.short2,
         child: AppBar(
-          backgroundColor: isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
+          backgroundColor: showingDetails ? Colors.transparent : Colors.black.withAlpha(125),
           leading: const _AppBarBackButton(),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet || isReadonlyModeEnabled
+          actions: showingDetails || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions
@@ -99,9 +99,9 @@ class _AppBarBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
-    final backgroundColor = isShowingSheet && !context.isDarkTheme ? Colors.white : Colors.black;
-    final foregroundColor = isShowingSheet && !context.isDarkTheme ? Colors.black : Colors.white;
+    final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
+    final backgroundColor = showingDetails && !context.isDarkTheme ? Colors.white : Colors.black;
+    final foregroundColor = showingDetails && !context.isDarkTheme ? Colors.black : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12.0),
@@ -112,7 +112,7 @@ class _AppBarBackButton extends ConsumerWidget {
           iconSize: 22,
           iconColor: foregroundColor,
           padding: EdgeInsets.zero,
-          elevation: isShowingSheet ? 4 : 0,
+          elevation: showingDetails ? 4 : 0,
         ),
         onPressed: context.maybePop,
         child: const Icon(Icons.arrow_back_rounded),
