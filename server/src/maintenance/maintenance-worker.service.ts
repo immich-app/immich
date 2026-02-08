@@ -25,19 +25,11 @@ import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { type ApiService as _ApiService } from 'src/services/api.service';
 import { type BaseService as _BaseService } from 'src/services/base.service';
-import { type DatabaseBackupService as _DatabaseBackupService } from 'src/services/database-backup.service';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { type ServerService as _ServerService } from 'src/services/server.service';
 import { type VersionService as _VersionService } from 'src/services/version.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
-import {
-  deleteDatabaseBackup,
-  downloadDatabaseBackup,
-  listDatabaseBackups,
-  restoreDatabaseBackup,
-  uploadDatabaseBackup,
-} from 'src/utils/database-backups';
-import { ImmichFileResponse } from 'src/utils/file';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 
@@ -62,6 +54,7 @@ export class MaintenanceWorkerService {
     private storageRepository: StorageRepository,
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
+    private databaseBackupService: DatabaseBackupService,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -185,35 +178,6 @@ export class MaintenanceWorkerService {
     }
 
     return '/usr/src/app/upload';
-  }
-
-  /**
-   * {@link _DatabaseBackupService.listBackups}
-   */
-  async listBackups(): Promise<{ backups: { filename: string; filesize: number }[] }> {
-    const backups = await listDatabaseBackups(this.backupRepos);
-    return { backups };
-  }
-
-  /**
-   * {@link _DatabaseBackupService.deleteBackup}
-   */
-  async deleteBackup(files: string[]): Promise<void> {
-    return deleteDatabaseBackup(this.backupRepos, files);
-  }
-
-  /**
-   * {@link _DatabaseBackupService.uploadBackup}
-   */
-  async uploadBackup(file: Express.Multer.File): Promise<void> {
-    return uploadDatabaseBackup(this.backupRepos, file);
-  }
-
-  /**
-   * {@link _DatabaseBackupService.downloadBackup}
-   */
-  downloadBackup(fileName: string): ImmichFileResponse {
-    return downloadDatabaseBackup(fileName);
   }
 
   private get secret() {
@@ -364,7 +328,7 @@ export class MaintenanceWorkerService {
       progress: 0,
     });
 
-    await restoreDatabaseBackup(this.backupRepos, filename, (task, progress) =>
+    await this.databaseBackupService.restoreDatabaseBackup(filename, (task, progress) =>
       this.setStatus({
         active: true,
         action: MaintenanceAction.RestoreDatabase,
