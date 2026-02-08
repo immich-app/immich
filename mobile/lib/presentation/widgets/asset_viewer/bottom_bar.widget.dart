@@ -29,7 +29,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final isInLockedView = ref.watch(inLockedViewProvider);
@@ -63,7 +63,7 @@ class ViewerBottomBar extends ConsumerWidget {
         duration: Durations.short2,
         child: AnimatedSwitcher(
           duration: Durations.short4,
-          child: isSheetOpen
+          child: showingDetails
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
