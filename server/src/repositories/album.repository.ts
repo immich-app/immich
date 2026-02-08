@@ -113,6 +113,44 @@ export class AlbumRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
+  @ChunkedSet({ paramIndex: 1 })
+  async getByAssetIds(ownerId: string, assetIds: string[]): Promise<Map<string, string[]>> {
+    if (assetIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.db
+      .selectFrom('album')
+      .select('album.id')
+      .innerJoin('album_asset', 'album_asset.albumId', 'album.id')
+      .where((eb) =>
+        eb.or([
+          eb('album.ownerId', '=', ownerId),
+          eb.exists(
+            eb
+              .selectFrom('album_user')
+              .whereRef('album_user.albumId', '=', 'album.id')
+              .where('album_user.userId', '=', ownerId),
+          ),
+        ]),
+      )
+      .where('album_asset.assetId', 'in', assetIds)
+      .where('album.deletedAt', 'is', null)
+      .select('album_asset.assetId')
+      .execute();
+
+    // Group by assetId
+    const map = new Map<string, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.assetId) ?? [];
+      existing.push(row.id);
+      map.set(row.assetId, existing);
+    }
+
+    return map;
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
@@ -326,7 +364,12 @@ export class AlbumRepository {
     if (values.length === 0) {
       return;
     }
-    await this.db.insertInto('album_asset').values(values).execute();
+    await this.db
+      .insertInto('album_asset')
+      .values(values)
+      // Allow idempotent album sync without failing on existing album memberships.
+      .onConflict((oc) => oc.columns(['albumId', 'assetId']).doNothing())
+      .execute();
   }
 
   /**

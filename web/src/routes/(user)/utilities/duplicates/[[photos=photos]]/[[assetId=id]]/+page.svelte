@@ -10,11 +10,9 @@
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
+  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -99,34 +97,48 @@
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+    const forceDelete = !featureFlagsManager.value.trash;
+    const shouldConfirmDelete = trashIds.length > 0 && forceDelete;
+
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
-        await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+        const keepAssetIds = duplicateAssetIds.filter((id) => !trashIds.includes(id));
+
+        const response = await resolveDuplicates({
+          duplicateResolveDto: {
+            groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }],
+          },
+        });
+
+        const { success, error, errorMessage } = response[0];
+        if (!success) {
+          throw new Error(errorMessage || error);
+        }
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
         await navigateToIndex(duplicatesIndex);
       },
-      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('delete_duplicates_confirmation') : undefined,
-      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('permanently_delete') : undefined,
+      shouldConfirmDelete ? $t('delete_duplicates_confirmation') : undefined,
+      shouldConfirmDelete ? $t('permanently_delete') : undefined,
     );
   };
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
-    await stackAssets(assets, false);
-    const duplicateAssetIds = assets.map((asset) => asset.id);
-    await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    const assetIds = assets.map((asset) => asset.id);
+    await createStack({ stackCreateDto: { assetIds } });
+    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
+    // Use server-provided suggestedKeepAssetIds from each group
+    const idsToDelete = duplicates.flatMap((group) => {
+      const keepIds = new Set(group.suggestedKeepAssetIds);
+      return group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id));
+    });
 
     let prompt, confirmText;
     if (featureFlagsManager.value.trash) {
@@ -139,13 +151,25 @@
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
+        // Resolve all groups in a single batch request
+        const response = await resolveDuplicates({
+          duplicateResolveDto: {
+            groups: duplicates.map((group) => {
+              const keepIds = new Set(group.suggestedKeepAssetIds);
+              return {
+                duplicateId: group.duplicateId,
+                keepAssetIds: group.suggestedKeepAssetIds,
+                trashAssetIds: group.assets.map((asset) => asset.id).filter((id) => !keepIds.has(id)),
+              };
+            }),
           },
         });
+
+        // Count failures and show appropriate message
+        const failedCount = response.filter(({ success }) => !success).length;
+        if (failedCount > 0) {
+          toastManager.danger($t('errors.unable_to_resolve_duplicate'));
+        }
 
         duplicates = [];
 
@@ -259,6 +283,7 @@
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
+          suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}

@@ -229,6 +229,11 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
     }
 
+    case Permission.DuplicateRead:
+    case Permission.DuplicateDelete: {
+      return access.duplicate.checkOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.AuthDeviceDelete: {
       return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
     }
