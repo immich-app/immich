@@ -60,8 +60,11 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     final bool onlyCacheListenerLeft = _listenerCount == 1 && !didProvideImage;
     final bool noListenersAfterImage = _listenerCount == 0 && didProvideImage;
 
-    if (noListenersAfterImage || onlyCacheListenerLeft) {
-      _onLastListenerRemoved?.call();
+    final onLastListenerRemoved = _onLastListenerRemoved;
+
+    if (onLastListenerRemoved != null && (noListenersAfterImage || onlyCacheListenerLeft)) {
+      _onLastListenerRemoved = null;
+      onLastListenerRemoved();
     }
   }
 }
