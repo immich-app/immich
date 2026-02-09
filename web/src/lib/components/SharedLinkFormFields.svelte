@@ -11,7 +11,6 @@
     allowUpload: boolean;
     showMetadata: boolean;
     expiresAt: string | null;
-    createdAt?: string;
   };
 
   let {
@@ -22,7 +21,6 @@
     allowUpload = $bindable(),
     showMetadata = $bindable(),
     expiresAt = $bindable(),
-    createdAt,
   }: Props = $props();
 
   $effect(() => {
