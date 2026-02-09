@@ -11,10 +11,15 @@ part 'map_state.provider.g.dart';
 class MapStateNotifier extends _$MapStateNotifier {
   @override
   MapState build() {
-    final appSettingsProvider = ref.read(appSettingsServiceProvider);
+    final appSettingsProvider = ref.watch(appSettingsServiceProvider);
 
-    final lightStyleUrl = ref.read(serverInfoProvider).serverConfig.mapLightStyleUrl;
-    final darkStyleUrl = ref.read(serverInfoProvider).serverConfig.mapDarkStyleUrl;
+    final serverInfo = ref.watch(serverInfoProvider);
+    final lightStyleUrl = serverInfo.serverConfig.mapLightStyleUrl.isNotEmpty
+        ? serverInfo.serverConfig.mapLightStyleUrl
+        : 'https://tiles.immich.cloud/v1/style/light.json';
+    final darkStyleUrl = serverInfo.serverConfig.mapDarkStyleUrl.isNotEmpty
+        ? serverInfo.serverConfig.mapDarkStyleUrl
+        : 'https://tiles.immich.cloud/v1/style/dark.json';
 
     return MapState(
       themeMode: ThemeMode.values[appSettingsProvider.getSetting<int>(AppSettingsEnum.mapThemeMode)],

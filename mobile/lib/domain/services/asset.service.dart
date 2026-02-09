@@ -5,17 +5,23 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:openapi/api.dart';
+
 typedef _AssetVideoDimension = ({double? width, double? height, bool isFlipped});
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final AssetsApi _assetsApi;
 
-  const AssetService({
+  AssetService({
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
+    AssetsApi? assetsApi,
   }) : _remoteAssetRepository = remoteAssetRepository,
-       _localAssetRepository = localAssetRepository;
+       _localAssetRepository = localAssetRepository,
+       _assetsApi = assetsApi ?? AssetsApi();
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
@@ -55,6 +61,30 @@ class AssetService {
     }
 
     final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
+    final info = await _remoteAssetRepository.getExif(id);
+    if (info != null && (!asset.isVideo || info.codec != null)) {
+      return info;
+    }
+
+    return refreshExif(asset);
+  }
+
+  Future<ExifInfo?> refreshExif(BaseAsset asset) async {
+    if (!asset.hasRemote) {
+      return null;
+    }
+
+    final id = asset is LocalAsset ? asset.remoteId! : (asset as RemoteAsset).id;
+    try {
+      final response = await _assetsApi.getAssetInfo(id);
+      if (response != null && response.exifInfo != null) {
+        final exifInfo = ExifDtoConverter.fromDto(response.exifInfo!);
+        await _remoteAssetRepository.upsertExif(id, exifInfo);
+        return exifInfo;
+      }
+    } catch (e) {
+      // ignore
+    }
     return _remoteAssetRepository.getExif(id);
   }
 

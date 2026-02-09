@@ -16,7 +16,7 @@ Future<bool> loadTranslations() async {
     saveLocale: true,
     assetLoader: const CodegenLoader(),
     path: translationsPath,
-    useOnlyLangCode: false,
+    useOnlyLangCode: true,
     onLoadError: (e) => dPrint(() => e.toString()),
     fallbackLocale: locales.values.first,
   );

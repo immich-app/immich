@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
+import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
@@ -78,14 +79,16 @@ class _PlaceSliverAppBar extends HookWidget {
   }
 }
 
-class _Map extends StatelessWidget {
+class _Map extends ConsumerWidget {
   const _Map({required this.search, this.currentLocation});
 
   final ValueNotifier<String?> search;
   final LatLng? currentLocation;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dynamicCentre = ref.watch(mapMarkersCenterProvider).valueOrNull ?? const LatLng(0, 0);
+    final finalCentre = currentLocation ?? dynamicCentre;
     return search.value == null
         ? SliverPadding(
             padding: const EdgeInsets.all(16.0),
@@ -94,9 +97,8 @@ class _Map extends StatelessWidget {
                 height: 200,
                 width: context.width,
                 child: MapThumbnail(
-                  onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
-                  zoom: 8,
-                  centre: currentLocation ?? const LatLng(21.44950, -157.91959),
+                  onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation ?? finalCentre)),
+                  zoom: 4,
                   showAttribution: false,
                   themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),

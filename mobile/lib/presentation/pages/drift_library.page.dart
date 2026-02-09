@@ -12,12 +12,11 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 @RoutePage()
 class DriftLibraryPage extends ConsumerWidget {
@@ -229,8 +228,7 @@ class _PlacesCollectionCard extends StatelessWidget {
                   ),
                   child: IgnorePointer(
                     child: MapThumbnail(
-                      zoom: 8,
-                      centre: const LatLng(21.44950, -157.91959),
+                      zoom: 4,
                       showAttribution: false,
                       themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                     ),

@@ -42,13 +42,14 @@ class Asset {
       stackCount = remote.stack?.assetCount ?? 0,
       stackId = remote.stack?.id,
       thumbhash = remote.thumbhash,
+      originalPath = remote.originalPath,
       visibility = getVisibility(remote.visibility);
 
   Asset({
     this.id = Isar.autoIncrement,
     required this.checksum,
     this.remoteId,
-    required this.localId,
+    this.localId,
     required this.ownerId,
     required this.fileCreatedAt,
     required this.fileModifiedAt,
@@ -68,6 +69,7 @@ class Asset {
     this.stackCount = 0,
     this.isOffline = false,
     this.thumbhash,
+    this.originalPath,
     this.visibility = AssetVisibilityEnum.timeline,
   });
 
@@ -146,6 +148,8 @@ class Asset {
   short? height;
 
   String fileName;
+
+  String? originalPath;
 
   String? livePhotoVideoId;
 
@@ -270,7 +274,7 @@ class Asset {
   }
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     if (other is! Asset) return false;
     if (identical(this, other)) return true;
     return id == other.id &&
@@ -293,6 +297,7 @@ class Asset {
         isTrashed == other.isTrashed &&
         stackCount == other.stackCount &&
         stackPrimaryAssetId == other.stackPrimaryAssetId &&
+        originalPath == other.originalPath &&
         stackId == other.stackId;
   }
 
@@ -319,6 +324,7 @@ class Asset {
       isTrashed.hashCode ^
       stackCount.hashCode ^
       stackPrimaryAssetId.hashCode ^
+      originalPath.hashCode ^
       stackId.hashCode;
 
   /// Returns `true` if this [Asset] can updated with values from parameter [a]
@@ -340,6 +346,7 @@ class Asset {
         a.exifInfo?.longitude != exifInfo?.longitude ||
         // no local stack count or different count from remote
         a.thumbhash != thumbhash ||
+        a.originalPath != originalPath ||
         stackId != a.stackId ||
         stackCount != a.stackCount ||
         stackPrimaryAssetId == null && a.stackPrimaryAssetId != null ||
@@ -442,6 +449,7 @@ class Asset {
     String? stackPrimaryAssetId,
     int? stackCount,
     String? thumbhash,
+    String? originalPath,
     AssetVisibilityEnum? visibility,
   }) => Asset(
     id: id ?? this.id,
@@ -467,6 +475,7 @@ class Asset {
     stackPrimaryAssetId: stackPrimaryAssetId ?? this.stackPrimaryAssetId,
     stackCount: stackCount ?? this.stackCount,
     thumbhash: thumbhash ?? this.thumbhash,
+    originalPath: originalPath ?? this.originalPath,
     visibility: visibility ?? this.visibility,
   );
 
@@ -530,7 +539,7 @@ class Asset {
 }""";
   }
 
-  static getVisibility(AssetVisibility visibility) => switch (visibility) {
+  static AssetVisibilityEnum getVisibility(AssetVisibility visibility) => switch (visibility) {
     AssetVisibility.archive => AssetVisibilityEnum.archive,
     AssetVisibility.hidden => AssetVisibilityEnum.hidden,
     AssetVisibility.locked => AssetVisibilityEnum.locked,

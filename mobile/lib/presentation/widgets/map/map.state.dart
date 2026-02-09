@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
+import 'package:immich_mobile/providers/map/map_marker.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
@@ -139,3 +140,36 @@ final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LatLngBoun
 }, dependencies: [mapServiceProvider]);
 
 final mapStateProvider = NotifierProvider<MapStateNotifier, MapState>(MapStateNotifier.new);
+final mapMarkersGeoJsonProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final markers = await ref.watch(mapMarkersProvider.future);
+  final features = markers
+      .map(
+        (marker) => {
+          'type': 'Feature',
+          'id': marker.assetRemoteId,
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [marker.latLng.longitude, marker.latLng.latitude],
+          },
+          'properties': {'weight': 1.0},
+        },
+      )
+      .toList();
+
+  return {'type': 'FeatureCollection', 'features': features};
+});
+
+final mapMarkersCenterProvider = FutureProvider<LatLng>((ref) async {
+  final markers = await ref.watch(mapMarkersProvider.future);
+  if (markers.isEmpty) {
+    return const LatLng(0, 0);
+  }
+
+  double lat = 0;
+  double lon = 0;
+  for (final marker in markers) {
+    lat += marker.latLng.latitude;
+    lon += marker.latLng.longitude;
+  }
+  return LatLng(lat / markers.length, lon / markers.length);
+});

@@ -82,6 +82,34 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
   }
 
+  Future<void> upsertExif(String assetId, ExifInfo exifInfo) {
+    final companion = RemoteExifEntityCompanion(
+      city: Value(exifInfo.city),
+      state: Value(exifInfo.state),
+      country: Value(exifInfo.country),
+      dateTimeOriginal: Value(exifInfo.dateTimeOriginal),
+      description: Value(exifInfo.description),
+      exposureTime: Value(exifInfo.exposureSeconds != null ? "${exifInfo.exposureSeconds}" : null),
+      fNumber: Value(exifInfo.f?.toDouble()),
+      fileSize: Value(exifInfo.fileSize),
+      focalLength: Value(exifInfo.mm?.toDouble()),
+      latitude: Value(exifInfo.latitude?.toDouble()),
+      longitude: Value(exifInfo.longitude?.toDouble()),
+      iso: Value(exifInfo.iso),
+      make: Value(exifInfo.make),
+      model: Value(exifInfo.model),
+      orientation: Value(exifInfo.orientation),
+      timeZone: Value(exifInfo.timeZone),
+      rating: Value(exifInfo.rating),
+      lens: Value(exifInfo.lens),
+      fps: Value(exifInfo.fps),
+      bitRate: Value(exifInfo.bitRate),
+      codec: Value(exifInfo.codec),
+    );
+
+    return _db.remoteExifEntity.insertOnConflictUpdate(companion.copyWith(assetId: Value(assetId)));
+  }
+
   Future<List<(String, String)>> getPlaces(String userId) {
     final asset = Subquery(
       _db.remoteAssetEntity.select()

@@ -87,12 +87,34 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
-    return switch ((fileSize, resolution)) {
+    final baseInfo = switch ((fileSize, resolution)) {
       (null, null) => '',
       (String fileSize, null) => fileSize,
       (null, String resolution) => resolution,
       (String fileSize, String resolution) => '$fileSize$_kSeparator$resolution',
     };
+
+    if (asset.isVideo) {
+      final codec = exifInfo?.codec;
+      final friendlyCodec = switch (codec?.toLowerCase()) {
+        "h264" => "AVC (h264)",
+        "h265" || "hevc" => "HEVC (h265)",
+        _ => codec,
+      };
+
+      final videoInfo = [
+        asset.duration.format(),
+        friendlyCodec,
+        exifInfo?.fps != null ? '${exifInfo!.fps!.toStringAsFixed(exifInfo.fps! % 1 == 0 ? 0 : 2)} fps' : null,
+        exifInfo?.bitRate != null ? '${(exifInfo!.bitRate! / 1000).round()} kbps' : null,
+      ].whereNotNull().join(_kSeparator);
+
+      if (videoInfo.isNotEmpty) {
+        return '$baseInfo\n$videoInfo';
+      }
+    }
+
+    return baseInfo;
   }
 
   String? _getCameraInfoTitle(ExifInfo? exifInfo) {

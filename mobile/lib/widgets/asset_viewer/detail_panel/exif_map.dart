@@ -67,9 +67,9 @@ class ExifMap extends StatelessWidget {
       builder: (context, constraints) {
         return MapThumbnail(
           centre: LatLng(exifInfo.latitude ?? 0, exifInfo.longitude ?? 0),
-          height: 150,
+          height: 120,
           width: constraints.maxWidth,
-          zoom: 12.0,
+          zoom: 15.0,
           assetMarkerRemoteId: markerId,
           assetThumbhash: markerAssetThumbhash,
           onTap: (tapPosition, latLong) async {

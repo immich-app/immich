@@ -223,7 +223,7 @@ class _ImageIcon extends StatelessWidget {
     final isDto = asset.id == noDbId;
     final image = SizedBox.expand(
       child: Hero(
-        tag: isDto ? '${asset.remoteId}-$heroOffset' : asset.id + heroOffset,
+        tag: '${isDto ? asset.remoteId : asset.id}_$heroOffset',
         child: Stack(
           children: [
             SizedBox.expand(child: ImmichThumbnail(asset: asset, height: 250, width: 250)),

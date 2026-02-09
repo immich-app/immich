@@ -1156,6 +1156,8 @@
   "exif_bottom_sheet_description": "Add Description...",
   "exif_bottom_sheet_description_error": "Error updating description",
   "exif_bottom_sheet_details": "DETAILS",
+  "video_info_row_title": "Video",
+  "file_info_path_row_title": "Path",
   "exif_bottom_sheet_location": "LOCATION",
   "exif_bottom_sheet_no_description": "No description",
   "exif_bottom_sheet_people": "PEOPLE",
@@ -2413,5 +2415,16 @@
   "start_on_albums_page_subtitle": "Open the app on the Albums page by default",
   "prevent_sync_duplicates_title": "Prevent Sync Duplicates",
   "prevent_sync_duplicates_subtitle": "When you move a photo between albums in Immich, it won't reappear in the original album on next sync",
-  "search_bar_hint": "Search your photos"
+  "search_bar_hint": "Search your photos",
+  "video_quality_settings_title": "Video Quality",
+  "video_quality_original": "Original (Source)",
+  "video_quality_original_subtitle": "Best quality, high data usage",
+  "video_quality_data_saver": "Data Saver (Transcoded)",
+  "video_quality_data_saver_subtitle": "Smooth playback, lower quality",
+  "album_viewer_appbar_share_err_description": "Failed to change album description",
+  "client_cert_password_message": "Please enter the password for the certificate",
+  "client_cert_password_title": "Enter Certificate Password",
+  "interface_enhancements": "Interface Enhancements",
+  "login_form_button_text": "Login",
+  "login": "Login"
 }

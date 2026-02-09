@@ -242,6 +242,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             lens: Value(exif.lensModel),
             width: Value(exif.exifImageWidth),
             height: Value(exif.exifImageHeight),
+            fps: Value(exif.fps),
           );
 
           batch.insert(

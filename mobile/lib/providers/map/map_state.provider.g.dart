@@ -6,7 +6,7 @@ part of 'map_state.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$mapStateNotifierHash() => r'22e4e571bd0730dbc34b109255a62b920e9c7d66';
+String _$mapStateNotifierHash() => r'c5d1bf45105121f45a5504ec0c92dad4ee2e7fa7';
 
 /// See also [MapStateNotifier].
 @ProviderFor(MapStateNotifier)

@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -17,11 +19,10 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
-import 'package:immich_mobile/utils/debounce.dart';
-import 'package:immich_mobile/utils/hooks/interval_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
-import 'package:native_video_player/native_video_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
@@ -42,18 +43,16 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useState<NativeVideoPlayerController?>(null);
-    final lastVideoPosition = useRef(-1);
+    final player = useMemoized(() => Player());
+    final videoController = useMemoized(() => VideoController(player));
+
+    final lastVideoPosition = useRef(Duration.zero);
     final isBuffering = useRef(false);
 
     // Used to track whether the video should play when the app
     // is brought back to the foreground
     final shouldPlayOnForeground = useRef(true);
 
-    // When a video is opened through the timeline, `isCurrent` will immediately be true.
-    // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
-    // If the swipe is completed, `isCurrent` will be true for video B after a delay.
-    // If the swipe is canceled, `currentAsset` will not have changed and video A will continue to play.
     final currentAsset = useState(ref.read(currentAssetProvider));
     final isCurrent = currentAsset.value == asset;
 
@@ -64,7 +63,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     final isVideoReady = useState(false);
 
-    Future<VideoSource?> createSource() async {
+    Future<Media?> createMedia() async {
       if (!context.mounted) {
         return null;
       }
@@ -77,8 +76,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
             throw Exception('No file found for the video');
           }
 
-          final source = await VideoSource.init(path: file.path, type: VideoSourceType.file);
-          return source;
+          return Media(file.path);
         }
 
         // Use a network URL for the video player controller
@@ -91,20 +89,20 @@ class NativeVideoViewerPage extends HookConsumerWidget {
             ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/$postfixUrl'
             : '$serverEndpoint/assets/${asset.remoteId}/$postfixUrl';
 
-        final source = await VideoSource.init(
-          path: videoUrl,
-          type: VideoSourceType.network,
-          headers: ApiService.getRequestHeaders(),
-        );
-        return source;
+        return Media(videoUrl, httpHeaders: ApiService.getRequestHeaders());
       } catch (error) {
         log.severe('Error creating video source for asset ${asset.fileName}: $error');
         return null;
       }
     }
 
-    final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
+    final mediaSource = useMemoized<Future<Media?>>(() => createMedia());
     final aspectRatio = useState<double?>(asset.aspectRatio);
+
+    useEffect(() {
+      return player.dispose;
+    }, [player]);
+
     useMemoized(() async {
       if (!context.mounted || aspectRatio.value != null) {
         return null;
@@ -117,296 +115,182 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     });
 
-    void checkIfBuffering() {
-      if (!context.mounted) {
-        return;
-      }
+    // Sync Player State with Riverpod
+    useEffect(() {
+      final subscriptions = <StreamSubscription>[];
 
-      final videoPlayback = ref.read(videoPlaybackValueProvider);
-      if ((isBuffering.value || videoPlayback.state == VideoPlaybackState.initializing) &&
-          videoPlayback.state != VideoPlaybackState.buffering) {
-        ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback.copyWith(
-          state: VideoPlaybackState.buffering,
-        );
-      }
-    }
+      subscriptions.add(
+        player.stream.position.listen((position) {
+          if (!context.mounted) return;
+          final notifier = ref.read(videoPlaybackValueProvider.notifier);
+          if (notifier.value.position != position) {
+            notifier.position = position;
+          }
+          if (notifier.value.duration != player.state.duration) {
+            notifier.duration = player.state.duration;
+          }
+          if (player.state.playing) {
+            lastVideoPosition.value = position;
+          }
+        }),
+      );
 
-    // Timer to mark videos as buffering if the position does not change
-    useInterval(const Duration(seconds: 5), checkIfBuffering);
+      subscriptions.add(
+        player.stream.buffering.listen((buffering) {
+          if (!context.mounted) return;
+          isBuffering.value = buffering;
+          final playbackValue = ref.read(videoPlaybackValueProvider);
+          if (buffering && playbackValue.state != VideoPlaybackState.buffering) {
+            ref.read(videoPlaybackValueProvider.notifier).status = VideoPlaybackState.buffering;
+          } else if (!buffering && playbackValue.state == VideoPlaybackState.buffering) {
+            ref.read(videoPlaybackValueProvider.notifier).status = player.state.playing
+                ? VideoPlaybackState.playing
+                : VideoPlaybackState.paused;
+          }
+        }),
+      );
 
-    // When the position changes, seek to the position
-    // Debounce the seek to avoid seeking too often
-    // But also don't delay the seek too much to maintain visual feedback
-    final seekDebouncer = useDebouncer(
-      interval: const Duration(milliseconds: 100),
-      maxWaitTime: const Duration(milliseconds: 200),
-    );
-    ref.listen(videoPlayerControlsProvider, (oldControls, newControls) {
-      final playerController = controller.value;
-      if (playerController == null) {
-        return;
-      }
+      subscriptions.add(
+        player.stream.playing.listen((playing) {
+          if (!context.mounted) return;
+          if (playing) {
+            WakelockPlus.enable();
+            ref.read(videoPlaybackValueProvider.notifier).status = VideoPlaybackState.playing;
+          } else {
+            WakelockPlus.disable();
+            ref.read(videoPlaybackValueProvider.notifier).status = VideoPlaybackState.paused;
+          }
+        }),
+      );
 
-      final playbackInfo = playerController.playbackInfo;
-      if (playbackInfo == null) {
-        return;
-      }
+      subscriptions.add(
+        player.stream.duration.listen((duration) {
+          if (!context.mounted) return;
+          ref.read(videoPlaybackValueProvider.notifier).duration = duration;
+        }),
+      );
 
-      final oldSeek = oldControls?.position.inMilliseconds;
-      final newSeek = newControls.position.inMilliseconds;
-      if (oldSeek != newSeek || newControls.restarted) {
-        seekDebouncer.run(() => playerController.seekTo(newSeek));
-      }
+      subscriptions.add(
+        player.stream.completed.listen((completed) {
+          if (!context.mounted) return;
+          if (completed) {
+            ref.read(videoPlaybackValueProvider.notifier).status = VideoPlaybackState.completed;
+            if (!ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo)) {
+              ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+            }
+          }
+        }),
+      );
 
-      if (oldControls?.pause != newControls.pause || newControls.restarted) {
-        unawaited(_onPauseChange(context, playerController, seekDebouncer, newControls.pause));
-      }
-    });
-
-    void onPlaybackReady() async {
-      final videoController = controller.value;
-      if (videoController == null || !isCurrent || !context.mounted) {
-        return;
-      }
-
-      final videoPlayback = VideoPlaybackValue.fromNativeController(videoController);
-      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
-
-      isVideoReady.value = true;
-
-      try {
-        final autoPlayVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.autoPlayVideo);
-        if (autoPlayVideo) {
-          await videoController.play();
+      return () {
+        for (final sub in subscriptions) {
+          sub.cancel();
         }
-        await videoController.setVolume(0.9);
-      } catch (error) {
-        log.severe('Error playing video: $error');
-      }
-    }
+      };
+    }, [player]);
 
-    void onPlaybackStatusChanged() {
-      final videoController = controller.value;
-      if (videoController == null || !context.mounted) {
-        return;
-      }
+    void initPlayer() async {
+      final media = await mediaSource;
+      if (media == null || !context.mounted) return;
 
-      final videoPlayback = VideoPlaybackValue.fromNativeController(videoController);
-      if (videoPlayback.state == VideoPlaybackState.playing) {
-        // Sync with the controls playing
-        WakelockPlus.enable();
-      } else {
-        // Sync with the controls pause
-        WakelockPlus.disable();
-      }
-
-      ref.read(videoPlaybackValueProvider.notifier).status = videoPlayback.state;
-    }
-
-    void onPlaybackPositionChanged() {
-      // When seeking, these events sometimes move the slider to an older position
-      if (seekDebouncer.isActive) {
-        return;
-      }
-
-      final videoController = controller.value;
-      if (videoController == null || !context.mounted) {
-        return;
-      }
-
-      final playbackInfo = videoController.playbackInfo;
-      if (playbackInfo == null) {
-        return;
-      }
-
-      ref.read(videoPlaybackValueProvider.notifier).position = Duration(milliseconds: playbackInfo.position);
-
-      // Check if the video is buffering
-      if (playbackInfo.status == PlaybackStatus.playing) {
-        isBuffering.value = lastVideoPosition.value == playbackInfo.position;
-        lastVideoPosition.value = playbackInfo.position;
-      } else {
-        isBuffering.value = false;
-        lastVideoPosition.value = -1;
-      }
-    }
-
-    void onPlaybackEnded() {
-      final videoController = controller.value;
-      if (videoController == null || !context.mounted) {
-        return;
-      }
-
-      if (videoController.playbackInfo?.status == PlaybackStatus.stopped &&
-          !ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo)) {
-        ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      }
-    }
-
-    void removeListeners(NativeVideoPlayerController controller) {
-      controller.onPlaybackPositionChanged.removeListener(onPlaybackPositionChanged);
-      controller.onPlaybackStatusChanged.removeListener(onPlaybackStatusChanged);
-      controller.onPlaybackReady.removeListener(onPlaybackReady);
-      controller.onPlaybackEnded.removeListener(onPlaybackEnded);
-    }
-
-    void initController(NativeVideoPlayerController nc) async {
-      if (controller.value != null || !context.mounted) {
-        return;
-      }
       ref.read(videoPlayerControlsProvider.notifier).reset();
       ref.read(videoPlaybackValueProvider.notifier).reset();
 
-      final source = await videoSource;
-      if (source == null) {
-        return;
-      }
+      await player.open(media, play: false);
 
-      nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
-      nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
-      nc.onPlaybackReady.addListener(onPlaybackReady);
-      nc.onPlaybackEnded.addListener(onPlaybackEnded);
-
-      unawaited(
-        nc.loadVideoSource(source).catchError((error) {
-          log.severe('Error loading video source: $error');
-        }),
-      );
       final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
-      unawaited(nc.setLoop(loopVideo));
+      await player.setPlaylistMode(loopVideo ? PlaylistMode.single : PlaylistMode.none);
 
-      controller.value = nc;
-      Timer(const Duration(milliseconds: 200), checkIfBuffering);
+      if (isCurrent) {
+        final autoPlayVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.autoPlayVideo);
+        if (autoPlayVideo) {
+          await player.play();
+        }
+        await player.setVolume(100.0);
+        isVideoReady.value = true;
+      }
     }
 
-    ref.listen(currentAssetProvider, (_, value) {
-      final playerController = controller.value;
-      if (playerController != null && value != asset) {
-        removeListeners(playerController);
+    useEffect(() {
+      if (isCurrent) {
+        initPlayer();
       }
+      return null;
+    }, [isCurrent]);
 
-      final curAsset = currentAsset.value;
-      if (curAsset == asset) {
-        return;
+    ref.listen(videoPlayerControlsProvider, (oldControls, newControls) {
+      if (oldControls?.position != newControls.position) {
+        player.seek(newControls.position);
       }
-
-      final imageToVideo = curAsset != null && !curAsset.isVideo;
-
-      // No need to delay video playback when swiping from an image to a video
-      if (imageToVideo && Platform.isIOS) {
-        currentAsset.value = value;
-        onPlaybackReady();
-        return;
+      if (oldControls?.pause != newControls.pause) {
+        if (newControls.pause) {
+          player.pause();
+        } else {
+          player.play();
+        }
       }
-
-      // Delay the video playback to avoid a stutter in the swipe animation
-      // Note, in some circumstances a longer delay is needed (eg: memories),
-      // the playbackDelayFactor can be used for this
-      // This delay seems like a hacky way to resolve underlying bugs in video
-      // playback, but other resolutions failed thus far
-      Timer(
-        Platform.isIOS
-            ? Duration(milliseconds: 300 * playbackDelayFactor)
-            : imageToVideo
-            ? Duration(milliseconds: 200 * playbackDelayFactor)
-            : Duration(milliseconds: 400 * playbackDelayFactor),
-        () {
-          if (!context.mounted) {
-            return;
-          }
-
-          currentAsset.value = value;
-          if (currentAsset.value == asset) {
-            onPlaybackReady();
-          }
-        },
-      );
     });
 
-    useEffect(() {
-      // If opening a remote video from a hero animation, delay visibility to avoid a stutter
-      final timer = isVisible.value ? null : Timer(const Duration(milliseconds: 300), () => isVisible.value = true);
+    ref.listen(currentAssetProvider, (_, value) {
+      if (value != asset) {
+        player.pause();
+      }
+    });
 
-      return () {
-        timer?.cancel();
-        final playerController = controller.value;
-        if (playerController == null) {
-          return;
-        }
-        removeListeners(playerController);
-        playerController.stop().catchError((error) {
-          log.fine('Error stopping video: $error');
-        });
-
-        WakelockPlus.disable();
-      };
-    }, const []);
-
-    useOnAppLifecycleStateChange((_, state) async {
+    useOnAppLifecycleStateChange((_, state) {
       if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
-        await controller.value?.play();
+        player.play();
       } else if (state == AppLifecycleState.paused) {
-        final videoPlaying = await controller.value?.isPlaying();
-        if (videoPlaying ?? true) {
+        if (player.state.playing) {
           shouldPlayOnForeground.value = true;
-          await controller.value?.pause();
+          player.pause();
         } else {
           shouldPlayOnForeground.value = false;
         }
       }
     });
 
+    // Long Press Speed Logic
+    void onLongPressStart(LongPressStartDetails details) {
+      HapticFeedback.selectionClick();
+      player.setRate(2.0);
+      Fluttertoast.showToast(
+        msg: "2x Speed",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.TOP,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
+
+    void onLongPressEnd(LongPressEndDetails details) {
+      player.setRate(1.0);
+    }
+
     return Stack(
       children: [
-        // This remains under the video to avoid flickering
-        // For motion videos, this is the image portion of the asset
         if (!isVideoReady.value || asset.isMotionPhoto) Center(key: ValueKey(asset.id), child: image),
         if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             key: ValueKey(asset),
             visible: isVisible.value,
-            child: Center(
-              key: ValueKey(asset),
-              child: AspectRatio(
+            child: GestureDetector(
+              onLongPressStart: onLongPressStart,
+              onLongPressEnd: onLongPressEnd,
+              child: Center(
                 key: ValueKey(asset),
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
+                child: AspectRatio(
+                  key: ValueKey(asset),
+                  aspectRatio: aspectRatio.value!,
+                  child: isCurrent ? Video(controller: videoController, controls: NoVideoControls) : null,
+                ),
               ),
             ),
           ),
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
-  }
-
-  Future<void> _onPauseChange(
-    BuildContext context,
-    NativeVideoPlayerController controller,
-    Debouncer seekDebouncer,
-    bool isPaused,
-  ) async {
-    if (!context.mounted) {
-      return;
-    }
-
-    // Make sure the last seek is complete before pausing or playing
-    // Otherwise, `onPlaybackPositionChanged` can receive outdated events
-    if (seekDebouncer.isActive) {
-      await seekDebouncer.drain();
-    }
-
-    if (!context.mounted) {
-      return;
-    }
-
-    try {
-      if (isPaused) {
-        await controller.pause();
-      } else {
-        await controller.play();
-      }
-    } catch (error) {
-      log.severe('Error pausing or playing video: $error');
-    }
   }
 }

@@ -145,16 +145,32 @@ class AssetService {
   /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
     a.exifInfo ??= (await _exifInfoRepository.get(a.id));
-    // fileSize is always filled on the server but not set on client
-    if (a.exifInfo?.fileSize == null) {
+    // fileSize or video metadata is always filled on the server but not set on client
+    final isMissingVideoMetadata = a.isVideo && (a.exifInfo?.codec == null || a.exifInfo?.fps == null);
+    if (a.exifInfo?.fileSize == null || isMissingVideoMetadata) {
       if (a.isRemote) {
         final dto = await _apiService.assetsApi.getAssetInfo(a.remoteId!);
         if (dto != null && dto.exifInfo != null) {
+          final oldExif = a.exifInfo;
           final newExif = Asset.remote(dto).exifInfo!.copyWith(assetId: a.id);
-          a.exifInfo = newExif;
-          if (newExif != a.exifInfo) {
+          final newPath = dto.originalPath;
+
+          bool changed = false;
+          if (newExif != oldExif) {
+            a.exifInfo = newExif;
+            changed = true;
+          }
+          if (newPath != a.originalPath) {
+            a.originalPath = newPath;
+            changed = true;
+          }
+
+          if (changed) {
             if (a.isInDb) {
-              await _assetRepository.transaction(() => _assetRepository.update(a));
+              await _assetRepository.transaction(() async {
+                await _assetRepository.update(a);
+                await _exifInfoRepository.update(newExif);
+              });
             } else {
               dPrint(() => "[loadExif] parameter Asset is not from DB!");
             }

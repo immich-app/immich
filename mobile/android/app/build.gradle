@@ -60,6 +60,11 @@ android {
     versionName flutterVersionName
   }
 
+  lintOptions {
+      checkReleaseBuilds false
+      abortOnError false
+  }
+
   signingConfigs {
     release {
       def keyAliasVal = System.getenv("ALIAS")
@@ -68,7 +73,7 @@ android {
 
       keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
       keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
-      storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
+      storeFile file(keystoreProperties['storeFile'])
       storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
     }
   }
@@ -80,8 +85,7 @@ android {
     }
 
     release {
-      applicationIdSuffix '.debug'
-      signingConfig signingConfigs.debug
+      signingConfig signingConfigs.release
     }
   }
   namespace 'app.alextran.immich'

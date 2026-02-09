@@ -32,6 +32,9 @@ typedef $$RemoteExifEntityTableCreateCompanionBuilder =
       i0.Value<String?> timeZone,
       i0.Value<int?> rating,
       i0.Value<String?> projectionType,
+      i0.Value<double?> fps,
+      i0.Value<int?> bitRate,
+      i0.Value<String?> codec,
     });
 typedef $$RemoteExifEntityTableUpdateCompanionBuilder =
     i1.RemoteExifEntityCompanion Function({
@@ -57,6 +60,9 @@ typedef $$RemoteExifEntityTableUpdateCompanionBuilder =
       i0.Value<String?> timeZone,
       i0.Value<int?> rating,
       i0.Value<String?> projectionType,
+      i0.Value<double?> fps,
+      i0.Value<int?> bitRate,
+      i0.Value<String?> codec,
     });
 
 final class $$RemoteExifEntityTableReferences
@@ -219,6 +225,21 @@ class $$RemoteExifEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
+  i0.ColumnFilters<double> get fps => $composableBuilder(
+    column: $table.fps,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<int> get bitRate => $composableBuilder(
+    column: $table.bitRate,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<String> get codec => $composableBuilder(
+    column: $table.codec,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
   i3.$$RemoteAssetEntityTableFilterComposer get assetId {
     final i3.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -361,6 +382,21 @@ class $$RemoteExifEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<double> get fps => $composableBuilder(
+    column: $table.fps,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<int> get bitRate => $composableBuilder(
+    column: $table.bitRate,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<String> get codec => $composableBuilder(
+    column: $table.codec,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i3.$$RemoteAssetEntityTableOrderingComposer get assetId {
     final i3.$$RemoteAssetEntityTableOrderingComposer composer =
         $composerBuilder(
@@ -474,6 +510,15 @@ class $$RemoteExifEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
+  i0.GeneratedColumn<double> get fps =>
+      $composableBuilder(column: $table.fps, builder: (column) => column);
+
+  i0.GeneratedColumn<int> get bitRate =>
+      $composableBuilder(column: $table.bitRate, builder: (column) => column);
+
+  i0.GeneratedColumn<String> get codec =>
+      $composableBuilder(column: $table.codec, builder: (column) => column);
+
   i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
     final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
@@ -558,6 +603,9 @@ class $$RemoteExifEntityTableTableManager
                 i0.Value<String?> timeZone = const i0.Value.absent(),
                 i0.Value<int?> rating = const i0.Value.absent(),
                 i0.Value<String?> projectionType = const i0.Value.absent(),
+                i0.Value<double?> fps = const i0.Value.absent(),
+                i0.Value<int?> bitRate = const i0.Value.absent(),
+                i0.Value<String?> codec = const i0.Value.absent(),
               }) => i1.RemoteExifEntityCompanion(
                 assetId: assetId,
                 city: city,
@@ -581,6 +629,9 @@ class $$RemoteExifEntityTableTableManager
                 timeZone: timeZone,
                 rating: rating,
                 projectionType: projectionType,
+                fps: fps,
+                bitRate: bitRate,
+                codec: codec,
               ),
           createCompanionCallback:
               ({
@@ -606,6 +657,9 @@ class $$RemoteExifEntityTableTableManager
                 i0.Value<String?> timeZone = const i0.Value.absent(),
                 i0.Value<int?> rating = const i0.Value.absent(),
                 i0.Value<String?> projectionType = const i0.Value.absent(),
+                i0.Value<double?> fps = const i0.Value.absent(),
+                i0.Value<int?> bitRate = const i0.Value.absent(),
+                i0.Value<String?> codec = const i0.Value.absent(),
               }) => i1.RemoteExifEntityCompanion.insert(
                 assetId: assetId,
                 city: city,
@@ -629,6 +683,9 @@ class $$RemoteExifEntityTableTableManager
                 timeZone: timeZone,
                 rating: rating,
                 projectionType: projectionType,
+                fps: fps,
+                bitRate: bitRate,
+                codec: codec,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -956,6 +1013,37 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
         type: i0.DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const i0.VerificationMeta _fpsMeta = const i0.VerificationMeta('fps');
+  @override
+  late final i0.GeneratedColumn<double> fps = i0.GeneratedColumn<double>(
+    'fps',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _bitRateMeta = const i0.VerificationMeta(
+    'bitRate',
+  );
+  @override
+  late final i0.GeneratedColumn<int> bitRate = i0.GeneratedColumn<int>(
+    'bit_rate',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _codecMeta = const i0.VerificationMeta(
+    'codec',
+  );
+  @override
+  late final i0.GeneratedColumn<String> codec = i0.GeneratedColumn<String>(
+    'codec',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<i0.GeneratedColumn> get $columns => [
     assetId,
@@ -980,6 +1068,9 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
     timeZone,
     rating,
     projectionType,
+    fps,
+    bitRate,
+    codec,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1145,6 +1236,24 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
         ),
       );
     }
+    if (data.containsKey('fps')) {
+      context.handle(
+        _fpsMeta,
+        fps.isAcceptableOrUnknown(data['fps']!, _fpsMeta),
+      );
+    }
+    if (data.containsKey('bit_rate')) {
+      context.handle(
+        _bitRateMeta,
+        bitRate.isAcceptableOrUnknown(data['bit_rate']!, _bitRateMeta),
+      );
+    }
+    if (data.containsKey('codec')) {
+      context.handle(
+        _codecMeta,
+        codec.isAcceptableOrUnknown(data['codec']!, _codecMeta),
+      );
+    }
     return context;
   }
 
@@ -1245,6 +1354,18 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}projection_type'],
       ),
+      fps: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}fps'],
+      ),
+      bitRate: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}bit_rate'],
+      ),
+      codec: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}codec'],
+      ),
     );
   }
 
@@ -1283,6 +1404,9 @@ class RemoteExifEntityData extends i0.DataClass
   final String? timeZone;
   final int? rating;
   final String? projectionType;
+  final double? fps;
+  final int? bitRate;
+  final String? codec;
   const RemoteExifEntityData({
     required this.assetId,
     this.city,
@@ -1306,6 +1430,9 @@ class RemoteExifEntityData extends i0.DataClass
     this.timeZone,
     this.rating,
     this.projectionType,
+    this.fps,
+    this.bitRate,
+    this.codec,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -1374,6 +1501,15 @@ class RemoteExifEntityData extends i0.DataClass
     if (!nullToAbsent || projectionType != null) {
       map['projection_type'] = i0.Variable<String>(projectionType);
     }
+    if (!nullToAbsent || fps != null) {
+      map['fps'] = i0.Variable<double>(fps);
+    }
+    if (!nullToAbsent || bitRate != null) {
+      map['bit_rate'] = i0.Variable<int>(bitRate);
+    }
+    if (!nullToAbsent || codec != null) {
+      map['codec'] = i0.Variable<String>(codec);
+    }
     return map;
   }
 
@@ -1407,6 +1543,9 @@ class RemoteExifEntityData extends i0.DataClass
       timeZone: serializer.fromJson<String?>(json['timeZone']),
       rating: serializer.fromJson<int?>(json['rating']),
       projectionType: serializer.fromJson<String?>(json['projectionType']),
+      fps: serializer.fromJson<double?>(json['fps']),
+      bitRate: serializer.fromJson<int?>(json['bitRate']),
+      codec: serializer.fromJson<String?>(json['codec']),
     );
   }
   @override
@@ -1435,6 +1574,9 @@ class RemoteExifEntityData extends i0.DataClass
       'timeZone': serializer.toJson<String?>(timeZone),
       'rating': serializer.toJson<int?>(rating),
       'projectionType': serializer.toJson<String?>(projectionType),
+      'fps': serializer.toJson<double?>(fps),
+      'bitRate': serializer.toJson<int?>(bitRate),
+      'codec': serializer.toJson<String?>(codec),
     };
   }
 
@@ -1461,6 +1603,9 @@ class RemoteExifEntityData extends i0.DataClass
     i0.Value<String?> timeZone = const i0.Value.absent(),
     i0.Value<int?> rating = const i0.Value.absent(),
     i0.Value<String?> projectionType = const i0.Value.absent(),
+    i0.Value<double?> fps = const i0.Value.absent(),
+    i0.Value<int?> bitRate = const i0.Value.absent(),
+    i0.Value<String?> codec = const i0.Value.absent(),
   }) => i1.RemoteExifEntityData(
     assetId: assetId ?? this.assetId,
     city: city.present ? city.value : this.city,
@@ -1488,6 +1633,9 @@ class RemoteExifEntityData extends i0.DataClass
     projectionType: projectionType.present
         ? projectionType.value
         : this.projectionType,
+    fps: fps.present ? fps.value : this.fps,
+    bitRate: bitRate.present ? bitRate.value : this.bitRate,
+    codec: codec.present ? codec.value : this.codec,
   );
   RemoteExifEntityData copyWithCompanion(i1.RemoteExifEntityCompanion data) {
     return RemoteExifEntityData(
@@ -1525,6 +1673,9 @@ class RemoteExifEntityData extends i0.DataClass
       projectionType: data.projectionType.present
           ? data.projectionType.value
           : this.projectionType,
+      fps: data.fps.present ? data.fps.value : this.fps,
+      bitRate: data.bitRate.present ? data.bitRate.value : this.bitRate,
+      codec: data.codec.present ? data.codec.value : this.codec,
     );
   }
 
@@ -1552,7 +1703,10 @@ class RemoteExifEntityData extends i0.DataClass
           ..write('orientation: $orientation, ')
           ..write('timeZone: $timeZone, ')
           ..write('rating: $rating, ')
-          ..write('projectionType: $projectionType')
+          ..write('projectionType: $projectionType, ')
+          ..write('fps: $fps, ')
+          ..write('bitRate: $bitRate, ')
+          ..write('codec: $codec')
           ..write(')'))
         .toString();
   }
@@ -1581,6 +1735,9 @@ class RemoteExifEntityData extends i0.DataClass
     timeZone,
     rating,
     projectionType,
+    fps,
+    bitRate,
+    codec,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1607,7 +1764,10 @@ class RemoteExifEntityData extends i0.DataClass
           other.orientation == this.orientation &&
           other.timeZone == this.timeZone &&
           other.rating == this.rating &&
-          other.projectionType == this.projectionType);
+          other.projectionType == this.projectionType &&
+          other.fps == this.fps &&
+          other.bitRate == this.bitRate &&
+          other.codec == this.codec);
 }
 
 class RemoteExifEntityCompanion
@@ -1634,6 +1794,9 @@ class RemoteExifEntityCompanion
   final i0.Value<String?> timeZone;
   final i0.Value<int?> rating;
   final i0.Value<String?> projectionType;
+  final i0.Value<double?> fps;
+  final i0.Value<int?> bitRate;
+  final i0.Value<String?> codec;
   const RemoteExifEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.city = const i0.Value.absent(),
@@ -1657,6 +1820,9 @@ class RemoteExifEntityCompanion
     this.timeZone = const i0.Value.absent(),
     this.rating = const i0.Value.absent(),
     this.projectionType = const i0.Value.absent(),
+    this.fps = const i0.Value.absent(),
+    this.bitRate = const i0.Value.absent(),
+    this.codec = const i0.Value.absent(),
   });
   RemoteExifEntityCompanion.insert({
     required String assetId,
@@ -1681,6 +1847,9 @@ class RemoteExifEntityCompanion
     this.timeZone = const i0.Value.absent(),
     this.rating = const i0.Value.absent(),
     this.projectionType = const i0.Value.absent(),
+    this.fps = const i0.Value.absent(),
+    this.bitRate = const i0.Value.absent(),
+    this.codec = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId);
   static i0.Insertable<i1.RemoteExifEntityData> custom({
     i0.Expression<String>? assetId,
@@ -1705,6 +1874,9 @@ class RemoteExifEntityCompanion
     i0.Expression<String>? timeZone,
     i0.Expression<int>? rating,
     i0.Expression<String>? projectionType,
+    i0.Expression<double>? fps,
+    i0.Expression<int>? bitRate,
+    i0.Expression<String>? codec,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
@@ -1729,6 +1901,9 @@ class RemoteExifEntityCompanion
       if (timeZone != null) 'time_zone': timeZone,
       if (rating != null) 'rating': rating,
       if (projectionType != null) 'projection_type': projectionType,
+      if (fps != null) 'fps': fps,
+      if (bitRate != null) 'bit_rate': bitRate,
+      if (codec != null) 'codec': codec,
     });
   }
 
@@ -1755,6 +1930,9 @@ class RemoteExifEntityCompanion
     i0.Value<String?>? timeZone,
     i0.Value<int?>? rating,
     i0.Value<String?>? projectionType,
+    i0.Value<double?>? fps,
+    i0.Value<int?>? bitRate,
+    i0.Value<String?>? codec,
   }) {
     return i1.RemoteExifEntityCompanion(
       assetId: assetId ?? this.assetId,
@@ -1779,6 +1957,9 @@ class RemoteExifEntityCompanion
       timeZone: timeZone ?? this.timeZone,
       rating: rating ?? this.rating,
       projectionType: projectionType ?? this.projectionType,
+      fps: fps ?? this.fps,
+      bitRate: bitRate ?? this.bitRate,
+      codec: codec ?? this.codec,
     );
   }
 
@@ -1851,6 +2032,15 @@ class RemoteExifEntityCompanion
     if (projectionType.present) {
       map['projection_type'] = i0.Variable<String>(projectionType.value);
     }
+    if (fps.present) {
+      map['fps'] = i0.Variable<double>(fps.value);
+    }
+    if (bitRate.present) {
+      map['bit_rate'] = i0.Variable<int>(bitRate.value);
+    }
+    if (codec.present) {
+      map['codec'] = i0.Variable<String>(codec.value);
+    }
     return map;
   }
 
@@ -1878,7 +2068,10 @@ class RemoteExifEntityCompanion
           ..write('orientation: $orientation, ')
           ..write('timeZone: $timeZone, ')
           ..write('rating: $rating, ')
-          ..write('projectionType: $projectionType')
+          ..write('projectionType: $projectionType, ')
+          ..write('fps: $fps, ')
+          ..write('bitRate: $bitRate, ')
+          ..write('codec: $codec')
           ..write(')'))
         .toString();
   }

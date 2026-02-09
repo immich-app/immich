@@ -23,6 +23,9 @@ class ExifInfo {
   final double? mm;
   final int? iso;
   final double? exposureSeconds;
+  final double? fps;
+  final int? bitRate;
+  final String? codec;
 
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
@@ -61,6 +64,9 @@ class ExifInfo {
     this.mm,
     this.iso,
     this.exposureSeconds,
+    this.fps,
+    this.bitRate,
+    this.codec,
   });
 
   @override
@@ -86,6 +92,9 @@ class ExifInfo {
         other.mm == mm &&
         other.iso == iso &&
         other.exposureSeconds == exposureSeconds &&
+        other.fps == fps &&
+        other.bitRate == bitRate &&
+        other.codec == codec &&
         other.assetId == assetId;
   }
 
@@ -110,6 +119,9 @@ class ExifInfo {
         mm.hashCode ^
         iso.hashCode ^
         exposureSeconds.hashCode ^
+        fps.hashCode ^
+        bitRate.hashCode ^
+        codec.hashCode ^
         assetId.hashCode;
   }
 
@@ -135,6 +147,9 @@ f: ${f ?? 'NA'},
 mm: ${mm ?? '<NA>'},
 iso: ${iso ?? 'NA'},
 exposureSeconds: ${exposureSeconds ?? 'NA'},
+fps: ${fps ?? 'NA'},
+bitRate: ${bitRate ?? 'NA'},
+codec: ${codec ?? 'NA'},
 }''';
   }
 
@@ -159,6 +174,9 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
     double? mm,
     int? iso,
     double? exposureSeconds,
+    double? fps,
+    int? bitRate,
+    String? codec,
   }) {
     return ExifInfo(
       assetId: assetId ?? this.assetId,
@@ -181,6 +199,9 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
       mm: mm ?? this.mm,
       iso: iso ?? this.iso,
       exposureSeconds: exposureSeconds ?? this.exposureSeconds,
+      fps: fps ?? this.fps,
+      bitRate: bitRate ?? this.bitRate,
+      codec: codec ?? this.codec,
     );
   }
 }

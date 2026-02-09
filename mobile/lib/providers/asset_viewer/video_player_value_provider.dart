@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:native_video_player/native_video_player.dart';
+import 'package:media_kit/media_kit.dart';
 
 enum VideoPlaybackState { initializing, paused, playing, buffering, completed }
 
@@ -18,26 +18,18 @@ class VideoPlaybackValue {
 
   const VideoPlaybackValue({required this.position, required this.duration, required this.state, required this.volume});
 
-  factory VideoPlaybackValue.fromNativeController(NativeVideoPlayerController controller) {
-    final playbackInfo = controller.playbackInfo;
-    final videoInfo = controller.videoInfo;
-
-    if (playbackInfo == null || videoInfo == null) {
-      return videoPlaybackValueDefault;
+  factory VideoPlaybackValue.fromPlayer(Player player) {
+    final state = player.state;
+    VideoPlaybackState status;
+    if (state.completed) {
+      status = VideoPlaybackState.completed;
+    } else if (state.playing) {
+      status = VideoPlaybackState.playing;
+    } else {
+      status = VideoPlaybackState.paused;
     }
 
-    final VideoPlaybackState status = switch (playbackInfo.status) {
-      PlaybackStatus.playing => VideoPlaybackState.playing,
-      PlaybackStatus.paused => VideoPlaybackState.paused,
-      PlaybackStatus.stopped => VideoPlaybackState.completed,
-    };
-
-    return VideoPlaybackValue(
-      position: Duration(milliseconds: playbackInfo.position),
-      duration: Duration(milliseconds: videoInfo.duration),
-      state: status,
-      volume: playbackInfo.volume,
-    );
+    return VideoPlaybackValue(position: state.position, duration: state.duration, state: status, volume: state.volume);
   }
 
   VideoPlaybackValue copyWith({Duration? position, Duration? duration, VideoPlaybackState? state, double? volume}) {
@@ -74,7 +66,12 @@ class VideoPlaybackValueState extends StateNotifier<VideoPlaybackValue> {
 
   set position(Duration value) {
     if (state.position == value) return;
-    state = VideoPlaybackValue(position: value, duration: state.duration, state: state.state, volume: state.volume);
+    state = state.copyWith(position: value);
+  }
+
+  set duration(Duration value) {
+    if (state.duration == value) return;
+    state = state.copyWith(duration: value);
   }
 
   set status(VideoPlaybackState value) {

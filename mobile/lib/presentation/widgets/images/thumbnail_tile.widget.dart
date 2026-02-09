@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
@@ -13,7 +14,7 @@ import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.da
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class ThumbnailTile extends ConsumerStatefulWidget {
+class ThumbnailTile extends HookConsumerWidget {
   const ThumbnailTile(
     this.asset, {
     this.size = kThumbnailResolution,
@@ -32,22 +33,11 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final int? heroOffset;
 
   @override
-  ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hideIndicators = useState(false);
+    final showSelectionContainer = useState(false);
 
-class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
-  bool _hideIndicators = false;
-  bool _showSelectionContainer = false;
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final asset = widget.asset;
-    final heroIndex = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
     final isCurrentAsset = ref.watch(assetViewerProvider.select((current) => current.currentAsset == asset));
 
     final assetContainerColor = context.isDarkTheme
@@ -59,26 +49,31 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
     );
 
     final bool storageIndicator =
-        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && widget.showStorageIndicator;
+        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
 
-    if (!isCurrentAsset) {
-      _hideIndicators = false;
-    }
+    final isViewerActive = ref.watch(assetViewerProvider.select((s) => s.currentAsset != null));
+
+    useEffect(() {
+      if (!isViewerActive || !isCurrentAsset) {
+        hideIndicators.value = false;
+      }
+      return null;
+    }, [isViewerActive, isCurrentAsset]);
 
     if (isSelected) {
-      _showSelectionContainer = true;
+      showSelectionContainer.value = true;
     }
 
     final uploadProgress = asset is LocalAsset
-        ? ref.watch(assetUploadProgressProvider.select((map) => map[asset.id]))
+        ? ref.watch(assetUploadProgressProvider.select((map) => map[(asset as LocalAsset).id]))
         : null;
 
     return Stack(
       children: [
         Container(
-          color: widget.lockSelection
+          color: lockSelection
               ? context.colorScheme.surfaceContainerHighest
-              : _showSelectionContainer
+              : showSelectionContainer.value
               ? assetContainerColor
               : Colors.transparent,
         ),
@@ -87,12 +82,12 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
           curve: Curves.decelerate,
           onEnd: () {
             if (!isSelected) {
-              _showSelectionContainer = false;
+              showSelectionContainer.value = false;
             }
           },
-          padding: EdgeInsets.all(isSelected || widget.lockSelection ? 6 : 0),
+          padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
           child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 15.0 : 0.0),
+            tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
             duration: Durations.short4,
             curve: Curves.decelerate,
             builder: (context, value, child) {
@@ -107,12 +102,12 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     // but other solutions have failed thus far.
                     key: ValueKey(isCurrentAsset),
                     tag: '${asset?.heroTag}_$heroIndex',
-                    child: Thumbnail.fromAsset(asset: asset, size: widget.size),
+                    child: Thumbnail.fromAsset(asset: asset, size: size),
                     // Placeholderbuilder used to hide indicators on first hero animation, since flightShuttleBuilder isn't called until both source and destination hero exist in widget tree.
                     placeholderBuilder: (context, heroSize, child) {
-                      if (!_hideIndicators) {
+                      if (!hideIndicators.value) {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
-                          setState(() => _hideIndicators = true);
+                          hideIndicators.value = true;
                         });
                       }
                       return const SizedBox();
@@ -120,8 +115,8 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     flightShuttleBuilder: (context, animation, direction, from, to) {
                       void animationStatusListener(AnimationStatus status) {
                         final heroInFlight = status == AnimationStatus.forward || status == AnimationStatus.reverse;
-                        if (_hideIndicators != heroInFlight) {
-                          setState(() => _hideIndicators = heroInFlight);
+                        if (hideIndicators.value != heroInFlight) {
+                          hideIndicators.value = heroInFlight;
                         }
                         if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
                           animation.removeStatusListener(animationStatusListener);
@@ -135,18 +130,18 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                 ),
                 if (asset != null)
                   AnimatedOpacity(
-                    opacity: _hideIndicators ? 0.0 : 1.0,
+                    opacity: (hideIndicators.value && isViewerActive) ? 0.0 : 1.0,
                     duration: Durations.short4,
                     child: Align(
                       alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset),
+                      child: _AssetTypeIcons(asset: asset!),
                     ),
                   ),
                 if (storageIndicator && asset != null)
                   AnimatedOpacity(
-                    opacity: _hideIndicators ? 0.0 : 1.0,
+                    opacity: (hideIndicators.value && isViewerActive) ? 0.0 : 1.0,
                     duration: Durations.short4,
-                    child: switch (asset.storage) {
+                    child: switch (asset!.storage) {
                       AssetState.local => const Align(
                         alignment: Alignment.bottomRight,
                         child: Padding(
@@ -171,10 +166,10 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     },
                   ),
 
-                if (asset != null && asset.isFavorite)
+                if (asset != null && asset!.isFavorite)
                   AnimatedOpacity(
                     duration: Durations.short4,
-                    opacity: _hideIndicators ? 0.0 : 1.0,
+                    opacity: (hideIndicators.value && isViewerActive) ? 0.0 : 1.0,
                     child: const Align(
                       alignment: Alignment.bottomLeft,
                       child: Padding(
@@ -189,19 +184,19 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
           ),
         ),
         TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0.0, end: (isSelected || widget.lockSelection) ? 1.0 : 0.0),
+          tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 1.0 : 0.0),
           duration: Durations.short4,
           curve: Curves.decelerate,
           builder: (context, value, child) {
             return Padding(
-              padding: EdgeInsets.all((isSelected || widget.lockSelection) ? value * 3.0 : 3.0),
+              padding: EdgeInsets.all((isSelected || lockSelection) ? value * 3.0 : 3.0),
               child: Align(
                 alignment: Alignment.topLeft,
                 child: Opacity(
-                  opacity: (isSelected || widget.lockSelection) ? 1 : value,
+                  opacity: (isSelected || lockSelection) ? 1 : value,
                   child: _SelectionIndicator(
-                    isLocked: widget.lockSelection,
-                    color: widget.lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
+                    isLocked: lockSelection,
+                    color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
                   ),
                 ),
               ),

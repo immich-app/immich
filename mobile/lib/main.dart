@@ -47,9 +47,11 @@ import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
+import 'package:media_kit/media_kit.dart';
 
 void main() async {
   ImmichWidgetsBinding();
+  MediaKit.ensureInitialized();
   unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
   final (isar, drift, logDb) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDb);
@@ -223,8 +225,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
             ref
                 .read(backgroundWorkerFgServiceProvider)
                 .saveNotificationMessage(
-                  IntlKeys.uploading_media.t(),
-                  IntlKeys.backup_background_service_default_notification.t(),
+                  IntlKeys.uploading_media.t(context: context),
+                  IntlKeys.backup_background_service_default_notification.t(context: context),
                 ),
           );
         }

@@ -31,7 +31,7 @@ class AssetDetails extends ConsumerWidget {
               fontWeight: FontWeight.w600,
             ),
           ).tr(),
-          FileInfo(asset: asset),
+          FileInfo(asset: assetWithExif.value ?? asset),
           if (exifInfo?.make != null) CameraInfo(exifInfo: exifInfo!),
         ],
       ),

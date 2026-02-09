@@ -29,6 +29,9 @@ class ExifInfo {
   final String? country;
   final String? description;
   final String? orientation;
+  final float? fps;
+  final int? bitRate;
+  final String? codec;
 
   const ExifInfo({
     this.id,
@@ -49,6 +52,9 @@ class ExifInfo {
     this.country,
     this.description,
     this.orientation,
+    this.fps,
+    this.bitRate,
+    this.codec,
   });
 
   static ExifInfo fromDto(domain.ExifInfo dto) => ExifInfo(
@@ -70,6 +76,9 @@ class ExifInfo {
     country: dto.country,
     description: dto.description,
     orientation: dto.orientation,
+    fps: dto.fps,
+    bitRate: dto.bitRate,
+    codec: dto.codec,
   );
 
   domain.ExifInfo toDto() => domain.ExifInfo(
@@ -92,6 +101,9 @@ class ExifInfo {
     mm: mm,
     iso: iso?.toInt(),
     exposureSeconds: exposureSeconds,
+    fps: fps?.toDouble(),
+    bitRate: bitRate,
+    codec: codec,
   );
 }
 
@@ -143,6 +155,12 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get projectionType => text().nullable()();
 
+  RealColumn get fps => real().nullable()();
+
+  IntColumn get bitRate => integer().nullable()();
+
+  TextColumn get codec => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {assetId};
 }
@@ -168,5 +186,8 @@ extension RemoteExifEntityDataDomainEx on RemoteExifEntityData {
     lens: lens,
     isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
     exposureSeconds: ExifDtoConverter.exposureTimeToSeconds(exposureTime),
+    fps: fps,
+    bitRate: bitRate,
+    codec: codec,
   );
 }
