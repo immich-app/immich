@@ -59,7 +59,7 @@
   </Field>
 
   <div class="flex flex-wrap gap-2 mt-2">
-    {#each expiredDateOptions as option}
+    {#each expiredDateOptions as option (option.value)}
       <Button
         size="tiny"
         variant={isSelected(option.value) ? 'filled' : 'outline'}
