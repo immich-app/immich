@@ -11,6 +11,8 @@ import 'package:flutter/painting.dart';
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   void Function()? _onLastListenerRemoved;
   int _listenerCount = 0;
+  // True once setImage() has been called at least once.
+  bool didProvideImage = false;
 
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
@@ -23,11 +25,15 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     void Function()? onLastListenerRemoved,
   }) {
     if (initialImage != null) {
+      didProvideImage = true;
       setImage(initialImage);
     }
     _onLastListenerRemoved = onLastListenerRemoved;
     images.listen(
-      setImage,
+      (image) {
+        didProvideImage = true;
+        setImage(image);
+      },
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -43,23 +49,19 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   @override
   void addListener(ImageStreamListener listener) {
     super.addListener(listener);
-    _listenerCount++;
+    _listenerCount = _listenerCount + 1;
   }
 
   @override
   void removeListener(ImageStreamListener listener) {
     super.removeListener(listener);
-    _listenerCount--;
-    if (_listenerCount == 0) {
-      onLastListenerRemovedImmediately();
-    }
-  }
+    _listenerCount = _listenerCount - 1;
 
-  void onLastListenerRemovedImmediately() {
-    final onLastListenerRemoved = _onLastListenerRemoved;
-    if (onLastListenerRemoved != null) {
-      _onLastListenerRemoved = null;
-      onLastListenerRemoved();
+    final bool onlyCacheListenerLeft = _listenerCount == 1 && !didProvideImage;
+    final bool noListenersAfterImage = _listenerCount == 0 && didProvideImage;
+
+    if (noListenersAfterImage || onlyCacheListenerLeft) {
+      _onLastListenerRemoved?.call();
     }
   }
 }
