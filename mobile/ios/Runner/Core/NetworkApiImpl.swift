@@ -54,8 +54,7 @@ class NetworkApiImpl: NetworkApi {
     completion: @escaping (Result<WebSocketTaskResult, any Error>) -> Void
   ) {
     guard let wsUrl = URL(string: url) else {
-      completion(.failure(WebSocketError.invalidURL(url)))
-      return
+      return completion(.failure(WebSocketError.invalidURL(url)))
     }
     
     URLSessionManager.shared.createWebSocketTask(url: wsUrl, protocols: protocols) { result in
