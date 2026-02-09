@@ -1,10 +1,11 @@
+import { isUndefined, omitBy } from 'lodash';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { build } from 'test/factories/builder.factory';
 import { SharedLinkFactory } from 'test/factories/shared-link.factory';
-import { FactoryBuilder, SharedLinkLike, UserLike } from 'test/factories/types';
+import { AuthStub, FactoryBuilder, RelationKeysPath, SharedLinkLike, UserLike } from 'test/factories/types';
 import { UserFactory } from 'test/factories/user.factory';
 
-export class AuthFactory {
+export class AuthFactory<T extends RelationKeysPath<'auth'> = never> {
   #user: UserFactory;
   #sharedLink?: SharedLinkFactory;
 
@@ -25,24 +26,30 @@ export class AuthFactory {
     return this;
   }
 
-  sharedLink(dto: SharedLinkLike = {}, builder?: FactoryBuilder<SharedLinkFactory>) {
+  sharedLink<K extends RelationKeysPath<'sharedLink', 'auth'> = never>(
+    dto: SharedLinkLike = {},
+    builder?: FactoryBuilder<SharedLinkFactory<'owner'>, SharedLinkFactory<'owner' | K>>,
+  ) {
     this.#sharedLink = build(SharedLinkFactory.from(dto), builder);
-    return this;
+    return this as AuthFactory<T | 'sharedLink' | 'sharedLink.owner' | K extends never ? never : `sharedLink.${K}`>;
   }
 
   build(): AuthDto {
     const { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes } = this.#user.build();
 
-    return {
-      user: {
-        id,
-        isAdmin,
-        name,
-        email,
-        quotaUsageInBytes,
-        quotaSizeInBytes,
+    return omitBy(
+      {
+        user: {
+          id,
+          isAdmin,
+          name,
+          email,
+          quotaUsageInBytes,
+          quotaSizeInBytes,
+        },
+        sharedLink: this.#sharedLink?.build(),
       },
-      sharedLink: this.#sharedLink?.build(),
-    };
+      isUndefined,
+    ) as AuthStub<T>;
   }
 }

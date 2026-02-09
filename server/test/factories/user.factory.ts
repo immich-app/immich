@@ -1,11 +1,13 @@
 import { Selectable } from 'kysely';
+import { isUndefined, omitBy } from 'lodash';
 import { UserStatus } from 'src/enum';
-import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
-import { UserLike } from 'test/factories/types';
+import { RelationKeysPath, UserLike, UserMetadataStub, UserStub } from 'test/factories/types';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
 
-export class UserFactory {
+export class UserFactory<T extends RelationKeysPath<'user'> = never> {
+  #metadata?: UserMetadataStub[];
+
   private constructor(private value: Selectable<UserTable>) {}
 
   static create(dto: UserLike = {}) {
@@ -34,13 +36,21 @@ export class UserFactory {
       profileChangedAt: newDate(),
       updateId: newUuidV7(),
       ...dto,
-    });
+    }).metadata();
+  }
+
+  metadata() {
+    this.#metadata = [];
+    return this as UserFactory<T | 'metadata'>;
   }
 
   build() {
-    return {
-      ...this.value,
-      metadata: [] as UserMetadataTable[],
-    };
+    return omitBy(
+      {
+        ...this.value,
+        metadata: this.#metadata,
+      },
+      isUndefined,
+    ) as UserStub<T>;
   }
 }

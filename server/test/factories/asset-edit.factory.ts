@@ -3,7 +3,7 @@ import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { build } from 'test/factories/builder.factory';
-import { AssetEditLike, AssetLike, FactoryBuilder } from 'test/factories/types';
+import { AssetEditLike, AssetEditStub, AssetLike, FactoryBuilder } from 'test/factories/types';
 import { newUuid } from 'test/small.factory';
 
 export class AssetEditFactory {
@@ -33,6 +33,6 @@ export class AssetEditFactory {
   }
 
   build() {
-    return { ...this.value } as Selectable<AssetEditTable<AssetEditAction.Crop>>;
+    return { ...this.value } as AssetEditStub;
   }
 }
