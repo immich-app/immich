@@ -12,6 +12,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -32,8 +33,13 @@ class SearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textSearchType = useState<TextSearchType>(TextSearchType.context);
-    final searchHintText = useState<String>('sunrise_on_the_beach'.tr());
+    final serverFeatures = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
+    final textSearchType = useState<TextSearchType>(
+      serverFeatures.smartSearch ? TextSearchType.context : TextSearchType.filename,
+    );
+    final searchHintText = useState<String>(
+      serverFeatures.smartSearch ? 'sunrise_on_the_beach'.tr() : 'file_name_or_extension'.tr(),
+    );
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
@@ -444,24 +450,25 @@ class SearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.image_search_rounded),
-                    title: Text(
-                      'search_by_context'.tr(),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                if (serverFeatures.smartSearch)
+                  MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.image_search_rounded),
+                      title: Text(
+                        'search_by_context'.tr(),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.context,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.context,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.context;
+                      searchHintText.value = 'sunrise_on_the_beach'.tr();
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.tr();
-                  },
-                ),
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.abc_rounded),
@@ -498,24 +505,25 @@ class SearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.tr();
                   },
                 ),
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.document_scanner_outlined),
-                    title: Text(
-                      'search_filter_ocr'.tr(),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                if (serverFeatures.ocr)
+                  MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.document_scanner_outlined),
+                      title: Text(
+                        'search_filter_ocr'.tr(),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.ocr,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.ocr,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.ocr;
+                      searchHintText.value = 'search_by_ocr_example'.tr();
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.ocr;
-                    searchHintText.value = 'search_by_ocr_example'.tr();
-                  },
-                ),
               ],
             ),
           ),
