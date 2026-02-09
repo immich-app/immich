@@ -27,56 +27,35 @@
     })),
   ]);
 
-  let selectedDate = $state<DateTime | undefined>(expiresAt ? DateTime.fromISO(expiresAt) : undefined);
+  let selectedPresetValue = $state<number | null>(null);
+
+  const getSelectedDate = (): DateTime | undefined => {
+    return expiresAt ? DateTime.fromISO(expiresAt) : undefined;
+  };
+
+  const setSelectedDate = (value: DateTime | undefined) => {
+    selectedPresetValue = null; // Clear preset when manually setting date
+    expiresAt = value ? value.toISO() : null;
+  };
 
   const selectPreset = (value: number) => {
+    selectedPresetValue = value;
     if (value === 0) {
-      selectedDate = undefined;
+      expiresAt = null;
       return;
     }
-    selectedDate = DateTime.now().plus(value);
+    const newDate = DateTime.now().plus(value);
+    expiresAt = newDate.toISO();
   };
 
   const isSelected = (value: number) => {
-    if (value === 0) {
-      return !selectedDate;
-    }
-    if (!selectedDate) {
-      return false;
-    }
-    const target = DateTime.now().plus(value);
-    // Tolerance of 1 minute roughly, or exact match?
-    // Using a small tolerance like 10 seconds to be safe with execution time
-    return Math.abs(selectedDate.diff(target).toMillis()) < 60_000;
+    return selectedPresetValue === value;
   };
-
-  $effect(() => {
-    if (selectedDate) {
-      // Only update if changed significantly to avoid infinite loops with ISO string conversion
-      const current = expiresAt ? DateTime.fromISO(expiresAt) : null;
-      if (!current || Math.abs(selectedDate.diff(current).toMillis()) > 100) {
-        expiresAt = selectedDate.toISO();
-      }
-    } else if (expiresAt !== null) {
-      expiresAt = null;
-    }
-  });
-
-  $effect(() => {
-    if (expiresAt) {
-      const dt = DateTime.fromISO(expiresAt);
-      if (!selectedDate || Math.abs(dt.diff(selectedDate).toMillis()) > 100) {
-        selectedDate = dt;
-      }
-    } else if (selectedDate !== undefined) {
-      selectedDate = undefined;
-    }
-  });
 </script>
 
 <div class="mt-2">
   <Field label={$t('expire_after')}>
-    <DatePicker bind:value={selectedDate} />
+    <DatePicker bind:value={getSelectedDate, setSelectedDate} />
   </Field>
 
   <div class="flex flex-wrap gap-2 mt-2">
