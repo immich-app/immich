@@ -7,7 +7,6 @@ import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
@@ -426,17 +425,17 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
 };
 
 export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
-  if (get(isSelectingAllAssets)) {
+  if (assetInteraction.selectAll) {
     // Selection is already ongoing
     return;
   }
-  isSelectingAllAssets.set(true);
+  assetInteraction.selectAll = true;
 
   try {
     for (const monthGroup of timelineManager.months) {
       await timelineManager.loadMonthGroup(monthGroup.yearMonth);
 
-      if (!get(isSelectingAllAssets)) {
+      if (!assetInteraction.selectAll) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
@@ -449,12 +448,12 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   } catch (error) {
     const $t = get(t);
     handleError(error, $t('errors.error_selecting_all_assets'));
-    isSelectingAllAssets.set(false);
+    assetInteraction.selectAll = false;
   }
 };
 
 export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
-  isSelectingAllAssets.set(false);
+  assetInteraction.selectAll = false;
   assetInteraction.clearMultiselect();
 };
 
