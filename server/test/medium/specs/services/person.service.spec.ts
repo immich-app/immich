@@ -21,7 +21,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
     real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
-    mock: [LoggingRepository, StorageRepository],
+    mock: [LoggingRepository, StorageRepository, JobRepository],
   });
 };
 

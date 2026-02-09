@@ -704,7 +704,9 @@ export class PersonService extends BaseService {
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
     const face = await this.personRepository.getFaceById(id);
-    dto.force ? await this.personRepository.deleteAssetFace(id) : await this.personRepository.softDeleteAssetFaces(id);
+    const _result = dto.force
+      ? await this.personRepository.deleteAssetFace(id)
+      : await this.personRepository.softDeleteAssetFaces(id);
 
     if (face?.personId) {
       const person = await this.personRepository.getById(face.personId);
