@@ -50,7 +50,7 @@
     <Input bind:value={description} autocomplete="off" />
   </Field>
 
-  <SharedLinkExpiration {createdAt} bind:expiresAt />
+  <SharedLinkExpiration bind:expiresAt />
   <Field label={$t('show_metadata')}>
     <Switch bind:checked={showMetadata} />
   </Field>
