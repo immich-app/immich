@@ -134,6 +134,11 @@ export class PersonService extends BaseService {
     return faces.map((face) => mapFaces(face, auth, asset!.edits!, assetDimensions));
   }
 
+  @OnJob({ name: JobName.PersonNewFeaturePhoto, queue: QueueName.BackgroundTask })
+  async createNewFeaturePhotoJob(job: JobOf<JobName.PersonNewFeaturePhoto>) {
+    await this.createNewFeaturePhoto([job.id]);
+  }
+
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
     this.logger.debug(
       `Changing feature photos for ${changeFeaturePhoto.length} ${changeFeaturePhoto.length > 1 ? 'people' : 'person'}`,
@@ -146,6 +151,8 @@ export class PersonService extends BaseService {
       if (assetFace) {
         await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: personId } });
+      } else {
+        await this.personRepository.update({ id: personId, faceAssetId: null, thumbnailPath: '' });
       }
     }
 
@@ -696,7 +703,14 @@ export class PersonService extends BaseService {
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
+    const face = await this.personRepository.getFaceById(id);
+    dto.force ? await this.personRepository.deleteAssetFace(id) : await this.personRepository.softDeleteAssetFaces(id);
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    if (face?.personId) {
+      const person = await this.personRepository.getById(face.personId);
+      if (person?.faceAssetId === id) {
+        await this.createNewFeaturePhoto([person.id]);
+      }
+    }
   }
 }

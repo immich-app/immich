@@ -390,6 +390,18 @@ export class AssetService extends BaseService {
       deletedAt: new Date(),
       status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
     });
+
+    // Update feature photos of persons that had this asset as feature photo
+    for (const id of ids) {
+      const persons = await this.personRepository.getFeaturedPersonsFromAsset(id);
+      for (const person of persons) {
+        await this.jobRepository.queue({
+          name: JobName.PersonNewFeaturePhoto,
+          data: { id: person.id },
+        });
+      }
+    }
+
     await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
       assetIds: ids,
       userId: auth.user.id,

@@ -582,4 +582,14 @@ export class PersonRepository {
       }
     });
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getFeaturedPersonsFromAsset(assetId: string) {
+    return this.db
+      .selectFrom('person')
+      .select(['person.id'])
+      .innerJoin('asset_face', 'asset_face.id', 'person.faceAssetId')
+      .where('asset_face.assetId', '=', assetId)
+      .execute();
+  }
 }
