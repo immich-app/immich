@@ -503,7 +503,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_DISABLE_WEBSERVER: true
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=web
         if: ${{ !cancelled() }}
       - name: Archive e2e test (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -523,11 +523,11 @@ jobs:
         with:
           name: e2e-ui-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
-      - name: Run maintenance tests (web)
+      - name: Run maintenance tests
         env:
           CI: true
           PLAYWRIGHT_DISABLE_WEBSERVER: true
-        run: npx playwright test --project=maintenance-isolated
+        run: npx playwright test --project=maintenance
         if: ${{ !cancelled() }}
       - name: Archive maintenance tests (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

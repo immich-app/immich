@@ -14,6 +14,8 @@ export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERV
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
 
 const config: PlaywrightTestConfig = {
+  testDir: './src/specs/server',
+  testMatch: /.*\.e2e-spec\.ts/,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 4 : 0,
@@ -31,57 +33,24 @@ const config: PlaywrightTestConfig = {
 
   projects: [
     {
-      name: 'chromium',
+      name: 'web',
       use: { ...devices['Desktop Chrome'] },
-      testDir: './src/e2e/web/specs',
-      testMatch: /.*\.e2e-spec\.ts/,
+      testDir: './src/specs/web',
       workers: 1,
     },
     {
       name: 'ui',
       use: { ...devices['Desktop Chrome'] },
-      testDir: './src/ui-tests/web/specs',
-      testMatch: /.*\.e2e-spec\.ts/,
+      testDir: './src/ui/specs',
       fullyParallel: true,
       workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
     },
     {
-      name: 'maintenance-isolated',
+      name: 'maintenance',
       use: { ...devices['Desktop Chrome'] },
-      testDir: './src/maintenance-tests/web/specs',
-      testMatch: /.*\.e2e-spec\.ts/,
+      testDir: './src/specs/maintenance',
       workers: 1,
     },
-
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
 
   /* Run your local dev server before starting the tests */
