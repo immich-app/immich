@@ -79,9 +79,7 @@
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
-    class="flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned
-      ? 'overflow-auto'
-      : ''}"
+    class="flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned ? 'overflow-auto' : ''}"
     style:max-height={isVisible ? `${position.maxHeight}px` : '0px'}
     role="menu"
     tabindex="-1"
