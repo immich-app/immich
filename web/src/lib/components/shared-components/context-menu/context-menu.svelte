@@ -55,23 +55,15 @@
   // We need to bind clientHeight since the bounding box may return a height
   // of zero when starting the 'slide' animation.
   let height: number = $state(0);
-
-  let isTransitioned = $state(false);
 </script>
 
 <div
   bind:clientHeight={height}
-  class="fixed min-w-50 w-max max-w-75 overflow-hidden rounded-lg shadow-lg z-1"
+  class="fixed min-w-50 w-max max-w-75 overflow-hidden rounded-lg shadow-lg z-1 immich-scrollbar"
   style:left="{position.left}px"
   style:top="{position.top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
   use:clickOutside={{ onOutclick: onClose }}
-  onintroend={() => {
-    isTransitioned = true;
-  }}
-  onoutrostart={() => {
-    isTransitioned = false;
-  }}
 >
   <ul
     {id}
@@ -79,7 +71,7 @@
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
-    class="flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned ? 'overflow-auto' : ''}"
+    class="flex flex-col transition-all duration-250 ease-in-out outline-none overflow-auto immich-scrollbar"
     style:max-height={isVisible ? `${position.maxHeight}px` : '0px'}
     role="menu"
     tabindex="-1"
