@@ -179,7 +179,7 @@ class TestOrtSession:
     OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
-    ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
+    ROCM_EP = ["MIGraphXExecutionProvider", "CPUExecutionProvider"]
     COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
@@ -292,9 +292,9 @@ class TestOrtSession:
     def test_sets_provider_options_for_rocm(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
-        session = OrtSession("ViT-B-32__openai", providers=["ROCMExecutionProvider"])
+        session = OrtSession("ViT-B-32__openai", providers=["MIGraphXExecutionProvider"])
 
-        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+        assert session.provider_options == [{"device_id": "1"}]
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(

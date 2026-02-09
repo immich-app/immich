@@ -22,10 +22,10 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS builder-rocm
 
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
-ARG ONNXRUNTIME_VERSION="v1.22.1"
+ARG ONNXRUNTIME_VERSION="v1.23.2"
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git
@@ -37,15 +37,13 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.
 
 RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
-# Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
-# TODO: find a way to fix this without disabling algo caching
-COPY ./patches/* /tmp/
-RUN git apply /tmp/*.patch
 
-RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
+RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh && \
+    pip3 install --break-system-packages numpy packaging protobuf
 
 ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
 ENV CCACHE_DIR="/ccache"
+
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN --mount=type=cache,target=/ccache \
     ./build.sh \
@@ -56,11 +54,13 @@ RUN --mount=type=cache,target=/ccache \
     --build \
     --parallel 17 \
     --cmake_extra_defines \
+    onnxruntime_BUILD_UNIT_TESTS=OFF \
+    onnxruntime_BUILD_TESTS=OFF \
     ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
     CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
     --skip_tests \
-    --use_rocm \
-    --rocm_home=/opt/rocm \
+    --use_migraphx \
+    --migraphx_home=/opt/rocm \
     --use_cache \
     --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
@@ -80,7 +80,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 RUN if [ "$DEVICE" = "rocm" ]; then \
-    uv pip install /opt/onnxruntime_rocm-*.whl; \
+    uv pip install /opt/onnxruntime_migraphx-*.whl; \
     fi
 
 FROM python:3.11-slim-bookworm@sha256:917ec0e42cd6af87657a768449c2f604a6b67c7ab8e10ff917b8724799f816d3 AS prod-cpu
@@ -120,7 +120,8 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
+RUN apt update && apt install -y migraphx migraphx-dev wget zstd miopen-hip && apt clean
 
 FROM prod-cpu AS prod-armnn
 
