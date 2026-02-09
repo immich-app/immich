@@ -295,6 +295,7 @@ export function getAssetRatio(asset: AssetResponseDto) {
 const supportedImageMimeTypes = new Set([
   'image/apng',
   'image/avif',
+  'image/bmp',
   'image/gif',
   'image/jpeg',
   'image/png',
