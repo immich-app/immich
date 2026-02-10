@@ -12,18 +12,15 @@ import {
   selectRandomMultiple,
   TimelineAssetConfig,
   TimelineData,
-} from 'src/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
-import { pageRoutePromise, setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
-import { utils } from 'src/utils';
+} from 'src/ui/generators/timeline';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
 import {
-  assetViewerUtils,
-  padYearMonth,
-  pageUtils,
-  poll,
-  thumbnailUtils,
-  timelineUtils,
-} from 'src/web/specs/timeline/utils';
+  pageRoutePromise,
+  setupTimelineMockApiRoutes,
+  TimelineTestContext,
+} from 'src/ui/mock-network/timeline-network';
+import { utils } from 'src/utils';
+import { assetViewerUtils, padYearMonth, pageUtils, poll, thumbnailUtils, timelineUtils } from './utils';
 
 test.describe.configure({ mode: 'parallel' });
 test.describe('Timeline', () => {

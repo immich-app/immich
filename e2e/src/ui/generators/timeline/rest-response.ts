@@ -15,7 +15,7 @@ import {
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { signupDto } from 'src/fixtures';
-import { parseTimeBucketKey } from 'src/generators/timeline/utils';
+import { parseTimeBucketKey } from 'src/ui/generators/timeline/utils';
 import type { MockTimelineAsset, MockTimelineData } from './timeline-config';
 
 /**

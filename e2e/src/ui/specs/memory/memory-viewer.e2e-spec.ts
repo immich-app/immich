@@ -1,18 +1,18 @@
 import { faker } from '@faker-js/faker';
 import type { MemoryResponseDto } from '@immich/sdk';
 import { test } from '@playwright/test';
-import { generateMemoriesFromTimeline } from 'src/generators/memory';
+import { generateMemoriesFromTimeline } from 'src/ui/generators/memory';
 import {
   Changes,
   createDefaultTimelineConfig,
   generateTimelineData,
   TimelineAssetConfig,
   TimelineData,
-} from 'src/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
-import { MemoryChanges, setupMemoryMockApiRoutes } from 'src/mock-network/memory-network';
-import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
-import { memoryAssetViewerUtils, memoryGalleryUtils, memoryViewerUtils } from 'src/web/specs/memory/utils';
+} from 'src/ui/generators/timeline';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
+import { MemoryChanges, setupMemoryMockApiRoutes } from 'src/ui/mock-network/memory-network';
+import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
+import { memoryAssetViewerUtils, memoryGalleryUtils, memoryViewerUtils } from './utils';
 
 test.describe.configure({ mode: 'parallel' });
 

@@ -1,6 +1,6 @@
 import { BrowserContext, expect, Page } from '@playwright/test';
 import { DateTime } from 'luxon';
-import { TimelineAssetConfig } from 'src/generators/timeline';
+import { TimelineAssetConfig } from 'src/ui/generators/timeline';
 
 export const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));

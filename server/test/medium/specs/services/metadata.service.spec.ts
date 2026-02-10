@@ -1,24 +1,21 @@
+import { Kysely } from 'kysely';
 import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { AssetJobRepository } from 'src/repositories/asset-job.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
+import { DB } from 'src/schema';
 import { MetadataService } from 'src/services/metadata.service';
-import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
-
-const metadataRepository = new MetadataRepository(
-  // eslint-disable-next-line no-sparse-arrays
-  automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
-);
-
-const createTestFile = async (exifData: Record<string, any>) => {
-  const data = newRandomImage();
-  const filePath = join(tmpdir(), 'test.png');
-  await writeFile(filePath, data);
-  await metadataRepository.writeTags(filePath, exifData);
-  return { filePath };
-};
+import { newMediumService } from 'test/medium.factory';
+import { getKyselyDB, newRandomImage } from 'test/utils';
 
 type TimeZoneTest = {
   description: string;
@@ -31,24 +28,52 @@ type TimeZoneTest = {
   };
 };
 
+let defaultDatabase: Kysely<DB>;
+
+const setup = (db?: Kysely<DB>) => {
+  const { sut, ctx } = newMediumService(MetadataService, {
+    database: db || defaultDatabase,
+    real: [
+      AssetRepository,
+      AssetJobRepository,
+      ConfigRepository,
+      MetadataRepository,
+      SystemMetadataRepository,
+      TagRepository,
+    ],
+    mock: [EventRepository, StorageRepository, LoggingRepository],
+  });
+
+  ctx.getMock(StorageRepository).stat.mockResolvedValue({
+    size: 123_456,
+    mtime: new Date(654_321),
+    mtimeMs: 654_321,
+    birthtimeMs: 654_322,
+  } as Stats);
+
+  return { sut, ctx };
+};
+
+const createTestFile = async (exifData: Record<string, any>) => {
+  const { ctx } = setup();
+  const data = newRandomImage();
+  const filePath = join(tmpdir(), 'test.png');
+  await writeFile(filePath, data);
+  await ctx.get(MetadataRepository).writeTags(filePath, exifData);
+  return { filePath };
+};
+
+beforeAll(async () => {
+  defaultDatabase = await getKyselyDB();
+});
+
 describe(MetadataService.name, () => {
-  let sut: MetadataService;
-  let mocks: ServiceMocks;
-
-  beforeEach(() => {
-    ({ sut, mocks } = newTestService(MetadataService, { metadata: metadataRepository }));
-
-    mocks.storage.stat.mockResolvedValue({
-      size: 123_456,
-      mtime: new Date(654_321),
-      mtimeMs: 654_321,
-      birthtimeMs: 654_322,
-    } as Stats);
-
-    delete process.env.TZ;
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('should be defined', () => {
+    const { sut } = setup();
     expect(sut).toBeDefined();
   });
 
@@ -79,30 +104,52 @@ describe(MetadataService.name, () => {
     ];
 
     it.each(timeZoneTests)('$description', async ({ exifData, serverTimeZone, expected }) => {
-      process.env.TZ = serverTimeZone ?? undefined;
+      vi.stubEnv('TZ', serverTimeZone);
 
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
       const { filePath } = await createTestFile(exifData);
-      mocks.assetJob.getForMetadataExtraction.mockResolvedValue({
-        id: 'asset-1',
-        originalPath: filePath,
-        files: [],
-      } as any);
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
 
-      await sut.handleMetadataExtraction({ id: 'asset-1' });
+      await sut.handleMetadataExtraction({ id: asset.id });
 
-      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dateTimeOriginal: new Date(expected.dateTimeOriginal),
-          timeZone: expected.timeZone,
-        }),
-        { lockedPropertiesBehavior: 'skip' },
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select(['dateTimeOriginal', 'timeZone', 'lockedProperties'])
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({
+        dateTimeOriginal: new Date(expected.dateTimeOriginal),
+        timeZone: expected.timeZone,
+        lockedProperties: null,
+      });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ localDateTime: new Date(expected.localDateTime) }),
       );
+    });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          localDateTime: new Date(expected.localDateTime),
-        }),
-      );
+    it('should handle dates far in the future', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ CreateDate: '42603:05:04 04:12:48' });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .where('assetId', '=', asset.id)
+          .select('dateTimeOriginal')
+          .executeTakeFirstOrThrow(),
+        // note that this date is technically wrong. it does not throw though and should get the user's attention either way.
+      ).resolves.toEqual({ dateTimeOriginal: new Date('4260-03-05T04:04:12.000Z') });
     });
   });
 });

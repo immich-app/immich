@@ -10,8 +10,8 @@ import {
   randomPreview,
   randomThumbnail,
   TimelineData,
-} from 'src/generators/timeline';
-import { sleep } from 'src/web/specs/timeline/utils';
+} from 'src/ui/generators/timeline';
+import { sleep } from 'src/ui/specs/timeline/utils';
 
 export class TimelineTestContext {
   slowBucket = false;
