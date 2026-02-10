@@ -76,7 +76,6 @@ class ViewIntentHandler {
             await _localAssetRepository.updateHashes({localAssetId: checksum});
           }
         }
-        //todo clarify logic for assets not presented into MainTimeline (locked folder, deleted etc)
         final timelineMatch = await _openFromMainTimeline(localAssetId, checksum: checksum);
         if (timelineMatch) {
           return;
@@ -86,7 +85,8 @@ class ViewIntentHandler {
       }
     }
 
-    await _router.push(ExternalMediaViewerRoute(attachment: attachment));
+    final fallbackAsset = _toViewIntentAsset(attachment);
+    _openAssetViewer(fallbackAsset, _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink), 0);
   }
 
   Future<bool> _openFromMainTimeline(String localAssetId, {String? checksum}) async {
@@ -151,5 +151,19 @@ class ViewIntentHandler {
     } catch (_) {
       return null;
     }
+  }
+
+  LocalAsset _toViewIntentAsset(ViewIntentAttachment attachment) {
+    final now = DateTime.now();
+
+    return LocalAsset(
+      id: attachment.path,
+      name: attachment.fileName,
+      checksum: null,
+      type: attachment.isVideo ? AssetType.video : AssetType.image,
+      createdAt: now,
+      updatedAt: now,
+      isEdited: false,
+    );
   }
 }

@@ -1654,47 +1654,6 @@ class EditImageRouteArgs {
 }
 
 /// generated route for
-/// [ExternalMediaViewerPage]
-class ExternalMediaViewerRoute
-    extends PageRouteInfo<ExternalMediaViewerRouteArgs> {
-  ExternalMediaViewerRoute({
-    Key? key,
-    required ViewIntentAttachment attachment,
-    List<PageRouteInfo>? children,
-  }) : super(
-         ExternalMediaViewerRoute.name,
-         args: ExternalMediaViewerRouteArgs(key: key, attachment: attachment),
-         initialChildren: children,
-       );
-
-  static const String name = 'ExternalMediaViewerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<ExternalMediaViewerRouteArgs>();
-      return ExternalMediaViewerPage(
-        key: args.key,
-        attachment: args.attachment,
-      );
-    },
-  );
-}
-
-class ExternalMediaViewerRouteArgs {
-  const ExternalMediaViewerRouteArgs({this.key, required this.attachment});
-
-  final Key? key;
-
-  final ViewIntentAttachment attachment;
-
-  @override
-  String toString() {
-    return 'ExternalMediaViewerRouteArgs{key: $key, attachment: $attachment}';
-  }
-}
-
-/// generated route for
 /// [FailedBackupStatusPage]
 class FailedBackupStatusRoute extends PageRouteInfo<void> {
   const FailedBackupStatusRoute({List<PageRouteInfo>? children})
