@@ -49,6 +49,12 @@
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
 
+  const isTransparent = $derived(
+    asset.originalMimeType === 'image/png' ||
+      asset.originalMimeType === 'image/webp' ||
+      asset.originalMimeType === 'image/gif',
+  );
+
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
@@ -226,7 +232,7 @@
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
+          : slideshowLookCssMapping[$slideshowLook]} {isTransparent ? 'checkerboard' : ''}"
         draggable="false"
       />
       <!-- eslint-disable-next-line svelte/require-each-key -->
@@ -258,5 +264,9 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+  .checkerboard {
+    background-image: conic-gradient(#808080 25%, #b0b0b0 25% 50%, #808080 50% 75%, #b0b0b0 75%);
+    background-size: 20px 20px;
   }
 </style>
