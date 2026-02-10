@@ -27,11 +27,6 @@ import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
-const filesNoFullsize = [
-  factory.assetFile({ type: AssetFileType.Preview }),
-  factory.assetFile({ type: AssetFileType.Thumbnail }),
-];
-
 const fullsizeBuffer = Buffer.from('embedded image data');
 const rawBuffer = Buffer.from('raw image data');
 const extractedBuffer = Buffer.from('embedded image file');
@@ -171,7 +166,7 @@ describe(MediaService.name, () => {
 
     it('should queue all assets with missing fullsize when feature is enabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      const asset = { id: factory.uuid(), thumbhash: factory.buffer(), edits: [], files: filesNoFullsize };
+      const asset = { id: factory.uuid(), isEdited: false };
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
@@ -189,7 +184,7 @@ describe(MediaService.name, () => {
 
     it('should not queue assets with missing fullsize when feature is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
-      const asset = { id: factory.uuid(), thumbhash: factory.buffer(), edits: [], files: filesNoFullsize };
+      const asset = { id: factory.uuid(), isEdited: false };
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
@@ -230,7 +225,7 @@ describe(MediaService.name, () => {
 
     it('should queue assets with missing fullsize when force is true, regardless of setting', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
-      const asset = { id: factory.uuid(), thumbhash: Buffer.from('thumbhash'), edits: [], files: filesNoFullsize };
+      const asset = { id: factory.uuid(), isEdited: false };
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: true });
