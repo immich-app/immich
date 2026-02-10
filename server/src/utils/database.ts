@@ -78,8 +78,8 @@ export const getKyselyConfig = (
           date: {
             to: 1184,
             from: [1082, 1114, 1184],
-            serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
-            parse: (x: string) => new Date(x),
+            serialize: (x: Date | string) => (x instanceof Date ? convertDateToTimestamp(x) : x),
+            parse: (x: string) => convertTimestampToDate(x),
           },
           bigint: {
             to: 20,
@@ -129,6 +129,62 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
   }
 
   return update;
+};
+
+const convertTimestampToDate = (item: string) => {
+  const match = item.match(/^(\d+)-(.+)$/i);
+  if (!match) {
+    return new Date(item);
+  }
+
+  // 3 main differences between js date and postgres date
+  // - postgres uses BC instead of negative year
+  // - postgres uses Julian calendar for BC dates, while js uses Gregorian calendar
+  // - js needs extra + for years >= 10000, so use padded +002000 for all years
+
+  const year = Number(match[1]);
+  const rest = match[2];
+
+  if (item.endsWith('BC')) {
+    const astroYear = 1 - year;
+    const sign = astroYear < 0 ? '-' : '+';
+    const yearAbs = Math.abs(astroYear).toString().padStart(6, '0');
+    item = `${sign}${yearAbs}-${rest.slice(0, -3)}`;
+  } else {
+    item = `+${year.toString().padStart(6, '0')}-${rest}`;
+  }
+
+  return new Date(item);
+};
+
+const pad = (n: number, l = 2) => String(n).padStart(l, '0');
+
+const convertDateToTimestamp = (item: Date) => {
+  if (Number.isNaN(item as any)) {
+    return item.toISOString();
+  }
+
+  // 3 main differences between js date and postgres date
+  // - postgres range is -4713 till 294276, while js -271821 to +275760
+  // - postgres does not support all toISOString() output (e.g. BC instead of negative year)
+  // - postgres uses Julian calendar for BC dates, while js uses Gregorian calendar
+  const year = Math.max(-4712, Math.min(item.getUTCFullYear(), 294_276));
+
+  const rest =
+    `${pad(item.getUTCMonth() + 1)}-` +
+    `${pad(item.getUTCDate())} ` +
+    `${pad(item.getUTCHours())}:` +
+    `${pad(item.getUTCMinutes())}:` +
+    `${pad(item.getUTCSeconds())}.` +
+    `${pad(item.getUTCMilliseconds(), 3)}`;
+
+  // AD years
+  if (year >= 1) {
+    return `${pad(year, 4)}-${rest}`;
+  } else {
+    const bcYear = 1 - year;
+    return `${bcYear}-${rest} BC`;
+  }
 };
 
 /** Modifies toJson return type to not set all properties as nullable */

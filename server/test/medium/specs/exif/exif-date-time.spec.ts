@@ -62,4 +62,18 @@ describe('exif date time', () => {
       fileCreatedAt: stats.mtime,
     });
   });
+
+  it('test asset date in the very far future', async () => {
+    // 42603 AD uses a plus sign for year, which postgres does not support
+    const { ctx, sut, asset } = await setup('metadata/dates/future42603.mp4');
+
+    await sut.handleMetadataExtraction({ id: asset.id });
+
+    await expect(ctx.getDates(asset.id)).resolves.toEqual({
+      timeZone: 'UTC',
+      dateTimeOriginal: new Date('+042603-05-04T04:12:48.000Z'),
+      localDateTime: new Date('+042603-05-04T04:12:48.000Z'),
+      fileCreatedAt: new Date('+042603-05-04T04:12:48.000Z'),
+    });
+  });
 });
