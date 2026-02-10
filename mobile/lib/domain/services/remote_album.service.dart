@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -36,6 +37,7 @@ class RemoteAlbumService {
     AlbumSortMode sortMode, {
     bool isReverse = false,
   }) async {
+    // list of albums sorted ascendingly according to the selected sort mode
     final List<RemoteAlbum> sorted = switch (sortMode) {
       AlbumSortMode.created => albums.sortedBy((album) => album.createdAt),
       AlbumSortMode.title => albums.sortedBy((album) => album.name),
@@ -44,8 +46,9 @@ class RemoteAlbumService {
       AlbumSortMode.mostRecent => await _sortByNewestAsset(albums),
       AlbumSortMode.mostOldest => await _sortByOldestAsset(albums),
     };
+    final effectiveOrder = isReverse ? sortMode.defaultOrder.reverse() : sortMode.defaultOrder;
 
-    return (isReverse ? sorted.reversed : sorted).toList();
+    return (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
   }
 
   List<RemoteAlbum> searchAlbums(
@@ -209,6 +212,6 @@ class RemoteAlbumService {
       return aDate.compareTo(bDate);
     });
 
-    return sorted.reversed.toList();
+    return sorted;
   }
 }

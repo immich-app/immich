@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -281,6 +282,8 @@ class _SortButtonState extends ConsumerState<_SortButton> {
       setState(() {
         albumSortOption = sortMode;
         isSorting = true;
+        // reset sort order to default state when switching option
+        albumSortIsReverse = false;
       });
     }
 
@@ -293,6 +296,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveOrder = albumSortOption.effectiveOrder(albumSortIsReverse);
     return MenuAnchor(
       controller: widget.controller,
       style: MenuStyle(
@@ -307,7 +311,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
           .map(
             (sortMode) => MenuItemButton(
               leadingIcon: albumSortOption == sortMode
-                  ? albumSortIsReverse
+                  ? effectiveOrder == SortOrder.desc
                         ? Icon(
                             Icons.keyboard_arrow_down,
                             color: albumSortOption == sortMode
@@ -355,7 +359,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 5),
-                child: albumSortIsReverse
+                child: effectiveOrder == SortOrder.desc
                     ? Icon(Icons.keyboard_arrow_down, color: context.colorScheme.onSurface)
                     : Icon(Icons.keyboard_arrow_up_rounded, color: context.colorScheme.onSurface),
               ),

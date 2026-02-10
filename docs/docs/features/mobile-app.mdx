@@ -66,7 +66,7 @@ Now make sure that the local album is selected in the backup screen (steps 1-2 a
     - **Keep on device:** You can choose to restrict removal to `Always keep` **All photos** or **All videos**, regardless of other settings. This setting can hamper freeing up space significantly — with 80 GB of videos and 40 GB photos, selecting `Always keep photos` retains thousands of photos on your device.
 
 2.  **Scan & Review:** Before any files are removed, you are presented with a review screen to verify which items will be deleted and how much storage is reclamable.
-3.  **Deletion:** Confirmed items are moved to your device's native Trash/Recycle Bin.
+3.  **Deletion:** Confirmed items are moved to your device's native Trash/Recycle Bin. For large queues, Immich processes deletion in batches for stability (`2000` assets per batch on Android, `10000` per batch on iOS).
 
 :::info reclaim storage
 To use the reclaimed space right away, you must empty the system/gallery trash manually outside of Immich.
