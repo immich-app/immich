@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent_service.dart';
+import 'package:logging/logging.dart';
 
 final viewIntentHandlerProvider = Provider<ViewIntentHandler>(
   (ref) => ViewIntentHandler(
@@ -36,6 +37,7 @@ class ViewIntentHandler {
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final TimelineFactory _timelineFactory;
+  static final Logger _logger = Logger('ViewIntentHandler');
 
   const ViewIntentHandler(
     this._ref,
@@ -60,12 +62,14 @@ class ViewIntentHandler {
   }
 
   Future<void> handle(ViewIntentAttachment attachment) async {
+    _logger.info('handle attachment: $attachment');
     if (!_ref.read(authProvider).isAuthenticated) {
       _viewIntentService.defer(attachment);
       return;
     }
 
     final localAssetId = attachment.localAssetId;
+    _logger.fine('localAssetId: $localAssetId');
     if (localAssetId != null) {
       final localAsset = await _localAssetRepository.getById(localAssetId);
       if (localAsset != null) {
@@ -77,6 +81,7 @@ class ViewIntentHandler {
           }
         }
         final timelineMatch = await _openFromMainTimeline(localAssetId, checksum: checksum);
+        _logger.fine('localAsset: $localAsset, checksum: $checksum, timelineMatch: $timelineMatch');
         if (timelineMatch) {
           return;
         }
@@ -86,6 +91,7 @@ class ViewIntentHandler {
     }
 
     final fallbackAsset = _toViewIntentAsset(attachment);
+    _logger.fine('openAssetViewer for fallbackAsset');
     _openAssetViewer(fallbackAsset, _timelineFactory.fromAssets([fallbackAsset], TimelineOrigin.deepLink), 0);
   }
 
