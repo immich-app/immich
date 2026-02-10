@@ -8,11 +8,11 @@ import {
   selectRandom,
   TimelineAssetConfig,
   TimelineData,
-} from 'src/generators/timeline';
-import { setupBaseMockApiRoutes } from 'src/mock-network/base-network';
-import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/mock-network/timeline-network';
+} from 'src/ui/generators/timeline';
+import { setupBaseMockApiRoutes } from 'src/ui/mock-network/base-network';
+import { setupTimelineMockApiRoutes, TimelineTestContext } from 'src/ui/mock-network/timeline-network';
 import { utils } from 'src/utils';
-import { assetViewerUtils } from 'src/web/specs/timeline/utils';
+import { assetViewerUtils } from '../timeline/utils';
 
 test.describe.configure({ mode: 'parallel' });
 test.describe('asset-viewer', () => {

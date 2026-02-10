@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { GENERATION_CONSTANTS, MockTimelineAsset } from 'src/generators/timeline/timeline-config';
+import { GENERATION_CONSTANTS, MockTimelineAsset } from 'src/ui/generators/timeline/timeline-config';
 
 /**
  * Linear Congruential Generator for deterministic pseudo-random numbers
