@@ -12,6 +12,7 @@ export const playwriteSlowMo = Number.parseInt(process.env.PLAYWRIGHT_SLOW_MO ??
 export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
 
 process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+process.env.TZ = 'UTC';
 
 const config: PlaywrightTestConfig = {
   testDir: './src/web/specs',
