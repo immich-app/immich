@@ -10,11 +10,11 @@ import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent_service.dart';
 
@@ -60,7 +60,7 @@ class ViewIntentHandler {
   }
 
   Future<void> handle(ViewIntentAttachment attachment) async {
-    if (_ref.read(currentUserProvider) == null) {
+    if (!_ref.read(authProvider).isAuthenticated) {
       _viewIntentService.defer(attachment);
       return;
     }

@@ -24,6 +24,7 @@ import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/view_intent_handler.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/view_intent_service.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -31,7 +32,6 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -134,7 +134,7 @@ class ImmichApp extends ConsumerStatefulWidget {
 }
 
 class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
-  ProviderSubscription<Object?>? _userSubscription;
+  ProviderSubscription<bool>? _authSubscription;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -239,8 +239,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     ref.read(viewIntentHandlerProvider).init();
     ref.read(shareIntentUploadProvider.notifier).init();
-    _userSubscription = ref.listenManual(currentUserProvider, (_, user) {
-      if (user != null) {
+    _authSubscription = ref.listenManual(authProvider.select((state) => state.isAuthenticated), (_, isAuthenticated) {
+      if (isAuthenticated) {
         unawaited(ref.read(viewIntentServiceProvider).flushPending());
       }
     }, fireImmediately: true);
@@ -248,7 +248,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
   @override
   void dispose() {
-    _userSubscription?.close();
+    _authSubscription?.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
