@@ -20,7 +20,6 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
@@ -411,11 +410,7 @@
       }
     }
 
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
   };
 
   const onSelectAssets = async (asset: TimelineAsset) => {
@@ -559,7 +554,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    isSelectingAllAssets.set(timelineManager.assetCount === assetInteraction.selectedAssets.length);
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
   };
 
   const _onClick = (

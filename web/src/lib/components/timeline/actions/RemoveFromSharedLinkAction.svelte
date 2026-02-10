@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { handleRemoveSharedLinkAssets } from '$lib/services/shared-link.service';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';

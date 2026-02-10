@@ -496,10 +496,12 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
   } as unknown as ChildProcessWithoutNullStreams;
 });
 
-export const mockDuplex = vitest.fn(
+export const mockDuplex =
+  (chunkCb?: (chunk: Buffer) => void) =>
   (command: string, exitCode: number, stdout: string, stderr: string, error?: unknown) => {
     const duplex = new Duplex({
-      write(_chunk, _encoding, callback) {
+      write(chunk, _encoding, callback) {
+        chunkCb?.(chunk);
         callback();
       },
 
@@ -524,8 +526,7 @@ export const mockDuplex = vitest.fn(
     });
 
     return duplex;
-  },
-);
+  };
 
 export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
   const stdoutStream = new Readable({

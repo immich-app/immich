@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { StackService } from 'src/services/stack.service';
 import { assetStub, stackStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(StackService.name, () => {
@@ -204,9 +205,9 @@ describe(StackService.name, () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: null, primaryAssetId: null });
 
-      await expect(
-        sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.imageFrom2015.id }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: newUuid() })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();

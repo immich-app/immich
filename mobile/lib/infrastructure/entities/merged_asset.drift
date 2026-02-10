@@ -90,8 +90,14 @@ FROM
 (
 	SELECT
 		CASE
-			WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', rae.local_date_time)
-			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', rae.local_date_time)
+			WHEN :group_by = 0 THEN COALESCE(
+				STRFTIME('%Y-%m-%d', rae.local_date_time),
+				STRFTIME('%Y-%m-%d', rae.created_at, 'localtime')
+			)
+			WHEN :group_by = 1 THEN COALESCE(
+				STRFTIME('%Y-%m', rae.local_date_time),
+				STRFTIME('%Y-%m', rae.created_at, 'localtime')
+			)
 		END as bucket_date
 	FROM
 		remote_asset_entity rae

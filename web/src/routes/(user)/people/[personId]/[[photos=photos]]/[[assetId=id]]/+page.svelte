@@ -297,6 +297,14 @@
     person = response;
   };
 
+  const handlePersonAssetDelete = async ({ id, assetId }: { id: string; assetId: string }) => {
+    if (id !== person.id) {
+      return;
+    }
+    timelineManager.removeAssets([assetId]);
+    await updateAssetCount();
+  };
+
   const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
@@ -315,7 +323,12 @@
   };
 </script>
 
-<OnEvents {onPersonUpdate} onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
+<OnEvents
+  {onPersonUpdate}
+  onPersonAssetDelete={handlePersonAssetDelete}
+  onAssetsDelete={updateAssetCount}
+  onAssetsArchive={updateAssetCount}
+/>
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"

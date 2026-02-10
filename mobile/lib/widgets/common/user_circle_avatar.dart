@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -20,7 +18,7 @@ class UserCircleAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAvatarColor = user.avatarColor.toColor();
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${Random().nextInt(1024)}';
+        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
 
     final textIcon = DefaultTextStyle(
       style: TextStyle(

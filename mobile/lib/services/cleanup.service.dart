@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -9,6 +10,8 @@ final cleanupServiceProvider = Provider<CleanupService>((ref) {
 });
 
 class CleanupService {
+  static final int _deleteBatchSize = CurrentPlatform.isAndroid ? 2000 : 10000;
+
   final DriftLocalAssetRepository _localAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
 
@@ -35,13 +38,20 @@ class CleanupService {
       return 0;
     }
 
-    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-    if (deletedIds.isNotEmpty) {
-      await _localAssetRepository.delete(deletedIds);
-      return deletedIds.length;
+    int deletedCount = 0;
+
+    for (int index = 0; index < localIds.length; index += _deleteBatchSize) {
+      final end = index + _deleteBatchSize < localIds.length ? index + _deleteBatchSize : localIds.length;
+      final batch = localIds.sublist(index, end);
+
+      final deletedIds = await _assetMediaRepository.deleteAll(batch);
+      if (deletedIds.isNotEmpty) {
+        await _localAssetRepository.delete(deletedIds);
+        deletedCount += deletedIds.length;
+      }
     }
 
-    return 0;
+    return deletedCount;
   }
 
   /// Returns album IDs that should be kept by default (e.g., messaging app albums)

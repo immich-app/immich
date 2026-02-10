@@ -260,7 +260,7 @@ export class SharedLinkRepository {
             .selectAll('asset')
             .innerJoinLateral(
               (eb) =>
-                eb.selectFrom('asset_exif').whereRef('asset_exif.assetId', '=', 'asset.id').selectAll().as('exif'),
+                eb.selectFrom('asset_exif').whereRef('asset_exif.assetId', '=', 'asset.id').selectAll().as('exifInfo'),
               (join) => join.onTrue(),
             )
             .as('assets'),

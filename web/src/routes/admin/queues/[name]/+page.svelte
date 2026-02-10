@@ -53,7 +53,7 @@
 
       <div class="flex gap-1 mb-4">
         <Badge>{$t('active_count', { values: { count: queue.statistics.active } })}</Badge>
-        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting } })}</Badge>
+        <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting + queue.statistics.paused } })}</Badge>
         {#if queue.statistics.failed > 0}
           <Badge color="danger">{$t('failed_count', { values: { count: queue.statistics.failed } })}</Badge>
         {/if}

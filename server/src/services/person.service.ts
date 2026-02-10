@@ -677,8 +677,9 @@ export class PersonService extends BaseService {
       };
 
       // now coordinates are in original image space
-      dto.imageHeight = asset.exifInfo.exifImageHeight;
-      dto.imageWidth = asset.exifInfo.exifImageWidth;
+      const originalDimensions = getDimensions(asset.exifInfo);
+      dto.imageWidth = originalDimensions.width;
+      dto.imageHeight = originalDimensions.height;
     }
 
     await this.personRepository.createAssetFace({

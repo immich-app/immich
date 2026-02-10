@@ -105,72 +105,74 @@
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<div
-  class="fixed top-0 z-1 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
->
-  <div class="flex items-center">
-    <IconButton
-      shape="round"
-      color="secondary"
-      variant="ghost"
-      aria-label={$t('close')}
-      icon={mdiClose}
-      onclick={onClose}
-    />
-    <div class="flex gap-2 items-center">
-      <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
-      <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
-    </div>
-  </div>
-  <div class="flex items-center justify-end">
-    <div class="flex items-center md:me-4">
+<div class="h-full overflow-y-auto">
+  <div
+    class="sticky top-0 z-1 flex h-16 w-full items-center justify-between border-b bg-white p-1 dark:border-immich-dark-gray dark:bg-black dark:text-immich-dark-fg md:p-8"
+  >
+    <div class="flex items-center">
       <IconButton
         shape="round"
         color="secondary"
         variant="ghost"
-        aria-label={$t('reset_people_visibility')}
-        icon={mdiRestart}
-        onclick={() => overrides.clear()}
+        aria-label={$t('close')}
+        icon={mdiClose}
+        onclick={onClose}
       />
-      <IconButton
-        shape="round"
-        color="secondary"
-        variant="ghost"
-        aria-label={toggleButton.label}
-        icon={toggleButton.icon}
-        onclick={handleToggleVisibility}
-      />
+      <div class="flex gap-2 items-center">
+        <p id={titleId} class="ms-2">{$t('show_and_hide_people')}</p>
+        <p class="text-sm text-gray-400 dark:text-gray-600">({totalPeopleCount.toLocaleString($locale)})</p>
+      </div>
     </div>
-    <Button loading={showLoadingSpinner} onclick={handleSaveVisibility} size="small">{$t('done')}</Button>
-  </div>
-</div>
-
-<div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8 mt-16">
-  <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
-    {#snippet children({ person })}
-      {@const hidden = overrides.get(person.id) ?? person.isHidden}
-      <button
-        type="button"
-        class="group relative w-full h-full"
-        onclick={() => setHiddenOverride(person, !hidden)}
-        aria-pressed={hidden}
-        aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
-      >
-        <ImageThumbnail
-          {hidden}
-          shadow
-          url={getPeopleThumbnailUrl(person)}
-          altText={person.name}
-          widthStyle="100%"
-          hiddenIconClass="text-white group-hover:text-black transition-colors"
-          preload={false}
+    <div class="flex items-center justify-end">
+      <div class="flex items-center md:me-4">
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('reset_people_visibility')}
+          icon={mdiRestart}
+          onclick={() => overrides.clear()}
         />
-        {#if person.name}
-          <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">
-            {person.name}
-          </span>
-        {/if}
-      </button>
-    {/snippet}
-  </PeopleInfiniteScroll>
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={toggleButton.label}
+          icon={toggleButton.icon}
+          onclick={handleToggleVisibility}
+        />
+      </div>
+      <Button loading={showLoadingSpinner} onclick={handleSaveVisibility} size="small">{$t('done')}</Button>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-1 p-2 pb-8 md:px-8">
+    <PeopleInfiniteScroll {people} hasNextPage={true} {loadNextPage}>
+      {#snippet children({ person })}
+        {@const hidden = overrides.get(person.id) ?? person.isHidden}
+        <button
+          type="button"
+          class="group relative w-full h-full"
+          onclick={() => setHiddenOverride(person, !hidden)}
+          aria-pressed={hidden}
+          aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}
+        >
+          <ImageThumbnail
+            {hidden}
+            shadow
+            url={getPeopleThumbnailUrl(person)}
+            altText={person.name}
+            widthStyle="100%"
+            hiddenIconClass="text-white group-hover:text-black transition-colors"
+            preload={false}
+          />
+          {#if person.name}
+            <span class="absolute bottom-2 start-0 w-full select-text px-1 text-center font-medium text-white">
+              {person.name}
+            </span>
+          {/if}
+        </button>
+      {/snippet}
+    </PeopleInfiniteScroll>
+  </div>
 </div>

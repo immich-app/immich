@@ -75,6 +75,7 @@
       show: false,
     },
     width: 2,
+    pxAlign: 0,
   };
 
   const options: uPlot.Options = {
@@ -91,7 +92,7 @@
     width: 200,
     height: 200,
     ms: 1,
-    pxAlign: true,
+    pxAlign: 0,
     scales: {
       y: {
         distr: 1,

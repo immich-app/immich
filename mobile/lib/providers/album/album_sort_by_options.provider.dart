@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -73,18 +74,21 @@ class _AlbumSortHandlers {
 
 // Store index allows us to re-arrange the values without affecting the saved prefs
 enum AlbumSortMode {
-  title(1, "library_page_sort_title", _AlbumSortHandlers.title),
-  assetCount(4, "library_page_sort_asset_count", _AlbumSortHandlers.assetCount),
-  lastModified(3, "library_page_sort_last_modified", _AlbumSortHandlers.lastModified),
-  created(0, "library_page_sort_created", _AlbumSortHandlers.created),
-  mostRecent(2, "sort_recent", _AlbumSortHandlers.mostRecent),
-  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest);
+  title(1, "library_page_sort_title", _AlbumSortHandlers.title, SortOrder.asc),
+  assetCount(4, "library_page_sort_asset_count", _AlbumSortHandlers.assetCount, SortOrder.desc),
+  lastModified(3, "library_page_sort_last_modified", _AlbumSortHandlers.lastModified, SortOrder.desc),
+  created(0, "library_page_sort_created", _AlbumSortHandlers.created, SortOrder.desc),
+  mostRecent(2, "sort_recent", _AlbumSortHandlers.mostRecent, SortOrder.desc),
+  mostOldest(5, "sort_oldest", _AlbumSortHandlers.mostOldest, SortOrder.asc);
 
   final int storeIndex;
   final String label;
   final AlbumSortFn sortFn;
+  final SortOrder defaultOrder;
 
-  const AlbumSortMode(this.storeIndex, this.label, this.sortFn);
+  const AlbumSortMode(this.storeIndex, this.label, this.sortFn, this.defaultOrder);
+
+  SortOrder effectiveOrder(bool isReverse) => isReverse ? defaultOrder.reverse() : defaultOrder;
 }
 
 @riverpod

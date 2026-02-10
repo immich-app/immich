@@ -62,6 +62,9 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         return;
       }
       yield image;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      rethrow;
     } finally {
       this.request = null;
     }

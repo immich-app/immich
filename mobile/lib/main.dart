@@ -75,7 +75,7 @@ Future<void> initApp() async {
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
 
-  if (kReleaseMode && Platform.isAndroid) {
+  if (Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
       dPrint(() => "Enabled high refresh mode");
@@ -114,7 +114,7 @@ Future<void> initApp() async {
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
-  await FileDownloader().trackTasks();
+  unawaited(FileDownloader().trackTasks());
 
   LicenseRegistry.addLicense(() async* {
     for (final license in nonPubLicenses.entries) {
