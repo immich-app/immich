@@ -3,8 +3,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_ui/immich_ui.dart';
 
-class TrashDeleteDialog extends StatelessWidget {
-  const TrashDeleteDialog({super.key, required this.count});
+class PermanentDeleteDialog extends StatelessWidget {
+  const PermanentDeleteDialog({super.key, required this.count});
 
   final int count;
 
