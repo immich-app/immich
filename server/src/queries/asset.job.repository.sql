@@ -111,7 +111,7 @@ where
         where
           "assetId" = "asset"."id"
           and "type" = 'fullsize'
-          and "asset"."isEdited" = true
+          and "asset_file"."isEdited" = true
       )
     )
     or "asset"."thumbhash" is null

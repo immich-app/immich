@@ -78,7 +78,7 @@ export class AssetJobRepository {
               not(exists(file(AssetFileType.Preview))),
               and([
                 eb('asset.isEdited', '=', sql.lit(true)),
-                not(exists(file(AssetFileType.FullSize).where('asset.isEdited', '=', sql.lit(true)))),
+                not(exists(file(AssetFileType.FullSize).where('asset_file.isEdited', '=', sql.lit(true)))),
               ]),
               eb('asset.thumbhash', 'is', null),
             ];
