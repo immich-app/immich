@@ -2426,5 +2426,9 @@
   "client_cert_password_title": "Enter Certificate Password",
   "interface_enhancements": "Interface Enhancements",
   "login_form_button_text": "Login",
-  "login": "Login"
+  "album_name_required": "Album name is required",
+  "album_update_error": "Error updating album",
+  "create_album_title_required": "Album title is required",
+  "error_loading_people": "Error loading people",
+  "unable_to_upload_file": "Unable to upload file"
 }

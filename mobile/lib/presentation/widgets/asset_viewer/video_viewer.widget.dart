@@ -435,6 +435,7 @@ class NativeVideoViewer extends HookConsumerWidget {
                       opacity: isPlayerReady.value ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 200),
                       child: Video(
+                        key: ValueKey("video_${asset.heroTag}"),
                         controller: videoController,
                         controls: NoVideoControls,
                         pauseUponEnteringBackgroundMode: false,

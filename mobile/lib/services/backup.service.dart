@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart' as http;
@@ -170,6 +171,7 @@ class BackupService {
       return candidates;
     }
 
+    // 1. Check strict local validation (if we already know it's duplicated in local DB)
     final Set<String> duplicatedAssetIds = await getDuplicatedAssetIds();
     candidates.removeWhere((candidate) => duplicatedAssetIds.contains(candidate.asset.localId));
 
@@ -177,6 +179,82 @@ class BackupService {
       return candidates;
     }
 
+    // 2. Compute SHA1 hashes for all candidates to check for content-duplication
+    final List<AssetBulkUploadCheckItem> checkItems = [];
+    final Map<String, BackupCandidate> hashToCandidate = {};
+
+    for (final candidate in candidates) {
+      try {
+        final File? file = await candidate.asset.local?.originFile;
+        if (file != null && await file.exists()) {
+          final hash = await _computeHash(file);
+          if (hash != null) {
+            // Update checksum in local entity if not set
+            if (candidate.asset.checksum != hash) {
+              candidate.asset.checksum = hash;
+              // We could save this to DB here, but let's wait until we process results
+              // to avoid too many writes if not needed immediately.
+            }
+            checkItems.add(AssetBulkUploadCheckItem(id: candidate.asset.localId!, checksum: hash));
+            hashToCandidate[candidate.asset.localId!] = candidate;
+          }
+        }
+      } catch (e) {
+        _log.warning("Failed to compute hash for ${candidate.asset.localId}: $e");
+      }
+    }
+
+    // 3. Check against server for existing assets by checksum
+    if (checkItems.isNotEmpty) {
+      try {
+        final AssetBulkUploadCheckDto checkDto = AssetBulkUploadCheckDto(assets: checkItems);
+        final AssetBulkUploadCheckResponseDto? response = await _apiService.assetsApi.checkBulkUpload(checkDto);
+
+        if (response != null) {
+          final List<Asset> assetsToUpdate = [];
+
+          for (final result in response.results) {
+            final String localId = result.id;
+            final String? remoteId = result.assetId;
+            final BackupCandidate? candidate = hashToCandidate[localId];
+
+            if (candidate != null) {
+              if (result.action == AssetBulkUploadCheckResultActionEnum.reject &&
+                  result.reason == AssetBulkUploadCheckResultReasonEnum.duplicate &&
+                  remoteId != null) {
+                // Content duplicate found! Link local asset to existing remote asset.
+                _log.info("Duplicate found: Local $localId matches Remote $remoteId");
+
+                candidate.asset.remoteId = remoteId;
+                // Mark as merged so it shows as synced
+                // Note: The storage getter derives state from remoteId & localId presence
+
+                assetsToUpdate.add(candidate.asset);
+
+                // Remove from upload queue
+                candidates.remove(candidate);
+              }
+            }
+          }
+
+          // Bulk update the database with new remoteIds
+          if (assetsToUpdate.isNotEmpty) {
+            await _assetRepository.updateAll(assetsToUpdate);
+          }
+        }
+      } catch (e) {
+        _log.severe("Error checking bulk upload duplicates: $e");
+        // Fallback to old check if this fails?
+        // For now, proceed to strict check or return current candidates
+      }
+    }
+
+    if (candidates.isEmpty) {
+      return candidates;
+    }
+
+    // 4. Fallback/Legacy Check: Check strictly by ID (for devices that restored backups but kept same IDs?? unlikely but safe)
+    // Or plain check for previously uploaded IDs that might have been lost in local DB sync
     final Set<String> existing = {};
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
@@ -199,6 +277,17 @@ class BackupService {
     }
 
     return candidates;
+  }
+
+  Future<String?> _computeHash(File file) async {
+    try {
+      final stream = file.openRead();
+      final digest = await sha1.bind(stream).first;
+      return base64.encode(digest.bytes);
+    } catch (e) {
+      _log.warning("Could not compute hash for file ${file.path}: $e");
+      return null;
+    }
   }
 
   Future<bool> _checkPermissions() async {

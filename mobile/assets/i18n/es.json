@@ -2426,5 +2426,11 @@
   "asset_not_found_on_device_android": "Elemento no encontrado en el dispositivo",
   "asset_not_found_on_device_ios": "Elemento no encontrado en el dispositivo. Si usas iCloud, es posible que el archivo no sea accesible.",
   "asset_not_found_on_icloud": "Elemento no encontrado en iCloud. Es posible que el archivo esté dañado.",
-  "upload_error_with_count": "Error al subir {count, plural, one {# elemento} other {# elementos}}"
+  "upload_error_with_count": "Error al subir {count, plural, one {# elemento} other {# elementos}}",
+  "album_name_required": "El nombre del álbum es obligatorio",
+  "album_update_error": "Error al actualizar el álbum",
+  "create_album_title_required": "El título del álbum es obligatorio",
+  "error_loading_people": "Error al cargar personas",
+  "unable_to_upload_file": "No se puede subir el archivo",
+  "backup_background_service_complete_notification": "Copia de seguridad completada"
 }

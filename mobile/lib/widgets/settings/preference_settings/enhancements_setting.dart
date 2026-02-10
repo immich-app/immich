@@ -68,7 +68,7 @@ class EnhancementsSetting extends HookConsumerWidget {
         SwitchListTile(
           value: isAlbumsLandingPage.value,
           onChanged: onLandingPageChanged,
-          activeColor: context.primaryColor,
+          activeThumbColor: context.primaryColor,
           title: Text(
             "start_on_albums_page".tr(),
             style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
