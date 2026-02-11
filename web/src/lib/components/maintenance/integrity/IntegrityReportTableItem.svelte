@@ -5,11 +5,11 @@
   import { ContextMenuButton, TableCell, TableRow } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     id: string;
     path: string;
     reportType: IntegrityReportType;
-  }
+  };
 
   let { id, path, reportType }: Props = $props();
   let deleting = $state(false);

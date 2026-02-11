@@ -25,9 +25,9 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
   const { data }: Props = $props();
   const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));

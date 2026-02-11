@@ -6,10 +6,10 @@ import { IntegrityReportType } from 'src/enum';
 import { DB } from 'src/schema';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
 
-export interface ReportPaginationOptions {
+export type ReportPaginationOptions = {
   cursor?: string;
   limit: number;
-}
+};
 
 @Injectable()
 export class IntegrityRepository {
