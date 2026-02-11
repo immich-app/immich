@@ -15,6 +15,7 @@ export class AssetFactory {
   #assetExif?: AssetExifFactory;
   #files: AssetFileFactory[] = [];
   #edits: AssetEditFactory[] = [];
+  #faces: Selectable<AssetFaceTable>[] = [];
 
   private constructor(private readonly value: Selectable<AssetTable>) {
     value.ownerId ??= newUuid();
@@ -82,6 +83,11 @@ export class AssetFactory {
     return this;
   }
 
+  face(dto: Selectable<AssetFaceTable>) {
+    this.#faces.push(dto);
+    return this;
+  }
+
   file(dto: AssetFileLike = {}, builder?: FactoryBuilder<AssetFileFactory>) {
     this.#files.push(build(AssetFileFactory.from(dto).asset(this.value), builder));
     return this;
@@ -120,7 +126,8 @@ export class AssetFactory {
       exifInfo: exif as NonNullable<typeof exif>,
       files: this.#files.map((file) => file.build()),
       edits: this.#edits.map((edit) => edit.build()),
-      faces: [] as Selectable<AssetFaceTable>[],
+      faces: this.#faces,
+      stack: null,
     };
   }
 }

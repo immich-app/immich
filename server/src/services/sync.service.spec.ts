@@ -1,5 +1,6 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SyncService } from 'src/services/sync.service';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { factory } from 'test/small.factory';
@@ -60,10 +61,9 @@ describe(SyncService.name, () => {
     });
 
     it('should return a response requiring a full sync when there are too many changes', async () => {
+      const asset = AssetFactory.create();
       mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getChangedDeltaSync.mockResolvedValue(
-        Array.from<typeof assetStub.image>({ length: 10_000 }).fill(assetStub.image),
-      );
+      mocks.asset.getChangedDeltaSync.mockResolvedValue(Array.from<typeof asset>({ length: 10_000 }).fill(asset));
       await expect(
         sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
@@ -72,14 +72,15 @@ describe(SyncService.name, () => {
     });
 
     it('should return a response with changes and deletions', async () => {
+      const asset = AssetFactory.create({ ownerId: authStub.user1.user.id });
       mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getChangedDeltaSync.mockResolvedValue([assetStub.image1]);
+      mocks.asset.getChangedDeltaSync.mockResolvedValue([asset]);
       mocks.audit.getAfter.mockResolvedValue([assetStub.external.id]);
       await expect(
         sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
       ).resolves.toEqual({
         needsFullSync: false,
-        upserted: [mapAsset(assetStub.image1, mapAssetOpts)],
+        upserted: [mapAsset(asset, mapAssetOpts)],
         deleted: [assetStub.external.id],
       });
       expect(mocks.asset.getChangedDeltaSync).toHaveBeenCalledTimes(1);

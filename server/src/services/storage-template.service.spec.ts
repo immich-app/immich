@@ -478,9 +478,9 @@ describe(StorageTemplateService.name, () => {
       mocks.user.getList.mockResolvedValue([userStub.user1]);
       mocks.move.create.mockResolvedValue({
         id: '123',
-        entityId: assetStub.image.id,
+        entityId: asset.id,
         pathType: AssetPathType.Original,
-        oldPath: assetStub.image.originalPath,
+        oldPath: asset.originalPath,
         newPath,
       });
 
