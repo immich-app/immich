@@ -15954,10 +15954,12 @@
       "AssetDeltaSyncDto": {
         "properties": {
           "updatedAfter": {
+            "description": "Sync assets updated after this date",
             "format": "date-time",
             "type": "string"
           },
           "userIds": {
+            "description": "User IDs to sync",
             "items": {
               "format": "uuid",
               "type": "string"
@@ -15974,15 +15976,18 @@
       "AssetDeltaSyncResponseDto": {
         "properties": {
           "deleted": {
+            "description": "Deleted asset IDs",
             "items": {
               "type": "string"
             },
             "type": "array"
           },
           "needsFullSync": {
+            "description": "Whether full sync is needed",
             "type": "boolean"
           },
           "upserted": {
+            "description": "Upserted assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -16333,18 +16338,22 @@
       "AssetFullSyncDto": {
         "properties": {
           "lastId": {
+            "description": "Last asset ID (pagination)",
             "format": "uuid",
             "type": "string"
           },
           "limit": {
+            "description": "Maximum number of assets to return",
             "minimum": 1,
             "type": "integer"
           },
           "updatedUntil": {
+            "description": "Sync assets updated until this date",
             "format": "date-time",
             "type": "string"
           },
           "userId": {
+            "description": "Filter by user ID",
             "format": "uuid",
             "type": "string"
           }
@@ -22257,6 +22266,7 @@
       "SyncAckDeleteDto": {
         "properties": {
           "types": {
+            "description": "Sync entity types to delete acks for",
             "items": {
               "$ref": "#/components/schemas/SyncEntityType"
             },
@@ -22268,6 +22278,7 @@
       "SyncAckDto": {
         "properties": {
           "ack": {
+            "description": "Acknowledgment ID",
             "type": "string"
           },
           "type": {
@@ -22275,7 +22286,8 @@
               {
                 "$ref": "#/components/schemas/SyncEntityType"
               }
-            ]
+            ],
+            "description": "Sync entity type"
           }
         },
         "required": [
@@ -22287,6 +22299,7 @@
       "SyncAckSetDto": {
         "properties": {
           "acks": {
+            "description": "Acknowledgment IDs (max 1000)",
             "items": {
               "type": "string"
             },
@@ -22306,6 +22319,7 @@
       "SyncAlbumDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           }
         },
@@ -22317,9 +22331,11 @@
       "SyncAlbumToAssetDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22332,9 +22348,11 @@
       "SyncAlbumToAssetV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22347,9 +22365,11 @@
       "SyncAlbumUserDeleteV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -22362,6 +22382,7 @@
       "SyncAlbumUserV1": {
         "properties": {
           "albumId": {
+            "description": "Album ID",
             "type": "string"
           },
           "role": {
@@ -22369,9 +22390,11 @@
               {
                 "$ref": "#/components/schemas/AlbumUserRole"
               }
-            ]
+            ],
+            "description": "Album user role"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -22385,19 +22408,24 @@
       "SyncAlbumV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "description": {
+            "description": "Album description",
             "type": "string"
           },
           "id": {
+            "description": "Album ID",
             "type": "string"
           },
           "isActivityEnabled": {
+            "description": "Is activity enabled",
             "type": "boolean"
           },
           "name": {
+            "description": "Album name",
             "type": "string"
           },
           "order": {
@@ -22408,13 +22436,16 @@
             ]
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "thumbnailAssetId": {
+            "description": "Thumbnail asset ID",
             "nullable": true,
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -22435,6 +22466,7 @@
       "SyncAssetDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           }
         },
@@ -22488,108 +22520,133 @@
       "SyncAssetExifV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "city": {
+            "description": "City",
             "nullable": true,
             "type": "string"
           },
           "country": {
+            "description": "Country",
             "nullable": true,
             "type": "string"
           },
           "dateTimeOriginal": {
+            "description": "Date time original",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "description": {
+            "description": "Description",
             "nullable": true,
             "type": "string"
           },
           "exifImageHeight": {
+            "description": "Exif image height",
             "nullable": true,
             "type": "integer"
           },
           "exifImageWidth": {
+            "description": "Exif image width",
             "nullable": true,
             "type": "integer"
           },
           "exposureTime": {
+            "description": "Exposure time",
             "nullable": true,
             "type": "string"
           },
           "fNumber": {
+            "description": "F number",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "fileSizeInByte": {
+            "description": "File size in byte",
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
+            "description": "Focal length",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "fps": {
+            "description": "FPS",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "iso": {
+            "description": "ISO",
             "nullable": true,
             "type": "integer"
           },
           "latitude": {
+            "description": "Latitude",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "lensModel": {
+            "description": "Lens model",
             "nullable": true,
             "type": "string"
           },
           "longitude": {
+            "description": "Longitude",
             "format": "double",
             "nullable": true,
             "type": "number"
           },
           "make": {
+            "description": "Make",
             "nullable": true,
             "type": "string"
           },
           "model": {
+            "description": "Model",
             "nullable": true,
             "type": "string"
           },
           "modifyDate": {
+            "description": "Modify date",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "orientation": {
+            "description": "Orientation",
             "nullable": true,
             "type": "string"
           },
           "profileDescription": {
+            "description": "Profile description",
             "nullable": true,
             "type": "string"
           },
           "projectionType": {
+            "description": "Projection type",
             "nullable": true,
             "type": "string"
           },
           "rating": {
+            "description": "Rating",
             "nullable": true,
             "type": "integer"
           },
           "state": {
+            "description": "State",
             "nullable": true,
             "type": "string"
           },
           "timeZone": {
+            "description": "Time zone",
             "nullable": true,
             "type": "string"
           }
@@ -22626,6 +22683,7 @@
       "SyncAssetFaceDeleteV1": {
         "properties": {
           "assetFaceId": {
+            "description": "Asset face ID",
             "type": "string"
           }
         },
@@ -22637,6 +22695,7 @@
       "SyncAssetFaceV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "boundingBoxX1": {
@@ -22652,6 +22711,7 @@
             "type": "integer"
           },
           "id": {
+            "description": "Asset face ID",
             "type": "string"
           },
           "imageHeight": {
@@ -22661,10 +22721,12 @@
             "type": "integer"
           },
           "personId": {
+            "description": "Person ID",
             "nullable": true,
             "type": "string"
           },
           "sourceType": {
+            "description": "Source type",
             "type": "string"
           }
         },
@@ -22685,9 +22747,11 @@
       "SyncAssetMetadataDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "key": {
+            "description": "Key",
             "type": "string"
           }
         },
@@ -22700,12 +22764,15 @@
       "SyncAssetMetadataV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "key": {
+            "description": "Key",
             "type": "string"
           },
           "value": {
+            "description": "Value",
             "type": "object"
           }
         },
@@ -22719,64 +22786,80 @@
       "SyncAssetV1": {
         "properties": {
           "checksum": {
+            "description": "Checksum",
             "type": "string"
           },
           "deletedAt": {
+            "description": "Deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "duration": {
+            "description": "Duration",
             "nullable": true,
             "type": "string"
           },
           "fileCreatedAt": {
+            "description": "File created at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "fileModifiedAt": {
+            "description": "File modified at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "height": {
+            "description": "Asset height",
             "nullable": true,
             "type": "integer"
           },
           "id": {
+            "description": "Asset ID",
             "type": "string"
           },
           "isEdited": {
+            "description": "Is edited",
             "type": "boolean"
           },
           "isFavorite": {
+            "description": "Is favorite",
             "type": "boolean"
           },
           "libraryId": {
+            "description": "Library ID",
             "nullable": true,
             "type": "string"
           },
           "livePhotoVideoId": {
+            "description": "Live photo video ID",
             "nullable": true,
             "type": "string"
           },
           "localDateTime": {
+            "description": "Local date time",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "originalFileName": {
+            "description": "Original file name",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "stackId": {
+            "description": "Stack ID",
             "nullable": true,
             "type": "string"
           },
           "thumbhash": {
+            "description": "Thumbhash",
             "nullable": true,
             "type": "string"
           },
@@ -22785,16 +22868,19 @@
               {
                 "$ref": "#/components/schemas/AssetTypeEnum"
               }
-            ]
+            ],
+            "description": "Asset type"
           },
           "visibility": {
             "allOf": [
               {
                 "$ref": "#/components/schemas/AssetVisibility"
               }
-            ]
+            ],
+            "description": "Asset visibility"
           },
           "width": {
+            "description": "Asset width",
             "nullable": true,
             "type": "integer"
           }
@@ -22830,36 +22916,46 @@
                 "$ref": "#/components/schemas/UserAvatarColor"
               }
             ],
+            "description": "User avatar color",
             "nullable": true
           },
           "deletedAt": {
+            "description": "User deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "email": {
+            "description": "User email",
             "type": "string"
           },
           "hasProfileImage": {
+            "description": "User has profile image",
             "type": "boolean"
           },
           "id": {
+            "description": "User ID",
             "type": "string"
           },
           "isAdmin": {
+            "description": "User is admin",
             "type": "boolean"
           },
           "name": {
+            "description": "User name",
             "type": "string"
           },
           "oauthId": {
+            "description": "User OAuth ID",
             "type": "string"
           },
           "pinCode": {
+            "description": "User pin code",
             "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
+            "description": "User profile changed at",
             "format": "date-time",
             "type": "string"
           },
@@ -22871,6 +22967,7 @@
             "type": "integer"
           },
           "storageLabel": {
+            "description": "User storage label",
             "nullable": true,
             "type": "string"
           }
@@ -22897,6 +22994,7 @@
         "type": "object"
       },
       "SyncEntityType": {
+        "description": "Sync entity type",
         "enum": [
           "AuthUserV1",
           "UserV1",
@@ -22953,9 +23051,11 @@
       "SyncMemoryAssetDeleteV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22968,9 +23068,11 @@
       "SyncMemoryAssetV1": {
         "properties": {
           "assetId": {
+            "description": "Asset ID",
             "type": "string"
           },
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22983,6 +23085,7 @@
       "SyncMemoryDeleteV1": {
         "properties": {
           "memoryId": {
+            "description": "Memory ID",
             "type": "string"
           }
         },
@@ -22994,41 +23097,51 @@
       "SyncMemoryV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "data": {
+            "description": "Data",
             "type": "object"
           },
           "deletedAt": {
+            "description": "Deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "hideAt": {
+            "description": "Hide at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "id": {
+            "description": "Memory ID",
             "type": "string"
           },
           "isSaved": {
+            "description": "Is saved",
             "type": "boolean"
           },
           "memoryAt": {
+            "description": "Memory at",
             "format": "date-time",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "seenAt": {
+            "description": "Seen at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "showAt": {
+            "description": "Show at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
@@ -23038,9 +23151,11 @@
               {
                 "$ref": "#/components/schemas/MemoryType"
               }
-            ]
+            ],
+            "description": "Memory type"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23064,9 +23179,11 @@
       "SyncPartnerDeleteV1": {
         "properties": {
           "sharedById": {
+            "description": "Shared by ID",
             "type": "string"
           },
           "sharedWithId": {
+            "description": "Shared with ID",
             "type": "string"
           }
         },
@@ -23079,12 +23196,15 @@
       "SyncPartnerV1": {
         "properties": {
           "inTimeline": {
+            "description": "In timeline",
             "type": "boolean"
           },
           "sharedById": {
+            "description": "Shared by ID",
             "type": "string"
           },
           "sharedWithId": {
+            "description": "Shared with ID",
             "type": "string"
           }
         },
@@ -23098,6 +23218,7 @@
       "SyncPersonDeleteV1": {
         "properties": {
           "personId": {
+            "description": "Person ID",
             "type": "string"
           }
         },
@@ -23109,38 +23230,48 @@
       "SyncPersonV1": {
         "properties": {
           "birthDate": {
+            "description": "Birth date",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "color": {
+            "description": "Color",
             "nullable": true,
             "type": "string"
           },
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "faceAssetId": {
+            "description": "Face asset ID",
             "nullable": true,
             "type": "string"
           },
           "id": {
+            "description": "Person ID",
             "type": "string"
           },
           "isFavorite": {
+            "description": "Is favorite",
             "type": "boolean"
           },
           "isHidden": {
+            "description": "Is hidden",
             "type": "boolean"
           },
           "name": {
+            "description": "Person name",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23160,6 +23291,7 @@
         "type": "object"
       },
       "SyncRequestType": {
+        "description": "Sync request types",
         "enum": [
           "AlbumsV1",
           "AlbumUsersV1",
@@ -23192,6 +23324,7 @@
       "SyncStackDeleteV1": {
         "properties": {
           "stackId": {
+            "description": "Stack ID",
             "type": "string"
           }
         },
@@ -23203,19 +23336,24 @@
       "SyncStackV1": {
         "properties": {
           "createdAt": {
+            "description": "Created at",
             "format": "date-time",
             "type": "string"
           },
           "id": {
+            "description": "Stack ID",
             "type": "string"
           },
           "ownerId": {
+            "description": "Owner ID",
             "type": "string"
           },
           "primaryAssetId": {
+            "description": "Primary asset ID",
             "type": "string"
           },
           "updatedAt": {
+            "description": "Updated at",
             "format": "date-time",
             "type": "string"
           }
@@ -23232,9 +23370,11 @@
       "SyncStreamDto": {
         "properties": {
           "reset": {
+            "description": "Reset sync state",
             "type": "boolean"
           },
           "types": {
+            "description": "Sync request types",
             "items": {
               "$ref": "#/components/schemas/SyncRequestType"
             },
@@ -23249,6 +23389,7 @@
       "SyncUserDeleteV1": {
         "properties": {
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -23264,9 +23405,11 @@
               {
                 "$ref": "#/components/schemas/UserMetadataKey"
               }
-            ]
+            ],
+            "description": "User metadata key"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           }
         },
@@ -23283,12 +23426,15 @@
               {
                 "$ref": "#/components/schemas/UserMetadataKey"
               }
-            ]
+            ],
+            "description": "User metadata key"
           },
           "userId": {
+            "description": "User ID",
             "type": "string"
           },
           "value": {
+            "description": "User metadata value",
             "type": "object"
           }
         },
@@ -23307,26 +23453,33 @@
                 "$ref": "#/components/schemas/UserAvatarColor"
               }
             ],
+            "description": "User avatar color",
             "nullable": true
           },
           "deletedAt": {
+            "description": "User deleted at",
             "format": "date-time",
             "nullable": true,
             "type": "string"
           },
           "email": {
+            "description": "User email",
             "type": "string"
           },
           "hasProfileImage": {
+            "description": "User has profile image",
             "type": "boolean"
           },
           "id": {
+            "description": "User ID",
             "type": "string"
           },
           "name": {
+            "description": "User name",
             "type": "string"
           },
           "profileChangedAt": {
+            "description": "User profile changed at",
             "format": "date-time",
             "type": "string"
           }
@@ -25225,6 +25378,7 @@
         "type": "object"
       },
       "UserMetadataKey": {
+        "description": "User metadata key",
         "enum": [
           "preferences",
           "license",
