@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/enum';
 import { SharedLinkService } from 'src/services/shared-link.service';
-import { albumStub } from 'test/fixtures/album.stub';
+import { AlbumFactory } from 'test/factories/album.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sharedLinkResponseStub, sharedLinkStub } from 'test/fixtures/shared-link.stub';
@@ -120,19 +120,17 @@ describe(SharedLinkService.name, () => {
     });
 
     it('should create an album shared link', async () => {
-      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.oneAsset.id]));
+      const album = AlbumFactory.from().asset().build();
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.valid);
 
-      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: albumStub.oneAsset.id });
+      await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: album.id });
 
-      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
-        authStub.admin.user.id,
-        new Set([albumStub.oneAsset.id]),
-      );
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([album.id]));
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
         type: SharedLinkType.Album,
         userId: authStub.admin.user.id,
-        albumId: albumStub.oneAsset.id,
+        albumId: album.id,
         allowDownload: true,
         allowUpload: true,
         description: null,

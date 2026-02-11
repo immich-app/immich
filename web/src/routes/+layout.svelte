@@ -13,6 +13,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
+  import { locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
@@ -23,6 +24,7 @@
     CommandPaletteDefaultProvider,
     TooltipProvider,
     modalManager,
+    setLocale,
     setTranslations,
     toastManager,
     type ActionItem,
@@ -52,6 +54,8 @@
     });
   });
 
+  $effect(() => setLocale($locale));
+
   let { children }: Props = $props();
 
   let showNavigationLoadingBar = $state(false);
@@ -60,7 +64,7 @@
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
-  toastManager.setOptions({ class: 'top-16' });
+  toastManager.setOptions({ class: 'top-16 fixed' });
 
   onMount(() => {
     const element = document.querySelector('#stencil');
