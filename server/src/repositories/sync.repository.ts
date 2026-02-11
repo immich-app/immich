@@ -502,7 +502,7 @@ class AssetExifSync extends BaseSync {
 }
 
 class AssetEditSync extends BaseSync {
-  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getDeletes(options: SyncQueryOptions) {
     return this.auditQuery('asset_edit_audit', options)
       .select(['asset_edit_audit.id', 'assetId'])
@@ -515,7 +515,7 @@ class AssetEditSync extends BaseSync {
     return this.auditCleanup('asset_edit_audit', daysAgo);
   }
 
-  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset_edit', options)
       .select(['asset_edit.id', 'assetId', 'action', 'parameters', 'sequence', 'asset_edit.updateId'])
