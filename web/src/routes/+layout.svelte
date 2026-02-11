@@ -13,6 +13,7 @@
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
+  import { locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
@@ -23,6 +24,7 @@
     CommandPaletteDefaultProvider,
     TooltipProvider,
     modalManager,
+    setLocale,
     setTranslations,
     toastManager,
     type ActionItem,
@@ -51,6 +53,8 @@
       navigate_previous: $t('previous'),
     });
   });
+
+  $effect(() => setLocale($locale));
 
   let { children }: Props = $props();
 
