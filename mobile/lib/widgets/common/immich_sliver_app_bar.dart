@@ -128,6 +128,9 @@ class _ProfileIndicator extends ConsumerWidget {
 
     const widgetSize = 30.0;
 
+    // TODO: remove this when update Flutter version newer than 3.35.7
+    final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
+
     void toggleReadonlyMode() {
       final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
@@ -144,7 +147,12 @@ class _ProfileIndicator extends ConsumerWidget {
     }
 
     return InkWell(
-      onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
+      onTap: () => showDialog(
+        context: context,
+        useRootNavigator: false,
+        barrierDismissible: !isIpad,
+        builder: (ctx) => const ImmichAppBarDialog(),
+      ),
       onLongPress: () => toggleReadonlyMode(),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(

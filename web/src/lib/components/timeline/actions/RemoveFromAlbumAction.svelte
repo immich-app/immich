@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';

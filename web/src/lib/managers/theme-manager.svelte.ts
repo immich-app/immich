@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import { Theme } from '$lib/constants';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
-import { theme as uiTheme, type Theme as UiTheme } from '@immich/ui';
+import { onThemeChange as onUiThemeChange, theme as uiTheme, type Theme as UiTheme } from '@immich/ui';
 
 export interface ThemeSetting {
   value: Theme;
@@ -55,15 +55,14 @@ class ThemeManager {
   }
 
   #onAppInit() {
-    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener(
-      'change',
-      () => {
-        if (this.theme.system) {
-          this.#update('system');
-        }
-      },
-      { passive: true },
-    );
+    const syncSystemTheme = () => {
+      this.#update(this.theme.system ? 'system' : this.theme.value);
+    };
+
+    syncSystemTheme();
+    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncSystemTheme, {
+      passive: true,
+    });
   }
 
   #update(value: Theme | 'system') {
@@ -75,6 +74,7 @@ class ThemeManager {
     this.#theme.current = theme;
 
     uiTheme.value = theme.value as unknown as UiTheme;
+    onUiThemeChange();
 
     eventManager.emit('ThemeChange', theme);
   }

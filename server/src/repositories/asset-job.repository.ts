@@ -18,6 +18,7 @@ import {
   withFilePath,
   withFiles,
 } from 'src/utils/database';
+import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
 export class AssetJobRepository {
@@ -57,40 +58,45 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [false], stream: true })
-  streamForThumbnailJob(force: boolean) {
+  @GenerateSql({ params: [{ force: false, fullsizeEnabled: true }], stream: true })
+  streamForThumbnailJob(options: { force: boolean | undefined; fullsizeEnabled: boolean }) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.thumbhash'])
-      .select(withFiles)
-      .select(withEdits)
+      .select(['asset.id', 'asset.isEdited'])
       .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .$if(!force, (qb) =>
+      .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
+      .$if(!options.force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-          .where((eb) =>
-            eb.or([
-              eb.not((eb) =>
-                eb.exists((qb) =>
-                  qb
-                    .selectFrom('asset_file')
-                    .whereRef('assetId', '=', 'asset.id')
-                    .where('asset_file.type', '=', AssetFileType.Preview),
-                ),
-              ),
-              eb.not((eb) =>
-                eb.exists((qb) =>
-                  qb
-                    .selectFrom('asset_file')
-                    .whereRef('assetId', '=', 'asset.id')
-                    .where('asset_file.type', '=', AssetFileType.Thumbnail),
-                ),
-              ),
+          .where(({ and, eb, exists, not, or, selectFrom }) => {
+            const file = (type: AssetFileType) =>
+              selectFrom('asset_file').whereRef('assetId', '=', 'asset.id').where('type', '=', sql.lit(type));
+
+            const conditions = [
+              not(exists(file(AssetFileType.Thumbnail))),
+              not(exists(file(AssetFileType.Preview))),
+              and([
+                eb('asset.isEdited', '=', sql.lit(true)),
+                not(exists(file(AssetFileType.FullSize).where('asset_file.isEdited', '=', sql.lit(true)))),
+              ]),
               eb('asset.thumbhash', 'is', null),
-            ]),
-          ),
+            ];
+
+            if (options.fullsizeEnabled) {
+              const isWebUnsupported = sql.join(
+                Object.keys(mimeTypes.webUnsupportedImage).map((ext) => sql.lit(`%${ext}`)),
+              );
+              conditions.push(
+                and([
+                  not(exists(file(AssetFileType.FullSize))),
+                  eb(sql`f_unaccent(asset."originalFileName")`, 'like', sql`any(array[${isWebUnsupported}]::text[])`),
+                ]),
+              );
+            }
+
+            return or(conditions);
+          }),
       )
       .stream();
   }
