@@ -6,6 +6,7 @@ import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
@@ -548,13 +549,14 @@ describe(LibraryService.name, () => {
 
     it('should import a new asset', async () => {
       const library = factory.library();
+      const asset = AssetFactory.create();
 
       const mockLibraryJob: ILibraryFileJob = {
         libraryId: library.id,
         paths: ['/data/user1/photo.jpg'],
       };
 
-      mocks.asset.createAll.mockResolvedValue([assetStub.image]);
+      mocks.asset.createAll.mockResolvedValue([asset]);
       mocks.library.get.mockResolvedValue(library);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
@@ -575,7 +577,7 @@ describe(LibraryService.name, () => {
         {
           name: JobName.SidecarCheck,
           data: {
-            id: assetStub.image.id,
+            id: asset.id,
             source: 'upload',
           },
         },
@@ -602,7 +604,7 @@ describe(LibraryService.name, () => {
     it('should delete a library', async () => {
       const library = factory.library();
 
-      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
       mocks.library.get.mockResolvedValue(library);
 
       await sut.delete(library.id);
@@ -614,7 +616,7 @@ describe(LibraryService.name, () => {
     it('should allow an external library to be deleted', async () => {
       const library = factory.library();
 
-      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
       mocks.library.get.mockResolvedValue(library);
 
       await sut.delete(library.id);
@@ -630,7 +632,7 @@ describe(LibraryService.name, () => {
     it('should unwatch an external library when deleted', async () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
-      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
       mocks.library.get.mockResolvedValue(library);
       mocks.library.getAll.mockResolvedValue([library]);
 
@@ -962,7 +964,7 @@ describe(LibraryService.name, () => {
 
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([library]);
-        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
         mocks.storage.watch.mockImplementation(makeMockWatcher({ items: [{ event: 'add', value: '/foo/photo.jpg' }] }));
 
         await sut.watchAll();
@@ -981,7 +983,7 @@ describe(LibraryService.name, () => {
 
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([library]);
-        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(AssetFactory.create());
         mocks.storage.watch.mockImplementation(
           makeMockWatcher({ items: [{ event: 'change', value: '/foo/photo.jpg' }] }),
         );
@@ -999,12 +1001,13 @@ describe(LibraryService.name, () => {
 
       it('should handle a file unlink event', async () => {
         const library = factory.library({ importPaths: ['/foo', '/bar'] });
+        const asset = AssetFactory.create();
 
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([library]);
-        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(assetStub.image);
+        mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(asset);
         mocks.storage.watch.mockImplementation(
-          makeMockWatcher({ items: [{ event: 'unlink', value: assetStub.image.originalPath }] }),
+          makeMockWatcher({ items: [{ event: 'unlink', value: asset.originalPath }] }),
         );
 
         await sut.watchAll();
@@ -1013,7 +1016,7 @@ describe(LibraryService.name, () => {
           name: JobName.LibraryRemoveAsset,
           data: {
             libraryId: library.id,
-            paths: [assetStub.image.originalPath],
+            paths: [asset.originalPath],
           },
         });
       });
@@ -1115,7 +1118,7 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.image1]));
+      mocks.library.streamAssetIds.mockReturnValue(makeStream([AssetFactory.create()]));
 
       await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.Success);
     });

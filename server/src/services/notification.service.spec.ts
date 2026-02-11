@@ -6,6 +6,7 @@ import { NotificationService } from 'src/services/notification.service';
 import { INotifyAlbumUpdateJob } from 'src/types';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { notificationStub } from 'test/fixtures/notification.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -392,8 +393,8 @@ describe(NotificationService.name, () => {
     });
 
     it('should send invite email with album thumbnail and arbitrary extension', async () => {
-      const assetFile = AssetFileFactory.create({ path: 'some-thumb.ext', type: AssetFileType.Thumbnail });
-      const album = AlbumFactory.create({ albumThumbnailAssetId: assetFile.assetId });
+      const asset = AssetFactory.from().file({ type: AssetFileType.Thumbnail }).build();
+      const album = AlbumFactory.from({ albumThumbnailAssetId: asset.id }).asset(asset).build();
       mocks.album.getById.mockResolvedValue(album);
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -407,7 +408,7 @@ describe(NotificationService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
       mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
-      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([assetFile]);
+      mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([asset.files[0]]);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.assetJob.getAlbumThumbnailFiles).toHaveBeenCalledWith(
@@ -418,7 +419,7 @@ describe(NotificationService.name, () => {
         name: JobName.SendMail,
         data: expect.objectContaining({
           subject: expect.stringContaining('You have been added to a shared album'),
-          imageAttachments: [{ filename: 'album-thumbnail.ext', path: expect.anything(), cid: expect.anything() }],
+          imageAttachments: [{ filename: 'album-thumbnail.jpg', path: expect.anything(), cid: expect.anything() }],
         }),
       });
     });
