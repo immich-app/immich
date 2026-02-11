@@ -58,10 +58,7 @@ export interface CrawlOptionsDto {
   pathsToCrawl: string[];
   includeHidden?: boolean;
   exclusionPatterns?: string[];
-}
-
-export interface WalkOptionsDto extends CrawlOptionsDto {
-  take: number;
+  take?: number;
 }
 
 export class ValidateLibraryDto {

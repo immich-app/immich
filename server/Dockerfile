@@ -73,6 +73,12 @@ RUN --mount=type=cache,id=pnpm-plugins,target=/buildcache/pnpm-store \
 
 FROM ghcr.io/immich-app/base-server-prod:202601131104@sha256:c649c5838b6348836d27db6d49cadbbc6157feae7a1a237180c3dec03577ba8f
 
+RUN apt-get update && \
+  apt-get install -y fd-find && \
+  ln -s /usr/bin/fdfind /usr/local/bin/fd && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
