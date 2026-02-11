@@ -22,6 +22,30 @@ class RemoteImageRequest extends ImageRequest {
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
+  Future<ui.Codec?> loadCodec() async {
+    if (_isCancelled) {
+      return null;
+    }
+
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
+    if (info == null || _isCancelled) {
+      return null;
+    }
+
+    return switch (info) {
+      {'pointer': int pointer, 'length': int length} => () async {
+        final result = await _codecFromEncodedPlatformImage(pointer, length);
+        if (result == null) return null;
+
+        final (codec, descriptor) = result;
+        descriptor.dispose(); // release native resources
+
+        return codec;
+      }(),
+      _ => null,
+    };
+  }
+
   @override
   Future<void> _onCancelled() {
     return remoteImageApi.cancelRequest(requestId);

@@ -35,7 +35,12 @@ class ImmichImage extends StatelessWidget {
     }
 
     if (asset == null) {
-      return RemoteFullImageProvider(assetId: assetId!, thumbhash: '', assetType: base_asset.AssetType.video);
+      return RemoteFullImageProvider(
+        assetId: assetId!,
+        thumbhash: '',
+        assetType: base_asset.AssetType.video,
+        isAnimated: false,
+      );
     }
 
     if (useLocal(asset)) {
@@ -43,12 +48,14 @@ class ImmichImage extends StatelessWidget {
         id: asset.localId!,
         assetType: base_asset.AssetType.video,
         size: Size(width, height),
+        isAnimated: false,
       );
     } else {
       return RemoteFullImageProvider(
         assetId: asset.remoteId!,
         thumbhash: asset.thumbhash ?? '',
         assetType: base_asset.AssetType.video,
+        isAnimated: false,
       );
     }
   }

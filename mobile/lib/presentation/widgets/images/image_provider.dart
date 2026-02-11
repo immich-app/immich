@@ -110,7 +110,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
   } else {
     final String assetId;
     final String thumbhash;
@@ -123,7 +123,12 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash, assetType: asset.type);
+    provider = RemoteFullImageProvider(
+      assetId: assetId,
+      thumbhash: thumbhash,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+    );
   }
 
   return provider;

@@ -43,6 +43,8 @@ sealed class BaseAsset {
 
   bool get isMotionPhoto => livePhotoVideoId != null;
 
+  bool get isAnimatedImage => isImage && durationInSeconds != null && durationInSeconds! > 0;
+
   Duration get duration {
     final durationInSeconds = this.durationInSeconds;
     if (durationInSeconds != null) {

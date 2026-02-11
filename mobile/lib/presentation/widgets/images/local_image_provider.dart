@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -58,8 +59,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final String id;
   final Size size;
   final AssetType assetType;
+  final bool isAnimated;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size});
+  LocalFullImageProvider({required this.id, required this.assetType, required this.size, required this.isAnimated});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -68,6 +70,18 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
+    if (isAnimated) {
+      return AnimatedImageStreamCompleter(
+        codec: _loadAnimatedCodec(key),
+        scale: 1.0,
+        informationCollector: () => <DiagnosticsNode>[
+          DiagnosticsProperty<ImageProvider>('Image provider', this),
+          DiagnosticsProperty<String>('Id', key.id),
+        ],
+        onLastListenerRemoved: cancel,
+      );
+    }
+
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
@@ -78,6 +92,30 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       ],
       onLastListenerRemoved: cancel,
     );
+  }
+
+  Future<Codec> _loadAnimatedCodec(LocalFullImageProvider key) async {
+    final request = this.request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
+
+    if (isCancelled) {
+      this.request = null;
+      PaintingBinding.instance.imageCache.evict(this);
+      return Future.error('Request cancelled');
+    }
+
+    try {
+      final codec = await request.loadCodec();
+      if (codec == null || isCancelled) {
+        PaintingBinding.instance.imageCache.evict(this);
+        return Future.error('Failed to load animated image');
+      }
+      return codec;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return Future.error(e);
+    } finally {
+      this.request = null;
+    }
   }
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {

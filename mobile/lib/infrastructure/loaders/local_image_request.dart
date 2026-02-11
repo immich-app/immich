@@ -31,6 +31,44 @@ class LocalImageRequest extends ImageRequest {
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
+  Future<ui.Codec?> loadCodec() async {
+    if (_isCancelled) {
+      return null;
+    }
+
+    final entity = await AssetEntity.fromId(localId);
+    if (entity == null || _isCancelled) {
+      return null;
+    }
+
+    final file = await entity.originFile;
+    if (file == null || _isCancelled) {
+      return null;
+    }
+
+    final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
+    if (_isCancelled) {
+      buffer.dispose();
+      return null;
+    }
+
+    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    buffer.dispose();
+    if (_isCancelled) {
+      descriptor.dispose();
+      return null;
+    }
+
+    final codec = await descriptor.instantiateCodec();
+    descriptor.dispose();
+    if (_isCancelled) {
+      codec.dispose();
+      return null;
+    }
+
+    return codec;
+  }
+
   @override
   Future<void> _onCancelled() {
     return localImageApi.cancelRequest(requestId);
