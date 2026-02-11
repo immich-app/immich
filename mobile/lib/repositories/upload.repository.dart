@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -90,10 +91,8 @@ class UploadRepository {
   Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
-    required Map<String, String> headers,
     required Map<String, String> fields,
-    required Client httpClient,
-    required Completer cancelToken,
+    required Completer<void>? cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
   }) async {
@@ -101,7 +100,7 @@ class UploadRepository {
     final baseRequest = ProgressMultipartRequest(
       'POST',
       Uri.parse('$savedEndpoint/assets'),
-      abortTrigger: cancelToken.future,
+      abortTrigger: cancelToken?.future,
       onProgress: onProgress,
     );
 
@@ -109,11 +108,10 @@ class UploadRepository {
       final fileStream = file.openRead();
       final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
 
-      baseRequest.headers.addAll(headers);
       baseRequest.fields.addAll(fields);
       baseRequest.files.add(assetRawUploadData);
 
-      final response = await httpClient.send(baseRequest);
+      final response = await NetworkRepository.client.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {

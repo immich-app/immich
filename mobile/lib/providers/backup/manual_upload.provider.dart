@@ -64,7 +64,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           progressInFileSpeeds: const [],
           progressInFileSpeedUpdateTime: DateTime.now(),
           progressInFileSpeedUpdateSentBytes: 0,
-          cancelToken: Completer(),
+          cancelToken: Completer<void>(),
           currentUploadAsset: CurrentUploadAsset(
             id: '...',
             fileCreatedAt: DateTime.parse('2020-10-04'),
@@ -235,7 +235,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             fileName: '...',
             fileType: '...',
           ),
-          cancelToken: Completer(),
+          cancelToken: Completer<void>(),
         );
         // Reset Error List
         ref.watch(errorBackupListProvider.notifier).empty();

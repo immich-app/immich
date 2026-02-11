@@ -62,7 +62,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final _cancellationToken = Completer();
+  final _cancellationToken = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;

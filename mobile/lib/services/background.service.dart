@@ -438,7 +438,7 @@ class BackgroundService {
       ),
     );
 
-    _cancellationToken = Completer();
+    _cancellationToken = Completer<void>();
     final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
     final bool ok = await backupService.backupAsset(

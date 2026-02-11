@@ -436,7 +436,7 @@ class ActionNotifier extends Notifier<void> {
     final assetsToUpload = assets ?? _getAssets(source).whereType<LocalAsset>().toList();
 
     final progressNotifier = ref.read(assetUploadProgressProvider.notifier);
-    final cancelToken = Completer();
+    final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
 
     // Initialize progress for all assets
@@ -447,7 +447,7 @@ class ActionNotifier extends Notifier<void> {
     try {
       await _foregroundUploadService.uploadManual(
         assetsToUpload,
-        cancelToken,
+        cancelToken: cancelToken,
         callbacks: UploadCallbacks(
           onProgress: (localAssetId, filename, bytes, totalBytes) {
             final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
