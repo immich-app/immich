@@ -49,7 +49,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 
   override fun requestImage(
     url: String,
-    headers: Map<String, String>,
     requestId: Long,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
@@ -58,7 +57,6 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 
     ImageFetcherManager.fetch(
       url,
-      headers,
       signal,
       onSuccess = { buffer ->
         requestMap.remove(requestId)
@@ -119,12 +117,11 @@ private object ImageFetcherManager {
 
   fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
-    fetcher.fetch(url, headers, signal, onSuccess, onFailure)
+    fetcher.fetch(url, signal, onSuccess, onFailure)
   }
 
   fun clearCache(onCleared: (Result<Long>) -> Unit) {
@@ -151,7 +148,6 @@ private object ImageFetcherManager {
 private sealed interface ImageFetcher {
   fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -178,7 +174,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
 
   override fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -193,7 +188,7 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
 
     val callback = FetchCallback(onSuccess, onFailure, ::onComplete)
     val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
-    headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
+    HttpClientManager.headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
     val request = requestBuilder.build()
     signal.setOnCancelListener(request::cancel)
     request.start()
@@ -390,7 +385,6 @@ private class OkHttpImageFetcher private constructor(
 
   override fun fetch(
     url: String,
-    headers: Map<String, String>,
     signal: CancellationSignal,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
@@ -403,7 +397,6 @@ private class OkHttpImageFetcher private constructor(
     }
 
     val requestBuilder = Request.Builder().url(url)
-    headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
     val call = client.newCall(requestBuilder.build())
     signal.setOnCancelListener(call::cancel)
 

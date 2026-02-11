@@ -8,6 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/services/api.service.dart';
 
 class SettingsHeader {
   String key = "";
@@ -20,7 +22,6 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final apiService = ref.watch(apiServiceProvider);
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
@@ -87,7 +88,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     );
   }
 
-  saveHeaders(List<SettingsHeader> headers) {
+  saveHeaders(List<SettingsHeader> headers) async {
     final headersMap = {};
     for (var header in headers) {
       final key = header.key.trim();
@@ -98,7 +99,8 @@ class HeaderSettingsPage extends HookConsumerWidget {
     }
 
     var encoded = jsonEncode(headersMap);
-    Store.put(StoreKey.customHeaders, encoded);
+    await Store.put(StoreKey.customHeaders, encoded);
+    await networkApi.setRequestHeaders(ApiService.getRequestHeaders());
   }
 }
 
