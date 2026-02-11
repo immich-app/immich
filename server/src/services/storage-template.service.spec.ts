@@ -2,7 +2,7 @@ import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
 import { AssetPathType, JobStatus } from 'src/enum';
 import { StorageTemplateService } from 'src/services/storage-template.service';
-import { albumStub } from 'test/fixtures/album.stub';
+import { AlbumFactory } from 'test/factories/album.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
@@ -143,7 +143,7 @@ describe(StorageTemplateService.name, () => {
     it('should use handlebar if condition for album', async () => {
       const asset = assetStub.storageAsset();
       const user = userStub.user1;
-      const album = albumStub.oneAsset;
+      const album = AlbumFactory.from().asset().build();
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other/{{MM}}{{/if}}/{{filename}}';
 
@@ -191,7 +191,7 @@ describe(StorageTemplateService.name, () => {
     it('should handle album startDate', async () => {
       const asset = assetStub.storageAsset();
       const user = userStub.user1;
-      const album = albumStub.oneAsset;
+      const album = AlbumFactory.from().asset().build();
       const config = structuredClone(defaults);
       config.storageTemplate.template =
         '{{#if album}}{{album-startDate-y}}/{{album-startDate-MM}} - {{album}}{{else}}{{y}}/{{MM}}/{{/if}}/{{filename}}';
