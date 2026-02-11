@@ -10,20 +10,12 @@ where
 
 -- IntegrityRepository.getIntegrityReportSummary
 select
-  count(*) filter (
-    where
-      "type" = $1
-  ) as "checksum_mismatch",
-  count(*) filter (
-    where
-      "type" = $2
-  ) as "missing_file",
-  count(*) filter (
-    where
-      "type" = $3
-  ) as "untracked_file"
+  "type",
+  count(*) as "count"
 from
   "integrity_report"
+group by
+  "type"
 
 -- IntegrityRepository.getIntegrityReports
 select
