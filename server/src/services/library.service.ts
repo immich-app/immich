@@ -394,7 +394,16 @@ export class LibraryService extends BaseService {
 
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
-    const stat = await this.storageRepository.stat(assetPath);
+
+    let stat: Stats;
+    try {
+      stat = await this.storageRepository.stat(assetPath);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        this.logger.error(`File not found during import: ${assetPath} (original path: ${filePath})`);
+      }
+      throw error;
+    }
 
     return {
       ownerId,
@@ -636,21 +645,25 @@ export class LibraryService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const pathsOnDisk = this.storageRepository.walk({
+    this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+
+    const crawlStart = Date.now();
+
+    const pathsOnDisk = await this.storageRepository.crawl({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
     let importCount = 0;
-    let crawlCount = 0;
 
-    this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+    this.logger.log(
+      `Found ${pathsOnDisk.length} file(s) on disk in ${((Date.now() - crawlStart) / 1000).toFixed(2)}s, queuing for import...`,
+    );
 
-    for await (const pathBatch of pathsOnDisk) {
-      crawlCount += pathBatch.length;
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+    for (let i = 0; i < pathsOnDisk.length; i += JOBS_LIBRARY_PAGINATION_SIZE) {
+      const pathChunk = pathsOnDisk.slice(i, i + JOBS_LIBRARY_PAGINATION_SIZE);
+      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathChunk);
 
       if (paths.length > 0) {
         importCount += paths.length;
@@ -660,18 +673,18 @@ export class LibraryService extends BaseService {
           data: {
             libraryId: library.id,
             paths,
-            progressCounter: crawlCount,
+            progressCounter: i + pathChunk.length,
           },
         });
       }
 
       this.logger.log(
-        `Crawled ${crawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
+        `Processed ${i + pathChunk.length} file(s): ${paths.length} of current batch of ${pathChunk.length} will be imported to library ${library.id}...`,
       );
     }
 
     this.logger.log(
-      `Finished disk crawl, ${crawlCount} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
+      `Finished disk crawl, ${pathsOnDisk.length} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
