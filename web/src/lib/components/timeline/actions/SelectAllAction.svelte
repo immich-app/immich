@@ -1,7 +1,6 @@
 <script lang="ts">
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';
   import { Button, IconButton } from '@immich/ui';
   import { mdiSelectAll, mdiSelectRemove } from '@mdi/js';
@@ -14,6 +13,7 @@
   }
 
   let { timelineManager, assetInteraction, withText = false }: Props = $props();
+  const allAssetsSelected = $derived(assetInteraction.selectAll);
 
   const handleSelectAll = async () => {
     await selectAllAssets(timelineManager, assetInteraction);
@@ -26,21 +26,21 @@
 
 {#if withText}
   <Button
-    leadingIcon={$isSelectingAllAssets ? mdiSelectRemove : mdiSelectAll}
+    leadingIcon={allAssetsSelected ? mdiSelectRemove : mdiSelectAll}
     size="medium"
     color="secondary"
     variant="ghost"
-    onclick={$isSelectingAllAssets ? handleCancel : handleSelectAll}
+    onclick={allAssetsSelected ? handleCancel : handleSelectAll}
   >
-    {$isSelectingAllAssets ? $t('unselect_all') : $t('select_all')}
+    {allAssetsSelected ? $t('unselect_all') : $t('select_all')}
   </Button>
 {:else}
   <IconButton
     shape="round"
     color="secondary"
     variant="ghost"
-    aria-label={$isSelectingAllAssets ? $t('unselect_all') : $t('select_all')}
-    icon={$isSelectingAllAssets ? mdiSelectRemove : mdiSelectAll}
-    onclick={$isSelectingAllAssets ? handleCancel : handleSelectAll}
+    aria-label={allAssetsSelected ? $t('unselect_all') : $t('select_all')}
+    icon={allAssetsSelected ? mdiSelectRemove : mdiSelectAll}
+    onclick={allAssetsSelected ? handleCancel : handleSelectAll}
   />
 {/if}

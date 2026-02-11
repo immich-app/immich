@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -60,22 +61,22 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
       mocks.storage.realpath.mockRejectedValue(new Error('Could not read file'));
-      mocks.asset.getByIds.mockResolvedValue([
-        { ...assetStub.noResizePath, id: 'asset-1' },
-        { ...assetStub.noWebpPath, id: 'asset-2' },
-      ]);
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
       expect(mocks.logger.warn).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, asset1.originalPath, asset1.originalFileName);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, asset2.originalPath, asset2.originalFileName);
     });
 
     it('should download an archive', async () => {
@@ -85,20 +86,20 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      mocks.asset.getByIds.mockResolvedValue([
-        { ...assetStub.noResizePath, id: 'asset-1' },
-        { ...assetStub.noWebpPath, id: 'asset-2' },
-      ]);
+      const asset1 = AssetFactory.create();
+      const asset2 = AssetFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, '/data/library/IMG_123.jpg', 'IMG_123.jpg');
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, '/data/library/IMG_456.jpg', 'IMG_456.jpg');
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, asset1.originalPath, asset1.originalFileName);
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, asset2.originalPath, asset2.originalFileName);
     });
 
     it('should handle duplicate file names', async () => {
