@@ -90,7 +90,7 @@ dependencies:
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: '6a28337a5d759bee3d198992e79d9b5c1e80fd3a' # https://github.com/dart-lang/http/pull/1876
+      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
       path: pkgs/cupertino_http/
   ok_http:
     git:

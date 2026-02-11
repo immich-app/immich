@@ -9,24 +9,26 @@ import 'package:web_socket/web_socket.dart';
 
 class NetworkRepository {
   static http.Client? _client;
-  static late int _clientPointer;
+  static late Pointer<Void> _clientPointer;
 
   static Future<void> init() async {
-    _clientPointer = await networkApi.getClientPointer();
+    _clientPointer = Pointer<Void>.fromAddress(await networkApi.getClientPointer());
     _client?.close();
     if (Platform.isIOS) {
-      _client = _createIOSClient(_clientPointer);
+      final session = URLSession.fromRawPointer(_clientPointer.cast());
+      _client = CupertinoClient.fromSharedSession(session);
     } else {
-      _client = _createAndroidClient(_clientPointer);
+      _client = OkHttpClient.fromJniGlobalRef(_clientPointer);
     }
   }
 
   // ignore: avoid-unused-parameters
   static Future<WebSocket> createWebSocket(Uri uri, {Map<String, String>? headers, Iterable<String>? protocols}) {
     if (Platform.isIOS) {
-      return _createIOSWebSocket(uri, protocols: protocols);
+      final session = URLSession.fromRawPointer(_clientPointer.cast());
+      return CupertinoWebSocket.connectWithSession(session, uri, protocols: protocols);
     } else {
-      return _createAndroidWebSocket(uri, protocols: protocols);
+      return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer, uri, protocols: protocols);
     }
   }
 
@@ -39,27 +41,4 @@ class NetworkRepository {
   ///
   /// Must call [init] before using this method.
   static http.Client get client => _client!;
-
-  static http.Client _createIOSClient(int address) {
-    final pointer = Pointer.fromAddress(address);
-    final session = URLSession.fromRawPointer(pointer.cast());
-    return CupertinoClient.fromSharedSession(session);
-  }
-
-  static http.Client _createAndroidClient(int address) {
-    final pointer = Pointer<Void>.fromAddress(address);
-    return OkHttpClient.fromJniGlobalRef(pointer);
-  }
-
-  static Future<WebSocket> _createIOSWebSocket(Uri uri, {Iterable<String>? protocols}) async {
-    final result = await networkApi.createWebSocketTask(uri.toString(), protocols?.toList());
-    final pointer = Pointer.fromAddress(result.taskPointer);
-    final task = URLSessionWebSocketTask.fromRawPointer(pointer.cast());
-    return CupertinoWebSocket.fromConnectedTask(task, protocol: result.taskProtocol ?? '');
-  }
-
-  static Future<WebSocket> _createAndroidWebSocket(Uri uri, {Iterable<String>? protocols}) {
-    final pointer = Pointer<Void>.fromAddress(_clientPointer);
-    return OkHttpWebSocket.connectFromJniGlobalRef(pointer, uri, protocols: protocols);
-  }
 }

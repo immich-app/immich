@@ -333,8 +333,8 @@ packages:
     dependency: "direct main"
     description:
       path: "pkgs/cupertino_http"
-      ref: "6a28337a5d759bee3d198992e79d9b5c1e80fd3a"
-      resolved-ref: "6a28337a5d759bee3d198992e79d9b5c1e80fd3a"
+      ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
+      resolved-ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
       url: "https://github.com/mertalev/http"
     source: git
     version: "3.0.0-wip"
