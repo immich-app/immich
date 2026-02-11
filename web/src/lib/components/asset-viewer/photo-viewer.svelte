@@ -232,7 +232,7 @@
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]} {isTransparent ? 'checkerboard' : ''}"
+          : slideshowLookCssMapping[$slideshowLook]} checkerboard"
         draggable="false"
       />
       <!-- eslint-disable-next-line svelte/require-each-key -->
