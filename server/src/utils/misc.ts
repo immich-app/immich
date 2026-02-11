@@ -12,6 +12,7 @@ import {
   SchemaObject,
 } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import _ from 'lodash';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
@@ -275,7 +276,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, specification, customOptions);
+  SwaggerModule.setup('doc', app, cleanupOpenApiDoc(specification), customOptions);
 
   if (write) {
     // Generate API Documentation only in development mode

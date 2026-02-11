@@ -1,8 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
 import { ClsService } from 'nestjs-cls';
+import { ZodSerializationException } from 'nestjs-zod';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { logGlobalError } from 'src/utils/logger';
+import { ZodError } from 'zod';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
@@ -33,6 +35,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     logGlobalError(this.logger, error);
 
     if (error instanceof HttpException) {
+      // Handle ZodSerializationException
+      if (error instanceof ZodSerializationException) {
+        const zodError = error.getZodError();
+        if (zodError instanceof ZodError) {
+          // TODO: handle zod error
+        }
+      }
       const status = error.getStatus();
       let body = error.getResponse();
 
