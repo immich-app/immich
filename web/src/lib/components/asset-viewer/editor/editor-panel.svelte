@@ -4,7 +4,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetEdits, type AssetResponseDto } from '@immich/sdk';
   import { Button, HStack, IconButton } from '@immich/ui';
-  import { mdiClose } from '@mdi/js';
+  import { mdiClose, mdiCrop, mdiPalette } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -23,11 +23,12 @@
 
   onMount(async () => {
     const edits = await getAssetEdits({ id: asset.id });
-    await editManager.activateTool(EditToolType.Transform, asset, edits);
+    await editManager.init(asset, edits);
+    editManager.activateTool(EditToolType.Transform);
   });
 
-  onDestroy(() => {
-    editManager.cleanup();
+  onDestroy(async () => {
+    await editManager.cleanup();
   });
 
   async function applyEdits() {
@@ -63,6 +64,31 @@
       <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
     </HStack>
     <Button shape="round" size="small" onclick={applyEdits} loading={editManager.isApplyingEdits}>{$t('save')}</Button>
+  </HStack>
+
+  <HStack class="mt-4 gap-0 mx-4">
+    <Button
+      leadingIcon={mdiCrop}
+      variant={editManager.selectedTool?.type === EditToolType.Transform ? 'filled' : 'outline'}
+      onclick={() => editManager.activateTool(EditToolType.Transform)}
+      class="rounded-r-none"
+      shape="round"
+      size="small"
+      fullWidth
+    >
+      {$t('editor_panel_transform')}
+    </Button>
+    <Button
+      leadingIcon={mdiPalette}
+      variant={editManager.selectedTool?.type === EditToolType.Filter ? 'filled' : 'outline'}
+      onclick={() => editManager.activateTool(EditToolType.Filter)}
+      class="rounded-l-none"
+      shape="round"
+      size="small"
+      fullWidth
+    >
+      {$t('editor_panel_filter')}
+    </Button>
   </HStack>
 
   <section>

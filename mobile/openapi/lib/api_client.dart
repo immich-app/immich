@@ -242,6 +242,8 @@ class ApiClient {
           return AssetEditActionTypeTransformer().decode(value);
         case 'AssetEditActionCrop':
           return AssetEditActionCrop.fromJson(value);
+        case 'AssetEditActionFilter':
+          return AssetEditActionFilter.fromJson(value);
         case 'AssetEditActionListDto':
           return AssetEditActionListDto.fromJson(value);
         case 'AssetEditActionListDtoEditsInner':
@@ -380,6 +382,8 @@ class ApiClient {
           return FaceDto.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
+        case 'FilterParameters':
+          return FilterParameters.fromJson(value);
         case 'FoldersResponse':
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':

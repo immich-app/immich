@@ -1,20 +1,22 @@
+import FilterTool from '$lib/components/asset-viewer/editor/filter-tool/filter-tool.svelte';
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
+import { filterManager } from '$lib/managers/edit/filter-manager.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { getFormatter } from '$lib/utils/i18n';
 import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
-import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
-import { mdiCropRotate } from '@mdi/js';
+import { ConfirmModal, modalManager, toastManager, type MaybePromise } from '@immich/ui';
+import { mdiCropRotate, mdiPalette } from '@mdi/js';
 import type { Component } from 'svelte';
 
 export type EditAction = AssetEditsDto['edits'][number];
 export type EditActions = EditAction[];
 
 export interface EditToolManager {
-  onActivate: (asset: AssetResponseDto, edits: EditActions) => Promise<void>;
-  onDeactivate: () => void;
-  resetAllChanges: () => Promise<void>;
+  onActivate: (asset: AssetResponseDto, edits: EditActions) => MaybePromise<void>;
+  onDeactivate: () => MaybePromise<void>;
+  resetAllChanges: () => MaybePromise<void>;
   hasChanges: boolean;
   canReset: boolean;
   edits: EditAction[];
@@ -22,6 +24,7 @@ export interface EditToolManager {
 
 export enum EditToolType {
   Transform = 'transform',
+  Filter = 'filter',
 }
 
 export interface EditTool {
@@ -38,6 +41,12 @@ export class EditManager {
       icon: mdiCropRotate,
       component: TransformTool,
       manager: transformManager,
+    },
+    {
+      type: EditToolType.Filter,
+      icon: mdiPalette,
+      component: FilterTool,
+      manager: filterManager,
     },
   ];
 
@@ -77,32 +86,32 @@ export class EditManager {
     return confirmed;
   }
 
-  reset() {
+  async reset() {
     for (const tool of this.tools) {
-      tool.manager.onDeactivate?.();
+      await tool.manager.onDeactivate?.();
     }
     this.selectedTool = this.tools[0];
   }
 
-  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsDto) {
-    this.hasAppliedEdits = false;
-    if (this.selectedTool?.type === toolType) {
-      return;
-    }
-
+  async init(asset: AssetResponseDto, edits: AssetEditsDto) {
     this.currentAsset = asset;
 
-    this.selectedTool?.manager.onDeactivate?.();
+    for (const tool of this.tools) {
+      await tool.manager.onActivate?.(asset, edits.edits);
+    }
+    this.selectedTool = this.tools[0];
+  }
+
+  activateTool(toolType: EditToolType) {
     const newTool = this.tools.find((t) => t.type === toolType);
     if (newTool) {
       this.selectedTool = newTool;
-      await newTool.manager.onActivate?.(asset, edits.edits);
     }
   }
 
-  cleanup() {
+  async cleanup() {
     for (const tool of this.tools) {
-      tool.manager.onDeactivate?.();
+      await tool.manager.onDeactivate?.();
     }
     this.currentAsset = null;
     this.selectedTool = null;
