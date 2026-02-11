@@ -394,7 +394,16 @@ export class LibraryService extends BaseService {
 
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
-    const stat = await this.storageRepository.stat(assetPath);
+
+    let stat: Stats;
+    try {
+      stat = await this.storageRepository.stat(assetPath);
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        this.logger.error(`File not found during import: ${assetPath} (original path: ${filePath})`);
+      }
+      throw error;
+    }
 
     return {
       ownerId,
