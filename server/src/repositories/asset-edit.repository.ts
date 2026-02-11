@@ -9,9 +9,7 @@ import { DB } from 'src/schema';
 export class AssetEditRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({
-    params: [DummyValue.UUID],
-  })
+  @GenerateSql({ params: [DummyValue.UUID] })
   replaceAll(assetId: string, edits: AssetEditActionItem[]): Promise<AssetEditActionItem[]> {
     return this.db.transaction().execute(async (trx) => {
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
@@ -28,9 +26,7 @@ export class AssetEditRepository {
     });
   }
 
-  @GenerateSql({
-    params: [DummyValue.UUID],
-  })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getAll(assetId: string): Promise<AssetEditActionItem[]> {
     return this.db
       .selectFrom('asset_edit')
@@ -40,9 +36,7 @@ export class AssetEditRepository {
       .execute() as Promise<AssetEditActionItem[]>;
   }
 
-  @GenerateSql({
-    params: [DummyValue.UUID],
-  })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getWithSyncInfo(assetId: string) {
     return this.db
       .selectFrom('asset_edit')
