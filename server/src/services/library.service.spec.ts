@@ -160,7 +160,7 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -201,7 +201,7 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
-      expect(mocks.storage.crawl).toHaveBeenCalledWith({
+      expect(mocks.storage.walk).toHaveBeenCalledWith({
         pathsToCrawl: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
@@ -214,7 +214,7 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.crawl.mockResolvedValue(['/data/user1/photo.jpg']);
+      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -256,7 +256,7 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
-      expect(mocks.storage.crawl).toHaveBeenCalledWith({
+      expect(mocks.storage.walk).toHaveBeenCalledWith({
         pathsToCrawl: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
@@ -269,7 +269,7 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.crawl.mockResolvedValue([]);
+      mocks.storage.walk.mockResolvedValue([]);
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -287,7 +287,7 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.crawl.mockResolvedValue([]);
+      mocks.storage.walk.mockResolvedValue([]);
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -301,7 +301,7 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.crawl.mockResolvedValue([]);
+      mocks.storage.walk.mockResolvedValue([]);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([assetStub.external]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });

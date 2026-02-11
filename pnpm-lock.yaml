@@ -343,6 +343,9 @@ importers:
       '@extism/extism':
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
+      '@immich/walkrs':
+        specifier: file:../../walkrs
+        version: file:../walkrs
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.12(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.12)(bullmq@5.66.5)
@@ -3135,6 +3138,10 @@ packages:
     resolution: {integrity: sha512-32nrY7GW6BdBQ12ZI/E4VgrgY40Yn2K31vSO6GPiOvmNgt8h3s3TSKUXbh7pY4yJgfnr7f2QL2EYRV9KkjRybQ==}
     peerDependencies:
       svelte: ^5.0.0
+
+  '@immich/walkrs@file:../walkrs':
+    resolution: {directory: ../walkrs, type: directory}
+    engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@1.0.2':
     resolution: {integrity: sha512-S8qNSZiYzFd0wAcyG5AXCvUHC5Sr7xpZ9wZ2py9XR88jUz8wooStVx5M6dRzczbBWjic9NP7+rY0Xi7qqK/aMQ==}
@@ -15778,6 +15785,8 @@ snapshots:
       tailwindcss: 4.1.18
     transitivePeerDependencies:
       - '@sveltejs/kit'
+
+  '@immich/walkrs@file:../walkrs': {}
 
   '@inquirer/ansi@1.0.2': {}
 

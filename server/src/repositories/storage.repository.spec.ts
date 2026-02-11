@@ -1,12 +1,12 @@
 import mockfs from 'mock-fs';
-import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { automock } from 'test/utils';
 
 interface Test {
   test: string;
-  options: CrawlOptionsDto;
+  options: WalkOptionsDto;
   files: Record<string, boolean>;
 }
 
@@ -16,14 +16,14 @@ const tests: Test[] = [
   {
     test: 'should return empty when crawling an empty path list',
     options: {
-      pathsToCrawl: [],
+      pathsToWalk: [],
     },
     files: {},
   },
   {
     test: 'should crawl a single path',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -32,7 +32,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by file extension',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/*.tif'],
     },
     files: {
@@ -43,7 +43,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by file extension without case sensitivity',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/*.TIF'],
     },
     files: {
@@ -54,7 +54,7 @@ const tests: Test[] = [
   {
     test: 'should exclude by folder',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
       exclusionPatterns: ['**/raw/**'],
     },
     files: {
@@ -68,7 +68,7 @@ const tests: Test[] = [
   {
     test: 'should crawl multiple paths',
     options: {
-      pathsToCrawl: ['/photos/', '/images/', '/albums/'],
+      pathsToWalk: ['/photos/', '/images/', '/albums/'],
     },
     files: {
       '/photos/image1.jpg': true,
@@ -79,7 +79,7 @@ const tests: Test[] = [
   {
     test: 'should crawl a single path without trailing slash',
     options: {
-      pathsToCrawl: ['/photos'],
+      pathsToWalk: ['/photos'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -88,7 +88,7 @@ const tests: Test[] = [
   {
     test: 'should crawl a single path',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -100,7 +100,7 @@ const tests: Test[] = [
   {
     test: 'should filter file extensions',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -111,7 +111,7 @@ const tests: Test[] = [
   {
     test: 'should include photo and video extensions',
     options: {
-      pathsToCrawl: ['/photos/', '/videos/'],
+      pathsToWalk: ['/photos/', '/videos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -133,7 +133,7 @@ const tests: Test[] = [
   {
     test: 'should check file extensions without case sensitivity',
     options: {
-      pathsToCrawl: ['/photos/'],
+      pathsToWalk: ['/photos/'],
     },
     files: {
       '/photos/image.jpg': true,
@@ -150,7 +150,7 @@ const tests: Test[] = [
   {
     test: 'should normalize the path',
     options: {
-      pathsToCrawl: ['/photos/1/../2'],
+      pathsToWalk: ['/photos/1/../2'],
     },
     files: {
       '/photos/1/image.jpg': false,
@@ -160,7 +160,7 @@ const tests: Test[] = [
   {
     test: 'should return absolute paths',
     options: {
-      pathsToCrawl: ['photos'],
+      pathsToWalk: ['photos'],
     },
     files: {
       [`${cwd}/photos/1.jpg`]: true,
@@ -171,7 +171,7 @@ const tests: Test[] = [
   {
     test: 'should support special characters in paths',
     options: {
-      pathsToCrawl: ['/photos (new)'],
+      pathsToWalk: ['/photos (new)'],
     },
     files: {
       ['/photos (new)/1.jpg']: true,
@@ -196,7 +196,7 @@ describe(StorageRepository.name, () => {
       it(test, async () => {
         mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, ''])));
 
-        const actual = await sut.crawl(options);
+        const actual = await sut.walk(options);
         const expected = Object.entries(files)
           .filter((entry) => entry[1])
           .map(([file]) => file);

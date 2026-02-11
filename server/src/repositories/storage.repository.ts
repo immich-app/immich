@@ -1,13 +1,13 @@
+import { walk } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
-import { spawn } from 'node:child_process';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
-import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -198,86 +198,19 @@ export class StorageRepository {
     };
   }
 
-  async crawl(crawlOptions: CrawlOptionsDto): Promise<string[]> {
-    const { pathsToCrawl, exclusionPatterns, includeHidden } = crawlOptions;
-    if (pathsToCrawl.length === 0) {
+  async walk(walkOptions: WalkOptionsDto): Promise<string[]> {
+    const { pathsToWalk, exclusionPatterns, includeHidden } = walkOptions;
+    if (pathsToWalk.length === 0) {
       return [];
     }
 
-    return new Promise((resolve, reject) => {
-      const args: string[] = [
-        '-t',
-        'f', // File type: only files
-        '-a', // Absolute paths
-        '-i', // Case insensitive
-        '.', // Search pattern: match all files
-      ];
+    const extensions = mimeTypes.getSupportedFileExtensions().map((ext) => ext.toLowerCase());
 
-      if (includeHidden) {
-        args.push('-H');
-      }
-
-      for (const pattern of exclusionPatterns ?? []) {
-        args.push('-E', pattern);
-      }
-
-      const extensions = mimeTypes.getSupportedFileExtensions();
-      for (const ext of extensions) {
-        // fd expects extensions without the dot
-        args.push('-e', ext.replace(/^\./, ''));
-      }
-
-      args.push(...pathsToCrawl);
-
-      const fdfind = spawn('fdfind', args);
-
-      const files: string[] = [];
-      let buffer = '';
-      let stderr = '';
-
-      fdfind.stdout.on('data', (data) => {
-        buffer += data.toString();
-        const lines = buffer.split('\n');
-        // Keep the last partial line in the buffer
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.length > 0) {
-            files.push(trimmed);
-          }
-        }
-      });
-
-      fdfind.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      fdfind.on('close', (code) => {
-        // Process any remaining data in the buffer
-        if (buffer.length > 0) {
-          const trimmed = buffer.trim();
-          if (trimmed.length > 0) {
-            files.push(trimmed);
-          }
-        }
-
-        if (code === 0) {
-          resolve(files);
-        } else {
-          reject(new Error(`fdfind process exited with code ${code}: ${stderr}`));
-        }
-      });
-
-      fdfind.on('error', (error) => {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-          reject(
-            new Error('fdfind command not found. Please install fd-find: https://github.com/sharkdp/fd#installation'),
-          );
-        } else {
-          reject(new Error(`Failed to spawn fdfind: ${error.message}`));
-        }
-      });
+    return await walk({
+      paths: pathsToWalk.map((p) => path.resolve(p)),
+      includeHidden: includeHidden ?? false,
+      exclusionPatterns,
+      extensions,
     });
   }
 

@@ -14,15 +14,12 @@ COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
 COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
 COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
 COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
+COPY --from=walkrs ./package*.json /tmp/walkrs/
+COPY --from=walkrs ./Cargo.toml /tmp/walkrs/
+COPY --from=walkrs ./src /tmp/walkrs/src/
 WORKDIR /tmp/create-dep-cache
 RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
-
-RUN apt-get update && \
-  apt-get install -y fd-find && \
-  ln -s /usr/bin/fdfind /usr/local/bin/fd && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
 
 ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
   IMMICH_ENV=development \

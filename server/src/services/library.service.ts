@@ -649,17 +649,17 @@ export class LibraryService extends BaseService {
 
     const crawlStart = Date.now();
 
-    const pathsOnDisk = await this.storageRepository.crawl({
-      pathsToCrawl: validImportPaths,
+    const pathsOnDisk = await this.storageRepository.walk({
+      pathsToWalk: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    let importCount = 0;
-
     this.logger.log(
       `Found ${pathsOnDisk.length} file(s) on disk in ${((Date.now() - crawlStart) / 1000).toFixed(2)}s, queuing for import...`,
     );
+
+    let importCount = 0;
 
     for (let i = 0; i < pathsOnDisk.length; i += JOBS_LIBRARY_PAGINATION_SIZE) {
       const pathChunk = pathsOnDisk.slice(i, i + JOBS_LIBRARY_PAGINATION_SIZE);
