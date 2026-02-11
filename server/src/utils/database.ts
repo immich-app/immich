@@ -132,27 +132,25 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 };
 
 const convertTimestampToDate = (item: string) => {
+  if (!item.endsWith('BC')) {
+    return new Date(item);
+  }
+
   const match = item.match(/^(\d+)-(.+)$/i);
   if (!match) {
     return new Date(item);
   }
 
-  // 3 main differences between js date and postgres date
+  // 2 main differences between js date and postgres date
   // - postgres uses BC instead of negative year
   // - postgres uses Julian calendar for BC dates, while js uses Gregorian calendar
-  // - js needs extra + for years >= 10000, so use padded +002000 for all years
 
   const year = Number(match[1]);
   const rest = match[2];
-
-  if (item.endsWith('BC')) {
-    const astroYear = 1 - year;
-    const sign = astroYear < 0 ? '-' : '+';
-    const yearAbs = Math.abs(astroYear).toString().padStart(6, '0');
-    item = `${sign}${yearAbs}-${rest.slice(0, -3)}`;
-  } else {
-    item = `+${year.toString().padStart(6, '0')}-${rest}`;
-  }
+  const astroYear = 1 - year;
+  const sign = astroYear < 0 ? '-' : '+';
+  const yearAbs = Math.abs(astroYear).toString().padStart(6, '0');
+  item = `${sign}${yearAbs}-${rest.slice(0, -3)}`;
 
   return new Date(item);
 };
@@ -160,7 +158,8 @@ const convertTimestampToDate = (item: string) => {
 const pad = (n: number, l = 2) => String(n).padStart(l, '0');
 
 const convertDateToTimestamp = (item: Date) => {
-  if (Number.isNaN(item as any)) {
+  // eslint-disable-next-line unicorn/prefer-number-properties
+  if (isNaN(item as any)) {
     return item.toISOString();
   }
 
