@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,7 +11,6 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -20,7 +18,6 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -83,7 +80,7 @@ class ForegroundUploadService {
   /// Bulk upload of backup candidates from selected albums
   Future<void> uploadCandidates(
     String userId,
-    Completer cancelToken, {
+    Completer<void> cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
     bool useSequentialUpload = false,
   }) async {
@@ -114,7 +111,7 @@ class ForegroundUploadService {
   /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues
   Future<void> _uploadSequentially({
     required List<LocalAsset> items,
-    required Completer cancelToken,
+    required Completer<void> cancelToken,
     required bool hasWifi,
     required UploadCallbacks callbacks,
   }) async {
@@ -138,8 +135,8 @@ class ForegroundUploadService {
 
   /// Manually upload picked local assets
   Future<void> uploadManual(
-    List<LocalAsset> localAssets,
-    Completer cancelToken, {
+    List<LocalAsset> localAssets, {
+    Completer<void>? cancelToken,
     UploadCallbacks callbacks = const UploadCallbacks(),
   }) async {
     if (localAssets.isEmpty) {
@@ -164,19 +161,16 @@ class ForegroundUploadService {
     if (files.isEmpty) {
       return;
     }
-    final effectiveCancelToken = cancelToken ?? Completer();
-
     await _executeWithWorkerPool<File>(
       items: files,
-      cancelToken: effectiveCancelToken,
+      cancelToken: cancelToken,
       processItem: (file) async {
         final fileId = p.hash(file.path).toString();
 
         final result = await _uploadSingleFile(
           file,
           deviceAssetId: fileId,
-          httpClient: NetworkRepository.client,
-          cancelToken: effectiveCancelToken,
+          cancelToken: cancelToken,
           onProgress: (bytes, totalBytes) => onProgress?.call(fileId, bytes, totalBytes),
         );
 
@@ -202,7 +196,7 @@ class ForegroundUploadService {
   /// [concurrentWorkers] - Number of concurrent workers (default: 3)
   Future<void> _executeWithWorkerPool<T>({
     required List<T> items,
-    required Completer cancelToken,
+    required Completer<void>? cancelToken,
     required Future<void> Function(T item) processItem,
     bool Function(T item)? shouldSkip,
     int concurrentWorkers = 3,
@@ -214,7 +208,7 @@ class ForegroundUploadService {
 
     Future<void> worker() async {
       while (true) {
-        if (shouldAbortUpload || cancelToken.isCompleted) {
+        if (shouldAbortUpload || (cancelToken != null && cancelToken.isCompleted)) {
           break;
         }
 
@@ -242,7 +236,11 @@ class ForegroundUploadService {
     await Future.wait(workerFutures);
   }
 
-  Future<void> _uploadSingleAsset(LocalAsset asset, Completer cancelToken, {required UploadCallbacks callbacks}) async {
+  Future<void> _uploadSingleAsset(
+    LocalAsset asset,
+    Completer<void>? cancelToken, {
+    required UploadCallbacks callbacks,
+  }) async {
     File? file;
     File? livePhotoFile;
 
@@ -325,7 +323,6 @@ class ForegroundUploadService {
       final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
       final deviceId = Store.get(StoreKey.deviceId);
 
-      final headers = ApiService.getRequestHeaders();
       final fields = {
         'deviceAssetId': asset.localId!,
         'deviceId': deviceId,
@@ -344,9 +341,7 @@ class ForegroundUploadService {
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
-          headers: headers,
           fields: fields,
-          httpClient: NetworkRepository.client,
           cancelToken: cancelToken,
           onProgress: onProgress != null
               ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)
@@ -383,9 +378,7 @@ class ForegroundUploadService {
       final result = await _uploadRepository.uploadFile(
         file: file,
         originalFileName: originalFileName,
-        headers: headers,
         fields: fields,
-        httpClient: NetworkRepository.client,
         cancelToken: cancelToken,
         onProgress: onProgress != null
             ? (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes)
@@ -428,8 +421,7 @@ class ForegroundUploadService {
   Future<UploadResult> _uploadSingleFile(
     File file, {
     required String deviceAssetId,
-    required Client httpClient,
-    required Completer cancelToken,
+    required Completer<void>? cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
   }) async {
     try {
@@ -438,12 +430,9 @@ class ForegroundUploadService {
       final fileModifiedAt = stats.modified;
       final filename = p.basename(file.path);
 
-      final headers = ApiService.getRequestHeaders();
-      final deviceId = Store.get(StoreKey.deviceId);
-
       final fields = {
         'deviceAssetId': deviceAssetId,
-        'deviceId': deviceId,
+        'deviceId': Store.get(StoreKey.deviceId),
         'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
         'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
         'isFavorite': 'false',
@@ -453,9 +442,7 @@ class ForegroundUploadService {
       return await _uploadRepository.uploadFile(
         file: file,
         originalFileName: filename,
-        headers: headers,
         fields: fields,
-        httpClient: httpClient,
         cancelToken: cancelToken,
         onProgress: onProgress,
         logContext: 'shareIntent[$deviceAssetId]',

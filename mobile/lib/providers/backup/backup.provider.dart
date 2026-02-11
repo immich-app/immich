@@ -68,7 +68,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           progressInFileSpeeds: const [],
           progressInFileSpeedUpdateTime: DateTime.now(),
           progressInFileSpeedUpdateSentBytes: 0,
-          cancelToken: Completer(),
+          cancelToken: Completer<void>(),
           autoBackup: Store.get(StoreKey.autoBackup, false),
           backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
           backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
@@ -454,7 +454,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       // Perform Backup
-      state = state.copyWith(cancelToken: Completer());
+      state = state.copyWith(cancelToken: Completer<void>());
 
       final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 

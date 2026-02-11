@@ -265,7 +265,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     state = state.copyWith(error: BackupError.none);
 
-    final cancelToken = Completer();
+    final cancelToken = Completer<void>();
     state = state.copyWith(cancelToken: cancelToken);
 
     return _foregroundUploadService.uploadCandidates(
