@@ -46,6 +46,7 @@ import {
   onBeforeUnlink,
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
+import { extractTimeZone } from 'src/utils/date';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -168,11 +169,12 @@ export class AssetService extends BaseService {
       },
       _.isUndefined,
     );
-    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
 
     if (Object.keys(exifDto).length > 0) {
       await this.assetRepository.updateAllExif(ids, exifDto);
     }
+
+    const extractedTimeZone = extractTimeZone(dateTimeOriginal);
 
     if (
       (dateTimeRelative !== undefined && dateTimeRelative !== 0) ||
@@ -513,12 +515,11 @@ export class AssetService extends BaseService {
     rating?: number;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const extractedTimeZone = dateTimeOriginal ? DateTime.fromISO(dateTimeOriginal, { setZone: true }).zone : undefined;
     const writes = _.omitBy(
       {
         description,
         dateTimeOriginal,
-        timeZone: extractedTimeZone?.type === 'fixed' ? extractedTimeZone.name : undefined,
+        timeZone: extractTimeZone(dateTimeOriginal)?.name,
         latitude,
         longitude,
         rating,

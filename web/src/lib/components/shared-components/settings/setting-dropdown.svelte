@@ -29,7 +29,7 @@
 <div class="flex place-items-center justify-between">
   <div>
     <div class="flex h-6.5 place-items-center gap-1">
-      <label class="font-medium text-primary text-sm" for={title}>
+      <label class="font-medium text-sm" for={title}>
         {title}
       </label>
       {#if isEdited}
@@ -48,6 +48,7 @@
   <div class="w-fit">
     <Dropdown
       {options}
+      position="bottom-right"
       hideTextOnSmallScreen={false}
       bind:selectedOption
       render={(option) => {

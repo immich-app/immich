@@ -497,14 +497,15 @@ jobs:
         run: npx playwright install chromium --only-shell
         if: ${{ !cancelled() }}
       - name: Docker build
-        run: docker compose build
+        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
         env:
           CI: true
-        run: npx playwright test --project=chromium
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
+        run: npx playwright test --project=web
         if: ${{ !cancelled() }}
-      - name: Archive web results
+      - name: Archive e2e test (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: success() || failure()
         with:
@@ -513,14 +514,37 @@ jobs:
       - name: Run ui tests (web)
         env:
           CI: true
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: npx playwright test --project=ui
         if: ${{ !cancelled() }}
-      - name: Archive ui results
+      - name: Archive ui test (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: success() || failure()
         with:
           name: e2e-ui-test-results-${{ matrix.runner }}
           path: e2e/playwright-report/
+      - name: Run maintenance tests
+        env:
+          CI: true
+          PLAYWRIGHT_DISABLE_WEBSERVER: true
+        run: npx playwright test --project=maintenance
+        if: ${{ !cancelled() }}
+      - name: Archive maintenance tests (web) results
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: success() || failure()
+        with:
+          name: e2e-maintenance-isolated-test-results-${{ matrix.runner }}
+          path: e2e/playwright-report/
+      - name: Capture Docker logs
+        if: always()
+        run: docker compose logs --no-color > docker-compose-logs.txt
+        working-directory: ./e2e
+      - name: Archive Docker logs
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: docker-compose-logs-${{ matrix.runner }}
+          path: e2e/docker-compose-logs.txt
   success-check-e2e:
     name: End-to-End Tests Success
     needs: [e2e-tests-server-cli, e2e-tests-web]

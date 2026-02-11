@@ -41,7 +41,7 @@ class HashService {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       // Migrate hashes from cloud ID to local ID so we don't have to re-hash them
-      await _localAssetRepository.reconcileHashesFromCloudId();
+      // await _localAssetRepository.reconcileHashesFromCloudId();
 
       // Sorted by backupSelection followed by isCloud
       final localAlbums = await _localAlbumRepository.getBackupAlbums();
