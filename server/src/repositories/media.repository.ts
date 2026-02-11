@@ -19,7 +19,7 @@ import {
   TranscodeCommand,
   VideoInfo,
 } from 'src/types';
-import { convertColorFilterToMatricies } from 'src/utils/color_filter';
+import { convertColorFilterToMatrices } from 'src/utils/color_filter';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -170,7 +170,7 @@ export class MediaRepository {
 
     const filter = edits.find((edit) => edit.action === 'filter');
     if (filter) {
-      const { biasMatrix, offsetMatrix } = convertColorFilterToMatricies(filter.parameters);
+      const { biasMatrix, offsetMatrix } = convertColorFilterToMatrices(filter.parameters);
       pipeline = pipeline.recomb(biasMatrix).linear([1, 1, 1], offsetMatrix);
     }
 

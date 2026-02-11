@@ -68,8 +68,6 @@ class EditFilter {
   }
 
   factory EditFilter.fromDtoParams(Map<String, dynamic> params, String name) {
-    print(params);
-
     return EditFilter(
       name: name,
       rrBias: (params['rrBias'] as num).toDouble(),

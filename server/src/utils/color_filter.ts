@@ -1,7 +1,7 @@
 import { Matrix3x3 } from 'sharp';
 import { FilterParameters } from 'src/dtos/editing.dto';
 
-export function convertColorFilterToMatricies(filter: FilterParameters) {
+export function convertColorFilterToMatrices(filter: FilterParameters) {
   const biasMatrix: Matrix3x3 = [
     [filter.rrBias, filter.rgBias, filter.rbBias],
     [filter.grBias, filter.ggBias, filter.gbBias],

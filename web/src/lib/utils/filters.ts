@@ -17,36 +17,50 @@ export class EditFilter {
   gOffset: number;
   bOffset: number;
 
-  static identity = new EditFilter('Normal', 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+  static identity = new EditFilter({
+    name: 'Normal',
+    rrBias: 1,
+    rgBias: 0,
+    rbBias: 0,
+    grBias: 0,
+    ggBias: 1,
+    gbBias: 0,
+    brBias: 0,
+    bgBias: 0,
+    bbBias: 1,
+    rOffset: 0,
+    gOffset: 0,
+    bOffset: 0,
+  });
 
-  constructor(
-    name: string,
-    rrBias: number,
-    rgBias: number,
-    rbBias: number,
-    grBias: number,
-    ggBias: number,
-    gbBias: number,
-    brBias: number,
-    bgBias: number,
-    bbBias: number,
-    rOffset: number,
-    gOffset: number,
-    bOffset: number,
-  ) {
-    this.name = name;
-    this.rrBias = rrBias;
-    this.rgBias = rgBias;
-    this.rbBias = rbBias;
-    this.grBias = grBias;
-    this.ggBias = ggBias;
-    this.gbBias = gbBias;
-    this.brBias = brBias;
-    this.bgBias = bgBias;
-    this.bbBias = bbBias;
-    this.rOffset = rOffset;
-    this.gOffset = gOffset;
-    this.bOffset = bOffset;
+  constructor(filter: {
+    name: string;
+    rrBias: number;
+    rgBias: number;
+    rbBias: number;
+    grBias: number;
+    ggBias: number;
+    gbBias: number;
+    brBias: number;
+    bgBias: number;
+    bbBias: number;
+    rOffset: number;
+    gOffset: number;
+    bOffset: number;
+  }) {
+    this.name = filter.name;
+    this.rrBias = filter.rrBias;
+    this.rgBias = filter.rgBias;
+    this.rbBias = filter.rbBias;
+    this.grBias = filter.grBias;
+    this.ggBias = filter.ggBias;
+    this.gbBias = filter.gbBias;
+    this.brBias = filter.brBias;
+    this.bgBias = filter.bgBias;
+    this.bbBias = filter.bbBias;
+    this.rOffset = filter.rOffset;
+    this.gOffset = filter.gOffset;
+    this.bOffset = filter.bOffset;
   }
 
   get dtoParameters(): FilterParameters {
@@ -76,39 +90,28 @@ export class EditFilter {
   }
 
   static fromDto(params: FilterParameters, name: string): EditFilter {
-    return new EditFilter(
+    return new EditFilter({
       name,
-      params.rrBias,
-      params.rgBias,
-      params.rbBias,
-      params.grBias,
-      params.ggBias,
-      params.gbBias,
-      params.brBias,
-      params.bgBias,
-      params.bbBias,
-      params.rOffset,
-      params.gOffset,
-      params.bOffset,
-    );
+      ...params,
+    });
   }
 
   static fromMatrix(matrix: number[], name: string): EditFilter {
-    return new EditFilter(
+    return new EditFilter({
       name,
-      matrix[0],
-      matrix[1],
-      matrix[2],
-      matrix[5],
-      matrix[6],
-      matrix[7],
-      matrix[10],
-      matrix[11],
-      matrix[12],
-      matrix[15],
-      matrix[16],
-      matrix[17],
-    );
+      rrBias: matrix[0],
+      rgBias: matrix[1],
+      rbBias: matrix[2],
+      grBias: matrix[5],
+      ggBias: matrix[6],
+      gbBias: matrix[7],
+      brBias: matrix[10],
+      bgBias: matrix[11],
+      bbBias: matrix[12],
+      rOffset: matrix[15],
+      gOffset: matrix[16],
+      bOffset: matrix[17],
+    });
   }
 
   get isIdentity(): boolean {

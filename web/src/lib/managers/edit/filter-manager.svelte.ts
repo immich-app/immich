@@ -4,6 +4,7 @@ import { AssetEditAction, type AssetEditActionFilter, type AssetResponseDto, typ
 
 class FilterManager implements EditToolManager {
   selectedFilter: EditFilter = $state(filters[0]);
+  canReset: boolean = $derived(!this.selectedFilter.isIdentity);
 
   hasChanges = $derived(!this.selectedFilter.isIdentity);
   edits = $derived<EditActions>(

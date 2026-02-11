@@ -76,7 +76,7 @@
       size="small"
       fullWidth
     >
-      Transform
+      {$t('editor_panel_transform')}
     </Button>
     <Button
       leadingIcon={mdiPalette}
@@ -87,7 +87,7 @@
       size="small"
       fullWidth
     >
-      Filter
+      {$t('editor_panel_filter')}
     </Button>
   </HStack>
 
