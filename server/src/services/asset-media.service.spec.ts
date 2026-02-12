@@ -429,45 +429,40 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should handle a live photo', async () => {
-      mocks.asset.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
-      mocks.asset.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden })
+        .owner(authStub.user1.user)
+        .build();
+      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.create.mockResolvedValueOnce(asset);
 
       await expect(
-        sut.uploadAsset(
-          authStub.user1,
-          { ...createDto, livePhotoVideoId: 'live-photo-motion-asset' },
-          fileStub.livePhotoStill,
-        ),
+        sut.uploadAsset(authStub.user1, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
       ).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
-        id: 'live-photo-still-asset',
+        id: asset.id,
       });
 
-      expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
+      expect(mocks.asset.getById).toHaveBeenCalledWith(motionAsset.id);
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should hide the linked motion asset', async () => {
-      mocks.asset.getById.mockResolvedValueOnce({
-        ...assetStub.livePhotoMotionAsset,
-        visibility: AssetVisibility.Timeline,
-      });
-      mocks.asset.create.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
+      const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
+      const asset = AssetFactory.create();
+      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.create.mockResolvedValueOnce(asset);
 
       await expect(
-        sut.uploadAsset(
-          authStub.user1,
-          { ...createDto, livePhotoVideoId: 'live-photo-motion-asset' },
-          fileStub.livePhotoStill,
-        ),
+        sut.uploadAsset(authStub.user1, { ...createDto, livePhotoVideoId: motionAsset.id }, fileStub.livePhotoStill),
       ).resolves.toEqual({
         status: AssetMediaStatus.CREATED,
-        id: 'live-photo-still-asset',
+        id: asset.id,
       });
 
-      expect(mocks.asset.getById).toHaveBeenCalledWith('live-photo-motion-asset');
+      expect(mocks.asset.getById).toHaveBeenCalledWith(motionAsset.id);
       expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: 'live-photo-motion-asset',
+        id: motionAsset.id,
         visibility: AssetVisibility.Hidden,
       });
     });
@@ -777,12 +772,13 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should fall back to the original path', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.video.id]));
-      mocks.asset.getForVideo.mockResolvedValue(assetStub.video);
+      const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForVideo.mockResolvedValue(asset);
 
-      await expect(sut.playbackVideo(authStub.admin, assetStub.video.id)).resolves.toEqual(
+      await expect(sut.playbackVideo(authStub.admin, asset.id)).resolves.toEqual(
         new ImmichFileResponse({
-          path: assetStub.video.originalPath,
+          path: asset.originalPath,
           cacheControl: CacheControl.PrivateWithCache,
           contentType: 'application/octet-stream',
         }),
