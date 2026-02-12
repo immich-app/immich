@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -43,9 +44,7 @@ class DriftTrashPage extends StatelessWidget {
 
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
-              sliver: SliverToBoxAdapter(
-                child: const Text("trash_page_info").t(context: context, args: {"days": "$trashDays"}),
-              ),
+              sliver: SliverToBoxAdapter(child: Text(context.t.trash_page_info(days: trashDays))),
             );
           },
         ),
