@@ -193,8 +193,7 @@ export class IntegrityService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.IntegrityUntrackedFilesQueueAll, queue: QueueName.IntegrityCheck })
-  async handleUntrackedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
+  private async queueRefreshAllUntrackedFiles() {
     this.logger.log(`Checking for out of date untracked file reports...`);
 
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.UntrackedFile);
@@ -211,6 +210,11 @@ export class IntegrityService extends BaseService {
       total += batchReports.length;
       this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
     }
+  }
+
+  @OnJob({ name: JobName.IntegrityUntrackedFilesQueueAll, queue: QueueName.IntegrityCheck })
+  async handleUntrackedFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
+    await this.queueRefreshAllUntrackedFiles();
 
     if (refreshOnly) {
       this.logger.log('Refresh complete.');
@@ -243,7 +247,7 @@ export class IntegrityService extends BaseService {
       }
     }
 
-    total = 0;
+    let total = 0;
     for await (const [batchType, batchPaths] of paths()) {
       await this.jobRepository.queue({
         name: JobName.IntegrityUntrackedFiles,
@@ -319,27 +323,31 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
+  private async queueRefreshAllMissingFiles() {
+    this.logger.log(`Checking for out of date missing file reports...`);
+
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.MissingFile);
+
+    let total = 0;
+    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      await this.jobRepository.queue({
+        name: JobName.IntegrityMissingFilesRefresh,
+        data: {
+          items: batchReports,
+        },
+      });
+
+      total += batchReports.length;
+      this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+    }
+
+    this.logger.log('Refresh complete.');
+  }
+
   @OnJob({ name: JobName.IntegrityMissingFilesQueueAll, queue: QueueName.IntegrityCheck })
   async handleMissingFilesQueueAll({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
-      this.logger.log(`Checking for out of date missing file reports...`);
-
-      const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.MissingFile);
-
-      let total = 0;
-      for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
-        await this.jobRepository.queue({
-          name: JobName.IntegrityMissingFilesRefresh,
-          data: {
-            items: batchReports,
-          },
-        });
-
-        total += batchReports.length;
-        this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
-      }
-
-      this.logger.log('Refresh complete.');
+      await this.queueRefreshAllMissingFiles();
       return JobStatus.Success;
     }
 
@@ -423,33 +431,35 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
+  async queueRefreshAllChecksumFiles() {
+    this.logger.log(`Checking for out of date checksum file reports...`);
+
+    const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.ChecksumFail);
+
+    let total = 0;
+    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      await this.jobRepository.queue({
+        name: JobName.IntegrityChecksumFilesRefresh,
+        data: {
+          items: batchReports.map(({ path, reportId, checksum }) => ({
+            path,
+            reportId,
+            checksum: checksum?.toString('hex'),
+          })),
+        },
+      });
+
+      total += batchReports.length;
+      this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
+    }
+
+    this.logger.log('Refresh complete.');
+  }
+
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.IntegrityCheck })
   async handleChecksumFiles({ refreshOnly }: IIntegrityJob = {}): Promise<JobStatus> {
     if (refreshOnly) {
-      this.logger.log(`Checking for out of date checksum file reports...`);
-
-      const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(
-        IntegrityReportType.ChecksumFail,
-      );
-
-      let total = 0;
-      for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
-        await this.jobRepository.queue({
-          name: JobName.IntegrityChecksumFilesRefresh,
-          data: {
-            items: batchReports.map(({ path, reportId, checksum }) => ({
-              path,
-              reportId,
-              checksum: checksum?.toString('hex'),
-            })),
-          },
-        });
-
-        total += batchReports.length;
-        this.logger.log(`Queued report check of ${batchReports.length} report(s) (${total} so far)`);
-      }
-
-      this.logger.log('Refresh complete.');
+      await this.queueRefreshAllChecksumFiles();
       return JobStatus.Success;
     }
 
