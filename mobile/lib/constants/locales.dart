@@ -5,6 +5,7 @@ const Map<String, Locale> locales = {
   'English (en)': Locale('en'),
   // Additional locales
   'Arabic (ar)': Locale('ar'),
+  'Belarusian (be)': Locale('be'),
   'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),
   'Chinese Simplified (zh_CN)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'SIMPLIFIED'),
