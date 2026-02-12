@@ -38,187 +38,178 @@ class AppBarServerInfo extends HookConsumerWidget {
     }, []);
 
     return Padding(
-      padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.colorScheme.surface,
-          borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (showVersionWarning) ...[
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: ServerUpdateNotification()),
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+          ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (showVersionWarning) ...[
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: ServerUpdateNotification()),
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-              ],
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "server_info_box_app_version".tr(),
-                        style: TextStyle(
-                          fontSize: titleFontSize,
-                          color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Text(
+                    "server_info_box_app_version".tr(),
+                    style: TextStyle(
+                      fontSize: titleFontSize,
+                      color: context.textTheme.labelSmall?.color,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Expanded(
-                    flex: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
-                        style: TextStyle(
-                          fontSize: contentFontSize,
-                          color: context.colorScheme.onSurfaceSecondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "server_version".tr(),
-                        style: TextStyle(
-                          fontSize: titleFontSize,
-                          color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        serverInfoState.serverVersion.major > 0
-                            ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
-                            : "--",
-                        style: TextStyle(
-                          fontSize: contentFontSize,
-                          color: context.colorScheme.onSurfaceSecondary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Text(
-                        "server_info_box_server_url".tr(),
-                        style: TextStyle(
-                          fontSize: titleFontSize,
-                          color: context.textTheme.labelSmall?.color,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 0,
-                    child: Container(
-                      width: 200,
-                      padding: const EdgeInsets.only(right: 10.0),
-                      child: Tooltip(
-                        verticalOffset: 0,
-                        decoration: BoxDecoration(
-                          color: context.primaryColor.withValues(alpha: 0.9),
-                          borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        ),
-                        textStyle: TextStyle(
-                          color: context.isDarkTheme ? Colors.black : Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        message: getServerUrl() ?? '--',
-                        preferBelow: false,
-                        triggerMode: TooltipTriggerMode.tap,
-                        child: Text(
-                          getServerUrl() ?? '--',
-                          style: TextStyle(
-                            fontSize: contentFontSize,
-                            color: context.colorScheme.onSurfaceSecondary,
-                            fontWeight: FontWeight.bold,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          textAlign: TextAlign.end,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (serverInfoState.latestVersion != null) ...[
-                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Row(
-                          children: [
-                            if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate)
-                              const Padding(
-                                padding: EdgeInsets.only(right: 5.0),
-                                child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),
-                              ),
-                            Text(
-                              "latest_version".tr(),
-                              style: TextStyle(
-                                fontSize: titleFontSize,
-                                color: context.textTheme.labelSmall?.color,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 10.0),
-                        child: Text(
-                          serverInfoState.latestVersion!.major > 0
-                              ? "${serverInfoState.latestVersion!.major}.${serverInfoState.latestVersion!.minor}.${serverInfoState.latestVersion!.patch}"
-                              : "--",
-                          style: TextStyle(
-                            fontSize: contentFontSize,
-                            color: context.colorScheme.onSurfaceSecondary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
-              ],
+              ),
+              Expanded(
+                flex: 0,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: Text(
+                    "${appInfo.value["version"]} build.${appInfo.value["buildNumber"]}",
+                    style: TextStyle(
+                      fontSize: contentFontSize,
+                      color: context.colorScheme.onSurfaceSecondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
+          const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Text(
+                    "server_version".tr(),
+                    style: TextStyle(
+                      fontSize: titleFontSize,
+                      color: context.textTheme.labelSmall?.color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 0,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: Text(
+                    serverInfoState.serverVersion.major > 0
+                        ? "${serverInfoState.serverVersion.major}.${serverInfoState.serverVersion.minor}.${serverInfoState.serverVersion.patch}"
+                        : "--",
+                    style: TextStyle(
+                      fontSize: contentFontSize,
+                      color: context.colorScheme.onSurfaceSecondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Text(
+                    "server_info_box_server_url".tr(),
+                    style: TextStyle(
+                      fontSize: titleFontSize,
+                      color: context.textTheme.labelSmall?.color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 0,
+                child: Container(
+                  width: 200,
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: Tooltip(
+                    verticalOffset: 0,
+                    decoration: BoxDecoration(
+                      color: context.primaryColor.withValues(alpha: 0.9),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                    ),
+                    textStyle: TextStyle(
+                      color: context.isDarkTheme ? Colors.black : Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    message: getServerUrl() ?? '--',
+                    preferBelow: false,
+                    triggerMode: TooltipTriggerMode.tap,
+                    child: Text(
+                      getServerUrl() ?? '--',
+                      style: TextStyle(
+                        fontSize: contentFontSize,
+                        color: context.colorScheme.onSurfaceSecondary,
+                        fontWeight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (serverInfoState.latestVersion != null) ...[
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 10.0),
+                    child: Row(
+                      children: [
+                        if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate)
+                          const Padding(
+                            padding: EdgeInsets.only(right: 5.0),
+                            child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),
+                          ),
+                        Text(
+                          "latest_version".tr(),
+                          style: TextStyle(
+                            fontSize: titleFontSize,
+                            color: context.textTheme.labelSmall?.color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 10.0),
+                    child: Text(
+                      serverInfoState.latestVersion!.major > 0
+                          ? "${serverInfoState.latestVersion!.major}.${serverInfoState.latestVersion!.minor}.${serverInfoState.latestVersion!.patch}"
+                          : "--",
+                      style: TextStyle(
+                        fontSize: contentFontSize,
+                        color: context.colorScheme.onSurfaceSecondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
