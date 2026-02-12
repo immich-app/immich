@@ -49,12 +49,6 @@
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
 
-  const isTransparent = $derived(
-    asset.originalMimeType === 'image/png' ||
-      asset.originalMimeType === 'image/webp' ||
-      asset.originalMimeType === 'image/gif',
-  );
-
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
