@@ -13,6 +13,7 @@
             "description": "Album ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -23,6 +24,7 @@
             "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -30,7 +32,6 @@
             "name": "level",
             "required": false,
             "in": "query",
-            "description": "Filter by activity level",
             "schema": {
               "$ref": "#/components/schemas/ReactionLevel"
             }
@@ -39,7 +40,6 @@
             "name": "type",
             "required": false,
             "in": "query",
-            "description": "Filter by activity type",
             "schema": {
               "$ref": "#/components/schemas/ReactionType"
             }
@@ -51,6 +51,7 @@
             "description": "Filter by user ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           }
@@ -173,6 +174,7 @@
             "description": "Album ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -183,6 +185,7 @@
             "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           }
@@ -15417,11 +15420,13 @@
           "albumId": {
             "description": "Album ID",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "assetId": {
             "description": "Asset ID (if activity is for an asset)",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "comment": {
@@ -15429,12 +15434,7 @@
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReactionType"
-              }
-            ],
-            "description": "Activity type (like or comment)"
+            "$ref": "#/components/schemas/ReactionType"
           }
         },
         "required": [
@@ -15444,10 +15444,13 @@
         "type": "object"
       },
       "ActivityResponseDto": {
+        "additionalProperties": false,
         "properties": {
           "assetId": {
             "description": "Asset ID (if activity is for an asset)",
+            "format": "uuid",
             "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "comment": {
@@ -15458,22 +15461,71 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "id": {
             "description": "Activity ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReactionType"
-              }
-            ],
-            "description": "Activity type"
+            "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
-            "$ref": "#/components/schemas/UserResponseDto"
+            "additionalProperties": false,
+            "properties": {
+              "avatarColor": {
+                "description": "Avatar color",
+                "enum": [
+                  "primary",
+                  "pink",
+                  "red",
+                  "yellow",
+                  "blue",
+                  "green",
+                  "purple",
+                  "orange",
+                  "gray",
+                  "amber"
+                ],
+                "type": "string"
+              },
+              "email": {
+                "description": "User email",
+                "type": "string"
+              },
+              "id": {
+                "description": "User ID",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+                "type": "string"
+              },
+              "name": {
+                "description": "User name",
+                "type": "string"
+              },
+              "profileChangedAt": {
+                "description": "Profile change date",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                "type": "string"
+              },
+              "profileImagePath": {
+                "description": "Profile image path",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "email",
+              "profileImagePath",
+              "avatarColor",
+              "profileChangedAt"
+            ],
+            "type": "object"
           }
         },
         "required": [
@@ -15486,13 +15538,18 @@
         "type": "object"
       },
       "ActivityStatisticsResponseDto": {
+        "additionalProperties": false,
         "properties": {
           "comments": {
             "description": "Number of comments",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "likes": {
             "description": "Number of likes",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           }
         },
@@ -20789,17 +20846,21 @@
         "type": "object"
       },
       "ReactionLevel": {
+        "description": "Reaction level",
         "enum": [
           "album",
           "asset"
         ],
+        "id": "ReactionLevel",
         "type": "string"
       },
       "ReactionType": {
+        "description": "Reaction type",
         "enum": [
           "comment",
           "like"
         ],
+        "id": "ReactionType",
         "type": "string"
       },
       "ReverseGeocodingStateResponseDto": {

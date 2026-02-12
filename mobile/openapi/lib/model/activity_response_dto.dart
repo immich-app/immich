@@ -33,10 +33,9 @@ class ActivityResponseDto {
   /// Activity ID
   String id;
 
-  /// Activity type
   ReactionType type;
 
-  UserResponseDto user;
+  ActivityResponseDtoUser user;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
@@ -72,7 +71,9 @@ class ActivityResponseDto {
     } else {
     //  json[r'comment'] = null;
     }
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAt.millisecondsSinceEpoch
+        : this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'type'] = this.type;
       json[r'user'] = this.user;
@@ -90,10 +91,10 @@ class ActivityResponseDto {
       return ActivityResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId'),
         comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ReactionType.fromJson(json[r'type'])!,
-        user: UserResponseDto.fromJson(json[r'user'])!,
+        user: ActivityResponseDtoUser.fromJson(json[r'user'])!,
       );
     }
     return null;

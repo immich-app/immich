@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ZodResponse } from 'nestjs-zod';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   ActivityCreateDto,
@@ -28,7 +29,8 @@ export class ActivityController {
       'Returns a list of activities for the selected asset or album. The activities are returned in sorted order, with the oldest activities appearing first.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
+  @ZodResponse({ type: [ActivityResponseDto], status: HttpStatus.OK })
+  getActivities(@Auth() auth: AuthDto, @Query() dto: ActivitySearchDto) {
     return this.service.getAll(auth, dto);
   }
 
@@ -39,11 +41,12 @@ export class ActivityController {
     description: 'Create a like or a comment for an album, or an asset in an album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @ZodResponse({ type: ActivityResponseDto, status: HttpStatus.CREATED })
   async createActivity(
     @Auth() auth: AuthDto,
     @Body() dto: ActivityCreateDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ActivityResponseDto> {
+  ) {
     const { duplicate, value } = await this.service.create(auth, dto);
     if (duplicate) {
       res.status(HttpStatus.OK);
@@ -58,7 +61,8 @@ export class ActivityController {
     description: 'Returns the number of likes and comments for a given album or asset in an album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
+  @ZodResponse({ type: ActivityStatisticsResponseDto, status: HttpStatus.OK })
+  getActivityStatistics(@Auth() auth: AuthDto, @Query() dto: ActivityDto) {
     return this.service.getStatistics(auth, dto);
   }
 
@@ -70,7 +74,7 @@ export class ActivityController {
     description: 'Removes a like or comment from a given album or asset in an album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
 }

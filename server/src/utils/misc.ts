@@ -150,6 +150,43 @@ function sortKeys<T>(target: T): T {
 export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
+const stripSchemaMetadata = (schema: unknown) => {
+  if (!schema || typeof schema !== 'object') {
+    return schema;
+  }
+
+  const clone = _.cloneDeep(schema) as Record<string, unknown>;
+  delete clone.id;
+  return clone;
+};
+
+const replaceSchemaRefs = (target: unknown, schemaNameMap: Record<string, string>) => {
+  if (!target || typeof target !== 'object') {
+    return;
+  }
+
+  if (Array.isArray(target)) {
+    for (const item of target) {
+      replaceSchemaRefs(item, schemaNameMap);
+    }
+    return;
+  }
+
+  const obj = target as Record<string, unknown>;
+  const ref = obj.$ref;
+  if (typeof ref === 'string' && ref.startsWith('#/components/schemas/')) {
+    const name = ref.slice('#/components/schemas/'.length);
+    const mapped = schemaNameMap[name];
+    if (mapped) {
+      obj.$ref = `#/components/schemas/${mapped}`;
+    }
+  }
+
+  for (const value of Object.values(obj)) {
+    replaceSchemaRefs(value, schemaNameMap);
+  }
+};
+
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
   if (typeof schema === 'string' || '$ref' in schema) {
     return false;
@@ -163,10 +200,42 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
   if (document.components?.schemas) {
     const schemas = document.components.schemas as Record<string, SchemaObject>;
+    const schemaNameMap: Record<string, string> = {};
+
+    /**
+     If X_Output exists and X does not exist → rename X_Output to X and rewrite all $refs.
+     If both exist and are deep-equal → rewrite refs to X, delete X_Output.
+     If both exist and differ → keep both (this is the "real" reason _Output exists).
+     */
+    for (const outputName of Object.keys(schemas).filter((name) => name.endsWith('_Output'))) {
+      const baseName = outputName.slice(0, -'_Output'.length);
+      const outputSchema = schemas[outputName];
+      const baseSchema = schemas[baseName];
+
+      if (!baseSchema) {
+        schemas[baseName] = outputSchema;
+        delete schemas[outputName];
+        schemaNameMap[outputName] = baseName;
+
+        const id = (outputSchema as Record<string, unknown>).id;
+        if (id === outputName) {
+          (outputSchema as Record<string, unknown>).id = baseName;
+        }
+
+        continue;
+      }
+
+      if (_.isEqual(stripSchemaMetadata(baseSchema), stripSchemaMetadata(outputSchema))) {
+        delete schemas[outputName];
+        schemaNameMap[outputName] = baseName;
+      }
+    }
+
+    replaceSchemaRefs(document, schemaNameMap);
 
     document.components.schemas = sortKeys(schemas);
 
-    for (const [schemaName, schema] of Object.entries(schemas)) {
+    for (const [schemaName, schema] of Object.entries(document.components.schemas as Record<string, SchemaObject>)) {
       if (schema.properties) {
         schema.properties = sortKeys(schema.properties);
 
@@ -266,6 +335,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);
+  const openApiDoc = cleanupOpenApiDoc(specification);
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -276,12 +346,12 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, cleanupOpenApiDoc(specification), customOptions);
+  SwaggerModule.setup('doc', app, openApiDoc, customOptions);
 
   if (write) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
+    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
   }
 };
 

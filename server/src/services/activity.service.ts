@@ -23,7 +23,7 @@ export class ActivityService extends BaseService {
       userId: dto.userId,
       albumId: dto.albumId,
       assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
-      isLiked: dto.type && dto.type === ReactionType.LIKE,
+      isLiked: dto.type && dto.type === ReactionType.enum.like,
     });
 
     return activities.map((activity) => mapActivity(activity));
@@ -46,7 +46,7 @@ export class ActivityService extends BaseService {
     let activity: Activity | undefined;
     let duplicate = false;
 
-    if (dto.type === ReactionType.LIKE) {
+    if (dto.type === ReactionType.enum.like) {
       delete dto.comment;
       [activity] = await this.activityRepository.search({
         ...common,
@@ -60,7 +60,7 @@ export class ActivityService extends BaseService {
     if (!activity) {
       activity = await this.activityRepository.create({
         ...common,
-        isLiked: dto.type === ReactionType.LIKE,
+        isLiked: dto.type === ReactionType.enum.like,
         comment: dto.comment,
       });
     }

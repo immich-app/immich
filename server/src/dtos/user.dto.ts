@@ -5,6 +5,7 @@ import { User, UserAdmin } from 'src/database';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
 import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
+import { z } from 'zod';
 
 export class UserUpdateMeDto {
   @ApiPropertyOptional({ description: 'User email' })
@@ -50,6 +51,15 @@ export class UserResponseDto {
   @ApiProperty({ description: 'Profile change date' })
   profileChangedAt!: Date;
 }
+
+export const UserResponseSchema = z.object({
+  id: z.uuidv4().describe('User ID'),
+  name: z.string().describe('User name'),
+  email: z.string().describe('User email'),
+  profileImagePath: z.string().describe('Profile image path'),
+  avatarColor: z.enum(UserAvatarColor).describe('Avatar color'),
+  profileChangedAt: z.iso.datetime().describe('Profile change date'),
+});
 
 export class UserLicense {
   @ApiProperty({ description: 'License key' })

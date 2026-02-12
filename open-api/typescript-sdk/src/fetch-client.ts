@@ -14,20 +14,6 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
-export type UserResponseDto = {
-    /** Avatar color */
-    avatarColor: UserAvatarColor;
-    /** User email */
-    email: string;
-    /** User ID */
-    id: string;
-    /** User name */
-    name: string;
-    /** Profile change date */
-    profileChangedAt: string;
-    /** Profile image path */
-    profileImagePath: string;
-};
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
     assetId: string | null;
@@ -37,9 +23,21 @@ export type ActivityResponseDto = {
     createdAt: string;
     /** Activity ID */
     id: string;
-    /** Activity type */
     "type": ReactionType;
-    user: UserResponseDto;
+    user: {
+        /** Avatar color */
+        avatarColor: AvatarColor;
+        /** User email */
+        email: string;
+        /** User ID */
+        id: string;
+        /** User name */
+        name: string;
+        /** Profile change date */
+        profileChangedAt: string;
+        /** Profile image path */
+        profileImagePath: string;
+    };
 };
 export type ActivityCreateDto = {
     /** Album ID */
@@ -48,7 +46,6 @@ export type ActivityCreateDto = {
     assetId?: string;
     /** Comment text (required if type is comment) */
     comment?: string;
-    /** Activity type (like or comment) */
     "type": ReactionType;
 };
 export type ActivityStatisticsResponseDto = {
@@ -448,6 +445,20 @@ export type AssetStatsResponseDto = {
     total: number;
     /** Number of videos */
     videos: number;
+};
+export type UserResponseDto = {
+    /** Avatar color */
+    avatarColor: UserAvatarColor;
+    /** User email */
+    email: string;
+    /** User ID */
+    id: string;
+    /** User name */
+    name: string;
+    /** Profile change date */
+    profileChangedAt: string;
+    /** Profile image path */
+    profileImagePath: string;
 };
 export type AlbumUserResponseDto = {
     /** Album user role */
@@ -6782,7 +6793,7 @@ export enum ReactionType {
     Comment = "comment",
     Like = "like"
 }
-export enum UserAvatarColor {
+export enum AvatarColor {
     Primary = "primary",
     Pink = "pink",
     Red = "red",
@@ -6821,6 +6832,18 @@ export enum NotificationType {
     AlbumInvite = "AlbumInvite",
     AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
+}
+export enum UserAvatarColor {
+    Primary = "primary",
+    Pink = "pink",
+    Red = "red",
+    Yellow = "yellow",
+    Blue = "blue",
+    Green = "green",
+    Purple = "purple",
+    Orange = "orange",
+    Gray = "gray",
+    Amber = "amber"
 }
 export enum UserStatus {
     Active = "active",
