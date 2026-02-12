@@ -29,7 +29,8 @@ files.forEach(file => {
   } else if (Intl.DisplayNames.supportedLocalesOf(bcp47Code).length > 0) {
     localeNamesMap[code] = capitalize(new Intl.DisplayNames([bcp47Code], { type: 'language' }).of(bcp47Code));
   } else {
-    throw new Error(`Unsupported locale: ${code}`);
+    throw new Error(`Unsupported locale: ${code}. Verify that it follows ISO 639-1, ISO 639-2, ISO 639-3 or IETF BCP-47 and that it is supported by Intl.DisplayNames.
+      Otherwise add a mapping for the language in mobile/scripts/generate_locale_names.js and in web/src/lib/constants.ts`);
   }
 });
 
