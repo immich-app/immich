@@ -402,6 +402,9 @@ To decrease Redis logs, you can add the following line to the `redis:` section o
 ### How can I run Immich as a non-root user?
 
 You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
+
+[Example docker-compose.yml file](https://github.com/immich-app/immich/blob/main/docker/docker-compose.rootless.yml)
+
 You may need to add mount points or docker volumes for the following internal container paths:
 
 - `immich-machine-learning:/.config`

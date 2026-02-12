@@ -10,7 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
@@ -153,7 +153,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                           Icon(Icons.warning_rounded, color: context.colorScheme.error, fill: 1),
                           const SizedBox(width: 8),
                           Text(
-                            IntlKeys.backup_error_sync_failed.t(),
+                            context.t.backup_error_sync_failed,
                             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
                             textAlign: TextAlign.center,
                           ),

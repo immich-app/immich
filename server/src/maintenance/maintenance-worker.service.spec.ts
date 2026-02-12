@@ -1,23 +1,18 @@
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { SignJWT } from 'jose';
-import { DateTime } from 'luxon';
-import { PassThrough, Readable } from 'node:stream';
-import { StorageCore } from 'src/cores/storage.core';
-import { MaintenanceAction, StorageFolder, SystemMetadataKey } from 'src/enum';
+import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { automock, AutoMocked, getMocks, mockDuplex, mockSpawn, ServiceMocks } from 'test/utils';
-
-function* mockData() {
-  yield '';
-}
+import { DatabaseBackupService } from 'src/services/database-backup.service';
+import { automock, AutoMocked, getMocks, ServiceMocks } from 'test/utils';
 
 describe(MaintenanceWorkerService.name, () => {
   let sut: MaintenanceWorkerService;
   let mocks: ServiceMocks;
   let maintenanceWebsocketRepositoryMock: AutoMocked<MaintenanceWebsocketRepository>;
   let maintenanceHealthRepositoryMock: AutoMocked<MaintenanceHealthRepository>;
+  let databaseBackupServiceMock: AutoMocked<DatabaseBackupService>;
 
   beforeEach(() => {
     mocks = getMocks();
@@ -27,6 +22,20 @@ describe(MaintenanceWorkerService.name, () => {
     });
     maintenanceHealthRepositoryMock = automock(MaintenanceHealthRepository, {
       args: [mocks.logger],
+      strict: false,
+    });
+    databaseBackupServiceMock = automock(DatabaseBackupService, {
+      args: [
+        mocks.logger,
+        mocks.storage,
+        mocks.config,
+        mocks.systemMetadata,
+        mocks.process,
+        mocks.database,
+        mocks.cron,
+        mocks.job,
+        maintenanceHealthRepositoryMock,
+      ],
       strict: false,
     });
 
@@ -40,6 +49,7 @@ describe(MaintenanceWorkerService.name, () => {
       mocks.storage as never,
       mocks.process,
       mocks.database as never,
+      databaseBackupServiceMock,
     );
 
     sut.mock({
@@ -310,17 +320,6 @@ describe(MaintenanceWorkerService.name, () => {
   describe('action: restore database', () => {
     beforeEach(() => {
       mocks.database.tryLock.mockResolvedValueOnce(true);
-
-      mocks.storage.readdir.mockResolvedValue([]);
-      mocks.process.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
-      mocks.process.spawnDuplexStream.mockImplementation(() => mockDuplex('command', 0, 'data', ''));
-      mocks.process.fork.mockImplementation(() => mockSpawn(0, 'Immich Server is listening', ''));
-      mocks.storage.rename.mockResolvedValue();
-      mocks.storage.unlink.mockResolvedValue();
-      mocks.storage.createPlainReadStream.mockReturnValue(Readable.from(mockData()));
-      mocks.storage.createWriteStream.mockReturnValue(new PassThrough());
-      mocks.storage.createGzip.mockReturnValue(new PassThrough());
-      mocks.storage.createGunzip.mockReturnValue(new PassThrough());
     });
 
     it('should update maintenance mode state', async () => {
@@ -341,21 +340,7 @@ describe(MaintenanceWorkerService.name, () => {
       });
     });
 
-    it('should fail to restore invalid backup', async () => {
-      await sut.runAction({
-        action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'filename',
-      });
-
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
-        active: true,
-        action: MaintenanceAction.RestoreDatabase,
-        error: 'Error: Invalid backup file format!',
-        task: 'error',
-      });
-    });
-
-    it('should successfully run a backup', async () => {
+    it('should defer to database backup service', async () => {
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
         restoreBackupFilename: 'development-filename.sql',
@@ -380,13 +365,10 @@ describe(MaintenanceWorkerService.name, () => {
           action: 'end',
         },
       );
-
-      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
-      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(3);
     });
 
-    it('should fail if backup creation fails', async () => {
-      mocks.process.spawnDuplexStream.mockReturnValueOnce(mockDuplex('pg_dump', 1, '', 'error'));
+    it('should forward errors from database backup service', async () => {
+      databaseBackupServiceMock.restoreDatabaseBackup.mockRejectedValue('Sample error');
 
       await sut.runAction({
         action: MaintenanceAction.RestoreDatabase,
@@ -396,149 +378,16 @@ describe(MaintenanceWorkerService.name, () => {
       expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
         active: true,
         action: MaintenanceAction.RestoreDatabase,
-        error: 'Error: pg_dump non-zero exit code (1)\nerror',
+        error: 'Sample error',
         task: 'error',
       });
 
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenLastCalledWith(
-        'MaintenanceStatusV1',
-        expect.any(String),
-        expect.objectContaining({
-          task: 'error',
-        }),
-      );
-    });
-
-    it('should fail if restore itself fails', async () => {
-      mocks.process.spawnDuplexStream
-        .mockReturnValueOnce(mockDuplex('pg_dump', 0, 'data', ''))
-        .mockReturnValueOnce(mockDuplex('gzip', 0, 'data', ''))
-        .mockReturnValueOnce(mockDuplex('psql', 1, '', 'error'));
-
-      await sut.runAction({
-        action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename.sql',
-      });
-
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
+      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'public', {
         active: true,
         action: MaintenanceAction.RestoreDatabase,
-        error: 'Error: psql non-zero exit code (1)\nerror',
+        error: 'Something went wrong, see logs!',
         task: 'error',
       });
-
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenLastCalledWith(
-        'MaintenanceStatusV1',
-        expect.any(String),
-        expect.objectContaining({
-          task: 'error',
-        }),
-      );
-    });
-
-    it('should rollback if database migrations fail', async () => {
-      mocks.database.runMigrations.mockRejectedValue(new Error('Migrations Error'));
-
-      await sut.runAction({
-        action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename.sql',
-      });
-
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
-        active: true,
-        action: MaintenanceAction.RestoreDatabase,
-        error: 'Error: Migrations Error',
-        task: 'error',
-      });
-
-      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalledTimes(0);
-      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
-    });
-
-    it('should rollback if API healthcheck fails', async () => {
-      maintenanceHealthRepositoryMock.checkApiHealth.mockRejectedValue(new Error('Health Error'));
-
-      await sut.runAction({
-        action: MaintenanceAction.RestoreDatabase,
-        restoreBackupFilename: 'development-filename.sql',
-      });
-
-      expect(maintenanceWebsocketRepositoryMock.clientSend).toHaveBeenCalledWith('MaintenanceStatusV1', 'private', {
-        active: true,
-        action: MaintenanceAction.RestoreDatabase,
-        error: 'Error: Health Error',
-        task: 'error',
-      });
-
-      expect(maintenanceHealthRepositoryMock.checkApiHealth).toHaveBeenCalled();
-      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledTimes(4);
-    });
-  });
-
-  /**
-   * Backups
-   */
-
-  describe('listBackups', () => {
-    it('should give us all backups', async () => {
-      mocks.storage.readdir.mockResolvedValue([
-        `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
-        `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
-        'immich-db-backup-1753789649000.sql.gz',
-        `immich-db-backup-${DateTime.fromISO('2025-07-29T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
-      ]);
-      mocks.storage.stat.mockResolvedValue({ size: 1024 } as any);
-
-      await expect(sut.listBackups()).resolves.toMatchObject({
-        backups: [
-          { filename: 'immich-db-backup-20250729T110116-v1.234.5-pg14.5.sql.gz', filesize: 1024 },
-          { filename: 'immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz', filesize: 1024 },
-          { filename: 'immich-db-backup-1753789649000.sql.gz', filesize: 1024 },
-        ],
-      });
-    });
-  });
-
-  describe('deleteBackup', () => {
-    it('should reject invalid file names', async () => {
-      await expect(sut.deleteBackup(['filename'])).rejects.toThrowError(
-        new BadRequestException('Invalid backup name!'),
-      );
-    });
-
-    it('should unlink the target file', async () => {
-      await sut.deleteBackup(['filename.sql']);
-      expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/filename.sql`,
-      );
-    });
-  });
-
-  describe('uploadBackup', () => {
-    it('should reject invalid file names', async () => {
-      await expect(sut.uploadBackup({ originalname: 'invalid backup' } as never)).rejects.toThrowError(
-        new BadRequestException('Invalid backup name!'),
-      );
-    });
-
-    it('should write file', async () => {
-      await sut.uploadBackup({ originalname: 'path.sql.gz', buffer: 'buffer' } as never);
-      expect(mocks.storage.createOrOverwriteFile).toBeCalledWith('/data/backups/uploaded-path.sql.gz', 'buffer');
-    });
-  });
-
-  describe('downloadBackup', () => {
-    it('should reject invalid file names', () => {
-      expect(() => sut.downloadBackup('invalid backup')).toThrowError(new BadRequestException('Invalid backup name!'));
-    });
-
-    it('should get backup path', () => {
-      expect(sut.downloadBackup('hello.sql.gz')).toEqual(
-        expect.objectContaining({
-          path: '/data/backups/hello.sql.gz',
-        }),
-      );
     });
   });
 });

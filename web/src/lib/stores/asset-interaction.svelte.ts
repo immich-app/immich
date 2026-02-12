@@ -6,6 +6,7 @@ import { fromStore } from 'svelte/store';
 
 export class AssetInteraction {
   selectedAssets = $state<TimelineAsset[]>([]);
+  selectAll = $state(false);
   hasSelectedAsset(assetId: string) {
     return this.selectedAssets.some((asset) => asset.id === assetId);
   }
@@ -65,6 +66,8 @@ export class AssetInteraction {
   }
 
   clearMultiselect() {
+    this.selectAll = false;
+
     // Multi-selection
     this.selectedAssets = [];
     this.selectedGroup.clear();

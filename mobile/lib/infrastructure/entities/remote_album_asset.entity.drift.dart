@@ -441,9 +441,9 @@ typedef $$RemoteAlbumAssetEntityTableProcessedTableManager =
       i1.RemoteAlbumAssetEntityData,
       i0.PrefetchHooks Function({bool assetId, bool albumId})
     >;
-i0.Index get idxRemoteAlbumAssetAlbumId => i0.Index(
-  'idx_remote_album_asset_album_id',
-  'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_id ON remote_album_asset_entity (album_id)',
+i0.Index get idxRemoteAlbumAssetAlbumAsset => i0.Index(
+  'idx_remote_album_asset_album_asset',
+  'CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)',
 );
 
 class $RemoteAlbumAssetEntityTable extends i2.RemoteAlbumAssetEntity
