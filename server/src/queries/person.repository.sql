@@ -355,7 +355,7 @@ from
 where
   "id" in ($1)
 
--- PersonRepository.getFeaturedPersonsFromAsset
+-- PersonRepository.getFeaturedPeopleOfAsset
 select
   "person"."id"
 from

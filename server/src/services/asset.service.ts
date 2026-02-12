@@ -393,7 +393,7 @@ export class AssetService extends BaseService {
 
     // Update feature photos of persons that had this asset as feature photo
     for (const id of ids) {
-      const persons = await this.personRepository.getFeaturedPersonsFromAsset(id);
+      const persons = await this.personRepository.getFeaturedPeopleOfAsset(id);
       for (const person of persons) {
         await this.jobRepository.queue({
           name: JobName.PersonNewFeaturePhoto,

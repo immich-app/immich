@@ -493,7 +493,7 @@ describe(AssetService.name, () => {
 
     it('should force delete a batch of assets', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
-      mocks.person.getFeaturedPersonsFromAsset.mockResolvedValue([]);
+      mocks.person.getFeaturedPeopleOfAsset.mockResolvedValue([]);
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: true });
 
@@ -505,7 +505,7 @@ describe(AssetService.name, () => {
 
     it('should soft delete a batch of assets', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
-      mocks.person.getFeaturedPersonsFromAsset.mockResolvedValue([]);
+      mocks.person.getFeaturedPeopleOfAsset.mockResolvedValue([]);
 
       await sut.deleteAll(authStub.user1, { ids: ['asset1', 'asset2'], force: false });
 

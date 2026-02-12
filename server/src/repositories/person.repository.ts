@@ -584,7 +584,7 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getFeaturedPersonsFromAsset(assetId: string) {
+  getFeaturedPeopleOfAsset(assetId: string) {
     return this.db
       .selectFrom('person')
       .select(['person.id'])
