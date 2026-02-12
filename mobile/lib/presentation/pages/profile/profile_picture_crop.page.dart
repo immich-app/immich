@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,59 +14,68 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
 import 'package:immich_mobile/utils/image_converter.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 @RoutePage()
-class ProfilePictureCropPage extends HookConsumerWidget {
+class ProfilePictureCropPage extends ConsumerStatefulWidget {
   final BaseAsset asset;
 
   const ProfilePictureCropPage({super.key, required this.asset});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cropController = useCropController();
-    final isLoading = useState<bool>(false);
-    final didInitCropController = useRef(false);
+  ConsumerState<ProfilePictureCropPage> createState() => _ProfilePictureCropPageState();
+}
+
+class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage> {
+  late final CropController _cropController;
+  bool _isLoading = false;
+  bool _didInitCropController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _cropController = CropController(defaultCrop: const Rect.fromLTRB(0, 0, 1, 1));
 
     // Lock aspect ratio to 1:1 for circular/square crop
-    useEffect(() {
-      // CropController depends on CropImage initializing its bitmap size.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (didInitCropController.value) {
-          return;
-        }
-        didInitCropController.value = true;
+    // CropController depends on CropImage initializing its bitmap size.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _didInitCropController) {
+        return;
+      }
+      _didInitCropController = true;
 
-        cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
-        cropController.aspectRatio = 1.0;
-      });
-      return null;
-    }, [cropController]);
+      _cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
+      _cropController.aspectRatio = 1.0;
+    });
+  }
 
-    // Create Image widget from asset
-    final image = Image(image: getFullImageProvider(asset));
+  @override
+  void dispose() {
+    _cropController.dispose();
+    super.dispose();
+  }
 
-    Future<void> handleDone() async {
-      if (isLoading.value) return;
+  Future<void> _handleDone() async {
+    if (_isLoading) return;
 
-      isLoading.value = true;
+    setState(() {
+      _isLoading = true;
+    });
 
       try {
-        final croppedImage = await cropController.croppedImage();
+        final croppedImage = await _cropController.croppedImage();
         final pngBytes = await imageToUint8List(croppedImage);
         final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
-        final success = await ref
-            .read(uploadProfileImageProvider.notifier)
-            .upload(xFile, fileName: 'profile-picture.png');
+        final success =
+            await ref.read(uploadProfileImageProvider.notifier).upload(xFile, fileName: 'profile-picture.png');
 
         if (!context.mounted) return;
 
         if (success) {
           final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.watch(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
+          ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
           final user = ref.read(currentUserProvider);
           if (user != null) {
             unawaited(ref.read(currentUserProvider.notifier).refresh());
@@ -102,17 +110,26 @@ class ProfilePictureCropPage extends HookConsumerWidget {
           gravity: ToastGravity.BOTTOM,
         );
       } finally {
-        isLoading.value = false;
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
+
+  @override
+  Widget build(BuildContext context) {
+    // Create Image widget from asset
+    final image = Image(image: getFullImageProvider(widget.asset));
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
         title: Text("set_profile_picture".tr()),
-        leading: isLoading.value ? null : const ImmichCloseButton(),
+        leading: _isLoading ? null : const ImmichCloseButton(),
         actions: [
-          if (isLoading.value)
+          if (_isLoading)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
@@ -122,7 +139,7 @@ class ProfilePictureCropPage extends HookConsumerWidget {
               icon: Icons.done_rounded,
               color: ImmichColor.primary,
               variant: ImmichVariant.ghost,
-              onPressed: handleDone,
+              onPressed: _handleDone,
             ),
         ],
       ),
@@ -146,7 +163,7 @@ class ProfilePictureCropPage extends HookConsumerWidget {
                     ],
                   ),
                   child: ClipRRect(
-                    child: CropImage(controller: cropController, image: image, gridColor: Colors.white),
+                    child: CropImage(controller: _cropController, image: image, gridColor: Colors.white),
                   ),
                 ),
               ),
