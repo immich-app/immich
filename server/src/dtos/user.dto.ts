@@ -59,7 +59,7 @@ export const UserResponseSchema = z.object({
   profileImagePath: z.string().describe('Profile image path'),
   avatarColor: z.enum(UserAvatarColor).describe('Avatar color'),
   profileChangedAt: z.iso.datetime().describe('Profile change date'),
-});
+}).meta({ id: 'UserResponseDto' });
 
 export class UserLicense {
   @ApiProperty({ description: 'License key' })

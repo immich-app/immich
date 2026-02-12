@@ -15474,58 +15474,7 @@
             "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
-            "additionalProperties": false,
-            "properties": {
-              "avatarColor": {
-                "description": "Avatar color",
-                "enum": [
-                  "primary",
-                  "pink",
-                  "red",
-                  "yellow",
-                  "blue",
-                  "green",
-                  "purple",
-                  "orange",
-                  "gray",
-                  "amber"
-                ],
-                "type": "string"
-              },
-              "email": {
-                "description": "User email",
-                "type": "string"
-              },
-              "id": {
-                "description": "User ID",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-                "type": "string"
-              },
-              "name": {
-                "description": "User name",
-                "type": "string"
-              },
-              "profileChangedAt": {
-                "description": "Profile change date",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-                "type": "string"
-              },
-              "profileImagePath": {
-                "description": "Profile image path",
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "name",
-              "email",
-              "profileImagePath",
-              "avatarColor",
-              "profileChangedAt"
-            ],
-            "type": "object"
+            "$ref": "#/components/schemas/UserResponseDto_Output"
           }
         },
         "required": [
@@ -25620,6 +25569,61 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "type": "string"
+          },
+          "profileImagePath": {
+            "description": "Profile image path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "avatarColor",
+          "email",
+          "id",
+          "name",
+          "profileChangedAt",
+          "profileImagePath"
+        ],
+        "type": "object"
+      },
+      "UserResponseDto_Output": {
+        "additionalProperties": false,
+        "id": "UserResponseDto_Output",
+        "properties": {
+          "avatarColor": {
+            "description": "Avatar color",
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
+            ],
+            "type": "string"
+          },
+          "email": {
+            "description": "User email",
+            "type": "string"
+          },
+          "id": {
+            "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "name": {
+            "description": "User name",
+            "type": "string"
+          },
+          "profileChangedAt": {
+            "description": "Profile change date",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "profileImagePath": {

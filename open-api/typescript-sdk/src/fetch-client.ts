@@ -14,6 +14,20 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
+export type UserResponseDtoOutput = {
+    /** Avatar color */
+    avatarColor: AvatarColor;
+    /** User email */
+    email: string;
+    /** User ID */
+    id: string;
+    /** User name */
+    name: string;
+    /** Profile change date */
+    profileChangedAt: string;
+    /** Profile image path */
+    profileImagePath: string;
+};
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
     assetId: string | null;
@@ -24,20 +38,7 @@ export type ActivityResponseDto = {
     /** Activity ID */
     id: string;
     "type": ReactionType;
-    user: {
-        /** Avatar color */
-        avatarColor: AvatarColor;
-        /** User email */
-        email: string;
-        /** User ID */
-        id: string;
-        /** User name */
-        name: string;
-        /** Profile change date */
-        profileChangedAt: string;
-        /** Profile image path */
-        profileImagePath: string;
-    };
+    user: UserResponseDtoOutput;
 };
 export type ActivityCreateDto = {
     /** Album ID */
