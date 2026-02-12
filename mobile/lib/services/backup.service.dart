@@ -234,7 +234,7 @@ class BackupService {
 
   Future<bool> backupAsset(
     Iterable<BackupCandidate> assets,
-    Completer cancelToken, {
+    Completer<void> cancelToken, {
     bool isBackground = false,
     PMProgressHandler? pmProgressHandler,
     required void Function(SuccessUploadAsset result) onSuccess,

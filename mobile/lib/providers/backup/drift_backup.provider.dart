@@ -108,7 +108,7 @@ class DriftBackupState {
   final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
-  final Completer? cancelToken;
+  final Completer<void>? cancelToken;
 
   final Map<String, double> iCloudDownloadProgress;
 
@@ -132,7 +132,7 @@ class DriftBackupState {
     bool? isSyncing,
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
-    Completer? cancelToken,
+    Completer<void>? cancelToken,
     Map<String, double>? iCloudDownloadProgress,
   }) {
     return DriftBackupState(
