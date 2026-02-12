@@ -16,7 +16,7 @@ class WidgetService {
     await _repository.saveData(kWidgetServerEndpoint, serverURL);
     await _repository.saveData(kWidgetAuthToken, sessionKey);
 
-    await _repository.saveData(kWidgetCustomHeaders, customHeaders ?? "");
+    await _repository.saveData(kWidgetCustomHeaders, customHeaders ?? "{}");
 
     // wait 3 seconds to ensure the widget is updated, dont block
     Future.delayed(const Duration(seconds: 3), refreshWidgets);

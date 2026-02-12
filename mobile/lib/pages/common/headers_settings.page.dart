@@ -98,13 +98,13 @@ class HeaderSettingsPage extends HookConsumerWidget {
       headersMap[key] = value;
     }
 
-    final customHeaders = headersMap.isNotEmpty ? jsonEncode(headersMap) : "";
-    await Store.put(StoreKey.customHeaders, customHeaders);
+    var encoded = jsonEncode(headersMap);
+    await Store.put(StoreKey.customHeaders, encoded);
 
     final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
     if (serverEndpoint != null && accessToken != null) {
-      await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, customHeaders);
+      await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, encoded);
     }
   }
 }
