@@ -6,7 +6,6 @@ import { pipeline } from 'node:stream/promises';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
 import {
   IntegrityGetReportDto,
   IntegrityReportResponseDto,
@@ -171,7 +170,7 @@ export class IntegrityService extends BaseService {
     });
   }
 
-  async deleteIntegrityReport(auth: AuthDto, id: string): Promise<void> {
+  async deleteIntegrityReport(userId: string, id: string): Promise<void> {
     const { path, assetId, fileAssetId } = await this.integrityRepository.getById(id);
 
     if (assetId) {
@@ -182,7 +181,7 @@ export class IntegrityService extends BaseService {
 
       await this.eventRepository.emit('AssetTrashAll', {
         assetIds: [assetId],
-        userId: auth.user.id,
+        userId,
       });
 
       await this.integrityRepository.deleteById(id);

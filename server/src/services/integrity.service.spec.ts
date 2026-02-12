@@ -101,14 +101,7 @@ describe(IntegrityService.name, () => {
         fileAssetId: null,
       });
 
-      await sut.deleteIntegrityReport(
-        {
-          user: {
-            id: 'userId',
-          },
-        } as never,
-        'id',
-      );
+      await sut.deleteIntegrityReport('userId', 'id');
 
       expect(mocks.asset.updateAll).toHaveBeenCalledWith(['assetId'], {
         deletedAt: expect.any(Date),
@@ -133,14 +126,7 @@ describe(IntegrityService.name, () => {
         fileAssetId: 'fileAssetId',
       });
 
-      await sut.deleteIntegrityReport(
-        {
-          user: {
-            id: 'userId',
-          },
-        } as never,
-        'id',
-      );
+      await sut.deleteIntegrityReport('userId', 'id');
 
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([{ id: 'fileAssetId' }]);
     });
@@ -155,14 +141,7 @@ describe(IntegrityService.name, () => {
         fileAssetId: null,
       });
 
-      await sut.deleteIntegrityReport(
-        {
-          user: {
-            id: 'userId',
-          },
-        } as never,
-        'id',
-      );
+      await sut.deleteIntegrityReport('userId', 'id');
 
       expect(mocks.storage.unlink).toHaveBeenCalledWith('/path/to/file');
       expect(mocks.integrityReport.deleteById).toHaveBeenCalledWith('id');

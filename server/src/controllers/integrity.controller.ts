@@ -70,7 +70,7 @@ export class IntegrityController {
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
   async deleteIntegrityReport(@Auth() auth: AuthDto, @Param() { id }: UUIDv7ParamDto): Promise<void> {
-    await this.service.deleteIntegrityReport(auth, id);
+    await this.service.deleteIntegrityReport(auth.user.id, id);
   }
 
   @Get('report/:type/csv')
