@@ -39,7 +39,7 @@ import {
   VideoInterfaces,
   VideoStreamInfo,
 } from 'src/types';
-import { getAssetFiles, getDimensions } from 'src/utils/asset.util';
+import { getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -78,17 +78,11 @@ export class MediaService extends BaseService {
 
     const fullsizeEnabled = config.image.fullsize.enabled;
     for await (const asset of this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled })) {
-      const { previewFile, thumbnailFile, fullsizeFile, editedPreviewFile, editedThumbnailFile, editedFullsizeFile } =
-        getAssetFiles(asset.files);
-
-      if (force || !previewFile || !thumbnailFile || !asset.thumbhash || (fullsizeEnabled && !fullsizeFile)) {
+      if (force || !asset.isEdited) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
-      if (
-        asset.edits.length > 0 &&
-        (force || !editedPreviewFile || !editedThumbnailFile || (fullsizeEnabled && !editedFullsizeFile))
-      ) {
+      if (asset.isEdited) {
         jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
       }
 

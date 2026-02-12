@@ -288,6 +288,7 @@ export class PersonRepository {
           .select('asset_file.path')
           .whereRef('asset_file.assetId', '=', 'asset.id')
           .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
+          .where('asset_file.isEdited', '=', false)
           .as('previewPath'),
       )
       .where('person.id', '=', id)
