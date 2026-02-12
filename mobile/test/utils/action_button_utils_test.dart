@@ -955,6 +955,21 @@ void main() {
           );
           final widget = buttonType.buildButton(contextWithAlbum);
           expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.setAlbumCover) {
+          final album = createRemoteAlbum();
+          final contextWithAlbum = ActionButtonContext(
+            asset: asset,
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: album,
+            advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+          );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
         } else if (buttonType == ActionButtonType.unstack) {
           final album = createRemoteAlbum();
           final contextWithAlbum = ActionButtonContext(
