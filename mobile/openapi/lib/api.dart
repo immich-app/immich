@@ -170,7 +170,6 @@ part 'model/facial_recognition_config.dart';
 part 'model/folders_response.dart';
 part 'model/folders_update.dart';
 part 'model/image_format.dart';
-part 'model/integrity_get_report_dto.dart';
 part 'model/integrity_report_dto.dart';
 part 'model/integrity_report_response_dto.dart';
 part 'model/integrity_report_summary_response_dto.dart';

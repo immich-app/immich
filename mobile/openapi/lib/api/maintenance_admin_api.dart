@@ -121,24 +121,38 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityGetReportDto] integrityGetReportDto (required):
-  Future<Response> getIntegrityReportWithHttpInfo(IntegrityGetReportDto integrityGetReportDto,) async {
+  /// * [IntegrityReportType] type (required):
+  ///
+  /// * [String] cursor:
+  ///   Cursor for pagination
+  ///
+  /// * [num] limit:
+  ///   Number of items per page
+  Future<Response> getIntegrityReportWithHttpInfo(IntegrityReportType type, { String? cursor, num? limit, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/integrity/report';
 
     // ignore: prefer_final_locals
-    Object? postBody = integrityGetReportDto;
+    Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
+    if (cursor != null) {
+      queryParams.addAll(_queryParams('', 'cursor', cursor));
+    }
+    if (limit != null) {
+      queryParams.addAll(_queryParams('', 'limit', limit));
+    }
+      queryParams.addAll(_queryParams('', 'type', type));
+
+    const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
       apiPath,
-      'POST',
+      'GET',
       queryParams,
       postBody,
       headerParams,
@@ -153,9 +167,15 @@ class MaintenanceAdminApi {
   ///
   /// Parameters:
   ///
-  /// * [IntegrityGetReportDto] integrityGetReportDto (required):
-  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityGetReportDto integrityGetReportDto,) async {
-    final response = await getIntegrityReportWithHttpInfo(integrityGetReportDto,);
+  /// * [IntegrityReportType] type (required):
+  ///
+  /// * [String] cursor:
+  ///   Cursor for pagination
+  ///
+  /// * [num] limit:
+  ///   Number of items per page
+  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityReportType type, { String? cursor, num? limit, }) async {
+    final response = await getIntegrityReportWithHttpInfo(type,  cursor: cursor, limit: limit, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

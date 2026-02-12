@@ -17,14 +17,13 @@
 
   let { data }: Props = $props();
 
+  // svelte-ignore state_referenced_locally
   let integrityReport = $state(data.integrityReport);
 
   async function loadMore() {
     const { items, nextCursor } = await getIntegrityReport({
-      integrityGetReportDto: {
-        type: data.type,
-        cursor: integrityReport.nextCursor,
-      },
+      $type: data.type,
+      cursor: integrityReport.nextCursor,
     });
 
     integrityReport.items.push(...items);
@@ -41,9 +40,7 @@
         expectingUpdate = true;
       } else if (expectingUpdate) {
         integrityReport = await getIntegrityReport({
-          integrityGetReportDto: {
-            type: data.type,
-          },
+          $type: data.type,
         });
         expectingUpdate = false;
       }

@@ -8,9 +8,7 @@ export const load = (async ({ params, url }) => {
 
   await authenticate(url, { admin: true });
   const integrityReport = await getIntegrityReport({
-    integrityGetReportDto: {
-      type,
-    },
+    $type: type,
   });
   const $t = await getFormatter();
 

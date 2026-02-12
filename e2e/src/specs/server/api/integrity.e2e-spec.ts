@@ -50,7 +50,7 @@ describe('/admin/integrity', () => {
         command: QueueCommand.Pause,
       });
     }
-    
+
     asset = await utils.createAsset(admin.accessToken, {
       assetData: {
         filename: 'asset.jpg',
@@ -397,9 +397,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=untracked_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'untracked_file' });
+        .send();
 
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -427,9 +427,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=missing_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'missing_file' });
+        .send();
 
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -457,9 +457,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status, body } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=checksum_mismatch')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'checksum_mismatch' });
+        .send();
 
       expect(status).toBe(200);
       expect(body).toEqual({
@@ -489,9 +489,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus, body: listBody } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=untracked_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'untracked_file' });
+        .send();
 
       expect(listStatus).toBe(200);
 
@@ -513,9 +513,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus2, body: listBody2 } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=untracked_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'untracked_file' });
+        .send();
 
       expect(listStatus2).toBe(200);
       expect(listBody2).not.toBe(
@@ -539,9 +539,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus, body: listBody } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=missing_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'missing_file' });
+        .send();
 
       expect(listStatus).toBe(200);
       expect(listBody.items.length).toBe(1);
@@ -562,9 +562,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus2, body: listBody2 } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=missing_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'missing_file' });
+        .send();
 
       expect(listStatus2).toBe(200);
       expect(listBody2.items.length).toBe(0);
@@ -580,9 +580,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus, body: listBody } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=checksum_mismatch')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'checksum_mismatch' });
+        .send();
 
       expect(listStatus).toBe(200);
       expect(listBody.items.length).toBe(1);
@@ -603,9 +603,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { status: listStatus2, body: listBody2 } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=checksum_mismatch')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'checksum_mismatch' });
+        .send();
 
       expect(listStatus2).toBe(200);
       expect(listBody2.items.length).toBe(0);
@@ -647,9 +647,9 @@ describe('/admin/integrity', () => {
       await utils.waitForQueueFinish(admin.accessToken, QueueName.IntegrityCheck);
 
       const { body: listBody } = await request(app)
-        .post('/admin/integrity/report')
+        .get('/admin/integrity/report?type=untracked_file')
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ type: 'untracked_file' });
+        .send();
 
       const report = (listBody as IntegrityReportResponseDto).items.find(
         (item) => item.path === `/data/upload/${admin.userId}/untracked1.png`,

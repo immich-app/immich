@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Next, Param, Post, Res } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Next, Param, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
@@ -34,7 +34,7 @@ export class IntegrityController {
     return this.service.getIntegrityReportSummary();
   }
 
-  @Post('report')
+  @Get('report')
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Get integrity report by type',
@@ -42,7 +42,7 @@ export class IntegrityController {
     history: new HistoryBuilder().added('v2.6.0').alpha('v2.6.0'),
   })
   @Authenticated({ permission: Permission.Maintenance, admin: true })
-  getIntegrityReport(@Body() dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
+  getIntegrityReport(@Query() dto: IntegrityGetReportDto): Promise<IntegrityReportResponseDto> {
     return this.service.getIntegrityReport(dto);
   }
 

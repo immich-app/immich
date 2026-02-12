@@ -70,11 +70,6 @@ export type DatabaseBackupListResponseDto = {
 export type DatabaseBackupUploadDto = {
     file?: Blob;
 };
-export type IntegrityGetReportDto = {
-    cursor?: string;
-    limit?: number;
-    "type": IntegrityReportType;
-};
 export type IntegrityReportDto = {
     id: string;
     path: string;
@@ -3413,17 +3408,21 @@ export function downloadDatabaseBackup({ filename }: {
 /**
  * Get integrity report by type
  */
-export function getIntegrityReport({ integrityGetReportDto }: {
-    integrityGetReportDto: IntegrityGetReportDto;
+export function getIntegrityReport({ cursor, limit, $type }: {
+    cursor?: string;
+    limit?: number;
+    $type: IntegrityReportType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: IntegrityReportResponseDto;
-    }>("/admin/integrity/report", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: integrityGetReportDto
-    })));
+    }>(`/admin/integrity/report${QS.query(QS.explode({
+        cursor,
+        limit,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Delete integrity report item

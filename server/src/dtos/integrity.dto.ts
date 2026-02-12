@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 import { IntegrityReportType } from 'src/enum';
@@ -17,10 +17,12 @@ export class IntegrityGetReportDto {
   @ValidateEnum({ enum: IntegrityReportType, name: 'IntegrityReportType' })
   type!: IntegrityReportType;
 
+  @ApiPropertyOptional({ description: 'Cursor for pagination', default: 1 })
   @IsOptional()
   @IsUUID()
   cursor?: string;
 
+  @ApiPropertyOptional({ description: 'Number of items per page', default: 500 })
   @IsInt()
   @Min(1)
   @IsOptional()

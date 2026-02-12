@@ -386,8 +386,6 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
-        case 'IntegrityGetReportDto':
-          return IntegrityGetReportDto.fromJson(value);
         case 'IntegrityReportDto':
           return IntegrityReportDto.fromJson(value);
         case 'IntegrityReportResponseDto':

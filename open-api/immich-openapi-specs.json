@@ -561,20 +561,41 @@
       }
     },
     "/admin/integrity/report": {
-      "post": {
+      "get": {
         "description": "Get all flagged items by integrity report type",
         "operationId": "getIntegrityReport",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IntegrityGetReportDto"
-              }
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor for pagination",
+            "schema": {
+              "format": "uuid",
+              "default": 1,
+              "type": "string"
             }
           },
-          "required": true
-        },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "minimum": 1,
+              "default": 500,
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/IntegrityReportType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -18273,29 +18294,6 @@
           "webp"
         ],
         "type": "string"
-      },
-      "IntegrityGetReportDto": {
-        "properties": {
-          "cursor": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "limit": {
-            "minimum": 1,
-            "type": "number"
-          },
-          "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/IntegrityReportType"
-              }
-            ]
-          }
-        },
-        "required": [
-          "type"
-        ],
-        "type": "object"
       },
       "IntegrityReportDto": {
         "properties": {

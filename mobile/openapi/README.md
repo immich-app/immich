@@ -173,7 +173,7 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
 *MaintenanceAdminApi* | [**deleteIntegrityReport**](doc//MaintenanceAdminApi.md#deleteintegrityreport) | **DELETE** /admin/integrity/report/{id} | Delete integrity report item
 *MaintenanceAdminApi* | [**detectPriorInstall**](doc//MaintenanceAdminApi.md#detectpriorinstall) | **GET** /admin/maintenance/detect-install | Detect existing install
-*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **POST** /admin/integrity/report | Get integrity report by type
+*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **GET** /admin/integrity/report | Get integrity report by type
 *MaintenanceAdminApi* | [**getIntegrityReportCsv**](doc//MaintenanceAdminApi.md#getintegrityreportcsv) | **GET** /admin/integrity/report/{type}/csv | Export integrity report by type as CSV
 *MaintenanceAdminApi* | [**getIntegrityReportFile**](doc//MaintenanceAdminApi.md#getintegrityreportfile) | **GET** /admin/integrity/report/{id}/file | Download flagged file
 *MaintenanceAdminApi* | [**getIntegrityReportSummary**](doc//MaintenanceAdminApi.md#getintegrityreportsummary) | **GET** /admin/integrity/summary | Get integrity report summary
@@ -435,7 +435,6 @@ Class | Method | HTTP request | Description
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
- - [IntegrityGetReportDto](doc//IntegrityGetReportDto.md)
  - [IntegrityReportDto](doc//IntegrityReportDto.md)
  - [IntegrityReportResponseDto](doc//IntegrityReportResponseDto.md)
  - [IntegrityReportSummaryResponseDto](doc//IntegrityReportSummaryResponseDto.md)
