@@ -246,10 +246,6 @@ export interface Lang {
 }
 
 export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
-export const nonIntlLang = [
-  { code: 'mfa', name: 'Malay (Pattani)' },
-  { code: 'bi', name: 'Bislama' },
-];
 
 export enum ImmichProduct {
   Client = 'immich-client',
