@@ -20,7 +20,7 @@
   // svelte-ignore state_referenced_locally
   let integrityReport = $state(data.integrityReport);
 
-  async function loadMore() {
+  const loadMore = async () => {
     const { items, nextCursor } = await getIntegrityReport({
       $type: data.type,
       cursor: integrityReport.nextCursor,
@@ -28,7 +28,7 @@
 
     integrityReport.items.push(...items);
     integrityReport.nextCursor = nextCursor;
-  }
+  };
 
   let running = true;
   let expectingUpdate = false;
@@ -55,14 +55,14 @@
 
   const { Download, Delete } = $derived(getIntegrityReportActions($t, data.type));
 
-  function onIntegrityReportDeleted({ id, type }: { id?: string; type?: IntegrityReportType }) {
+  const onIntegrityReportDeleted = ({ id, type }: { id?: string; type?: IntegrityReportType }) => {
     if (type === data.type) {
       integrityReport.items = [];
       integrityReport.nextCursor = undefined;
     } else {
       integrityReport.items = integrityReport.items.filter((report) => report.id !== id);
     }
-  }
+  };
 </script>
 
 <OnEvents {onIntegrityReportDeleted} />

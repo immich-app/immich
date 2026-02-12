@@ -16,7 +16,7 @@
 
   const { Download, Delete } = $derived(getIntegrityReportItemActions($t, id, reportType));
 
-  function onIntegrityReportDeleteStatus({
+  const onIntegrityReportDeleteStatus = ({
     id: reportId,
     type,
     isDeleting,
@@ -24,11 +24,11 @@
     id?: string;
     type?: IntegrityReportType;
     isDeleting: boolean;
-  }) {
+  }) => {
     if (type === reportType || reportId === id) {
       deleting = isDeleting;
     }
-  }
+  };
 </script>
 
 <OnEvents {onIntegrityReportDeleteStatus} />

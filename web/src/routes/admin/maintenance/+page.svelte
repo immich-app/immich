@@ -32,6 +32,7 @@
   const { data }: Props = $props();
   const { StartMaintenance } = $derived(getMaintenanceAdminActions($t));
 
+  // svelte-ignore state_referenced_locally
   let integrityReport: IntegrityReportSummaryResponseDto = $state(data.integrityReport);
 
   const TYPES: IntegrityReportType[] = [
@@ -75,7 +76,7 @@
     running = false;
   });
 
-  function onJobCreate({ dto }: { dto: JobCreateDto }) {
+  const onJobCreate = ({ dto }: { dto: JobCreateDto }) => {
     if (
       (Object.values(INTEGRITY_JOB_NAMES).includes(dto.name) ||
         Object.values(INTEGRITY_REFRESH_JOB_NAMES).includes(dto.name)) &&
@@ -84,7 +85,7 @@
       expectingUpdate = true;
       jobs.integrityCheck.queueStatus.isActive = true;
     }
-  }
+  };
 </script>
 
 <OnEvents {onJobCreate} />

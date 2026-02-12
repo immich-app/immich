@@ -34,16 +34,16 @@ export const getIntegrityReportItemActions = (
   reportId: string,
   reportType: IntegrityReportType,
 ) => {
-  const Download = {
+  const Download: ActionItem = {
     title: $t('download'),
     icon: mdiDownload,
     onAction: () => {
       void handleDownloadIntegrityReportFile(reportId);
     },
-    $if: reportType === IntegrityReportType.UntrackedFile || reportType === IntegrityReportType.ChecksumMismatch,
+    $if: () => reportType === IntegrityReportType.UntrackedFile || reportType === IntegrityReportType.ChecksumMismatch,
   };
 
-  const Delete = {
+  const Delete: ActionItem = {
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
