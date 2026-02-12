@@ -153,7 +153,7 @@ class ForegroundUploadService {
   /// Upload files from shared intent
   Future<void> uploadShareIntent(
     List<File> files, {
-    Completer? cancelToken,
+    Completer<void>? cancelToken,
     void Function(String fileId, int bytes, int totalBytes)? onProgress,
     void Function(String fileId)? onSuccess,
     void Function(String fileId, String errorMessage)? onError,

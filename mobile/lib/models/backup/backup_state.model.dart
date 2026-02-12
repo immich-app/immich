@@ -22,7 +22,7 @@ class BackUpState {
   final DateTime progressInFileSpeedUpdateTime;
   final int progressInFileSpeedUpdateSentBytes;
   final double iCloudDownloadProgress;
-  final Completer cancelToken;
+  final Completer<void> cancelToken;
   final ServerDiskInfo serverInfo;
   final bool autoBackup;
   final bool backgroundBackup;

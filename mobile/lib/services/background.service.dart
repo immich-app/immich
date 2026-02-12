@@ -41,7 +41,7 @@ class BackgroundService {
   static const MethodChannel _backgroundChannel = MethodChannel('immich/backgroundChannel');
   static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
-  Completer? _cancellationToken;
+  Completer<void>? _cancellationToken;
   bool _canceledBySystem = false;
   int _wantsLockTime = 0;
   bool _hasLock = false;
@@ -464,7 +464,7 @@ class BackgroundService {
     return ok;
   }
 
-  void _onAssetUploaded({bool shouldNotify = false}) async {
+  void _onAssetUploaded({bool shouldNotify = false}) {
     if (!shouldNotify) {
       return;
     }
