@@ -27,7 +27,7 @@ const Locale defaultLocale = Locale('en');
 
 const List<Locale> localesNotSupportedByAppFont = [Locale('el', 'GR'), Locale('sr', 'Cyrl')];
 
-final List<Locale> materialSupportedLanguages = [
+const List<Locale> materialSupportedLanguages = [
   const Locale('af'), // Afrikaans
   const Locale('am'), // Amharic
   const Locale('ar'), // Arabic
