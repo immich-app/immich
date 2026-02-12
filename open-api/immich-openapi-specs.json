@@ -1618,7 +1618,7 @@
             "name": "shared",
             "required": false,
             "in": "query",
-            "description": "Filter by shared status: true = only shared, false = only own, undefined = all",
+            "description": "Filter by shared status: true = only shared, false = not shared, undefined = all owned albums",
             "schema": {
               "type": "boolean"
             }
@@ -4959,7 +4959,22 @@
         "summary": "Retrieve auth status",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/validateToken": {
@@ -15057,7 +15072,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.5.2",
+    "version": "2.5.6",
     "contact": {}
   },
   "tags": [
@@ -15760,7 +15775,7 @@
             "type": "string"
           },
           "duplicateId": {
-            "description": "Duplicate asset ID",
+            "description": "Duplicate ID",
             "nullable": true,
             "type": "string"
           },
@@ -19038,6 +19053,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -19128,6 +19144,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           },
           "readAt": {
@@ -25067,6 +25084,12 @@
           },
           "password": {
             "description": "User password",
+            "type": "string"
+          },
+          "pinCode": {
+            "description": "PIN code",
+            "example": "123456",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {

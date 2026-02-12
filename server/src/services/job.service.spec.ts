@@ -1,6 +1,7 @@
 import { ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { JobService } from 'src/services/job.service';
 import { JobItem } from 'src/types';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -55,7 +56,7 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
         jobs: [],
-        stub: [assetStub.image],
+        stub: [AssetFactory.create({ id: 'asset-id' })],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },

@@ -78,43 +78,13 @@ limit
 -- AssetJobRepository.streamForThumbnailJob
 select
   "asset"."id",
-  "asset"."thumbhash",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "asset_file"."id",
-          "asset_file"."path",
-          "asset_file"."type",
-          "asset_file"."isEdited"
-        from
-          "asset_file"
-        where
-          "asset_file"."assetId" = "asset"."id"
-      ) as agg
-  ) as "files",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "asset_edit"."action",
-          "asset_edit"."parameters"
-        from
-          "asset_edit"
-        where
-          "asset_edit"."assetId" = "asset"."id"
-      ) as agg
-  ) as "edits"
+  "asset"."isEdited"
 from
   "asset"
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset"."deletedAt" is null
-  and "asset"."visibility" != $1
+  and "asset"."visibility" != 'hidden'
   and (
     not exists (
       select
@@ -122,7 +92,7 @@ where
         "asset_file"
       where
         "assetId" = "asset"."id"
-        and "asset_file"."type" = $2
+        and "type" = 'thumbnail'
     )
     or not exists (
       select
@@ -130,9 +100,75 @@ where
         "asset_file"
       where
         "assetId" = "asset"."id"
-        and "asset_file"."type" = $3
+        and "type" = 'preview'
+    )
+    or (
+      "asset"."isEdited" = true
+      and not exists (
+        select
+        from
+          "asset_file"
+        where
+          "assetId" = "asset"."id"
+          and "type" = 'fullsize'
+          and "asset_file"."isEdited" = true
+      )
     )
     or "asset"."thumbhash" is null
+    or (
+      not exists (
+        select
+        from
+          "asset_file"
+        where
+          "assetId" = "asset"."id"
+          and "type" = 'fullsize'
+      )
+      and f_unaccent (asset."originalFileName") like any (
+        array[
+          '%.3fr',
+          '%.ari',
+          '%.arw',
+          '%.cap',
+          '%.cin',
+          '%.cr2',
+          '%.cr3',
+          '%.crw',
+          '%.dcr',
+          '%.dng',
+          '%.erf',
+          '%.fff',
+          '%.iiq',
+          '%.k25',
+          '%.kdc',
+          '%.mrw',
+          '%.nef',
+          '%.nrw',
+          '%.orf',
+          '%.ori',
+          '%.pef',
+          '%.psd',
+          '%.raf',
+          '%.raw',
+          '%.rw2',
+          '%.rwl',
+          '%.sr2',
+          '%.srf',
+          '%.srw',
+          '%.x3f',
+          '%.heic',
+          '%.heif',
+          '%.hif',
+          '%.insp',
+          '%.jp2',
+          '%.jpe',
+          '%.jxl',
+          '%.svg',
+          '%.tif',
+          '%.tiff'
+        ]::text[]
+      )
+    )
   )
 
 -- AssetJobRepository.getForMigrationJob
@@ -436,30 +472,6 @@ select
     from
       (
         select
-          "asset_face".*,
-          "person" as "person"
-        from
-          "asset_face"
-          left join lateral (
-            select
-              "person".*
-            from
-              "person"
-            where
-              "asset_face"."personId" = "person"."id"
-          ) as "person" on true
-        where
-          "asset_face"."assetId" = "asset"."id"
-          and "asset_face"."deletedAt" is null
-          and "asset_face"."isVisible" is true
-      ) as agg
-  ) as "faces",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
           "asset_file"."id",
           "asset_file"."path",
           "asset_file"."type",
@@ -470,27 +482,37 @@ select
           "asset_file"."assetId" = "asset"."id"
       ) as agg
   ) as "files",
-  to_json("stacked_assets") as "stack"
+  to_json("stack_result") as "stack"
 from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
   left join lateral (
     select
       "stack"."id",
       "stack"."primaryAssetId",
-      array_agg("stacked") as "assets"
+      (
+        select
+          coalesce(json_agg(agg), '[]')
+        from
+          (
+            select
+              "stack_asset"."id"
+            from
+              "asset" as "stack_asset"
+            where
+              "stack_asset"."stackId" = "stack"."id"
+              and "stack_asset"."id" != "stack"."primaryAssetId"
+              and "stack_asset"."visibility" = $1
+              and "stack_asset"."status" != $2
+          ) as agg
+      ) as "assets"
     from
-      "asset" as "stacked"
+      "stack"
     where
-      "stacked"."deletedAt" is not null
-      and "stacked"."visibility" = $1
-      and "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
+      "stack"."id" = "asset"."stackId"
+  ) as "stack_result" on true
 where
-  "asset"."id" = $2
+  "asset"."id" = $3
 
 -- AssetJobRepository.streamForVideoConversion
 select
