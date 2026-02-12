@@ -193,6 +193,41 @@ describe(MemoryService.name, () => {
       );
     });
 
+    it('should create a memory including partner assets', async () => {
+      const { sut, ctx } = setup();
+      const assetRepo = ctx.get(AssetRepository);
+      const memoryRepo = ctx.get(MemoryRepository);
+      const now = DateTime.fromObject({ year: 2025, month: 2, day: 25 }, { zone: 'utc' }) as DateTime<true>;
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: user1.id, sharedWithId: user2.id, inTimeline: true });
+
+      const { asset } = await ctx.newAsset({ ownerId: user1.id, localDateTime: now.minus({ years: 1 }).toISO() });
+      await Promise.all([
+        ctx.newExif({ assetId: asset.id, make: 'Canon' }),
+        ctx.newJobStatus({ assetId: asset.id }),
+        assetRepo.upsertFiles([
+          { assetId: asset.id, type: AssetFileType.Preview, path: '/path/to/preview.jpg' },
+          { assetId: asset.id, type: AssetFileType.Thumbnail, path: '/path/to/thumbnail.jpg' },
+        ]),
+      ]);
+
+      vi.setSystemTime(now.toJSDate());
+      await sut.onMemoriesCreate();
+
+      // user2 should have a memory containing user1's asset (via partner sharing)
+      const memories = await memoryRepo.search(user2.id, {});
+      expect(memories.length).toBe(1);
+      expect(memories[0]).toEqual(
+        expect.objectContaining({
+          ownerId: user2.id,
+          assets: expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+          type: 'on_this_day',
+          data: { year: 2024 },
+        }),
+      );
+    });
+
     it('should not generate a memory twice for the same day', async () => {
       const { sut, ctx } = setup();
       const assetRepo = ctx.get(AssetRepository);

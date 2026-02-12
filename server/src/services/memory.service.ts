@@ -6,7 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { addAssets, getMyPartnerIds, removeAssets } from 'src/utils/asset.util';
 
 const DAYS = 3;
 
@@ -15,6 +15,16 @@ export class MemoryService extends BaseService {
   @OnJob({ name: JobName.MemoryGenerate, queue: QueueName.BackgroundTask })
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
+
+    const partnerIdsByUser = await Promise.all(
+      users.map((user) =>
+        getMyPartnerIds({
+          userId: user.id,
+          repository: this.partnerRepository,
+          timelineEnabled: true,
+        }),
+      ),
+    );
 
     await this.databaseRepository.withLock(DatabaseLock.MemoryCreation, async () => {
       const state = await this.systemMetadataRepository.get(SystemMetadataKey.MemoriesState);
@@ -30,7 +40,9 @@ export class MemoryService extends BaseService {
 
         this.logger.log(`Creating memories for ${target.toISO()}`);
         try {
-          await Promise.all(users.map((owner) => this.createOnThisDayMemories(owner.id, target)));
+          await Promise.all(
+            users.map((owner, i) => this.createOnThisDayMemories(owner.id, partnerIdsByUser[i], target)),
+          );
         } catch (error) {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }
@@ -43,10 +55,10 @@ export class MemoryService extends BaseService {
     });
   }
 
-  private async createOnThisDayMemories(ownerId: string, target: DateTime) {
+  private async createOnThisDayMemories(ownerId: string, partnerIds: string[], target: DateTime) {
     const showAt = target.startOf('day').toISO();
     const hideAt = target.endOf('day').toISO();
-    const memories = await this.assetRepository.getByDayOfYear([ownerId], target);
+    const memories = await this.assetRepository.getByDayOfYear([ownerId, ...partnerIds], target);
     await Promise.all(
       memories.map(({ year, assets }) =>
         this.memoryRepository.create(

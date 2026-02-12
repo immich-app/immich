@@ -541,6 +541,21 @@ class MemoryToAssetSync extends BaseSync {
     return this.auditQuery('memory_asset_audit', options)
       .select(['id', 'memoryId', 'assetId'])
       .where('memoryId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
+      .where((eb) =>
+        eb.or([
+          eb('assetId', 'in', (sub) =>
+            sub.selectFrom('asset').select('id').where('ownerId', '=', options.userId),
+          ),
+          eb('assetId', 'in', (sub) =>
+            sub
+              .selectFrom('asset')
+              .select('id')
+              .where('ownerId', 'in', (psub) =>
+                psub.selectFrom('partner').select('sharedById').where('sharedWithId', '=', options.userId),
+              ),
+          ),
+        ]),
+      )
       .stream();
   }
 
@@ -554,6 +569,21 @@ class MemoryToAssetSync extends BaseSync {
       .select(['memoriesId as memoryId', 'assetId as assetId'])
       .select('updateId')
       .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
+      .where((eb) =>
+        eb.or([
+          eb('assetId', 'in', (sub) =>
+            sub.selectFrom('asset').select('id').where('ownerId', '=', options.userId),
+          ),
+          eb('assetId', 'in', (sub) =>
+            sub
+              .selectFrom('asset')
+              .select('id')
+              .where('ownerId', 'in', (psub) =>
+                psub.selectFrom('partner').select('sharedById').where('sharedWithId', '=', options.userId),
+              ),
+          ),
+        ]),
+      )
       .stream();
   }
 }

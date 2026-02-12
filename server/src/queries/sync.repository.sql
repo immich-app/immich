@@ -663,6 +663,31 @@ where
     where
       "ownerId" = $3
   )
+  and (
+    "assetId" in (
+      select
+        "id"
+      from
+        "asset"
+      where
+        "ownerId" = $4
+    )
+    or "assetId" in (
+      select
+        "id"
+      from
+        "asset"
+      where
+        "ownerId" in (
+          select
+            "sharedById"
+          from
+            "partner"
+          where
+            "sharedWithId" = $5
+        )
+    )
+  )
 order by
   "memory_asset_audit"."id" asc
 
@@ -683,6 +708,31 @@ where
       "memory"
     where
       "ownerId" = $3
+  )
+  and (
+    "assetId" in (
+      select
+        "id"
+      from
+        "asset"
+      where
+        "ownerId" = $4
+    )
+    or "assetId" in (
+      select
+        "id"
+      from
+        "asset"
+      where
+        "ownerId" in (
+          select
+            "sharedById"
+          from
+            "partner"
+          where
+            "sharedWithId" = $5
+        )
+    )
   )
 order by
   "memory_asset"."updateId" asc

@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
@@ -87,5 +88,47 @@ describe(SyncEntityType.MemoryToAssetV1, () => {
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoryToAssetsV1]);
+  });
+
+  it('should sync a memory with partner assets when partner is active', async () => {
+    const { auth, user, ctx } = await setup();
+    const { user: partner } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+    const { asset } = await ctx.newAsset({ ownerId: partner.id });
+    const { memory } = await ctx.newMemory({ ownerId: user.id });
+    await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: {
+          memoryId: memory.id,
+          assetId: asset.id,
+        },
+        type: 'MemoryToAssetV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
+  it('should not sync a memory with partner assets when partner is removed', async () => {
+    const { auth, user, ctx } = await setup();
+    const partnerRepo = ctx.get(PartnerRepository);
+    const { user: partner } = await ctx.newUser();
+    await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+    const { asset } = await ctx.newAsset({ ownerId: partner.id });
+    const { memory } = await ctx.newMemory({ ownerId: user.id });
+    await ctx.newMemoryAsset({ memoryId: memory.id, assetId: asset.id });
+
+    // Remove the partner sharing
+    await partnerRepo.remove({ sharedById: partner.id, sharedWithId: user.id });
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.MemoryToAssetsV1]);
+    expect(response).toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
   });
 });

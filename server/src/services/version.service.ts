@@ -40,7 +40,9 @@ export class VersionService extends BaseService {
         await this.versionRepository.create({ version: current });
 
         const needsNewMemories = semver.lt(previousVersion, '1.129.0');
-        if (needsNewMemories) {
+        const needsPartnerMemories = semver.lt(previousVersion, '2.5.7');
+        if (needsNewMemories || needsPartnerMemories) {
+          await this.systemMetadataRepository.delete(SystemMetadataKey.MemoriesState);
           await this.jobRepository.queue({ name: JobName.MemoryGenerate });
         }
       }
