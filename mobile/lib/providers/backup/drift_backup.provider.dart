@@ -245,7 +245,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  void updateError(BackupError error) async {
+  void updateError(BackupError error) {
     if (!mounted) {
       _logger.warning("Skip updateError: notifier disposed");
       return;
@@ -253,14 +253,14 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(error: error);
   }
 
-  void updateSyncing(bool isSyncing) async {
+  void updateSyncing(bool isSyncing) {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) async {
+  Future<void> startForegroundBackup(String userId) {
     // Cancel any existing backup before starting a new one
     if (state.cancelToken != null) {
-      await stopForegroundBackup();
+      stopForegroundBackup();
     }
 
     state = state.copyWith(error: BackupError.none);
@@ -280,7 +280,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> stopForegroundBackup() async {
+  void stopForegroundBackup() {
     state.cancelToken?.complete();
     _uploadSpeedManager.clear();
     state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
@@ -398,7 +398,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 }
 
-final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((ref) async {
+final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) {
     return [];
