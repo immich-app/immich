@@ -29,7 +29,7 @@ export class AssetFactory {
   static from(dto: AssetLike = {}) {
     const id = dto.id ?? newUuid();
 
-    const originalFileName = dto.originalFileName ?? `IMG_${id}.jpg`;
+    const originalFileName = dto.originalFileName ?? (dto.type === AssetType.Video ? `MOV_${id}.mp4` : `IMG_${id}.jpg`);
 
     return new AssetFactory({
       id,
