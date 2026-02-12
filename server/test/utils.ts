@@ -569,7 +569,7 @@ export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: str
   } as unknown as ChildProcessWithoutNullStreams;
 });
 
-export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+export async function* makeStream<T>(items: T[] = []): AsyncGenerator<T> {
   for (const item of items) {
     await Promise.resolve();
     yield item;

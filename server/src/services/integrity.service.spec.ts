@@ -154,12 +154,7 @@ describe(IntegrityService.name, () => {
     });
 
     it('queues jobs for all detected files', async () => {
-      mocks.storage.walk.mockReturnValueOnce(
-        (function* () {
-          yield ['/path/to/file', '/path/to/file2'];
-          yield ['/path/to/batch2'];
-        })() as never,
-      );
+      mocks.storage.walk.mockReturnValueOnce(makeStream([['/path/to/file', '/path/to/file2'], ['/path/to/batch2']]));
 
       mocks.storage.walk.mockReturnValueOnce(
         (function* () {
