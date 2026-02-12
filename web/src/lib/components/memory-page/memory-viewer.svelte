@@ -28,7 +28,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
-  import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
+  import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -303,7 +303,6 @@
 
   $effect(() => {
     if (videoPlayer) {
-      videoPlayer.muted = $videoViewerMuted;
       initPlayer();
     }
   });
@@ -407,9 +406,9 @@
               shape="round"
               variant="ghost"
               color="secondary"
-              aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-              icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-              onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+              aria-label={videoPlayer?.muted ? $t('unmute_memories') : $t('mute_memories')}
+              icon={videoPlayer?.muted ? mdiVolumeOff : mdiVolumeHigh}
+              onclick={() => (videoPlayer ? (videoPlayer.muted = !videoPlayer.muted) : {})}
             />
           </div>
         {/if}
@@ -483,12 +482,7 @@
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
               {#if current.asset.isVideo}
-                <MemoryVideoViewer
-                  asset={current.asset}
-                  bind:videoPlayer
-                  videoViewerMuted={$videoViewerMuted}
-                  videoViewerVolume={$videoViewerVolume}
-                />
+                <MemoryVideoViewer asset={current.asset} bind:videoPlayer />
               {:else}
                 <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
               {/if}

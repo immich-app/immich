@@ -10,11 +10,9 @@
   interface Props {
     asset: TimelineAsset;
     videoPlayer: HTMLVideoElement | undefined;
-    videoViewerMuted?: boolean;
-    videoViewerVolume?: number;
   }
 
-  let { asset, videoPlayer = $bindable(), videoViewerVolume, videoViewerMuted }: Props = $props();
+  let { asset, videoPlayer = $bindable() }: Props = $props();
 
   let showVideo: boolean = $state(false);
 
@@ -34,8 +32,6 @@
       src={getAssetPlaybackUrl({ id: asset.id })}
       poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
       draggable="false"
-      muted={videoViewerMuted}
-      volume={videoViewerVolume}
     ></video>
   </div>
 {/if}
