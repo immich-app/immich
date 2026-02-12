@@ -11,7 +11,7 @@ export const getIntegrityReportActions = ($t: MessageFormatter, reportType: Inte
     type: $t('command'),
     title: $t('admin.download_csv'),
     icon: mdiDownload,
-    onAction() {
+    onAction: () => {
       handleDownloadIntegrityReportCsv(reportType);
     },
   };
@@ -21,7 +21,7 @@ export const getIntegrityReportActions = ($t: MessageFormatter, reportType: Inte
     title: $t('trash_page_delete_all'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction() {
+    onAction: () => {
       void handleRemoveAllIntegrityReportItems(reportType);
     },
   };
@@ -34,22 +34,20 @@ export const getIntegrityReportItemActions = (
   reportId: string,
   reportType: IntegrityReportType,
 ) => {
-  const Download =
-    reportType === IntegrityReportType.UntrackedFile || reportType === IntegrityReportType.ChecksumMismatch
-      ? {
-          title: $t('download'),
-          icon: mdiDownload,
-          onAction() {
-            void handleDownloadIntegrityReportFile(reportId);
-          },
-        }
-      : undefined;
+  const Download = {
+    title: $t('download'),
+    icon: mdiDownload,
+    onAction: () => {
+      void handleDownloadIntegrityReportFile(reportId);
+    },
+    $if: reportType === IntegrityReportType.UntrackedFile || reportType === IntegrityReportType.ChecksumMismatch,
+  };
 
   const Delete = {
     title: $t('delete'),
     icon: mdiTrashCanOutline,
     color: 'danger',
-    onAction() {
+    onAction: () => {
       void handleRemoveIntegrityReportItem(reportId);
     },
   };
@@ -71,43 +69,45 @@ export const handleRemoveAllIntegrityReportItems = async (reportType: IntegrityR
     confirmText: $t('delete'),
   });
 
-  if (confirm) {
-    let name: ManualJobName;
-    switch (reportType) {
-      case IntegrityReportType.UntrackedFile: {
-        name = ManualJobName.IntegrityUntrackedFilesDeleteAll;
-        break;
-      }
-      case IntegrityReportType.MissingFile: {
-        name = ManualJobName.IntegrityMissingFilesDeleteAll;
-        break;
-      }
-      case IntegrityReportType.ChecksumMismatch: {
-        name = ManualJobName.IntegrityChecksumMismatchDeleteAll;
-        break;
-      }
+  if (!confirm) {
+    return;
+  }
+
+  let name: ManualJobName;
+  switch (reportType) {
+    case IntegrityReportType.UntrackedFile: {
+      name = ManualJobName.IntegrityUntrackedFilesDeleteAll;
+      break;
     }
-
-    try {
-      eventManager.emit('IntegrityReportDeleteStatus', {
-        type: reportType,
-        isDeleting: true,
-      });
-
-      await createJob({ jobCreateDto: { name } });
-      toastManager.success($t('admin.job_created'));
-
-      eventManager.emit('IntegrityReportDeleted', {
-        type: reportType,
-      });
-    } catch (error) {
-      handleError(error, $t('failed_to_delete_file'));
-
-      eventManager.emit('IntegrityReportDeleteStatus', {
-        type: reportType,
-        isDeleting: false,
-      });
+    case IntegrityReportType.MissingFile: {
+      name = ManualJobName.IntegrityMissingFilesDeleteAll;
+      break;
     }
+    case IntegrityReportType.ChecksumMismatch: {
+      name = ManualJobName.IntegrityChecksumMismatchDeleteAll;
+      break;
+    }
+  }
+
+  try {
+    eventManager.emit('IntegrityReportDeleteStatus', {
+      type: reportType,
+      isDeleting: true,
+    });
+
+    await createJob({ jobCreateDto: { name } });
+    toastManager.success($t('admin.job_created'));
+
+    eventManager.emit('IntegrityReportDeleted', {
+      type: reportType,
+    });
+  } catch (error) {
+    handleError(error, $t('failed_to_delete_file'));
+
+    eventManager.emit('IntegrityReportDeleteStatus', {
+      type: reportType,
+      isDeleting: false,
+    });
   }
 };
 
@@ -117,27 +117,29 @@ export const handleRemoveIntegrityReportItem = async (reportId: string) => {
     confirmText: $t('delete'),
   });
 
-  if (confirm) {
-    try {
-      eventManager.emit('IntegrityReportDeleteStatus', {
-        id: reportId,
-        isDeleting: true,
-      });
+  if (!confirm) {
+    return;
+  }
 
-      await deleteIntegrityReport({
-        id: reportId,
-      });
+  try {
+    eventManager.emit('IntegrityReportDeleteStatus', {
+      id: reportId,
+      isDeleting: true,
+    });
 
-      eventManager.emit('IntegrityReportDeleted', {
-        id: reportId,
-      });
-    } catch (error) {
-      handleError(error, $t('failed_to_delete_file'));
+    await deleteIntegrityReport({
+      id: reportId,
+    });
 
-      eventManager.emit('IntegrityReportDeleteStatus', {
-        id: reportId,
-        isDeleting: false,
-      });
-    }
+    eventManager.emit('IntegrityReportDeleted', {
+      id: reportId,
+    });
+  } catch (error) {
+    handleError(error, $t('failed_to_delete_file'));
+
+    eventManager.emit('IntegrityReportDeleteStatus', {
+      id: reportId,
+      isDeleting: false,
+    });
   }
 };
