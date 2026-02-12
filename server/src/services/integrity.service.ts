@@ -431,7 +431,7 @@ export class IntegrityService extends BaseService {
     return JobStatus.Success;
   }
 
-  async queueRefreshAllChecksumFiles() {
+  private async queueRefreshAllChecksumFiles() {
     this.logger.log(`Checking for out of date checksum file reports...`);
 
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReportType.ChecksumFail);
@@ -454,6 +454,51 @@ export class IntegrityService extends BaseService {
     }
 
     this.logger.log('Refresh complete.');
+  }
+
+  private async checkAssetChecksum(
+    originalPath: string,
+    checksum: Buffer<ArrayBufferLike>,
+    assetId: string,
+    reportId: string | null,
+  ) {
+    const hash = createHash('sha1');
+
+    try {
+      await pipeline([
+        this.storageRepository.createPlainReadStream(originalPath),
+        new Writable({
+          write(chunk, _encoding, callback) {
+            hash.update(chunk);
+            callback();
+          },
+        }),
+      ]);
+
+      if (checksum.equals(hash.digest())) {
+        if (reportId) {
+          await this.integrityRepository.deleteById(reportId);
+        }
+      } else {
+        throw new Error('File failed checksum');
+      }
+    } catch (error) {
+      if ((error as { code?: string }).code === 'ENOENT') {
+        if (reportId) {
+          await this.integrityRepository.deleteById(reportId);
+        }
+
+        // missing file; handled by the missing files job
+        return;
+      }
+
+      this.logger.warn('Failed to process a file: ' + error);
+      await this.integrityRepository.create({
+        path: originalPath,
+        type: IntegrityReportType.ChecksumFail,
+        assetId,
+      });
+    }
   }
 
   @OnJob({ name: JobName.IntegrityChecksumFiles, queue: QueueName.IntegrityCheck })
@@ -504,44 +549,9 @@ export class IntegrityService extends BaseService {
       startMarker = undefined;
 
       for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
+        await this.checkAssetChecksum(originalPath, checksum, assetId, reportId);
+
         processed++;
-
-        const hash = createHash('sha1');
-
-        try {
-          await pipeline([
-            this.storageRepository.createPlainReadStream(originalPath),
-            new Writable({
-              write(chunk, _encoding, callback) {
-                hash.update(chunk);
-                callback();
-              },
-            }),
-          ]);
-
-          if (checksum.equals(hash.digest())) {
-            if (reportId) {
-              await this.integrityRepository.deleteById(reportId);
-            }
-          } else {
-            throw new Error('File failed checksum');
-          }
-        } catch (error) {
-          if ((error as { code?: string }).code === 'ENOENT') {
-            if (reportId) {
-              await this.integrityRepository.deleteById(reportId);
-            }
-            // missing file; handled by the missing files job
-            continue;
-          }
-
-          this.logger.warn('Failed to process a file: ' + error);
-          await this.integrityRepository.create({
-            path: originalPath,
-            type: IntegrityReportType.ChecksumFail,
-            assetId,
-          });
-        }
 
         if (processed % 100 === 0) {
           printStats();
