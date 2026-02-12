@@ -1,10 +1,9 @@
 <script lang="ts">
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
-  import { Button, Field, NumberInput, Switch, toastManager } from '@immich/ui';
+  import { Button, Field, NumberInput, Select, Switch, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -68,23 +67,23 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ms-4 mt-4 flex flex-col">
+      <div class="sm:ms-4 md:ms-8 flex flex-col">
         <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
-            <SettingSelect
-              label={$t('albums_default_sort_order')}
-              desc={$t('albums_default_sort_order_description')}
-              options={[
-                { value: AssetOrder.Asc, text: $t('oldest_first') },
-                { value: AssetOrder.Desc, text: $t('newest_first') },
-              ]}
-              bind:value={defaultAssetOrder}
-            />
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+            <Field label={$t('albums_default_sort_order')} description={$t('albums_default_sort_order_description')}>
+              <Select
+                options={[
+                  { label: $t('oldest_first'), value: AssetOrder.Asc },
+                  { label: $t('newest_first'), value: AssetOrder.Desc },
+                ]}
+                bind:value={defaultAssetOrder}
+              />
+            </Field>
           </div>
         </SettingAccordion>
 
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={foldersEnabled} />
             </Field>
@@ -98,7 +97,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
             </Field>
@@ -110,7 +109,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={peopleEnabled} />
             </Field>
@@ -124,7 +123,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={ratingsEnabled} />
             </Field>
@@ -132,7 +131,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={sharedLinksEnabled} />
             </Field>
@@ -146,7 +145,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={tagsEnabled} />
             </Field>
@@ -160,14 +159,14 @@
         </SettingAccordion>
 
         <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
-          <div class="ms-4 mt-6 flex flex-col gap-4">
+          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
             </Field>
           </div>
         </SettingAccordion>
 
-        <div class="flex justify-end">
+        <div class="flex justify-end mt-4">
           <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>

@@ -37,6 +37,7 @@ class RemoteAlbumService {
     AlbumSortMode sortMode, {
     bool isReverse = false,
   }) async {
+    // list of albums sorted ascendingly according to the selected sort mode
     final List<RemoteAlbum> sorted = switch (sortMode) {
       AlbumSortMode.created => albums.sortedBy((album) => album.createdAt),
       AlbumSortMode.title => albums.sortedBy((album) => album.name),
@@ -45,8 +46,9 @@ class RemoteAlbumService {
       AlbumSortMode.mostRecent => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.end),
       AlbumSortMode.mostOldest => await _sortByAssetDate(albums, aggregation: AssetDateAggregation.start),
     };
+    final effectiveOrder = isReverse ? sortMode.defaultOrder.reverse() : sortMode.defaultOrder;
 
-    return (isReverse ? sorted.reversed : sorted).toList();
+    return (effectiveOrder == SortOrder.asc ? sorted : sorted.reversed).toList();
   }
 
   List<RemoteAlbum> searchAlbums(

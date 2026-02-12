@@ -25,6 +25,7 @@ class SharedLinkCreateDto {
     required this.type,
   });
 
+  /// Album ID (for album sharing)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -33,8 +34,10 @@ class SharedLinkCreateDto {
   ///
   String? albumId;
 
+  /// Allow downloads
   bool allowDownload;
 
+  /// Allow uploads
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -43,18 +46,25 @@ class SharedLinkCreateDto {
   ///
   bool? allowUpload;
 
+  /// Asset IDs (for individual assets)
   List<String> assetIds;
 
+  /// Link description
   String? description;
 
+  /// Expiration date
   DateTime? expiresAt;
 
+  /// Link password
   String? password;
 
+  /// Show metadata
   bool showMetadata;
 
+  /// Custom URL slug
   String? slug;
 
+  /// Shared link type
   SharedLinkType type;
 
   @override

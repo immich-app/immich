@@ -26,6 +26,12 @@ const config = {
     locales: ['en'],
   },
 
+  // Mermaid diagrams
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+
   plugins: [
     async function myPlugin(context, options) {
       return {
@@ -69,6 +75,10 @@ const config = {
         sidebar: {
           autoCollapseCategories: false,
         },
+      },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 4,
       },
       navbar: {
         logo: {

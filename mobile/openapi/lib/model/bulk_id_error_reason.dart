@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Error reason
 class BulkIdErrorReason {
   /// Instantiate a new enum with the provided [value].
   const BulkIdErrorReason._(this.value);

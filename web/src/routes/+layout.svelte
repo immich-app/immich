@@ -4,21 +4,19 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import { AppRoute } from '$lib/constants';
+  import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
+  import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import type { ReleaseEvent } from '$lib/types';
-  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
+  import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import {
@@ -62,7 +60,7 @@
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
-  toastManager.setOptions({ class: 'top-16' });
+  toastManager.setOptions({ class: 'top-16 fixed' });
 
   onMount(() => {
     const element = document.querySelector('#stencil');
@@ -87,36 +85,15 @@
     showNavigationLoadingBar = false;
   });
 
+  const { serverRestarting } = websocketStore;
+
   $effect.pre(() => {
-    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if ($user || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
-
-  const { serverRestarting } = websocketStore;
-
-  const onReleaseEvent = async (release: ReleaseEvent) => {
-    if (!release.isAvailable || !$user.isAdmin) {
-      return;
-    }
-
-    const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
-    const type = getReleaseType(release.serverVersion, release.releaseVersion);
-
-    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
-      return;
-    }
-
-    try {
-      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-      localStorage.setItem('appVersion', releaseVersion);
-    } catch (error) {
-      console.error('Error [VersionAnnouncementBox]:', error);
-    }
-  };
 
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
@@ -155,40 +132,40 @@
       title: $t('users'),
       description: $t('admin.users_page_description'),
       icon: mdiAccountMultipleOutline,
-      onAction: () => goto(AppRoute.ADMIN_USERS),
+      onAction: () => goto(Route.users()),
     },
     {
       title: $t('settings'),
       description: $t('admin.settings_page_description'),
       icon: mdiCog,
-      onAction: () => goto(AppRoute.ADMIN_SETTINGS),
+      onAction: () => goto(Route.systemSettings()),
     },
     {
       title: $t('admin.queues'),
       description: $t('admin.queues_page_description'),
       icon: mdiSync,
       type: $t('page'),
-      onAction: () => goto(AppRoute.ADMIN_QUEUES),
+      onAction: () => goto(Route.queues()),
     },
     {
       title: $t('external_libraries'),
       description: $t('admin.external_libraries_page_description'),
       icon: mdiBookshelf,
-      onAction: () => goto(AppRoute.ADMIN_LIBRARIES),
+      onAction: () => goto(Route.libraries()),
     },
     {
       title: $t('server_stats'),
       description: $t('admin.server_stats_page_description'),
       icon: mdiServer,
-      onAction: () => goto(AppRoute.ADMIN_STATS),
+      onAction: () => goto(Route.systemStatistics()),
     },
   ].map((route) => ({ ...route, type: $t('page'), $if: () => $user?.isAdmin }));
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
-<OnEvents {onReleaseEvent} />
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
+<VersionAnnouncement />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>

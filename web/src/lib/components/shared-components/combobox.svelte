@@ -24,7 +24,7 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon, IconButton, Label } from '@immich/ui';
-  import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
+  import { mdiChevronDown, mdiClose, mdiMagnify } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { FormEventHandler } from 'svelte/elements';
@@ -251,7 +251,7 @@
 </script>
 
 <svelte:window onresize={onPositionChange} />
-<Label class="block mb-1 {hideLabel ? 'sr-only' : ''}" for={inputId}>{label}</Label>
+<Label class="block mb-1 {hideLabel ? 'sr-only' : ''} text-xs text-neutral-500 font-light" for={inputId}>{label}</Label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:focusOutside={{ onFocusOut: deactivate }}
@@ -351,7 +351,7 @@
           size="small"
         />
       {:else if !isOpen}
-        <Icon icon={mdiUnfoldMoreHorizontal} aria-hidden />
+        <Icon icon={mdiChevronDown} aria-hidden />
       {/if}
     </div>
   </div>
@@ -391,7 +391,7 @@
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
+          class="text-start w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 wrap-break-words"
           id={`${listboxId}-${index}`}
           onclick={() => handleSelect(option)}
           role="option"

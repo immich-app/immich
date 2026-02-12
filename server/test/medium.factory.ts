@@ -6,6 +6,7 @@ import { Stats } from 'node:fs';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
+import { AssetEditActionListDto } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetType,
@@ -19,6 +20,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -279,6 +281,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const result = await this.get(TagRepository).upsertAssetIds(tagsAssets);
     return { tagsAssets, result };
   }
+
+  async newEdits(assetId: string, dto: AssetEditActionListDto) {
+    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits);
+    return { edits };
+  }
 }
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
@@ -384,6 +391,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AlbumUserRepository:
     case ActivityRepository:
     case AssetRepository:
+    case AssetEditRepository:
     case AssetJobRepository:
     case MemoryRepository:
     case NotificationRepository:
@@ -535,6 +543,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     fileModifiedAt: now,
     localDateTime: now,
     visibility: AssetVisibility.Timeline,
+    isEdited: false,
   };
 
   return {
@@ -598,8 +607,6 @@ const assetJobStatusInsert = (
     duplicatesDetectedAt: date,
     facesRecognizedAt: date,
     metadataExtractedAt: date,
-    previewAt: date,
-    thumbnailAt: date,
   };
 
   return {

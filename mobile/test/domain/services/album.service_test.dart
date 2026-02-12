@@ -57,16 +57,56 @@ void main() {
   });
 
   group('sortAlbums', () {
+    test('should sort correctly based on name', () async {
+      final albums = [albumB, albumA];
+
+      final result = await sut.sortAlbums(albums, AlbumSortMode.title);
+      expect(result, [albumA, albumB]);
+    });
+
+    test('should sort correctly based on createdAt', () async {
+      final albums = [albumB, albumA];
+
+      final result = await sut.sortAlbums(albums, AlbumSortMode.created);
+      expect(result, [albumB, albumA]);
+    });
+
+    test('should sort correctly based on updatedAt', () async {
+      final albums = [albumB, albumA];
+
+      final result = await sut.sortAlbums(albums, AlbumSortMode.lastModified);
+      expect(result, [albumB, albumA]);
+    });
+
+    test('should sort correctly based on assetCount', () async {
+      final albums = [albumB, albumA];
+
+      final result = await sut.sortAlbums(albums, AlbumSortMode.assetCount);
+      expect(result, [albumB, albumA]);
+    });
+
     test('should sort correctly based on newestAssetTimestamp', () async {
       final albums = [albumB, albumA];
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostRecent);
-      expect(result, [albumA, albumB]);
+      expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on oldestAssetTimestamp', () async {
       final albums = [albumB, albumA];
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
       expect(result, [albumA, albumB]);
+    });
+
+    test('should flip order when isReverse is true for all modes', () async {
+      final albums = [albumB, albumA];
+
+      for (final mode in AlbumSortMode.values) {
+        final normal = await sut.sortAlbums(albums, mode, isReverse: false);
+        final reversed = await sut.sortAlbums(albums, mode, isReverse: true);
+
+        // reversed should be the exact inverse of normal
+        expect(reversed, normal.reversed.toList(), reason: 'Mode: $mode');
+      }
     });
   });
 }

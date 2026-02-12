@@ -17,6 +17,8 @@ class DownloadUpdate {
     this.includeEmbeddedVideos,
   });
 
+  /// Maximum archive size in bytes
+  ///
   /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -26,6 +28,7 @@ class DownloadUpdate {
   ///
   int? archiveSize;
 
+  /// Whether to include embedded videos in downloads
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

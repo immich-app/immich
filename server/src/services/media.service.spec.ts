@@ -18,12 +18,19 @@ import {
 } from 'src/enum';
 import { MediaService } from 'src/services/media.service';
 import { JobCounts, RawImageInfo } from 'src/types';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { assetStub, previewFile } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+
+const filesNoFullsize = [
+  factory.assetFile({ type: AssetFileType.Preview }),
+  factory.assetFile({ type: AssetFileType.Thumbnail }),
+];
 
 const fullsizeBuffer = Buffer.from('embedded image data');
 const rawBuffer = Buffer.from('raw image data');
@@ -49,7 +56,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: true, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
@@ -72,7 +79,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: true, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
@@ -87,7 +94,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: true, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
@@ -103,7 +110,7 @@ describe(MediaService.name, () => {
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
       expect(mocks.person.getRandomFace).toHaveBeenCalled();
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
@@ -122,7 +129,7 @@ describe(MediaService.name, () => {
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
@@ -133,34 +140,62 @@ describe(MediaService.name, () => {
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
-    it('should queue all assets with missing webp path', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noWebpPath]));
+    it('should queue all assets with missing preview', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.AssetGenerateThumbnails,
-          data: { id: assetStub.image.id },
-        },
+        { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
       ]);
-
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
     it('should queue all assets with missing thumbhash', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.noThumbhash]));
+      const asset = AssetFactory.from({ thumbhash: null })
+        .files([AssetFileType.Thumbnail, AssetFileType.Preview])
+        .build();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
+      ]);
+
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+    });
+
+    it('should queue all assets with missing fullsize when feature is enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      const asset = { id: factory.uuid(), thumbhash: factory.buffer(), edits: [], files: filesNoFullsize };
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
+      mocks.person.getAll.mockReturnValue(makeStream());
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: true });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
-          data: { id: assetStub.image.id },
+          data: { id: asset.id },
         },
       ]);
+
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+    });
+
+    it('should not queue assets with missing fullsize when feature is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
+      const asset = { id: factory.uuid(), thumbhash: factory.buffer(), edits: [], files: filesNoFullsize };
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
+      mocks.person.getAll.mockReturnValue(makeStream());
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
 
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
@@ -170,7 +205,7 @@ describe(MediaService.name, () => {
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(false);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetEditThumbnailGeneration,
@@ -181,12 +216,42 @@ describe(MediaService.name, () => {
       expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
+    it('should not queue assets with missing edited fullsize when feature is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.withCropEdit]));
+      mocks.person.getAll.mockReturnValue(makeStream());
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+    });
+
+    it('should queue assets with missing fullsize when force is true, regardless of setting', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
+      const asset = { id: factory.uuid(), thumbhash: Buffer.from('thumbhash'), edits: [], files: filesNoFullsize };
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
+      mocks.person.getAll.mockReturnValue(makeStream());
+      await sut.handleQueueGenerateThumbnails({ force: true });
+
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: true, fullsizeEnabled: false });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.AssetGenerateThumbnails,
+          data: { id: asset.id },
+        },
+      ]);
+
+      expect(mocks.person.getAll).toHaveBeenCalled();
+    });
+
     it('should queue both regular and edited thumbnails for assets with edits when force is true', async () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.withCropEdit]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: true });
 
-      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith(true);
+      expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: true, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
@@ -241,21 +306,21 @@ describe(MediaService.name, () => {
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.Success);
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
-        pathType: AssetPathType.FullSize,
+        pathType: AssetFileType.FullSize,
         oldPath: '/uploads/user-id/fullsize/path.webp',
-        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-fullsize.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id_fullsize.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
-        pathType: AssetPathType.Preview,
+        pathType: AssetFileType.Preview,
         oldPath: '/uploads/user-id/thumbs/path.jpg',
-        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-preview.jpeg'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id_preview.jpeg'),
       });
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: assetStub.image.id,
-        pathType: AssetPathType.Thumbnail,
+        pathType: AssetFileType.Thumbnail,
         oldPath: '/uploads/user-id/webp/path.ext',
-        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id-thumbnail.webp'),
+        newPath: expect.stringContaining('/data/thumbs/user-id/as/se/asset-id_thumbnail.webp'),
       });
       expect(mocks.move.create).toHaveBeenCalledTimes(3);
     });
@@ -352,6 +417,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -365,6 +431,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -385,11 +452,15 @@ describe(MediaService.name, () => {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
       ]);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-id', thumbhash: thumbhashBuffer });
@@ -421,11 +492,15 @@ describe(MediaService.name, () => {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
       ]);
     });
@@ -456,11 +531,15 @@ describe(MediaService.name, () => {
           assetId: 'asset-id',
           type: AssetFileType.Preview,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
         {
           assetId: 'asset-id',
           type: AssetFileType.Thumbnail,
           path: expect.any(String),
+          isEdited: false,
+          isProgressive: false,
         },
       ]);
     });
@@ -548,8 +627,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = `/data/thumbs/user-id/as/se/asset-id-preview.${format}`;
-      const thumbnailPath = `/data/thumbs/user-id/as/se/asset-id-thumbnail.webp`;
+      const previewPath = `/data/thumbs/user-id/as/se/asset-id_preview.${format}`;
+      const thumbnailPath = `/data/thumbs/user-id/as/se/asset-id_thumbnail.webp`;
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -569,6 +648,7 @@ describe(MediaService.name, () => {
           format,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -582,6 +662,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Webp,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -595,8 +676,8 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
-      const previewPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-preview.jpeg`);
-      const thumbnailPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id-thumbnail.${format}`);
+      const previewPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id_preview.jpeg`);
+      const thumbnailPath = expect.stringContaining(`/data/thumbs/user-id/as/se/asset-id_thumbnail.${format}`);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
@@ -616,6 +697,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -629,12 +711,106 @@ describe(MediaService.name, () => {
           format,
           size: 250,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
         },
         thumbnailPath,
       );
+    });
+
+    it('should generate progressive JPEG for preview when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: true }, thumbnail: { progressive: false } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+          progressive: false,
+        }),
+        expect.stringContaining('thumbnail.webp'),
+      );
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: true,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: false,
+        }),
+      ]);
+    });
+
+    it('should generate progressive JPEG for thumbnail when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: false }, thumbnail: { format: ImageFormat.Jpeg, progressive: true } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: false,
+        }),
+        expect.stringContaining('preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('thumbnail.jpeg'),
+      );
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: false,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: true,
+        }),
+      ]);
+    });
+
+    it('should never set isProgressive for videos', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { preview: { progressive: true }, thumbnail: { progressive: true } },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.video.id });
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          type: AssetFileType.Preview,
+          isProgressive: false,
+        }),
+        expect.objectContaining({
+          type: AssetFileType.Thumbnail,
+          isProgressive: false,
+        }),
+      ]);
     });
 
     it('should delete previous thumbnail if different path', async () => {
@@ -770,6 +946,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -801,6 +978,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -814,6 +992,7 @@ describe(MediaService.name, () => {
           format: ImageFormat.Jpeg,
           size: 1440,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -843,6 +1022,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -855,6 +1035,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           size: 1440,
           processInvalidImages: false,
           raw: rawInfo,
@@ -869,12 +1050,19 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
-      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+      await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -886,6 +1074,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -923,12 +1112,19 @@ describe(MediaService.name, () => {
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       mocks.media.copyTagGroup.mockResolvedValue(true);
 
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.panoramaTif);
+      const asset = AssetFactory.from({ originalFileName: 'panorama.tif' })
+        .exif({
+          fileSizeInByte: 5000,
+          projectionType: 'EQUIRECTANGULAR',
+        })
+        .build();
+
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.panoramaTif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.Srgb,
         orientation: undefined,
         processInvalidImages: false,
@@ -942,6 +1138,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.Srgb,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
@@ -950,11 +1147,7 @@ describe(MediaService.name, () => {
       );
 
       expect(mocks.media.copyTagGroup).toHaveBeenCalledTimes(2);
-      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith(
-        'XMP-GPano',
-        assetStub.panoramaTif.originalPath,
-        expect.any(String),
-      );
+      expect(mocks.media.copyTagGroup).toHaveBeenCalledWith('XMP-GPano', asset.originalPath, expect.any(String));
     });
 
     it('should respect encoding options when generating full-size preview', async () => {
@@ -964,12 +1157,19 @@ describe(MediaService.name, () => {
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.imageHif);
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -981,11 +1181,40 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Webp,
           quality: 90,
+          progressive: false,
           processInvalidImages: false,
           raw: rawInfo,
           edits: [],
         },
         expect.any(String),
+      );
+    });
+
+    it('should generate progressive JPEG for fullsize when enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.Jpeg, progressive: true } },
+      });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      const asset = AssetFactory.from({ originalFileName: 'image.hif' })
+        .exif({
+          fileSizeInByte: 5000,
+          profileDescription: 'Adobe RGB',
+          bitsPerSample: 14,
+        })
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+          progressive: true,
+        }),
+        expect.stringContaining('fullsize.jpeg'),
       );
     });
   });
@@ -1026,9 +1255,9 @@ describe(MediaService.name, () => {
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ type: AssetFileType.FullSizeEdited }),
-          expect.objectContaining({ type: AssetFileType.PreviewEdited }),
-          expect.objectContaining({ type: AssetFileType.ThumbnailEdited }),
+          expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
         ]),
       );
     });
@@ -1056,29 +1285,24 @@ describe(MediaService.name, () => {
     });
 
     it('should clean up edited files if an asset has no edits', async () => {
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
-        ...assetStub.withoutEdits,
-      });
+      const asset = AssetFactory.from({ thumbhash: factory.buffer() })
+        .exif()
+        .files([
+          { type: AssetFileType.Preview, path: 'edited1.jpg', isEdited: true },
+          { type: AssetFileType.Thumbnail, path: 'edited2.jpg', isEdited: true },
+          { type: AssetFileType.FullSize, path: 'edited3.jpg', isEdited: true },
+        ])
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
-      const status = await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id });
+      const status = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
+
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: {
-          files: expect.arrayContaining([
-            '/uploads/user-id/fullsize/path_edited.jpg',
-            '/uploads/user-id/preview/path_edited.jpg',
-            '/uploads/user-id/thumbnail/path_edited.jpg',
-          ]),
+          files: expect.arrayContaining(['edited1.jpg', 'edited2.jpg', 'edited3.jpg']),
         },
       });
-
-      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ path: '/uploads/user-id/preview/path_edited.jpg' }),
-          expect.objectContaining({ path: '/uploads/user-id/thumbnail/path_edited.jpg' }),
-          expect.objectContaining({ path: '/uploads/user-id/fullsize/path_edited.jpg' }),
-        ]),
-      );
 
       expect(status).toBe(JobStatus.Success);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -1098,26 +1322,24 @@ describe(MediaService.name, () => {
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.anything(),
-        expect.stringContaining('edited_preview.jpeg'),
+        expect.stringContaining('preview_edited.jpeg'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.anything(),
-        expect.stringContaining('edited_thumbnail.webp'),
+        expect.stringContaining('thumbnail_edited.webp'),
       );
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.anything(),
-        expect.stringContaining('edited_fullsize.jpeg'),
+        expect.stringContaining('fullsize_edited.jpeg'),
       );
     });
 
     it('should generate the original thumbhash if no edits exist', async () => {
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
-        ...assetStub.withoutEdits,
-      });
-      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
-      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      mocks.media.generateThumbhash.mockResolvedValue(factory.buffer());
 
       await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id, source: 'upload' });
 
@@ -1128,18 +1350,14 @@ describe(MediaService.name, () => {
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
         ...assetStub.withCropEdit,
       });
-      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      const thumbhashBuffer = factory.buffer();
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
       await sut.handleAssetEditThumbnailGeneration({ id: assetStub.image.id });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          thumbhash: thumbhashBuffer,
-        }),
-      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
     });
   });
 
@@ -1192,6 +1410,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1236,6 +1455,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1278,6 +1498,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1320,6 +1541,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1362,6 +1584,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1404,6 +1627,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -1451,6 +1675,7 @@ describe(MediaService.name, () => {
           colorspace: Colorspace.P3,
           format: ImageFormat.Jpeg,
           quality: 80,
+          progressive: false,
           edits: [
             {
               action: 'crop',
@@ -3253,14 +3478,38 @@ describe(MediaService.name, () => {
         files: [],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg' },
-        { type: AssetFileType.Thumbnail, newPath: '/new/thumbnail.jpg' },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/new/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview },
-        { assetId: 'asset-id', path: '/new/thumbnail.jpg', type: AssetFileType.Thumbnail },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/thumbnail.jpg',
+          type: AssetFileType.Thumbnail,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
@@ -3270,19 +3519,57 @@ describe(MediaService.name, () => {
       const asset = {
         id: 'asset-id',
         files: [
-          { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg' },
-          { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/old/thumbnail.jpg' },
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/old/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg' },
-        { type: AssetFileType.Thumbnail, newPath: '/new/thumbnail.jpg' },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/new/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview },
-        { assetId: 'asset-id', path: '/new/thumbnail.jpg', type: AssetFileType.Thumbnail },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/thumbnail.jpg',
+          type: AssetFileType.Thumbnail,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3295,17 +3582,45 @@ describe(MediaService.name, () => {
       const asset = {
         id: 'asset-id',
         files: [
-          { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg' },
-          { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/old/thumbnail.jpg' },
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/old/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
         ],
       };
 
-      await sut['syncFiles'](asset, [{ type: AssetFileType.Preview }, { type: AssetFileType.Thumbnail }]);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
-        { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg' },
-        { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/old/thumbnail.jpg' },
+        {
+          id: 'file-1',
+          assetId: 'asset-id',
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          id: 'file-2',
+          assetId: 'asset-id',
+          type: AssetFileType.Thumbnail,
+          path: '/old/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
@@ -3317,14 +3632,40 @@ describe(MediaService.name, () => {
       const asset = {
         id: 'asset-id',
         files: [
-          { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/same/preview.jpg' },
-          { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/same/thumbnail.jpg' },
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/same/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/same/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/same/preview.jpg' },
-        { type: AssetFileType.Thumbnail, newPath: '/same/thumbnail.jpg' },
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/same/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/same/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
@@ -3336,23 +3677,67 @@ describe(MediaService.name, () => {
       const asset = {
         id: 'asset-id',
         files: [
-          { id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg' },
-          { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/old/thumbnail.jpg' },
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/old/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
         ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Preview, newPath: '/new/preview.jpg' }, // replace
-        { type: AssetFileType.Thumbnail }, // delete
-        { type: AssetFileType.FullSize, newPath: '/new/fullsize.jpg' }, // new
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/new/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        }, // replace
+        {
+          assetId: asset.id,
+          type: AssetFileType.FullSize,
+          path: '/new/fullsize.jpg',
+          isEdited: false,
+          isProgressive: false,
+        }, // new
       ]);
 
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
-        { assetId: 'asset-id', path: '/new/preview.jpg', type: AssetFileType.Preview },
-        { assetId: 'asset-id', path: '/new/fullsize.jpg', type: AssetFileType.FullSize },
+        {
+          assetId: 'asset-id',
+          path: '/new/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+        },
+        {
+          assetId: 'asset-id',
+          path: '/new/fullsize.jpg',
+          type: AssetFileType.FullSize,
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
-        { id: 'file-2', assetId: 'asset-id', type: AssetFileType.Thumbnail, path: '/old/thumbnail.jpg' },
+        {
+          id: 'file-2',
+          assetId: 'asset-id',
+          type: AssetFileType.Thumbnail,
+          path: '/old/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
@@ -3366,7 +3751,7 @@ describe(MediaService.name, () => {
         files: [],
       };
 
-      await sut['syncFiles'](asset, []);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
@@ -3376,14 +3761,86 @@ describe(MediaService.name, () => {
     it('should delete non-existent file types when newPath is not provided', async () => {
       const asset = {
         id: 'asset-id',
-        files: [{ id: 'file-1', assetId: 'asset-id', type: AssetFileType.Preview, path: '/old/preview.jpg' }],
+        files: [
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+        ],
       };
 
-      await sut['syncFiles'](asset, [
-        { type: AssetFileType.Thumbnail }, // file doesn't exist, newPath not provided
-      ]);
+      await sut['syncFiles'](asset.files, []);
 
       expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
+        {
+          id: 'file-1',
+          assetId: 'asset-id',
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+      ]);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['/old/preview.jpg'] },
+      });
+    });
+
+    it('should update database when isProgressive changes', async () => {
+      const asset = {
+        id: 'asset-id',
+        files: [
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/old/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+          {
+            id: 'file-2',
+            assetId: 'asset-id',
+            type: AssetFileType.Thumbnail,
+            path: '/old/thumbnail.jpg',
+            isEdited: false,
+            isProgressive: false,
+          },
+        ],
+      };
+
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/old/preview.jpg',
+          isEdited: false,
+          isProgressive: true,
+        },
+        {
+          assetId: asset.id,
+          type: AssetFileType.Thumbnail,
+          path: '/old/thumbnail.jpg',
+          isEdited: false,
+          isProgressive: false,
+        },
+      ]);
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        {
+          assetId: 'asset-id',
+          path: '/old/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: true,
+        },
+      ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
   import { user as authUser } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
@@ -16,12 +16,10 @@
 
   let { data }: Props = $props();
 
-  const user = $state(data.user);
-  let isAdmin = $state(user.isAdmin);
-  let name = $state(user.name);
-  let email = $state(user.email);
-  let storageLabel = $state(user.storageLabel || '');
-  const previousQuota = $state(user.quotaSizeInBytes);
+  const user = $derived(data.user);
+  let { isAdmin, name, email } = $derived(user);
+  let storageLabel = $derived(user.storageLabel || '');
+  const previousQuota = $derived(user.quotaSizeInBytes);
 
   let quotaSize = $derived(
     typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,
@@ -37,7 +35,7 @@
   );
 
   const onClose = async () => {
-    await goto(`${AppRoute.ADMIN_USERS}/${user.id}`);
+    await goto(Route.viewUser(user));
   };
 
   const onSubmit = async (event: Event) => {
@@ -79,7 +77,7 @@
 
   <Text size="small" class="mt-2" color="muted">
     {$t('admin.note_apply_storage_label_previous_assets')}
-    <Link href={AppRoute.ADMIN_QUEUES}>
+    <Link href={Route.queues()}>
       {$t('admin.storage_template_migration_job')}
     </Link>
   </Text>

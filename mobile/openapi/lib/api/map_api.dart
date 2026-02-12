@@ -25,16 +25,22 @@ class MapApi {
   /// Parameters:
   ///
   /// * [DateTime] fileCreatedAfter:
+  ///   Filter assets created after this date
   ///
   /// * [DateTime] fileCreatedBefore:
+  ///   Filter assets created before this date
   ///
   /// * [bool] isArchived:
+  ///   Filter by archived status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] withPartners:
+  ///   Include partner assets
   ///
   /// * [bool] withSharedAlbums:
+  ///   Include shared album assets
   Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/map/markers';
@@ -86,16 +92,22 @@ class MapApi {
   /// Parameters:
   ///
   /// * [DateTime] fileCreatedAfter:
+  ///   Filter assets created after this date
   ///
   /// * [DateTime] fileCreatedBefore:
+  ///   Filter assets created before this date
   ///
   /// * [bool] isArchived:
+  ///   Filter by archived status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] withPartners:
+  ///   Include partner assets
   ///
   /// * [bool] withSharedAlbums:
+  ///   Include shared album assets
   Future<List<MapMarkerResponseDto>?> getMapMarkers({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     final response = await getMapMarkersWithHttpInfo( fileCreatedAfter: fileCreatedAfter, fileCreatedBefore: fileCreatedBefore, isArchived: isArchived, isFavorite: isFavorite, withPartners: withPartners, withSharedAlbums: withSharedAlbums, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -123,8 +135,10 @@ class MapApi {
   /// Parameters:
   ///
   /// * [double] lat (required):
+  ///   Latitude (-90 to 90)
   ///
   /// * [double] lon (required):
+  ///   Longitude (-180 to 180)
   Future<Response> reverseGeocodeWithHttpInfo(double lat, double lon,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/map/reverse-geocode';
@@ -160,8 +174,10 @@ class MapApi {
   /// Parameters:
   ///
   /// * [double] lat (required):
+  ///   Latitude (-90 to 90)
   ///
   /// * [double] lon (required):
+  ///   Longitude (-180 to 180)
   Future<List<MapReverseGeocodeResponseDto>?> reverseGeocode(double lat, double lon,) async {
     final response = await reverseGeocodeWithHttpInfo(lat, lon,);
     if (response.statusCode >= HttpStatus.badRequest) {

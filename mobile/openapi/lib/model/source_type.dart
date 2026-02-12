@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Face detection source type
 class SourceType {
   /// Instantiate a new enum with the provided [value].
   const SourceType._(this.value);

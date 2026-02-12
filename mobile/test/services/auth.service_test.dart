@@ -21,7 +21,6 @@ void main() {
   late MockApiService apiService;
   late MockNetworkService networkService;
   late MockBackgroundSyncManager backgroundSyncManager;
-  late MockUploadService uploadService;
   late MockAppSettingService appSettingsService;
   late Isar db;
 
@@ -31,7 +30,6 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
-    uploadService = MockUploadService();
     appSettingsService = MockAppSettingService();
 
     sut = AuthService(
@@ -118,7 +116,6 @@ void main() {
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
       when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData()).thenAnswer((_) => Future.value(null));
-      when(() => uploadService.cancelBackup()).thenAnswer((_) => Future.value(1));
       when(
         () => appSettingsService.setSetting(AppSettingsEnum.enableBackup, false),
       ).thenAnswer((_) => Future.value(null));
@@ -133,7 +130,6 @@ void main() {
       when(() => authApiRepository.logout()).thenThrow(Exception('Server error'));
       when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData()).thenAnswer((_) => Future.value(null));
-      when(() => uploadService.cancelBackup()).thenAnswer((_) => Future.value(1));
       when(
         () => appSettingsService.setSetting(AppSettingsEnum.enableBackup, false),
       ).thenAnswer((_) => Future.value(null));

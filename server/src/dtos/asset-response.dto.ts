@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
@@ -18,13 +18,16 @@ import { ImageDimensions } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
-import { ValidateEnum } from 'src/validation';
+import { ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class SanitizedAssetResponseDto {
+  @ApiProperty({ description: 'Asset ID' })
   id!: string;
-  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', description: 'Asset type' })
   type!: AssetType;
+  @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
   thumbhash!: string | null;
+  @ApiPropertyOptional({ description: 'Original MIME type' })
   originalMimeType?: string;
   @ApiProperty({
     type: 'string',
@@ -34,10 +37,15 @@ export class SanitizedAssetResponseDto {
     example: '2024-01-15T14:30:00.000Z',
   })
   localDateTime!: Date;
+  @ApiProperty({ description: 'Video duration (for videos)' })
   duration!: string;
+  @ApiPropertyOptional({ description: 'Live photo video ID' })
   livePhotoVideoId?: string | null;
+  @ApiProperty({ description: 'Whether asset has metadata' })
   hasMetadata!: boolean;
+  @ApiProperty({ description: 'Asset width' })
   width!: number | null;
+  @ApiProperty({ description: 'Asset height' })
   height!: number | null;
 }
 
@@ -49,13 +57,24 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
     example: '2024-01-15T20:30:00.000Z',
   })
   createdAt!: Date;
+  @ApiProperty({ description: 'Device asset ID' })
   deviceAssetId!: string;
+  @ApiProperty({ description: 'Device ID' })
   deviceId!: string;
+  @ApiProperty({ description: 'Owner user ID' })
   ownerId!: string;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   owner?: UserResponseDto;
-  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1') })
+  @ValidateUUID({
+    nullable: true,
+    description: 'Library ID',
+    history: new HistoryBuilder().added('v1').deprecated('v1'),
+  })
   libraryId?: string | null;
+  @ApiProperty({ description: 'Original file path' })
   originalPath!: string;
+  @ApiProperty({ description: 'Original file name' })
   originalFileName!: string;
   @ApiProperty({
     type: 'string',
@@ -81,23 +100,40 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
     example: '2024-01-16T12:45:30.000Z',
   })
   updatedAt!: Date;
+  @ApiProperty({ description: 'Is favorite' })
   isFavorite!: boolean;
+  @ApiProperty({ description: 'Is archived' })
   isArchived!: boolean;
+  @ApiProperty({ description: 'Is trashed' })
   isTrashed!: boolean;
+  @ApiProperty({ description: 'Is offline' })
   isOffline!: boolean;
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', description: 'Asset visibility' })
   visibility!: AssetVisibility;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   exifInfo?: ExifResponseDto;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   tags?: TagResponseDto[];
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   people?: PersonWithFacesResponseDto[];
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
-  /**base64 encoded sha1 hash */
+  @ApiProperty({ description: 'Base64 encoded SHA1 hash' })
   checksum!: string;
+  // Description lives on schema to avoid duplication
+  @ApiPropertyOptional({ description: undefined })
   stack?: AssetStackResponseDto | null;
+  @ApiPropertyOptional({ description: 'Duplicate group ID' })
   duplicateId?: string | null;
 
-  @Property({ history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
+  @Property({ description: 'Is resized', history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
   resized?: boolean;
+  @Property({ description: 'Is edited', history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
+  isEdited!: boolean;
 }
 
 export type MapAsset = {
@@ -137,14 +173,17 @@ export type MapAsset = {
   type: AssetType;
   width: number | null;
   height: number | null;
+  isEdited: boolean;
 };
 
 export class AssetStackResponseDto {
+  @ApiProperty({ description: 'Stack ID' })
   id!: string;
 
+  @ApiProperty({ description: 'Primary asset ID' })
   primaryAssetId!: string;
 
-  @ApiProperty({ type: 'integer' })
+  @ApiProperty({ type: 'integer', description: 'Number of assets in stack' })
   assetCount!: number;
 }
 
@@ -154,27 +193,30 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-// TODO: this is inefficient
 const peopleWithFaces = (
   faces?: AssetFace[],
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): PersonWithFacesResponseDto[] => {
-  const result: PersonWithFacesResponseDto[] = [];
-  if (faces) {
-    for (const face of faces) {
-      if (face.person) {
-        const existingPersonEntry = result.find((item) => item.id === face.person!.id);
-        if (existingPersonEntry) {
-          existingPersonEntry.faces.push(face);
-        } else {
-          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
-        }
-      }
-    }
+  if (!faces) {
+    return [];
   }
 
-  return result;
+  const peopleFaces: Map<string, PersonWithFacesResponseDto> = new Map();
+
+  for (const face of faces) {
+    if (!face.person) {
+      continue;
+    }
+
+    if (!peopleFaces.has(face.person.id)) {
+      peopleFaces.set(face.person.id, { ...mapPerson(face.person), faces: [] });
+    }
+    const mappedFace = mapFacesWithoutPerson(face, edits, assetDimensions);
+    peopleFaces.get(face.person.id)!.faces.push(mappedFace);
+  }
+
+  return [...peopleFaces.values()];
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {
@@ -236,7 +278,9 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
-    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
+    unassignedFaces: entity.faces
+      ?.filter((face) => !face.person)
+      .map((a) => mapFacesWithoutPerson(a, entity.edits, assetDimensions)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
@@ -245,5 +289,6 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     resized: true,
     width: entity.width,
     height: entity.height,
+    isEdited: entity.isEdited,
   };
 }

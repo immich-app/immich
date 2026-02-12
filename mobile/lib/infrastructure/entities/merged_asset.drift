@@ -21,7 +21,12 @@ SELECT
 	rae.owner_id,
 	rae.live_photo_video_id,
 	0 as orientation,
-	rae.stack_id
+	rae.stack_id,
+	NULL as i_cloud_id,
+	NULL as latitude,
+	NULL as longitude,
+	NULL as adjustmentTime,
+	rae.is_edited
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -53,7 +58,12 @@ SELECT
 	NULL as owner_id,
 	NULL as live_photo_video_id,
 	lae.orientation,
-	NULL as stack_id
+	NULL as stack_id,
+	lae.i_cloud_id,
+	lae.latitude,
+	lae.longitude,
+	lae.adjustment_time,
+	0 as is_edited
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (
@@ -75,14 +85,14 @@ LIMIT $limit;
 mergedBucket(:group_by AS INTEGER):
 SELECT
 	COUNT(*) as asset_count,
-	 CASE
-        WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', created_at, 'localtime') -- day
-        WHEN :group_by = 1 THEN STRFTIME('%Y-%m', created_at, 'localtime') -- month
-    END AS bucket_date
+	bucket_date
 FROM
 (
 	SELECT
-		rae.created_at
+		CASE
+			WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', rae.local_date_time)
+			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', rae.local_date_time)
+		END as bucket_date
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
@@ -97,7 +107,10 @@ FROM
 		)
 	UNION ALL
 	SELECT
-		lae.created_at
+		CASE
+			WHEN :group_by = 0 THEN STRFTIME('%Y-%m-%d', lae.created_at, 'localtime')
+			WHEN :group_by = 1 THEN STRFTIME('%Y-%m', lae.created_at, 'localtime')
+		END as bucket_date
 	FROM
 		local_asset_entity lae
 	WHERE NOT EXISTS (

@@ -37,6 +37,7 @@
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
+  import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -47,8 +48,8 @@
 
   let { searchQuery, onClose }: Props = $props();
 
-  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
-  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
+  const parseOptionalDate = (dateString?: DateTime) => (dateString ? parseUtcDate(dateString.toString()) : undefined);
+  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day') || undefined;
   const formId = generateId();
 
   // combobox and all the search components have terrible support for value | null so we use empty string instead.
@@ -187,7 +188,7 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
+      <div class="flex flex-col gap-5 pb-10" tabindex="-1">
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
