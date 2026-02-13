@@ -23,14 +23,14 @@ doctor:
 
 # Verify environment is ready for development
 check:
-    @echo "🔍 Checking Flutter environment..."
+    @echo "Checking Flutter environment..."
     @flutter --version
     @echo ""
-    @echo "🔍 Checking Android SDK..."
+    @echo "Checking Android SDK..."
     @echo "ANDROID_HOME: $ANDROID_HOME"
     @adb --version
     @echo ""
-    @echo "🔍 Checking emulators..."
+    @echo "Checking emulators..."
     @emulator -list-avds
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -113,22 +113,22 @@ _ensure-emulator:
     
     # Check if emulator is already running
     if adb devices 2>/dev/null | grep -q "emulator-5554"; then
-        echo "✅ Emulator already running"
+        echo "Emulator already running"
         exit 0
     fi
     
-    echo "🚀 Starting emulator {{default_avd}}..."
+    echo "Starting emulator {{default_avd}}..."
     emulator -avd {{default_avd}} &
     
-    echo "⏳ Waiting for emulator to connect..."
+    echo "Waiting for emulator to connect..."
     adb wait-for-device
     
-    echo "⏳ Waiting for boot to complete..."
+    echo "Waiting for boot to complete..."
     while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
         sleep 2
     done
     
-    echo "✅ Emulator ready!"
+    echo "Emulator ready!"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Emulator Management
@@ -140,12 +140,12 @@ emulators:
 
 # Start the default emulator (Pixel 9 Pro, Android 16)
 emulator:
-    @echo "🚀 Starting {{default_avd}} emulator..."
+    @echo "Starting {{default_avd}} emulator..."
     emulator -avd {{default_avd}} &
 
 # Start Pixel 7 emulator with Play Store (Android 15)
 emulator-pixel7:
-    @echo "🚀 Starting Pixel_7_PlayStore emulator..."
+    @echo "Starting Pixel_7_PlayStore emulator..."
     emulator -avd Pixel_7_PlayStore &
 
 # Cold boot emulator (wipes state)
@@ -154,19 +154,19 @@ emulator-cold:
 
 # List connected devices (ADB and Flutter)
 devices:
-    @echo "📱 ADB devices:"
-    @adb devices -l 2>/dev/null || echo "⚠️  ADB not available"
+    @echo "ADB devices:"
+    @adb devices -l 2>/dev/null || echo "ADB not available"
     @echo ""
-    @echo "📱 Flutter devices:"
+    @echo "Flutter devices:"
     @flutter devices
 
 # Wait for emulator to be ready (useful after `just emulator`)
 wait-emulator:
-    @echo "⏳ Waiting for emulator to connect..."
+    @echo "Waiting for emulator to connect..."
     @adb wait-for-device
-    @echo "⏳ Waiting for boot to complete..."
+    @echo "Waiting for boot to complete..."
     @while [ "$$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do sleep 2; done
-    @echo "✅ Emulator ready!"
+    @echo "Emulator ready!"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Testing
@@ -228,11 +228,11 @@ clean-all:
 
 # Show Flutter & project info
 info:
-    @echo "📱 Immich Mobile Development Environment"
+    @echo "Immich Mobile Development Environment"
     @echo "─────────────────────────────────────────"
     @flutter --version
     @echo ""
-    @echo "📦 Project Dependencies:"
+    @echo "Project Dependencies:"
     @grep "^  [a-z]" pubspec.yaml | head -20
 
 # Upgrade Flutter to latest stable
@@ -270,4 +270,4 @@ install-usb-release: build-release
 screenshot:
     @mkdir -p screenshots
     adb exec-out screencap -p > screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
-    @echo "📸 Screenshot saved to screenshots/"
+    @echo "Screenshot saved to screenshots/"
