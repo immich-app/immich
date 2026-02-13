@@ -48,7 +48,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
         const zodError = error.getZodError();
         if (zodError instanceof ZodError && zodError.issues.length > 0) {
           body = {
-            message: zodError.issues,
+            message: zodError.issues.map((issue) => issue.message),
             // technically more accurate to return 422 Unprocessable Entity here
             // nestjs-zod uses 400 Bad Request and we use 400 in v2
             // https://github.com/BenLorantfy/nestjs-zod/issues/328
