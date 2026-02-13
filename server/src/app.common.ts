@@ -5,8 +5,9 @@ import cookieParser from 'cookie-parser';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
 import { excludePaths, serverVersion } from 'src/constants';
+import { SocketIoAdapter } from 'src/enum';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
-import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { createWebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
@@ -25,6 +26,7 @@ export async function configureExpress(
   {
     permitSwaggerWrite = true,
     ssr,
+    socketIoAdapter,
   }: {
     /**
      * Whether to allow swagger module to write to the specs.json
@@ -36,6 +38,10 @@ export async function configureExpress(
      * Service to use for server-side rendering
      */
     ssr: typeof ApiService | typeof MaintenanceWorkerService;
+    /**
+     * Override the Socket.IO adapter. If not specified, uses the adapter from config.
+     */
+    socketIoAdapter?: SocketIoAdapter;
   },
 ) {
   const configRepository = app.get(ConfigRepository);
@@ -55,7 +61,7 @@ export async function configureExpress(
   }
 
   app.setGlobalPrefix('api', { exclude: excludePaths });
-  app.useWebSocketAdapter(new WebSocketAdapter(app));
+  app.useWebSocketAdapter(await createWebSocketAdapter(app, socketIoAdapter));
 
   useSwagger(app, { write: configRepository.isDev() && permitSwaggerWrite });
 

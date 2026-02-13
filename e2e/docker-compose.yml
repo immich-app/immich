@@ -10,6 +10,7 @@ services:
   immich-server:
     container_name: immich-e2e-server
     image: immich-server:latest
+    shm_size: 128mb
     build:
       context: ../
       dockerfile: server/Dockerfile
