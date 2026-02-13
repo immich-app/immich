@@ -2,8 +2,8 @@ import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
 import { AssetFactory } from 'test/factories/asset.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
 
@@ -151,9 +151,7 @@ describe(SearchService.name, () => {
           },
         },
       });
-      const id = assetStub.livePhotoMotionAsset.id;
-
-      const result = await sut.handleSearchDuplicates({ id });
+      const result = await sut.handleSearchDuplicates({ id: newUuid() });
 
       expect(result).toBe(JobStatus.Skipped);
       expect(mocks.assetJob.getForSearchDuplicatesJob).not.toHaveBeenCalled();
@@ -168,9 +166,7 @@ describe(SearchService.name, () => {
           },
         },
       });
-      const id = assetStub.livePhotoMotionAsset.id;
-
-      const result = await sut.handleSearchDuplicates({ id });
+      const result = await sut.handleSearchDuplicates({ id: newUuid() });
 
       expect(result).toBe(JobStatus.Skipped);
       expect(mocks.assetJob.getForSearchDuplicatesJob).not.toHaveBeenCalled();
@@ -187,26 +183,23 @@ describe(SearchService.name, () => {
     });
 
     it('should skip if asset is part of stack', async () => {
-      const id = assetStub.primaryImage.id;
-      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, stackId: 'stack-id' });
+      const asset = AssetFactory.from().stack().build();
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, stackId: asset.stackId });
 
-      const result = await sut.handleSearchDuplicates({ id });
+      const result = await sut.handleSearchDuplicates({ id: asset.id });
 
       expect(result).toBe(JobStatus.Skipped);
-      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${id} is part of a stack, skipping`);
+      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is part of a stack, skipping`);
     });
 
     it('should skip if asset is not visible', async () => {
-      const id = assetStub.livePhotoMotionAsset.id;
-      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({
-        ...hasEmbedding,
-        visibility: AssetVisibility.Hidden,
-      });
+      const asset = AssetFactory.create({ visibility: AssetVisibility.Hidden });
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, ...asset });
 
-      const result = await sut.handleSearchDuplicates({ id });
+      const result = await sut.handleSearchDuplicates({ id: asset.id });
 
       expect(result).toBe(JobStatus.Skipped);
-      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${id} is not visible, skipping`);
+      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is not visible, skipping`);
     });
 
     it('should fail if asset is missing embedding', async () => {

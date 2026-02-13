@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
@@ -8,9 +7,8 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { factory } from 'test/small.factory';
+import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
 const stats: AssetStats = {
@@ -34,14 +32,8 @@ describe(AssetService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  const mockGetById = (assets: MapAsset[]) => {
-    mocks.asset.getById.mockImplementation((assetId) => Promise.resolve(assets.find((asset) => asset.id === assetId)));
-  };
-
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetService));
-
-    mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
   });
 
   describe('getStatistics', () => {
@@ -254,74 +246,79 @@ describe(AssetService.name, () => {
 
     it('should fail linking a live video if the motion part could not be found', async () => {
       const auth = AuthFactory.create();
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
 
       await expect(
-        sut.update(auth, assetStub.livePhotoStillAsset.id, {
-          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        sut.update(auth, asset.id, {
+          livePhotoVideoId: 'unknown',
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        id: asset.id,
+        livePhotoVideoId: 'unknown',
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoMotionAsset.id,
+        id: 'unknown',
         visibility: AssetVisibility.Timeline,
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
-        assetId: assetStub.livePhotoMotionAsset.id,
+        assetId: 'unknown',
         userId: auth.user.id,
       });
     });
 
     it('should fail linking a live video if the motion part is not a video', async () => {
       const auth = AuthFactory.create();
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoStillAsset);
+      const motionAsset = AssetFactory.from().owner(auth.user).build();
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(asset);
 
       await expect(
-        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
-          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        sut.update(authStub.admin, asset.id, {
+          livePhotoVideoId: motionAsset.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        id: asset.id,
+        livePhotoVideoId: motionAsset.id,
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoMotionAsset.id,
+        id: motionAsset.id,
         visibility: AssetVisibility.Timeline,
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
-        assetId: assetStub.livePhotoMotionAsset.id,
+        assetId: motionAsset.id,
         userId: auth.user.id,
       });
     });
 
     it('should fail linking a live video if the motion part has a different owner', async () => {
       const auth = AuthFactory.create();
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      const motionAsset = AssetFactory.create({ type: AssetType.Video });
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(motionAsset);
 
       await expect(
-        sut.update(auth, assetStub.livePhotoStillAsset.id, {
-          livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        sut.update(auth, asset.id, {
+          livePhotoVideoId: motionAsset.id,
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        id: asset.id,
+        livePhotoVideoId: motionAsset.id,
       });
       expect(mocks.asset.update).not.toHaveBeenCalledWith({
-        id: assetStub.livePhotoMotionAsset.id,
+        id: motionAsset.id,
         visibility: AssetVisibility.Timeline,
       });
       expect(mocks.event.emit).not.toHaveBeenCalledWith('AssetShow', {
-        assetId: assetStub.livePhotoMotionAsset.id,
+        assetId: motionAsset.id,
         userId: auth.user.id,
       });
     });
@@ -351,36 +348,40 @@ describe(AssetService.name, () => {
 
     it('should unlink a live video', async () => {
       const auth = AuthFactory.create();
-      const asset = AssetFactory.create();
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
-      mocks.asset.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
-      mocks.asset.update.mockResolvedValueOnce(asset);
+      const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden })
+        .owner(auth.user)
+        .build();
+      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      const unlinkedAsset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValueOnce(asset);
+      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.update.mockResolvedValueOnce(unlinkedAsset);
 
-      await sut.update(auth, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null });
+      await sut.update(auth, asset.id, { livePhotoVideoId: null });
 
       expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
+        id: asset.id,
         livePhotoVideoId: null,
       });
       expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.livePhotoMotionAsset.id,
-        visibility: assetStub.livePhotoStillAsset.visibility,
+        id: motionAsset.id,
+        visibility: asset.visibility,
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetShow', {
-        assetId: assetStub.livePhotoMotionAsset.id,
+        assetId: motionAsset.id,
         userId: auth.user.id,
       });
     });
 
     it('should fail unlinking a live video if the asset could not be found', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      mocks.asset.getById.mockResolvedValueOnce(undefined);
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValueOnce(void 0);
 
-      await expect(
-        sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update(authStub.admin, asset.id, { livePhotoVideoId: null })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
@@ -584,79 +585,47 @@ describe(AssetService.name, () => {
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
+      const asset = AssetFactory.from()
+        .stack({}, (builder) => builder.asset())
+        .build();
       mocks.stack.delete.mockResolvedValue();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue({
-        ...assetStub.primaryImage,
-        stack: {
-          id: 'stack-id',
-          primaryAssetId: assetStub.primaryImage.id,
-          assets: [{ id: 'one-asset' }],
-        },
+        ...asset,
+        // TODO the specific query filters out the primary asset from `stack.assets`. This should be in a mapper eventually
+        stack: { ...asset.stack!, assets: asset.stack!.assets.filter(({ id }) => id !== asset.stack!.primaryAssetId) },
       });
 
-      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
-      expect(mocks.stack.delete).toHaveBeenCalledWith('stack-id');
+      expect(mocks.stack.delete).toHaveBeenCalledWith(asset.stackId);
     });
 
     it('should delete a live photo', async () => {
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
+      const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
+      const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
-        id: assetStub.livePhotoStillAsset.id,
+        id: asset.id,
         deleteOnDisk: true,
       });
 
       expect(mocks.job.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.AssetDelete,
-            data: {
-              id: assetStub.livePhotoMotionAsset.id,
-              deleteOnDisk: true,
-            },
-          },
-        ],
-        [
-          {
-            name: JobName.FileDelete,
-            data: {
-              files: [
-                '/uploads/user-id/webp/path.ext',
-                '/uploads/user-id/thumbs/path.jpg',
-                '/uploads/user-id/fullsize/path.webp',
-                'fake_path/asset_1.jpeg',
-              ],
-            },
-          },
-        ],
+        [{ name: JobName.AssetDelete, data: { id: motionAsset.id, deleteOnDisk: true } }],
+        [{ name: JobName.FileDelete, data: { files: [asset.originalPath] } }],
       ]);
     });
 
     it('should not delete a live motion part if it is being used by another asset', async () => {
+      const asset = AssetFactory.create({ livePhotoVideoId: newUuid() });
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetStub.livePhotoStillAsset as any);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
 
-      await sut.handleAssetDeletion({
-        id: assetStub.livePhotoStillAsset.id,
-        deleteOnDisk: true,
-      });
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
       expect(mocks.job.queue.mock.calls).toEqual([
-        [
-          {
-            name: JobName.FileDelete,
-            data: {
-              files: [
-                '/uploads/user-id/webp/path.ext',
-                '/uploads/user-id/thumbs/path.jpg',
-                '/uploads/user-id/fullsize/path.webp',
-                'fake_path/asset_1.jpeg',
-              ],
-            },
-          },
-        ],
+        [{ name: JobName.FileDelete, data: { files: [`/data/library/IMG_${asset.id}.jpg`] } }],
       ]);
     });
 

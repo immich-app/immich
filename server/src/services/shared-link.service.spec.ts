@@ -35,14 +35,14 @@ describe(SharedLinkService.name, () => {
 
   describe('getMine', () => {
     it('should only work for a public user', async () => {
-      await expect(sut.getMine(authStub.admin, {})).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(sut.getMine(authStub.admin, [])).rejects.toBeInstanceOf(ForbiddenException);
       expect(mocks.sharedLink.get).not.toHaveBeenCalled();
     });
 
     it('should return the shared link for the public user', async () => {
       const authDto = authStub.adminSharedLink;
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
-      await expect(sut.getMine(authDto, {})).resolves.toEqual(sharedLinkResponseStub.valid);
+      await expect(sut.getMine(authDto, [])).resolves.toEqual(sharedLinkResponseStub.valid);
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
@@ -55,21 +55,22 @@ describe(SharedLinkService.name, () => {
         },
       });
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.readonlyNoExif);
-      const response = await sut.getMine(authDto, {});
+      const response = await sut.getMine(authDto, []);
       expect(response.assets[0]).toMatchObject({ hasMetadata: false });
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
-    it('should throw an error for an invalid password protected shared link', async () => {
+    it('should throw an error for a request without a shared link auth token', async () => {
       const authDto = authStub.adminSharedLink;
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.passwordRequired);
-      await expect(sut.getMine(authDto, {})).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.getMine(authDto, [])).rejects.toBeInstanceOf(UnauthorizedException);
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authDto.user.id, authDto.sharedLink?.id);
     });
 
-    it('should allow a correct password on a password protected shared link', async () => {
+    it('should accept a valid shared link auth token', async () => {
       mocks.sharedLink.get.mockResolvedValue({ ...sharedLinkStub.individual, password: '123' });
-      await expect(sut.getMine(authStub.adminSharedLink, { password: '123' })).resolves.toBeDefined();
+      mocks.crypto.hashSha256.mockReturnValue('hashed-auth-token');
+      await expect(sut.getMine(authStub.adminSharedLink, ['hashed-auth-token'])).resolves.toBeDefined();
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(
         authStub.adminSharedLink.user.id,
         authStub.adminSharedLink.sharedLink?.id,
