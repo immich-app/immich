@@ -71,7 +71,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto, v
     title: $t('go_back'),
     type: $t('command'),
     icon: mdiArrowLeft,
-    onAction: () => goto(Route.albums()),
+    onAction: () => goto(album.parentId ? Route.viewAlbum({ id: album.parentId }) : Route.albums()),
     $if: () => viewMode === AlbumPageViewMode.VIEW,
     shortcuts: { key: 'Escape' },
   };

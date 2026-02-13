@@ -87,6 +87,37 @@ export class AlbumRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getChildAlbums(parentId: string) {
+    return this.db
+      .selectFrom('album')
+      .selectAll('album')
+      .where('album.parentId', '=', parentId)
+      .where('album.deletedAt', 'is', null)
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .select(withSharedLink)
+      .orderBy('album.createdAt', 'desc')
+      .execute();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  async getChildAlbumCounts(albumIds: string[]): Promise<{ albumId: string; childCount: number }[]> {
+    if (albumIds.length === 0) {
+      return [];
+    }
+
+    return this.db
+      .selectFrom('album')
+      .select('album.parentId as albumId')
+      .select((eb) => sql<number>`${eb.fn.count('album.id')}::int`.as('childCount'))
+      .where('album.parentId', 'in', albumIds)
+      .where('album.deletedAt', 'is', null)
+      .groupBy('album.parentId')
+      .execute() as Promise<{ albumId: string; childCount: number }[]>;
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async getByAssetId(ownerId: string, assetId: string) {
     return this.db

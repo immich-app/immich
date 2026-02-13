@@ -663,6 +663,10 @@ export type AlbumResponseDto = {
     owner: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
+    /** Parent album ID */
+    parentId: string | null;
+    /** Number of child (sub) albums */
+    childAlbumCount: number;
     /** Is shared album */
     shared: boolean;
     /** Start date (earliest asset) */
@@ -685,6 +689,8 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     /** Album description */
     description?: string;
+    /** Parent album ID for nesting */
+    parentId?: string;
 };
 export type AlbumsAddAssetsDto = {
     /** Album IDs */
@@ -3716,6 +3722,19 @@ export function getAlbumInfo({ id, key, slug, withoutAssets }: {
         slug,
         withoutAssets
     }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get child albums
+ */
+export function getChildAlbums({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/children`, {
         ...opts
     }));
 }

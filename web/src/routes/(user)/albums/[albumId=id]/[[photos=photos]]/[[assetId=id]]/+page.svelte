@@ -2,10 +2,12 @@
   import { goto, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ActionButton from '$lib/components/ActionButton.svelte';
+  import AlbumBreadcrumbs from '$lib/components/album-page/album-breadcrumbs.svelte';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
+  import SubAlbumsSection from '$lib/components/album-page/sub-albums-section.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
@@ -278,7 +280,7 @@
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id === album.id) {
-      await goto(Route.albums());
+      await goto(album.parentId ? Route.viewAlbum({ id: album.parentId }) : Route.albums());
       viewMode = AlbumPageViewMode.VIEW;
     }
   };
@@ -340,8 +342,15 @@
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
+            <!-- BREADCRUMBS -->
+            {#if album.parentId}
+              <section class="pt-8 md:pt-24 pb-0">
+                <AlbumBreadcrumbs {album} />
+              </section>
+            {/if}
+
             <!-- ALBUM TITLE -->
-            <section class="pt-8 md:pt-24">
+            <section class={album.parentId ? 'pt-2' : 'pt-8 md:pt-24'}>
               <AlbumTitle
                 id={album.id}
                 albumName={album.albumName}
@@ -397,6 +406,9 @@
               {/if}
               <!-- ALBUM DESCRIPTION -->
               <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
+
+              <!-- SUB-ALBUMS -->
+              <SubAlbumsSection {album} {isOwned} />
             </section>
           {/if}
 
@@ -485,7 +497,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
+        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(album.parentId ? Route.viewAlbum({ id: album.parentId }) : Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 

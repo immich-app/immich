@@ -73,6 +73,20 @@ export class AlbumController {
     return this.service.get(auth, id, dto);
   }
 
+  @Get(':id/children')
+  @Authenticated({ permission: Permission.AlbumRead })
+  @Endpoint({
+    summary: 'Get child albums',
+    description: 'Retrieve the direct child (sub) albums of a specific album.',
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+  })
+  getChildAlbums(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+  ): Promise<AlbumResponseDto[]> {
+    return this.service.getChildAlbums(auth, id);
+  }
+
   @Patch(':id')
   @Authenticated({ permission: Permission.AlbumUpdate })
   @Endpoint({

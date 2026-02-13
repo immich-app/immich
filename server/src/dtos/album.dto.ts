@@ -61,6 +61,9 @@ export class CreateAlbumDto {
 
   @ValidateUUID({ optional: true, each: true, description: 'Initial asset IDs' })
   assetIds?: string[];
+
+  @ValidateUUID({ optional: true, description: 'Parent album ID for nesting' })
+  parentId?: string;
 }
 
 export class AlbumsAddAssetsDto {
@@ -183,6 +186,12 @@ export class AlbumResponseDto {
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
   order?: AssetOrder;
 
+  @ApiProperty({ description: 'Parent album ID', nullable: true })
+  parentId!: string | null;
+
+  @ApiProperty({ type: 'integer', description: 'Number of child (sub) albums' })
+  childAlbumCount!: number;
+
   // Description lives on schema to avoid duplication
   @ApiPropertyOptional({ description: undefined })
   @Type(() => ContributorCountResponseDto)
@@ -203,6 +212,8 @@ export type MapAlbumDto = {
   owner: User;
   isActivityEnabled: boolean;
   order: AssetOrder;
+  parentId?: string | null;
+  childAlbumCount?: number;
 };
 
 export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDto): AlbumResponseDto => {
@@ -250,6 +261,8 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    parentId: entity.parentId ?? null,
+    childAlbumCount: entity.childAlbumCount ?? 0,
   };
 };
 
