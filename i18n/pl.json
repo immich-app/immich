@@ -2064,7 +2064,7 @@
   "shared_by_you": "Udostępnione przez ciebie",
   "shared_from_partner": "Zdjęcia od {partner}",
   "shared_intent_upload_button_progress_text": "{current} / {total} Przesłano",
-  "shared_link_app_bar_title": "Udostępnione linki",
+  "shared_link_app_bar_title": "Udostępnione",
   "shared_link_clipboard_copied_massage": "Skopiowane do schowka",
   "shared_link_clipboard_text": "Link: {link}\nHasło: {password}",
   "shared_link_create_error": "Błąd podczas tworzenia linka do udostępnienia",
