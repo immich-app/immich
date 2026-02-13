@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  UploadedFiles as Files,
   Get,
   HttpCode,
   HttpStatus,
@@ -12,7 +13,6 @@ import {
   Query,
   Req,
   Res,
-  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -35,18 +35,17 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ApiTag, ImmichHeader, Permission, RouteKey } from 'src/enum';
+import { ApiTag, ImmichHeader, Permission } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
+import { mapUploadedFile, UploadFiles, UploadRequest } from 'src/middleware/upload.interceptor';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadFiles } from 'src/types';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
-@Controller(RouteKey.Asset)
+@Controller('assets')
 export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
@@ -55,7 +54,7 @@ export class AssetMediaController {
 
   @Post()
   @Authenticated({ permission: Permission.AssetUpload, sharedLink: true })
-  @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
+  @UseInterceptors(AssetUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiHeader({
     name: ImmichHeader.Checksum,
@@ -80,12 +79,21 @@ export class AssetMediaController {
   })
   async uploadAsset(
     @Auth() auth: AuthDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
+    @Files(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
+    files: UploadFiles,
     @Body() dto: AssetMediaCreateDto,
+    @Req() req: UploadRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
-    const { file, sidecarFile } = getFiles(files);
-    const responseDto = await this.service.uploadAsset(auth, dto, file, sidecarFile);
+    const file = files[UploadFieldName.ASSET_DATA][0];
+    const sidecarFile = files[UploadFieldName.SIDECAR_DATA]?.[0];
+
+    const responseDto = await this.service.uploadAsset(
+      auth,
+      dto,
+      mapUploadedFile(req, file),
+      sidecarFile ? mapUploadedFile(req, sidecarFile) : undefined,
+    );
 
     if (responseDto.status === AssetMediaStatus.DUPLICATE) {
       res.status(HttpStatus.OK);
@@ -113,7 +121,7 @@ export class AssetMediaController {
   }
 
   @Put(':id/original')
-  @UseInterceptors(FileUploadInterceptor)
+  @UseInterceptors(AssetUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 200,
@@ -129,13 +137,19 @@ export class AssetMediaController {
   async replaceAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
+
+    @Files(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
     files: UploadFiles,
     @Body() dto: AssetMediaReplaceDto,
+    @Req() req: UploadRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
-    const { file } = getFiles(files);
-    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
+    const responseDto = await this.service.replaceAsset(
+      auth,
+      id,
+      dto,
+      mapUploadedFile(req, files[UploadFieldName.ASSET_DATA][0]),
+    );
     if (responseDto.status === AssetMediaStatus.DUPLICATE) {
       res.status(HttpStatus.OK);
     }

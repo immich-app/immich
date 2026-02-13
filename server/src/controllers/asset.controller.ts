@@ -22,13 +22,13 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
-@Controller(RouteKey.Asset)
+@Controller('assets')
 export class AssetController {
   constructor(private service: AssetService) {}
 

@@ -1,6 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
+import { extname, join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
+import sanitize from 'sanitize-filename';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
@@ -11,15 +14,41 @@ import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } 
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
+import { UploadFile, UploadMetadata, UploadedFile, UploadingFile } from 'src/middleware/upload.interceptor';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
+import { mimeTypes } from 'src/utils/mime-types';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
 export class UserService extends BaseService {
+  canUpload(auth: AuthDto, file: UploadFile) {
+    return mimeTypes.isProfile(file.originalName);
+  }
+
+  async onUpload(auth: AuthDto, file: UploadingFile): Promise<UploadMetadata> {
+    const extension = extname(file.originalName);
+    const filename = sanitize(`${file.requestId}${extension}`);
+    const folder = StorageCore.getNestedFolder(StorageFolder.Profile, auth.user.id, filename);
+    const path = join(folder, filename);
+
+    this.storageRepository.mkdirSync(folder);
+
+    let size = 0;
+    file.stream.on('data', (chunk: Buffer) => (size += chunk.length));
+
+    await pipeline(file.stream, this.storageRepository.createWriteStream(path));
+
+    return { filename, folder, path, size };
+  }
+
+  async onUploadRemove(auth: AuthDto, file: UploadedFile) {
+    await this.storageRepository.unlink(file.metadata.path);
+  }
+
   async search(auth: AuthDto): Promise<UserResponseDto[]> {
     const config = await this.getConfig({ withCache: false });
 
@@ -90,11 +119,11 @@ export class UserService extends BaseService {
     return mapUser(user);
   }
 
-  async createProfileImage(auth: AuthDto, file: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
+  async createProfileImage(auth: AuthDto, file: UploadedFile): Promise<CreateProfileImageResponseDto> {
     const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
 
     const user = await this.userRepository.update(auth.user.id, {
-      profileImagePath: file.path,
+      profileImagePath: file.metadata.path,
       profileChangedAt: new Date(),
     });
 

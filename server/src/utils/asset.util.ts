@@ -2,16 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetFile, Exif } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
-import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
+import { IBulkAsset } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
 export const getAssetFile = (files: AssetFile[], type: AssetFileType, { isEdited }: { isEdited: boolean }) => {
@@ -184,25 +182,6 @@ export const onAfterUnlink = async (
 ) => {
   await assetRepository.update({ id: livePhotoVideoId, visibility });
   await eventRepository.emit('AssetShow', { assetId: livePhotoVideoId, userId });
-};
-
-export function mapToUploadFile(file: ImmichFile): UploadFile {
-  return {
-    uuid: file.uuid,
-    checksum: file.checksum,
-    originalPath: file.path,
-    originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
-    size: file.size,
-  };
-}
-
-export const asUploadRequest = (request: AuthRequest, file: Express.Multer.File): UploadRequest => {
-  return {
-    auth: request.user || null,
-    body: request.body,
-    fieldName: file.fieldname as UploadFieldName,
-    file: mapToUploadFile(file as ImmichFile),
-  };
 };
 
 const isFlipped = (orientation?: string | null) => {

@@ -2,13 +2,13 @@ import {
   Body,
   Controller,
   Delete,
+  UploadedFile as File,
   Get,
   Next,
   Param,
   Post,
   Req,
   Res,
-  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -94,10 +94,7 @@ export class MaintenanceWorkerController {
   @Post('admin/database-backups/upload')
   @MaintenanceRoute()
   @UseInterceptors(FileInterceptor('file'))
-  uploadDatabaseBackup(
-    @UploadedFile()
-    file: Express.Multer.File,
-  ): Promise<void> {
+  uploadDatabaseBackup(@File() file: Express.Multer.File): Promise<void> {
     return this.databaseBackupService.uploadBackup(file);
   }
 

@@ -13,7 +13,6 @@ import postgres from 'postgres';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -120,7 +119,7 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
       ...providers,
     ],
   })
-    .overrideInterceptor(FileUploadInterceptor)
+    .overrideInterceptor(AssetUploadInterceptor)
     .useValue(memoryFileInterceptor)
     .overrideInterceptor(AssetUploadInterceptor)
     .useValue(noopInterceptor)

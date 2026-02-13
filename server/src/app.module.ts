@@ -14,11 +14,12 @@ import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
+import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
+import { UserProfileUploadInterceptor } from 'src/middleware/user-profile-upload.interceptor';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -46,7 +47,12 @@ const commonMiddleware = [
   { provide: APP_INTERCEPTOR, useClass: ErrorInterceptor },
 ];
 
-const apiMiddleware = [FileUploadInterceptor, ...commonMiddleware, { provide: APP_GUARD, useClass: AuthGuard }];
+const apiMiddleware = [
+  AssetUploadInterceptor,
+  UserProfileUploadInterceptor,
+  ...commonMiddleware,
+  { provide: APP_GUARD, useClass: AuthGuard },
+];
 
 const configRepository = new ConfigRepository();
 const { bull, cls, database, otel } = configRepository.getEnv();

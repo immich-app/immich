@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
@@ -11,9 +6,8 @@ import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldN
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
-import { AuthRequest } from 'src/middleware/auth.guard';
+import { UploadFile } from 'src/middleware/upload.interceptor';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
@@ -22,38 +16,17 @@ import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
 
-const uploadFile = {
-  nullAuth: {
-    auth: null,
-    body: {},
-    fieldName: UploadFieldName.ASSET_DATA,
-    file: {
-      uuid: 'random-uuid',
-      checksum: Buffer.from('checksum', 'utf8'),
-      originalPath: '/data/library/admin/image.jpeg',
-      originalName: 'image.jpeg',
-      size: 1000,
-    },
-  },
-  filename: (fieldName: UploadFieldName, filename: string, body?: UploadBody) => {
-    return {
-      auth: authStub.admin,
-      body: body || {},
-      fieldName,
-      file: {
-        uuid: 'random-uuid',
-        mimeType: 'image/jpeg',
-        checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: `/data/admin/${filename}`,
-        originalName: filename,
-        size: 1000,
-      },
-    };
-  },
+const create = (fieldName: UploadFieldName, originalName: string): UploadFile => {
+  return {
+    requestId: newUuid(),
+    fieldName,
+    originalName,
+  };
 };
 
 const validImages = [
@@ -208,17 +181,17 @@ describe(AssetMediaService.name, () => {
 
   describe('getUploadAssetIdByChecksum', () => {
     it('should return if checksum is undefined', async () => {
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin)).resolves.toBe(undefined);
+      await expect(sut.onBeforeUpload(authStub.admin)).resolves.toBe(undefined);
     });
 
     it('should handle a non-existent asset', async () => {
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
+      await expect(sut.onBeforeUpload(authStub.admin, file1.toString('hex'))).resolves.toBeUndefined();
       expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
     });
 
     it('should find an existing asset', async () => {
       mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+      await expect(sut.onBeforeUpload(authStub.admin, file1.toString('hex'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
       });
@@ -227,7 +200,7 @@ describe(AssetMediaService.name, () => {
 
     it('should find an existing asset by base64', async () => {
       mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
-      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
+      await expect(sut.onBeforeUpload(authStub.admin, file1.toString('base64'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
       });
@@ -236,21 +209,17 @@ describe(AssetMediaService.name, () => {
   });
 
   describe('canUpload', () => {
-    it('should require an authenticated user', () => {
-      expect(() => sut.canUploadFile(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
     for (const { fieldName, valid, invalid } of uploadTests) {
       describe(fieldName, () => {
         for (const filetype of valid) {
           it(`should accept ${filetype}`, () => {
-            expect(sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toEqual(true);
+            expect(sut.canUpload(AuthFactory.create(), create(fieldName, `asset${filetype}`))).toEqual(true);
           });
         }
 
         for (const filetype of invalid) {
           it(`should reject ${filetype}`, () => {
-            expect(() => sut.canUploadFile(uploadFile.filename(fieldName, `asset${filetype}`))).toThrowError(
+            expect(() => sut.canUpload(AuthFactory.create(), create(fieldName, `asset${filetype}`))).toThrowError(
               BadRequestException,
             );
           });
@@ -265,70 +234,22 @@ describe(AssetMediaService.name, () => {
         });
       });
     }
-
-    it('should prefer filename from body over name from path', () => {
-      const pathFilename = 'invalid-file-name';
-      const body = { filename: 'video.mov' };
-      expect(() => sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename))).toThrowError(
-        BadRequestException,
-      );
-      expect(sut.canUploadFile(uploadFile.filename(UploadFieldName.ASSET_DATA, pathFilename, body))).toEqual(true);
-    });
-  });
-
-  describe('getUploadFilename', () => {
-    it('should require authentication', () => {
-      expect(() => sut.getUploadFilename(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
-    it('should be the original extension for asset upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        'random-uuid.jpg',
-      );
-    });
-
-    it('should be the xmp extension for sidecar upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.SIDECAR_DATA, 'image.html'))).toEqual(
-        'random-uuid.xmp',
-      );
-    });
-
-    it('should be the original extension for profile upload', () => {
-      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        'random-uuid.jpg',
-      );
-    });
-  });
-
-  describe('getUploadFolder', () => {
-    it('should require authentication', () => {
-      expect(() => sut.getUploadFolder(uploadFile.nullAuth)).toThrowError(UnauthorizedException);
-    });
-
-    it('should return profile for profile uploads', () => {
-      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.PROFILE_DATA, 'image.jpg'))).toEqual(
-        expect.stringContaining('/data/profile/admin_id'),
-      );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/profile/admin_id'));
-    });
-
-    it('should return upload for everything else', () => {
-      expect(sut.getUploadFolder(uploadFile.filename(UploadFieldName.ASSET_DATA, 'image.jpg'))).toEqual(
-        expect.stringContaining('/data/upload/admin_id/ra/nd'),
-      );
-      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/upload/admin_id/ra/nd'));
-    });
   });
 
   describe('uploadAsset', () => {
     it('should throw an error if the quota is exceeded', async () => {
       const file = {
-        uuid: 'random-uuid',
-        originalPath: 'fake_path/asset_1.jpeg',
-        mimeType: 'image/jpeg',
-        checksum: Buffer.from('file hash', 'utf8'),
+        requestId: '1',
+        fieldName: 'assetData',
         originalName: 'asset_1.jpeg',
-        size: 42,
+        metadata: {
+          uuid: 'random-uuid',
+          path: 'fake_path/asset_1.jpeg',
+          folder: 'fake_path',
+          filename: 'asset_1.jpeg',
+          checksum: Buffer.from('file hash', 'utf8'),
+          size: 42,
+        },
       };
 
       mocks.asset.create.mockResolvedValue(assetEntity);
@@ -342,9 +263,9 @@ describe(AssetMediaService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
-      expect(mocks.user.updateUsage).not.toHaveBeenCalledWith(authStub.user1.user.id, file.size);
+      expect(mocks.user.updateUsage).not.toHaveBeenCalledWith(authStub.user1.user.id, file.metadata.size);
       expect(mocks.storage.utimes).not.toHaveBeenCalledWith(
-        file.originalPath,
+        file.metadata.path,
         expect.any(Date),
         new Date(createDto.fileModifiedAt),
       );
@@ -1015,33 +936,6 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
-    });
-  });
-
-  describe('onUploadError', () => {
-    it('should queue a job to delete the uploaded file', async () => {
-      const request = {
-        body: {},
-        user: authStub.user1,
-      } as AuthRequest;
-
-      const file = {
-        fieldname: UploadFieldName.ASSET_DATA,
-        originalname: 'image.jpg',
-        mimetype: 'image/jpeg',
-        buffer: Buffer.from(''),
-        size: 1000,
-        uuid: 'random-uuid',
-        checksum: Buffer.from('checksum', 'utf8'),
-        originalPath: '/data/upload/user-id/ra/nd/random-uuid.jpg',
-      } as unknown as Express.Multer.File;
-
-      await sut.onUploadError(request, file);
-
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: [expect.stringContaining('/data/upload/user-id/ra/nd/random-uuid.jpg')] },
-      });
     });
   });
 });

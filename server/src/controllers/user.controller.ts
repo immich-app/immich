@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  UploadedFile as File,
   Get,
   HttpCode,
   HttpStatus,
@@ -10,7 +11,6 @@ import {
   Post,
   Put,
   Res,
-  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -22,16 +22,17 @@ import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
+import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
+import { UploadedFile } from 'src/middleware/upload.interceptor';
+import { UserProfileUploadInterceptor } from 'src/middleware/user-profile-upload.interceptor';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Users)
-@Controller(RouteKey.User)
+@Controller('users')
 export class UserController {
   constructor(
     private service: UserService,
@@ -177,7 +178,7 @@ export class UserController {
 
   @Post('profile-image')
   @Authenticated({ permission: Permission.UserProfileImageUpdate })
-  @UseInterceptors(FileUploadInterceptor)
+  @UseInterceptors(UserProfileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
   @Endpoint({
@@ -185,11 +186,8 @@ export class UserController {
     description: 'Upload and set a new profile image for the current user.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  createProfileImage(
-    @Auth() auth: AuthDto,
-    @UploadedFile() fileInfo: Express.Multer.File,
-  ): Promise<CreateProfileImageResponseDto> {
-    return this.service.createProfileImage(auth, fileInfo);
+  createProfileImage(@Auth() auth: AuthDto, @File() file: UploadedFile): Promise<CreateProfileImageResponseDto> {
+    return this.service.createProfileImage(auth, file);
   }
 
   @Delete('profile-image')

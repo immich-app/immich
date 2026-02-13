@@ -487,11 +487,6 @@ export enum MetadataKey {
   TelemetryEnabled = 'telemetry_enabled',
 }
 
-export enum RouteKey {
-  Asset = 'assets',
-  User = 'users',
-}
-
 export enum CacheControl {
   PrivateWithCache = 'private_with_cache',
   PrivateWithoutCache = 'private_without_cache',

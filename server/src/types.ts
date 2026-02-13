@@ -1,8 +1,6 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { Asset, AssetFile } from 'src/database';
-import { UploadFieldName } from 'src/dtos/asset-media.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
@@ -418,37 +416,6 @@ export interface ExtensionVersion {
 
 export interface VectorUpdateResult {
   restartRequired: boolean;
-}
-
-export interface ImmichFile extends Express.Multer.File {
-  uuid: string;
-  /** sha1 hash of file */
-  checksum: Buffer;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
-}
-
-export interface UploadBody {
-  filename?: string;
-  [key: string]: unknown;
-}
-
-export type UploadRequest = {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-  body: UploadBody;
-};
-
-export interface UploadFiles {
-  assetData: ImmichFile[];
-  sidecarData: ImmichFile[];
 }
 
 export interface IBulkAsset {
