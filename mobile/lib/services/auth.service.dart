@@ -206,6 +206,68 @@ class AuthService {
     return null;
   }
 
+  /// Changes the primary server endpoint while keeping the user logged in.
+  /// 
+  /// This method validates that the new endpoint accepts the current access token
+  /// before updating the stored endpoint. This allows users to update their server
+  /// URL (e.g., after changing IP, domain, or port) without having to log out
+  /// and reconfigure all settings.
+  /// 
+  /// [newUrl] - The new server URL to switch to.
+  /// 
+  /// Returns the validated endpoint URL if successful, or throws an exception if:
+  /// - The new server cannot be reached
+  /// - The current access token is not valid on the new server
+  Future<String> changeServerEndpoint(String newUrl) async {
+    // First, resolve the new endpoint
+    final validUrl = await _apiService.resolveEndpoint(newUrl);
+    
+    // Temporarily set the new endpoint to validate the access token
+    final currentEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+    
+    try {
+      _apiService.setEndpoint(validUrl);
+      
+      // Verify that the current access token works with the new endpoint
+      // by making an authenticated request
+      final accessToken = Store.tryGet(StoreKey.accessToken);
+      if (accessToken == null) {
+        throw ApiException(401, "No access token available");
+      }
+      
+      // Try to get user info to verify the token is valid on this server
+      await _apiService.usersApi.getMyUser();
+      
+      // If we get here, the token is valid on the new server
+      // Save the new endpoint
+      await Store.put(StoreKey.serverEndpoint, validUrl);
+      await Store.put(StoreKey.serverUrl, newUrl);
+      
+      _log.info("Successfully changed server endpoint to: $validUrl");
+      return validUrl;
+    } catch (error, stackTrace) {
+      // Restore the original endpoint if validation failed
+      if (currentEndpoint != null) {
+        _apiService.setEndpoint(currentEndpoint);
+      }
+      _log.severe("Failed to change server endpoint", error, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Validates a new server endpoint without changing the current connection.
+  /// 
+  /// Returns true if the new endpoint is reachable and accepts the current access token.
+  Future<bool> validateNewEndpoint(String newUrl) async {
+    try {
+      final validUrl = await _apiService.resolveEndpoint(newUrl);
+      return await validateAuxilaryServerUrl(validUrl);
+    } catch (error) {
+      _log.severe("Error validating new endpoint", error);
+      return false;
+    }
+  }
+
   Future<bool> unlockPinCode(String pinCode) {
     return _authApiRepository.unlockPinCode(pinCode);
   }

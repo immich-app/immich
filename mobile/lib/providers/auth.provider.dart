@@ -211,4 +211,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> setupPinCode(String pinCode) {
     return _authService.setupPinCode(pinCode);
   }
+
+  /// Changes the primary server endpoint while keeping the user logged in.
+  /// 
+  /// This allows users to update their server URL (e.g., after changing IP,
+  /// domain, or port) without having to log out and reconfigure all settings.
+  /// 
+  /// Returns the new validated endpoint URL if successful.
+  /// Throws an exception if the new server cannot be reached or doesn't
+  /// accept the current access token.
+  Future<String> changeServerEndpoint(String newUrl) {
+    return _authService.changeServerEndpoint(newUrl);
+  }
+
+  /// Validates a new server endpoint without changing the current connection.
+  Future<bool> validateNewEndpoint(String newUrl) {
+    return _authService.validateNewEndpoint(newUrl);
+  }
 }

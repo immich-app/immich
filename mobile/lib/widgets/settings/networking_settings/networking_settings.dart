@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -19,8 +20,9 @@ class NetworkingSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentEndpoint = getServerUrl();
+    final currentEndpoint = useState(getServerUrl());
     final featureEnabled = useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
+    final isChangingEndpoint = useState(false);
 
     Future<void> checkWifiReadPermission() async {
       final [hasLocationInUse, hasLocationAlways] = await Future.wait([
@@ -79,6 +81,79 @@ class NetworkingSettings extends HookConsumerWidget {
       }
     }
 
+    Future<void> handleChangeServerEndpoint() async {
+      final controller = TextEditingController(text: currentEndpoint.value ?? '');
+      
+      final newUrl = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("change_server_endpoint".tr()),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "change_server_endpoint_description".tr(),
+                style: context.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: "https://your-server.com",
+                  labelText: "server_endpoint".tr(),
+                ),
+                keyboardType: TextInputType.url,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('cancel'.tr().toUpperCase(), style: const TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, controller.text),
+              child: Text('save'.tr().toUpperCase()),
+            ),
+          ],
+        ),
+      );
+
+      if (newUrl == null || newUrl.isEmpty || newUrl == currentEndpoint.value) {
+        return;
+      }
+
+      isChangingEndpoint.value = true;
+
+      try {
+        await ref.read(authProvider.notifier).changeServerEndpoint(newUrl);
+        currentEndpoint.value = getServerUrl();
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("server_endpoint_changed_successfully".tr()),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("server_endpoint_change_failed".tr()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        isChangingEndpoint.value = false;
+      }
+    }
+
     useEffect(() {
       if (featureEnabled.value == true) {
         checkWifiReadPermission();
@@ -92,7 +167,7 @@ class NetworkingSettings extends HookConsumerWidget {
         const SizedBox(height: 8),
         SettingGroupTitle(
           title: "current_server_address".t(context: context),
-          icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
+          icon: (currentEndpoint.value?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -103,12 +178,26 @@ class NetworkingSettings extends HookConsumerWidget {
               side: BorderSide(color: context.colorScheme.surfaceContainerHighest, width: 1),
             ),
             child: ListTile(
-              leading: currentEndpoint != null
-                  ? const Icon(Icons.check_circle_rounded, color: Colors.green)
-                  : const Icon(Icons.circle_outlined),
+              leading: isChangingEndpoint.value
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.primaryColor,
+                      ),
+                    )
+                  : currentEndpoint.value != null
+                      ? const Icon(Icons.check_circle_rounded, color: Colors.green)
+                      : const Icon(Icons.circle_outlined),
               title: Text(
-                currentEndpoint ?? "--",
+                currentEndpoint.value ?? "--",
                 style: TextStyle(fontSize: 14, fontFamily: 'GoogleSansCode', color: context.primaryColor),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit_rounded),
+                onPressed: isChangingEndpoint.value ? null : handleChangeServerEndpoint,
+                tooltip: "change_server_endpoint".tr(),
               ),
             ),
           ),
