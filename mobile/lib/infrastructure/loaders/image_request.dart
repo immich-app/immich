@@ -5,10 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:photo_manager/photo_manager.dart' hide AssetType;
-
-import '../../domain/models/asset/base_asset.model.dart';
 
 part 'local_image_request.dart';
 part 'thumbhash_image_request.dart';
@@ -25,6 +23,8 @@ abstract class ImageRequest {
   ImageRequest();
 
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0});
+
+  Future<ui.Codec?> loadCodec();
 
   void cancel() {
     if (_isCancelled) {

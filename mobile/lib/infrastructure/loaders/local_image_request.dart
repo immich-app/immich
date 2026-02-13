@@ -1,5 +1,14 @@
 part of 'image_request.dart';
 
+/// Requests a local image from the platform.
+///
+/// The [encoded] flag controls the response format from the platform:
+/// - `encoded: true` — returns raw encoded bytes as `{pointer, length}`,
+///   used for animated images where a multi-frame codec is needed.
+/// - `encoded: false` — decodes the image to RGBA pixels and returns
+///   `{pointer, width, height, rowBytes}` for direct display.
+///
+/// Both iOS and Android respect the [encoded] flag for local images.
 class LocalImageRequest extends ImageRequest {
   final String localId;
   final int width;
@@ -22,6 +31,7 @@ class LocalImageRequest extends ImageRequest {
       width: width,
       height: height,
       isVideo: assetType == AssetType.video,
+      encoded: false,
     );
     if (info == null) {
       return null;
@@ -31,42 +41,38 @@ class LocalImageRequest extends ImageRequest {
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
+  @override
   Future<ui.Codec?> loadCodec() async {
     if (_isCancelled) {
       return null;
     }
 
-    final entity = await AssetEntity.fromId(localId);
-    if (entity == null || _isCancelled) {
+    final info = await localImageApi.requestImage(
+      localId,
+      requestId: requestId,
+      width: width,
+      height: height,
+      isVideo: assetType == AssetType.video,
+      encoded: true,
+    );
+    if (info == null || _isCancelled) {
       return null;
     }
 
-    final file = await entity.originFile;
-    if (file == null || _isCancelled) {
-      return null;
-    }
+    return switch (info) {
+      {'pointer': int pointer, 'length': int length} => () async {
+        final result = await _codecFromEncodedPlatformImage(pointer, length);
+        if (result == null) {
+          return null;
+        }
 
-    final buffer = await ui.ImmutableBuffer.fromFilePath(file.path);
-    if (_isCancelled) {
-      buffer.dispose();
-      return null;
-    }
+        final (codec, descriptor) = result;
+        descriptor.dispose();
 
-    final descriptor = await ui.ImageDescriptor.encoded(buffer);
-    buffer.dispose();
-    if (_isCancelled) {
-      descriptor.dispose();
-      return null;
-    }
-
-    final codec = await descriptor.instantiateCodec();
-    descriptor.dispose();
-    if (_isCancelled) {
-      codec.dispose();
-      return null;
-    }
-
-    return codec;
+        return codec;
+      }(),
+      _ => null,
+    };
   }
 
   @override

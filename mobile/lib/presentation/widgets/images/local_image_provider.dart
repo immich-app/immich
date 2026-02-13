@@ -96,26 +96,11 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
 
   Future<Codec> _loadAnimatedCodec(LocalFullImageProvider key) async {
     final request = this.request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
-
-    if (isCancelled) {
-      this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
-      return Future.error('Request cancelled');
+    final codec = await loadCodecRequest(request);
+    if (codec == null) {
+      throw StateError('Failed to load animated image');
     }
-
-    try {
-      final codec = await request.loadCodec();
-      if (codec == null || isCancelled) {
-        PaintingBinding.instance.imageCache.evict(this);
-        return Future.error('Failed to load animated image');
-      }
-      return codec;
-    } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
-      return Future.error(e);
-    } finally {
-      this.request = null;
-    }
+    return codec;
   }
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -153,11 +138,11 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size;
+      return id == other.id && size == other.size && isAnimated == other.isAnimated;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode;
+  int get hashCode => id.hashCode ^ size.hashCode ^ isAnimated.hashCode;
 }

@@ -106,26 +106,11 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       uri: getOriginalUrlForRemoteId(key.assetId),
       headers: ApiService.getRequestHeaders(),
     );
-
-    if (isCancelled) {
-      this.request = null;
-      PaintingBinding.instance.imageCache.evict(this);
-      return Future.error('Request cancelled');
+    final codec = await loadCodecRequest(request);
+    if (codec == null) {
+      throw StateError('Failed to load animated image');
     }
-
-    try {
-      final result = await request.loadCodec();
-      if (result == null || isCancelled) {
-        PaintingBinding.instance.imageCache.evict(this);
-        return Future.error('Failed to load animated image');
-      }
-      return result;
-    } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
-      return Future.error(e);
-    } finally {
-      this.request = null;
-    }
+    return codec;
   }
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -160,12 +145,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteFullImageProvider) {
-      return assetId == other.assetId && thumbhash == other.thumbhash;
+      return assetId == other.assetId && thumbhash == other.thumbhash && isAnimated == other.isAnimated;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
+  int get hashCode => assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode;
 }
