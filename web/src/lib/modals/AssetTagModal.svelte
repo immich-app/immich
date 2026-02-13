@@ -10,7 +10,7 @@
   import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
 
   interface Props {
-    onClose: () => void;
+    onClose: (updated?: boolean) => void;
     assetIds: string[];
   }
 
@@ -33,7 +33,7 @@
 
     const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
     eventManager.emit('AssetsTag', updatedIds);
-    onClose();
+    onClose(true);
   };
 
   const handleSelect = async (option?: ComboBoxOption) => {

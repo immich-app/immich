@@ -1,8 +1,8 @@
 import { SystemConfig } from 'src/config';
-import { ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -13,7 +13,7 @@ describe(SmartInfoService.name, () => {
   beforeEach(() => {
     ({ sut, mocks } = newTestService(SmartInfoService));
 
-    mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+    mocks.asset.getByIds.mockResolvedValue([AssetFactory.create()]);
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
   });
 
@@ -155,25 +155,23 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should queue the assets without clip embeddings', async () => {
-      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueEncodeClip({ force: false });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SmartSearch, data: { id: assetStub.image.id } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SmartSearch, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(false);
       expect(mocks.database.setDimensionSize).not.toHaveBeenCalled();
     });
 
     it('should queue all the assets', async () => {
-      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForEncodeClip.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueEncodeClip({ force: true });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.SmartSearch, data: { id: assetStub.image.id } },
-      ]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SmartSearch, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForEncodeClip).toHaveBeenCalledWith(true);
       expect(mocks.database.setDimensionSize).toHaveBeenCalledExactlyOnceWith(512);
     });
@@ -190,34 +188,36 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
-      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.noResizePath, files: [] });
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
 
-      expect(await sut.handleEncodeClip({ id: assetStub.noResizePath.id })).toEqual(JobStatus.Failed);
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Failed);
 
       expect(mocks.search.upsert).not.toHaveBeenCalled();
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
-      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
 
-      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Success);
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
+        asset.files[0].path,
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(mocks.search.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
+      expect(mocks.search.upsert).toHaveBeenCalledWith(asset.id, '[0.01, 0.02, 0.03]');
     });
 
     it('should skip invisible assets', async () => {
-      mocks.assetJob.getForClipEncoding.mockResolvedValue({
-        ...assetStub.livePhotoMotionAsset,
-        files: [assetStub.image.files[1]],
-      });
+      const asset = AssetFactory.from({ visibility: AssetVisibility.Hidden })
+        .file({ type: AssetFileType.Preview })
+        .build();
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
 
-      expect(await sut.handleEncodeClip({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.Skipped);
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Skipped);
 
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
       expect(mocks.search.upsert).not.toHaveBeenCalled();
@@ -226,25 +226,26 @@ describe(SmartInfoService.name, () => {
     it('should fail if asset could not be found', async () => {
       mocks.assetJob.getForClipEncoding.mockResolvedValue(void 0);
 
-      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Failed);
+      expect(await sut.handleEncodeClip({ id: 'non-existent' })).toEqual(JobStatus.Failed);
 
       expect(mocks.machineLearning.encodeImage).not.toHaveBeenCalled();
       expect(mocks.search.upsert).not.toHaveBeenCalled();
     });
 
     it('should wait for database', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
       mocks.database.isBusy.mockReturnValue(true);
-      mocks.assetJob.getForClipEncoding.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
+      mocks.assetJob.getForClipEncoding.mockResolvedValue(asset);
 
-      expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Success);
+      expect(await sut.handleEncodeClip({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.database.wait).toHaveBeenCalledWith(512);
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
+        asset.files[0].path,
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(mocks.search.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
+      expect(mocks.search.upsert).toHaveBeenCalledWith(asset.id, '[0.01, 0.02, 0.03]');
     });
   });
 
