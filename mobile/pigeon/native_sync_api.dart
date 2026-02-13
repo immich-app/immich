@@ -31,6 +31,9 @@ class PlatformAsset {
   final double? latitude;
   final double? longitude;
 
+  // Follows AssetPlaybackStyle enum: 0=image, 1=video, 2=animated, 3=livePhoto
+  final int playbackStyle;
+
   const PlatformAsset({
     required this.id,
     required this.name,
@@ -45,6 +48,7 @@ class PlatformAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    this.playbackStyle = 0,
   });
 }
 

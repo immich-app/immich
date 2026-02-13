@@ -5,6 +5,7 @@ class LocalAsset extends BaseAsset {
   final String? remoteAssetId;
   final String? cloudId;
   final int orientation;
+  final AssetPlaybackStyle? playbackStyle;
 
   final DateTime? adjustmentTime;
   final double? latitude;
@@ -25,11 +26,17 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
+    this.playbackStyle,
     this.adjustmentTime,
     this.latitude,
     this.longitude,
     required super.isEdited,
   }) : remoteAssetId = remoteId;
+
+  @override
+  bool get isAnimatedImage =>
+      playbackStyle == AssetPlaybackStyle.animated ||
+      (playbackStyle == null && super.isAnimatedImage);
 
   @override
   String? get localId => id;
@@ -56,6 +63,7 @@ class LocalAsset extends BaseAsset {
    width: ${width ?? "<NA>"},
    height: ${height ?? "<NA>"},
    durationInSeconds: ${durationInSeconds ?? "<NA>"},
+   playbackStyle: $playbackStyle,
    remoteId: ${remoteId ?? "<NA>"},
    cloudId: ${cloudId ?? "<NA>"},
    checksum: ${checksum ?? "<NA>"},
@@ -76,6 +84,7 @@ class LocalAsset extends BaseAsset {
         id == other.id &&
         cloudId == other.cloudId &&
         orientation == other.orientation &&
+        playbackStyle == other.playbackStyle &&
         adjustmentTime == other.adjustmentTime &&
         latitude == other.latitude &&
         longitude == other.longitude;
@@ -87,6 +96,7 @@ class LocalAsset extends BaseAsset {
       id.hashCode ^
       remoteId.hashCode ^
       orientation.hashCode ^
+      playbackStyle.hashCode ^
       adjustmentTime.hashCode ^
       latitude.hashCode ^
       longitude.hashCode;
@@ -105,6 +115,7 @@ class LocalAsset extends BaseAsset {
     int? durationInSeconds,
     bool? isFavorite,
     int? orientation,
+    AssetPlaybackStyle? playbackStyle,
     DateTime? adjustmentTime,
     double? latitude,
     double? longitude,
@@ -124,6 +135,7 @@ class LocalAsset extends BaseAsset {
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

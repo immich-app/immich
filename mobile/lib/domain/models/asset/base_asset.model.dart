@@ -11,6 +11,8 @@ enum AssetType {
 
 enum AssetState { local, remote, merged }
 
+enum AssetPlaybackStyle { image, video, animated, livePhoto }
+
 sealed class BaseAsset {
   final String name;
   final String? checksum;
