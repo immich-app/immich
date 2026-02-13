@@ -19,13 +19,13 @@ class ActivityStatisticsResponseDto {
 
   /// Number of comments
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int comments;
 
   /// Number of likes
   ///
-  /// Minimum value: -9007199254740991
+  /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int likes;
 

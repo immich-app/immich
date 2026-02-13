@@ -15492,13 +15492,13 @@
           "comments": {
             "description": "Number of comments",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "likes": {
             "description": "Number of likes",
             "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },

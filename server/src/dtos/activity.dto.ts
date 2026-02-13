@@ -29,8 +29,8 @@ const ActivityResponseSchema = z
 
 const ActivityStatisticsResponseSchema = z
   .object({
-    comments: z.number().int().describe('Number of comments'),
-    likes: z.number().int().describe('Number of likes'),
+    comments: z.number().int().min(0).describe('Number of comments'),
+    likes: z.number().int().min(0).describe('Number of likes'),
   })
   .describe('Activity statistics response');
 
