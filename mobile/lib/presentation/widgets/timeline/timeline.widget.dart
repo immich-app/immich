@@ -29,11 +29,8 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-typedef TimelineBottomWidgetBuilder = Widget? Function(
-  BuildContext context,
-  bool isSelectionMode,
-  bool isMultiSelectEnabled,
-);
+typedef TimelineBottomWidgetBuilder =
+    Widget? Function(BuildContext context, bool isSelectionMode, bool isMultiSelectEnabled);
 
 class Timeline extends ConsumerWidget {
   const Timeline({
@@ -456,35 +453,35 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                             _restoreAssetIndex = targetAssetIndex;
                           });
 
-                        ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
-                      }
-                    };
-                  },
-                ),
-              },
-              child: TimelineDragRegion(
-                onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
-                onAssetEnter: _handleDragAssetEnter,
-                onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                onScroll: _dragScroll,
-                onScrollStart: () {
-                  // Minimize the bottom sheet when drag selection starts
-                  ref.read(timelineStateProvider.notifier).setScrolling(true);
+                          ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
+                        }
+                      };
+                    },
+                  ),
                 },
-                child: Stack(
-                  children: [
-                    timeline,
-                    if (!isSelectionMode && isMultiSelectEnabled) ...[
-                      Positioned(
-                        top: MediaQuery.paddingOf(context).top,
-                        left: 25,
-                        child: const SizedBox(
-                          height: kToolbarHeight,
-                          child: Center(child: _MultiSelectStatusButton()),
+                child: TimelineDragRegion(
+                  onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
+                  onAssetEnter: _handleDragAssetEnter,
+                  onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
+                  onScroll: _dragScroll,
+                  onScrollStart: () {
+                    // Minimize the bottom sheet when drag selection starts
+                    ref.read(timelineStateProvider.notifier).setScrolling(true);
+                  },
+                  child: Stack(
+                    children: [
+                      timeline,
+                      if (!isSelectionMode && isMultiSelectEnabled) ...[
+                        Positioned(
+                          top: MediaQuery.paddingOf(context).top,
+                          left: 25,
+                          child: const SizedBox(
+                            height: kToolbarHeight,
+                            child: Center(child: _MultiSelectStatusButton()),
+                          ),
                         ),
-                      ),
-                    ],
-                    ?bottomWidget,
+                      ],
+                      ?bottomWidget,
                     ],
                   ),
                 ),
