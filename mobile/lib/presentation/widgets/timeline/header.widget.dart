@@ -26,13 +26,19 @@ class TimelineHeader extends HookConsumerWidget {
 
   String _formatMonth(BuildContext context, DateTime date) {
     final formatter = date.year == DateTime.now().year
-        ? DateFormat.MMMM(context.locale.toLanguageTag())
-        : DateFormat.yMMMM(context.locale.toLanguageTag());
+        ? DateFormat.MMMM(
+            DateFormat.localeExists(context.locale.toLanguageTag()) ? context.locale.toLanguageTag() : 'en',
+          )
+        : DateFormat.yMMMM(
+            DateFormat.localeExists(context.locale.toLanguageTag()) ? context.locale.toLanguageTag() : 'en',
+          );
     return formatter.format(date);
   }
 
   String _formatDay(BuildContext context, DateTime date) {
-    final formatter = DateFormat.yMMMEd(context.locale.toLanguageTag());
+    final formatter = DateFormat.yMMMEd(
+      DateFormat.localeExists(context.locale.toLanguageTag()) ? context.locale.toLanguageTag() : 'en',
+    );
     return formatter.format(date);
   }
 
