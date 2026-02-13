@@ -34,12 +34,14 @@ import { FilenameParamDto } from 'src/validation';
 import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import type { ServerController as _ServerController } from 'src/controllers/server.controller';
 import { DatabaseBackupDeleteDto, DatabaseBackupListResponseDto } from 'src/dtos/database-backup.dto';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
 
 @Controller()
 export class MaintenanceWorkerController {
   constructor(
     private logger: LoggingRepository,
     private service: MaintenanceWorkerService,
+    private databaseBackupService: DatabaseBackupService,
   ) {}
 
   /**
@@ -61,7 +63,7 @@ export class MaintenanceWorkerController {
   @Get('admin/database-backups')
   @MaintenanceRoute()
   listDatabaseBackups(): Promise<DatabaseBackupListResponseDto> {
-    return this.service.listBackups();
+    return this.databaseBackupService.listBackups();
   }
 
   /**
@@ -74,7 +76,7 @@ export class MaintenanceWorkerController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.downloadBackup(filename), this.logger);
+    await sendFile(res, next, () => this.databaseBackupService.downloadBackup(filename), this.logger);
   }
 
   /**
@@ -83,7 +85,7 @@ export class MaintenanceWorkerController {
   @Delete('admin/database-backups')
   @MaintenanceRoute()
   async deleteDatabaseBackup(@Body() dto: DatabaseBackupDeleteDto): Promise<void> {
-    return this.service.deleteBackup(dto.backups);
+    return this.databaseBackupService.deleteBackup(dto.backups);
   }
 
   /**
@@ -96,7 +98,7 @@ export class MaintenanceWorkerController {
     @UploadedFile()
     file: Express.Multer.File,
   ): Promise<void> {
-    return this.service.uploadBackup(file);
+    return this.databaseBackupService.uploadBackup(file);
   }
 
   @Get('admin/maintenance/status')

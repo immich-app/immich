@@ -1,7 +1,8 @@
 import { MapService } from 'src/services/map.service';
-import { albumStub } from 'test/fixtures/album.stub';
+import { AlbumFactory } from 'test/factories/album.factory';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -72,8 +73,8 @@ describe(MapService.name, () => {
       };
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
-      mocks.album.getOwned.mockResolvedValue([albumStub.empty]);
-      mocks.album.getShared.mockResolvedValue([albumStub.sharedWithUser]);
+      mocks.album.getOwned.mockResolvedValue([AlbumFactory.create()]);
+      mocks.album.getShared.mockResolvedValue([AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build()]);
 
       const markers = await sut.getMapMarkers(authStub.user1, { withSharedAlbums: true });
 

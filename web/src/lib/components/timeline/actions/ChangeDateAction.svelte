@@ -1,7 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';

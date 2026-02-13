@@ -73,7 +73,9 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
-      labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      labelTextStyle: const WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(

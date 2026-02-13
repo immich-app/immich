@@ -1,8 +1,9 @@
-import { getAssetStatistics, getMyUser, getServerVersion, getSupportedMediaTypes } from '@immich/sdk';
-import { BaseOptions, authenticate } from 'src/utils';
+import { getAssetStatistics, getMyUser, getServerVersion, getSupportedMediaTypes, Permission } from '@immich/sdk';
+import { authenticate, BaseOptions, requirePermissions } from 'src/utils';
 
 export const serverInfo = async (options: BaseOptions) => {
   const { url } = await authenticate(options);
+  await requirePermissions([Permission.ServerAbout, Permission.AssetStatistics, Permission.UserRead]);
 
   const [versionInfo, mediaTypes, stats, userInfo] = await Promise.all([
     getServerVersion(),

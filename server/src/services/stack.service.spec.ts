@@ -1,7 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { StackService } from 'src/services/stack.service';
-import { assetStub, stackStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { stackStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(StackService.name, () => {
@@ -18,38 +20,36 @@ describe(StackService.name, () => {
 
   describe('search', () => {
     it('should search stacks', async () => {
-      mocks.stack.search.mockResolvedValue([stackStub('stack-id', [assetStub.image])]);
+      const asset = AssetFactory.create();
+      mocks.stack.search.mockResolvedValue([stackStub('stack-id', [asset])]);
 
-      await sut.search(authStub.admin, { primaryAssetId: assetStub.image.id });
+      await sut.search(authStub.admin, { primaryAssetId: asset.id });
       expect(mocks.stack.search).toHaveBeenCalledWith({
         ownerId: authStub.admin.user.id,
-        primaryAssetId: assetStub.image.id,
+        primaryAssetId: asset.id,
       });
     });
   });
 
   describe('create', () => {
     it('should require asset.update permissions', async () => {
-      await expect(
-        sut.create(authStub.admin, { assetIds: [assetStub.image.id, assetStub.image1.id] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
+      await expect(sut.create(authStub.admin, { assetIds: [primaryAsset.id, asset.id] })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.create).not.toHaveBeenCalled();
     });
 
     it('should create a stack', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id, assetStub.image1.id]));
-      mocks.stack.create.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
-      await expect(
-        sut.create(authStub.admin, { assetIds: [assetStub.image.id, assetStub.image1.id] }),
-      ).resolves.toEqual({
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([primaryAsset.id, asset.id]));
+      mocks.stack.create.mockResolvedValue(stackStub('stack-id', [primaryAsset, asset]));
+      await expect(sut.create(authStub.admin, { assetIds: [primaryAsset.id, asset.id] })).resolves.toEqual({
         id: 'stack-id',
-        primaryAssetId: assetStub.image.id,
-        assets: [
-          expect.objectContaining({ id: assetStub.image.id }),
-          expect.objectContaining({ id: assetStub.image1.id }),
-        ],
+        primaryAssetId: primaryAsset.id,
+        assets: [expect.objectContaining({ id: primaryAsset.id }), expect.objectContaining({ id: asset.id })],
       });
 
       expect(mocks.event.emit).toHaveBeenCalledWith('StackCreate', {
@@ -78,16 +78,14 @@ describe(StackService.name, () => {
     });
 
     it('should get stack', async () => {
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
+      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [primaryAsset, asset]));
 
       await expect(sut.get(authStub.admin, 'stack-id')).resolves.toEqual({
         id: 'stack-id',
-        primaryAssetId: assetStub.image.id,
-        assets: [
-          expect.objectContaining({ id: assetStub.image.id }),
-          expect.objectContaining({ id: assetStub.image1.id }),
-        ],
+        primaryAssetId: primaryAsset.id,
+        assets: [expect.objectContaining({ id: primaryAsset.id }), expect.objectContaining({ id: asset.id })],
       });
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
@@ -114,8 +112,9 @@ describe(StackService.name, () => {
     });
 
     it('should fail if the provided primary asset id is not in the stack', async () => {
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
+      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [primaryAsset, asset]));
 
       await expect(sut.update(authStub.admin, 'stack-id', { primaryAssetId: 'unknown-asset' })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -127,16 +126,17 @@ describe(StackService.name, () => {
     });
 
     it('should update stack', async () => {
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
-      mocks.stack.update.mockResolvedValue(stackStub('stack-id', [assetStub.image, assetStub.image1]));
+      mocks.stack.getById.mockResolvedValue(stackStub('stack-id', [primaryAsset, asset]));
+      mocks.stack.update.mockResolvedValue(stackStub('stack-id', [primaryAsset, asset]));
 
-      await sut.update(authStub.admin, 'stack-id', { primaryAssetId: assetStub.image1.id });
+      await sut.update(authStub.admin, 'stack-id', { primaryAssetId: asset.id });
 
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.stack.update).toHaveBeenCalledWith('stack-id', {
         id: 'stack-id',
-        primaryAssetId: assetStub.image1.id,
+        primaryAssetId: asset.id,
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
         stackId: 'stack-id',
@@ -204,33 +204,35 @@ describe(StackService.name, () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: null, primaryAssetId: null });
 
-      await expect(
-        sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.imageFrom2015.id }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: newUuid() })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it('should fail if the assetId is the primaryAssetId', async () => {
+      const asset = AssetFactory.create();
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: asset.id });
 
-      await expect(
-        sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image.id }),
-      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: asset.id })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.event.emit).not.toHaveBeenCalled();
     });
 
     it("should update the asset to nullify it's stack-id", async () => {
+      const [primaryAsset, asset] = [AssetFactory.create(), AssetFactory.create()];
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
-      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: assetStub.image.id });
+      mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-id', primaryAssetId: primaryAsset.id });
 
-      await sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: assetStub.image1.id });
+      await sut.removeAsset(authStub.admin, { id: 'stack-id', assetId: asset.id });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.image1.id, stackId: null });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, stackId: null });
       expect(mocks.event.emit).toHaveBeenCalledWith('StackUpdate', {
         stackId: 'stack-id',
         userId: authStub.admin.user.id,
