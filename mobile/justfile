@@ -1,0 +1,259 @@
+# Immich Mobile App - Development Commands
+# Usage: just <recipe>
+
+# Android SDK configuration
+android_home := "/opt/homebrew/share/android-commandlinetools"
+export ANDROID_HOME := android_home
+export PATH := android_home + "/emulator:" + android_home + "/platform-tools:" + env_var("PATH")
+
+# Default emulator AVD name
+default_avd := "Pixel_9_Pro"
+
+# Default recipe - show available commands
+default:
+    @just --list
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Environment Setup
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Check Flutter installation and dependencies
+doctor:
+    flutter doctor -v
+
+# Verify environment is ready for development
+check:
+    @echo "🔍 Checking Flutter environment..."
+    @flutter --version
+    @echo ""
+    @echo "🔍 Checking Android SDK..."
+    @echo "ANDROID_HOME: $ANDROID_HOME"
+    @adb --version
+    @echo ""
+    @echo "🔍 Checking emulators..."
+    @emulator -list-avds
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Install/update Flutter dependencies
+deps:
+    flutter pub get
+
+# Upgrade dependencies to latest compatible versions
+deps-upgrade:
+    flutter pub upgrade
+
+# Clean and reinstall dependencies
+deps-clean:
+    flutter pub cache clean
+    flutter pub get
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Code Generation
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run build_runner for code generation
+codegen:
+    dart run build_runner build --delete-conflicting-outputs
+
+# Watch for changes and regenerate code
+codegen-watch:
+    dart run build_runner watch --delete-conflicting-outputs
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Building
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Build debug APK
+build:
+    @echo "🌐 Generating translation keys..."
+    @cd .. && dart run bin/generate_keys.dart
+    flutter build apk --debug
+
+# Build release APK
+build-release:
+    @echo "🌐 Generating translation keys..."
+    @cd .. && dart run bin/generate_keys.dart
+    flutter build apk --release
+
+# Build app bundle for Play Store
+build-bundle:
+    flutter build appbundle --release
+
+# Build iOS (requires Xcode)
+build-ios:
+    flutter build ios --release --no-codesign
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Running
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run app on Android emulator (auto-starts emulator if needed)
+run: _ensure-emulator
+    flutter run -d emulator-5554
+
+# Run app on a specific device (use `flutter devices` to list)
+run-device device:
+    flutter run -d {{device}}
+
+# Run with hot reload verbose output
+run-verbose: _ensure-emulator
+    flutter run -d emulator-5554 --verbose
+
+# Run on Chrome for web debugging
+run-web:
+    flutter run -d chrome
+
+# Internal: ensure emulator is running and ready
+_ensure-emulator:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    # Check if emulator is already running
+    if adb devices 2>/dev/null | grep -q "emulator-5554"; then
+        echo "✅ Emulator already running"
+        exit 0
+    fi
+    
+    echo "🚀 Starting emulator {{default_avd}}..."
+    emulator -avd {{default_avd}} &
+    
+    echo "⏳ Waiting for emulator to connect..."
+    adb wait-for-device
+    
+    echo "⏳ Waiting for boot to complete..."
+    while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+        sleep 2
+    done
+    
+    echo "✅ Emulator ready!"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Emulator Management
+# ─────────────────────────────────────────────────────────────────────────────
+
+# List available emulators
+emulators:
+    @emulator -list-avds
+
+# Start the default emulator (Pixel 9 Pro, Android 16)
+emulator:
+    @echo "🚀 Starting {{default_avd}} emulator..."
+    emulator -avd {{default_avd}} &
+
+# Start Pixel 7 emulator with Play Store (Android 15)
+emulator-pixel7:
+    @echo "🚀 Starting Pixel_7_PlayStore emulator..."
+    emulator -avd Pixel_7_PlayStore &
+
+# Cold boot emulator (wipes state)
+emulator-cold:
+    emulator -avd {{default_avd}} -no-snapshot-load &
+
+# List connected devices (ADB and Flutter)
+devices:
+    @echo "📱 ADB devices:"
+    @adb devices -l 2>/dev/null || echo "⚠️  ADB not available"
+    @echo ""
+    @echo "📱 Flutter devices:"
+    @flutter devices
+
+# Wait for emulator to be ready (useful after `just emulator`)
+wait-emulator:
+    @echo "⏳ Waiting for emulator to connect..."
+    @adb wait-for-device
+    @echo "⏳ Waiting for boot to complete..."
+    @while [ "$$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do sleep 2; done
+    @echo "✅ Emulator ready!"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Testing
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Run all tests
+test:
+    flutter test
+
+# Run tests with coverage
+test-coverage:
+    flutter test --coverage
+
+# Run specific test file
+test-file file:
+    flutter test {{file}}
+
+# Run widget tests only
+test-widget:
+    flutter test test/widget_test.dart
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Linting & Formatting
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Analyze code for issues
+analyze:
+    flutter analyze
+
+# Format all Dart files
+format:
+    dart format .
+
+# Fix auto-fixable issues
+fix:
+    dart fix --apply
+
+# Run all checks (format, analyze, test)
+lint: format analyze
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Cleaning
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Clean build artifacts
+clean:
+    flutter clean
+
+# Deep clean (build artifacts + dependency cache)
+clean-all:
+    flutter clean
+    rm -rf .dart_tool
+    rm -rf build
+    flutter pub get
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Show Flutter & project info
+info:
+    @echo "📱 Immich Mobile Development Environment"
+    @echo "─────────────────────────────────────────"
+    @flutter --version
+    @echo ""
+    @echo "📦 Project Dependencies:"
+    @grep "^  [a-z]" pubspec.yaml | head -20
+
+# Upgrade Flutter to latest stable
+flutter-upgrade:
+    flutter upgrade
+
+# Generate localization files
+l10n:
+    flutter gen-l10n
+
+# Open Flutter DevTools
+devtools:
+    flutter pub global activate devtools
+    dart devtools
+
+# Install/update the app on connected device
+install:
+    flutter install
+
+# Take a screenshot from the running app
+screenshot:
+    @mkdir -p screenshots
+    adb exec-out screencap -p > screenshots/screenshot-$(date +%Y%m%d-%H%M%S).png
+    @echo "📸 Screenshot saved to screenshots/"
