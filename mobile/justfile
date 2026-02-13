@@ -68,14 +68,14 @@ codegen-watch:
 
 # Build debug APK
 build:
-    @echo "🌐 Generating translation keys..."
-    @cd .. && dart run bin/generate_keys.dart
+    @echo "Generating translation keys..."
+    @dart run bin/generate_keys.dart
     flutter build apk --debug
 
 # Build release APK
 build-release:
-    @echo "🌐 Generating translation keys..."
-    @cd .. && dart run bin/generate_keys.dart
+    @echo "Generating translation keys..."
+    @dart run bin/generate_keys.dart
     flutter build apk --release
 
 # Build app bundle for Play Store
