@@ -233,6 +233,10 @@ const patchOpenAPI = (document: OpenAPIObject) => {
 
     replaceSchemaRefs(document, schemaNameMap);
 
+    for (const schema of Object.values(schemas)) {
+      delete (schema as Record<string, unknown>).id;
+    }
+
     document.components.schemas = sortKeys(schemas);
 
     for (const [schemaName, schema] of Object.entries(document.components.schemas as Record<string, SchemaObject>)) {

@@ -20800,7 +20800,6 @@
           "album",
           "asset"
         ],
-        "id": "ReactionLevel",
         "type": "string"
       },
       "ReactionType": {
@@ -20809,7 +20808,6 @@
           "comment",
           "like"
         ],
-        "id": "ReactionType",
         "type": "string"
       },
       "ReverseGeocodingStateResponseDto": {
@@ -25588,7 +25586,6 @@
       },
       "UserResponseDto_Output": {
         "additionalProperties": false,
-        "id": "UserResponseDto_Output",
         "properties": {
           "avatarColor": {
             "description": "Avatar color",
