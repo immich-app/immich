@@ -200,7 +200,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Intl.defaultLocale = context.locale.toLanguageTag();
+
+    final verifiedLocale = Intl.verifiedLocale(
+      context.locale.toLanguageTag(),
+      (locale) => DateFormat.localeExists(locale),
+      onFailure: (_) => defaultLocale.toLanguageTag(),
+    );
+
+    Intl.defaultLocale = verifiedLocale;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       configureFileDownloaderNotifications();
     });

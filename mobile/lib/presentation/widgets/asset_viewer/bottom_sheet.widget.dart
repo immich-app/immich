@@ -75,8 +75,12 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
       );
     }
 
-    final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
-    final time = DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
+    final date = DateFormat.yMMMEd(
+      DateFormat.localeExists(ctx.locale.toLanguageTag()) ? ctx.locale.toLanguageTag() : 'en',
+    ).format(dateTime);
+    final time = DateFormat.jm(
+      DateFormat.localeExists(ctx.locale.toLanguageTag()) ? ctx.locale.toLanguageTag() : 'en',
+    ).format(dateTime);
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';
   }
