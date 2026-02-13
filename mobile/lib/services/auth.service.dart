@@ -239,9 +239,10 @@ class AuthService {
       await _apiService.usersApi.getMyUser();
       
       // If we get here, the token is valid on the new server
-      // Save the new endpoint
+      // Save the new endpoint (both serverEndpoint and serverUrl must be the resolved URL
+      // for consistency with the login flow and to ensure session resumption on app restart)
       await Store.put(StoreKey.serverEndpoint, validUrl);
-      await Store.put(StoreKey.serverUrl, newUrl);
+      await Store.put(StoreKey.serverUrl, validUrl);
       
       _log.info("Successfully changed server endpoint to: $validUrl");
       return validUrl;
