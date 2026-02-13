@@ -89,7 +89,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       .$TrashedLocalAssetEntityTable(this);
   late final i21.$TrashSyncEntityTable trashSyncEntity = i21
       .$TrashSyncEntityTable(this);
-
   i22.MergedAssetDrift get mergedAssetDrift => i23.ReadDatabaseContainer(
     this,
   ).accessor<i22.MergedAssetDrift>(i22.MergedAssetDrift.new);
@@ -392,7 +391,6 @@ class $DriftManager {
         _db,
         _db.trashedLocalAssetEntity,
       );
-
   i21.$$TrashSyncEntityTableTableManager get trashSyncEntity =>
       i21.$$TrashSyncEntityTableTableManager(_db, _db.trashSyncEntity);
 }
