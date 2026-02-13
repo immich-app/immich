@@ -258,6 +258,14 @@ install-usb: build
     adb install -r build/app/outputs/flutter-apk/app-debug.apk
     @echo "Installed successfully!"
 
+# Install release APK to USB-connected Android phone (replaces existing app)
+install-usb-release: build-release
+    @echo "Installing release build to USB-connected Android device..."
+    @echo "Uninstalling any existing version first..."
+    @adb uninstall app.alextran.immich 2>/dev/null || true
+    adb install build/app/outputs/flutter-apk/app-release.apk
+    @echo "Installed successfully!"
+
 # Take a screenshot from the running app
 screenshot:
     @mkdir -p screenshots

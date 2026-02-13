@@ -65,11 +65,26 @@ android {
       def keyAliasVal = System.getenv("ALIAS")
       def keyPasswordVal = System.getenv("ANDROID_KEY_PASSWORD")
       def storePasswordVal = System.getenv("ANDROID_STORE_PASSWORD")
+      def keyJksFile = file("../key.jks")
+      def debugKeystore = file(System.getenv("HOME") + "/.android/debug.keystore")
 
-      keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
-      keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
-      storeFile file("../key.jks") ? file("../key.jks") : file(keystoreProperties['storeFile'])
-      storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+      // Check for production keystore first
+      if (keyJksFile.exists() || keystorePropertiesFile.exists()) {
+        if (keyJksFile.exists()) {
+          storeFile keyJksFile
+        } else if (keystorePropertiesFile.exists()) {
+          storeFile file(keystoreProperties['storeFile'])
+        }
+        keyAlias keyAliasVal ? keyAliasVal : keystoreProperties['keyAlias']
+        keyPassword keyPasswordVal ? keyPasswordVal : keystoreProperties['keyPassword']
+        storePassword storePasswordVal ? storePasswordVal : keystoreProperties['storePassword']
+      } else if (debugKeystore.exists()) {
+        // Fall back to debug keystore for local development
+        storeFile debugKeystore
+        keyAlias "androiddebugkey"
+        keyPassword "android"
+        storePassword "android"
+      }
     }
   }
 
