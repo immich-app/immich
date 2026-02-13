@@ -4,6 +4,7 @@ import {
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
+  Permission,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
@@ -20,12 +21,10 @@ import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
-import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
+import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils';
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
-
-const s = (count: number) => (count === 1 ? '' : 's');
 
 // TODO figure out why `id` is missing
 type AssetBulkUploadCheckResults = Array<AssetBulkUploadCheckResult & { id: string }>;
@@ -136,6 +135,7 @@ export const startWatch = async (
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
+  await requirePermissions([Permission.AssetUpload]);
 
   const scanFiles = await scan(paths, options);
 

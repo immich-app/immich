@@ -1,21 +1,16 @@
 <script lang="ts">
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { Button, DatePicker, Field } from '@immich/ui';
   import { locale } from '$lib/stores/preferences.store';
-  import { minBy, uniqBy } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    createdAt?: string;
     expiresAt: string | null;
   };
 
-  let { createdAt = DateTime.now().toISO(), expiresAt = $bindable() }: Props = $props();
+  let { expiresAt = $bindable() }: Props = $props();
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
-    [30, 'minutes'],
-    [1, 'hour'],
-    [6, 'hours'],
     [1, 'day'],
     [7, 'days'],
     [30, 'days'],
@@ -26,50 +21,52 @@
   const relativeTime = $derived(new Intl.RelativeTimeFormat($locale));
   const expiredDateOptions = $derived([
     { text: $t('never'), value: 0 },
-    ...expirationOptions
-      .map(([value, unit]) => ({
-        text: relativeTime.format(value, unit),
-        value: Duration.fromObject({ [unit]: value }).toMillis(),
-      }))
-      .filter(({ value: millis }) => DateTime.fromISO(createdAt).plus(millis) > DateTime.now()),
+    ...expirationOptions.map(([value, unit]) => ({
+      text: relativeTime.format(value, unit),
+      value: Duration.fromObject({ [unit]: value }).toMillis(),
+    })),
   ]);
 
-  const getExpirationOption = (createdAt: string, expiresAt: string | null) => {
-    if (!expiresAt) {
-      return expiredDateOptions[0];
-    }
+  let selectedPresetValue = $state<number | null>(null);
 
-    const delta = DateTime.fromISO(expiresAt).diff(DateTime.fromISO(createdAt)).toMillis();
-    const closestOption = minBy(expiredDateOptions, ({ value }) => Math.abs(delta - value));
-
-    if (!closestOption) {
-      return expiredDateOptions[0];
-    }
-
-    // allow a generous epsilon to compensate for potential API delays
-    if (Math.abs(closestOption.value - delta) > 10_000) {
-      const interval = DateTime.fromMillis(closestOption.value) as DateTime<true>;
-      return { text: interval.toRelative({ locale: $locale }), value: closestOption.value };
-    }
-
-    return closestOption;
+  const getSelectedDate = (): DateTime | undefined => {
+    return expiresAt ? DateTime.fromISO(expiresAt) : undefined;
   };
 
-  const onSelect = (option: number | string) => {
-    const expirationOption = Number(option);
-
-    expiresAt = expirationOption === 0 ? null : DateTime.fromISO(createdAt).plus(expirationOption).toISO();
+  const setSelectedDate = (value: DateTime | undefined) => {
+    selectedPresetValue = null; // Clear preset when manually setting date
+    expiresAt = value ? value.toISO() : null;
   };
 
-  let expirationOption = $derived(getExpirationOption(createdAt, expiresAt).value);
+  const selectPreset = (value: number) => {
+    selectedPresetValue = value;
+    if (value === 0) {
+      expiresAt = null;
+      return;
+    }
+    const newDate = DateTime.now().plus(value);
+    expiresAt = newDate.toISO();
+  };
+
+  const isSelected = (value: number) => {
+    return selectedPresetValue === value;
+  };
 </script>
 
 <div class="mt-2">
-  <SettingSelect
-    bind:value={expirationOption}
-    {onSelect}
-    options={uniqBy([...expiredDateOptions, getExpirationOption(createdAt, expiresAt)], 'value')}
-    label={$t('expire_after')}
-    number={true}
-  />
+  <Field label={$t('expire_after')}>
+    <DatePicker bind:value={getSelectedDate, setSelectedDate} />
+  </Field>
+
+  <div class="flex flex-wrap gap-2 mt-2">
+    {#each expiredDateOptions as option (option.value)}
+      <Button
+        size="tiny"
+        variant={isSelected(option.value) ? 'filled' : 'outline'}
+        onclick={() => selectPreset(option.value)}
+      >
+        {option.text}
+      </Button>
+    {/each}
+  </div>
 </div>

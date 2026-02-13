@@ -4,8 +4,8 @@
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dateFormats } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
@@ -22,7 +22,6 @@
   import { mdiKey } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  const { isPurchased } = purchaseStore;
 
   let isServerProduct = $state(false);
   let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
@@ -53,7 +52,7 @@
   };
 
   onMount(async () => {
-    if (!$isPurchased) {
+    if (!authManager.isPurchased) {
       return;
     }
 
@@ -73,7 +72,7 @@
       }
 
       await deleteIndividualProductKey();
-      purchaseStore.setPurchaseStatus(false);
+      authManager.isPurchased = false;
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
@@ -92,21 +91,21 @@
       }
 
       await deleteServerProductKey();
-      purchaseStore.setPurchaseStatus(false);
+      authManager.isPurchased = false;
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
   };
 
   const onProductActivated = async () => {
-    purchaseStore.setPurchaseStatus(true);
+    authManager.isPurchased = true;
     await checkPurchaseInfo();
   };
 </script>
 
 <section class="my-4">
   <div class="sm:ms-8" in:fade={{ duration: 500 }}>
-    {#if $isPurchased}
+    {#if authManager.isPurchased}
       <!-- BADGE TOGGLE -->
       <div class="mb-4">
         <SettingSwitch
