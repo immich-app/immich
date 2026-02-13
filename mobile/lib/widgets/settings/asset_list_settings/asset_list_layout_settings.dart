@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -24,11 +25,12 @@ class LayoutSettings extends HookConsumerWidget {
           title: "asset_list_layout_sub_title".t(context: context),
           icon: Icons.view_module_outlined,
         ),
-        SettingsSwitchListTile(
-          valueNotifier: useDynamicLayout,
-          title: "asset_list_layout_settings_dynamic_layout_title".t(context: context),
-          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
-        ),
+        if (!Store.isBetaTimelineEnabled)
+          SettingsSwitchListTile(
+            valueNotifier: useDynamicLayout,
+            title: "asset_list_layout_settings_dynamic_layout_title".t(context: context),
+            onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+          ),
         SettingsSliderListTile(
           valueNotifier: tilesPerRow,
           text: 'theme_setting_asset_list_tiles_per_row_title'.tr(namedArgs: {'count': "${tilesPerRow.value}"}),
