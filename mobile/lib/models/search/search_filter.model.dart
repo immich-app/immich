@@ -214,6 +214,7 @@ class SearchFilter {
   String? ocr;
   String? language;
   String? assetId;
+  List<String>? tagIds;
   Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
@@ -231,6 +232,7 @@ class SearchFilter {
     this.ocr,
     this.language,
     this.assetId,
+    this.tagIds,
     required this.people,
     required this.location,
     required this.camera,
@@ -246,6 +248,7 @@ class SearchFilter {
         (description == null || (description!.isEmpty)) &&
         (assetId == null || (assetId!.isEmpty)) &&
         (ocr == null || (ocr!.isEmpty)) &&
+        (tagIds ?? []).isEmpty &&
         people.isEmpty &&
         location.country == null &&
         location.state == null &&
@@ -269,6 +272,7 @@ class SearchFilter {
     String? ocr,
     String? assetId,
     Set<PersonDto>? people,
+    List<String>? tagIds,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,
@@ -290,12 +294,13 @@ class SearchFilter {
       display: display ?? this.display,
       rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
+      tagIds: tagIds ?? this.tagIds,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -309,6 +314,7 @@ class SearchFilter {
         other.ocr == ocr &&
         other.assetId == assetId &&
         other.people == people &&
+        other.tagIds == tagIds &&
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
@@ -326,6 +332,7 @@ class SearchFilter {
         ocr.hashCode ^
         assetId.hashCode ^
         people.hashCode ^
+        tagIds.hashCode ^
         location.hashCode ^
         camera.hashCode ^
         date.hashCode ^
