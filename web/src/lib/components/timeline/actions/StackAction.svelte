@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { deleteStack, stackAssets } from '$lib/utils/asset-utils';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { mdiImageMultipleOutline, mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
