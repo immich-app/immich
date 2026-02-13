@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -29,6 +30,7 @@ import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_s
 import 'package:immich_mobile/widgets/search/search_filter/location_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
+import 'package:immich_mobile/widgets/search/search_filter/tag_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
@@ -52,8 +54,7 @@ class DriftSearchPage extends HookConsumerWidget {
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         rating: preFilter?.rating ?? SearchRatingFilter(),
         mediaType: preFilter?.mediaType ?? AssetType.other,
-        language: "${context.locale.languageCode}-${context.locale.countryCode}",
-        assetId: preFilter?.assetId,
+        tagIds: preFilter?.tagIds ?? [],
       ),
     );
 
@@ -64,15 +65,14 @@ class DriftSearchPage extends HookConsumerWidget {
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
+    final tagCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
     final isSearching = useState(false);
 
-    final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider)
-        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
+    final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
     SnackBar searchInfoSnackBar(String message) {
       return SnackBar(
@@ -140,10 +140,15 @@ class DriftSearchPage extends HookConsumerWidget {
       handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(people: value);
 
-        peopleCurrentFilterWidget.value = Text(
-          value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', '),
-          style: context.textTheme.labelLarge,
-        );
+        final label = value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        if (label.isEmpty) {
+          peopleCurrentFilterWidget.value = null;
+        } else {
+          peopleCurrentFilterWidget.value = Text(
+            label.isEmpty ? 'people'.t(context: context) : label,
+            style: context.textTheme.labelLarge,
+          );
+        }
       }
 
       handleClear() {
@@ -164,6 +169,42 @@ class DriftSearchPage extends HookConsumerWidget {
             onSearch: search,
             onClear: handleClear,
             child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+          ),
+        ),
+      );
+    }
+
+    showTagPicker() {
+      handleOnSelect(Iterable<Tag> tags) {
+        filter.value = filter.value.copyWith(tagIds: tags.map((t) => t.id).toList());
+        final label = tags.map((t) => t.value).join(', ');
+        if (label.isEmpty) {
+          tagCurrentFilterWidget.value = null;
+        } else {
+          tagCurrentFilterWidget.value = Text(
+            label.isEmpty ? 'tags'.t(context: context) : label,
+            style: context.textTheme.labelLarge,
+          );
+        }
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(tagIds: []);
+        tagCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        child: FractionallySizedBox(
+          heightFactor: 0.8,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_tags_title'.t(context: context),
+            expanded: true,
+            onSearch: search,
+            onClear: handleClear,
+            child: TagPicker(onSelect: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
           ),
         ),
       );
@@ -647,6 +688,13 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
+                    if (userPreferences.value?.tagsEnabled ?? false)
+                      SearchFilterChip(
+                        icon: Icons.sell_outlined,
+                        onTap: showTagPicker,
+                        label: 'tags'.t(context: context),
+                        currentFilter: tagCurrentFilterWidget.value,
+                      ),
                     SearchFilterChip(
                       icon: Icons.camera_alt_outlined,
                       onTap: showCameraPicker,
@@ -666,7 +714,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
-                    if (isRatingEnabled) ...[
+                    if (userPreferences.value?.ratingsEnabled ?? false) ...[
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
