@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -110,6 +111,10 @@ class NetworkingSettings extends HookConsumerWidget {
                 currentEndpoint ?? "--",
                 style: TextStyle(fontSize: 14, fontFamily: 'GoogleSansCode', color: context.primaryColor),
               ),
+              trailing: IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => _showChangeEndpointDialog(context, ref, currentEndpoint),
+              ),
             ),
           ),
         ),
@@ -138,6 +143,97 @@ class NetworkingSettings extends HookConsumerWidget {
       ],
     );
   }
+}
+
+void _showChangeEndpointDialog(BuildContext context, WidgetRef ref, String? currentEndpoint) {
+  final controller = TextEditingController(text: currentEndpoint ?? '');
+  final formKey = GlobalKey<FormState>();
+  var isLoading = false;
+
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text("change_server_endpoint".tr()),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "change_server_endpoint_description".tr(),
+                    style: context.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      labelText: "server_endpoint".tr(),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.dns_outlined),
+                    ),
+                    keyboardType: TextInputType.url,
+                    autocorrect: false,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "login_form_server_empty".tr();
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isLoading ? null : () => Navigator.pop(dialogContext),
+                child: Text("cancel".tr()),
+              ),
+              FilledButton(
+                onPressed: isLoading
+                    ? null
+                    : () async {
+                        if (!formKey.currentState!.validate()) return;
+
+                        setState(() => isLoading = true);
+
+                        try {
+                          final newUrl = sanitizeUrl(controller.text);
+                          final validEndpoint = await ref.read(authProvider.notifier).validateNewEndpoint(newUrl);
+                          await ref.read(authProvider.notifier).changeServerEndpoint(validEndpoint);
+
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("server_endpoint_changed_successfully".tr())),
+                            );
+                          }
+                        } catch (e) {
+                          setState(() => isLoading = false);
+                          if (dialogContext.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("server_endpoint_change_failed".tr())),
+                            );
+                          }
+                        }
+                      },
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text("save".tr()),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
 }
 
 class NetworkStatusIcon extends StatelessWidget {

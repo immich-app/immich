@@ -217,4 +217,33 @@ class AuthService {
   Future<void> setupPinCode(String pinCode) {
     return _authApiRepository.setupPinCode(pinCode);
   }
+
+  Future<String> validateNewEndpoint(String url) async {
+    final validUrl = await _apiService.resolveEndpoint(url);
+    final httpclient = HttpClient();
+
+    try {
+      final uri = Uri.parse('$validUrl/users/me');
+      final request = await httpclient.getUrl(uri);
+
+      final customHeaders = ApiService.getRequestHeaders();
+      customHeaders.forEach((key, value) {
+        request.headers.add(key, value);
+      });
+
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        return validUrl;
+      }
+      throw Exception('Server validation failed');
+    } finally {
+      httpclient.close();
+    }
+  }
+
+  Future<void> changeServerEndpoint(String newEndpoint) async {
+    _apiService.setEndpoint(newEndpoint);
+    await Store.put(StoreKey.serverEndpoint, newEndpoint);
+    await Store.put(StoreKey.serverUrl, newEndpoint.replaceAll('/api', ''));
+  }
 }

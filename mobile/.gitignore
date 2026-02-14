@@ -57,3 +57,6 @@ libisar.so
 
 # Translation file
 lib/generated/
+
+# Local development
+justfile

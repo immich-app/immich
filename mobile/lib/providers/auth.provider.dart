@@ -211,4 +211,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> setupPinCode(String pinCode) {
     return _authService.setupPinCode(pinCode);
   }
+
+  Future<String> validateNewEndpoint(String url) {
+    return _authService.validateNewEndpoint(url);
+  }
+
+  Future<void> changeServerEndpoint(String newEndpoint) {
+    return _authService.changeServerEndpoint(newEndpoint);
+  }
 }
