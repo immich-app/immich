@@ -24,7 +24,6 @@ class SmartCacheSetting extends HookConsumerWidget {
     final cacheDays = useAppSettingsState(AppSettingsEnum.smartCacheHighResDays);
     final cacheStats = ref.watch(smartCacheStatsProvider);
     final preferRemoteEnabled = Store.get(StoreKey.preferRemoteImage, false);
-    final description = "smart_cache_description".t(context: context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +31,6 @@ class SmartCacheSetting extends HookConsumerWidget {
         SettingGroupTitle(
           title: "smart_cache".t(context: context),
           icon: Icons.storage_outlined,
-          subtitle: description.isEmpty ? null : description,
         ),
         if (preferRemoteEnabled)
           Padding(

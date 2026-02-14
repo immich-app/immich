@@ -2160,7 +2160,6 @@
   "slideshow_repeat_description": "Loop back to beginning when slideshow ends",
   "slideshow_settings": "Slideshow settings",
   "smart_cache": "Smart Cache",
-  "smart_cache_description": "",
   "smart_cache_enabled": "Enable Smart Cache",
   "smart_cache_enabled_description": "Downloads and caches high-resolution images when opened, removing them after a set time to save space. Thumbnails remain cached for fast browsing.",
   "smart_cache_prefer_remote_warning": "'Prefer Remote Images' is enabled in Advanced Settings, which may affect cache behavior",
