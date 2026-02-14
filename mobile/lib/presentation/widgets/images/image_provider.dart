@@ -72,8 +72,6 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
   }
 
-
-
   Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
     if (isCancelled) {
       this.request = null;

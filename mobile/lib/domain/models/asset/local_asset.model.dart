@@ -35,8 +35,7 @@ class LocalAsset extends BaseAsset {
 
   @override
   bool get isAnimatedImage =>
-      playbackStyle == AssetPlaybackStyle.animated ||
-      (playbackStyle == null && super.isAnimatedImage);
+      playbackStyle == AssetPlaybackStyle.animated || (playbackStyle == null && super.isAnimatedImage);
 
   @override
   String? get localId => id;

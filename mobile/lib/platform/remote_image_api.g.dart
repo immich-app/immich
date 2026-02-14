@@ -15,7 +15,6 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -42,24 +41,29 @@ class RemoteImageApi {
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   RemoteImageApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<Map<String, int>?> requestImage(String url, {required Map<String, String> headers, required int requestId, required bool encoded, }) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage$pigeonVar_messageChannelSuffix';
+  Future<Map<String, int>?> requestImage(
+    String url, {
+    required Map<String, String> headers,
+    required int requestId,
+    required bool encoded,
+  }) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[url, headers, requestId, encoded]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -74,15 +78,15 @@ class RemoteImageApi {
   }
 
   Future<void> cancelRequest(int requestId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.RemoteImageApi.cancelRequest$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.RemoteImageApi.cancelRequest$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[requestId]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -97,15 +101,15 @@ class RemoteImageApi {
   }
 
   Future<int> clearCache() async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {

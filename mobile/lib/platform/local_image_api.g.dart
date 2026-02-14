@@ -15,7 +15,6 @@ PlatformException _createConnectionError(String channelName) {
   );
 }
 
-
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -42,24 +41,38 @@ class LocalImageApi {
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
   LocalImageApi({BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''})
-      : pigeonVar_binaryMessenger = binaryMessenger,
-        pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
+    : pigeonVar_binaryMessenger = binaryMessenger,
+      pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
   final BinaryMessenger? pigeonVar_binaryMessenger;
 
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<Map<String, int>?> requestImage(String assetId, {required int requestId, required int width, required int height, required bool isVideo, required bool encoded, }) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.LocalImageApi.requestImage$pigeonVar_messageChannelSuffix';
+  Future<Map<String, int>?> requestImage(
+    String assetId, {
+    required int requestId,
+    required int width,
+    required int height,
+    required bool isVideo,
+    required bool encoded,
+  }) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.LocalImageApi.requestImage$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetId, requestId, width, height, isVideo, encoded]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[
+      assetId,
+      requestId,
+      width,
+      height,
+      isVideo,
+      encoded,
+    ]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -74,15 +87,15 @@ class LocalImageApi {
   }
 
   Future<void> cancelRequest(int requestId) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.LocalImageApi.cancelRequest$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.LocalImageApi.cancelRequest$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[requestId]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
@@ -97,15 +110,15 @@ class LocalImageApi {
   }
 
   Future<Map<String, int>> getThumbhash(String thumbhash) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.LocalImageApi.getThumbhash$pigeonVar_messageChannelSuffix';
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.LocalImageApi.getThumbhash$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[thumbhash]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
     } else if (pigeonVar_replyList.length > 1) {
