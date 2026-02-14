@@ -196,12 +196,21 @@
       document.removeEventListener('pointermove', moveHandler, true);
     };
   });
+  const backgroundColorClass = $derived.by(() => {
+    if (loaded) {
+      return 'bg-transparent';
+    }
+    if (disabled) {
+      return 'bg-gray-300';
+    }
+    return 'dark:bg-neutral-700 bg-neutral-200';
+  });
 </script>
 
 <div
   class={[
     'group focus-visible:outline-none focus-visible:rounded-lg flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'dark:bg-neutral-700 bg-neutral-200',
+    backgroundColorClass,
     { 'rounded-xl': selected },
   ]}
   style:width="{width}px"

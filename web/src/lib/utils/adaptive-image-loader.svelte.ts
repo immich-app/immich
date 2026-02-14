@@ -15,6 +15,16 @@ type ImageQuality =
   | 'loading-original'
   | 'original';
 
+const qualityOrder: Record<ImageQuality, number> = {
+  basic: 0,
+  'loading-thumbnail': 1,
+  thumbnail: 2,
+  'loading-preview': 3,
+  preview: 4,
+  'loading-original': 5,
+  original: 6,
+};
+
 export interface ImageLoaderState {
   previewUrl?: string;
   thumbnailUrl?: string;
@@ -25,6 +35,7 @@ export interface ImageLoaderState {
   previewImage: ImageStatus;
   originalImage: ImageStatus;
 }
+
 enum ImageStatus {
   Unloaded = 'Unloaded',
   Success = 'Success',
@@ -36,7 +47,11 @@ enum ImageStatus {
  * thumbhash → thumbnail → preview → original (on zoom)
  *
  */
+let nextLoaderId = 0;
+
 export class AdaptiveImageLoader {
+  readonly id = nextLoaderId++;
+
   private internalState = $state<ImageLoaderState>({
     quality: 'basic',
     hasError: false,
@@ -98,8 +113,17 @@ export class AdaptiveImageLoader {
     return this.internalState;
   }
 
+  private shouldUpdateQuality(newQuality: ImageQuality): boolean {
+    const currentLevel = qualityOrder[this.internalState.quality];
+    const newLevel = qualityOrder[newQuality];
+    return newLevel > currentLevel;
+  }
+
   onThumbnailStart() {
     if (this.destroyed) {
+      return;
+    }
+    if (!this.shouldUpdateQuality('loading-thumbnail')) {
       return;
     }
     this.internalState.quality = 'loading-thumbnail';
@@ -107,6 +131,9 @@ export class AdaptiveImageLoader {
 
   onThumbnailLoad() {
     if (this.destroyed) {
+      return;
+    }
+    if (!this.shouldUpdateQuality('thumbnail')) {
       return;
     }
     this.internalState.quality = 'thumbnail';
@@ -137,6 +164,10 @@ export class AdaptiveImageLoader {
       this.triggerOriginal();
       return false;
     }
+    if (this.internalState.previewUrl) {
+      // Already triggered
+      return true;
+    }
     this.internalState.hasError = false;
     this.internalState.previewUrl = this.previewUrl;
     if (this.imageLoader) {
@@ -156,11 +187,20 @@ export class AdaptiveImageLoader {
     if (this.destroyed) {
       return;
     }
+    if (!this.shouldUpdateQuality('loading-preview')) {
+      return;
+    }
     this.internalState.quality = 'loading-preview';
   }
 
   onPreviewLoad() {
     if (this.destroyed) {
+      return;
+    }
+    if (!this.internalState.previewUrl) {
+      return;
+    }
+    if (!this.shouldUpdateQuality('preview')) {
       return;
     }
     this.internalState.quality = 'preview';
@@ -172,7 +212,6 @@ export class AdaptiveImageLoader {
     if (this.destroyed || imageManager.isCanceled(this.asset)) {
       return;
     }
-
     this.internalState.hasError = true;
     this.internalState.previewImage = ImageStatus.Error;
     this.internalState.previewUrl = undefined;
@@ -184,8 +223,11 @@ export class AdaptiveImageLoader {
     if (!this.originalUrl) {
       return false;
     }
+    if (this.internalState.originalUrl) {
+      // Already triggered
+      return true;
+    }
     this.internalState.hasError = false;
-
     this.internalState.originalUrl = this.originalUrl;
 
     if (this.imageLoader) {
@@ -205,11 +247,20 @@ export class AdaptiveImageLoader {
     if (this.destroyed || imageManager.isCanceled(this.asset)) {
       return;
     }
+    if (!this.shouldUpdateQuality('loading-original')) {
+      return;
+    }
     this.internalState.quality = 'loading-original';
   }
 
   onOriginalLoad() {
     if (this.destroyed || imageManager.isCanceled(this.asset)) {
+      return;
+    }
+    if (!this.internalState.originalUrl) {
+      return;
+    }
+    if (!this.shouldUpdateQuality('original')) {
       return;
     }
     this.internalState.quality = 'original';
@@ -221,7 +272,6 @@ export class AdaptiveImageLoader {
     if (this.destroyed || imageManager.isCanceled(this.asset)) {
       return;
     }
-
     this.internalState.hasError = true;
     this.internalState.originalImage = ImageStatus.Error;
     this.internalState.originalUrl = undefined;

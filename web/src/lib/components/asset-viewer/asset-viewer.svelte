@@ -222,8 +222,8 @@
     const movedForward = newCursor.current.id === oldCursor.nextAsset?.id;
     const movedBackward = newCursor.current.id === oldCursor.previousAsset?.id;
 
-    const shouldDestroyPrevious = movedForward || !movedBackward;
-    const shouldDestroyNext = movedBackward || !movedForward;
+    const shouldDestroyPrevious = !movedBackward;
+    const shouldDestroyNext = !movedForward;
 
     if (shouldDestroyPrevious) {
       destroyPreviousPreloader();
@@ -438,7 +438,7 @@
       // After navigation completes, reconcile preloads with full state information
       updatePreloadsAfterNavigation(lastCursor, cursor);
     }
-    if (!lastCursor && cursor) {
+    if (!lastCursor) {
       // "first time" load, start preloads
       if (cursor.nextAsset) {
         nextPreloader = startPreloader(cursor.nextAsset);

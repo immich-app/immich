@@ -1,6 +1,7 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import AdaptiveImage from '$lib/components/asset-viewer/adaptive-image.svelte';
+  import { zoomImageAction } from '$lib/actions/zoom-image';
+  import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
@@ -109,6 +110,7 @@
     width: containerWidth,
     height: containerHeight,
   });
+  let adaptiveImage = $state<HTMLDivElement | undefined>();
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} />
@@ -127,13 +129,13 @@
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  use:zoomImageAction={{ disabled: isOcrActive, zoomTarget: adaptiveImage }}
 >
   <AdaptiveImage
     {asset}
     {sharedLink}
     {container}
-    zoomDisabled={isOcrActive}
-    imageClass={`${$slideshowState === SlideshowState.None ? 'object-contain' : slideshowLookCssMapping[$slideshowLook]} checkerboard`}
+    imageClass={`${$slideshowState === SlideshowState.None ? 'object-contain' : slideshowLookCssMapping[$slideshowLook]}`}
     slideshowState={$slideshowState}
     slideshowLook={$slideshowLook}
     onImageReady={() => onReady?.()}
@@ -141,7 +143,8 @@
       onError?.();
       onReady?.();
     }}
-    bind:imgElement={assetViewerManager.imgRef}
+    bind:imgRef={assetViewerManager.imgRef}
+    bind:ref={adaptiveImage}
   >
     {#snippet overlays()}
       <!-- eslint-disable-next-line svelte/require-each-key -->

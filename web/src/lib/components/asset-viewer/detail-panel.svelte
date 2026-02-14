@@ -7,7 +7,6 @@
   import { timeToLoadTheMap } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { Route } from '$lib/route';
@@ -42,11 +41,12 @@
     mdiPlus,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { onMount, untrack } from 'svelte';
+  import { untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
@@ -95,8 +95,6 @@
       handleError(error, 'Error getting asset album membership');
     }
   };
-
-  onMount(() => eventManager.on({ AlbumAddAssets: () => void refreshAlbums() }));
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -152,6 +150,8 @@
     });
   };
 </script>
+
+<OnEvents onAlbumAddAssets={() => void refreshAlbums()} />
 
 <section class="relative p-2">
   <div class="flex place-items-center gap-2">

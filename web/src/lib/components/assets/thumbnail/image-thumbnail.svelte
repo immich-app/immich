@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { imageLoader } from '$lib/actions/image-loader.svelte';
+  import AlphaBackground from '$lib/components/AlphaBackground.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import Image from '$lib/components/Image.svelte';
   import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ClassValue } from 'svelte/elements';
@@ -75,19 +76,18 @@
 {#if errored}
   <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
-  <div
-    use:imageLoader={{
-      src: url,
-      onLoad: setLoaded,
-      onError: setErrored,
-      imgClass: ['object-cover', imageClass],
-      style,
-      alt: loaded || errored ? altText : '',
-      draggable: false,
-      title,
-      loading: preload ? 'eager' : 'lazy',
-    }}
-  ></div>
+  <AlphaBackground class="-z-1" />
+  <Image
+    src={url}
+    onLoad={setLoaded}
+    onError={setErrored}
+    class={['object-cover', imageClass]}
+    {style}
+    alt={loaded || errored ? altText : ''}
+    draggable={false}
+    title={title ?? undefined}
+    loading={preload ? 'eager' : 'lazy'}
+  />
 {/if}
 
 {#if hidden}
