@@ -60,6 +60,26 @@ class HeaderSettingsPage extends HookConsumerWidget {
       }),
     ];
 
+    Future<void> saveHeaders(List<SettingsHeader> headers) async {
+      final headersMap = {};
+      for (var header in headers) {
+        final key = header.key.trim();
+        final value = header.value.trim();
+
+        if (key.isEmpty || value.isEmpty) continue;
+        headersMap[key] = value;
+      }
+
+      var encoded = jsonEncode(headersMap);
+      await Store.put(StoreKey.customHeaders, encoded);
+
+      final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+      final accessToken = Store.tryGet(StoreKey.accessToken);
+      if (serverEndpoint != null && accessToken != null) {
+        await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, encoded);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.t.headers_settings_tile_title),
@@ -76,7 +96,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ],
       ),
       body: PopScope(
-        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value, ref),
+        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value),
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,
@@ -86,26 +106,6 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ),
       ),
     );
-  }
-
-  Future<void> saveHeaders(List<SettingsHeader> headers, WidgetRef ref) async {
-    final headersMap = {};
-    for (var header in headers) {
-      final key = header.key.trim();
-      final value = header.value.trim();
-
-      if (key.isEmpty || value.isEmpty) continue;
-      headersMap[key] = value;
-    }
-
-    var encoded = jsonEncode(headersMap);
-    await Store.put(StoreKey.customHeaders, encoded);
-
-    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
-    final accessToken = Store.tryGet(StoreKey.accessToken);
-    if (serverEndpoint != null && accessToken != null) {
-      await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, encoded);
-    }
   }
 }
 
