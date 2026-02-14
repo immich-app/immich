@@ -12,7 +12,26 @@ class URLSessionManager: NSObject {
   private let highResMetadataFile: URL
   
   var session: URLSession { highResSession }
-  
+
+  func fetchHighRes(
+    url: URL,
+    headers: [String: String] = [:],
+    completion: @escaping (Data?, URLResponse?, Error?) -> Void
+  ) {
+    var request = URLRequest(url: url)
+    for (key, value) in headers {
+      request.setValue(value, forHTTPHeaderField: key)
+    }
+
+    let task = highResSession.dataTask(with: request) { [weak self] data, response, error in
+      if let data = data, error == nil, let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
+        self?.recordAccess(for: url.absoluteString)
+      }
+      completion(data, response, error)
+    }
+    task.resume()
+  }
+
   private static func createConfig(cacheDir: URL) -> URLSessionConfiguration {
     let config = URLSessionConfiguration.default
     try! FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)

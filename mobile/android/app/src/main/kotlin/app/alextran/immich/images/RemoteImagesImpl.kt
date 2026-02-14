@@ -202,8 +202,11 @@ private object ImageFetcherManager {
     if (expiredUrls.isEmpty()) {
       return onComplete(Result.success(0))
     }
-    accessTracker.removeUrls(expiredUrls)
-    onComplete(Result.success(0))
+
+    highResFetcher.removeFromCache(expiredUrls) { bytesCleared ->
+      accessTracker.removeUrls(expiredUrls)
+      onComplete(Result.success(bytesCleared))
+    }
   }
 
   private fun invalidate() {
@@ -289,6 +292,8 @@ private sealed interface ImageFetcher {
   fun clearCache(onCleared: (Result<Long>) -> Unit)
 
   fun getCacheStats(onStats: (Result<NativeCacheStats>) -> Unit)
+
+  fun removeFromCache(urls: List<String>, onComplete: (Long) -> Unit)
 }
 
 private class CronetImageFetcher(context: Context, private val storageDir: File) : ImageFetcher {
@@ -408,6 +413,10 @@ private class CronetImageFetcher(context: Context, private val storageDir: File)
         onStats(Result.failure(e))
       }
     }
+  }
+
+  override fun removeFromCache(urls: List<String>, onComplete: (Long) -> Unit) {
+    onComplete(0)
   }
 
   private class FetchCallback(
@@ -637,6 +646,28 @@ private class OkHttpImageFetcher private constructor(
       }
     } catch (e: Exception) {
       onStats(Result.failure(e))
+    }
+  }
+
+  override fun removeFromCache(urls: List<String>, onComplete: (Long) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      var bytesCleared = 0L
+      val cache = client.cache
+      if (cache != null) {
+        val urlSet = urls.toSet()
+        try {
+          val iterator = cache.urls()
+          while (iterator.hasNext()) {
+            val cachedUrl = iterator.next()
+            if (cachedUrl in urlSet) {
+              iterator.remove()
+            }
+          }
+          bytesCleared = urls.size.toLong()
+        } catch (e: Exception) {
+        }
+      }
+      onComplete(bytesCleared)
     }
   }
 }
