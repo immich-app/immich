@@ -12,7 +12,11 @@ export enum ReactionLevel {
 export const ReactionLevelSchema = z.enum(ReactionLevel).describe('Reaction level').meta({ id: 'ReactionLevel' });
 
 // Option 2 - define inline and access via .enum.XXX:
-export const ReactionType = z.enum(['comment', 'like']).describe('Reaction type').meta({ id: 'ReactionType' });
+export enum ReactionType {
+  COMMENT = 'comment',
+  LIKE = 'like',
+}
+export const ReactionTypeSchema = z.enum(ReactionType).describe('Reaction type').meta({ id: 'ReactionType' });
 
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
@@ -22,7 +26,7 @@ const ActivityResponseSchema = z
     createdAt: z.iso.datetime().describe('Creation date'),
     user: UserResponseSchema,
     assetId: z.uuidv4().describe('Asset ID (if activity is for an asset)').nullable(),
-    type: ReactionType,
+    type: ReactionTypeSchema,
     comment: z.string().describe('Comment text (for comment activities)').nullish(),
   })
   .describe('Activity response');
@@ -42,35 +46,35 @@ const ActivitySchema = z
   .describe('Activity');
 
 const ActivitySearchSchema = ActivitySchema.extend({
-  type: ReactionType.optional(),
+  type: ReactionTypeSchema.optional(),
   level: ReactionLevelSchema.optional(),
   userId: z.uuidv4().describe('Filter by user ID').optional(),
 }).describe('Activity search');
 
 const ActivityCreateSchema = ActivitySchema.extend({
-  type: ReactionType,
+  type: ReactionTypeSchema,
   assetId: z.uuidv4().describe('Asset ID (if activity is for an asset)').optional(),
   comment: z.string().describe('Comment text (required if type is comment)').optional(),
 })
-  .refine((data) => data.type !== ReactionType.enum.comment || (data.comment && data.comment.trim() !== ''), {
+  .refine((data) => data.type !== ReactionType.COMMENT || (data.comment && data.comment.trim() !== ''), {
     message: 'Comment is required when type is COMMENT',
     path: ['comment'],
   })
-  .refine((data) => data.type === ReactionType.enum.comment || !data.comment, {
+  .refine((data) => data.type === ReactionType.COMMENT || !data.comment, {
     message: 'Comment must not be provided when type is not COMMENT',
     path: ['comment'],
   })
   .describe('Activity create');
 
 export const mapActivity = (activity: Activity): ActivityResponseDto => {
-  const type = activity.isLiked ? ReactionType.enum.like : ReactionType.enum.comment;
+  const type = activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT;
 
-  if (type === ReactionType.enum.comment) {
+  if (type === ReactionType.COMMENT) {
     return {
       id: activity.id,
       assetId: activity.assetId,
       createdAt: activity.createdAt.toISOString(),
-      type: ReactionType.enum.comment,
+      type: ReactionType.COMMENT,
       user: {
         id: activity.user.id,
         name: activity.user.name,
@@ -87,7 +91,7 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
     id: activity.id,
     assetId: activity.assetId,
     createdAt: activity.createdAt.toISOString(),
-    type: ReactionType.enum.like,
+    type: ReactionType.LIKE,
     user: {
       id: activity.user.id,
       name: activity.user.name,

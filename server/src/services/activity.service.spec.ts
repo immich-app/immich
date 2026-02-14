@@ -35,7 +35,7 @@ describe(ActivityService.name, () => {
       mocks.activity.search.mockResolvedValue([]);
 
       await expect(
-        sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId, type: ReactionType.enum.like }),
+        sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId, type: ReactionType.LIKE }),
       ).resolves.toEqual([]);
 
       expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: true });
@@ -47,7 +47,7 @@ describe(ActivityService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.search.mockResolvedValue([]);
 
-      await expect(sut.getAll(factory.auth(), { assetId, albumId, type: ReactionType.enum.comment })).resolves.toEqual(
+      await expect(sut.getAll(factory.auth(), { assetId, albumId, type: ReactionType.COMMENT })).resolves.toEqual(
         [],
       );
 
@@ -71,7 +71,7 @@ describe(ActivityService.name, () => {
       const [albumId, assetId] = newUuids();
 
       await expect(
-        sut.create(factory.auth(), { albumId, assetId, type: ReactionType.enum.comment, comment: 'comment' }),
+        sut.create(factory.auth(), { albumId, assetId, type: ReactionType.COMMENT, comment: 'comment' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -85,7 +85,7 @@ describe(ActivityService.name, () => {
       await sut.create(factory.auth({ user: { id: userId } }), {
         albumId,
         assetId,
-        type: ReactionType.enum.comment,
+        type: ReactionType.COMMENT,
         comment: 'comment',
       });
 
@@ -106,7 +106,7 @@ describe(ActivityService.name, () => {
       mocks.activity.create.mockResolvedValue(activity);
 
       await expect(
-        sut.create(factory.auth(), { albumId, assetId, type: ReactionType.enum.comment, comment: 'comment' }),
+        sut.create(factory.auth(), { albumId, assetId, type: ReactionType.COMMENT, comment: 'comment' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -118,7 +118,7 @@ describe(ActivityService.name, () => {
       mocks.activity.create.mockResolvedValue(activity);
       mocks.activity.search.mockResolvedValue([]);
 
-      await sut.create(factory.auth({ user: { id: userId } }), { albumId, assetId, type: ReactionType.enum.like });
+      await sut.create(factory.auth({ user: { id: userId } }), { albumId, assetId, type: ReactionType.LIKE });
 
       expect(mocks.activity.create).toHaveBeenCalledWith({ userId: activity.userId, albumId, assetId, isLiked: true });
     });
@@ -131,7 +131,7 @@ describe(ActivityService.name, () => {
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.search.mockResolvedValue([activity]);
 
-      await sut.create(factory.auth(), { albumId, assetId, type: ReactionType.enum.like });
+      await sut.create(factory.auth(), { albumId, assetId, type: ReactionType.LIKE });
 
       expect(mocks.activity.create).not.toHaveBeenCalled();
     });
