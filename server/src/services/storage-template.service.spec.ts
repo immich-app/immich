@@ -274,7 +274,7 @@ describe(StorageTemplateService.name, () => {
 
         mocks.user.get.mockResolvedValue(user);
         mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
-        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(stillAsset);
+        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(getForStorageTemplate(stillAsset));
         mocks.album.getByAssetId.mockResolvedValue([album]);
 
         mocks.move.create.mockResolvedValueOnce({
@@ -306,7 +306,9 @@ describe(StorageTemplateService.name, () => {
 
         mocks.user.get.mockResolvedValue(user);
         mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
-        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(stillPhotoWithDifferentDate);
+        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(
+          getForStorageTemplate(stillPhotoWithDifferentDate),
+        );
 
         mocks.move.create.mockResolvedValueOnce({
           id: '123',
