@@ -88,6 +88,28 @@ export class TagRepository {
     await this.db.deleteFrom('tag').where('id', '=', id).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAssetIdsForTag(tagId: string): Promise<string[]> {
+    const results = await this.db
+      .selectFrom('tag_asset')
+      .select(['assetId'])
+      .where('tagId', '=', tagId)
+      .execute();
+
+    return results.map(({ assetId }) => assetId);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getDescendantTagIds(tagId: string): Promise<string[]> {
+    const results = await this.db
+      .selectFrom('tag_closure')
+      .select(['id_descendant'])
+      .where('id_ancestor', '=', tagId)
+      .execute();
+
+    return results.map(({ id_descendant }) => id_descendant);
+  }
+
   @ChunkedSet({ paramIndex: 1 })
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async getAssetIds(tagId: string, assetIds: string[]): Promise<Set<string>> {
