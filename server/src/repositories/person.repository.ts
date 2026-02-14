@@ -192,7 +192,16 @@ export class PersonRepository {
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
+          // Within the unknown section only, sort by number of assets (distinct asset IDs) descending
+          .orderBy(
+            sql`CASE WHEN NULLIF(person.name, '') IS NULL THEN COUNT(DISTINCT asset_face.assetId) END`,
+            (om) => om.desc().nullsLast(),
+          )
+          // Tie-break unknowns by raw detection count
+          .orderBy(
+            sql`CASE WHEN NULLIF(person.name, '') IS NULL THEN COUNT(asset_face.assetId) END`,
+            (om) => om.desc().nullsLast(),
+          )
           .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
