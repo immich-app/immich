@@ -2,7 +2,7 @@
 
 -- AssetJobRepository.getForSearchDuplicatesJob
 select
-  "id",
+  "asset"."id",
   "type",
   "ownerId",
   "duplicateId",

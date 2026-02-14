@@ -30,7 +30,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
       .leftJoin('smart_search', 'asset.id', 'smart_search.assetId')
-      .select(['id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
+      .select(['asset.id', 'type', 'ownerId', 'duplicateId', 'stackId', 'visibility', 'smart_search.embedding'])
       .limit(1)
       .executeTakeFirst();
   }
