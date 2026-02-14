@@ -28,6 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
+import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
@@ -51,6 +52,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     url: String,
     headers: Map<String, String>,
     requestId: Long,
+    isThumbnail: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -60,6 +62,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
       url,
       headers,
       signal,
+      isThumbnail,
       onSuccess = { buffer ->
         requestMap.remove(requestId)
         if (signal.isCanceled) {
@@ -88,10 +91,40 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     requestMap.remove(requestId)?.cancellationSignal?.cancel()
   }
 
-  override fun clearCache(callback: (Result<Long>) -> Unit) {
+  override fun clearThumbnailCache(callback: (Result<Long>) -> Unit) {
     CoroutineScope(Dispatchers.IO).launch {
       try {
-        ImageFetcherManager.clearCache(callback)
+        ImageFetcherManager.clearThumbnailCache(callback)
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
+  }
+
+  override fun clearHighResCache(callback: (Result<Long>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        ImageFetcherManager.clearHighResCache(callback)
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
+  }
+
+  override fun getDualCacheStats(callback: (Result<DualCacheStats>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        ImageFetcherManager.getDualCacheStats(callback)
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
+  }
+
+  override fun cleanupExpiredHighRes(maxAgeDays: Long, callback: (Result<Long>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        ImageFetcherManager.cleanupExpired(maxAgeDays.toInt(), callback)
       } catch (e: Exception) {
         callback(Result.failure(e))
       }
@@ -102,7 +135,9 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 private object ImageFetcherManager {
   private lateinit var appContext: Context
   private lateinit var cacheDir: File
-  private lateinit var fetcher: ImageFetcher
+  private lateinit var thumbnailFetcher: ImageFetcher
+  private lateinit var highResFetcher: ImageFetcher
+  private lateinit var accessTracker: AccessTracker
   private var initialized = false
 
   fun initialize(context: Context) {
@@ -111,7 +146,9 @@ private object ImageFetcherManager {
       if (initialized) return
       appContext = context.applicationContext
       cacheDir = context.cacheDir
-      fetcher = build()
+      accessTracker = AccessTracker(File(cacheDir, "highres_access.properties"))
+      thumbnailFetcher = buildFetcher("thumbnails")
+      highResFetcher = buildFetcher("highres")
       HttpClientManager.addClientChangedListener(::invalidate)
       initialized = true
     }
@@ -121,30 +158,120 @@ private object ImageFetcherManager {
     url: String,
     headers: Map<String, String>,
     signal: CancellationSignal,
+    isThumbnail: Boolean,
     onSuccess: (NativeByteBuffer) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
-    fetcher.fetch(url, headers, signal, onSuccess, onFailure)
+    val fetcher = if (isThumbnail) thumbnailFetcher else highResFetcher
+    fetcher.fetch(url, headers, signal, { buffer ->
+      if (!isThumbnail) {
+        accessTracker.recordAccess(url)
+      }
+      onSuccess(buffer)
+    }, onFailure)
   }
 
-  fun clearCache(onCleared: (Result<Long>) -> Unit) {
-    fetcher.clearCache(onCleared)
+  fun clearThumbnailCache(onCleared: (Result<Long>) -> Unit) {
+    thumbnailFetcher.clearCache(onCleared)
+  }
+
+  fun clearHighResCache(onCleared: (Result<Long>) -> Unit) {
+    highResFetcher.clearCache { result ->
+      accessTracker.clear()
+      onCleared(result)
+    }
+  }
+
+  fun getDualCacheStats(onStats: (Result<DualCacheStats>) -> Unit) {
+    thumbnailFetcher.getCacheStats { thumbResult ->
+      highResFetcher.getCacheStats { highResResult ->
+        val thumb = thumbResult.getOrNull() ?: NativeCacheStats(0, 0)
+        val highRes = highResResult.getOrNull() ?: NativeCacheStats(0, 0)
+        onStats(Result.success(DualCacheStats(
+          thumbnailSize = thumb.size,
+          thumbnailCount = thumb.count,
+          highResSize = highRes.size,
+          highResCount = highRes.count
+        )))
+      }
+    }
+  }
+
+  fun cleanupExpired(maxAgeDays: Int, onComplete: (Result<Long>) -> Unit) {
+    val expiredUrls = accessTracker.getExpiredUrls(maxAgeDays)
+    if (expiredUrls.isEmpty()) {
+      return onComplete(Result.success(0))
+    }
+    accessTracker.removeUrls(expiredUrls)
+    onComplete(Result.success(0))
   }
 
   private fun invalidate() {
     synchronized(this) {
-      val oldFetcher = fetcher
-      fetcher = build()
-      oldFetcher.drain()
+      val oldThumb = thumbnailFetcher
+      val oldHighRes = highResFetcher
+      thumbnailFetcher = buildFetcher("thumbnails")
+      highResFetcher = buildFetcher("highres")
+      oldThumb.drain()
+      oldHighRes.drain()
     }
   }
 
-  private fun build(): ImageFetcher {
+  private fun buildFetcher(subdir: String): ImageFetcher {
+    val dir = File(cacheDir, subdir)
     return if (HttpClientManager.isMtls) {
-      OkHttpImageFetcher.create(cacheDir)
+      OkHttpImageFetcher.create(dir)
     } else {
-      CronetImageFetcher(appContext, cacheDir)
+      CronetImageFetcher(appContext, dir)
     }
+  }
+}
+
+private class AccessTracker(private val file: File) {
+  private val lock = Any()
+
+  fun recordAccess(url: String) {
+    synchronized(lock) {
+      val props = load()
+      props.setProperty(url, System.currentTimeMillis().toString())
+      save(props)
+    }
+  }
+
+  fun getExpiredUrls(maxAgeDays: Int): List<String> {
+    val cutoff = System.currentTimeMillis() - maxAgeDays.toLong() * 24 * 60 * 60 * 1000
+    synchronized(lock) {
+      val props = load()
+      return props.stringPropertyNames().filter { url ->
+        (props.getProperty(url)?.toLongOrNull() ?: 0) < cutoff
+      }
+    }
+  }
+
+  fun removeUrls(urls: List<String>) {
+    synchronized(lock) {
+      val props = load()
+      urls.forEach { props.remove(it) }
+      save(props)
+    }
+  }
+
+  fun clear() {
+    synchronized(lock) {
+      save(Properties())
+    }
+  }
+
+  private fun load(): Properties {
+    val props = Properties()
+    if (file.exists()) {
+      file.inputStream().use { props.load(it) }
+    }
+    return props
+  }
+
+  private fun save(props: Properties) {
+    file.outputStream().use { props.store(it, null) }
   }
 }
 
@@ -160,9 +287,11 @@ private sealed interface ImageFetcher {
   fun drain()
 
   fun clearCache(onCleared: (Result<Long>) -> Unit)
+
+  fun getCacheStats(onStats: (Result<NativeCacheStats>) -> Unit)
 }
 
-private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetcher {
+private class CronetImageFetcher(context: Context, private val storageDir: File) : ImageFetcher {
   private val ctx = context
   private var engine: CronetEngine
   private val executor = Executors.newFixedThreadPool(4)
@@ -170,9 +299,9 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
   private var activeCount = 0
   private var draining = false
   private var onCacheCleared: ((Result<Long>) -> Unit)? = null
-  private val storageDir = File(cacheDir, "cronet").apply { mkdirs() }
 
   init {
+    storageDir.mkdirs()
     engine = build(context)
   }
 
@@ -243,7 +372,6 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     } else {
       CoroutineScope(Dispatchers.IO).launch {
         val result = runCatching { deleteFolderAndGetSize(storageDir.toPath()) }
-        // Cronet is very good at self-repair, so it shouldn't fail here regardless of clear result
         engine = build(ctx)
         synchronized(stateLock) { draining = false }
         onCacheCleared(result)
@@ -259,6 +387,27 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
       onCacheCleared = onCleared
     }
     drain()
+  }
+
+  override fun getCacheStats(onStats: (Result<NativeCacheStats>) -> Unit) {
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        var totalSize = 0L
+        var totalCount = 0L
+        if (storageDir.exists()) {
+          Files.walkFileTree(storageDir.toPath(), object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+              totalSize += attrs.size()
+              totalCount++
+              return FileVisitResult.CONTINUE
+            }
+          })
+        }
+        onStats(Result.success(NativeCacheStats(totalSize, totalCount)))
+      } catch (e: Exception) {
+        onStats(Result.failure(e))
+      }
+    }
   }
 
   private class FetchCallback(
@@ -368,12 +517,10 @@ private class OkHttpImageFetcher private constructor(
 
   companion object {
     fun create(cacheDir: File): OkHttpImageFetcher {
-      val dir = File(cacheDir, "okhttp")
-
+      cacheDir.mkdirs()
       val client = HttpClientManager.getClient().newBuilder()
-        .cache(Cache(File(dir, "thumbnails"), CACHE_SIZE_BYTES))
+        .cache(Cache(cacheDir, CACHE_SIZE_BYTES))
         .build()
-
       return OkHttpImageFetcher(client)
     }
   }
@@ -477,6 +624,19 @@ private class OkHttpImageFetcher private constructor(
       onCleared(Result.success(size))
     } catch (e: Exception) {
       onCleared(Result.failure(e))
+    }
+  }
+
+  override fun getCacheStats(onStats: (Result<NativeCacheStats>) -> Unit) {
+    try {
+      val cache = client.cache
+      if (cache != null) {
+        onStats(Result.success(NativeCacheStats(cache.size(), 0)))
+      } else {
+        onStats(Result.success(NativeCacheStats(0, 0)))
+      }
+    } catch (e: Exception) {
+      onStats(Result.failure(e))
     }
   }
 }

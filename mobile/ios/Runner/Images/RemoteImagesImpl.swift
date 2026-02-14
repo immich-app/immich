@@ -8,10 +8,14 @@ class RemoteImageRequest {
   let id: Int64
   var isCancelled = false
   let completion: (Result<[String: Int64]?, any Error>) -> Void
+  let url: String
+  let isThumbnail: Bool
   
-  init(id: Int64, task: URLSessionDataTask, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
+  init(id: Int64, task: URLSessionDataTask, url: String, isThumbnail: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     self.id = id
     self.task = task
+    self.url = url
+    self.isThumbnail = isThumbnail
     self.completion = completion
   }
 }
@@ -33,18 +37,20 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ] as CFDictionary
   
-  func requestImage(url: String, headers: [String : String], requestId: Int64, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
+  func requestImage(url: String, headers: [String : String], requestId: Int64, isThumbnail: Bool, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
     urlRequest.cachePolicy = .returnCacheDataElseLoad
     for (key, value) in headers {
       urlRequest.setValue(value, forHTTPHeaderField: key)
     }
     
-    let task = URLSessionManager.shared.session.dataTask(with: urlRequest) { data, response, error in
+    let session = isThumbnail ? URLSessionManager.shared.thumbnailSession : URLSessionManager.shared.highResSession
+    
+    let task = session.dataTask(with: urlRequest) { data, response, error in
       Self.handleCompletion(requestId: requestId, data: data, response: response, error: error)
     }
     
-    let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
+    let request = RemoteImageRequest(id: requestId, task: task, url: url, isThumbnail: isThumbnail, completion: completion)
     
     os_unfair_lock_lock(&Self.lock)
     Self.requests[requestId] = request
@@ -74,6 +80,10 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     
     guard let data = data else {
       return request.completion(.failure(PigeonError(code: "", message: "No data received", details: nil)))
+    }
+    
+    if !request.isThumbnail {
+      URLSessionManager.shared.recordAccess(for: request.url)
     }
     
     ImageProcessing.queue.async {
@@ -124,12 +134,37 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     request.task?.cancel()
   }
   
-  func clearCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
+  func clearThumbnailCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
     Task {
-      let cache = URLSessionManager.shared.session.configuration.urlCache!
-      let cacheSize = Int64(cache.currentDiskUsage)
-      cache.removeAllCachedResponses()
-      completion(.success(cacheSize))
+      let size = URLSessionManager.shared.clearThumbnailCache()
+      completion(.success(size))
+    }
+  }
+  
+  func clearHighResCache(completion: @escaping (Result<Int64, any Error>) -> Void) {
+    Task {
+      let size = URLSessionManager.shared.clearHighResCache()
+      completion(.success(size))
+    }
+  }
+
+  func getDualCacheStats(completion: @escaping (Result<DualCacheStats, any Error>) -> Void) {
+    Task {
+      let thumb = URLSessionManager.shared.thumbnailCacheStats()
+      let highRes = URLSessionManager.shared.highResCacheStats()
+      completion(.success(DualCacheStats(
+        thumbnailSize: thumb.size,
+        thumbnailCount: thumb.count,
+        highResSize: highRes.size,
+        highResCount: highRes.count
+      )))
+    }
+  }
+  
+  func cleanupExpiredHighRes(maxAgeDays: Int64, completion: @escaping (Result<Int64, any Error>) -> Void) {
+    Task {
+      let cleared = URLSessionManager.shared.cleanupExpired(maxAgeDays: Int(maxAgeDays))
+      completion(.success(cleared))
     }
   }
 }

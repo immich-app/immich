@@ -12,6 +12,27 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+class NativeCacheStats {
+  final int size;
+  final int count;
+
+  NativeCacheStats({required this.size, required this.count});
+}
+
+class DualCacheStats {
+  final int thumbnailSize;
+  final int thumbnailCount;
+  final int highResSize;
+  final int highResCount;
+
+  DualCacheStats({
+    required this.thumbnailSize,
+    required this.thumbnailCount,
+    required this.highResSize,
+    required this.highResCount,
+  });
+}
+
 @HostApi()
 abstract class RemoteImageApi {
   @async
@@ -19,10 +40,20 @@ abstract class RemoteImageApi {
     String url, {
     required Map<String, String> headers,
     required int requestId,
+    required bool isThumbnail,
   });
 
   void cancelRequest(int requestId);
 
   @async
-  int clearCache();
+  int clearThumbnailCache();
+
+  @async
+  int clearHighResCache();
+
+  @async
+  DualCacheStats getDualCacheStats();
+
+  @async
+  int cleanupExpiredHighRes(int maxAgeDays);
 }

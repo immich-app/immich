@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -21,6 +23,7 @@ class SmartCacheSetting extends HookConsumerWidget {
     final isEnabled = useAppSettingsState(AppSettingsEnum.smartCacheEnabled);
     final cacheDays = useAppSettingsState(AppSettingsEnum.smartCacheHighResDays);
     final cacheStats = ref.watch(smartCacheStatsProvider);
+    final preferRemoteEnabled = Store.get(StoreKey.preferRemoteImage, false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,6 +33,24 @@ class SmartCacheSetting extends HookConsumerWidget {
           icon: Icons.storage_outlined,
           subtitle: "smart_cache_description".t(context: context),
         ),
+        if (preferRemoteEnabled)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 18, color: context.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "smart_cache_prefer_remote_warning".t(context: context),
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         SettingsSwitchListTile(
           valueNotifier: isEnabled,
           title: "smart_cache_enabled".t(context: context),
@@ -39,14 +60,16 @@ class SmartCacheSetting extends HookConsumerWidget {
         if (isEnabled.value) ...[
           SettingsSliderListTile(
             valueNotifier: cacheDays,
-            text: "high_res_cache_duration".t(
-              context: context,
-              args: {'days': cacheDays.value.toString()},
-            ),
+            text: cacheDays.value == 0
+                ? "high_res_cache_duration_never".t(context: context)
+                : "high_res_cache_duration".t(
+                    context: context,
+                    args: {'days': cacheDays.value.toString()},
+                  ),
             maxValue: 30,
-            minValue: 1,
-            noDivisons: 29,
-            label: "${cacheDays.value}",
+            minValue: 0,
+            noDivisons: 30,
+            label: cacheDays.value == 0 ? "Never" : "${cacheDays.value}",
             onChangeEnd: (_) => ref.invalidate(appSettingsServiceProvider),
           ),
           _buildCacheStats(context, ref, cacheStats),
