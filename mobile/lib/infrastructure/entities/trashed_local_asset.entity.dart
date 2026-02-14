@@ -33,6 +33,16 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 }
 
 extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityData {
+  AssetPlaybackStyle? get _deducedPlaybackStyle {
+    if (type == AssetType.video) return AssetPlaybackStyle.video;
+    if (type == AssetType.image) {
+      return (durationInSeconds != null && durationInSeconds! > 0)
+          ? AssetPlaybackStyle.animated
+          : AssetPlaybackStyle.image;
+    }
+    return null;
+  }
+
   LocalAsset toLocalAsset() => LocalAsset(
     id: id,
     name: name,
@@ -45,6 +55,7 @@ extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityD
     height: height,
     width: width,
     orientation: orientation,
+    playbackStyle: _deducedPlaybackStyle,
     isEdited: false,
   );
 }

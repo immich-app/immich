@@ -97,7 +97,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -225,7 +225,9 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createIndex(v19.idxRemoteAssetLocalDateTimeDay);
             await m.createIndex(v19.idxRemoteAssetLocalDateTimeMonth);
             await m.createIndex(v19.idxStackPrimaryAssetId);
-            await m.addColumn(v19.localAssetEntity, v19.localAssetEntity.playbackStyle);
+          },
+          from19To20: (m, v20) async {
+            await m.addColumn(v20.localAssetEntity, v20.localAssetEntity.playbackStyle);
           },
         ),
       );
