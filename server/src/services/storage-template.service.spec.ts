@@ -5,6 +5,7 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { UserFactory } from 'test/factories/user.factory';
+import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { getForStorageTemplate } from 'test/mappers';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
