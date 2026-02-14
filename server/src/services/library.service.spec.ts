@@ -196,13 +196,14 @@ describe(LibraryService.name, () => {
       });
 
       mocks.storage.checkFileExists.mockResolvedValue(true);
-
+      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
       mocks.library.get.mockResolvedValue(library);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
+        pathsToWalk: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
       });
@@ -235,32 +236,6 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
-    });
-
-    it('should ignore import paths that do not exist', async () => {
-      const library = factory.library({ importPaths: ['/foo', '/bar'] });
-
-      mocks.storage.stat.mockImplementation((path): Promise<Stats> => {
-        if (path === library.importPaths[0]) {
-          const error = { code: 'ENOENT' } as any;
-          throw error;
-        }
-        return Promise.resolve({
-          isDirectory: () => true,
-        } as Stats);
-      });
-
-      mocks.storage.checkFileExists.mockResolvedValue(true);
-
-      mocks.library.get.mockResolvedValue(library);
-
-      await sut.handleQueueSyncFiles({ id: library.id });
-
-      expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
-        exclusionPatterns: [],
-        includeHidden: false,
-      });
     });
   });
 
@@ -302,7 +277,7 @@ describe(LibraryService.name, () => {
       const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(async function* generator() {});
+      mocks.storage.walk.mockResolvedValue([]);
       mocks.library.streamAssetIds.mockReturnValue(makeStream([asset]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });

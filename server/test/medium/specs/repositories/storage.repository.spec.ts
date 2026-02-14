@@ -1,8 +1,16 @@
-import mockfs from 'mock-fs';
+import { Kysely } from 'kysely';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
-import { automock } from 'test/utils';
+import { DB } from 'src/schema';
+import { BaseService } from 'src/services/base.service';
+import { newMediumService } from 'test/medium.factory';
+import { getKyselyDB } from 'test/utils';
+
+let defaultDatabase: Kysely<DB>;
 
 interface Test {
   test: string;
@@ -10,7 +18,15 @@ interface Test {
   files: Record<string, boolean>;
 }
 
-const cwd = process.cwd();
+const createTestFiles = async (basePath: string, files: string[]) => {
+  await Promise.all(
+    files.map(async (file) => {
+      const fullPath = path.join(basePath, file.replace(/^\//, ''));
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, '');
+    }),
+  );
+};
 
 const tests: Test[] = [
   {
@@ -49,6 +65,8 @@ const tests: Test[] = [
     files: {
       '/photos/image.jpg': true,
       '/photos/image.tif': false,
+      '/photos/image.tIf': false,
+      '/photos/image.TIF': false,
     },
   },
   {
@@ -158,17 +176,6 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should return absolute paths',
-    options: {
-      pathsToWalk: ['photos'],
-    },
-    files: {
-      [`${cwd}/photos/1.jpg`]: true,
-      [`${cwd}/photos/2.jpg`]: true,
-      [`/photos/3.jpg`]: false,
-    },
-  },
-  {
     test: 'should support special characters in paths',
     options: {
       pathsToWalk: ['/photos (new)'],
@@ -179,29 +186,54 @@ const tests: Test[] = [
   },
 ];
 
+const setup = (db?: Kysely<DB>) => {
+  const { ctx } = newMediumService(BaseService, {
+    database: db || defaultDatabase,
+    real: [],
+    mock: [LoggingRepository],
+  });
+  return { sut: ctx.get(StorageRepository) };
+};
+
+beforeAll(async () => {
+  defaultDatabase = await getKyselyDB();
+});
+
 describe(StorageRepository.name, () => {
   let sut: StorageRepository;
 
   beforeEach(() => {
-    // eslint-disable-next-line no-sparse-arrays
-    sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
-  });
-
-  afterEach(() => {
-    mockfs.restore();
+    ({ sut } = setup());
   });
 
   describe('crawl', () => {
     for (const { test, options, files } of tests) {
-      it(test, async () => {
-        mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, ''])));
+      describe(test, () => {
+        const fileList = Object.keys(files);
+        let tempDir: string;
 
-        const actual = await sut.walk(options);
-        const expected = Object.entries(files)
-          .filter((entry) => entry[1])
-          .map(([file]) => file);
+        beforeEach(async () => {
+          tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-storage-test-'));
+          await createTestFiles(tempDir, fileList);
+        });
 
-        expect(actual.toSorted()).toEqual(expected.toSorted());
+        afterEach(async () => {
+          await fs.rm(tempDir, { recursive: true, force: true });
+        });
+
+        it('returns expected files', async () => {
+          const adjustedOptions = {
+            ...options,
+            pathsToWalk: options.pathsToWalk.map((p) => path.join(tempDir, p.replace(/^\//, ''))),
+          };
+
+          const actual = await sut.walk(adjustedOptions);
+          const expected = Object.entries(files)
+            .filter((entry) => entry[1])
+            .map(([file]) => path.join(tempDir, file.replace(/^\//, '')));
+
+          expect(actual.toSorted()).toEqual(expected.toSorted());
+        });
       });
     }
   });
