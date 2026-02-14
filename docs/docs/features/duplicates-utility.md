@@ -6,6 +6,13 @@ Immich comes with a duplicates utility to help you detect assets that look visua
 
 The review duplicates page allows the user to individually select which assets should be kept and which ones should be trashed. When more than one asset is kept, there is an option to automatically put the kept assets into a stack.
 
+### Automatic preselection
+
+When using "Deduplicate All" or viewing suggestions, Immich automatically preselects which assets to keep based on:
+
+1. **Image size in bytes** — larger files are preferred as they typically have higher quality.
+2. **Count of EXIF data** — assets with more metadata are preferred.
+
 ### Synchronizing metadata
 
 When resolving duplicates, metadata from trashed assets is automatically synchronized to the kept assets. The following metadata is synchronized:

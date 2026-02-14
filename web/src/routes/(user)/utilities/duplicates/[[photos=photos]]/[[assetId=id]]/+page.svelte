@@ -5,7 +5,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import LinkToDocs from '$lib/components/LinkToDocs.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -18,7 +18,6 @@
     mdiCheckOutline,
     mdiChevronLeft,
     mdiChevronRight,
-    mdiInformationOutline,
     mdiKeyboard,
     mdiPageFirst,
     mdiPageLast,
@@ -265,19 +264,8 @@
 
   <div class="">
     {#if duplicates && duplicates.length > 0}
-      <div class="flex items-center mb-2">
-        <div class="text-sm dark:text-white">
-          <p>{$t('duplicates_description')}</p>
-        </div>
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          icon={mdiInformationOutline}
-          aria-label={$t('deduplication_info')}
-          size="small"
-          onclick={() => modalManager.show(DuplicatesInformationModal)}
-        />
+      <div class="mb-2 text-sm dark:text-white">
+        <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
       </div>
 
       {#key duplicates[duplicatesIndex].duplicateId}
