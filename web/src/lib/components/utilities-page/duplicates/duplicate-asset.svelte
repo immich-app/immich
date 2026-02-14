@@ -52,7 +52,12 @@
     fileName: isDifferent((a) => a.originalFileName),
     fileSize: isDifferent((a) => getFileSize(a)),
     resolution: isDifferent((a) => getAssetResolution(a)),
-    originalPath: isDifferent((a) => a.originalPath ?? $t('unknown')),
+    originalPath: isDifferent((a) => {
+      const basePath = a.originalPath && a.originalFileName 
+        ? getBasePath(a.originalPath, a.originalFileName)
+        : a.originalPath ?? $t('unknown');
+      return basePath || $t('unknown');
+    }),
     date: isDifferent((a) => {
       const tz = a.exifInfo?.timeZone;
       const dt =
