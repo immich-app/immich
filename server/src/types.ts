@@ -333,6 +333,7 @@ export type JobItem =
   | { name: JobName.FacialRecognitionQueueAll; data: INightlyJob }
   | { name: JobName.FacialRecognition; data: IDeferrableJob }
   | { name: JobName.PersonGenerateThumbnail; data: IEntityJob }
+  | { name: JobName.PersonNewFeaturePhoto; data: IEntityJob }
 
   // Smart Search
   | { name: JobName.SmartSearchQueueAll; data: IBaseJob }

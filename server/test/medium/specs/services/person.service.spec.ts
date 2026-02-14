@@ -5,6 +5,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -20,7 +21,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
     real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
-    mock: [LoggingRepository, StorageRepository],
+    mock: [LoggingRepository, StorageRepository, JobRepository],
   });
 };
 
@@ -754,6 +755,95 @@ describe(PersonService.name, () => {
           }),
         ]),
       );
+    });
+  });
+  describe('deleteAssetFace', () => {
+    it('should reassign faceAssetId if the deleted face was the feature photo', async () => {
+      const { ctx, sut } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const personRepo = ctx.get(PersonRepository);
+
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user });
+
+      jobMock.queueAll.mockResolvedValue();
+
+      const { assetFace: face1 } = await ctx.newAssetFace({
+        assetId: asset.id,
+        personId: person.id,
+        isVisible: true,
+        deletedAt: null,
+      });
+      const { assetFace: face2 } = await ctx.newAssetFace({
+        assetId: asset.id,
+        personId: person.id,
+        isVisible: true,
+        deletedAt: null,
+      });
+
+      // Set face1 as the feature photo
+      await personRepo.update({ id: person.id, faceAssetId: face1.id });
+
+      // Verify setup
+      let updatedPerson = await personRepo.getById(person.id);
+      expect(updatedPerson?.faceAssetId).toBe(face1.id);
+
+      // Delete face1
+      await sut.deleteFace(auth, face1.id, { force: false });
+
+      // Check if faceAssetId was reassigned to face2 (since it's the only other face)
+      updatedPerson = await personRepo.getById(person.id);
+      expect(updatedPerson?.faceAssetId).toBe(face2.id);
+    });
+
+    it('should set faceAssetId to null if the deleted face was the feature photo and no other faces exist', async () => {
+      const { ctx, sut } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const personRepo = ctx.get(PersonRepository);
+
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user });
+
+      jobMock.queueAll.mockResolvedValue();
+
+      const { assetFace: face1 } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      // Set face1 as the feature photo
+      await personRepo.update({ id: person.id, faceAssetId: face1.id });
+
+      // Delete face1
+      await sut.deleteFace(auth, face1.id, { force: false });
+
+      // Check if faceAssetId is null
+      const updatedPerson = await personRepo.getById(person.id);
+      expect(updatedPerson?.faceAssetId).toBeNull();
+    });
+
+    it('should NOT change faceAssetId if the deleted face was NOT the feature photo', async () => {
+      const { ctx, sut } = setup();
+      const personRepo = ctx.get(PersonRepository);
+
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const auth = factory.auth({ user });
+
+      const { assetFace: face1 } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      const { assetFace: face2 } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+      // Set face1 as the feature photo
+      await personRepo.update({ id: person.id, faceAssetId: face1.id });
+
+      // Delete face2
+      await sut.deleteFace(auth, face2.id, { force: false });
+
+      // Check if faceAssetId is still face1
+      const updatedPerson = await personRepo.getById(person.id);
+      expect(updatedPerson?.faceAssetId).toBe(face1.id);
     });
   });
 });
