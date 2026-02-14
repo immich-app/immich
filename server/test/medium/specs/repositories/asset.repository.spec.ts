@@ -147,4 +147,58 @@ describe(AssetRepository.name, () => {
       ).resolves.toEqual({ lockedProperties: null });
     });
   });
+  describe('date corner cases', () => {
+    it('should handle out of range negative dates correctly', async () => {
+      // 4712 BC is the earliest date that can be represented in postgres
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({
+        assetId: asset.id,
+        dateTimeOriginal: new Date('-042603-05-04T04:12:48.000Z'),
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('dateTimeOriginal')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ dateTimeOriginal: new Date('-004712-05-04T04:12:48.000Z') });
+    });
+    it('should handle negative dates correctly', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({
+        assetId: asset.id,
+        dateTimeOriginal: new Date('-002000-05-04T04:12:48.000Z'),
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('dateTimeOriginal')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ dateTimeOriginal: new Date('-002000-05-04T04:12:48.000Z') });
+    });
+    it('should handle negative dates correctly', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({
+        assetId: asset.id,
+        dateTimeOriginal: new Date('+275760-05-04T04:12:48.000Z'),
+      });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('dateTimeOriginal')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ dateTimeOriginal: new Date('+275760-05-04T04:12:48.000Z') });
+    });
+  });
 });
