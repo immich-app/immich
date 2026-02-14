@@ -17,5 +17,9 @@ class ThumbhashImageRequest extends ImageRequest {
   }
 
   @override
+  Future<ui.Codec?> loadCodec() =>
+      throw UnsupportedError('Thumbhash does not support codec loading');
+
+  @override
   void _onCancelled() {}
 }
