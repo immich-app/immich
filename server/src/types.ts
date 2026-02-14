@@ -93,6 +93,7 @@ export interface VideoStreamInfo {
   colorPrimaries?: string;
   colorSpace?: string;
   colorTransfer?: string;
+  displayAspectRatio?: string;
 }
 
 export interface AudioStreamInfo {
