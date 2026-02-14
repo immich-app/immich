@@ -62,7 +62,7 @@
       />
       <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
     </HStack>
-    <Button shape="round" size="small" onclick={applyEdits}>{$t('save')}</Button>
+    <Button shape="round" size="small" onclick={applyEdits} loading={editManager.isApplyingEdits}>{$t('save')}</Button>
   </HStack>
 
   <section>
@@ -75,7 +75,7 @@
     <Button
       variant="outline"
       onclick={() => editManager.resetAllChanges()}
-      disabled={!editManager.hasChanges}
+      disabled={!editManager.canReset}
       class="self-start"
       shape="round"
       size="small"

@@ -17,11 +17,11 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable           | Description                     |  Default  | Containers               |
-| :----------------- | :------------------------------ | :-------: | :----------------------- |
-| `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
-| `UPLOAD_LOCATION`  | Host path for uploads           |           | server                   |
-| `DB_DATA_LOCATION` | Host path for Postgres database |           | database                 |
+| Variable           | Description                     | Default | Containers               |
+| :----------------- | :------------------------------ | :-----: | :----------------------- |
+| `IMMICH_VERSION`   | Image tags                      |  `v2`   | server, machine learning |
+| `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
+| `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.

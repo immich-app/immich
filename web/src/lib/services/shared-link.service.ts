@@ -18,8 +18,18 @@ import {
   type SharedLinkResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiContentCopy, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
+import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+
+export const getSharedLinksActions = ($t: MessageFormatter) => {
+  const ViewAll: ActionItem = {
+    title: $t('shared_links'),
+    icon: mdiLink,
+    onAction: () => goto(Route.sharedLinks()),
+  };
+
+  return { ViewAll };
+};
 
 export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLinkResponseDto) => {
   const Edit: ActionItem = {
@@ -50,8 +60,10 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
   return { Edit, Delete, Copy, ViewQrCode };
 };
 
-const asUrl = (sharedLink: SharedLinkResponseDto) => {
-  const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
+export const asUrl = (sharedLink: SharedLinkResponseDto) => {
+  const path = sharedLink.slug
+    ? `s/${encodeURIComponent(sharedLink.slug)}`
+    : `share/${encodeURIComponent(sharedLink.key)}`;
   return new URL(path, serverConfigManager.value.externalDomain || globalThis.location.origin).href;
 };
 

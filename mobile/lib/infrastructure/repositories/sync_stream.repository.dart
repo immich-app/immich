@@ -200,6 +200,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             libraryId: Value(asset.libraryId),
             width: Value(asset.width),
             height: Value(asset.height),
+            isEdited: Value(asset.isEdited),
           );
 
           batch.insert(
@@ -239,6 +240,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             rating: Value(exif.rating),
             projectionType: Value(exif.projectionType),
             lens: Value(exif.lensModel),
+            width: Value(exif.exifImageWidth),
+            height: Value(exif.exifImageHeight),
           );
 
           batch.insert(

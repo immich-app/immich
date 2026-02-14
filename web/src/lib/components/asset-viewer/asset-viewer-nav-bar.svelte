@@ -23,15 +23,11 @@
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { user } from '$lib/stores/user.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetJobName, getSharedLink, withoutIcons } from '$lib/utils';
+  import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     AssetVisibility,
     type AlbumResponseDto,
@@ -39,19 +35,12 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { CommandPaletteDefaultProvider, IconButton, type ActionItem } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
-    mdiCogRefreshOutline,
     mdiCompare,
-    mdiContentCopy,
-    mdiDatabaseRefreshOutline,
     mdiDotsVertical,
-    mdiHeadSyncOutline,
-    mdiImageRefreshOutline,
     mdiImageSearch,
-    mdiMagnifyMinusOutline,
-    mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
     mdiVideoOutline,
@@ -64,14 +53,10 @@
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showSlideshow?: boolean;
-    onZoomImage: () => void;
-    onCopyImage?: () => Promise<void>;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
-    // onEdit: () => void;
     onClose?: () => void;
     playOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
@@ -83,33 +68,29 @@
     person = null,
     stack = null,
     showSlideshow = false,
-    onZoomImage,
-    onCopyImage,
     preAction,
     onAction,
     onUndoDelete = undefined,
-    onRunJob,
     onPlaySlideshow,
     onClose,
-    // onEdit,
     playOriginalVideo = false,
     setPlayOriginalVideo,
   }: Props = $props();
 
-  let isOwner = $derived($user && asset.ownerId === $user?.id);
-  let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
-  let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
+  const isOwner = $derived($user && asset.ownerId === $user?.id);
+  const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
+  const smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
 
-  const Close: ActionItem = {
+  const { Cast } = $derived(getGlobalActions($t));
+
+  const Close: ActionItem = $derived({
     title: $t('go_back'),
     type: $t('assets'),
     icon: mdiArrowLeft,
     $if: () => !!onClose,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
-  };
-
-  const { Cast } = $derived(getGlobalActions($t));
+  });
 
   const {
     Share,
@@ -121,27 +102,43 @@
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
     Info,
+    Edit,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
   } = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
-
-  // TODO: Enable when edits are ready for release
-  // let showEditorButton = $derived(
-  //   isOwner &&
-  //     asset.type === AssetTypeEnum.Image &&
-  //     !(
-  //       asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
-  //       (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
-  //     ) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
-  //     !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.svg')) &&
-  //     !asset.livePhotoVideoId,
-  // );
 </script>
 
 <CommandPaletteDefaultProvider
   name={$t('assets')}
-  actions={withoutIcons([Close, Share, Offline, Favorite, Unfavorite, PlayMotionPhoto, StopMotionPhoto, Info])}
+  actions={withoutIcons([
+    Close,
+    Cast,
+    Share,
+    Download,
+    DownloadOriginal,
+    SharedLinkDownload,
+    Offline,
+    Favorite,
+    Unfavorite,
+    PlayMotionPhoto,
+    StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
+    Info,
+    Edit,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
+  ])}
 />
 
 <div
@@ -157,29 +154,9 @@
     <ActionButton action={Offline} />
     <ActionButton action={PlayMotionPhoto} />
     <ActionButton action={StopMotionPhoto} />
-
-    {#if asset.type === AssetTypeEnum.Image}
-      <IconButton
-        class="hidden sm:flex"
-        color="secondary"
-        variant="ghost"
-        shape="round"
-        icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        aria-label={$t('zoom_image')}
-        onclick={onZoomImage}
-      />
-    {/if}
-    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image && $photoViewerImgElement}
-      <IconButton
-        color="secondary"
-        variant="ghost"
-        shape="round"
-        icon={mdiContentCopy}
-        aria-label={$t('copy_image')}
-        onclick={() => onCopyImage?.()}
-      />
-    {/if}
-
+    <ActionButton action={ZoomIn} />
+    <ActionButton action={ZoomOut} />
+    <ActionButton action={Copy} />
     <ActionButton action={SharedLinkDownload} />
     <ActionButton action={Info} />
     <ActionButton action={Favorite} />
@@ -189,9 +166,7 @@
       <RatingAction {asset} {onAction} />
     {/if}
 
-    <!-- {#if showEditorButton}
-      <EditAction onAction={onEdit} />
-    {/if} -->
+    <ActionButton action={Edit} />
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
@@ -276,28 +251,10 @@
         {/if}
         {#if isOwner}
           <hr />
-          <MenuOption
-            icon={mdiHeadSyncOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
-            text={$getAssetJobName(AssetJobName.RefreshFaces)}
-          />
-          <MenuOption
-            icon={mdiDatabaseRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
-            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
-          />
-          <MenuOption
-            icon={mdiImageRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
-            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
-          />
-          {#if asset.type === AssetTypeEnum.Video}
-            <MenuOption
-              icon={mdiCogRefreshOutline}
-              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
-              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
-            />
-          {/if}
+          <ActionMenuItem action={RefreshFacesJob} />
+          <ActionMenuItem action={RefreshMetadataJob} />
+          <ActionMenuItem action={RegenerateThumbnailJob} />
+          <ActionMenuItem action={TranscodeVideoJob} />
         {/if}
       </ButtonContextMenu>
     {/if}

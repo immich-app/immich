@@ -6,6 +6,7 @@ import { Stats } from 'node:fs';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
+import { AssetEditActionListDto } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetType,
@@ -280,6 +281,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const result = await this.get(TagRepository).upsertAssetIds(tagsAssets);
     return { tagsAssets, result };
   }
+
+  async newEdits(assetId: string, dto: AssetEditActionListDto) {
+    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits);
+    return { edits };
+  }
 }
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
@@ -537,7 +543,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     fileModifiedAt: now,
     localDateTime: now,
     visibility: AssetVisibility.Timeline,
-    editCount: 0,
+    isEdited: false,
   };
 
   return {
@@ -601,8 +607,6 @@ const assetJobStatusInsert = (
     duplicatesDetectedAt: date,
     facesRecognizedAt: date,
     metadataExtractedAt: date,
-    previewAt: date,
-    thumbnailAt: date,
   };
 
   return {

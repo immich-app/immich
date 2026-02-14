@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
@@ -103,7 +103,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 24),
-                  child: Text("external_network_sheet_info".tr(), style: context.textTheme.bodyMedium),
+                  child: Text("external_network_sheet_info".t(context: context), style: context.textTheme.bodyMedium),
                 ),
                 const SizedBox(height: 4),
                 Divider(color: context.colorScheme.surfaceContainerHighest),
@@ -135,7 +135,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     height: 48,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: Text('add_endpoint'.tr().toUpperCase()),
+                      label: Text('add_endpoint'.t(context: context)),
                       onPressed: enabled
                           ? () {
                               entries.value = [

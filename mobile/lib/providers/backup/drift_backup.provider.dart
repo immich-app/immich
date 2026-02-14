@@ -149,6 +149,8 @@ class DriftBackupState {
     );
   }
 
+  int get errorCount => uploadItems.values.where((item) => item.isFailed == true).length;
+
   @override
   String toString() {
     return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';
@@ -257,6 +259,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> startForegroundBackup(String userId) async {
+    // Cancel any existing backup before starting a new one
+    if (state.cancelToken != null) {
+      await stopForegroundBackup();
+    }
+
     state = state.copyWith(error: BackupError.none);
 
     final cancelToken = CancellationToken();
@@ -373,21 +380,21 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       _logger.warning("Skip handleBackupResume (pre-call): notifier disposed");
       return;
     }
-    _logger.info("Resuming backup tasks...");
+    _logger.info("Start background backup sequence");
     state = state.copyWith(error: BackupError.none);
     final tasks = await _backgroundUploadService.getActiveTasks(kBackupGroup);
     if (!mounted) {
       _logger.warning("Skip handleBackupResume (post-call): notifier disposed");
       return;
     }
-    _logger.info("Found ${tasks.length} tasks");
+    _logger.info("Found ${tasks.length} pending tasks");
 
     if (tasks.isEmpty) {
-      _logger.info("Start backup with URLSession");
+      _logger.info("No pending tasks, starting new upload");
       return _backgroundUploadService.uploadBackupCandidates(userId);
     }
 
-    _logger.info("Tasks to resume: ${tasks.length}");
+    _logger.info("Resuming upload ${tasks.length} assets");
     return _backgroundUploadService.resume();
   }
 }

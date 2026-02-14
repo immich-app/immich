@@ -24,22 +24,31 @@ class WorkflowResponseDto {
     required this.triggerType,
   });
 
+  /// Workflow actions
   List<WorkflowActionResponseDto> actions;
 
+  /// Creation date
   String createdAt;
 
+  /// Workflow description
   String description;
 
+  /// Workflow enabled
   bool enabled;
 
+  /// Workflow filters
   List<WorkflowFilterResponseDto> filters;
 
+  /// Workflow ID
   String id;
 
+  /// Workflow name
   String? name;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Workflow trigger type
   PluginTriggerType triggerType;
 
   @override

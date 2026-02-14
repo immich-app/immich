@@ -16,7 +16,7 @@ class StackCreateDto {
     this.assetIds = const [],
   });
 
-  /// first asset becomes the primary
+  /// Asset IDs (first becomes primary, min 2)
   List<String> assetIds;
 
   @override

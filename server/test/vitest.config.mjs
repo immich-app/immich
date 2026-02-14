@@ -2,9 +2,6 @@ import swc from 'unplugin-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-// Set the timezone to UTC to avoid timezone issues during testing
-process.env.TZ = 'UTC';
-
 export default defineConfig({
   test: {
     root: './',
@@ -24,6 +21,9 @@ export default defineConfig({
       deps: {
         fallbackCJS: true,
       },
+    },
+    env: {
+      TZ: 'UTC',
     },
   },
   plugins: [swc.vite(), tsconfigPaths()],

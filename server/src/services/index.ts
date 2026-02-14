@@ -7,8 +7,8 @@ import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { AuthAdminService } from 'src/services/auth-admin.service';
 import { AuthService } from 'src/services/auth.service';
-import { BackupService } from 'src/services/backup.service';
 import { CliService } from 'src/services/cli.service';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
@@ -57,8 +57,8 @@ export const services = [
   AuditService,
   AuthService,
   AuthAdminService,
-  BackupService,
   CliService,
+  DatabaseBackupService,
   DatabaseService,
   DownloadService,
   DuplicateService,

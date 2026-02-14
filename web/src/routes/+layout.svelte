@@ -4,28 +4,27 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-  import { AppRoute } from '$lib/constants';
+  import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
-  import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { Route } from '$lib/route';
+  import { locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
-  import type { ReleaseEvent } from '$lib/types';
-  import { copyToClipboard, getReleaseType, semverToName } from '$lib/utils';
+  import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import {
     CommandPaletteDefaultProvider,
     TooltipProvider,
     modalManager,
+    setLocale,
     setTranslations,
     toastManager,
     type ActionItem,
@@ -41,19 +40,36 @@
 
   $effect(() => {
     setTranslations({
+      cancel: $t('cancel'),
       close: $t('close'),
+      confirm: $t('confirm'),
+      expand: $t('expand'),
+      collapse: $t('collapse'),
+      search_placeholder: $t('search'),
+      search_no_results: $t('no_results'),
+      prompt_default: $t('are_you_sure_to_do_this'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
-      confirm: $t('confirm'),
-      cancel: $t('cancel'),
+      dark_theme: $t('dark_theme'),
+      open_menu: $t('open'),
+      command_palette_prompt_default: $t('command_palette_prompt'),
+      command_palette_to_select: $t('command_palette_to_select'),
+      command_palette_to_navigate: $t('command_palette_to_navigate'),
+      command_palette_to_close: $t('command_palette_to_close'),
+      command_palette_to_show_all: $t('command_palette_to_show_all'),
+      navigate_next: $t('next'),
+      navigate_previous: $t('previous'),
+      open_calendar: $t('open_calendar'),
       toast_success_title: $t('success'),
       toast_info_title: $t('info'),
       toast_warning_title: $t('warning'),
       toast_danger_title: $t('error'),
-      navigate_next: $t('next'),
-      navigate_previous: $t('previous'),
+      save: $t('save'),
+      supporter: $t('supporter'),
     });
   });
+
+  $effect(() => setLocale($locale));
 
   let { children }: Props = $props();
 
@@ -63,7 +79,7 @@
     return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
-  toastManager.setOptions({ class: 'top-16' });
+  toastManager.setOptions({ class: 'top-16 fixed' });
 
   onMount(() => {
     const element = document.querySelector('#stencil');
@@ -88,36 +104,15 @@
     showNavigationLoadingBar = false;
   });
 
+  const { serverRestarting } = websocketStore;
+
   $effect.pre(() => {
-    if ($user || page.url.pathname.startsWith(AppRoute.MAINTENANCE)) {
+    if ($user || $serverRestarting || page.url.pathname.startsWith(Route.maintenanceMode())) {
       openWebsocketConnection();
     } else {
       closeWebsocketConnection();
     }
   });
-
-  const { serverRestarting } = websocketStore;
-
-  const onReleaseEvent = async (release: ReleaseEvent) => {
-    if (!release.isAvailable || !$user.isAdmin) {
-      return;
-    }
-
-    const releaseVersion = semverToName(release.releaseVersion);
-    const serverVersion = semverToName(release.serverVersion);
-    const type = getReleaseType(release.serverVersion, release.releaseVersion);
-
-    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
-      return;
-    }
-
-    try {
-      await modalManager.show(VersionAnnouncementModal, { serverVersion, releaseVersion });
-      localStorage.setItem('appVersion', releaseVersion);
-    } catch (error) {
-      console.error('Error [VersionAnnouncementBox]:', error);
-    }
-  };
 
   serverRestarting.subscribe((isRestarting) => {
     if (!isRestarting) {
@@ -188,8 +183,8 @@
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
 
-<OnEvents {onReleaseEvent} />
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
+<VersionAnnouncement />
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>

@@ -10,6 +10,7 @@ import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { ImmichWorker } from 'src/enum';
 import { MaintenanceAuthGuard } from 'src/maintenance/maintenance-auth.guard';
+import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-websocket.repository';
 import { MaintenanceWorkerController } from 'src/maintenance/maintenance-worker.controller';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
@@ -21,14 +22,18 @@ import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { repositories } from 'src/repositories';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 
@@ -103,9 +108,14 @@ export class ApiModule extends BaseModule {}
   providers: [
     ConfigRepository,
     LoggingRepository,
+    StorageRepository,
+    ProcessRepository,
+    DatabaseRepository,
     SystemMetadataRepository,
     AppRepository,
+    MaintenanceHealthRepository,
     MaintenanceWebsocketRepository,
+    DatabaseBackupService,
     MaintenanceWorkerService,
     ...commonMiddleware,
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },
@@ -116,8 +126,13 @@ export class MaintenanceModule {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
+    private maintenanceWorkerService: MaintenanceWorkerService,
   ) {
     logger.setAppName(this.worker);
+  }
+
+  async onModuleInit() {
+    await this.maintenanceWorkerService.init();
   }
 }
 
