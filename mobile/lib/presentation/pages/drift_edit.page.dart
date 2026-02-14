@@ -40,6 +40,8 @@ class DriftEditImagePage extends ConsumerStatefulWidget {
   ConsumerState<DriftEditImagePage> createState() => _DriftEditImagePageState();
 }
 
+typedef AspectRatio = ({double? ratio, String label});
+
 class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with TickerProviderStateMixin {
   late final CropController cropController;
 
@@ -55,6 +57,17 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
   late final originalHeight = widget.exifInfo.isFlipped ? widget.exifInfo.width : widget.exifInfo.height;
 
   bool isEditing = false;
+
+  List<AspectRatio> aspectRatios = const [
+    (ratio: null, label: 'Free'),
+    (ratio: 1.0, label: '1:1'),
+    (ratio: 16.0 / 9.0, label: '16:9'),
+    (ratio: 3.0 / 2.0, label: '3:2'),
+    (ratio: 7.0 / 5.0, label: '7:5'),
+    (ratio: 9.0 / 16.0, label: '9:16'),
+    (ratio: 2.0 / 3.0, label: '2:3'),
+    (ratio: 5.0 / 7.0, label: '5:7'),
+  ];
 
   void initEditor() {
     final existingCrop = widget.edits.firstWhereOrNull((edit) => edit.action == AssetEditAction.crop);
@@ -315,104 +328,20 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
                               padding: const EdgeInsets.symmetric(horizontal: 20),
                               child: Row(
                                 spacing: 12,
-                                children: <Widget>[
-                                  _AspectRatioButton(
+                                children: aspectRatios.map((aspect) {
+                                  return _AspectRatioButton(
                                     cropController: cropController,
                                     currentAspectRatio: aspectRatio,
-                                    ratio: null,
-                                    label: 'Free',
+                                    ratio: aspect.ratio,
+                                    label: aspect.label,
                                     onPressed: () {
                                       setState(() {
-                                        aspectRatio = null;
-                                        cropController.aspectRatio = null;
+                                        aspectRatio = aspect.ratio;
+                                        cropController.aspectRatio = aspect.ratio;
                                       });
                                     },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 1.0,
-                                    label: '1:1',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 1.0;
-                                        cropController.aspectRatio = 1.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 16.0 / 9.0,
-                                    label: '16:9',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 16.0 / 9.0;
-                                        cropController.aspectRatio = 16.0 / 9.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 3.0 / 2.0,
-                                    label: '3:2',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 3.0 / 2.0;
-                                        cropController.aspectRatio = 3.0 / 2.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 7.0 / 5.0,
-                                    label: '7:5',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 7.0 / 5.0;
-                                        cropController.aspectRatio = 7.0 / 5.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 9.0 / 16.0,
-                                    label: '9:16',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 9.0 / 16.0;
-                                        cropController.aspectRatio = 9.0 / 16.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 2.0 / 3.0,
-                                    label: '2:3',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 2.0 / 3.0;
-                                        cropController.aspectRatio = 2.0 / 3.0;
-                                      });
-                                    },
-                                  ),
-                                  _AspectRatioButton(
-                                    cropController: cropController,
-                                    currentAspectRatio: aspectRatio,
-                                    ratio: 5.0 / 7.0,
-                                    label: '5:7',
-                                    onPressed: () {
-                                      setState(() {
-                                        aspectRatio = 5.0 / 7.0;
-                                        cropController.aspectRatio = 5.0 / 7.0;
-                                      });
-                                    },
-                                  ),
-                                ],
+                                  );
+                                }).toList(),
                               ),
                             ),
                             const Spacer(),
