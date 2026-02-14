@@ -44,7 +44,7 @@ While this guide focuses on VS Code, you have many options for Dev Container dev
 **Self-Hostable Options:**
 
 - [Coder](https://coder.com) - Enterprise-focused, requires Terraform knowledge, self-managed
-- [DevPod](https://devpod.sh) - Client-only tool with excellent devcontainer.json support, works with any provider (local, cloud, or on-premise)
+- [DevPod](https://devpod.sh) - Client-only tool with excellent devcontainer.json support, works with any provider (local, cloud, or on-premise). Check [quick-start guide](#quick-start-guide-for-devpod-with-docker)
   :::
 
 ## Dev Container Services
@@ -409,6 +409,26 @@ If you encounter issues:
 2. Rebuild without cache: "Dev Containers: Rebuild Container Without Cache"
 3. Review [common Docker issues](https://docs.docker.com/desktop/troubleshoot/)
 4. Ask in [Discord](https://discord.immich.app) `#help-desk-support` channel
+
+### Quick-start guide for DevPod with docker
+
+You will need DevPod CLI (check [DevPod CLI installation guide](https://devpod.sh/docs/getting-started/install)) and Docker Desktop.
+
+```sh
+# Step 1: Clone the Repository
+git clone https://github.com/immich-app/immich.git
+cd immich
+
+# Step 2: Prepare DevPod (if you haven't already)
+devpod provider add docker
+devpod provider use docker
+
+# Step 3: Build 'immich-server-dev' docker image first manually
+docker build -f server/Dockerfile.dev -t immich-server-dev .
+
+# Step 4: Now you can start devcontainer
+devpod up .
+```
 
 ## Mobile Development
 
