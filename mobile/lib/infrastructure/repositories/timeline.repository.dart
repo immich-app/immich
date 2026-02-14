@@ -12,6 +12,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
+import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -21,6 +22,7 @@ class TimelineMapOptions {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
+  final CustomTimeRange customTimeRange;
 
   const TimelineMapOptions({
     required this.bounds,
@@ -28,6 +30,7 @@ class TimelineMapOptions {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
+    this.customTimeRange = const CustomTimeRange(),
   });
 }
 
@@ -528,7 +531,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.relativeDays != 0) {
+    if (options.customTimeRange.isValid) {
+      // Use custom from/to filters
+      if (options.customTimeRange.from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(options.customTimeRange.from!));
+      }
+      if (options.customTimeRange.to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(options.customTimeRange.to!));
+      }
+    } else if (options.relativeDays > 0) {
+      // Use relative days
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
@@ -570,7 +582,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.relativeDays != 0) {
+    if (options.customTimeRange.isValid) {
+      // Use custom from/to filters
+      if (options.customTimeRange.from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(options.customTimeRange.from!));
+      }
+      if (options.customTimeRange.to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(options.customTimeRange.to!));
+      }
+    } else if (options.relativeDays > 0) {
+      // Use relative days
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
