@@ -28,7 +28,10 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
-    state = SearchResult(assets: [...state.assets, ...result.assets], nextPage: result.nextPage);
+    final allAssets = [...state.assets, ...result.assets];
+    // Sort by date descending (newest first)
+    allAssets.sort((a, b) => b.fileCreatedAt.compareTo(a.fileCreatedAt));
+    state = SearchResult(assets: allAssets, nextPage: result.nextPage);
 
     return true;
   }

@@ -41,8 +41,11 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
+    final allAssets = [...state.assets, ...result.assets];
+    // Sort by date descending (newest first)
+    allAssets.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     state = SearchResult(
-      assets: [...state.assets, ...result.assets],
+      assets: allAssets,
       nextPage: result.nextPage,
       scrollOffset: state.scrollOffset,
     );
