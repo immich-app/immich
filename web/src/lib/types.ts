@@ -1,3 +1,4 @@
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 
@@ -41,3 +42,9 @@ export enum OnboardingRole {
   USER = 'user',
 }
 
+export type AssetControlContext = {
+  // Wrap assets in a function, because context isn't reactive.
+  getAssets: () => TimelineAsset[]; // All assets includes partners' assets
+  getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
+  clearSelect: () => void;
+};

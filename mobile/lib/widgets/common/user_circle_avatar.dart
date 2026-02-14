@@ -1,13 +1,9 @@
-import 'dart:math';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/widgets/common/transparent_image.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 
 // ignore: must_be_immutable
 class UserCircleAvatar extends ConsumerWidget {
@@ -22,7 +18,7 @@ class UserCircleAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAvatarColor = user.avatarColor.toColor();
     final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${Random().nextInt(1024)}';
+        '${Store.get(StoreKey.serverEndpoint)}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
 
     final textIcon = DefaultTextStyle(
       style: TextStyle(
@@ -46,16 +42,12 @@ class UserCircleAvatar extends ConsumerWidget {
           child: user.hasProfileImage
               ? ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(50)),
-                  child: CachedNetworkImage(
+                  child: Image(
                     fit: BoxFit.cover,
-                    cacheKey: '${user.id}-${user.profileChangedAt.toIso8601String()}',
                     width: size,
                     height: size,
-                    placeholder: (_, __) => Image.memory(kTransparentImage),
-                    imageUrl: profileImageUrl,
-                    httpHeaders: ApiService.getRequestHeaders(),
-                    fadeInDuration: const Duration(milliseconds: 300),
-                    errorWidget: (context, error, stackTrace) => textIcon,
+                    image: RemoteImageProvider(url: profileImageUrl),
+                    errorBuilder: (context, error, stackTrace) => textIcon,
                   ),
                 )
               : textIcon,

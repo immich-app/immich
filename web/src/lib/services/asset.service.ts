@@ -5,7 +5,8 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
-import { getAssetJobName, getSharedLink, sleep } from '$lib/utils';
+import type { AssetControlContext } from '$lib/types';
+import { getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
@@ -47,6 +48,44 @@ import {
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
+
+export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlContext) => {
+  const ownedAssets = ctx.getOwnedAssets();
+  const assetIds = ownedAssets.map((asset) => asset.id);
+  const isAllVideos = ownedAssets.every((asset) => asset.isVideo);
+
+  const onAction = async (name: AssetJobName) => {
+    await handleRunAssetJob({ name, assetIds });
+    ctx.clearSelect();
+  };
+
+  const RefreshFacesJob: ActionItem = {
+    title: $t('refresh_faces'),
+    icon: mdiHeadSyncOutline,
+    onAction: () => onAction(AssetJobName.RefreshFaces),
+  };
+
+  const RefreshMetadataJob: ActionItem = {
+    title: $t('refresh_metadata'),
+    icon: mdiDatabaseRefreshOutline,
+    onAction: () => onAction(AssetJobName.RefreshMetadata),
+  };
+
+  const RegenerateThumbnailJob: ActionItem = {
+    title: $t('refresh_thumbnails'),
+    icon: mdiImageRefreshOutline,
+    onAction: () => onAction(AssetJobName.RegenerateThumbnail),
+  };
+
+  const TranscodeVideoJob: ActionItem = {
+    title: $t('refresh_encoded_videos'),
+    icon: mdiCogRefreshOutline,
+    onAction: () => onAction(AssetJobName.TranscodeVideo),
+    $if: () => isAllVideos,
+  };
+
+  return { RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+};
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
   const sharedLink = getSharedLink();
@@ -186,25 +225,25 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   };
 
   const RefreshFacesJob: ActionItem = {
-    title: getAssetJobName($t, AssetJobName.RefreshFaces),
+    title: $t('refresh_faces'),
     icon: mdiHeadSyncOutline,
     onAction: () => handleRunAssetJob({ name: AssetJobName.RefreshFaces, assetIds: [asset.id] }),
   };
 
   const RefreshMetadataJob: ActionItem = {
-    title: getAssetJobName($t, AssetJobName.RefreshMetadata),
+    title: $t('refresh_metadata'),
     icon: mdiDatabaseRefreshOutline,
     onAction: () => handleRunAssetJob({ name: AssetJobName.RefreshMetadata, assetIds: [asset.id] }),
   };
 
   const RegenerateThumbnailJob: ActionItem = {
-    title: getAssetJobName($t, AssetJobName.RegenerateThumbnail),
+    title: $t('refresh_thumbnails'),
     icon: mdiImageRefreshOutline,
     onAction: () => handleRunAssetJob({ name: AssetJobName.RegenerateThumbnail, assetIds: [asset.id] }),
   };
 
   const TranscodeVideoJob: ActionItem = {
-    title: getAssetJobName($t, AssetJobName.TranscodeVideo),
+    title: $t('refresh_encoded_videos'),
     icon: mdiCogRefreshOutline,
     onAction: () => handleRunAssetJob({ name: AssetJobName.TranscodeVideo, assetIds: [asset.id] }),
     $if: () => asset.type === AssetTypeEnum.Video,
@@ -313,12 +352,23 @@ export const handleReplaceAsset = async (oldAssetId: string) => {
   eventManager.emit('AssetReplace', { oldAssetId, newAssetId });
 };
 
+const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
+  };
+
+  return messages[job];
+};
+
 const handleRunAssetJob = async (dto: AssetJobsDto) => {
   const $t = await getFormatter();
 
   try {
     await runAssetJobs({ assetJobsDto: dto });
-    toastManager.success(getAssetJobName($t, dto.name));
+    toastManager.success(getAssetJobMessage($t, dto.name));
   } catch (error) {
     handleError(error, $t('errors.unable_to_submit_job'));
   }

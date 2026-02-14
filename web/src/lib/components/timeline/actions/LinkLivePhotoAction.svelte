@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, updateAsset } from '@immich/sdk';

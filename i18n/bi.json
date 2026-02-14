@@ -17,7 +17,7 @@
   "readonly_mode_enabled": "Mod blo yu no save janjem i on",
   "reassigned_assets_to_new_person": "Janjem{count, plural, one {# asset} other {# assets}} blo nu man",
   "reassing_hint": "janjem ol sumtin yu bin joos i go blo wan man",
-  "recent-albums": "album i no old tu mas",
+  "recent_albums": "album i no old tu mas",
   "recent_searches": "lukabout wea i no old tu mas",
   "time_based_memories_duration": "hao mus second blo wan wan imij i stap lo scrin.",
   "timezone": "taemzon",

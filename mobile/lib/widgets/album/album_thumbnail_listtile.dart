@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
@@ -32,15 +32,12 @@ class AlbumThumbnailListTile extends StatelessWidget {
     }
 
     buildAlbumThumbnail() {
-      return CachedNetworkImage(
+      return SizedBox(
         width: cardSize,
         height: cardSize,
-        fit: BoxFit.cover,
-        fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(album, type: AssetMediaSize.thumbnail),
-        httpHeaders: ApiService.getRequestHeaders(),
-        cacheKey: getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
-        errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
+        child: Thumbnail(
+          imageProvider: RemoteImageProvider(url: getAlbumThumbnailUrl(album, type: AssetMediaSize.thumbnail)),
+        ),
       );
     }
 

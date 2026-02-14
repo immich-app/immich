@@ -495,6 +495,77 @@ class SharedLinksApi {
     return null;
   }
 
+  /// Shared link login
+  ///
+  /// Login to a password protected shared link
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> sharedLinkLoginWithHttpInfo(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-links/login';
+
+    // ignore: prefer_final_locals
+    Object? postBody = sharedLinkLoginDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Shared link login
+  ///
+  /// Login to a password protected shared link
+  ///
+  /// Parameters:
+  ///
+  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<SharedLinkResponseDto?> sharedLinkLogin(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
+    final response = await sharedLinkLoginWithHttpInfo(sharedLinkLoginDto,  key: key, slug: slug, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Update a shared link
   ///
   /// Update an existing shared link by its ID.

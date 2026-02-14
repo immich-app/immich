@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -41,15 +42,19 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
+    final cancelCompleter = Completer<void>();
+    const preparingDialog = _SharePreparingDialog();
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref.read(actionProvider.notifier).shareAssets(source, context).then((ActionResult result) {
-          ref.read(multiSelectProvider.notifier).reset();
-
-          if (!context.mounted) {
+        ref.read(actionProvider.notifier).shareAssets(source, context, cancelCompleter: cancelCompleter).then((
+          ActionResult result,
+        ) {
+          if (cancelCompleter.isCompleted || !context.mounted) {
             return;
           }
+
+          ref.read(multiSelectProvider.notifier).reset();
 
           if (!result.success) {
             ImmichToast.show(
@@ -64,11 +69,15 @@ class ShareActionButton extends ConsumerWidget {
         });
 
         // show a loading spinner with a "Preparing" message
-        return const _SharePreparingDialog();
+        return preparingDialog;
       },
       barrierDismissible: false,
       useRootNavigator: false,
-    );
+    ).then((_) {
+      if (!cancelCompleter.isCompleted) {
+        cancelCompleter.complete();
+      }
+    });
   }
 
   @override

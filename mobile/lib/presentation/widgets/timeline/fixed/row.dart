@@ -1,27 +1,45 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-class FixedTimelineRow extends MultiChildRenderObjectWidget {
-  final double dimension;
+class TimelineRow extends MultiChildRenderObjectWidget {
+  final double height;
+  final List<double> widths;
   final double spacing;
   final TextDirection textDirection;
 
-  const FixedTimelineRow({
+  const TimelineRow({
     super.key,
-    required this.dimension,
+    required this.height,
+    required this.widths,
     required this.spacing,
     required this.textDirection,
     required super.children,
   });
 
+  factory TimelineRow.fixed({
+    required double dimension,
+    required double spacing,
+    required TextDirection textDirection,
+    required List<Widget> children,
+  }) => TimelineRow(
+    height: dimension,
+    widths: List.filled(children.length, dimension),
+    spacing: spacing,
+    textDirection: textDirection,
+    children: children,
+  );
+
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderFixedRow(dimension: dimension, spacing: spacing, textDirection: textDirection);
+    return RenderFixedRow(height: height, widths: widths, spacing: spacing, textDirection: textDirection);
   }
 
   @override
   void updateRenderObject(BuildContext context, RenderFixedRow renderObject) {
-    renderObject.dimension = dimension;
+    renderObject.height = height;
+    renderObject.widths = widths;
     renderObject.spacing = spacing;
     renderObject.textDirection = textDirection;
   }
@@ -29,7 +47,8 @@ class FixedTimelineRow extends MultiChildRenderObjectWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DoubleProperty('dimension', dimension));
+    properties.add(DoubleProperty('height', height));
+    properties.add(DiagnosticsProperty<List<double>>('widths', widths));
     properties.add(DoubleProperty('spacing', spacing));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection));
   }
@@ -43,21 +62,32 @@ class RenderFixedRow extends RenderBox
         RenderBoxContainerDefaultsMixin<RenderBox, _RowParentData> {
   RenderFixedRow({
     List<RenderBox>? children,
-    required double dimension,
+    required double height,
+    required List<double> widths,
     required double spacing,
     required TextDirection textDirection,
-  }) : _dimension = dimension,
+  }) : _height = height,
+       _widths = widths,
        _spacing = spacing,
        _textDirection = textDirection {
     addAll(children);
   }
 
-  double get dimension => _dimension;
-  double _dimension;
+  double get height => _height;
+  double _height;
 
-  set dimension(double value) {
-    if (_dimension == value) return;
-    _dimension = value;
+  set height(double value) {
+    if (_height == value) return;
+    _height = value;
+    markNeedsLayout();
+  }
+
+  List<double> get widths => _widths;
+  List<double> _widths;
+
+  set widths(List<double> value) {
+    if (listEquals(_widths, value)) return;
+    _widths = value;
     markNeedsLayout();
   }
 
@@ -86,7 +116,7 @@ class RenderFixedRow extends RenderBox
     }
   }
 
-  double get intrinsicWidth => dimension * childCount + spacing * (childCount - 1);
+  double get intrinsicWidth => widths.sum + (spacing * (childCount - 1));
 
   @override
   double computeMinIntrinsicWidth(double height) => intrinsicWidth;
@@ -95,10 +125,10 @@ class RenderFixedRow extends RenderBox
   double computeMaxIntrinsicWidth(double height) => intrinsicWidth;
 
   @override
-  double computeMinIntrinsicHeight(double width) => dimension;
+  double computeMinIntrinsicHeight(double width) => height;
 
   @override
-  double computeMaxIntrinsicHeight(double width) => dimension;
+  double computeMaxIntrinsicHeight(double width) => height;
 
   @override
   double? computeDistanceToActualBaseline(TextBaseline baseline) {
@@ -118,7 +148,8 @@ class RenderFixedRow extends RenderBox
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DoubleProperty('dimension', dimension));
+    properties.add(DoubleProperty('height', height));
+    properties.add(DiagnosticsProperty<List<double>>('widths', widths));
     properties.add(DoubleProperty('spacing', spacing));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection));
   }
@@ -131,19 +162,25 @@ class RenderFixedRow extends RenderBox
       return;
     }
     // Use the entire width of the parent for the row.
-    size = Size(constraints.maxWidth, dimension);
-    // Each tile is forced to be dimension x dimension.
-    final childConstraints = BoxConstraints.tight(Size(dimension, dimension));
+    size = Size(constraints.maxWidth, height);
+
     final flipMainAxis = textDirection == TextDirection.rtl;
-    Offset offset = Offset(flipMainAxis ? size.width - dimension : 0, 0);
-    final dx = (flipMainAxis ? -1 : 1) * (dimension + spacing);
+    int childIndex = 0;
+    double currentX = flipMainAxis ? size.width - (widths.firstOrNull ?? 0) : 0;
     // Layout each child horizontally.
-    while (child != null) {
+    while (child != null && childIndex < widths.length) {
+      final width = widths[childIndex];
+      final childConstraints = BoxConstraints.tight(Size(width, height));
       child.layout(childConstraints, parentUsesSize: false);
       final childParentData = child.parentData! as _RowParentData;
-      childParentData.offset = offset;
-      offset += Offset(dx, 0);
+      childParentData.offset = Offset(currentX, 0);
       child = childParentData.nextSibling;
+      childIndex++;
+
+      if (child != null && childIndex < widths.length) {
+        final nextWidth = widths[childIndex];
+        currentX += flipMainAxis ? -(spacing + nextWidth) : width + spacing;
+      }
     }
   }
 }

@@ -58,7 +58,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where
@@ -265,7 +265,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where
@@ -338,7 +338,7 @@ select
     from
       (
         select
-          *
+          "shared_link".*
         from
           "shared_link"
         where

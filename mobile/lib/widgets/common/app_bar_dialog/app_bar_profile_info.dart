@@ -80,49 +80,39 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: context.colorScheme.surface,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-        ),
-        child: ListTile(
-          minLeadingWidth: 50,
-          leading: GestureDetector(
-            onTap: pickUserProfileImage,
-            onLongPress: toggleReadonlyMode,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AbsorbPointer(child: buildUserProfileImage()),
-                if (!isReadonlyModeEnabled)
-                  Positioned(
-                    bottom: -5,
-                    right: -8,
-                    child: Material(
-                      color: context.colorScheme.surfaceContainerHighest,
-                      elevation: 3,
-                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
-                      ),
-                    ),
+    return ListTile(
+      minLeadingWidth: 50,
+      leading: GestureDetector(
+        onTap: pickUserProfileImage,
+        onLongPress: toggleReadonlyMode,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AbsorbPointer(child: buildUserProfileImage()),
+            if (!isReadonlyModeEnabled)
+              Positioned(
+                bottom: -5,
+                right: -8,
+                child: Material(
+                  color: context.colorScheme.surfaceContainerHighest,
+                  elevation: 3,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
+                  child: Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
                   ),
-              ],
-            ),
-          ),
-          title: Text(
-            authState.name,
-            style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor, fontWeight: FontWeight.w500),
-          ),
-          subtitle: Text(
-            authState.userEmail,
-            style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-          ),
+                ),
+              ),
+          ],
         ),
+      ),
+      title: Text(
+        authState.name,
+        style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor, fontWeight: FontWeight.w500),
+      ),
+      subtitle: Text(
+        authState.userEmail,
+        style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
       ),
     );
   }
