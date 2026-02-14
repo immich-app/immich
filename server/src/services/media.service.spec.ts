@@ -344,8 +344,8 @@ describe(MediaService.name, () => {
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? { data: rawBuffer, info: rawInfo as OutputInfo, hasAlpha: false } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo, hasAlpha: false }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -417,6 +417,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -655,6 +656,7 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.Srgb,
         processInvalidImages: false,
         size: 1440,
@@ -705,6 +707,7 @@ describe(MediaService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.Srgb,
         processInvalidImages: false,
         size: 1440,
@@ -865,6 +868,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -883,6 +887,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -900,6 +905,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -918,6 +924,7 @@ describe(MediaService.name, () => {
       expect(mocks.media.extract).not.toHaveBeenCalled();
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -977,6 +984,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440, // capped to preview size as fullsize conversion is skipped
@@ -1015,6 +1023,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedBuffer, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1063,6 +1072,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1115,6 +1125,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: true,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1146,6 +1157,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: false,
         colorspace: Colorspace.Srgb,
         processInvalidImages: false,
         size: 1440,
@@ -1178,6 +1190,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: true,
         colorspace: Colorspace.Srgb,
         orientation: undefined,
         processInvalidImages: false,
@@ -1223,6 +1236,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
       expect(mocks.media.decodeImage).toHaveBeenCalledWith(asset.originalPath, {
+        checkAlpha: true,
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
@@ -1282,8 +1296,8 @@ describe(MediaService.name, () => {
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? { data: rawBuffer, info: rawInfo as OutputInfo, hasAlpha: false } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo, hasAlpha: false }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -1453,7 +1467,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1498,7 +1512,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1543,7 +1557,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1586,7 +1600,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1629,7 +1643,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 4624, height: 3080 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1672,7 +1686,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 4624, height: 3080 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1718,7 +1732,7 @@ describe(MediaService.name, () => {
       const data = Buffer.from('');
       const info = { width: 2160, height: 3840 } as OutputInfo;
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
       mocks.media.getImageDimensions.mockResolvedValue(info);
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1762,7 +1776,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1778,7 +1792,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
       const info = { width: 2160, height: 3840 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1800,7 +1814,7 @@ describe(MediaService.name, () => {
       const extracted = Buffer.from('');
       const data = Buffer.from('');
       const info = { width: 1000, height: 1000 } as OutputInfo;
-      mocks.media.decodeImage.mockResolvedValue({ data, info });
+      mocks.media.decodeImage.mockResolvedValue({ data, info, hasAlpha: false });
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue(info);
 

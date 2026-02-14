@@ -257,7 +257,7 @@ export class MediaService extends BaseService {
     return extracted;
   }
 
-  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number, checkAlpha?: boolean) {
     const { image } = await this.getConfig({ withCache: true });
     const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
     const decodeOptions: DecodeToBufferOptions = {
@@ -265,10 +265,11 @@ export class MediaService extends BaseService {
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
       size: targetSize,
       orientation: exifInfo.orientation ? Number(exifInfo.orientation) : undefined,
+      checkAlpha,
     };
 
-    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
-    return { info, data, colorspace };
+    const { info, data, hasAlpha } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+    return { info, data, colorspace, hasAlpha };
   }
 
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
@@ -280,12 +281,14 @@ export class MediaService extends BaseService {
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    const { data, info, colorspace } = await this.decodeImage(
+    const checkAlpha = !extracted && mimeTypes.canHaveAlpha(asset.originalPath);
+    const { data, info, colorspace, hasAlpha } = await this.decodeImage(
       extracted ? extracted.buffer : asset.originalPath,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
       convertFullsize ? undefined : image.preview.size,
+      checkAlpha,
     );
 
     return {
@@ -295,50 +298,57 @@ export class MediaService extends BaseService {
       colorspace,
       convertFullsize,
       generateFullsize,
+      hasAlpha,
     };
   }
 
   private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
+    // Handle embedded preview extraction for RAW files
+    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
+    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, hasAlpha } = extractedImage;
+
+    const previewFormat = this.resolveFinalImageFormat(hasAlpha, image.preview.format, asset.id);
+    const thumbnailFormat = this.resolveFinalImageFormat(hasAlpha, image.thumbnail.format, asset.id);
+
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
-      format: image.preview.format,
+      format: previewFormat,
       isEdited: useEdits,
-      isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
+      isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format,
+      format: thumbnailFormat,
       isEdited: useEdits,
-      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format !== ImageFormat.Webp,
+      isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    // Handle embedded preview extraction for RAW files
-    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
-    const { info, data, colorspace, generateFullsize, convertFullsize, extracted } = extractedImage;
-
     // generate final images
-    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
+    const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
-      this.mediaRepository.generateThumbhash(data, thumbnailOptions),
-      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewFile.path),
+      this.mediaRepository.generateThumbhash(data, baseOptions),
+      this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
+      const fullsizeFormat = this.resolveFinalImageFormat(hasAlpha, image.fullsize.format, asset.id);
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
-        format: image.fullsize.format,
+        format: fullsizeFormat,
         isEdited: useEdits,
-        isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
       });
       const fullsizeOptions = {
-        format: image.fullsize.format,
+        ...baseOptions,
+        format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
-        ...thumbnailOptions,
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
@@ -855,6 +865,16 @@ export class MediaService extends BaseService {
     await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);
 
     return generated;
+  }
+
+  private resolveFinalImageFormat(sourceHasAlpha: boolean, format: ImageFormat, assetId: string): ImageFormat {
+    if (sourceHasAlpha && format === ImageFormat.Jpeg) {
+      this.logger.debug(
+        `Overriding output format from ${format} to ${ImageFormat.Webp} to preserve alpha channel for asset ${assetId}`,
+      );
+      return ImageFormat.Webp;
+    }
+    return format;
   }
 
   private getImageFile(asset: ThumbnailPathEntity, options: ImagePathOptions & { isProgressive: boolean }) {
