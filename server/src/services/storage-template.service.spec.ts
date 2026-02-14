@@ -5,13 +5,12 @@ import { StorageTemplateService } from 'src/services/storage-template.service';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { UserFactory } from 'test/factories/user.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { getForStorageTemplate } from 'test/mappers';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
-const motionAsset = assetStub.storageAsset({ type: AssetType.Video });
-const stillAsset = assetStub.storageAsset({ livePhotoVideoId: motionAsset.id });
+const motionAsset = AssetFactory.from({ type: AssetType.Video }).exif().build();
+const stillAsset = AssetFactory.from({ livePhotoVideoId: motionAsset.id }).exif().build();
 
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
@@ -267,14 +266,14 @@ describe(StorageTemplateService.name, () => {
     describe('motion video processed directly', () => {
       it('should use still photo album info when motion video job is processed', async () => {
         const user = userStub.user1;
-        const album = albumStub.oneAsset;
+        const album = AlbumFactory.from().asset().build();
         const config = structuredClone(defaults);
         config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other{{/if}}/{{filename}}';
 
         sut.onConfigInit({ newConfig: config });
 
         mocks.user.get.mockResolvedValue(user);
-        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(motionAsset);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
         mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(stillAsset);
         mocks.album.getByAssetId.mockResolvedValue([album]);
 
@@ -298,13 +297,15 @@ describe(StorageTemplateService.name, () => {
 
       it('should use still photo date info when motion video job is triggered directly', async () => {
         const user = userStub.user1;
-        const stillPhotoWithDifferentDate = assetStub.storageAsset({
+        const stillPhotoWithDifferentDate = AssetFactory.from({
           livePhotoVideoId: motionAsset.id,
           fileCreatedAt: new Date('2023-08-15T10:30:00.000Z'),
-        });
+        })
+          .exif()
+          .build();
 
         mocks.user.get.mockResolvedValue(user);
-        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(motionAsset);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
         mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(stillPhotoWithDifferentDate);
 
         mocks.move.create.mockResolvedValueOnce({
@@ -327,15 +328,17 @@ describe(StorageTemplateService.name, () => {
 
       it('should process standalone video normally when no still photo exists', async () => {
         const user = userStub.user1;
-        const standaloneVideo = assetStub.storageAsset({
+        const standaloneVideo = AssetFactory.from({
           id: 'standalone-video',
           type: AssetType.Video,
           originalFileName: 'video.mp4',
           originalPath: '/original/video.mp4',
-        });
+        })
+          .exif()
+          .build();
 
         mocks.user.get.mockResolvedValue(user);
-        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(standaloneVideo);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(standaloneVideo));
         mocks.assetJob.getStillPhotoForMotionVideo.mockImplementationOnce(
           (): Promise<any | undefined> => Promise.resolve(),
         );
@@ -842,15 +845,15 @@ describe(StorageTemplateService.name, () => {
 
     it('should use still photo album info when migrating live photo motion video', async () => {
       const user = userStub.user1;
-      const album = albumStub.oneAsset;
+      const album = AlbumFactory.from().asset().build();
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other{{/if}}/{{filename}}';
 
       sut.onConfigInit({ newConfig: config });
 
-      mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([stillAsset]));
+      mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([getForStorageTemplate(stillAsset)]));
       mocks.user.getList.mockResolvedValue([user]);
-      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(motionAsset);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
       mocks.album.getByAssetId.mockResolvedValue([album]);
 
       mocks.move.create.mockResolvedValueOnce({

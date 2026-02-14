@@ -617,7 +617,8 @@ select
         select
           "asset_file"."id",
           "asset_file"."path",
-          "asset_file"."type"
+          "asset_file"."type",
+          "asset_file"."isEdited"
         from
           "asset_file"
         where
