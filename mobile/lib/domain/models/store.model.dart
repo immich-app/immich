@@ -91,7 +91,11 @@ enum StoreKey<T> {
   cleanupCutoffDaysAgo<int>._(1011),
   cleanupDefaultsInitialized<bool>._(1012),
 
-  syncMigrationStatus<String>._(1013);
+  syncMigrationStatus<String>._(1013),
+
+  smartCacheEnabled<bool>._(1100),
+  smartCacheHighResDays<int>._(1101),
+  smartCacheLastCleanup<int>._(1102);
 
   const StoreKey._(this.id);
   final int id;
