@@ -50,6 +50,7 @@ export type RawImageInfo = {
   width: number;
   height: number;
   channels: 1 | 2 | 3 | 4;
+  hasAlpha: boolean;
 };
 
 type DecodeImageOptions = {
