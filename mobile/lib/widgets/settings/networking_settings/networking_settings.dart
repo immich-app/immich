@@ -20,7 +20,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentEndpoint = getServerUrl();
+    final currentEndpoint = useState(getServerUrl());
     final featureEnabled = useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
 
     Future<void> checkWifiReadPermission() async {
@@ -93,7 +93,7 @@ class NetworkingSettings extends HookConsumerWidget {
         const SizedBox(height: 8),
         SettingGroupTitle(
           title: "current_server_address".t(context: context),
-          icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
+          icon: (currentEndpoint.value?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -104,11 +104,11 @@ class NetworkingSettings extends HookConsumerWidget {
               side: BorderSide(color: context.colorScheme.surfaceContainerHighest, width: 1),
             ),
             child: ListTile(
-              leading: currentEndpoint != null
+              leading: currentEndpoint.value != null
                   ? const Icon(Icons.check_circle_rounded, color: Colors.green)
                   : const Icon(Icons.circle_outlined),
               title: Text(
-                currentEndpoint ?? "--",
+                currentEndpoint.value ?? "--",
                 style: TextStyle(fontSize: 14, fontFamily: 'GoogleSansCode', color: context.primaryColor),
               ),
               trailing: IconButton(
@@ -145,8 +145,8 @@ class NetworkingSettings extends HookConsumerWidget {
   }
 }
 
-void _showChangeEndpointDialog(BuildContext context, WidgetRef ref, String? currentEndpoint) {
-  final controller = TextEditingController(text: currentEndpoint ?? '');
+void _showChangeEndpointDialog(BuildContext context, WidgetRef ref, ValueNotifier<String?> currentEndpoint) {
+  final controller = TextEditingController(text: currentEndpoint.value ?? '');
   final formKey = GlobalKey<FormState>();
   var isLoading = false;
 
@@ -204,6 +204,8 @@ void _showChangeEndpointDialog(BuildContext context, WidgetRef ref, String? curr
                           final newUrl = sanitizeUrl(controller.text);
                           final validEndpoint = await ref.read(authProvider.notifier).validateNewEndpoint(newUrl);
                           await ref.read(authProvider.notifier).changeServerEndpoint(validEndpoint);
+
+                          currentEndpoint.value = validEndpoint.replaceAll('/api', '');
 
                           if (dialogContext.mounted) {
                             Navigator.pop(dialogContext);
