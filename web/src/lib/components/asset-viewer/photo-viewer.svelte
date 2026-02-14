@@ -226,7 +226,7 @@
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]} checkerboard"
+          : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
       <!-- eslint-disable-next-line svelte/require-each-key -->
@@ -258,9 +258,5 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
-  }
-  .checkerboard {
-    background-image: conic-gradient(#808080 25%, #b0b0b0 25% 50%, #808080 50% 75%, #b0b0b0 75%);
-    background-size: 20px 20px;
   }
 </style>

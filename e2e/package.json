@@ -21,9 +21,9 @@
   "devDependencies": {
     "@eslint/js": "^9.8.0",
     "@faker-js/faker": "^10.1.0",
-    "@immich/cli": "file:../cli",
-    "@immich/e2e-auth-server": "file:../e2e-auth-server",
-    "@immich/sdk": "file:../open-api/typescript-sdk",
+    "@immich/cli": "workspace:*",
+    "@immich/e2e-auth-server":  "workspace:*",
+    "@immich/sdk": "workspace:*",
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
