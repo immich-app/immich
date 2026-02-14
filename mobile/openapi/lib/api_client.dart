@@ -264,6 +264,10 @@ class ApiClient {
           return AssetFaceUpdateItem.fromJson(value);
         case 'AssetFaceWithoutPersonResponseDto':
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
+        case 'AssetFileResponseDto':
+          return AssetFileResponseDto.fromJson(value);
+        case 'AssetFileType':
+          return AssetFileTypeTypeTransformer().decode(value);
         case 'AssetFullSyncDto':
           return AssetFullSyncDto.fromJson(value);
         case 'AssetIdsDto':

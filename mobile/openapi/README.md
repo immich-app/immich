@@ -95,6 +95,10 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | Remove user from album
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | Update an album
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | Update user role
+*AssetFilesApi* | [**deleteAssetFile**](doc//AssetFilesApi.md#deleteassetfile) | **DELETE** /asset-files/{id} | Delete an asset file
+*AssetFilesApi* | [**downloadAssetFile**](doc//AssetFilesApi.md#downloadassetfile) | **GET** /asset-files/{id}/download | Download an asset file
+*AssetFilesApi* | [**getAssetFile**](doc//AssetFilesApi.md#getassetfile) | **GET** /asset-files/{id} | Retrieve an asset file
+*AssetFilesApi* | [**searchAssetFiles**](doc//AssetFilesApi.md#searchassetfiles) | **GET** /asset-files | Retrieve an asset file
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | Check bulk upload
 *AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | Check existing assets
 *AssetsApi* | [**copyAsset**](doc//AssetsApi.md#copyasset) | **PUT** /assets/copy | Copy asset
@@ -370,6 +374,8 @@ Class | Method | HTTP request | Description
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
  - [AssetFaceWithoutPersonResponseDto](doc//AssetFaceWithoutPersonResponseDto.md)
+ - [AssetFileResponseDto](doc//AssetFileResponseDto.md)
+ - [AssetFileType](doc//AssetFileType.md)
  - [AssetFullSyncDto](doc//AssetFullSyncDto.md)
  - [AssetIdsDto](doc//AssetIdsDto.md)
  - [AssetIdsResponseDto](doc//AssetIdsResponseDto.md)
