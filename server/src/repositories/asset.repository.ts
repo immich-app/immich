@@ -466,6 +466,33 @@ export class AssetRepository {
     return count;
   }
 
+  async getVideosForLinking(ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id', 'originalFileName'])
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('type', '=', AssetType.Video)
+      .where('deletedAt', 'is', null)
+      .where('visibility', '!=', AssetVisibility.Hidden)
+      .execute();
+  }
+
+  async getImagesForLinking(ownerId: string, force: boolean, limit: number, offset: number) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['asset.id', 'asset.originalFileName', 'asset.livePhotoVideoId'])
+      .where('asset.ownerId', '=', asUuid(ownerId))
+      .where('asset.type', '=', AssetType.Image)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset_exif.make', 'ilike', '%vivo%')
+      .$if(!force, (qb) => qb.where('asset.livePhotoVideoId', 'is', null))
+      .limit(limit)
+      .offset(offset)
+      .orderBy('asset.id')
+      .execute();
+  }
+
   @GenerateSql()
   getFileSamples() {
     return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();

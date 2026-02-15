@@ -198,6 +198,10 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
+export interface ILinkVivoLivePhotosJob extends IBaseJob {
+  userId: string;
+}
+
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
@@ -371,6 +375,10 @@ export type JobItem =
   | { name: JobName.LibraryDelete; data: IEntityJob }
   | { name: JobName.LibraryScanQueueAll; data?: IBaseJob }
   | { name: JobName.LibraryDeleteCheck; data: IBaseJob }
+
+  // Link Live Photos
+  | { name: JobName.LinkVivoLivePhotosQueueAll; data?: IBaseJob }
+  | { name: JobName.LinkVivoLivePhotos; data: ILinkVivoLivePhotosJob }
 
   // Notification
   | { name: JobName.SendMail; data: IEmailJob }

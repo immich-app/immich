@@ -18528,7 +18528,9 @@
           "user-cleanup",
           "memory-cleanup",
           "memory-create",
-          "backup-database"
+          "backup-database",
+          "link-vivo-live-photos-all",
+          "link-vivo-live-photos-missing"
         ],
         "type": "string"
       },

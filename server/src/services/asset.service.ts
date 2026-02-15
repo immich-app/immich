@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import path from 'path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
@@ -616,5 +617,67 @@ export class AssetService extends BaseService {
 
     await this.assetEditRepository.replaceAll(id, []);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
+  }
+
+  @OnJob({ name: JobName.LinkVivoLivePhotosQueueAll, queue: QueueName.BackgroundTask })
+  async handleLinkVivoLivePhotosQueueAll(job: JobOf<JobName.LinkVivoLivePhotosQueueAll>): Promise<JobStatus> {
+    const { force } = job || {};
+    const users = await this.userRepository.getList();
+    for (const user of users) {
+      await this.jobRepository.queue({ name: JobName.LinkVivoLivePhotos, data: { userId: user.id, force } });
+    }
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.LinkVivoLivePhotos, queue: QueueName.BackgroundTask })
+  async handleLinkVivoLivePhotos(job: JobOf<JobName.LinkVivoLivePhotos>): Promise<JobStatus> {
+    const { userId, force } = job || {};
+    if (!userId) {
+      return JobStatus.Failed;
+    }
+
+    const videos = await this.assetRepository.getVideosForLinking(userId);
+    const videoMap = new Map<string, string>();
+    for (const video of videos) {
+      const name = path.parse(video.originalFileName).name.toLowerCase();
+      if (!videoMap.has(name)) {
+        videoMap.set(name, video.id);
+      }
+    }
+
+    const repos = { asset: this.assetRepository, event: this.eventRepository };
+
+    let hasNext = true;
+    let offset = 0;
+
+    while (hasNext) {
+      const images = await this.assetRepository.getImagesForLinking(userId, !!force, JOBS_ASSET_PAGINATION_SIZE, offset);
+      for (const image of images) {
+        if (!force && image.livePhotoVideoId) {
+          continue;
+        }
+
+        const name = path.parse(image.originalFileName).name.toLowerCase();
+        const motionId = videoMap.get(name);
+        if (motionId) {
+          // Skip if already linked to the same video
+          if (image.livePhotoVideoId === motionId) {
+            continue;
+          }
+
+          try {
+            await onBeforeLink(repos, { userId, livePhotoVideoId: motionId });
+            await this.assetRepository.update({ id: image.id, livePhotoVideoId: motionId });
+          } catch (error: any) {
+            this.logger.error(`Failed to link live photo ${image.id} with video ${motionId}`, error);
+          }
+        }
+      }
+
+      offset += images.length;
+      hasNext = images.length === JOBS_ASSET_PAGINATION_SIZE;
+    }
+
+    return JobStatus.Success;
   }
 }

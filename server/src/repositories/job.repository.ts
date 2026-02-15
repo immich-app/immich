@@ -233,6 +233,9 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.LinkVivoLivePhotos: {
+        return { jobId: `${JobName.LinkVivoLivePhotos}/${item.data.userId}` };
+      }
       default: {
         return null;
       }

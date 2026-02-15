@@ -367,6 +367,8 @@ export enum ManualJobName {
   MemoryCleanup = 'memory-cleanup',
   MemoryCreate = 'memory-create',
   BackupDatabase = 'backup-database',
+  LinkVivoLivePhotosAll = 'link-vivo-live-photos-all',
+  LinkVivoLivePhotosMissing = 'link-vivo-live-photos-missing',
 }
 
 export enum AssetPathType {
@@ -614,6 +616,8 @@ export enum JobName {
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
+  LinkVivoLivePhotos = 'LinkVivoLivePhotos',
+  LinkVivoLivePhotosQueueAll = 'LinkVivoLivePhotosQueueAll',
 
   MemoryCleanup = 'MemoryCleanup',
   MemoryGenerate = 'MemoryGenerate',

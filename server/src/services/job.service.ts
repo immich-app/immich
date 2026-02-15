@@ -34,6 +34,14 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.DatabaseBackup };
     }
 
+    case ManualJobName.LinkVivoLivePhotosAll: {
+      return { name: JobName.LinkVivoLivePhotosQueueAll, data: { force: true } };
+    }
+
+    case ManualJobName.LinkVivoLivePhotosMissing: {
+      return { name: JobName.LinkVivoLivePhotosQueueAll, data: { force: false } };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
