@@ -14,6 +14,7 @@ class SharedLink {
   final String key;
   final bool showMetadata;
   final SharedLinkSource type;
+  final String? slug;
 
   const SharedLink({
     required this.id,
@@ -27,6 +28,7 @@ class SharedLink {
     required this.key,
     required this.showMetadata,
     required this.type,
+    required this.slug,
   });
 
   SharedLink copyWith({
@@ -41,6 +43,7 @@ class SharedLink {
     String? key,
     bool? showMetadata,
     SharedLinkSource? type,
+    String? slug,
   }) {
     return SharedLink(
       id: id ?? this.id,
@@ -54,6 +57,7 @@ class SharedLink {
       key: key ?? this.key,
       showMetadata: showMetadata ?? this.showMetadata,
       type: type ?? this.type,
+      slug: slug ?? this.slug,
     );
   }
 
@@ -66,6 +70,7 @@ class SharedLink {
       expiresAt = dto.expiresAt,
       key = dto.key,
       showMetadata = dto.showMetadata,
+      slug = dto.slug,
       type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
       title = dto.type == SharedLinkType.ALBUM
           ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
@@ -78,7 +83,7 @@ class SharedLink {
 
   @override
   String toString() =>
-      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, type=$type)';
+      'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, type=$type, slug=$slug)';
 
   @override
   bool operator ==(Object other) =>
@@ -94,7 +99,8 @@ class SharedLink {
           other.expiresAt == expiresAt &&
           other.key == key &&
           other.showMetadata == showMetadata &&
-          other.type == type;
+          other.type == type &&
+          other.slug == slug;
 
   @override
   int get hashCode =>
@@ -108,5 +114,6 @@ class SharedLink {
       expiresAt.hashCode ^
       key.hashCode ^
       showMetadata.hashCode ^
-      type.hashCode;
+      type.hashCode ^
+      slug.hashCode;
 }

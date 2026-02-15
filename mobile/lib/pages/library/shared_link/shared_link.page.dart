@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/widgets/shared_link/shared_link_item.dart';
@@ -26,71 +25,41 @@ class SharedLinkPage extends HookConsumerWidget {
     }, []);
 
     Widget buildNoShares() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-            child: const Text(
-              "shared_link_manage_links",
-              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-            ).tr(),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: const Text("you_dont_have_any_shared_links", style: TextStyle(fontSize: 14)).tr(),
-            ),
-          ),
-          Expanded(
-            child: Center(
-              child: Icon(Icons.link_off, size: 100, color: context.themeData.iconTheme.color?.withValues(alpha: 0.5)),
-            ),
-          ),
-        ],
+      return Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.link_off, size: 100, color: Theme.of(context).colorScheme.onSurface.withAlpha(128)),
+            const SizedBox(height: 20),
+            const Text("you_dont_have_any_shared_links", style: TextStyle(fontSize: 14)).tr(),
+          ],
+        ),
       );
     }
 
     Widget buildSharesList(List<SharedLink> links) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 30.0),
-            child: Text(
-              "shared_link_manage_links",
-              style: context.textTheme.labelLarge?.copyWith(color: context.textTheme.labelLarge?.color?.withAlpha(200)),
-            ).tr(),
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 600) {
-                  // Two column
-                  return GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisExtent: 180,
-                    ),
-                    itemCount: links.length,
-                    itemBuilder: (context, index) {
-                      return SharedLinkItem(links.elementAt(index));
-                    },
-                  );
-                }
-
-                // Single column
-                return ListView.builder(
-                  itemCount: links.length,
-                  itemBuilder: (context, index) {
-                    return SharedLinkItem(links.elementAt(index));
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+      return LayoutBuilder(
+        builder: (context, constraints) => constraints.maxWidth > 600
+            ? GridView.builder(
+                key: const PageStorageKey('shared-links-grid'),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisExtent: 180,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                ),
+                padding: const EdgeInsets.all(12),
+                itemCount: links.length,
+                itemBuilder: (context, index) => SharedLinkItem(links[index]),
+              )
+            : ListView.separated(
+                key: const PageStorageKey('shared-links-list'),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: links.length,
+                itemBuilder: (context, index) => SharedLinkItem(links[index]),
+                separatorBuilder: (context, index) => const Divider(height: 1),
+              ),
       );
     }
 
