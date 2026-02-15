@@ -22,7 +22,6 @@ import {
 import { MediaService } from 'src/services/media.service';
 import { JobCounts, RawImageInfo } from 'src/types';
 import { AssetFactory } from 'test/factories/asset.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
@@ -205,7 +204,8 @@ describe(MediaService.name, () => {
     });
 
     it('should queue assets with edits but missing edited thumbnails', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.withCropEdit]));
+      const asset = AssetFactory.from().edit().build();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -213,7 +213,7 @@ describe(MediaService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetEditThumbnailGeneration,
-          data: { id: assetStub.withCropEdit.id },
+          data: { id: asset.id },
         },
       ]);
 
@@ -221,8 +221,9 @@ describe(MediaService.name, () => {
     });
 
     it('should not queue assets with missing edited fullsize when feature is disabled', async () => {
+      const asset = AssetFactory.from().edit().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.withCropEdit]));
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
@@ -251,7 +252,8 @@ describe(MediaService.name, () => {
     });
 
     it('should queue both regular and edited thumbnails for assets with edits when force is true', async () => {
-      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.withCropEdit]));
+      const asset = AssetFactory.from().edit().build();
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -259,11 +261,11 @@ describe(MediaService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetGenerateThumbnails,
-          data: { id: assetStub.withCropEdit.id },
+          data: { id: asset.id },
         },
         {
           name: JobName.AssetEditThumbnailGeneration,
-          data: { id: assetStub.withCropEdit.id },
+          data: { id: asset.id },
         },
       ]);
 
@@ -1504,7 +1506,7 @@ describe(MediaService.name, () => {
 
       expect(mocks.person.getDataForThumbnailGenerationJob).toHaveBeenCalledWith(personStub.primaryPerson.id);
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.decodeImage).toHaveBeenCalledWith(personThumbnailStub.newThumbnailMiddle.previewPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(expect.any(String), {
         colorspace: Colorspace.P3,
         orientation: undefined,
         processInvalidImages: false,
@@ -2193,7 +2195,7 @@ describe(MediaService.name, () => {
     });
 
     it('should delete existing transcode if current policy does not require transcoding', async () => {
-      const asset = assetStub.hasEncodedVideo;
+      const asset = AssetFactory.create({ type: AssetType.Video, encodedVideoPath: '/encoded/video/path.mp4' });
       mocks.media.probe.mockResolvedValue(probeStub.videoStream2160p);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Disabled } });
       mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);

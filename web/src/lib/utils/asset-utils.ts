@@ -4,7 +4,6 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { preferences } from '$lib/stores/user.store';
@@ -443,13 +442,15 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
 
   try {
     for (const monthGroup of timelineManager.months) {
-      await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      if (!monthGroup.isLoaded) {
+        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      }
 
       if (!assetInteraction.selectAll) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
+      assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
 
       for (const dateGroup of monthGroup.dayGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
