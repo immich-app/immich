@@ -1,0 +1,37 @@
+name: Check OpenAPI
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'open-api/**'
+      - '.github/workflows/check-openapi.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'open-api/**'
+      - '.github/workflows/check-openapi.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check-openapi:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check for breaking API changes
+        # sha is pinning to a commit instead of a tag since the action does not tag versions
+        uses: oasdiff/oasdiff-action/breaking@ccb863950ce437a50f8f1a40d2a1112117e06ce4
+        with:
+          base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
+          revision: open-api/immich-openapi-specs.json
+          fail-on: ERR
