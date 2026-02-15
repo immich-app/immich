@@ -24,13 +24,13 @@ import 'package:immich_mobile/providers/search/search_input_focus.provider.dart'
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_mobile/widgets/common/tag_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_scaffold.dart';
 import 'package:immich_mobile/widgets/search/search_filter/location_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
-import 'package:immich_mobile/widgets/search/search_filter/tag_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
@@ -140,15 +140,10 @@ class DriftSearchPage extends HookConsumerWidget {
       handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(people: value);
 
-        final label = value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
-        if (label.isEmpty) {
-          peopleCurrentFilterWidget.value = null;
-        } else {
-          peopleCurrentFilterWidget.value = Text(
-            label.isEmpty ? 'people'.t(context: context) : label,
-            style: context.textTheme.labelLarge,
-          );
-        }
+        peopleCurrentFilterWidget.value = Text(
+          value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', '),
+          style: context.textTheme.labelLarge,
+        );
       }
 
       handleClear() {

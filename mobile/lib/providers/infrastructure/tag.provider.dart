@@ -1,17 +1,17 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/infrastructure/repositories/tags_api.repository.dart';
 
-class TagNotifier extends AsyncNotifier<List<Tag>> {
+class TagNotifier extends AsyncNotifier<Set<Tag>> {
   @override
-  Future<List<Tag>> build() async {
-    final api = ref.read(apiServiceProvider).tagsApi;
-    final allTags = await api.getAllTags();
+  Future<Set<Tag>> build() async {
+    final repo = ref.read(tagsApiRepositoryProvider);
+    final allTags = await repo.getAllTags();
     if (allTags == null) {
-      return [];
+      return {};
     }
-    return allTags.map((t) => Tag.fromDto(t)).toList();
+    return allTags.map((t) => Tag.fromDto(t)).toSet();
   }
 }
 
-final tagServiceProvider = AsyncNotifierProvider<TagNotifier, List<Tag>>(TagNotifier.new);
+final tagProvider = AsyncNotifierProvider<TagNotifier, Set<Tag>>(TagNotifier.new);

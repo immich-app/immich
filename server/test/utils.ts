@@ -75,7 +75,6 @@ import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositorie
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
@@ -279,6 +278,14 @@ export const getMocks = () => {
   const loggerMock = { setContext: () => {} };
   const configMock = { getEnv: () => ({}) };
 
+  // eslint-disable-next-line no-sparse-arrays
+  const databaseMock = automock(DatabaseRepository, { args: [, loggerMock], strict: false });
+
+  databaseMock.withLock.mockImplementation((_type, fn) => fn());
+  databaseMock.getPostgresVersion = vitest.fn().mockResolvedValue('14.10 (Debian 14.10-1.pgdg120+1)');
+  databaseMock.getPostgresVersionRange = vitest.fn().mockReturnValue('>=14.0.0');
+  databaseMock.createExtension = vitest.fn().mockResolvedValue(void 0);
+
   const mocks: ServiceMocks = {
     access: newAccessRepositoryMock(),
     // eslint-disable-next-line no-sparse-arrays
@@ -295,7 +302,7 @@ export const getMocks = () => {
     assetJob: automock(AssetJobRepository),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
-    database: newDatabaseRepositoryMock(),
+    database: databaseMock,
     downloadRepository: automock(DownloadRepository, { strict: false }),
     duplicateRepository: automock(DuplicateRepository),
     email: automock(EmailRepository, { args: [loggerMock] }),
