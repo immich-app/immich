@@ -16,6 +16,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onLongPressStart,
     this.child,
     this.onTapUp,
@@ -34,6 +35,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
   final GestureDragEndCallback? onDragEnd;
   final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
+  final GestureDragCancelCallback? onDragCancel;
 
   final GestureTapUpCallback? onTapUp;
   final GestureTapDownCallback? onTapDown;
@@ -73,7 +75,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
           instance
             ..onStart = onDragStart
             ..onUpdate = onDragUpdate
-            ..onEnd = onDragEnd;
+            ..onEnd = onDragEnd
+            ..onCancel = onDragCancel;
         },
       );
     }

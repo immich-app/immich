@@ -3,16 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/events.model.dart';
-import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -35,8 +34,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
-    int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
+    final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
+    double opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
@@ -44,7 +43,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     if (!showControls) {
-      opacity = 0;
+      opacity = 0.0;
     }
 
     final originalTheme = context.themeData;
@@ -55,7 +54,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
+            context.router.push(
+              DriftActivitiesRoute(
+                album: album,
+                assetId: asset is RemoteAsset ? asset.id : null,
+                assetName: asset.name,
+              ),
+            );
           },
         ),
 
@@ -70,17 +75,17 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final lockedViewActions = <Widget>[ViewerKebabMenu(originalTheme: originalTheme)];
 
     return IgnorePointer(
-      ignoring: opacity < 255,
+      ignoring: opacity < 1.0,
       child: AnimatedOpacity(
-        opacity: opacity / 255,
+        opacity: opacity,
         duration: Durations.short2,
         child: AppBar(
-          backgroundColor: isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
+          backgroundColor: showingDetails ? Colors.transparent : Colors.black.withValues(alpha: 0.5),
           leading: const _AppBarBackButton(),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet || isReadonlyModeEnabled
+          actions: showingDetails || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions
@@ -99,9 +104,9 @@ class _AppBarBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
-    final backgroundColor = isShowingSheet && !context.isDarkTheme ? Colors.white : Colors.black;
-    final foregroundColor = isShowingSheet && !context.isDarkTheme ? Colors.black : Colors.white;
+    final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
+    final backgroundColor = showingDetails && !context.isDarkTheme ? Colors.white : Colors.black;
+    final foregroundColor = showingDetails && !context.isDarkTheme ? Colors.black : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12.0),
@@ -112,7 +117,7 @@ class _AppBarBackButton extends ConsumerWidget {
           iconSize: 22,
           iconColor: foregroundColor,
           padding: EdgeInsets.zero,
-          elevation: isShowingSheet ? 4 : 0,
+          elevation: showingDetails ? 4 : 0,
         ),
         onPressed: context.maybePop,
         child: const Icon(Icons.arrow_back_rounded),

@@ -5,7 +5,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/utils/hooks/timer_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/center_play_button.dart';
 import 'package:immich_mobile/widgets/common/delayed_loading_indicator.dart';
@@ -19,8 +19,8 @@ class VideoViewerControls extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final assetIsVideo = ref.watch(currentAssetNotifier.select((asset) => asset != null && asset.isVideo));
     bool showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final showBottomSheet = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    if (showBottomSheet) {
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
+    if (showingDetails) {
       showControls = false;
     }
     final VideoPlaybackState state = ref.watch(videoPlaybackValueProvider.select((value) => value.state));
