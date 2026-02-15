@@ -211,6 +211,7 @@ part 'model/notification_type.dart';
 part 'model/notification_update_all_dto.dart';
 part 'model/notification_update_dto.dart';
 part 'model/o_auth_authorize_response_dto.dart';
+part 'model/o_auth_backchannel_logout_dto.dart';
 part 'model/o_auth_callback_dto.dart';
 part 'model/o_auth_config_dto.dart';
 part 'model/o_auth_token_endpoint_auth_method.dart';

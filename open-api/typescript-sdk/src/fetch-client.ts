@@ -438,6 +438,8 @@ export type SessionResponseDto = {
     id: string;
     /** Is pending sync reset */
     isPendingSyncReset: boolean;
+    /** OAuth session ID */
+    oauthSid?: string | null;
     /** Last update date */
     updatedAt: string;
 };
@@ -1451,6 +1453,10 @@ export type OAuthAuthorizeResponseDto = {
     /** OAuth authorization URL */
     url: string;
 };
+export type OAuthBackchannelLogoutDto = {
+    /** OAuth logout token */
+    logout_token: string;
+};
 export type OAuthCallbackDto = {
     /** OAuth code verifier (PKCE) */
     codeVerifier?: string;
@@ -2226,6 +2232,8 @@ export type SessionCreateResponseDto = {
     id: string;
     /** Is pending sync reset */
     isPendingSyncReset: boolean;
+    /** OAuth session ID */
+    oauthSid?: string | null;
     /** Session token */
     token: string;
     /** Last update date */
@@ -4982,6 +4990,18 @@ export function startOAuth({ oAuthConfigDto }: {
         ...opts,
         method: "POST",
         body: oAuthConfigDto
+    })));
+}
+/**
+ * Backchannel OAuth logout
+ */
+export function logoutOAuth({ oAuthBackchannelLogoutDto }: {
+    oAuthBackchannelLogoutDto: OAuthBackchannelLogoutDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/oauth/backchannel-logout", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: oAuthBackchannelLogoutDto
     })));
 }
 /**

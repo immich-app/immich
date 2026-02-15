@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isString } from 'class-validator';
 import { parse } from 'cookie';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
@@ -13,6 +14,7 @@ import {
   ChangePasswordDto,
   LoginCredentialDto,
   LogoutResponseDto,
+  OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   PinCodeChangeDto,
@@ -90,6 +92,40 @@ export class AuthService extends BaseService {
       successful: true,
       redirectUri: await this.getLogoutEndpoint(authType),
     };
+  }
+
+  async backchannelLogout(dto: OAuthBackchannelLogoutDto): Promise<void> {
+    try {
+      const claims = await this.validateLogoutToken(dto.logout_token);
+      if (!claims) {
+        throw new BadRequestException('Invalid logout token: no claims found');
+      }
+
+      if (!claims.sub && !claims.sid) {
+        throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
+      }
+
+      if (claims.sub && !claims.sid) {
+        const user = await this.userRepository.getByOAuthId(claims.sub);
+        if (!user) {
+          throw new BadRequestException('User not found');
+        }
+        await this.sessionRepository.invalidateByUserId({ userId: user.id });
+      } else if (!claims.sub && claims.sid) {
+        await this.sessionRepository.invalidateByOAuthSid(claims.sid);
+      } else if (claims.sub && claims.sid) {
+        const user = await this.userRepository.getByOAuthId(claims.sub);
+        if (!user) {
+          throw new BadRequestException('User not found');
+        }
+        await this.sessionRepository.invalidateByOAuthSidAndUserId(claims.sid, user.id);
+      }
+    } catch (error: Error | any) {
+      this.logger.error(`Error backchannel logout: ${error.message}`);
+      this.logger.error(error);
+
+      throw new BadRequestException('Error backchannel logout');
+    }
   }
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
@@ -273,7 +309,12 @@ export class AuthService extends BaseService {
 
     const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
-    const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const { profile, oauthSid: oauthSid } = await this.oauthRepository.getProfileAndOAuthSid(
+      oauth,
+      url,
+      expectedState,
+      codeVerifier,
+    );
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
@@ -335,7 +376,7 @@ export class AuthService extends BaseService {
       await this.syncProfilePicture(user, profile.picture);
     }
 
-    return this.createLoginResponse(user, loginDetails);
+    return this.createLoginResponse(user, loginDetails, oauthSid);
   }
 
   private async syncProfilePicture(user: UserAdmin, url: string) {
@@ -373,7 +414,9 @@ export class AuthService extends BaseService {
     }
 
     const { oauth } = await this.getConfig({ withCache: false });
-    const { sub: oauthId } = await this.oauthRepository.getProfile(oauth, dto.url, expectedState, codeVerifier);
+    const {
+      profile: { sub: oauthId },
+    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
@@ -541,7 +584,7 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
   }
 
-  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
+  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails, oauthSid?: string) {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const tokenHashed = this.cryptoRepository.hashSha256(token);
 
@@ -551,6 +594,7 @@ export class AuthService extends BaseService {
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,
       userId: user.id,
+      oauthSid,
     });
 
     return mapLoginResponse(user, token);
@@ -586,5 +630,47 @@ export class AuthService extends BaseService {
       expiresAt: session?.expiresAt?.toISOString(),
       pinExpiresAt: session?.pinExpiresAt?.toISOString(),
     };
+  }
+
+  async validateLogoutToken(logoutToken: string): Promise<{ sub?: string; sid?: string } | null> {
+    const { oauth } = await this.getConfig({ withCache: false });
+
+    if (!oauth.enabled) {
+      throw new Error('Received logout token but OAuth is disabled');
+    }
+
+    const jwksUri = await this.oauthRepository.getJwksUri(oauth);
+
+    try {
+      const JWKS = createRemoteJWKSet(new URL(jwksUri));
+
+      const { payload } = await jwtVerify(logoutToken, JWKS, {
+        issuer: oauth.issuerUrl,
+        audience: oauth.clientId,
+        algorithms: ['RS256'],
+      });
+
+      // Validate specific Logout Token claims (RFC 8963):
+      // "events" claim must exist and contain the backchannel-logout event
+      const events = payload.events as Record<string, any> | undefined;
+      if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
+        throw new Error('Missing backchannel-logout event claim');
+      }
+
+      // "nonce" must not be present
+      if (payload.nonce) {
+        throw new Error('Logout token must not contain a nonce');
+      }
+
+      return {
+        sub: payload.sub,
+        sid: payload.sid as string | undefined,
+      };
+    } catch (error: Error | any) {
+      this.logger.error(`Error validating JWT logout token: ${error.message}`);
+      this.logger.error(error);
+
+      throw new Error('Error validating JWT logout token', { cause: error });
+    }
   }
 }
