@@ -341,7 +341,6 @@
           />
           <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
             <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
           </ButtonContextMenu>
           {#if isAllUserOwned}
             <FavoriteAction

@@ -132,7 +132,6 @@
       />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
