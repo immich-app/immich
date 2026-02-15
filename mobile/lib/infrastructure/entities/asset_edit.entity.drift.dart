@@ -374,6 +374,10 @@ typedef $$AssetEditEntityTableProcessedTableManager =
       i1.AssetEditEntityData,
       i0.PrefetchHooks Function({bool assetId})
     >;
+i0.Index get idxAssetEditAssetId => i0.Index(
+  'idx_asset_edit_asset_id',
+  'CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)',
+);
 
 class $AssetEditEntityTable extends i4.AssetEditEntity
     with i0.TableInfo<$AssetEditEntityTable, i1.AssetEditEntityData> {

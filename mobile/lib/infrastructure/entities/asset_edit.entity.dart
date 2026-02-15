@@ -4,6 +4,7 @@ import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.da
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)')
 class AssetEditEntity extends Table with DriftDefaultsMixin {
   const AssetEditEntity();
 

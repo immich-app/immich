@@ -230,6 +230,7 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from19To20: (m, v20) async {
             await m.createTable(v20.assetEditEntity);
+            await m.createIndex(v20.idxAssetEditAssetId);
           },
         ),
       );

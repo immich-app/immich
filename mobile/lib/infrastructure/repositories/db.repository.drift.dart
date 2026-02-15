@@ -139,6 +139,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     i18.idxAssetFaceAssetId,
     i20.idxTrashedLocalAssetChecksum,
     i20.idxTrashedLocalAssetAlbum,
+    i21.idxAssetEditAssetId,
   ];
   @override
   i0.StreamQueryUpdateRules

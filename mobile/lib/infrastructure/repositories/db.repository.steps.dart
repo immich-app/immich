@@ -8406,6 +8406,7 @@ final class Schema20 extends i0.VersionedSchema {
     idxAssetFaceAssetId,
     idxTrashedLocalAssetChecksum,
     idxTrashedLocalAssetAlbum,
+    idxAssetEditAssetId,
   ];
   late final Shape20 userEntity = Shape20(
     source: i0.VersionedTable(
@@ -8872,6 +8873,10 @@ final class Schema20 extends i0.VersionedSchema {
   final i1.Index idxTrashedLocalAssetAlbum = i1.Index(
     'idx_trashed_local_asset_album',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
+  );
+  final i1.Index idxAssetEditAssetId = i1.Index(
+    'idx_asset_edit_asset_id',
+    'CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)',
   );
 }
 
