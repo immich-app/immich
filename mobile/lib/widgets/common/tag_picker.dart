@@ -18,8 +18,9 @@ class TagPicker extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
     final searchQuery = useState('');
-    final tags = ref.watch(tagServiceProvider);
+    final tags = ref.watch(tagProvider);
     final selectedTagIds = useState<Set<String>>(filter);
+    final borderRadius = const BorderRadius.all(Radius.circular(10));
 
     return Column(
       children: [
@@ -55,7 +56,7 @@ class TagPicker extends HookConsumerWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: borderRadius,
                       ),
                       child: ListTile(
                         title: Text(
