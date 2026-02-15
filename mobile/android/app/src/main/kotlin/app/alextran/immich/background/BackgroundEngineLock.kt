@@ -43,8 +43,8 @@ class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, ImmichPl
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     super.onAttachedToEngine(binding)
-    checkAndEnforceBackgroundLock(binding.applicationContext)
     engineCount.incrementAndGet()
+    checkAndEnforceBackgroundLock(binding.applicationContext)
     Log.i(TAG, "Flutter engine attached. Attached Engines count: $engineCount")
   }
 
