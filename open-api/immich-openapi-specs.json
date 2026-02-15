@@ -2221,6 +2221,71 @@
         "x-immich-state": "Stable"
       }
     },
+    "/albums/{id}/thumbnail": {
+      "get": {
+        "description": "Virtual route that redirects to the thumbnail of the album cover asset.",
+        "operationId": "getAlbumThumbnailRedirect",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Redirect to album thumbnail",
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "album.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/albums/{id}/user/{userId}": {
       "delete": {
         "description": "Remove a user from an album. Use an ID of \"me\" to leave a shared album.",

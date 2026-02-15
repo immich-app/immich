@@ -21,6 +21,7 @@ import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -91,6 +92,23 @@ export class AlbumService extends BaseService {
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
+  }
+
+  async getThumbnailRedirectUrl(auth: AuthDto, id: string) {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+
+    const asset = await this.albumRepository.getForThumbnailRedirect(id);
+    if (!asset) {
+      throw new BadRequestException('Album has no thumbnail');
+    }
+
+    const params = new URLSearchParams();
+    params.append('edited', 'true');
+    if (asset.thumbhash) {
+      params.append('c', hexOrBufferToBase64(asset.thumbhash));
+    }
+
+    return `/api/assets/${asset.id}/thumbnail?${params.toString()}`;
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
