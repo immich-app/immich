@@ -300,19 +300,45 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
-if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif');
-}
+async function addSupportedMimeTypes(): Promise<void> {
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
+  if (isSafari) {
+    const match = navigator.userAgent.match(/Version\/(\d+)/);
 
-function checkJxlSupport(): void {
-  const img = new Image();
-  img.addEventListener('load', () => {
-    supportedImageMimeTypes.add('image/jxl');
-  });
-  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+    if (match) {
+      const majorVersion = Number.parseInt(match[1]);
+      const MIN_REQUIRED_VERSION = 17;
+
+      if (majorVersion >= MIN_REQUIRED_VERSION) {
+        supportedImageMimeTypes.add('image/jxl').add('image/heic').add('image/heif');
+      }
+    }
+  } else if (globalThis.isSecureContext && typeof ImageDecoder !== 'undefined') {
+    const isJxlSupported = await ImageDecoder.isTypeSupported('image/jxl');
+    if (isJxlSupported) {
+      supportedImageMimeTypes.add('image/jxl');
+    }
+
+    const isHeicSupported = await ImageDecoder.isTypeSupported('image/heic');
+    if (isHeicSupported) {
+      supportedImageMimeTypes.add('image/heic').add('image/heif');
+    }
+  } else {
+    const jxlImg = new Image();
+    jxlImg.addEventListener('load', () => {
+      supportedImageMimeTypes.add('image/jxl');
+    });
+    jxlImg.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+
+    const heicImg = new Image();
+    heicImg.addEventListener('load', () => {
+      supportedImageMimeTypes.add('image/heic');
+    });
+    heicImg.src =
+      'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
+  }
 }
-checkJxlSupport();
+void addSupportedMimeTypes();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
