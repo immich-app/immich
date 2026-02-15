@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -7,7 +8,6 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -50,7 +51,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
@@ -77,6 +77,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         child: AppBar(
           backgroundColor: isShowingSheet ? Colors.transparent : Colors.black.withAlpha(125),
           leading: const _AppBarBackButton(),
+          centerTitle: true,
+          title: isShowingSheet ? null : _AssetInfoTitle(asset: asset),
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
@@ -117,6 +119,35 @@ class _AppBarBackButton extends ConsumerWidget {
         onPressed: context.maybePop,
         child: const Icon(Icons.arrow_back_rounded),
       ),
+    );
+  }
+}
+
+class _AssetInfoTitle extends ConsumerWidget {
+  final BaseAsset asset;
+
+  const _AssetInfoTitle({required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    DateTime dateTime = asset.createdAt.toLocal();
+    final currentYear = DateTime.now().year;
+    final isCurrentYear = dateTime.year == currentYear;
+    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+
+    if (exifInfo?.dateTimeOriginal != null) {
+      (dateTime, _) = applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
+    }
+
+    final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
+    final timeFormatted = DateFormat.jm().format(dateTime);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(dateFormatted, style: context.textTheme.labelLarge?.copyWith(color: Colors.white)),
+        Text(timeFormatted, style: context.textTheme.labelMedium?.copyWith(color: Colors.white70)),
+      ],
     );
   }
 }
