@@ -2,7 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { SearchService } from 'src/services/search.service';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -64,16 +65,18 @@ describe(SearchService.name, () => {
 
   describe('getExploreData', () => {
     it('should get assets by city and tag', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from()
+        .exif({ latitude: 42, longitude: 69, city: 'city', state: 'state', country: 'country' })
+        .build();
       mocks.asset.getAssetIdByCity.mockResolvedValue({
         fieldName: 'exifInfo.city',
-        items: [{ value: 'test-city', data: assetStub.withLocation.id }],
+        items: [{ value: 'city', data: asset.id }],
       });
-      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.withLocation]);
-      const expectedResponse = [
-        { fieldName: 'exifInfo.city', items: [{ value: 'test-city', data: mapAsset(assetStub.withLocation) }] },
-      ];
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
+      const expectedResponse = [{ fieldName: 'exifInfo.city', items: [{ value: 'city', data: mapAsset(asset) }] }];
 
-      const result = await sut.getExploreData(authStub.user1);
+      const result = await sut.getExploreData(auth);
 
       expect(result).toEqual(expectedResponse);
     });

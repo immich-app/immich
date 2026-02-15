@@ -1,6 +1,6 @@
 import { Comparer, DatabaseExtension, Reason } from 'src/sql-tools/types';
 
-export const compareExtensions: Comparer<DatabaseExtension> = {
+export const compareExtensions = (): Comparer<DatabaseExtension> => ({
   onMissing: (source) => [
     {
       type: 'ExtensionCreate',
@@ -19,4 +19,4 @@ export const compareExtensions: Comparer<DatabaseExtension> = {
     // if the name matches they are the same
     return [];
   },
-};
+});

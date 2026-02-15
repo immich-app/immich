@@ -1,12 +1,23 @@
 import { Selectable } from 'kysely';
 import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { StackTable } from 'src/schema/tables/stack.table';
 import { AssetEditFactory } from 'test/factories/asset-edit.factory';
 import { AssetExifFactory } from 'test/factories/asset-exif.factory';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { build } from 'test/factories/builder.factory';
-import { AssetEditLike, AssetExifLike, AssetFileLike, AssetLike, FactoryBuilder, UserLike } from 'test/factories/types';
+import { StackFactory } from 'test/factories/stack.factory';
+import {
+  AssetEditLike,
+  AssetExifLike,
+  AssetFaceLike,
+  AssetFileLike,
+  AssetLike,
+  FactoryBuilder,
+  StackLike,
+  UserLike,
+} from 'test/factories/types';
 import { UserFactory } from 'test/factories/user.factory';
 import { newDate, newSha1, newUuid, newUuidV7 } from 'test/small.factory';
 
@@ -15,7 +26,8 @@ export class AssetFactory {
   #assetExif?: AssetExifFactory;
   #files: AssetFileFactory[] = [];
   #edits: AssetEditFactory[] = [];
-  #faces: Selectable<AssetFaceTable>[] = [];
+  #faces: AssetFaceFactory[] = [];
+  #stack?: Selectable<StackTable> & { assets: Selectable<AssetTable>[]; primaryAsset: Selectable<AssetTable> };
 
   private constructor(private readonly value: Selectable<AssetTable>) {
     value.ownerId ??= newUuid();
@@ -83,8 +95,8 @@ export class AssetFactory {
     return this;
   }
 
-  face(dto: Selectable<AssetFaceTable>) {
-    this.#faces.push(dto);
+  face(dto: AssetFaceLike = {}, builder?: FactoryBuilder<AssetFaceFactory>) {
+    this.#faces.push(build(AssetFaceFactory.from(dto), builder));
     return this;
   }
 
@@ -117,6 +129,12 @@ export class AssetFactory {
     return this;
   }
 
+  stack(dto: StackLike = {}, builder?: FactoryBuilder<StackFactory>) {
+    this.#stack = build(StackFactory.from(dto).primaryAsset(this.value), builder).build();
+    this.value.stackId = this.#stack.id;
+    return this;
+  }
+
   build() {
     const exif = this.#assetExif?.build();
 
@@ -126,8 +144,9 @@ export class AssetFactory {
       exifInfo: exif as NonNullable<typeof exif>,
       files: this.#files.map((file) => file.build()),
       edits: this.#edits.map((edit) => edit.build()),
-      faces: this.#faces,
-      stack: null,
+      faces: this.#faces.map((face) => face.build()),
+      stack: this.#stack ?? null,
+      tags: [],
     };
   }
 }

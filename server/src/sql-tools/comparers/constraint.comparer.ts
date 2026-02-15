@@ -12,7 +12,7 @@ import {
   SchemaDiff,
 } from 'src/sql-tools/types';
 
-export const compareConstraints: Comparer<DatabaseConstraint> = {
+export const compareConstraints = (): Comparer<DatabaseConstraint> => ({
   getRenameKey: (constraint) => {
     switch (constraint.type) {
       case ConstraintType.PRIMARY_KEY:
@@ -83,7 +83,7 @@ export const compareConstraints: Comparer<DatabaseConstraint> = {
       }
     }
   },
-};
+});
 
 const comparePrimaryKeyConstraint: CompareFunction<DatabasePrimaryKeyConstraint> = (source, target) => {
   if (!haveEqualColumns(source.columnNames, target.columnNames)) {

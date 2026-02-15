@@ -1,6 +1,6 @@
 import { Comparer, DatabaseTrigger, Reason } from 'src/sql-tools/types';
 
-export const compareTriggers: Comparer<DatabaseTrigger> = {
+export const compareTriggers = (): Comparer<DatabaseTrigger> => ({
   onMissing: (source) => [
     {
       type: 'TriggerCreate',
@@ -38,4 +38,4 @@ export const compareTriggers: Comparer<DatabaseTrigger> = {
 
     return [];
   },
-};
+});

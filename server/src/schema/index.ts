@@ -168,6 +168,8 @@ export interface Migrations {
 }
 
 export interface DB {
+  kysely_migrations: { timestamp: string; name: string };
+
   activity: ActivityTable;
 
   album: AlbumTable;

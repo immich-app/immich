@@ -1,4 +1,5 @@
 import { Kysely, sql } from 'kysely';
+import { ErrorMessages } from 'src/constants';
 import { DatabaseExtension } from 'src/enum';
 import { getVectorExtension } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -16,9 +17,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       rows: [lastMigration],
     } = await lastMigrationSql.execute(db);
     if (lastMigration?.name !== 'AddMissingIndex1744910873956') {
-      throw new Error(
-        'Invalid upgrade path. For more information, see https://docs.immich.app/errors/#typeorm-upgrade',
-      );
+      throw new Error(ErrorMessages.TypeOrmUpgrade);
     }
     logger.log('Database has up to date TypeORM migrations, skipping initial Kysely migration');
     return;

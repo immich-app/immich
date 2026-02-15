@@ -13,7 +13,7 @@ const testConstraint: DatabaseConstraint = {
 describe('compareConstraints', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareConstraints.onExtra(testConstraint)).toEqual([
+      expect(compareConstraints().onExtra(testConstraint)).toEqual([
         {
           type: 'ConstraintDrop',
           constraintName: 'test',
@@ -26,7 +26,7 @@ describe('compareConstraints', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareConstraints.onMissing(testConstraint)).toEqual([
+      expect(compareConstraints().onMissing(testConstraint)).toEqual([
         {
           type: 'ConstraintAdd',
           constraint: testConstraint,
@@ -38,14 +38,14 @@ describe('compareConstraints', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareConstraints.onCompare(testConstraint, testConstraint)).toEqual([]);
+      expect(compareConstraints().onCompare(testConstraint, testConstraint)).toEqual([]);
     });
 
     it('should detect a change in type', () => {
       const source: DatabaseConstraint = { ...testConstraint };
       const target: DatabaseConstraint = { ...testConstraint, columnNames: ['column1', 'column2'] };
       const reason = 'Primary key columns are different: (column1 vs column1,column2)';
-      expect(compareConstraints.onCompare(source, target)).toEqual([
+      expect(compareConstraints().onCompare(source, target)).toEqual([
         {
           constraintName: 'test',
           tableName: 'table1',

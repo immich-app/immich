@@ -1,6 +1,6 @@
 import { Comparer, DatabaseOverride, Reason } from 'src/sql-tools/types';
 
-export const compareOverrides: Comparer<DatabaseOverride> = {
+export const compareOverrides = (): Comparer<DatabaseOverride> => ({
   onMissing: (source) => [
     {
       type: 'OverrideCreate',
@@ -26,4 +26,4 @@ export const compareOverrides: Comparer<DatabaseOverride> = {
 
     return [];
   },
-};
+});

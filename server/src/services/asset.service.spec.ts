@@ -7,7 +7,6 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -586,19 +585,19 @@ describe(AssetService.name, () => {
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
+      const asset = AssetFactory.from()
+        .stack({}, (builder) => builder.asset())
+        .build();
       mocks.stack.delete.mockResolvedValue();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue({
-        ...assetStub.primaryImage,
-        stack: {
-          id: 'stack-id',
-          primaryAssetId: assetStub.primaryImage.id,
-          assets: [{ id: 'one-asset' }],
-        },
+        ...asset,
+        // TODO the specific query filters out the primary asset from `stack.assets`. This should be in a mapper eventually
+        stack: { ...asset.stack!, assets: asset.stack!.assets.filter(({ id }) => id !== asset.stack!.primaryAssetId) },
       });
 
-      await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
-      expect(mocks.stack.delete).toHaveBeenCalledWith('stack-id');
+      expect(mocks.stack.delete).toHaveBeenCalledWith(asset.stackId);
     });
 
     it('should delete a live photo', async () => {

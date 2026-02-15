@@ -1,0 +1,38 @@
+name: Close LLM-generated PRs
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  comment_and_close:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'llm-generated' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          gh api graphql \
+            -f prId="$NODE_ID" \
+            -f body="Thank you for your interest in contributing to Immich! Unfortunately this PR looks like it was generated using an LLM. As noted in our CONTRIBUTING.md, we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
+            -f query='
+              mutation CommentAndClosePR($prId: ID!, $body: String!) {
+                addComment(input: {
+                  subjectId: $prId,
+                  body: $body
+                }) {
+                  __typename
+                }
+
+                closePullRequest(input: {
+                  pullRequestId: $prId
+                }) {
+                  __typename
+                }
+              }'

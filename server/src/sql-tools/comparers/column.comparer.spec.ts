@@ -15,7 +15,7 @@ const testColumn: DatabaseColumn = {
 describe('compareColumns', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareColumns.onExtra(testColumn)).toEqual([
+      expect(compareColumns().onExtra(testColumn)).toEqual([
         {
           tableName: 'table1',
           columnName: 'test',
@@ -28,7 +28,7 @@ describe('compareColumns', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareColumns.onMissing(testColumn)).toEqual([
+      expect(compareColumns().onMissing(testColumn)).toEqual([
         {
           type: 'ColumnAdd',
           column: testColumn,
@@ -40,14 +40,14 @@ describe('compareColumns', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareColumns.onCompare(testColumn, testColumn)).toEqual([]);
+      expect(compareColumns().onCompare(testColumn, testColumn)).toEqual([]);
     });
 
     it('should detect a change in type', () => {
       const source: DatabaseColumn = { ...testColumn };
       const target: DatabaseColumn = { ...testColumn, type: 'text' };
       const reason = 'column type is different (character varying vs text)';
-      expect(compareColumns.onCompare(source, target)).toEqual([
+      expect(compareColumns().onCompare(source, target)).toEqual([
         {
           columnName: 'test',
           tableName: 'table1',
@@ -66,7 +66,7 @@ describe('compareColumns', () => {
       const source: DatabaseColumn = { ...testColumn, nullable: true };
       const target: DatabaseColumn = { ...testColumn, nullable: true, default: "''" };
       const reason = `default is different (null vs '')`;
-      expect(compareColumns.onCompare(source, target)).toEqual([
+      expect(compareColumns().onCompare(source, target)).toEqual([
         {
           columnName: 'test',
           tableName: 'table1',
@@ -83,7 +83,7 @@ describe('compareColumns', () => {
       const source: DatabaseColumn = { ...testColumn, comment: 'new comment' };
       const target: DatabaseColumn = { ...testColumn, comment: 'old comment' };
       const reason = 'comment is different (new comment vs old comment)';
-      expect(compareColumns.onCompare(source, target)).toEqual([
+      expect(compareColumns().onCompare(source, target)).toEqual([
         {
           columnName: 'test',
           tableName: 'table1',

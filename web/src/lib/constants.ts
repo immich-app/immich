@@ -340,8 +340,8 @@ export const langs: Lang[] = [
   {
     name: 'Chinese (Simplified)',
     code: 'zh-CN',
-    weblateCode: 'zh_SIMPLIFIED',
-    loader: () => import('$i18n/zh_SIMPLIFIED.json'),
+    weblateCode: 'zh_Hans',
+    loader: () => import('$i18n/zh_Hans.json'),
   },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];

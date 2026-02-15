@@ -1,14 +1,15 @@
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { user } from '$lib/stores/user.store';
 import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
 export class AssetInteraction {
-  selectedAssets = $state<TimelineAsset[]>([]);
+  private selectedAssetsMap = new SvelteMap<string, TimelineAsset>();
+  selectedAssets = $derived(Array.from(this.selectedAssetsMap.values()));
   selectAll = $state(false);
   hasSelectedAsset(assetId: string) {
-    return this.selectedAssets.some((asset) => asset.id === assetId);
+    return this.selectedAssetsMap.has(assetId);
   }
   selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state<TimelineAsset[]>([]);
@@ -16,7 +17,7 @@ export class AssetInteraction {
     return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
   }
   assetSelectionStart = $state<TimelineAsset | null>(null);
-  selectionActive = $derived(this.selectedAssets.length > 0);
+  selectionActive = $derived(this.selectedAssetsMap.size > 0);
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
@@ -27,9 +28,7 @@ export class AssetInteraction {
   isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 
   selectAsset(asset: TimelineAsset) {
-    if (!this.hasSelectedAsset(asset.id)) {
-      this.selectedAssets.push(asset);
-    }
+    this.selectedAssetsMap.set(asset.id, asset);
   }
 
   selectAssets(assets: TimelineAsset[]) {
@@ -39,10 +38,7 @@ export class AssetInteraction {
   }
 
   removeAssetFromMultiselectGroup(assetId: string) {
-    const index = this.selectedAssets.findIndex((a) => a.id == assetId);
-    if (index !== -1) {
-      this.selectedAssets.splice(index, 1);
-    }
+    this.selectedAssetsMap.delete(assetId);
   }
 
   addGroupToMultiselectGroup(group: string) {
@@ -69,7 +65,7 @@ export class AssetInteraction {
     this.selectAll = false;
 
     // Multi-selection
-    this.selectedAssets = [];
+    this.selectedAssetsMap.clear();
     this.selectedGroup.clear();
 
     // Range selection

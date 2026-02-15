@@ -19,7 +19,9 @@ import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
@@ -279,6 +281,27 @@ export class DatabaseRepository {
   private async getDatabaseName(): Promise<string> {
     const { rows } = await sql<{ db: string }>`SELECT current_database() as db`.execute(this.db);
     return rows[0].db;
+  }
+
+  getMigrations() {
+    return this.db.selectFrom('kysely_migrations').select(['name', 'timestamp']).orderBy('name', 'asc').execute();
+  }
+
+  async getSchemaDrift() {
+    const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
+    const target = await schemaFromDatabase(this.db, {});
+
+    const drift = schemaDiff(source, target, {
+      tables: { ignoreExtra: true },
+      constraints: { ignoreExtra: false },
+      indexes: { ignoreExtra: true },
+      triggers: { ignoreExtra: true },
+      columns: { ignoreExtra: true },
+      functions: { ignoreExtra: false },
+      parameters: { ignoreExtra: true },
+    });
+
+    return drift;
   }
 
   async getDimensionSize(table: string, column = 'embedding'): Promise<number> {

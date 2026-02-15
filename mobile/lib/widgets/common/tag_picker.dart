@@ -18,7 +18,7 @@ class TagPicker extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
     final searchQuery = useState('');
-    final tags = ref.watch(tagServiceProvider);
+    final tags = ref.watch(tagProvider);
     final selectedTagIds = useState<Set<String>>(filter);
 
     return Column(
