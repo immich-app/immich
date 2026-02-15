@@ -90,8 +90,10 @@ class OrtSession:
             match provider:
                 case "CPUExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested"}
-                case "CUDAExecutionProvider" | "ROCMExecutionProvider":
+                case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
+                case "MIGraphXExecutionProvider":
+                    options = {"device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":
                     openvino_dir = self.model_path.parent / "openvino"
                     device = f"GPU.{settings.device_id}"
