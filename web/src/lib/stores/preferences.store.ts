@@ -49,7 +49,7 @@ const defaultMapSettings = {
 const persistedObject = <T>(key: string, defaults: T) =>
   persisted<T>(key, defaults, {
     serializer: {
-      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      parse: (text) => ({ ...defaults, ...JSON.parse(text ?? null) }),
       stringify: JSON.stringify,
     },
   });
@@ -149,3 +149,4 @@ export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
 export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-video', false, {});
 
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
+
