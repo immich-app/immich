@@ -40,13 +40,7 @@ depends = [
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [
-  { task = "//:i18n:format-fix" },
-  "dart run easy_localization:generate -S ../i18n",
-  "dart run bin/generate_keys.dart",
-  "dart format lib/generated/codegen_loader.g.dart",
-  "dart format lib/generated/translations.g.dart",
-]
+run = [{ task = "//:i18n:format-fix" }, { tasks = ["i18n:loader", "i18n:keys"] }]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"
