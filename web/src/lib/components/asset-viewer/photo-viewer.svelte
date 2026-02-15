@@ -165,6 +165,42 @@
   let containerWidth = $state(0);
   let containerHeight = $state(0);
 
+  // Compute the rendered image rect within the object-contain img element
+  // so we can position the checkerboard background precisely behind the visible image content
+  let checkerboardStyle = $derived.by(() => {
+    const img = assetViewerManager.imgRef;
+    if (!img || !imageLoaded || !containerWidth || !containerHeight) {
+      return '';
+    }
+
+    const naturalW = img.naturalWidth;
+    const naturalH = img.naturalHeight;
+    if (!naturalW || !naturalH) {
+      return '';
+    }
+
+    const containerAspect = containerWidth / containerHeight;
+    const imageAspect = naturalW / naturalH;
+
+    let renderedW: number;
+    let renderedH: number;
+
+    if (imageAspect > containerAspect) {
+      // Image is wider — fills width, letterboxed vertically
+      renderedW = containerWidth;
+      renderedH = containerWidth / imageAspect;
+    } else {
+      // Image is taller — fills height, letterboxed horizontally
+      renderedH = containerHeight;
+      renderedW = containerHeight * imageAspect;
+    }
+
+    const offsetX = (containerWidth - renderedW) / 2;
+    const offsetY = (containerHeight - renderedH) / 2;
+
+    return `top: ${offsetY}px; left: ${offsetX}px; width: ${renderedW}px; height: ${renderedH}px;`;
+  });
+
   let lastUrl: string | undefined;
 
   $effect(() => {
@@ -220,6 +256,9 @@
           draggable="false"
         />
       {/if}
+      {#if checkerboardStyle && $slideshowState === SlideshowState.None}
+        <div class="checkerboard absolute" style={checkerboardStyle}></div>
+      {/if}
       <img
         bind:this={assetViewerManager.imgRef}
         src={imageLoaderUrl}
@@ -258,5 +297,9 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
+  }
+  .checkerboard {
+    background-image: conic-gradient(#808080 25%, #b0b0b0 25% 50%, #808080 50% 75%, #b0b0b0 75%);
+    background-size: 20px 20px;
   }
 </style>
