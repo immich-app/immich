@@ -186,7 +186,7 @@ class DriftSearchPage extends HookConsumerWidget {
             expanded: true,
             onSearch: handleApply,
             onClear: handleClear,
-            child: TagPicker(onSelect: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+            child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
           ),
         ),
       );
