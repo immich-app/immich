@@ -332,6 +332,21 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult?> tagAssets(ActionSource source, BuildContext context) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    try {
+      final isTagged = await _service.tagAssets(ids, context);
+      if (!isTagged) {
+        return null;
+      }
+
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to tag assets', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {

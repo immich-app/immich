@@ -18,16 +18,11 @@ class TagNotifier extends AsyncNotifier<Set<Tag>> {
     await repo.bulkTagAssets(assetIds, tagIds);
   }
 
-  Future<List<Tag>> upsertTags(List<String> tags) async {
+  Future<Tag> createTag(String name, {String? color}) async {
     final repo = ref.read(tagsApiRepositoryProvider);
-    final dtos = await repo.upsertTags(tags);
-    if (dtos == null) {
-      return [];
-    }
-    final upsertedTags = dtos.map((t) => Tag.fromDto(t)).toList();
-
-    state = AsyncValue.data({...?state.valueOrNull, ...upsertedTags});
-    return upsertedTags;
+    final newTag = await repo.createTag(name, color: color);
+    state = AsyncValue.data({...?state.valueOrNull, newTag});
+    return newTag;
   }
 }
 

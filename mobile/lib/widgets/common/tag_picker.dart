@@ -8,11 +8,75 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
-class TagPicker extends HookConsumerWidget {
-  const TagPicker({super.key, required this.onSelect, required this.filter});
+Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext context, Set<String>? initialSelection}) {
+  return showDialog<(Set<String>, Set<String>)?>(
+    context: context,
+    builder: (context) => _TagPickerModal(initialSelection: initialSelection),
+  );
+}
 
-  final Function(Iterable<Tag>) onSelect;
+class _TagPickerModal extends HookConsumerWidget {
+  final Set<String>? initialSelection;
+
+  const _TagPickerModal({this.initialSelection});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTagIds = useState<Set<String>>(initialSelection ?? {});
+    final newTagValues = useState<Set<String>>({});
+
+    void onSelectExistingTag(Iterable<Tag> tags) {
+      selectedTagIds.value = tags.map((tag) => tag.id).toSet();
+    }
+
+    void onSelectNewTag(Set<String> tags) {
+      newTagValues.value = tags;
+    }
+
+    return AlertDialog(
+      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(),
+          child: Text(
+            "cancel",
+            style: context.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colorScheme.error,
+            ),
+          ).tr(),
+        ),
+        TextButton(
+          onPressed: () => context.pop((selectedTagIds.value, newTagValues.value)),
+          child: Text(
+            "action_common_update",
+            style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
+          ).tr(),
+        ),
+      ],
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: TagPicker(
+          onSelectExistingTag: onSelectExistingTag,
+          filter: selectedTagIds.value,
+          onSelectNewTag: onSelectNewTag,
+        ),
+      ),
+    );
+  }
+}
+
+class TagPicker extends HookConsumerWidget {
+  const TagPicker({super.key, required this.onSelectExistingTag, required this.filter, this.onSelectNewTag});
+
   final Set<String> filter;
+
+  /// Callback when existing tags are selected/deselected.
+  final Function(Iterable<Tag>) onSelectExistingTag;
+
+  /// If not null, shows a tile to create a new tag with user's filter input.
+  final Function(Set<String>)? onSelectNewTag;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,6 +85,7 @@ class TagPicker extends HookConsumerWidget {
     final tags = ref.watch(tagProvider);
     final selectedTagIds = useState<Set<String>>(filter);
     final borderRadius = const BorderRadius.all(Radius.circular(10));
+    final selectedNewTagValues = useState<Set<String>>({});
 
     return Column(
       children: [
@@ -41,13 +106,53 @@ class TagPicker extends HookConsumerWidget {
         Expanded(
           child: tags.widgetWhen(
             onData: (tags) {
+              final trimmedQuery = _trimSlashes(searchQuery.value);
               final queryResult = tags
-                  .where((t) => t.value.toLowerCase().contains(searchQuery.value.toLowerCase()))
+                  .where((t) => t.value.toLowerCase().contains(trimmedQuery.toLowerCase()))
                   .toList();
+              final showCreateTile =
+                  (onSelectNewTag != null) &&
+                  trimmedQuery.isNotEmpty &&
+                  !tags.any((t) => t.value.toLowerCase() == trimmedQuery.toLowerCase());
+              final isCreateSelected = selectedNewTagValues.value.contains(trimmedQuery);
               return ListView.builder(
-                itemCount: queryResult.length,
+                itemCount: queryResult.length + (showCreateTile ? 1 : 0),
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
+                  if (showCreateTile && index == queryResult.length) {
+                    // Create new tag tile
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          title: Text(
+                            trimmedQuery,
+                            style: context.textTheme.bodyLarge?.copyWith(
+                              color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.add,
+                            color: isCreateSelected ? context.colorScheme.onPrimary : context.colorScheme.onSurface,
+                          ),
+                          onTap: () {
+                            final newSelectedNewTagValues = {...selectedNewTagValues.value};
+                            if (isCreateSelected) {
+                              newSelectedNewTagValues.remove(trimmedQuery);
+                            } else {
+                              newSelectedNewTagValues.add(trimmedQuery);
+                            }
+                            selectedNewTagValues.value = newSelectedNewTagValues;
+                            onSelectNewTag!.call(newSelectedNewTagValues);
+                          },
+                        ),
+                      ),
+                    );
+                  }
                   final tag = queryResult[index];
                   final isSelected = selectedTagIds.value.any((id) => id == tag.id);
 
@@ -73,7 +178,7 @@ class TagPicker extends HookConsumerWidget {
                             newSelected.add(tag.id);
                           }
                           selectedTagIds.value = newSelected;
-                          onSelect(tags.where((t) => newSelected.contains(t.id)));
+                          onSelectExistingTag(tags.where((t) => newSelected.contains(t.id)));
                         },
                       ),
                     ),
@@ -85,5 +190,9 @@ class TagPicker extends HookConsumerWidget {
         ),
       ],
     );
+  }
+
+  String _trimSlashes(String s) {
+    return s.replaceAll(RegExp(r'^/+|/+$'), '');
   }
 }

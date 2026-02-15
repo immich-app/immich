@@ -819,6 +819,7 @@
   "contain": "Contain",
   "context": "Context",
   "continue": "Continue",
+  "control_bottom_app_bar_add_tags": "Add Tags",
   "control_bottom_app_bar_create_new_album": "Create new album",
   "control_bottom_app_bar_delete_from_immich": "Delete from Immich",
   "control_bottom_app_bar_delete_from_local": "Delete from device",
