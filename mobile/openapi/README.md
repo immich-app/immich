@@ -663,6 +663,7 @@ Class | Method | HTTP request | Description
  - [UserPreferencesResponseDto](doc//UserPreferencesResponseDto.md)
  - [UserPreferencesUpdateDto](doc//UserPreferencesUpdateDto.md)
  - [UserResponseDto](doc//UserResponseDto.md)
+ - [UserResponseDtoOutput](doc//UserResponseDtoOutput.md)
  - [UserStatus](doc//UserStatus.md)
  - [UserUpdateMeDto](doc//UserUpdateMeDto.md)
  - [ValidateAccessTokenResponseDto](doc//ValidateAccessTokenResponseDto.md)

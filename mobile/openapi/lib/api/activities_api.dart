@@ -136,10 +136,8 @@ class ActivitiesApi {
   ///   Asset ID (if activity is for an asset)
   ///
   /// * [ReactionLevel] level:
-  ///   Filter by activity level
   ///
   /// * [ReactionType] type:
-  ///   Filter by activity type
   ///
   /// * [String] userId:
   ///   Filter by user ID
@@ -195,10 +193,8 @@ class ActivitiesApi {
   ///   Asset ID (if activity is for an asset)
   ///
   /// * [ReactionLevel] level:
-  ///   Filter by activity level
   ///
   /// * [ReactionType] type:
-  ///   Filter by activity type
   ///
   /// * [String] userId:
   ///   Filter by user ID

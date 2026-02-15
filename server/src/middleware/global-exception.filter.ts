@@ -1,8 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
 import { ClsService } from 'nestjs-cls';
+import { ZodSerializationException, ZodValidationException } from 'nestjs-zod';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { logGlobalError } from 'src/utils/logger';
+import { ZodError } from 'zod';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
@@ -39,6 +41,20 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
       // unclear what circumstances would return a string
       if (typeof body === 'string') {
         body = { message: body };
+      }
+
+      // handle both request and response validation errors
+      if (error instanceof ZodValidationException || error instanceof ZodSerializationException) {
+        const zodError = error.getZodError();
+        if (zodError instanceof ZodError && zodError.issues.length > 0) {
+          body = {
+            message: zodError.issues.map((issue) => issue.message),
+            // technically more accurate to return 422 Unprocessable Entity here
+            // nestjs-zod uses 400 Bad Request and we use 400 in v2
+            // https://github.com/BenLorantfy/nestjs-zod/issues/328
+            error: 'Bad Request',
+          };
+        }
       }
 
       return { status, body };
