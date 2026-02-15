@@ -183,6 +183,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     final companions = trashedAssets.map((e) {
+      final localAsset = e.toLocalAsset();
       return LocalAssetEntityCompanion.insert(
         id: e.id,
         name: e.name,
@@ -195,6 +196,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         checksum: Value(e.checksum),
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
+        playbackStyle: Value(localAsset.playbackStyle),
       );
     });
 

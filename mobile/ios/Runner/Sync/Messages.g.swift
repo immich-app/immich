@@ -143,6 +143,7 @@ struct PlatformAsset: Hashable {
   var adjustmentTime: Int64? = nil
   var latitude: Double? = nil
   var longitude: Double? = nil
+  var playbackStyle: Int64
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -160,6 +161,7 @@ struct PlatformAsset: Hashable {
     let adjustmentTime: Int64? = nilOrValue(pigeonVar_list[10])
     let latitude: Double? = nilOrValue(pigeonVar_list[11])
     let longitude: Double? = nilOrValue(pigeonVar_list[12])
+    let playbackStyle = pigeonVar_list[13] as! Int64
 
     return PlatformAsset(
       id: id,
@@ -174,7 +176,8 @@ struct PlatformAsset: Hashable {
       isFavorite: isFavorite,
       adjustmentTime: adjustmentTime,
       latitude: latitude,
-      longitude: longitude
+      longitude: longitude,
+      playbackStyle: playbackStyle
     )
   }
   func toList() -> [Any?] {
@@ -192,6 +195,7 @@ struct PlatformAsset: Hashable {
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
