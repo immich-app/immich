@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
@@ -559,7 +558,7 @@ class _DynamicText extends StatelessWidget {
         style: _baseTextStyle.copyWith(fontSize: fontSize),
       ),
       maxLines: 3,
-      textDirection: ui.TextDirection.ltr,
+      textDirection: TextDirection.ltr,
     )..layout(maxWidth: maxWidth);
     return textPainter.computeLineMetrics().length;
   }
