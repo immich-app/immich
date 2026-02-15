@@ -20,7 +20,7 @@ jobs:
         run: |
           gh api graphql \
             -f prId="$NODE_ID" \
-            -f body="Thank you for your interest in contributing to Immich! Unfortunately this PR looks like it was generated using an LLM. As noted in our CONTRIBUTING.md, we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
+            -f body="Thank you for your interest in contributing to Immich! Unfortunately this PR looks like it was generated using an LLM. As noted in our [CONTRIBUTING.md](https://github.com/immich-app/immich/blob/main/CONTRIBUTING.md#use-of-generative-ai), we request that you don't use LLMs to generate PRs as those are not a good use of maintainer time." \
             -f query='
               mutation CommentAndClosePR($prId: ID!, $body: String!) {
                 addComment(input: {
