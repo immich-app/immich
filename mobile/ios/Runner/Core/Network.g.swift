@@ -221,8 +221,9 @@ class NetworkPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NetworkApi {
   func addCertificate(clientData: ClientCertData, completion: @escaping (Result<Void, Error>) -> Void)
-  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, Error>) -> Void)
+  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<Void, Error>) -> Void)
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
+  func hasCertificate() throws -> Bool
   func getClientPointer() throws -> Int64
   func setRequestHeaders(headers: [String: String]) throws
 }
@@ -257,8 +258,8 @@ class NetworkApiSetup {
         let promptTextArg = args[0] as! ClientCertPrompt
         api.selectCertificate(promptText: promptTextArg) { result in
           switch result {
-          case .success(let res):
-            reply(wrapResult(res))
+          case .success:
+            reply(wrapResult(nil))
           case .failure(let error):
             reply(wrapError(error))
           }
@@ -281,6 +282,19 @@ class NetworkApiSetup {
       }
     } else {
       removeCertificateChannel.setMessageHandler(nil)
+    }
+    let hasCertificateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.hasCertificate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      hasCertificateChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.hasCertificate()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      hasCertificateChannel.setMessageHandler(nil)
     }
     let getClientPointerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.getClientPointer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
