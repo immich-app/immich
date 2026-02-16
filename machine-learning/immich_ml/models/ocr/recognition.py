@@ -66,26 +66,62 @@ class TextRecognizer(InferenceModel):
             )
         )
         return session
+    def calc_wh_ratio(img: np.ndarray) -> float:
+        h, w = img.shape[:2]
+        return w / float(h)
 
     def _predict(self, img: Image.Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
         boxes, box_scores = texts["boxes"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
-        rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
-        if rec.txts is None:
-            return self._empty
 
+        crop_imgs = self.get_crop_img_list(img, boxes)
+
+        normal_imgs = []
+        extreme_imgs = []
+        normal_indices = []
+        extreme_indices = []
+
+        EXTREME_WH_RATIO = 12.0
+
+        for idx, crop in enumerate(crop_imgs):
+            ratio = crop.shape[1] / float(crop.shape[0])
+            if ratio > EXTREME_WH_RATIO:
+                extreme_imgs.append(crop)
+                extreme_indices.append(idx)
+            else:
+                normal_imgs.append(crop)
+                normal_indices.append(idx)
+
+        # 结果占位
+        rec_txts = [None] * len(crop_imgs)
+        rec_scores = [None] * len(crop_imgs)
+
+        # -------- 正常文本：正常 batch --------
+        if normal_imgs:
+            rec = self.model(TextRecInput(img=normal_imgs))
+            for i, idx in enumerate(normal_indices):
+                rec_txts[idx] = rec.txts[i]
+                rec_scores[idx] = rec.scores[i]
+
+        # -------- 极端文本：单 batch（显存安全） --------
+        for i, crop in zip(extreme_indices, extreme_imgs):
+            rec = self.model(TextRecInput(img=[crop]))
+            rec_txts[i] = rec.txts[0]
+            rec_scores[i] = rec.scores[0]
+
+        # ---------- 后处理 ----------
         boxes[:, :, 0] /= img.width
         boxes[:, :, 1] /= img.height
 
-        text_scores = np.array(rec.scores)
-        valid_text_score_idx = text_scores > self.min_score
-        valid_score_idx_list = valid_text_score_idx.tolist()
+        text_scores = np.array(rec_scores, dtype=np.float32)
+        valid_idx = text_scores > self.min_score
+        log.info([rec_txts[i] for i in range(len(rec_txts)) if valid_idx[i]])
         return {
-            "box": boxes.reshape(-1, 8)[valid_text_score_idx].reshape(-1),
-            "text": [rec.txts[i] for i in range(len(rec.txts)) if valid_score_idx_list[i]],
-            "boxScore": box_scores[valid_text_score_idx],
-            "textScore": text_scores[valid_text_score_idx],
+            "box": boxes.reshape(-1, 8)[valid_idx].reshape(-1),
+            "text": [rec_txts[i] for i in range(len(rec_txts)) if valid_idx[i]],
+            "boxScore": box_scores[valid_idx],
+            "textScore": text_scores[valid_idx],
         }
 
     def get_crop_img_list(self, img: Image.Image, boxes: NDArray[np.float32]) -> list[NDArray[np.uint8]]:
