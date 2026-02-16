@@ -70,5 +70,33 @@ describe(SystemConfigController.name, () => {
         expect(body).toEqual(errorDto.badRequest(['nightlyTasks.databaseCleanup must be a boolean value']));
       });
     });
+
+    describe('image', () => {
+      it('should accept config without optional progressive property', async () => {
+        const config = _.cloneDeep(defaults);
+        delete config.image.thumbnail.progressive;
+        delete config.image.preview.progressive;
+        delete config.image.fullsize.progressive;
+        const { status } = await request(ctx.getHttpServer()).put('/system-config').send(config);
+        expect(status).toBe(200);
+      });
+
+      it('should accept config with progressive set to true', async () => {
+        const config = _.cloneDeep(defaults);
+        config.image.thumbnail.progressive = true;
+        config.image.preview.progressive = true;
+        config.image.fullsize.progressive = true;
+        const { status } = await request(ctx.getHttpServer()).put('/system-config').send(config);
+        expect(status).toBe(200);
+      });
+
+      it('should reject invalid progressive value', async () => {
+        const config = _.cloneDeep(defaults);
+        (config.image.thumbnail.progressive as any) = 'invalid';
+        const { status, body } = await request(ctx.getHttpServer()).put('/system-config').send(config);
+        expect(status).toBe(400);
+        expect(body).toEqual(errorDto.badRequest(['image.thumbnail.progressive must be a boolean value']));
+      });
+    });
   });
 });

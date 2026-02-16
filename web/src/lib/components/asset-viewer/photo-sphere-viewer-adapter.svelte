@@ -1,8 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
-  import { photoZoomState } from '$lib/stores/zoom-image.store';
   import {
     EquirectangularAdapter,
     Viewer,
@@ -32,17 +33,9 @@
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
-    zoomToggle?: (() => void) | null;
   };
 
-  let {
-    panorama,
-    originalPanorama,
-    adapter = EquirectangularAdapter,
-    plugins = [],
-    navbar = false,
-    zoomToggle = $bindable(),
-  }: Props = $props();
+  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
@@ -103,11 +96,8 @@
     }
   });
 
-  zoomToggle = () => {
-    if (!viewer) {
-      return;
-    }
-    viewer.animate({ zoom: $photoZoomState.currentZoom > 1 ? 50 : 83.3, speed: 250 });
+  const onZoom = () => {
+    viewer?.animate({ zoom: assetViewerManager.zoom > 1 ? 50 : 83.3, speed: 250 });
   };
 
   let hasChangedResolution: boolean = false;
@@ -156,11 +146,8 @@
     });
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
-      // zoomLevel range: [0, 100]
-      photoZoomState.set({
-        ...$photoZoomState,
-        currentZoom: zoomLevel / 50,
-      });
+      // zoomLevel is 0-100
+      assetViewerManager.zoom = zoomLevel / 50;
 
       if (Math.round(zoomLevel) >= 75 && !hasChangedResolution) {
         // Replace the preview with the original
@@ -181,13 +168,11 @@
       viewer.destroy();
     }
     boundingBoxesUnsubscribe();
-    // zoomHandler is not called on initial load. Viewer initial zoom is 1, but photoZoomState could be != 1.
-    photoZoomState.set({
-      ...$photoZoomState,
-      currentZoom: 1,
-    });
+    assetViewerManager.zoom = 1;
   });
 </script>
 
-<svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true }]} />
+<AssetViewerEvents {onZoom} />
+
+<svelte:document use:shortcuts={[{ shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true }]} />
 <div class="h-full w-full mb-0" bind:this={container}></div>

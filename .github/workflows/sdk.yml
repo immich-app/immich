@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
+      packages: write
     defaults:
       run:
         working-directory: ./open-api/typescript-sdk
@@ -42,6 +44,4 @@ jobs:
       - name: Build
         run: pnpm build
       - name: Publish
-        run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm publish --provenance --no-git-checks

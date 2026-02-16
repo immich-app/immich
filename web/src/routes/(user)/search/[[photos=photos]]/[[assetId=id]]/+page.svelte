@@ -1,15 +1,13 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
-  import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -24,12 +22,13 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
@@ -49,7 +48,6 @@
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let searchResultsElement: HTMLElement | undefined = $state();
 
@@ -82,18 +80,6 @@
     terms;
     untrack(() => handlePromiseError(onSearchQueryUpdate()));
   });
-
-  const onEscape = () => {
-    if ($showAssetViewer) {
-      return;
-    }
-
-    if (assetInteraction.selectionActive) {
-      assetInteraction.selectedAssets = [];
-      return;
-    }
-    handlePromiseError(goto(previousRoute));
-  };
 
   $effect(() => {
     if (scrollY) {
@@ -207,7 +193,7 @@
       lensModel: $t('lens_model'),
       personIds: $t('people'),
       tagIds: $t('tags'),
-      originalFileName: $t('file_name'),
+      originalFileName: $t('file_name_text'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
@@ -261,7 +247,6 @@
 </script>
 
 <svelte:window bind:scrollY />
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
 
 {#if terms}
   <section
@@ -308,16 +293,6 @@
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
 >
-  {#if searchResultAlbums.length > 0}
-    <section>
-      <div class="uppercase ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
-      <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
-
-      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-        {$t('photos_and_videos')}
-      </div>
-    </section>
-  {/if}
   <section id="search-content">
     {#if searchResultAssets.length > 0}
       <GalleryViewer
@@ -353,6 +328,8 @@
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
+          {@const Actions = getAssetBulkActions($t, getAssetControlContext())}
+
           <CreateSharedLink />
           <IconButton
             shape="round"
@@ -393,7 +370,9 @@
               {/if}
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
               <hr />
-              <AssetJobActions />
+              <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+              <ActionMenuItem action={Actions.RefreshMetadataJob} />
+              <ActionMenuItem action={Actions.TranscodeVideoJob} />
             </ButtonContextMenu>
           {:else}
             <DownloadAction />

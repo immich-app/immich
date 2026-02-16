@@ -16,6 +16,7 @@ class TagBulkAssetsResponseDto {
     required this.count,
   });
 
+  /// Number of assets tagged
   int count;
 
   @override

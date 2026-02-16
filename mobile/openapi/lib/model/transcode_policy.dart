@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Transcode policy
 class TranscodePolicy {
   /// Instantiate a new enum with the provided [value].
   const TranscodePolicy._(this.value);

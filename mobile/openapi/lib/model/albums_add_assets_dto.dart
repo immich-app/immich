@@ -17,8 +17,10 @@ class AlbumsAddAssetsDto {
     this.assetIds = const [],
   });
 
+  /// Album IDs
   List<String> albumIds;
 
+  /// Asset IDs
   List<String> assetIds;
 
   @override

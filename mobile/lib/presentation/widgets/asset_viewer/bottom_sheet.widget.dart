@@ -16,11 +16,13 @@ import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -204,6 +206,9 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
+    final isRatingEnabled = ref
+        .watch(userMetadataPreferencesProvider)
+        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
 
     // Build file info tile based on asset type
     Widget buildFileInfoTile() {
@@ -281,6 +286,35 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
             subtitle: _getLensInfoSubtitle(exifInfo),
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+        ],
+        // Rating bar
+        if (isRatingEnabled) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 8,
+              children: [
+                Text(
+                  'rating'.t(context: context),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                ),
+                RatingBar(
+                  initialRating: exifInfo?.rating?.toDouble() ?? 0,
+                  filledColor: context.themeData.colorScheme.primary,
+                  unfilledColor: context.themeData.colorScheme.onSurface.withAlpha(100),
+                  itemSize: 40,
+                  onRatingUpdate: (rating) async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
+                  },
+                  onClearRating: () async {
+                    await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+                  },
+                ),
+              ],
+            ),
           ),
         ],
         // Appears in (Albums)
