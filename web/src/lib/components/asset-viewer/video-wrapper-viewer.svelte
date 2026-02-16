@@ -11,7 +11,7 @@
     cacheKey: string | null;
     loopVideo: boolean;
     playOriginalVideo: boolean;
-    showFullscreen?: boolean;
+    extendedControls?: boolean;
     onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
@@ -26,7 +26,7 @@
     cacheKey,
     loopVideo,
     playOriginalVideo,
-    showFullscreen = true,
+    extendedControls = false,
     onPreviousAsset,
     onClose,
     onNextAsset,
@@ -46,7 +46,7 @@
     {asset}
     assetId={effectiveAssetId}
     {playOriginalVideo}
-    {showFullscreen}
+    {extendedControls}
     {onPreviousAsset}
     {onNextAsset}
     {onVideoEnded}

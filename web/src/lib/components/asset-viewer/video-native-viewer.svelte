@@ -14,6 +14,8 @@
     mdiFullscreenExit,
     mdiPause,
     mdiPlay,
+    mdiSkipBackward,
+    mdiSkipForward,
     mdiVolumeHigh,
     mdiVolumeLow,
     mdiVolumeMedium,
@@ -25,6 +27,8 @@
   import 'media-chrome/media-mute-button';
   import 'media-chrome/media-play-button';
   import 'media-chrome/media-playback-rate-button';
+  import 'media-chrome/media-seek-backward-button';
+  import 'media-chrome/media-seek-forward-button';
   import 'media-chrome/media-time-display';
   import 'media-chrome/media-time-range';
   import 'media-chrome/media-volume-range';
@@ -38,7 +42,7 @@
     loopVideo: boolean;
     cacheKey: string | null;
     playOriginalVideo: boolean;
-    showFullscreen?: boolean;
+    extendedControls?: boolean;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -52,7 +56,7 @@
     loopVideo,
     cacheKey,
     playOriginalVideo,
-    showFullscreen = true,
+    extendedControls = false,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -67,6 +71,8 @@
       ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
       : getAssetPlaybackUrl({ id: assetId, cacheKey }),
   );
+  let duration = $derived(timeToSeconds(asset.duration));
+  let showSeekButtons = $derived(duration > 10);
   let showVideo = $state(false);
 
   onMount(() => {
@@ -154,7 +160,8 @@
         />
       </div>
     {:else}
-      <media-controller class="h-full dark" defaultduration={timeToSeconds(asset.duration)}>
+      <!-- dir=ltr based on https://github.com/videojs/video.js/issues/949 -->
+      <media-controller dir="ltr" class="h-full dark" defaultduration={duration}>
         <video
           bind:this={videoPlayer}
           slot="media"
@@ -171,8 +178,20 @@
           src={assetFileUrl}
         ></video>
         <div part="center" slot="centered-chrome">
-          <media-play-button class="rounded-full h-12 p-3 outline-none bg-light-100/60 hover:bg-light-100"
-          ></media-play-button>
+          {#if extendedControls && showSeekButtons}
+            <media-seek-backward-button seekoffset="10" class="rounded-full p-2 outline-none">
+              <Icon slot="icon" icon={mdiSkipBackward} />
+            </media-seek-backward-button>
+          {/if}
+          <media-play-button class="rounded-full h-12 p-3 outline-none bg-light-100/60 hover:bg-light-100">
+            <Icon slot="play" icon={mdiPlay} />
+            <Icon slot="pause" icon={mdiPause} />
+          </media-play-button>
+          {#if extendedControls && showSeekButtons}
+            <media-seek-forward-button seekoffset="10" class="rounded-full p-2 outline-none">
+              <Icon slot="icon" icon={mdiSkipForward} />
+            </media-seek-forward-button>
+          {/if}
         </div>
         <div class="flex h-16 w-full place-items-center bg-linear-to-b to-black/40 px-3">
           <media-control-bar part="bottom" class="flex justify-end gap-2 h-10 w-full">
@@ -180,8 +199,21 @@
               <Icon slot="play" icon={mdiPlay} />
               <Icon slot="pause" icon={mdiPause} />
             </media-play-button>
+            {#if extendedControls && showSeekButtons}
+              <media-seek-backward-button seekoffset="10" class="rounded-full p-2 outline-none">
+                <Icon slot="icon" icon={mdiSkipBackward} />
+              </media-seek-backward-button>
+              <media-seek-forward-button seekoffset="10" class="rounded-full p-2 outline-none">
+                <Icon slot="icon" icon={mdiSkipForward} />
+              </media-seek-forward-button>
+            {/if}
+
             <media-time-range class="rounded-lg p-2 outline-none"></media-time-range>
             <media-time-display showduration class="rounded-lg p-2 outline-none"></media-time-display>
+            {#if extendedControls}
+              <media-playback-rate-button rates="0.5 1 1.5 2" class="rounded-full p-2 outline-none"
+              ></media-playback-rate-button>
+            {/if}
 
             <div class="media-volume-wrapper" style:position="relative">
               <media-mute-button class="rounded-full p-2 outline-none">
@@ -195,7 +227,7 @@
               </div>
             </div>
 
-            {#if showFullscreen}
+            {#if extendedControls}
               <media-fullscreen-button class="rounded-full p-2 outline-none">
                 <Icon slot="enter" icon={mdiFullscreen} />
                 <Icon slot="exit" icon={mdiFullscreenExit} />
@@ -244,23 +276,34 @@
   /* Small screens */
   media-controller {
     --bottom-play-button-display: none;
-    --center-play-button-display: inline-flex;
+    --bottom-seek-buttons-display: none;
+    --center-buttons-display: inline-flex;
+    --media-playback-rate-button-display: none;
     --media-time-range-display: none;
   }
 
   /* Larger screens */
   *[breakpointsm] {
     --bottom-play-button-display: flex;
-    --center-play-button-display: none;
+    --center-buttons-display: none;
     --media-time-range-display: flex;
+  }
+
+  *[breakpointmd] {
+    --bottom-seek-buttons-display: flex;
+    --media-playback-rate-button-display: inline-flex;
   }
 
   *::part(bottom) {
     --media-play-button-display: var(--bottom-play-button-display);
+    --media-seek-backward-button-display: var(--bottom-seek-buttons-display);
+    --media-seek-forward-button-display: var(--bottom-seek-buttons-display);
   }
 
   *::part(center) {
-    --media-play-button-display: var(--center-play-button-display);
+    --media-play-button-display: var(--center-buttons-display);
+    --media-seek-backward-button-display: var(--center-buttons-display);
+    --media-seek-forward-button-display: var(--center-buttons-display);
   }
 
   *::part(tooltip) {
