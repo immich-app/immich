@@ -33,6 +33,7 @@ import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
+import { LatLonResult, parseIso6709Location } from 'src/utils/iso6709-location-parser';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -244,15 +245,12 @@ export class MetadataService extends BaseService {
     const dates = this.getDates(asset, exifTags, stats);
 
     const { width, height } = this.getImageDimensions(exifTags);
-    let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
-      latitude: number | null = null,
-      longitude: number | null = null;
-    if (this.hasGeo(exifTags)) {
-      latitude = Number(exifTags.GPSLatitude);
-      longitude = Number(exifTags.GPSLongitude);
-      if (reverseGeocoding.enabled) {
-        geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
-      }
+    let geo: ReverseGeocodeResult = { country: null, state: null, city: null };
+
+    const { hasGeo, latitude, longitude } = this.parseGeo(exifTags);
+
+    if (hasGeo === true && reverseGeocoding.enabled) {
+      geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
     }
 
     const tags = this.getTagList(exifTags);
@@ -949,10 +947,31 @@ export class MetadataService extends BaseService {
     };
   }
 
-  private hasGeo(tags: ImmichTags) {
+  private parseGeo(tags: ImmichTags): LatLonResult {
     const lat = Number(tags.GPSLatitude);
     const lng = Number(tags.GPSLongitude);
-    return !Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0);
+
+    if (!Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0)) {
+      return {
+        hasGeo: true,
+        latitude: lat,
+        longitude: lng,
+      };
+    }
+
+    if (typeof tags.Location === 'string' && tags.Location.length > 0) {
+      // maybe the `Location` field is still valid ISO6709, so we'll try to parse it.
+      // This happens quite often in videos from some cameras.
+      // see https://github.com/immich-app/immich/issues/26101
+      return parseIso6709Location(tags.Location);
+    }
+
+    return {
+      hasGeo: false,
+      latitude: null,
+      longitude: null,
+      error: 'No location info found',
+    };
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {
