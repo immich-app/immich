@@ -14,7 +14,12 @@
   let { asset, isOwner }: Props = $props();
 
   let currentDescription = $derived(asset.exifInfo?.description ?? '');
-  let description = $derived(currentDescription);
+  let description = $state('');
+
+  $effect.pre(() => {
+    void asset.id;
+    description = currentDescription;
+  });
 
   const handleFocusOut = async () => {
     if (description === currentDescription) {
