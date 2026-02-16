@@ -52,7 +52,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         child: Stack(
           alignment: Alignment.centerLeft,
           children: [
-            IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close, size: 20)),
+            IconButton(
+              onPressed: () => context.pop(),
+              icon: Icon(Icons.close, size: 20, color: context.colorScheme.onSurfaceVariant),
+            ),
             Align(
               alignment: Alignment.center,
               child: Padding(
@@ -154,15 +157,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       }
 
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 12,
           children: [
-            Text(
-              "backup_controller_page_server_storage",
-              style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
-            ).tr(),
+            Text("backup_controller_page_server_storage".tr(), style: context.textTheme.labelLarge),
             LinearProgressIndicator(
               minHeight: 10.0,
               value: percentage,
@@ -264,13 +264,13 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     color: context.colorScheme.surface,
                     borderRadius: const BorderRadius.all(Radius.circular(10)),
                   ),
-                  margin: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                  margin: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
                   child: Column(
                     children: [
                       const AppBarProfileInfoBox(),
-                      const Divider(height: 3),
+                      Divider(thickness: 4, color: context.colorScheme.surfaceContainer),
                       buildStorageInformation(),
-                      const Divider(height: 3),
+                      Divider(thickness: 4, color: context.colorScheme.surfaceContainer),
                       const AppBarServerInfo(),
                     ],
                   ),
