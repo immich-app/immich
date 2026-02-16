@@ -587,6 +587,7 @@ where
 
 -- AssetRepository.getForOriginal
 select
+  "asset"."id",
   "originalFileName",
   "asset_file"."path" as "editedPath",
   "originalPath"
@@ -596,7 +597,21 @@ from
   and "asset_file"."isEdited" = $1
   and "asset_file"."type" = $2
 where
-  "asset"."id" = $3
+  "asset"."id" = any ($3::uuid[])
+
+-- AssetRepository.getForOriginals
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" = any ($3::uuid[])
 
 -- AssetRepository.getForThumbnail
 select
