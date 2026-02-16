@@ -171,7 +171,12 @@ Class | Method | HTTP request | Description
 *LibrariesApi* | [**scanLibrary**](doc//LibrariesApi.md#scanlibrary) | **POST** /libraries/{id}/scan | Scan a library
 *LibrariesApi* | [**updateLibrary**](doc//LibrariesApi.md#updatelibrary) | **PUT** /libraries/{id} | Update a library
 *LibrariesApi* | [**validate**](doc//LibrariesApi.md#validate) | **POST** /libraries/{id}/validate | Validate library settings
+*MaintenanceAdminApi* | [**deleteIntegrityReport**](doc//MaintenanceAdminApi.md#deleteintegrityreport) | **DELETE** /admin/integrity/report/{id} | Delete integrity report item
 *MaintenanceAdminApi* | [**detectPriorInstall**](doc//MaintenanceAdminApi.md#detectpriorinstall) | **GET** /admin/maintenance/detect-install | Detect existing install
+*MaintenanceAdminApi* | [**getIntegrityReport**](doc//MaintenanceAdminApi.md#getintegrityreport) | **GET** /admin/integrity/report | Get integrity report by type
+*MaintenanceAdminApi* | [**getIntegrityReportCsv**](doc//MaintenanceAdminApi.md#getintegrityreportcsv) | **GET** /admin/integrity/report/{type}/csv | Export integrity report by type as CSV
+*MaintenanceAdminApi* | [**getIntegrityReportFile**](doc//MaintenanceAdminApi.md#getintegrityreportfile) | **GET** /admin/integrity/report/{id}/file | Download flagged file
+*MaintenanceAdminApi* | [**getIntegrityReportSummary**](doc//MaintenanceAdminApi.md#getintegrityreportsummary) | **GET** /admin/integrity/summary | Get integrity report summary
 *MaintenanceAdminApi* | [**getMaintenanceStatus**](doc//MaintenanceAdminApi.md#getmaintenancestatus) | **GET** /admin/maintenance/status | Get maintenance mode status
 *MaintenanceAdminApi* | [**maintenanceLogin**](doc//MaintenanceAdminApi.md#maintenancelogin) | **POST** /admin/maintenance/login | Log into maintenance mode
 *MaintenanceAdminApi* | [**setMaintenanceMode**](doc//MaintenanceAdminApi.md#setmaintenancemode) | **POST** /admin/maintenance | Set maintenance mode
@@ -431,6 +436,10 @@ Class | Method | HTTP request | Description
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
+ - [IntegrityReportDto](doc//IntegrityReportDto.md)
+ - [IntegrityReportResponseDto](doc//IntegrityReportResponseDto.md)
+ - [IntegrityReportSummaryResponseDto](doc//IntegrityReportSummaryResponseDto.md)
+ - [IntegrityReportType](doc//IntegrityReportType.md)
  - [JobCreateDto](doc//JobCreateDto.md)
  - [JobName](doc//JobName.md)
  - [JobSettingsDto](doc//JobSettingsDto.md)
@@ -607,6 +616,9 @@ Class | Method | HTTP request | Description
  - [SystemConfigGeneratedFullsizeImageDto](doc//SystemConfigGeneratedFullsizeImageDto.md)
  - [SystemConfigGeneratedImageDto](doc//SystemConfigGeneratedImageDto.md)
  - [SystemConfigImageDto](doc//SystemConfigImageDto.md)
+ - [SystemConfigIntegrityChecks](doc//SystemConfigIntegrityChecks.md)
+ - [SystemConfigIntegrityChecksumJob](doc//SystemConfigIntegrityChecksumJob.md)
+ - [SystemConfigIntegrityJob](doc//SystemConfigIntegrityJob.md)
  - [SystemConfigJobDto](doc//SystemConfigJobDto.md)
  - [SystemConfigLibraryDto](doc//SystemConfigLibraryDto.md)
  - [SystemConfigLibraryScanDto](doc//SystemConfigLibraryScanDto.md)

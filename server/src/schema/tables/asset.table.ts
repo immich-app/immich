@@ -99,7 +99,7 @@ export class AssetTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ index: true })
   createdAt!: Generated<Timestamp>;
 
   @Column({ index: true })

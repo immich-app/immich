@@ -38,6 +38,7 @@ const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
 const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
+const isEnabledProperty = (config: { enabled: boolean }) => config.enabled;
 
 export class DatabaseBackupConfig {
   @ValidateBoolean({ description: 'Enabled' })
@@ -155,6 +156,42 @@ export class SystemConfigFFmpegDto {
   tonemap!: ToneMapping;
 }
 
+class SystemConfigIntegrityJob {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isEnabledProperty)
+  @IsNotEmpty()
+  @IsCronExpression()
+  @IsString()
+  cronExpression!: string;
+}
+
+class SystemConfigIntegrityChecksumJob extends SystemConfigIntegrityJob {
+  @IsInt()
+  timeLimit!: number;
+
+  @IsNumber()
+  percentageLimit!: number;
+}
+
+class SystemConfigIntegrityChecks {
+  @Type(() => SystemConfigIntegrityJob)
+  @ValidateNested()
+  @IsObject()
+  missingFiles!: SystemConfigIntegrityJob;
+
+  @Type(() => SystemConfigIntegrityJob)
+  @ValidateNested()
+  @IsObject()
+  untrackedFiles!: SystemConfigIntegrityJob;
+
+  @Type(() => SystemConfigIntegrityChecksumJob)
+  @ValidateNested()
+  @IsObject()
+  checksumFiles!: SystemConfigIntegrityChecksumJob;
+}
+
 class JobSettingsDto {
   @IsInt()
   @IsPositive()
@@ -242,6 +279,12 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   [QueueName.Workflow]!: JobSettingsDto;
 
   @ApiProperty({ type: JobSettingsDto, description: undefined })
+  @ValidateNested()
+  @IsObject()
+  @Type(() => JobSettingsDto)
+  [QueueName.IntegrityCheck]!: JobSettingsDto;
+
+  @ApiProperty({ type: JobSettingsDto })
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
@@ -714,6 +757,13 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   ffmpeg!: SystemConfigFFmpegDto;
+
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
+  @Type(() => SystemConfigIntegrityChecks)
+  @ValidateNested()
+  @IsObject()
+  integrityChecks!: SystemConfigIntegrityChecks;
 
   // Description lives on schema to avoid duplication
   @ApiProperty({ description: undefined })

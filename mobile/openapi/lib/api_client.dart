@@ -386,6 +386,14 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
+        case 'IntegrityReportDto':
+          return IntegrityReportDto.fromJson(value);
+        case 'IntegrityReportResponseDto':
+          return IntegrityReportResponseDto.fromJson(value);
+        case 'IntegrityReportSummaryResponseDto':
+          return IntegrityReportSummaryResponseDto.fromJson(value);
+        case 'IntegrityReportType':
+          return IntegrityReportTypeTypeTransformer().decode(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
@@ -738,6 +746,12 @@ class ApiClient {
           return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
+        case 'SystemConfigIntegrityChecks':
+          return SystemConfigIntegrityChecks.fromJson(value);
+        case 'SystemConfigIntegrityChecksumJob':
+          return SystemConfigIntegrityChecksumJob.fromJson(value);
+        case 'SystemConfigIntegrityJob':
+          return SystemConfigIntegrityJob.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':

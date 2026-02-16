@@ -1,15 +1,17 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
   import { Icon, Text } from '@immich/ui';
+  import type { Snippet } from 'svelte';
 
   interface Props {
-    icon: string;
+    icon?: string;
     title: string;
     value: number;
     unit?: ByteUnit | undefined;
+    footer?: Snippet<[]>;
   }
 
-  let { icon, title, value, unit = undefined }: Props = $props();
+  let { icon, title, value, unit = undefined, footer }: Props = $props();
 
   const zeros = $derived(() => {
     const maxLength = 13;
@@ -22,7 +24,9 @@
 
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
-    <Icon {icon} size="40" />
+    {#if icon}
+      <Icon {icon} size="40" />
+    {/if}
     <Text size="giant" fontWeight="medium">{title}</Text>
   </div>
 
@@ -32,4 +36,6 @@
       <code class="font-mono text-base font-normal">{unit}</code>
     {/if}
   </div>
+
+  {@render footer?.()}
 </div>
