@@ -61,6 +61,7 @@
         asset: TimelineAsset,
       ) => void,
     ) => void;
+    forceRemount?: boolean;
   }
 
   let {
@@ -83,6 +84,7 @@
     empty,
     customThumbnailLayout,
     onThumbnailClick,
+    forceRemount = false,
   }: Props = $props();
 
   timelineManager = new TimelineManager();
@@ -652,7 +654,7 @@
       {/if}
     </section>
 
-    {#each timelineManager.months as monthGroup (monthGroup.viewId)}
+    {#each timelineManager.months as monthGroup (forceRemount ? monthGroup : monthGroup.viewId)}
       {@const display = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
 

@@ -274,6 +274,7 @@
     onEscape={handleEscape}
     withStacked
     onThumbnailClick={handleThumbnailClick}
+    forceRemount={true}
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
