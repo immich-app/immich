@@ -9,6 +9,9 @@ import { userStub } from 'test/fixtures/user.stub';
 import { getForStorageTemplate } from 'test/mappers';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
+const motionAsset = AssetFactory.from({ type: AssetType.Video }).exif().build();
+const stillAsset = AssetFactory.from({ livePhotoVideoId: motionAsset.id }).exif().build();
+
 describe(StorageTemplateService.name, () => {
   let sut: StorageTemplateService;
   let mocks: ServiceMocks;
@@ -257,6 +260,107 @@ describe(StorageTemplateService.name, () => {
         newPath: `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
+      });
+    });
+
+    describe('motion video processed directly', () => {
+      it('should use still photo album info when motion video job is processed', async () => {
+        const user = userStub.user1;
+        const album = AlbumFactory.from().asset().build();
+        const config = structuredClone(defaults);
+        config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other{{/if}}/{{filename}}';
+
+        sut.onConfigInit({ newConfig: config });
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(getForStorageTemplate(stillAsset));
+        mocks.album.getByAssetId.mockResolvedValue([album]);
+
+        mocks.move.create.mockResolvedValueOnce({
+          id: '123',
+          entityId: motionAsset.id,
+          pathType: AssetPathType.Original,
+          oldPath: motionAsset.originalPath,
+          newPath: `/data/library/${user.id}/2022/${album.albumName}/${motionAsset.originalFileName}`,
+        });
+
+        expect(await sut.handleMigrationSingle({ id: motionAsset.id })).toBe(JobStatus.Success);
+
+        expect(mocks.assetJob.getStillPhotoForMotionVideo).toHaveBeenCalledWith(motionAsset.id);
+        expect(mocks.album.getByAssetId).toHaveBeenCalledWith(stillAsset.ownerId, stillAsset.id);
+        expect(mocks.asset.update).toHaveBeenCalledWith({
+          id: motionAsset.id,
+          originalPath: expect.stringContaining(`/${album.albumName}/`),
+        });
+      });
+
+      it('should use still photo date info when motion video job is triggered directly', async () => {
+        const user = userStub.user1;
+        const stillPhotoWithDifferentDate = AssetFactory.from({
+          livePhotoVideoId: motionAsset.id,
+          fileCreatedAt: new Date('2023-08-15T10:30:00.000Z'),
+        })
+          .exif()
+          .build();
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+        mocks.assetJob.getStillPhotoForMotionVideo.mockResolvedValueOnce(
+          getForStorageTemplate(stillPhotoWithDifferentDate),
+        );
+
+        mocks.move.create.mockResolvedValueOnce({
+          id: '123',
+          entityId: motionAsset.id,
+          pathType: AssetPathType.Original,
+          oldPath: motionAsset.originalPath,
+          newPath: `/data/library/${user.id}/2023/2023-08-15/${motionAsset.originalFileName}`,
+        });
+
+        expect(await sut.handleMigrationSingle({ id: motionAsset.id })).toBe(JobStatus.Success);
+
+        expect(mocks.assetJob.getStillPhotoForMotionVideo).toHaveBeenCalledWith(motionAsset.id);
+        expect(mocks.move.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            newPath: expect.stringContaining('/2023/2023-08-15/'),
+          }),
+        );
+      });
+
+      it('should process standalone video normally when no still photo exists', async () => {
+        const user = userStub.user1;
+        const standaloneVideo = AssetFactory.from({
+          id: 'standalone-video',
+          type: AssetType.Video,
+          originalFileName: 'video.mp4',
+          originalPath: '/original/video.mp4',
+        })
+          .exif()
+          .build();
+
+        mocks.user.get.mockResolvedValue(user);
+        mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(standaloneVideo));
+        mocks.assetJob.getStillPhotoForMotionVideo.mockImplementationOnce(
+          (): Promise<any | undefined> => Promise.resolve(),
+        );
+
+        mocks.move.create.mockResolvedValueOnce({
+          id: '123',
+          entityId: standaloneVideo.id,
+          pathType: AssetPathType.Original,
+          oldPath: standaloneVideo.originalPath,
+          newPath: `/data/library/${user.id}/2022/2022-06-19/video.mp4`,
+        });
+
+        expect(await sut.handleMigrationSingle({ id: standaloneVideo.id })).toBe(JobStatus.Success);
+
+        expect(mocks.assetJob.getStillPhotoForMotionVideo).toHaveBeenCalledWith(standaloneVideo.id);
+        expect(mocks.move.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            entityId: standaloneVideo.id,
+          }),
+        );
       });
     });
 
@@ -739,6 +843,49 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(2);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: stillAsset.id, originalPath: newStillPicturePath });
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: motionAsset.id, originalPath: newMotionPicturePath });
+    });
+
+    it('should use still photo album info when migrating live photo motion video', async () => {
+      const user = userStub.user1;
+      const album = AlbumFactory.from().asset().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other{{/if}}/{{filename}}';
+
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([getForStorageTemplate(stillAsset)]));
+      mocks.user.getList.mockResolvedValue([user]);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+      mocks.album.getByAssetId.mockResolvedValue([album]);
+
+      mocks.move.create.mockResolvedValueOnce({
+        id: '123',
+        entityId: stillAsset.id,
+        pathType: AssetPathType.Original,
+        oldPath: stillAsset.originalPath,
+        newPath: `/data/library/${user.id}/2022/${album.albumName}/${stillAsset.originalFileName}`,
+      });
+
+      mocks.move.create.mockResolvedValueOnce({
+        id: '124',
+        entityId: motionAsset.id,
+        pathType: AssetPathType.Original,
+        oldPath: motionAsset.originalPath,
+        newPath: `/data/library/${user.id}/2022/${album.albumName}/${motionAsset.originalFileName}`,
+      });
+
+      await sut.handleMigration();
+
+      expect(mocks.album.getByAssetId).toHaveBeenCalledWith(stillAsset.ownerId, stillAsset.id);
+      expect(mocks.album.getByAssetId).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: stillAsset.id,
+        originalPath: expect.stringContaining(`/${album.albumName}/`),
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: motionAsset.id,
+        originalPath: expect.stringContaining(`/${album.albumName}/`),
+      });
     });
   });
 
