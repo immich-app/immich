@@ -34,10 +34,12 @@ abstract class NetworkApi {
   void addCertificate(ClientCertData clientData);
 
   @async
-  ClientCertData selectCertificate(ClientCertPrompt promptText);
+  void selectCertificate(ClientCertPrompt promptText);
 
   @async
   void removeCertificate();
+
+  bool hasCertificate();
 
   int getClientPointer();
 

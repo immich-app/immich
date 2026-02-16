@@ -180,8 +180,9 @@ private open class NetworkPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NetworkApi {
   fun addCertificate(clientData: ClientCertData, callback: (Result<Unit>) -> Unit)
-  fun selectCertificate(promptText: ClientCertPrompt, callback: (Result<ClientCertData>) -> Unit)
+  fun selectCertificate(promptText: ClientCertPrompt, callback: (Result<Unit>) -> Unit)
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
+  fun hasCertificate(): Boolean
   fun getClientPointer(): Long
   fun setRequestHeaders(headers: Map<String, String>)
 
@@ -219,13 +220,12 @@ interface NetworkApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val promptTextArg = args[0] as ClientCertPrompt
-            api.selectCertificate(promptTextArg) { result: Result<ClientCertData> ->
+            api.selectCertificate(promptTextArg) { result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(NetworkPigeonUtils.wrapError(error))
               } else {
-                val data = result.getOrNull()
-                reply.reply(NetworkPigeonUtils.wrapResult(data))
+                reply.reply(NetworkPigeonUtils.wrapResult(null))
               }
             }
           }
@@ -245,6 +245,21 @@ interface NetworkApi {
                 reply.reply(NetworkPigeonUtils.wrapResult(null))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NetworkApi.hasCertificate$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              listOf(api.hasCertificate())
+            } catch (exception: Throwable) {
+              NetworkPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

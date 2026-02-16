@@ -17,13 +17,24 @@ class NetworkApiImpl: NetworkApi {
     self.viewController = viewController
   }
   
-  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, any Error>) -> Void) {
-    let importer = CertImporter(promptText: promptText, completion: { [weak self] result in
+  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<Void, any Error>) -> Void) {
+    let importer = CertImporter(promptText: promptText, completion: { [weak self] _ in
       self?.activeImporter = nil
-      completion(result.map { ClientCertData(data: FlutterStandardTypedData(bytes: $0.0), password: $0.1) })
+      completion(())
     }, viewController: viewController)
     activeImporter = importer
     importer.load()
+  }
+
+  func hasCertificate() throws -> Bool {
+    let query: [String: Any] = [
+      kSecClass as String: kSecClassIdentity,
+      kSecAttrLabel as String: CLIENT_CERT_LABEL,
+      kSecReturnRef as String: true,
+    ]
+    var item: CFTypeRef?
+    let status = SecItemCopyMatching(query as CFDictionary, &item)
+    return status == errSecSuccess
   }
   
   func removeCertificate(completion: @escaping (Result<Void, any Error>) -> Void) {
@@ -55,10 +66,10 @@ class NetworkApiImpl: NetworkApi {
 
 private class CertImporter: NSObject, UIDocumentPickerDelegate {
   private let promptText: ClientCertPrompt
-  private var completion: ((Result<(Data, String), Error>) -> Void)
+  private var completion: ((Result<Void, Error>) -> Void)
   private weak var viewController: UIViewController?
-  
-  init(promptText: ClientCertPrompt, completion: (@escaping (Result<(Data, String), Error>) -> Void), viewController: UIViewController?) {
+
+  init(promptText: ClientCertPrompt, completion: (@escaping (Result<Void, Error>) -> Void), viewController: UIViewController?) {
     self.promptText = promptText
     self.completion = completion
     self.viewController = viewController
@@ -92,7 +103,7 @@ private class CertImporter: NSObject, UIDocumentPickerDelegate {
         }
         
         await URLSessionManager.shared.session.flush()
-        self.completion(.success((data, password)))
+        self.completion(.success(()))
       } catch {
         completion(.failure(error))
       }

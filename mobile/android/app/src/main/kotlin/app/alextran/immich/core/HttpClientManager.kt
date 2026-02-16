@@ -1,6 +1,9 @@
 package app.alextran.immich.core
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.security.KeyChain
+import androidx.core.content.edit
 import app.alextran.immich.BuildConfig
 import okhttp3.Cache
 import okhttp3.ConnectionPool
@@ -21,8 +24,10 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509KeyManager
 import javax.net.ssl.X509TrustManager
 
-const val CERT_ALIAS = "client_cert"
 const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
+private const val CERT_ALIAS = "client_cert"
+private const val PREFS_NAME = "immich.ssl"
+private const val PREFS_CERT_ALIAS = "immich.client_cert"
 
 /**
  * Manages a shared OkHttpClient with SSL configuration support.
@@ -37,20 +42,42 @@ object HttpClientManager {
   private val clientChangedListeners = mutableListOf<() -> Unit>()
 
   private lateinit var client: OkHttpClient
+  private lateinit var appContext: Context
+  private lateinit var prefs: SharedPreferences
 
   private val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
+  var keyChainAlias: String? = null
+    private set
+
   var headers: Headers = Headers.headersOf("User-Agent", USER_AGENT)
-  val isMtls: Boolean get() = keyStore.containsAlias(CERT_ALIAS)
+
+  val isMtls: Boolean get() = keyChainAlias != null || keyStore.containsAlias(CERT_ALIAS)
 
   fun initialize(context: Context) {
     if (initialized) return
     synchronized(this) {
       if (initialized) return
 
+      appContext = context.applicationContext
+      prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+      keyChainAlias = prefs.getString(PREFS_CERT_ALIAS, null)
+
       val cacheDir = File(File(context.cacheDir, "okhttp"), "api")
       client = build(cacheDir)
       initialized = true
+    }
+  }
+
+  fun setKeyChainAlias(alias: String) {
+    synchronized(this) {
+      val wasMtls = isMtls
+      keyChainAlias = alias
+      prefs.edit { putString(PREFS_CERT_ALIAS, alias) }
+
+      if (wasMtls != isMtls) {
+        clientChangedListeners.forEach { it() }
+      }
     }
   }
 
@@ -65,7 +92,7 @@ object HttpClientManager {
       val key = tmpKeyStore.getKey(tmpAlias, password)
       val chain = tmpKeyStore.getCertificateChain(tmpAlias)
 
-      if (wasMtls) {
+      if (keyStore.containsAlias(CERT_ALIAS)) {
         keyStore.deleteEntry(CERT_ALIAS)
       }
       keyStore.setKeyEntry(CERT_ALIAS, key, null, chain)
@@ -77,12 +104,21 @@ object HttpClientManager {
 
   fun deleteKeyEntry() {
     synchronized(this) {
-      if (!isMtls) {
-        return
+      val wasMtls = isMtls
+
+      if (keyChainAlias != null) {
+        keyChainAlias = null
+        prefs.edit { remove(PREFS_CERT_ALIAS) }
+
       }
 
-      keyStore.deleteEntry(CERT_ALIAS)
-      clientChangedListeners.forEach { it() }
+      if (keyStore.containsAlias(CERT_ALIAS)) {
+        keyStore.deleteEntry(CERT_ALIAS)
+      }
+
+      if (wasMtls) {
+        clientChangedListeners.forEach { it() }
+      }
     }
   }
 
@@ -129,23 +165,39 @@ object HttpClientManager {
       .build()
   }
 
-  // Reads from the key store rather than taking a snapshot at initialization time
+  /**
+   * Resolves client certificates dynamically at TLS handshake time.
+   * Checks the system KeyChain alias first, then falls back to the app's private KeyStore.
+   */
   private class DynamicKeyManager : X509KeyManager {
-    override fun getClientAliases(keyType: String, issuers: Array<Principal>?): Array<String>? =
-      if (isMtls) arrayOf(CERT_ALIAS) else null
+    override fun getClientAliases(keyType: String, issuers: Array<Principal>?): Array<String>? {
+      val alias = chooseClientAlias(arrayOf(keyType), issuers, null) ?: return null
+      return arrayOf(alias)
+    }
 
     override fun chooseClientAlias(
       keyTypes: Array<String>,
       issuers: Array<Principal>?,
       socket: Socket?
-    ): String? =
-      if (isMtls) CERT_ALIAS else null
+    ): String? {
+      keyChainAlias?.let { return it }
+      if (keyStore.containsAlias(CERT_ALIAS)) return CERT_ALIAS
+      return null
+    }
 
-    override fun getCertificateChain(alias: String): Array<X509Certificate>? =
-      keyStore.getCertificateChain(alias)?.map { it as X509Certificate }?.toTypedArray()
+    override fun getCertificateChain(alias: String): Array<X509Certificate>? {
+      if (alias == keyChainAlias) {
+        return KeyChain.getCertificateChain(appContext, alias)
+      }
+      return keyStore.getCertificateChain(alias)?.map { it as X509Certificate }?.toTypedArray()
+    }
 
-    override fun getPrivateKey(alias: String): PrivateKey? =
-      keyStore.getKey(alias, null) as? PrivateKey
+    override fun getPrivateKey(alias: String): PrivateKey? {
+      if (alias == keyChainAlias) {
+        return KeyChain.getPrivateKey(appContext, alias)
+      }
+      return keyStore.getKey(alias, null) as? PrivateKey
+    }
 
     override fun getServerAliases(keyType: String, issuers: Array<Principal>?): Array<String>? =
       null
