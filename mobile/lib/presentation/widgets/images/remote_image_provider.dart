@@ -37,7 +37,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   }
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
-    final request = this.request = RemoteImageRequest(uri: key.url, headers: ApiService.getRequestHeaders());
+    final request = this.request = RemoteImageRequest(uri: key.url, headers: ApiService.getRequestHeaders(), isThumbnail: true);
     return loadRequest(request, decode);
   }
 

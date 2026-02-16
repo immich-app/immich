@@ -43,6 +43,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
+import 'package:immich_mobile/services/smart_cache.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -58,6 +59,7 @@ void main() async {
   await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
+  unawaited(SmartCacheService().runCleanupIfNeeded());
 
   runApp(
     ProviderScope(

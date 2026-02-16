@@ -46,11 +46,161 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+func deepEqualsRemoteImages(_ lhs: Any?, _ rhs: Any?) -> Bool {
+  let cleanLhs = nilOrValue(lhs) as Any?
+  let cleanRhs = nilOrValue(rhs) as Any?
+  switch (cleanLhs, cleanRhs) {
+  case (nil, nil):
+    return true
+
+  case (nil, _), (_, nil):
+    return false
+
+  case is (Void, Void):
+    return true
+
+  case let (cleanLhsHashable, cleanRhsHashable) as (AnyHashable, AnyHashable):
+    return cleanLhsHashable == cleanRhsHashable
+
+  case let (cleanLhsArray, cleanRhsArray) as ([Any?], [Any?]):
+    guard cleanLhsArray.count == cleanRhsArray.count else { return false }
+    for (index, element) in cleanLhsArray.enumerated() {
+      if !deepEqualsRemoteImages(element, cleanRhsArray[index]) {
+        return false
+      }
+    }
+    return true
+
+  case let (cleanLhsDictionary, cleanRhsDictionary) as ([AnyHashable: Any?], [AnyHashable: Any?]):
+    guard cleanLhsDictionary.count == cleanRhsDictionary.count else { return false }
+    for (key, cleanLhsValue) in cleanLhsDictionary {
+      guard cleanRhsDictionary.index(forKey: key) != nil else { return false }
+      if !deepEqualsRemoteImages(cleanLhsValue, cleanRhsDictionary[key]!) {
+        return false
+      }
+    }
+    return true
+
+  default:
+    // Any other type shouldn't be able to be used with pigeon. File an issue if you find this to be untrue.
+    return false
+  }
+}
+
+func deepHashRemoteImages(value: Any?, hasher: inout Hasher) {
+  if let valueList = value as? [AnyHashable] {
+     for item in valueList { deepHashRemoteImages(value: item, hasher: &hasher) }
+     return
+  }
+
+  if let valueDict = value as? [AnyHashable: AnyHashable] {
+    for key in valueDict.keys { 
+      hasher.combine(key)
+      deepHashRemoteImages(value: valueDict[key]!, hasher: &hasher)
+    }
+    return
+  }
+
+  if let hashableValue = value as? AnyHashable {
+    hasher.combine(hashableValue.hashValue)
+  }
+
+  return hasher.combine(String(describing: value))
+}
+
+    
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeCacheStats: Hashable {
+  var size: Int64
+  var count: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeCacheStats? {
+    let size = pigeonVar_list[0] as! Int64
+    let count = pigeonVar_list[1] as! Int64
+
+    return NativeCacheStats(
+      size: size,
+      count: count
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      size,
+      count,
+    ]
+  }
+  static func == (lhs: NativeCacheStats, rhs: NativeCacheStats) -> Bool {
+    return deepEqualsRemoteImages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashRemoteImages(value: toList(), hasher: &hasher)
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct DualCacheStats: Hashable {
+  var thumbnailSize: Int64
+  var thumbnailCount: Int64
+  var highResSize: Int64
+  var highResCount: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> DualCacheStats? {
+    let thumbnailSize = pigeonVar_list[0] as! Int64
+    let thumbnailCount = pigeonVar_list[1] as! Int64
+    let highResSize = pigeonVar_list[2] as! Int64
+    let highResCount = pigeonVar_list[3] as! Int64
+
+    return DualCacheStats(
+      thumbnailSize: thumbnailSize,
+      thumbnailCount: thumbnailCount,
+      highResSize: highResSize,
+      highResCount: highResCount
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      thumbnailSize,
+      thumbnailCount,
+      highResSize,
+      highResCount,
+    ]
+  }
+  static func == (lhs: DualCacheStats, rhs: DualCacheStats) -> Bool {
+    return deepEqualsRemoteImages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashRemoteImages(value: toList(), hasher: &hasher)
+  }
+}
 
 private class RemoteImagesPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      return NativeCacheStats.fromList(self.readValue() as! [Any?])
+    case 130:
+      return DualCacheStats.fromList(self.readValue() as! [Any?])
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
 }
 
 private class RemoteImagesPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? NativeCacheStats {
+      super.writeByte(129)
+      super.writeValue(value.toList())
+    } else if let value = value as? DualCacheStats {
+      super.writeByte(130)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
 }
 
 private class RemoteImagesPigeonCodecReaderWriter: FlutterStandardReaderWriter {
@@ -70,9 +220,12 @@ class RemoteImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable 
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RemoteImageApi {
-  func requestImage(url: String, headers: [String: String], requestId: Int64, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
+  func requestImage(url: String, headers: [String: String], requestId: Int64, isThumbnail: Bool, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
   func cancelRequest(requestId: Int64) throws
-  func clearCache(completion: @escaping (Result<Int64, Error>) -> Void)
+  func clearThumbnailCache(completion: @escaping (Result<Int64, Error>) -> Void)
+  func clearHighResCache(completion: @escaping (Result<Int64, Error>) -> Void)
+  func getDualCacheStats(completion: @escaping (Result<DualCacheStats, Error>) -> Void)
+  func cleanupExpiredHighRes(maxAgeDays: Int64, completion: @escaping (Result<Int64, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -88,7 +241,8 @@ class RemoteImageApiSetup {
         let urlArg = args[0] as! String
         let headersArg = args[1] as! [String: String]
         let requestIdArg = args[2] as! Int64
-        api.requestImage(url: urlArg, headers: headersArg, requestId: requestIdArg) { result in
+        let isThumbnailArg = args[3] as! Bool
+        api.requestImage(url: urlArg, headers: headersArg, requestId: requestIdArg, isThumbnail: isThumbnailArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -115,10 +269,10 @@ class RemoteImageApiSetup {
     } else {
       cancelRequestChannel.setMessageHandler(nil)
     }
-    let clearCacheChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let clearThumbnailCacheChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearThumbnailCache\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      clearCacheChannel.setMessageHandler { _, reply in
-        api.clearCache { result in
+      clearThumbnailCacheChannel.setMessageHandler { _, reply in
+        api.clearThumbnailCache { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))
@@ -128,7 +282,54 @@ class RemoteImageApiSetup {
         }
       }
     } else {
-      clearCacheChannel.setMessageHandler(nil)
+      clearThumbnailCacheChannel.setMessageHandler(nil)
+    }
+    let clearHighResCacheChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearHighResCache\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      clearHighResCacheChannel.setMessageHandler { _, reply in
+        api.clearHighResCache { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      clearHighResCacheChannel.setMessageHandler(nil)
+    }
+    let getDualCacheStatsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.getDualCacheStats\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getDualCacheStatsChannel.setMessageHandler { _, reply in
+        api.getDualCacheStats { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getDualCacheStatsChannel.setMessageHandler(nil)
+    }
+    let cleanupExpiredHighResChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.cleanupExpiredHighRes\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      cleanupExpiredHighResChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let maxAgeDaysArg = args[0] as! Int64
+        api.cleanupExpiredHighRes(maxAgeDays: maxAgeDaysArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      cleanupExpiredHighResChannel.setMessageHandler(nil)
     }
   }
 }
