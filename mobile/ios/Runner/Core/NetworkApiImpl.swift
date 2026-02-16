@@ -48,27 +48,6 @@ class NetworkApiImpl: NetworkApi {
     return Int64(Int(bitPattern: pointer))
   }
   
-  func createWebSocketTask(
-    url: String,
-    protocols: [String]?,
-    completion: @escaping (Result<WebSocketTaskResult, any Error>) -> Void
-  ) {
-    guard let wsUrl = URL(string: url) else {
-      return completion(.failure(WebSocketError.invalidURL(url)))
-    }
-    
-    URLSessionManager.shared.createWebSocketTask(url: wsUrl, protocols: protocols) { result in
-      switch result {
-      case .success(let (task, proto)):
-        let pointer = Unmanaged.passUnretained(task).toOpaque()
-        let address = Int64(Int(bitPattern: pointer))
-        completion(.success(WebSocketTaskResult(taskPointer: address, taskProtocol: proto)))
-      case .failure(let error):
-        completion(.failure(error))
-      }
-    }
-  }
-  
   func setRequestHeaders(headers: [String : String]) throws {
     URLSessionManager.shared.session.configuration.httpAdditionalHeaders = headers
   }
