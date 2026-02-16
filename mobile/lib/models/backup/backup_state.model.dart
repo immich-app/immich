@@ -79,7 +79,7 @@ class BackUpState {
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
     double? iCloudDownloadProgress,
-    Completer? cancelToken,
+    Completer<void>? cancelToken,
     ServerDiskInfo? serverInfo,
     bool? autoBackup,
     bool? backgroundBackup,

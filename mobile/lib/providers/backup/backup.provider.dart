@@ -497,6 +497,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state.cancelToken.complete();
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
+      cancelToken: Completer<void>(),
       progressInPercentage: 0.0,
       progressInFileSize: "0 B / 0 B",
       progressInFileSpeed: 0,

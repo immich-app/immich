@@ -31,4 +31,4 @@ final assetUploadProgressProvider = NotifierProvider<AssetUploadProgressNotifier
   AssetUploadProgressNotifier.new,
 );
 
-final manualUploadCancelTokenProvider = StateProvider<Completer?>((ref) => null);
+final manualUploadCancelTokenProvider = StateProvider<Completer<void>?>((ref) => null);
