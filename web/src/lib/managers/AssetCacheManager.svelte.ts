@@ -9,10 +9,7 @@ class AsyncCache<K, V> {
 
   constructor(private fetcher: (params: K) => Promise<V>) {}
 
-  async getOrFetch(
-    params: K,
-    updateCache: boolean,
-  ): Promise<V> {
+  async getOrFetch(params: K, updateCache: boolean): Promise<V> {
     const cacheKey = defaultSerializer(params);
 
     const cached = this.#cache.get(cacheKey);
@@ -54,7 +51,7 @@ class AssetCacheManager {
   }
 
   async getAsset({ id, key, slug }: { id: string; key?: string; slug?: string }, updateCache = true) {
-    return this.#assetCache.getOrFetch({ id, key, slug}, updateCache);
+    return this.#assetCache.getOrFetch({ id, key, slug }, updateCache);
   }
 
   async getAssetOcr(id: string) {
