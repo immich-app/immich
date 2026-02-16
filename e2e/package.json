@@ -5,8 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "vitest --run",
+    "test": "vitest --run --exclude src/specs/server/api/maintenance.e2e-spec.ts",
     "test:watch": "vitest",
+    "test:maintenance": "vitest --run src/specs/server/api/maintenance.e2e-spec.ts",
     "test:web": "npx playwright test",
     "start:web": "npx playwright test --ui",
     "format": "prettier --check .",
