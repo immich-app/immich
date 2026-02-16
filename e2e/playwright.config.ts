@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { cpus } from 'node:os';
 import { resolve } from 'node:path';
 
-dotenv.config({ path: resolve(import.meta.dirname, '.env') });
+dotenv.config({ quiet: true, path: resolve(import.meta.dirname, '.env') });
 
 export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
 export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? '127.0.0.1';
