@@ -142,7 +142,17 @@ export class MediaRepository {
 
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
     const pipeline = await this.getImageDecodingPipeline(input, options);
-    return pipeline.raw().toBuffer({ resolveWithObject: true });
+    const metadata = await pipeline.metadata();
+    const result = await pipeline.raw().toBuffer({ resolveWithObject: true });
+    return {
+      data: result.data,
+      info: {
+        width: result.info.width,
+        height: result.info.height,
+        channels: result.info.channels,
+        hasAlpha: metadata.hasAlpha,
+      },
+    };
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {

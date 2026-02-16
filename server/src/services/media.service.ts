@@ -298,44 +298,71 @@ export class MediaService extends BaseService {
     };
   }
 
-  private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
-    const previewFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Preview,
-      format: image.preview.format,
-      isEdited: useEdits,
-      isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
-    });
-    const thumbnailFile = this.getImageFile(asset, {
-      fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format,
-      isEdited: useEdits,
-      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format !== ImageFormat.Webp,
-    });
-    this.storageCore.ensureFolders(previewFile.path);
+  private getFinalFormat(sourceHasAlpha: boolean, requestedFormat: ImageFormat): ImageFormat {
+    if (requestedFormat !== ImageFormat.Jpeg) {
+      return requestedFormat;
+    }
 
+    if (sourceHasAlpha) {
+      this.logger.debug('Overriding JPEG to WebP due to alpha channel in source image');
+      return ImageFormat.Webp;
+    }
+
+    return requestedFormat;
+  }
+
+  private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
     // Handle embedded preview extraction for RAW files
     const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
     const { info, data, colorspace, generateFullsize, convertFullsize, extracted } = extractedImage;
+
+    const sourceHasAlpha = info.hasAlpha === true;
+    const previewFormat = this.getFinalFormat(sourceHasAlpha, image.preview.format);
+    const thumbnailFormat = this.getFinalFormat(sourceHasAlpha, image.thumbnail.format);
+
+    const previewFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Preview,
+      format: previewFormat,
+      isEdited: useEdits,
+      isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
+    });
+    const thumbnailFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Thumbnail,
+      format: thumbnailFormat,
+      isEdited: useEdits,
+      isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
+    });
+    this.storageCore.ensureFolders(previewFile.path);
 
     // generate final images
     const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
-      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewFile.path),
+      this.mediaRepository.generateThumbnail(
+        data,
+        { ...image.thumbnail, format: thumbnailFormat, ...thumbnailOptions },
+        thumbnailFile.path,
+      ),
+      this.mediaRepository.generateThumbnail(
+        data,
+        { ...image.preview, format: previewFormat, ...thumbnailOptions },
+        previewFile.path,
+      ),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
+      const fullsizeFormat = this.getFinalFormat(sourceHasAlpha, image.fullsize.format);
+
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
-        format: image.fullsize.format,
+        format: fullsizeFormat,
         isEdited: useEdits,
-        isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
       });
       const fullsizeOptions = {
-        format: image.fullsize.format,
+        format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
         ...thumbnailOptions,

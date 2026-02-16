@@ -1,4 +1,3 @@
-import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
 import { AssetEditAction } from 'src/dtos/editing.dto';
@@ -338,14 +337,14 @@ describe(MediaService.name, () => {
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
-      rawInfo = { width: 100, height: 100, channels: 3 };
+      rawInfo = { width: 100, height: 100, channels: 3, hasAlpha: false };
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? { data: rawBuffer, info: rawInfo } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -815,6 +814,132 @@ describe(MediaService.name, () => {
       ]);
     });
 
+    it('should override JPEG format to WebP when source image has alpha channel', async () => {
+      rawInfo.hasAlpha = true;
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Jpeg },
+          thumbnail: { format: ImageFormat.Jpeg },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('preview.webp'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('thumbnail.webp'),
+      );
+    });
+
+    it('should keep JPEG format when source image has no alpha channel', async () => {
+      rawInfo.hasAlpha = false;
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Jpeg },
+          thumbnail: { format: ImageFormat.Jpeg },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+        }),
+        expect.stringContaining('preview.jpeg'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Jpeg,
+        }),
+        expect.stringContaining('thumbnail.jpeg'),
+      );
+    });
+
+    it('should use WebP format for non-JPEG formats regardless of alpha channel', async () => {
+      rawInfo.hasAlpha = true;
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Webp },
+          thumbnail: { format: ImageFormat.Webp },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('preview.webp'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('thumbnail.webp'),
+      );
+    });
+
+    it('should override mixed JPEG formats to WebP when source image has alpha channel', async () => {
+      rawInfo.hasAlpha = true;
+      const asset = AssetFactory.from().exif().build();
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: {
+          preview: { format: ImageFormat.Jpeg, quality: 80, progressive: false },
+          thumbnail: { format: ImageFormat.Webp, quality: 80, progressive: false },
+        },
+      });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+      const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('preview.webp'),
+      );
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({
+          format: ImageFormat.Webp,
+        }),
+        expect.stringContaining('thumbnail.webp'),
+      );
+    });
+
     it('should never set isProgressive for videos', async () => {
       const asset = AssetFactory.create({ type: AssetType.Video, originalPath: '/original/path.ext' });
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamHDR);
@@ -1276,14 +1401,14 @@ describe(MediaService.name, () => {
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
-      rawInfo = { width: 100, height: 100, channels: 3 };
+      rawInfo = { width: 100, height: 100, channels: 3, hasAlpha: false };
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
       mocks.media.decodeImage.mockImplementation((input) =>
         Promise.resolve(
           typeof input === 'string'
-            ? { data: rawBuffer, info: rawInfo as OutputInfo } // string implies original file
-            : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
+            ? { data: rawBuffer, info: rawInfo } // string implies original file
+            : { data: fullsizeBuffer, info: rawInfo }, // buffer implies embedded image extracted
         ),
       );
     });
@@ -1452,7 +1577,7 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
+      const info = { width: 1000, height: 1000, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1497,7 +1622,7 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.videoThumbnail);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
+      const info = { width: 1000, height: 1000, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1542,7 +1667,7 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailStart);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
+      const info = { width: 2160, height: 3840, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1585,7 +1710,7 @@ describe(MediaService.name, () => {
       mocks.person.update.mockResolvedValue(personStub.primaryPerson);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
+      const info = { width: 1000, height: 1000, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1628,7 +1753,7 @@ describe(MediaService.name, () => {
       mocks.person.update.mockResolvedValue(personStub.primaryPerson);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 4624, height: 3080 } as OutputInfo;
+      const info = { width: 4624, height: 3080, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1671,7 +1796,7 @@ describe(MediaService.name, () => {
       mocks.person.update.mockResolvedValue(personStub.primaryPerson);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 4624, height: 3080 } as OutputInfo;
+      const info = { width: 4624, height: 3080, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1716,7 +1841,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const extracted = Buffer.from('');
       const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
+      const info = { width: 2160, height: 3840, hasAlpha: false, channels: 3 as const };
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
       mocks.media.decodeImage.mockResolvedValue({ data, info });
       mocks.media.getImageDimensions.mockResolvedValue(info);
@@ -1761,7 +1886,7 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
+      const info = { width: 2160, height: 3840, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1777,7 +1902,7 @@ describe(MediaService.name, () => {
       mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.rawEmbeddedThumbnail);
       mocks.media.generateThumbnail.mockResolvedValue();
       const data = Buffer.from('');
-      const info = { width: 2160, height: 3840 } as OutputInfo;
+      const info = { width: 2160, height: 3840, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
@@ -1799,7 +1924,7 @@ describe(MediaService.name, () => {
       mocks.media.generateThumbnail.mockResolvedValue();
       const extracted = Buffer.from('');
       const data = Buffer.from('');
-      const info = { width: 1000, height: 1000 } as OutputInfo;
+      const info = { width: 1000, height: 1000, hasAlpha: false, channels: 3 as const };
       mocks.media.decodeImage.mockResolvedValue({ data, info });
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageDimensions.mockResolvedValue(info);
