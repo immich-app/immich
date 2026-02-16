@@ -1050,10 +1050,10 @@ packages:
     dependency: transitive
     description:
       name: jni
-      sha256: d2c361082d554d4593c3012e26f6b188f902acd291330f13d6427641a92b3da1
+      sha256: "8706a77e94c76fe9ec9315e18949cc9479cc03af97085ca9c1077b61323ea12d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.14.2"
+    version: "0.15.2"
   js:
     dependency: transitive
     description:
@@ -1267,8 +1267,8 @@ packages:
     dependency: "direct main"
     description:
       path: "pkgs/ok_http"
-      ref: fc43a0bf108c4705a11511f403802528ab1db716
-      resolved-ref: fc43a0bf108c4705a11511f403802528ab1db716
+      ref: cbe2199e515a6d184715fa129cad794356447d11
+      resolved-ref: cbe2199e515a6d184715fa129cad794356447d11
       url: "https://github.com/mertalev/http"
     source: git
     version: "0.1.1-wip"
