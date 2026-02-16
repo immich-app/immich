@@ -191,7 +191,7 @@
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
-    <div class="flex w-fit rounded-full bg-gray-200 p-1 text-sm font-medium font-mono overflow-hidden">
+    <div class="flex w-fit rounded-full bg-gray-200 dark:bg-gray-700 p-1 text-sm font-medium font-mono overflow-hidden">
       <Button
         size="small"
         variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
