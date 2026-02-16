@@ -9,6 +9,22 @@ import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+class CustomTimeRange {
+  final DateTime? from;
+  final DateTime? to;
+
+  const CustomTimeRange({this.from, this.to});
+
+  bool get isValid => from != null || to != null;
+
+  CustomTimeRange copyWith({DateTime? from, DateTime? to}) {
+    return CustomTimeRange(from: from ?? this.from, to: to ?? this.to);
+  }
+
+  CustomTimeRange clearFrom() => CustomTimeRange(to: to);
+  CustomTimeRange clearTo() => CustomTimeRange(from: from);
+}
+
 class MapState {
   final ThemeMode themeMode;
   final LatLngBounds bounds;
@@ -16,6 +32,7 @@ class MapState {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
+  final CustomTimeRange customTimeRange;
 
   const MapState({
     this.themeMode = ThemeMode.system,
@@ -24,6 +41,7 @@ class MapState {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
+    this.customTimeRange = const CustomTimeRange(),
   });
 
   @override
@@ -41,6 +59,7 @@ class MapState {
     bool? includeArchived,
     bool? withPartners,
     int? relativeDays,
+    CustomTimeRange? customTimeRange,
   }) {
     return MapState(
       bounds: bounds ?? this.bounds,
@@ -49,6 +68,7 @@ class MapState {
       includeArchived: includeArchived ?? this.includeArchived,
       withPartners: withPartners ?? this.withPartners,
       relativeDays: relativeDays ?? this.relativeDays,
+      customTimeRange: customTimeRange ?? this.customTimeRange,
     );
   }
 
@@ -58,6 +78,7 @@ class MapState {
     includeArchived: includeArchived,
     withPartners: withPartners,
     relativeDays: relativeDays,
+    customTimeRange: customTimeRange,
   );
 }
 
@@ -104,9 +125,22 @@ class MapStateNotifier extends Notifier<MapState> {
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
+  void setCustomTimeRange(CustomTimeRange range) {
+    ref
+        .read(appSettingsServiceProvider)
+        .setSetting(AppSettingsEnum.mapCustomFrom, range.from == null ? "" : range.from!.toIso8601String());
+    ref
+        .read(appSettingsServiceProvider)
+        .setSetting(AppSettingsEnum.mapCustomTo, range.to == null ? "" : range.to!.toIso8601String());
+    state = state.copyWith(customTimeRange: range);
+    EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
   @override
   MapState build() {
     final appSettingsService = ref.read(appSettingsServiceProvider);
+    final customFrom = appSettingsService.getSetting(AppSettingsEnum.mapCustomFrom);
+    final customTo = appSettingsService.getSetting(AppSettingsEnum.mapCustomTo);
     return MapState(
       themeMode: ThemeMode.values[appSettingsService.getSetting(AppSettingsEnum.mapThemeMode)],
       onlyFavorites: appSettingsService.getSetting(AppSettingsEnum.mapShowFavoriteOnly),
@@ -114,6 +148,10 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
       relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+      customTimeRange: CustomTimeRange(
+        from: customFrom.isNotEmpty ? DateTime.parse(customFrom) : null,
+        to: customTo.isNotEmpty ? DateTime.parse(customTo) : null,
+      ),
     );
   }
 }

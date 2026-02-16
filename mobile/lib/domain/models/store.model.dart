@@ -73,6 +73,10 @@ enum StoreKey<T> {
   autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
 
+  // Map custom time range settings
+  mapCustomFrom<String>._(141),
+  mapCustomTo<String>._(142),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
