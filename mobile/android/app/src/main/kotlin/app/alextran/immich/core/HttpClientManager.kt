@@ -109,12 +109,9 @@ object HttpClientManager {
       if (keyChainAlias != null) {
         keyChainAlias = null
         prefs.edit { remove(PREFS_CERT_ALIAS) }
-
       }
 
-      if (keyStore.containsAlias(CERT_ALIAS)) {
-        keyStore.deleteEntry(CERT_ALIAS)
-      }
+      keyStore.deleteEntry(CERT_ALIAS)
 
       if (wasMtls) {
         clientChangedListeners.forEach { it() }
