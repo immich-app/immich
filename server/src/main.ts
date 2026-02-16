@@ -1,6 +1,5 @@
 import { Kysely, sql } from 'kysely';
 import { CommandFactory } from 'nest-commander';
-import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { PostgresError } from 'postgres';
@@ -18,7 +17,7 @@ class Workers {
   /**
    * Currently running workers
    */
-  workers: Partial<Record<ImmichWorker, { kill: (signal: NodeJS.Signals) => Promise<void> | void }>> = {};
+  workers: Partial<Record<ImmichWorker, { kill: () => Promise<void> | void }>> = {};
 
   /**
    * Fail-safe in case anything dies during restart
@@ -101,25 +100,23 @@ class Workers {
     const basePath = dirname(__filename);
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
-    let anyWorker: Worker | ChildProcess;
-    let kill: (signal?: NodeJS.Signals) => Promise<void> | void;
+    const inspectArg = process.execArgv.find((arg) => arg.startsWith('--inspect'));
+    const workerData: { inspectorPort?: number } = {};
 
-    if (name === ImmichWorker.Api) {
-      const worker = fork(workerFile, [], {
-        execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
-      });
-
-      kill = (signal) => void worker.kill(signal);
-      anyWorker = worker;
-    } else {
-      const worker = new Worker(workerFile);
-
-      kill = async () => void (await worker.terminate());
-      anyWorker = worker;
+    if (inspectArg) {
+      const inspectorPorts: Record<ImmichWorker, number> = {
+        [ImmichWorker.Api]: 9230,
+        [ImmichWorker.Microservices]: 9231,
+        [ImmichWorker.Maintenance]: 9232,
+      };
+      workerData.inspectorPort = inspectorPorts[name];
     }
 
-    anyWorker.on('error', (error) => this.onError(name, error));
-    anyWorker.on('exit', (exitCode) => this.onExit(name, exitCode));
+    const worker = new Worker(workerFile, { workerData });
+    const kill = async () => void (await worker.terminate());
+
+    worker.on('error', (error) => this.onError(name, error));
+    worker.on('exit', (exitCode) => this.onExit(name, exitCode));
 
     this.workers[name] = { kill };
   }
@@ -152,8 +149,8 @@ class Workers {
       console.error(`${name} worker exited with code ${exitCode}`);
 
       if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
-        console.error('Killing api process');
-        void this.workers[ImmichWorker.Api].kill('SIGTERM');
+        console.error('Terminating api worker');
+        void this.workers[ImmichWorker.Api].kill();
       }
     }
 

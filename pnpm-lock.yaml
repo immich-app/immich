@@ -406,9 +406,12 @@ importers:
       '@react-email/render':
         specifier: ^1.1.2
         version: 1.4.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@socket.io/redis-adapter':
-        specifier: ^8.3.0
-        version: 8.3.0(socket.io-adapter@2.5.6)
+      '@socket.io/postgres-adapter':
+        specifier: ^0.5.0
+        version: 0.5.0(socket.io-adapter@2.5.6)
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.16.0
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -562,6 +565,9 @@ importers:
       socket.io:
         specifier: ^4.8.1
         version: 4.8.3
+      socket.io-adapter:
+        specifier: ^2.5.6
+        version: 2.5.6
       tailwindcss-preset-email:
         specifier: ^1.4.0
         version: 1.4.1(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.8.2))
@@ -3402,6 +3408,10 @@ packages:
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
 
+  '@msgpack/msgpack@2.8.0':
+    resolution: {integrity: sha512-h9u4u/jiIRKbq25PM+zymTyW6bhTzELvOoUd+AvYriWOAKpLGnIamaET3pnHYoI5iYphAHBI4ayx0MehR+VVPQ==}
+    engines: {node: '>= 10'}
+
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
     cpu: [arm64]
@@ -4310,9 +4320,9 @@ packages:
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
 
-  '@socket.io/redis-adapter@8.3.0':
-    resolution: {integrity: sha512-ly0cra+48hDmChxmIpnESKrc94LjRL80TEmZVscuQ/WWkRP81nNj8W8cCGMqbI4L6NCuAaPRSzZF1a9GlAxxnA==}
-    engines: {node: '>=10.0.0'}
+  '@socket.io/postgres-adapter@0.5.0':
+    resolution: {integrity: sha512-s1vFsatB4lS429ZbeAi8ju+mZMgtgdSmi9UsZsdcEG++vVtX5z10yDEt4TV8saePscvvGjs6uXvJfMCxz8+M2Q==}
+    engines: {node: '>=12.0.0'}
     peerDependencies:
       socket.io-adapter: ^2.5.4
 
@@ -9285,9 +9295,6 @@ packages:
   not@0.1.0:
     resolution: {integrity: sha512-5PDmaAsVfnWUgTUbJ3ERwn7u79Z0dYxN9ErxCpVJJqe2RK0PJ3z+iFUxuqjwtlDDegXvtWoxD/3Fzxox7tFGWA==}
 
-  notepack.io@3.0.1:
-    resolution: {integrity: sha512-TKC/8zH5pXIAMVQio2TvVDTtPRX+DJPHDqjRbxogtFiByHyzKmy96RA0JtCQJ+WouyyL4A10xomQzgbUT+1jCg==}
-
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
@@ -11618,10 +11625,6 @@ packages:
     resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
     engines: {node: '>=0.8.0'}
     hasBin: true
-
-  uid2@1.0.0:
-    resolution: {integrity: sha512-+I6aJUv63YAcY9n4mQreLUt0d4lvwkkopDNmpomkAUz0fAkEMV9pRWxN0EjhW1YfRhcuyHg2v3mwddCDW1+LFQ==}
-    engines: {node: '>= 4.0.0'}
 
   uid@2.0.2:
     resolution: {integrity: sha512-u3xV3X7uzvi5b1MncmZo3i2Aw222Zk1keqLA1YkHldREkAhAqi65wuPfe7lHx8H/Wzy+8CE7S7uS3jekIM5s8g==}
@@ -15426,6 +15429,8 @@ snapshots:
 
   '@microsoft/tsdoc@0.16.0': {}
 
+  '@msgpack/msgpack@2.8.0': {}
+
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     optional: true
 
@@ -16303,13 +16308,15 @@ snapshots:
 
   '@socket.io/component-emitter@3.1.2': {}
 
-  '@socket.io/redis-adapter@8.3.0(socket.io-adapter@2.5.6)':
+  '@socket.io/postgres-adapter@0.5.0(socket.io-adapter@2.5.6)':
     dependencies:
+      '@msgpack/msgpack': 2.8.0
+      '@types/pg': 8.16.0
       debug: 4.3.7
-      notepack.io: 3.0.1
+      pg: 8.18.0
       socket.io-adapter: 2.5.6
-      uid2: 1.0.0
     transitivePeerDependencies:
+      - pg-native
       - supports-color
 
   '@sphinxxxx/color-conversion@2.2.2': {}
@@ -22280,8 +22287,6 @@ snapshots:
 
   not@0.1.0: {}
 
-  notepack.io@3.0.1: {}
-
   npm-run-path@4.0.1:
     dependencies:
       path-key: 3.1.1
@@ -25029,8 +25034,6 @@ snapshots:
 
   uglify-js@3.19.3:
     optional: true
-
-  uid2@1.0.0: {}
 
   uid@2.0.2:
     dependencies:

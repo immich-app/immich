@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { isMainThread } from 'node:worker_threads';
+import inspector from 'node:inspector';
+import { isMainThread, workerData } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
-import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
+import { createWebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -10,6 +11,11 @@ import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { isStartUpError } from 'src/utils/misc';
 
 export async function bootstrap() {
+  const { inspectorPort } = workerData ?? {};
+  if (inspectorPort) {
+    inspector.open(inspectorPort, '0.0.0.0', false);
+  }
+
   const { telemetry } = new ConfigRepository().getEnv();
   if (telemetry.metrics.size > 0) {
     bootstrapTelemetry(telemetry.microservicesPort);
@@ -24,7 +30,7 @@ export async function bootstrap() {
 
   logger.setContext('Bootstrap');
   app.useLogger(logger);
-  app.useWebSocketAdapter(new WebSocketAdapter(app));
+  app.useWebSocketAdapter(await createWebSocketAdapter(app));
 
   await (host ? app.listen(0, host) : app.listen(0));
 
