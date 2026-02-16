@@ -320,6 +320,7 @@ class BackgroundService {
       case "systemStop":
         _canceledBySystem = true;
         _cancellationToken?.complete();
+        _cancellationToken = null;
         return true;
       default:
         dPrint(() => "Unknown method ${call.method}");

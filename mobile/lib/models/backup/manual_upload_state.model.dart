@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 
 class ManualUploadState {
-  final Completer cancelToken;
+  final Completer<void> cancelToken;
 
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
@@ -45,7 +45,7 @@ class ManualUploadState {
     List<double>? progressInFileSpeeds,
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
-    Completer? cancelToken,
+    Completer<void>? cancelToken,
     CurrentUploadAsset? currentUploadAsset,
     int? totalAssetsToUpload,
     int? successfulUploads,

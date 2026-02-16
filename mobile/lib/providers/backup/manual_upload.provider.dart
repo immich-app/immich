@@ -328,6 +328,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     }
     state = state.copyWith(
+      cancelToken: Completer<void>(),
       progressInPercentage: 0,
       progressInFileSize: "0 B / 0 B",
       progressInFileSpeed: 0,
