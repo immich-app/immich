@@ -104,12 +104,6 @@ private class NetworkApiImpl(private val context: Context) : NetworkApi {
     return NativeBuffer.createGlobalRef(client)
   }
 
-  // only used on iOS
-  override fun createWebSocketTask(
-    url: String,
-    protocols: List<String>?,
-    callback: (Result<WebSocketTaskResult>) -> Unit
-  ) {}
 
   override fun setRequestHeaders(headers: Map<String, String>) {
     HttpClientManager.setRequestHeaders(headers)
