@@ -101,8 +101,22 @@ export class SessionRepository {
     await this.db.deleteFrom('session').where('id', '=', asUuid(id)).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async invalidateByOAuthSid(oauthSid: string) {
+    await this.db.deleteFrom('session').where('oauthSid', '=', asUuid(oauthSid)).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async invalidateByOAuthSidAndUserId(oauthSid: string, userId: string) {
+    await this.db
+      .deleteFrom('session')
+      .where('oauthSid', '=', asUuid(oauthSid))
+      .where('userId', '=', asUuid(userId))
+      .execute();
+  }
+
   @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })
-  async invalidate({ userId, excludeId }: { userId: string; excludeId?: string }) {
+  async invalidateByUserId({ userId, excludeId }: { userId: string; excludeId?: string }) {
     await this.db
       .deleteFrom('session')
       .where('userId', '=', userId)

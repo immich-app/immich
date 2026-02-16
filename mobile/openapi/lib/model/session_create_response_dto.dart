@@ -21,6 +21,7 @@ class SessionCreateResponseDto {
     this.expiresAt,
     required this.id,
     required this.isPendingSyncReset,
+    this.oauthSid,
     required this.token,
     required this.updatedAt,
   });
@@ -55,6 +56,9 @@ class SessionCreateResponseDto {
   /// Is pending sync reset
   bool isPendingSyncReset;
 
+  /// OAuth session ID
+  String? oauthSid;
+
   /// Session token
   String token;
 
@@ -71,6 +75,7 @@ class SessionCreateResponseDto {
     other.expiresAt == expiresAt &&
     other.id == id &&
     other.isPendingSyncReset == isPendingSyncReset &&
+    other.oauthSid == oauthSid &&
     other.token == token &&
     other.updatedAt == updatedAt;
 
@@ -85,11 +90,12 @@ class SessionCreateResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (isPendingSyncReset.hashCode) +
+    (oauthSid == null ? 0 : oauthSid!.hashCode) +
     (token.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionCreateResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
+  String toString() => 'SessionCreateResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, oauthSid=$oauthSid, token=$token, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -109,6 +115,11 @@ class SessionCreateResponseDto {
     }
       json[r'id'] = this.id;
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
+    if (this.oauthSid != null) {
+      json[r'oauthSid'] = this.oauthSid;
+    } else {
+    //  json[r'oauthSid'] = null;
+    }
       json[r'token'] = this.token;
       json[r'updatedAt'] = this.updatedAt;
     return json;
@@ -131,6 +142,7 @@ class SessionCreateResponseDto {
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
+        oauthSid: mapValueOfType<String>(json, r'oauthSid'),
         token: mapValueOfType<String>(json, r'token')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );

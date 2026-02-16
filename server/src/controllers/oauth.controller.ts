@@ -6,6 +6,7 @@ import {
   AuthDto,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
+  OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
 } from 'src/dtos/auth.dto';
@@ -111,5 +112,16 @@ export class OAuthController {
   })
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
+  }
+
+  @Post('backchannel-logout')
+  @Endpoint({
+    summary: 'Backchannel OAuth logout',
+    description:
+      'Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async logoutOAuth(@Body() dto: OAuthBackchannelLogoutDto): Promise<void> {
+    return this.service.backchannelLogout(dto);
   }
 }

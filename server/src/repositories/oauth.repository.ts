@@ -58,13 +58,31 @@ export class OAuthRepository {
     return client.serverMetadata().end_session_endpoint;
   }
 
-  async getProfile(
+  async getJwksUri(config: OAuthConfig): Promise<string> {
+    const client = await this.getClient(config);
+
+    try {
+      const jwksUri = client.serverMetadata().jwks_uri;
+      if (!jwksUri) {
+        throw new Error('Unable to get JWKS URI');
+      }
+
+      return jwksUri;
+    } catch (error: Error | any) {
+      this.logger.error(`getJwksUri failed: ${error.message}`);
+      this.logger.error(error);
+
+      throw new Error('getJwksUri failed', { cause: error });
+    }
+  }
+
+  async getProfileAndOAuthSid(
     config: OAuthConfig,
     url: string,
     expectedState: string,
     codeVerifier: string,
-  ): Promise<OAuthProfile> {
-    const { authorizationCodeGrant, fetchUserInfo, ...oidc } = await import('openid-client');
+  ): Promise<{ profile: OAuthProfile; oauthSid?: string }> {
+    const { authorizationCodeGrant, fetchUserInfo, tokenIntrospection, ...oidc } = await import('openid-client');
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
@@ -75,7 +93,13 @@ export class OAuthRepository {
         throw new Error('Unexpected profile response, no `sub`');
       }
 
-      return profile;
+      let sid: string | undefined;
+      if (tokens.id_token) {
+        const claims = await tokenIntrospection(client, tokens.id_token);
+        sid = claims.sid;
+      }
+
+      return { profile, oauthSid: sid };
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(
