@@ -527,6 +527,15 @@ export class MetadataService extends BaseService {
         for (const tag of EXIF_DATE_TAGS) {
           delete mediaTags[tag];
         }
+
+        // exiftool-vendored derives tz information from the date.
+        // if the sidecar file has date information, we also assume the tz information come from there.
+        //
+        // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
+        // and as such the tags aren't overwritten when returning all tags.
+        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
+          delete mediaTags[tag];
+        }
       }
     }
 
@@ -897,8 +906,8 @@ export class MetadataService extends BaseService {
     }
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
-    if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
+    let timeZone = exifTags.zone ?? null;
+    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -906,7 +915,7 @@ export class MetadataService extends BaseService {
 
     if (timeZone) {
       this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
       );
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
