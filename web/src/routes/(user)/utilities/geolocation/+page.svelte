@@ -208,10 +208,14 @@
         class={`flex-1 px-4 py-1 text-center transition-colors duration-200 rounded-full ${showOnlyWithoutGps ? 'bg-primary text-light' : ''}`}
         onclick={() => (showOnlyWithoutGps = true)}
       >
-        <Text class="hidden md:block mr-4" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
+        <Text class="whitespace-nowrap">{$t('no_gps')}</Text>
+      </Button>
+    </div>
+    <div class="flex gap-2 justify-end place-items-center">
       <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
         <Text class="hidden md:inline-block font-mono mr-5 ml-2" color="muted" size="tiny">
-          {$t('selected_gps_coordinates')}</Text>
+          {$t('selected_gps_location')}</Text
+        >
         <Text
           title={hasCityOrCountry
             ? `${location.latitude.toFixed(3)}, ${location.longitude.toFixed(3)}`

@@ -2005,7 +2005,6 @@
   "latitude_longitude": "latitude, longitude",
   "copy_location_coordinates": "Copy location coordinates",
   "some_assets_already_have_a_location_warning": "Some of the selected assets already include location information",
-  "show_only_assets_without_gps": "Show only assets without GPS",
   "no_gps": "No GPS",
   "send_message": "Send message",
   "send_welcome_email": "Send welcome email",
