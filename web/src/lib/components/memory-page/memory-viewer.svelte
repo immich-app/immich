@@ -68,7 +68,8 @@
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
-  let currentTimelineAssets = $derived([
+  let currentTimelineAssets = $derived(current?.memory.assets ?? []);
+  let viewerAssets = $derived([
     ...(current?.previousMemory?.assets ?? []),
     ...(current?.memory.assets ?? []),
     ...(current?.nextMemory?.assets ?? []),
@@ -651,6 +652,7 @@
     >
       <GalleryViewer
         assets={currentTimelineAssets}
+        {viewerAssets}
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}

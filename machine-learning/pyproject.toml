@@ -1,6 +1,6 @@
 [project]
 name = "immich-ml"
-version = "2.5.5"
+version = "2.5.6"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
 requires-python = ">=3.11,<4.0"
@@ -15,7 +15,7 @@ dependencies = [
     "numpy>=2.3.4",
     "opencv-python-headless>=4.7.0.72,<5.0",
     "orjson>=3.9.5",
-    "pillow>=9.5.0,<11.0",
+    "pillow>=12.1.1,<12.2",
     "pydantic>=2.0.0,<3",
     "pydantic-settings>=2.5.2,<3",
     "python-multipart>=0.0.6,<1.0",

@@ -1,7 +1,15 @@
-import { getMyUser } from '@immich/sdk';
+import { getMyUser, Permission } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { mkdir, unlink } from 'node:fs/promises';
-import { BaseOptions, connect, getAuthFilePath, logError, withError, writeAuthFile } from 'src/utils';
+import {
+  BaseOptions,
+  connect,
+  getAuthFilePath,
+  logError,
+  requirePermissions,
+  withError,
+  writeAuthFile,
+} from 'src/utils';
 
 export const login = async (url: string, key: string, options: BaseOptions) => {
   console.log(`Logging in to ${url}`);
@@ -9,6 +17,7 @@ export const login = async (url: string, key: string, options: BaseOptions) => {
   const { configDirectory: configDir } = options;
 
   await connect(url, key);
+  await requirePermissions([Permission.UserRead]);
 
   const [error, user] = await withError(getMyUser());
   if (error) {

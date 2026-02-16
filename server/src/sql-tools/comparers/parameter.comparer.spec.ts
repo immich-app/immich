@@ -13,7 +13,7 @@ const testParameter: DatabaseParameter = {
 describe('compareParameters', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareParameters.onExtra(testParameter)).toEqual([
+      expect(compareParameters().onExtra(testParameter)).toEqual([
         {
           type: 'ParameterReset',
           databaseName: 'immich',
@@ -26,7 +26,7 @@ describe('compareParameters', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareParameters.onMissing(testParameter)).toEqual([
+      expect(compareParameters().onMissing(testParameter)).toEqual([
         {
           type: 'ParameterSet',
           parameter: testParameter,
@@ -38,7 +38,7 @@ describe('compareParameters', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareParameters.onCompare(testParameter, testParameter)).toEqual([]);
+      expect(compareParameters().onCompare(testParameter, testParameter)).toEqual([]);
     });
   });
 });

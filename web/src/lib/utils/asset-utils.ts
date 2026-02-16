@@ -4,10 +4,8 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
@@ -304,8 +302,17 @@ const supportedImageMimeTypes = new Set([
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif').add('image/jxl');
+  supportedImageMimeTypes.add('image/heic').add('image/heif');
 }
+
+function checkJxlSupport(): void {
+  const img = new Image();
+  img.addEventListener('load', () => {
+    supportedImageMimeTypes.add('image/jxl');
+  });
+  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+}
+checkJxlSupport();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
@@ -427,21 +434,23 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
 };
 
 export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
-  if (get(isSelectingAllAssets)) {
+  if (assetInteraction.selectAll) {
     // Selection is already ongoing
     return;
   }
-  isSelectingAllAssets.set(true);
+  assetInteraction.selectAll = true;
 
   try {
     for (const monthGroup of timelineManager.months) {
-      await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      if (!monthGroup.isLoaded) {
+        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      }
 
-      if (!get(isSelectingAllAssets)) {
+      if (!assetInteraction.selectAll) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
+      assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
 
       for (const dateGroup of monthGroup.dayGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
@@ -450,12 +459,12 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   } catch (error) {
     const $t = get(t);
     handleError(error, $t('errors.error_selecting_all_assets'));
-    isSelectingAllAssets.set(false);
+    assetInteraction.selectAll = false;
   }
 };
 
 export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
-  isSelectingAllAssets.set(false);
+  assetInteraction.selectAll = false;
   assetInteraction.clearMultiselect();
 };
 
