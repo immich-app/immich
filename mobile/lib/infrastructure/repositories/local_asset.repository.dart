@@ -119,7 +119,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
-                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                innerJoin(
+                  _db.localAlbumEntity,
+                  _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+                  useColumns: false,
+                ),
                 innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
               ])..where(
                 _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
@@ -134,6 +138,43 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
     }
+    return result;
+  }
+
+  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbumsByRemoteIds(Iterable<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return {};
+    }
+
+    final result = <String, List<LocalAsset>>{};
+
+    for (final slice in remoteIds.toSet().slices(kDriftMaxChunk)) {
+      final rows =
+          await (_db.select(_db.localAlbumAssetEntity).join([
+                innerJoin(
+                  _db.localAlbumEntity,
+                  _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+                  useColumns: false,
+                ),
+                innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+                innerJoin(
+                  _db.remoteAssetEntity,
+                  _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+                  useColumns: false,
+                ),
+              ])..where(
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                    _db.remoteAssetEntity.id.isIn(slice),
+              ))
+              .get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
+        final asset = row.readTable(_db.localAssetEntity).toDto();
+        (result[albumId] ??= <LocalAsset>[]).add(asset);
+      }
+    }
+
     return result;
   }
 
