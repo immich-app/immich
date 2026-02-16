@@ -16,9 +16,8 @@ class ScrollToDateEvent extends Event {
 }
 
 // Asset Viewer Events
-class ViewerOpenBottomSheetEvent extends Event {
-  final bool activitiesMode;
-  const ViewerOpenBottomSheetEvent({this.activitiesMode = false});
+class ViewerShowDetailsEvent extends Event {
+  const ViewerShowDetailsEvent();
 }
 
 class ViewerReloadAssetEvent extends Event {

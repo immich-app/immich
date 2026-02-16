@@ -14,13 +14,15 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 @RoutePage()
 class DriftActivitiesPage extends HookConsumerWidget {
   final RemoteAlbum album;
+  final String? assetId;
+  final String? assetName;
 
-  const DriftActivitiesPage({super.key, required this.album});
+  const DriftActivitiesPage({super.key, required this.album, this.assetId, this.assetName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activityNotifier = ref.read(albumActivityProvider(album.id).notifier);
-    final activities = ref.watch(albumActivityProvider(album.id));
+    final activityNotifier = ref.read(albumActivityProvider(album.id, assetId).notifier);
+    final activities = ref.watch(albumActivityProvider(album.id, assetId));
     final listViewScrollController = useScrollController();
 
     void scrollToBottom() {
@@ -36,7 +38,13 @@ class DriftActivitiesPage extends HookConsumerWidget {
       overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
       child: Scaffold(
         appBar: AppBar(
-          title: Text(album.name),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(album.name),
+              if (assetName != null) Text(assetName!, style: context.textTheme.bodySmall),
+            ],
+          ),
           actions: [const LikeActivityActionButton(iconOnly: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),
@@ -47,7 +55,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
               activityWidgets.add(
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: CommentBubble(activity: activity),
+                  child: CommentBubble(activity: activity, isAssetActivity: assetId != null),
                 ),
               );
             }

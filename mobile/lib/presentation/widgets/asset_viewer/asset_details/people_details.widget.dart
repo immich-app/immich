@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
@@ -15,14 +15,14 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 
-class SheetPeopleDetails extends ConsumerStatefulWidget {
-  const SheetPeopleDetails({super.key});
+class PeopleDetails extends ConsumerStatefulWidget {
+  const PeopleDetails({super.key});
 
   @override
-  ConsumerState createState() => _SheetPeopleDetailsState();
+  ConsumerState createState() => _PeopleDetailsState();
 }
 
-class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
+class _PeopleDetailsState extends ConsumerState<PeopleDetails> {
   @override
   Widget build(BuildContext context) {
     final asset = ref.watch(currentAssetNotifier);
@@ -65,7 +65,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                   scrollDirection: Axis.horizontal,
                   children: [
                     for (final person in people)
-                      _PeopleAvatar(
+                      _Avatar(
                         person: person,
                         assetFileCreatedAt: asset.createdAt,
                         onTap: () {
@@ -97,14 +97,14 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
   }
 }
 
-class _PeopleAvatar extends StatelessWidget {
+class _Avatar extends StatelessWidget {
   final DriftPerson person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
   final VoidCallback? onNameTap;
   final double imageSize = 96;
 
-  const _PeopleAvatar({required this.person, required this.assetFileCreatedAt, this.onTap, this.onNameTap});
+  const _Avatar({required this.person, required this.assetFileCreatedAt, this.onTap, this.onNameTap});
 
   @override
   Widget build(BuildContext context) {

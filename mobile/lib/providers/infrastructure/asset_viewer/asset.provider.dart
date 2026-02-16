@@ -31,6 +31,18 @@ class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
   }
 }
 
+class ScopedAssetNotifier extends CurrentAssetNotifier {
+  final BaseAsset _asset;
+
+  ScopedAssetNotifier(this._asset);
+
+  @override
+  BaseAsset? build() {
+    setAsset(_asset);
+    return _asset;
+  }
+}
+
 final currentAssetExifProvider = FutureProvider.autoDispose((ref) {
   final currentAsset = ref.watch(currentAssetNotifier);
   if (currentAsset == null) {
