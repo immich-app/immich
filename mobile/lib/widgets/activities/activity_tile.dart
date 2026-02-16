@@ -40,7 +40,7 @@ class ActivityTile extends HookConsumerWidget {
               child: Icon(Icons.thumb_up, color: context.primaryColor),
             )
           : isBottomSheet
-          ? UserCircleAvatar(user: activity.user, size: 30, radius: 15)
+          ? UserCircleAvatar(user: activity.user, size: 30)
           : UserCircleAvatar(user: activity.user),
       title: _ActivityTitle(
         userName: activity.user.name,

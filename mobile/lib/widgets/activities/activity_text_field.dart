@@ -63,7 +63,7 @@ class ActivityTextField extends HookConsumerWidget {
           prefixIcon: user != null
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: UserCircleAvatar(user: user, size: 30, radius: 15),
+                  child: UserCircleAvatar(user: user, size: 30),
                 )
               : null,
           suffixIcon: Padding(
