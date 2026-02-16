@@ -57,7 +57,10 @@
 
   $effect.pre(() => {
     void asset.id;
-    untrack(() => assetViewerManager.resetZoomState());
+    untrack(() => {
+      assetViewerManager.resetZoomState();
+      $boundingBoxesArray = [];
+    });
   });
 
   onDestroy(() => {
