@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -53,17 +51,20 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
   Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
     if (isCancelled) {
       this.request = null;
-      unawaited(evict());
+      PaintingBinding.instance.imageCache.evict(this);
       return;
     }
 
     try {
       final image = await request.load(decode);
       if (image == null || isCancelled) {
-        unawaited(evict());
+        PaintingBinding.instance.imageCache.evict(this);
         return;
       }
       yield image;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      rethrow;
     } finally {
       this.request = null;
     }
@@ -122,7 +123,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash);
+    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash, assetType: asset.type);
   }
 
   return provider;
@@ -136,7 +137,7 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
-  return assetId != null ? RemoteThumbProvider(assetId: assetId, thumbhash: thumbhash) : null;
+  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash) : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

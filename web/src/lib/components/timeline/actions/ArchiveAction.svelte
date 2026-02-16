@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { AssetVisibility } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
   interface Props {
     onArchive?: OnArchive;

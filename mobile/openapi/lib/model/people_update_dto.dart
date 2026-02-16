@@ -16,6 +16,7 @@ class PeopleUpdateDto {
     this.people = const [],
   });
 
+  /// People to update
   List<PeopleUpdateItem> people;
 
   @override

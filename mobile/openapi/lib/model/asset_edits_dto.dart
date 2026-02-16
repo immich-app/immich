@@ -17,9 +17,10 @@ class AssetEditsDto {
     this.edits = const [],
   });
 
+  /// Asset ID to apply edits to
   String assetId;
 
-  /// list of edits
+  /// List of edit actions to apply (crop, rotate, or mirror)
   List<AssetEditActionListDtoEditsInner> edits;
 
   @override

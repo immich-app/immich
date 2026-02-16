@@ -1,8 +1,11 @@
+import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
+import type { AssetControlContext } from '$lib/types';
 import { getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -10,32 +13,84 @@ import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
+  AssetJobName,
+  AssetTypeEnum,
   AssetVisibility,
   copyAsset,
   deleteAssets,
   getAssetInfo,
   getBaseUrl,
+  runAssetJobs,
   updateAsset,
+  type AssetJobsDto,
   type AssetResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAlertOutline,
+  mdiCogRefreshOutline,
+  mdiContentCopy,
+  mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
+  mdiHeadSyncOutline,
   mdiHeart,
   mdiHeartOutline,
+  mdiImageRefreshOutline,
   mdiInformationOutline,
+  mdiMagnifyMinusOutline,
+  mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
   mdiShareVariantOutline,
+  mdiTagPlusOutline,
+  mdiTune,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
+export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlContext) => {
+  const ownedAssets = ctx.getOwnedAssets();
+  const assetIds = ownedAssets.map((asset) => asset.id);
+  const isAllVideos = ownedAssets.every((asset) => asset.isVideo);
+
+  const onAction = async (name: AssetJobName) => {
+    await handleRunAssetJob({ name, assetIds });
+    ctx.clearSelect();
+  };
+
+  const RefreshFacesJob: ActionItem = {
+    title: $t('refresh_faces'),
+    icon: mdiHeadSyncOutline,
+    onAction: () => onAction(AssetJobName.RefreshFaces),
+  };
+
+  const RefreshMetadataJob: ActionItem = {
+    title: $t('refresh_metadata'),
+    icon: mdiDatabaseRefreshOutline,
+    onAction: () => onAction(AssetJobName.RefreshMetadata),
+  };
+
+  const RegenerateThumbnailJob: ActionItem = {
+    title: $t('refresh_thumbnails'),
+    icon: mdiImageRefreshOutline,
+    onAction: () => onAction(AssetJobName.RegenerateThumbnail),
+  };
+
+  const TranscodeVideoJob: ActionItem = {
+    title: $t('refresh_encoded_videos'),
+    icon: mdiCogRefreshOutline,
+    onAction: () => onAction(AssetJobName.TranscodeVideo),
+    $if: () => isAllVideos,
+  };
+
+  return { RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+};
+
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
   const sharedLink = getSharedLink();
   const currentAuthUser = get(authUser);
+  const userPreferences = get(preferences);
   const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
 
   const Share: ActionItem = {
@@ -115,13 +170,83 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     onAction: () => assetViewerManager.toggleDetailPanel(),
   };
 
+  const ZoomIn: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyPlusOutline,
+    $if: () => assetViewerManager.canZoomIn(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const ZoomOut: ActionItem = {
+    title: $t('zoom_image'),
+    icon: mdiMagnifyMinusOutline,
+    $if: () => assetViewerManager.canZoomOut(),
+    onAction: () => assetViewerManager.emit('Zoom'),
+  };
+
+  const Copy: ActionItem = {
+    title: $t('copy_image'),
+    icon: mdiContentCopy,
+    $if: () => assetViewerManager.canCopyImage(),
+    onAction: () => assetViewerManager.emit('Copy'),
+  };
+
   const Info: ActionItem = {
     title: $t('info'),
     icon: mdiInformationOutline,
     type: $t('assets'),
     $if: () => asset.hasMetadata,
     onAction: () => assetViewerManager.toggleDetailPanel(),
-    shortcuts: [{ key: 'i' }],
+    shortcuts: { key: 'i' },
+  };
+
+  const Tag: ActionItem = {
+    title: $t('add_tag'),
+    icon: mdiTagPlusOutline,
+    type: $t('assets'),
+    $if: () => userPreferences.tags.enabled,
+    onAction: () => modalManager.show(AssetTagModal, { assetIds: [asset.id] }),
+    shortcuts: { key: 't' },
+  };
+
+  const Edit: ActionItem = {
+    title: $t('editor'),
+    icon: mdiTune,
+    $if: () =>
+      !sharedLink &&
+      isOwner &&
+      asset.type === AssetTypeEnum.Image &&
+      !asset.livePhotoVideoId &&
+      asset.exifInfo?.projectionType !== ProjectionType.EQUIRECTANGULAR &&
+      !asset.originalPath.toLowerCase().endsWith('.insp') &&
+      !asset.originalPath.toLowerCase().endsWith('.gif') &&
+      !asset.originalPath.toLowerCase().endsWith('.svg'),
+    onAction: () => assetViewerManager.openEditor(),
+  };
+
+  const RefreshFacesJob: ActionItem = {
+    title: $t('refresh_faces'),
+    icon: mdiHeadSyncOutline,
+    onAction: () => handleRunAssetJob({ name: AssetJobName.RefreshFaces, assetIds: [asset.id] }),
+  };
+
+  const RefreshMetadataJob: ActionItem = {
+    title: $t('refresh_metadata'),
+    icon: mdiDatabaseRefreshOutline,
+    onAction: () => handleRunAssetJob({ name: AssetJobName.RefreshMetadata, assetIds: [asset.id] }),
+  };
+
+  const RegenerateThumbnailJob: ActionItem = {
+    title: $t('refresh_thumbnails'),
+    icon: mdiImageRefreshOutline,
+    onAction: () => handleRunAssetJob({ name: AssetJobName.RegenerateThumbnail, assetIds: [asset.id] }),
+  };
+
+  const TranscodeVideoJob: ActionItem = {
+    title: $t('refresh_encoded_videos'),
+    icon: mdiCogRefreshOutline,
+    onAction: () => handleRunAssetJob({ name: AssetJobName.TranscodeVideo, assetIds: [asset.id] }),
+    $if: () => asset.type === AssetTypeEnum.Video,
   };
 
   return {
@@ -135,6 +260,15 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    ZoomIn,
+    ZoomOut,
+    Copy,
+    Tag,
+    Edit,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
   };
 };
 
@@ -216,4 +350,26 @@ export const handleReplaceAsset = async (oldAssetId: string) => {
   await deleteAssets({ assetBulkDeleteDto: { ids: [oldAssetId], force: true } });
 
   eventManager.emit('AssetReplace', { oldAssetId, newAssetId });
+};
+
+const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
+  const messages: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
+    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
+    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
+    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
+  };
+
+  return messages[job];
+};
+
+const handleRunAssetJob = async (dto: AssetJobsDto) => {
+  const $t = await getFormatter();
+
+  try {
+    await runAssetJobs({ assetJobsDto: dto });
+    toastManager.success(getAssetJobMessage($t, dto.name));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_submit_job'));
+  }
 };

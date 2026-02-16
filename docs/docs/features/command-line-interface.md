@@ -183,11 +183,13 @@ For example to get a list of files that would be uploaded for further
 processing:
 
 ```bash
-immich upload --dry-run . | tail -n +6 | jq .newFiles[]
+immich upload --dry-run --json-output . | tail -n +6 | jq .newFiles[]
 ```
 
 ### Obtain the API Key
 
-The API key can be obtained in the user setting panel on the web interface.
+The API key can be obtained in the user setting panel on the web interface. You can also specify permissions for the key to limit its access.
 
 ![Obtain Api Key](./img/obtain-api-key.webp)
+
+![Specify permissions for the key](./img/obtain-api-key-2.webp)

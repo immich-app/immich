@@ -11,34 +11,33 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
-  import { preloadManager } from '$lib/managers/PreloadManager.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
-  import { getAssetJobMessage, getAssetUrl, getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { preloadImageUrl } from '$lib/utils/sw-messaging';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
-    AssetJobName,
     AssetTypeEnum,
     getAllAlbums,
     getAssetInfo,
     getStack,
-    runAssetJobs,
     type AlbumResponseDto,
     type AssetResponseDto,
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { toastManager } from '@immich/ui';
+  import { CommandPaletteDefaultProvider } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -73,7 +72,6 @@
     onUndoDelete?: OnUndoDelete;
     onClose?: (asset: AssetResponseDto) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
-    copyImage?: () => Promise<void>;
   }
 
   let {
@@ -89,7 +87,6 @@
     onUndoDelete,
     onClose,
     onRandom,
-    copyImage = $bindable(),
   }: Props = $props();
 
   const { setAssetId } = assetViewingStore;
@@ -99,6 +96,7 @@
     slideshowNavigation,
     slideshowState,
     slideshowTransition,
+    slideshowRepeat,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -109,13 +107,12 @@
   let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
-  let isShowEditor = $state(false);
   let fullscreenElement = $state<Element>();
   let unsubscribes: (() => void)[] = [];
   let stack: StackResponseDto | null = $state(null);
 
-  let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
@@ -135,9 +132,7 @@
     }
 
     untrack(() => {
-      if (stack && stack?.assets.length > 1) {
-        preloadImageUrl(getAssetUrl({ asset: stack.assets[1] }));
-      }
+      imageManager.preload(stack?.assets[1]);
     });
   };
 
@@ -181,6 +176,7 @@
     }
 
     activityManager.reset();
+    assetViewerManager.closeEditor();
   });
 
   const handleGetAllAlbums = async () => {
@@ -201,13 +197,11 @@
 
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
-      console.log(asset);
       const refreshedAsset = await getAssetInfo({ id: asset.id });
-      console.log(refreshedAsset);
       onAssetChange?.(refreshedAsset);
       assetViewingStore.setAsset(refreshedAsset);
     }
-    isShowEditor = false;
+    assetViewerManager.closeEditor();
   };
 
   const tracker = new InvocationTracker();
@@ -222,7 +216,7 @@
     }
 
     e?.stopPropagation();
-    preloadManager.cancel(asset);
+    imageManager.cancel(asset);
     if (tracker.isActive()) {
       return;
     }
@@ -247,27 +241,15 @@
       if ($slideshowState === SlideshowState.PlaySlideshow) {
         if (hasNext) {
           $restartSlideshowProgress = true;
+        } else if ($slideshowRepeat && slideshowStartAssetId) {
+          // Loop back to starting asset
+          await setAssetId(slideshowStartAssetId);
+          $restartSlideshowProgress = true;
         } else {
           await handleStopSlideshow();
         }
       }
-    });
-  };
-
-  const showEditor = () => {
-    if (assetViewerManager.isShowActivityPanel) {
-      assetViewerManager.isShowActivityPanel = false;
-    }
-    isShowEditor = !isShowEditor;
-  };
-
-  const handleRunJob = async (name: AssetJobName) => {
-    try {
-      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      toastManager.success($getAssetJobMessage(name));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_submit_job'));
-    }
+    }, $t('error_while_navigating'));
   };
 
   /**
@@ -287,6 +269,7 @@
   };
 
   const handlePlaySlideshow = async () => {
+    slideshowStartAssetId = asset.id;
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
@@ -319,6 +302,11 @@
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
         await handleGetAllAlbums();
+        break;
+      }
+      case AssetAction.DELETE:
+      case AssetAction.TRASH: {
+        eventManager.emit('AssetsDelete', [asset.id]);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
@@ -386,8 +374,8 @@
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     asset;
     untrack(() => handlePromiseError(refresh()));
-    preloadManager.preload(cursor.nextAsset);
-    preloadManager.preload(cursor.previousAsset);
+    imageManager.preload(cursor.nextAsset);
+    imageManager.preload(cursor.previousAsset);
   });
 
   const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
@@ -421,7 +409,7 @@
     ) {
       return 'ImagePanaramaViewer';
     }
-    if (isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
+    if (assetViewerManager.isShowEditor && editManager.selectedTool?.type === EditToolType.Transform) {
       return 'CropArea';
     }
     return 'PhotoViewer';
@@ -437,11 +425,15 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
-      !isShowEditor &&
+      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
+      !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );
+
+  const { Tag } = $derived(getAssetActions($t, asset));
 </script>
 
+<CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
 <OnEvents {onAssetReplace} {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />
@@ -453,7 +445,7 @@
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None && !isShowEditor}
+  {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
     <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
@@ -461,13 +453,9 @@
         {person}
         {stack}
         showSlideshow={true}
-        onZoomImage={zoomToggle}
-        onCopyImage={copyImage}
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onEdit={showEditor}
-        onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(asset) : undefined}
         {playOriginalVideo}
@@ -489,7 +477,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && previousAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && previousAsset}
     <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -499,8 +487,6 @@
   <div class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
     {#if viewerKind === 'StackPhotoViewer'}
       <PhotoViewer
-        bind:zoomToggle
-        bind:copyImage
         cursor={{ ...cursor, current: previewStackedAsset! }}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
@@ -509,7 +495,7 @@
       />
     {:else if viewerKind === 'StackVideoViewer'}
       <VideoViewer
-        assetId={previewStackedAsset!.id}
+        asset={previewStackedAsset!}
         cacheKey={previewStackedAsset!.thumbhash}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
@@ -522,6 +508,7 @@
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
+        {asset}
         assetId={asset.livePhotoVideoId!}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
@@ -532,13 +519,11 @@
         {playOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
-      <ImagePanoramaViewer bind:zoomToggle {asset} />
+      <ImagePanoramaViewer {asset} />
     {:else if viewerKind === 'CropArea'}
       <CropArea {asset} />
     {:else if viewerKind === 'PhotoViewer'}
       <PhotoViewer
-        bind:zoomToggle
-        bind:copyImage
         {cursor}
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
@@ -547,7 +532,7 @@
       />
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
-        assetId={asset.id}
+        {asset}
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
@@ -579,13 +564,13 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor && nextAsset}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && nextAsset}
     <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
-  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !isShowEditor}
+  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
@@ -596,7 +581,7 @@
     </div>
   {/if}
 
-  {#if isShowEditor}
+  {#if assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="editor-panel"
@@ -607,7 +592,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
       <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">
