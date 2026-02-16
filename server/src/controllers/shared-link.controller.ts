@@ -22,21 +22,39 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
+  SharedLinkLoginDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
 import { ApiTag, ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import { respondWithCookie } from 'src/utils/response';
 import { UUIDParamDto } from 'src/validation';
 
+const getAuthTokens = (cookies: Record<string, string> | undefined) => {
+  return cookies?.[ImmichCookie.SharedLinkToken]?.split(',') || [];
+};
+
+const merge = (cookies: Record<string, string> | undefined, token: string) => {
+  const authTokens = getAuthTokens(cookies);
+  if (!authTokens.includes(token)) {
+    authTokens.push(token);
+  }
+
+  return authTokens.join(',');
+};
+
 @ApiTags(ApiTag.SharedLinks)
 @Controller('shared-links')
 export class SharedLinkController {
-  constructor(private service: SharedLinkService) {}
+  constructor(
+    private service: SharedLinkService,
+    private logger: LoggingRepository,
+  ) {}
 
   @Get()
   @Authenticated({ permission: Permission.SharedLinkRead })
@@ -49,6 +67,28 @@ export class SharedLinkController {
     return this.service.getAll(auth, dto);
   }
 
+  @Post('login')
+  @Authenticated({ sharedLink: true })
+  @Endpoint({
+    summary: 'Shared link login',
+    description: 'Login to a password protected shared link',
+    history: new HistoryBuilder().added('v2.6.0').beta('v2.6.0'),
+  })
+  async sharedLinkLogin(
+    @Auth() auth: AuthDto,
+    @Body() dto: SharedLinkLoginDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @GetLoginDetails() loginDetails: LoginDetails,
+  ): Promise<SharedLinkResponseDto> {
+    const { sharedLink, token } = await this.service.login(auth, dto);
+
+    return respondWithCookie(res, sharedLink, {
+      isSecure: loginDetails.isSecure,
+      values: [{ key: ImmichCookie.SharedLinkToken, value: merge(req.cookies, token) }],
+    });
+  }
+
   @Get('me')
   @Authenticated({ sharedLink: true })
   @Endpoint({
@@ -59,19 +99,19 @@ export class SharedLinkController {
   async getMySharedLink(
     @Auth() auth: AuthDto,
     @Query() dto: SharedLinkPasswordDto,
-    @Req() request: Request,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<SharedLinkResponseDto> {
-    const sharedLinkToken = request.cookies?.[ImmichCookie.SharedLinkToken];
-    if (sharedLinkToken) {
-      dto.token = sharedLinkToken;
+    if (dto.password) {
+      this.logger.deprecate(
+        'Passing shared link password via query parameters is deprecated and will be removed in the next major release. Please use POST /shared-links/login instead.',
+      );
+
+      return this.sharedLinkLogin(auth, { password: dto.password }, req, res, loginDetails);
     }
-    const body = await this.service.getMine(auth, dto);
-    return respondWithCookie(res, body, {
-      isSecure: loginDetails.isSecure,
-      values: body.token ? [{ key: ImmichCookie.SharedLinkToken, value: body.token }] : [],
-    });
+
+    return this.service.getMine(auth, getAuthTokens(req.cookies));
   }
 
   @Get(':id')

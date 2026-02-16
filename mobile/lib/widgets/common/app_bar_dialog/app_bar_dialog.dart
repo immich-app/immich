@@ -153,42 +153,26 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         percentage = user.quotaUsageInBytes / user.quotaSizeInBytes;
       }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(color: context.colorScheme.surface),
-          child: ListTile(
-            minLeadingWidth: 50,
-            leading: Icon(Icons.storage_rounded, color: theme.primaryColor),
-            title: Text(
+      return Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 12,
+          children: [
+            Text(
               "backup_controller_page_server_storage",
               style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
             ).tr(),
-            isThreeLine: true,
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: LinearProgressIndicator(
-                      minHeight: 10.0,
-                      value: percentage,
-                      borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: const Text(
-                      'backup_controller_page_storage_format',
-                    ).tr(namedArgs: {'used': usedDiskSpace, 'total': totalDiskSpace}),
-                  ),
-                ],
-              ),
+            LinearProgressIndicator(
+              minHeight: 10.0,
+              value: percentage,
+              borderRadius: const BorderRadius.all(Radius.circular(10.0)),
             ),
-          ),
+            Text(
+              'backup_controller_page_storage_format',
+              style: context.textTheme.bodySmall,
+            ).tr(namedArgs: {'used': usedDiskSpace, 'total': totalDiskSpace}),
+          ],
         ),
       );
     }
@@ -275,9 +259,22 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8), child: buildTopRow()),
-                const AppBarProfileInfoBox(),
-                buildStorageInformation(),
-                const AppBarServerInfo(),
+                Container(
+                  decoration: BoxDecoration(
+                    color: context.colorScheme.surface,
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  margin: const EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                  child: Column(
+                    children: [
+                      const AppBarProfileInfoBox(),
+                      const Divider(height: 3),
+                      buildStorageInformation(),
+                      const Divider(height: 3),
+                      const AppBarServerInfo(),
+                    ],
+                  ),
+                ),
                 if (Store.isBetaTimelineEnabled && isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),

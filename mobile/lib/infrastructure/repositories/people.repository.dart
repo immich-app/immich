@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -6,6 +7,13 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 class DriftPeopleRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftPeopleRepository(this._db) : super(_db);
+
+  Future<DriftPerson?> get(String personId) async {
+    final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
+
+    final result = await query.getSingleOrNull();
+    return result?.toDto();
+  }
 
   Future<List<DriftPerson>> getAssetPeople(String assetId) async {
     final query = _db.select(_db.assetFaceEntity).join([
@@ -19,19 +27,28 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   }
 
   Future<List<DriftPerson>> getAllPeople() async {
+    final people = _db.personEntity;
+    final faces = _db.assetFaceEntity;
+    final assets = _db.remoteAssetEntity;
+
     final query =
-        _db.select(_db.personEntity).join([
-            leftOuterJoin(_db.assetFaceEntity, _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id)),
+        _db.select(people).join([
+            innerJoin(faces, faces.personId.equalsExp(people.id)),
+            innerJoin(assets, assets.id.equalsExp(faces.assetId)),
           ])
-          ..where(_db.personEntity.isHidden.equals(false))
-          ..groupBy([_db.personEntity.id], having: _db.assetFaceEntity.id.count().isBiggerOrEqualValue(3))
+          ..where(
+            people.isHidden.equals(false) &
+                assets.deletedAt.isNull() &
+                assets.visibility.equalsValue(AssetVisibility.timeline),
+          )
+          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(3) | people.name.equals('').not())
           ..orderBy([
-            OrderingTerm(expression: _db.personEntity.name.equals('').not(), mode: OrderingMode.desc),
-            OrderingTerm(expression: _db.assetFaceEntity.id.count(), mode: OrderingMode.desc),
+            OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
+            OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
 
     return query.map((row) {
-      final person = row.readTable(_db.personEntity);
+      final person = row.readTable(people);
       return person.toDto();
     }).get();
   }

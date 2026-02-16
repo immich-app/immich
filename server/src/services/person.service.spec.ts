@@ -1,12 +1,12 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { mapFaces, mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
-import { CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
+import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
 import { DetectedFaces } from 'src/repositories/machine-learning.repository';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { PersonService } from 'src/services/person.service';
 import { ImmichFileResponse } from 'src/utils/file';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { personStub } from 'test/fixtures/person.stub';
@@ -261,7 +261,7 @@ describe(PersonService.name, () => {
     it("should update a person's thumbnailPath", async () => {
       mocks.person.update.mockResolvedValue(personStub.withName);
       mocks.person.getFacesByIds.mockResolvedValue([faceStub.face1]);
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
       await expect(
@@ -331,7 +331,7 @@ describe(PersonService.name, () => {
 
       await expect(
         sut.reassignFaces(authStub.admin, personStub.noName.id, {
-          data: [{ personId: personStub.withName.id, assetId: assetStub.image.id }],
+          data: [{ personId: personStub.withName.id, assetId: faceStub.face1.assetId }],
         }),
       ).resolves.toBeDefined();
 
@@ -352,9 +352,10 @@ describe(PersonService.name, () => {
 
   describe('getFacesById', () => {
     it('should get the bounding boxes for an asset', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([faceStub.face1.assetId]));
+      const asset = AssetFactory.from({ id: faceStub.face1.assetId }).exif().build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.person.getFaces.mockResolvedValue([faceStub.primaryFace1]);
-      mocks.asset.getById.mockResolvedValue(assetStub.image);
+      mocks.asset.getById.mockResolvedValue(asset);
       await expect(sut.getFacesById(authStub.admin, { id: faceStub.face1.assetId })).resolves.toStrictEqual([
         mapFaces(faceStub.primaryFace1, authStub.admin),
       ]);
@@ -455,7 +456,8 @@ describe(PersonService.name, () => {
     });
 
     it('should queue missing assets', async () => {
-      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueDetectFaces({ force: false });
 
@@ -464,13 +466,14 @@ describe(PersonService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
-          data: { id: assetStub.image.id },
+          data: { id: asset.id },
         },
       ]);
     });
 
     it('should queue all assets', async () => {
-      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.withName]);
 
       await sut.handleQueueDetectFaces({ force: true });
@@ -483,13 +486,14 @@ describe(PersonService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
-          data: { id: assetStub.image.id },
+          data: { id: asset.id },
         },
       ]);
     });
 
     it('should refresh all assets', async () => {
-      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueDetectFaces({ force: undefined });
 
@@ -501,16 +505,17 @@ describe(PersonService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
-          data: { id: assetStub.image.id },
+          data: { id: asset.id },
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.PersonCleanup });
     });
 
     it('should delete existing people and faces if forced', async () => {
+      const asset = AssetFactory.create();
       mocks.person.getAll.mockReturnValue(makeStream([faceStub.face1.person, personStub.randomPerson]));
       mocks.person.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
-      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([assetStub.image]));
+      mocks.assetJob.streamForDetectFacesJob.mockReturnValue(makeStream([asset]));
       mocks.person.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
       mocks.person.deleteFaces.mockResolvedValue();
 
@@ -520,7 +525,7 @@ describe(PersonService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.AssetDetectFaces,
-          data: { id: assetStub.image.id },
+          data: { id: asset.id },
         },
       ]);
       expect(mocks.person.delete).toHaveBeenCalledWith([personStub.randomPerson.id]);
@@ -718,26 +723,28 @@ describe(PersonService.name, () => {
     });
 
     it('should skip when no resize path', async () => {
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({ ...assetStub.noResizePath, files: [] });
-      await sut.handleDetectFaces({ id: assetStub.noResizePath.id });
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).not.toHaveBeenCalled();
     });
 
     it('should handle no results', async () => {
       const start = Date.now();
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
 
       mocks.machineLearning.detectFaces.mockResolvedValue({ imageHeight: 500, imageWidth: 400, faces: [] });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
+      await sut.handleDetectFaces({ id: asset.id });
       expect(mocks.machineLearning.detectFaces).toHaveBeenCalledWith(
-        '/uploads/user-id/thumbs/path.jpg',
+        asset.files[0].path,
         expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
 
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
-        assetId: assetStub.image.id,
+        assetId: asset.id,
         facesRecognizedAt: expect.any(Date),
       });
       const facesRecognizedAt = mocks.asset.upsertJobStatus.mock.calls[0][0].facesRecognizedAt as Date;
@@ -745,14 +752,15 @@ describe(PersonService.name, () => {
     });
 
     it('should create a face with no person and queue recognition job', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.detectFaces.mockResolvedValue(detectFaceMock);
       mocks.search.searchFaces.mockResolvedValue([{ ...faceStub.face1, distance: 0.7 }]);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({ ...assetStub.image, files: [assetStub.image.files[1]] });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
       mocks.person.refreshFaces.mockResolvedValue();
 
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      await sut.handleDetectFaces({ id: asset.id });
 
-      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [], [faceSearch]);
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([{ ...face, assetId: asset.id }], [], [faceSearch]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },
@@ -762,14 +770,11 @@ describe(PersonService.name, () => {
     });
 
     it('should delete an existing face not among the new detected faces', async () => {
+      const asset = AssetFactory.from().face(faceStub.primaryFace1).file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.detectFaces.mockResolvedValue({ faces: [], imageHeight: 500, imageWidth: 400 });
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({
-        ...assetStub.image,
-        faces: [faceStub.primaryFace1],
-        files: [assetStub.image.files[1]],
-      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
 
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      await sut.handleDetectFaces({ id: asset.id });
 
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith([], [faceStub.primaryFace1.id], []);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
@@ -778,17 +783,18 @@ describe(PersonService.name, () => {
     });
 
     it('should add new face and delete an existing face not among the new detected faces', async () => {
+      const asset = AssetFactory.from().face(faceStub.primaryFace1).file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.detectFaces.mockResolvedValue(detectFaceMock);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({
-        ...assetStub.image,
-        faces: [faceStub.primaryFace1],
-        files: [assetStub.image.files[1]],
-      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
       mocks.person.refreshFaces.mockResolvedValue();
 
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      await sut.handleDetectFaces({ id: asset.id });
 
-      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [faceStub.primaryFace1.id], [faceSearch]);
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
+        [{ ...face, assetId: asset.id }],
+        [faceStub.primaryFace1.id],
+        [faceSearch],
+      );
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },
@@ -798,15 +804,12 @@ describe(PersonService.name, () => {
     });
 
     it('should add embedding to matching metadata face', async () => {
+      const asset = AssetFactory.from().face(faceStub.fromExif1).file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.detectFaces.mockResolvedValue(detectFaceMock);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({
-        ...assetStub.image,
-        faces: [faceStub.fromExif1],
-        files: [assetStub.image.files[1]],
-      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
       mocks.person.refreshFaces.mockResolvedValue();
 
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      await sut.handleDetectFaces({ id: asset.id });
 
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
         [],
@@ -819,16 +822,13 @@ describe(PersonService.name, () => {
     });
 
     it('should not add embedding to non-matching metadata face', async () => {
+      const asset = AssetFactory.from().face(faceStub.fromExif2).file({ type: AssetFileType.Preview }).build();
       mocks.machineLearning.detectFaces.mockResolvedValue(detectFaceMock);
-      mocks.assetJob.getForDetectFacesJob.mockResolvedValue({
-        ...assetStub.image,
-        faces: [faceStub.fromExif2],
-        files: [assetStub.image.files[1]],
-      });
+      mocks.assetJob.getForDetectFacesJob.mockResolvedValue(asset);
 
-      await sut.handleDetectFaces({ id: assetStub.image.id });
+      await sut.handleDetectFaces({ id: asset.id });
 
-      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([face], [], [faceSearch]);
+      expect(mocks.person.refreshFaces).toHaveBeenCalledWith([{ ...face, assetId: asset.id }], [], [faceSearch]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.FacialRecognitionQueueAll, data: { force: false } },
         { name: JobName.FacialRecognition, data: { id: faceId } },

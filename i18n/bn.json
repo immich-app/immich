@@ -325,7 +325,16 @@
     "storage_template_user_label": "<code>{label}</code> হলো ব্যবহারকারীর স্টোরেজ লেবেল (Storage Label)",
     "theme_settings_description": "ইমিচ (Immich) ওয়েব ইন্টারফেসের কাস্টমাইজেশন ম্যানেজ করুন",
     "thumbnail_generation_job": "থাম্বনেইল তৈরি করুন (Generate Thumbnails)",
-    "thumbnail_generation_job_description": "প্রতিটি অ্যাসেটের জন্য বড়, ছোট এবং ব্লার (অস্পষ্ট) থাম্বনেইল তৈরি করুন, সেই সাথে প্রতিটি ব্যক্তির জন্যও থাম্বনেইল তৈরি করুন।"
+    "thumbnail_generation_job_description": "প্রতিটি অ্যাসেটের জন্য বড়, ছোট এবং ব্লার (অস্পষ্ট) থাম্বনেইল তৈরি করুন, সেই সাথে প্রতিটি ব্যক্তির জন্যও থাম্বনেইল তৈরি করুন।",
+    "transcoding_acceleration_api": "অ্যাক্সিলারেট এপিআই (Acceleration API)",
+    "transcoding_acceleration_api_description": "ট্রানসকোডিং (transcoding) দ্রুত করার জন্য আপনার ডিভাইসের সাথে যে API ইন্টারঅ্যাক্ট করবে। এই সেটিংসটি 'সাধ্যমতো' (best effort) কাজ করবে: ব্যর্থ হলে এটি পুনরায় সফটওয়্যার ট্রানসকোডিংয়ে ফিরে আসবে। হার্ডওয়্যারের ওপর ভিত্তি করে VP9 কাজ করতেও পারে, আবার নাও করতে পারে।",
+    "transcoding_acceleration_nvenc": "NVENC (NVIDIA GPU প্রয়োজন)",
+    "transcoding_acceleration_qsv": "Quick Sync (৭ম প্রজন্মের ইনটেল CPU বা পরবর্তী ভার্সন প্রয়োজন)",
+    "transcoding_acceleration_rkmpp": "RKMPP (শুধুমাত্র Rockchip SOC-এর জন্য)",
+    "transcoding_acceleration_vaapi": "VA-API (ভিডিও অ্যাক্সিলারেশন এপিআই)",
+    "transcoding_accepted_audio_codecs": "গ্রহণযোগ্য অডিও কোডেকসমূহ (Accepted audio codecs)",
+    "transcoding_accepted_audio_codecs_description": "কোন অডিও কোডেকগুলো ট্রানসকোড করার প্রয়োজন নেই তা নির্বাচন করুন। এটি শুধুমাত্র নির্দিষ্ট ট্রানসকোড পলিসির (transcode policies) জন্য ব্যবহৃত হয়।",
+    "transcoding_accepted_containers": "গ্রহণযোগ্য কন্টেইনারসমূহ (Accepted containers)"
   },
   "yes": "হ্যাঁ",
   "you_dont_have_any_shared_links": "আপনার কোনো শেয়ার করা লিঙ্ক নেই (You don't have any shared links)",

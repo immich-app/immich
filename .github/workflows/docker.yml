@@ -131,7 +131,7 @@ jobs:
           - device: rocm
             suffixes: '-rocm'
             platforms: linux/amd64
-            runner-mapping: '{"linux/amd64": "mich"}'
+            runner-mapping: '{"linux/amd64": "pokedex-giant"}'
     uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@0477486d82313fba68f7c82c034120a4b8981297 # multi-runner-build-workflow-v2.1.0
     permissions:
       contents: read

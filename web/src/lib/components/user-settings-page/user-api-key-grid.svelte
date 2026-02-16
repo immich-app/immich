@@ -41,7 +41,7 @@
     />
     <Label label={title} for="permission-{title}" class="font-mono text-primary text-lg" />
   </div>
-  <div class="mx-6 mt-3 grid grid-cols-3 gap-2">
+  <div class="mx-6 mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
     {#each subItems as item (item)}
       <div class="flex items-center gap-2">
         <Checkbox

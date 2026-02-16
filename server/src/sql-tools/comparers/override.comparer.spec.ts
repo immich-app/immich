@@ -11,7 +11,7 @@ const testOverride: DatabaseOverride = {
 describe('compareOverrides', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareOverrides.onExtra(testOverride)).toEqual([
+      expect(compareOverrides().onExtra(testOverride)).toEqual([
         {
           type: 'OverrideDrop',
           overrideName: 'test',
@@ -23,7 +23,7 @@ describe('compareOverrides', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareOverrides.onMissing(testOverride)).toEqual([
+      expect(compareOverrides().onMissing(testOverride)).toEqual([
         {
           type: 'OverrideCreate',
           override: testOverride,
@@ -35,7 +35,7 @@ describe('compareOverrides', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareOverrides.onCompare(testOverride, testOverride)).toEqual([]);
+      expect(compareOverrides().onCompare(testOverride, testOverride)).toEqual([]);
     });
 
     it('should drop and recreate when the value changes', () => {
@@ -57,7 +57,7 @@ describe('compareOverrides', () => {
         },
         synchronize: true,
       };
-      expect(compareOverrides.onCompare(source, target)).toEqual([
+      expect(compareOverrides().onCompare(source, target)).toEqual([
         {
           override: source,
           type: 'OverrideUpdate',

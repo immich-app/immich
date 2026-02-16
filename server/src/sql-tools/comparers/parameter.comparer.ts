@@ -1,6 +1,6 @@
 import { Comparer, DatabaseParameter, Reason } from 'src/sql-tools/types';
 
-export const compareParameters: Comparer<DatabaseParameter> = {
+export const compareParameters = (): Comparer<DatabaseParameter> => ({
   onMissing: (source) => [
     {
       type: 'ParameterSet',
@@ -20,4 +20,4 @@ export const compareParameters: Comparer<DatabaseParameter> = {
     // TODO
     return [];
   },
-};
+});

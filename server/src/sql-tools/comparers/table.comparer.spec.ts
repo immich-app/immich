@@ -14,7 +14,7 @@ const testTable: DatabaseTable = {
 describe('compareParameters', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareTables.onExtra(testTable)).toEqual([
+      expect(compareTables({}).onExtra(testTable)).toEqual([
         {
           type: 'TableDrop',
           tableName: 'test',
@@ -26,7 +26,7 @@ describe('compareParameters', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareTables.onMissing(testTable)).toEqual([
+      expect(compareTables({}).onMissing(testTable)).toEqual([
         {
           type: 'TableCreate',
           table: testTable,
@@ -38,7 +38,7 @@ describe('compareParameters', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareTables.onCompare(testTable, testTable)).toEqual([]);
+      expect(compareTables({}).onCompare(testTable, testTable)).toEqual([]);
     });
   });
 });

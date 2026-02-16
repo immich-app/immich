@@ -53,6 +53,7 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
+    shm_size: 128mb
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
       interval: 1s

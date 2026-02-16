@@ -7,7 +7,7 @@ const testExtension = { name: 'test', synchronize: true };
 describe('compareExtensions', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareExtensions.onExtra(testExtension)).toEqual([
+      expect(compareExtensions().onExtra(testExtension)).toEqual([
         {
           extensionName: 'test',
           type: 'ExtensionDrop',
@@ -19,7 +19,7 @@ describe('compareExtensions', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareExtensions.onMissing(testExtension)).toEqual([
+      expect(compareExtensions().onMissing(testExtension)).toEqual([
         {
           type: 'ExtensionCreate',
           extension: testExtension,
@@ -31,7 +31,7 @@ describe('compareExtensions', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareExtensions.onCompare(testExtension, testExtension)).toEqual([]);
+      expect(compareExtensions().onCompare(testExtension, testExtension)).toEqual([]);
     });
   });
 });

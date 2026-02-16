@@ -6,6 +6,8 @@ import { UserLike } from 'test/factories/types';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
 
 export class UserFactory {
+  #metadata: Selectable<UserMetadataTable>[] = [];
+
   private constructor(private value: Selectable<UserTable>) {}
 
   static create(dto: UserLike = {}) {
@@ -37,10 +39,21 @@ export class UserFactory {
     });
   }
 
+  metadata(dto: Partial<Selectable<UserMetadataTable>> & Pick<Selectable<UserMetadataTable>, 'key' | 'value'>) {
+    this.#metadata.push({
+      updatedAt: newDate(),
+      updateId: newUuid(),
+      userId: newUuid(),
+      ...dto,
+    });
+
+    return this;
+  }
+
   build() {
     return {
       ...this.value,
-      metadata: [] as UserMetadataTable[],
+      metadata: this.#metadata,
     };
   }
 }

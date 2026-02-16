@@ -1,5 +1,5 @@
-import { AssetType } from 'src/enum';
-import { previewFile } from 'test/fixtures/asset.stub';
+import { AssetFileType, AssetType } from 'src/enum';
+import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { userStub } from 'test/fixtures/user.stub';
 
 const updateId = '0d1173e3-4d80-4d76-b41e-57d56de21125';
@@ -179,7 +179,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailMiddle: Object.freeze({
     ownerId: userStub.admin.id,
@@ -192,7 +192,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   newThumbnailEnd: Object.freeze({
     ownerId: userStub.admin.id,
@@ -205,7 +205,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   rawEmbeddedThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -218,7 +218,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.dng',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   negativeCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -231,7 +231,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   overflowingCoordinate: Object.freeze({
     ownerId: userStub.admin.id,
@@ -244,7 +244,7 @@ export const personThumbnailStub = {
     type: AssetType.Image,
     originalPath: '/original/path.jpg',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
   videoThumbnail: Object.freeze({
     ownerId: userStub.admin.id,
@@ -257,6 +257,6 @@ export const personThumbnailStub = {
     type: AssetType.Video,
     originalPath: '/original/path.mp4',
     exifOrientation: '1',
-    previewPath: previewFile.path,
+    previewPath: AssetFileFactory.create({ type: AssetFileType.Preview }).path,
   }),
 };

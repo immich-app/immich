@@ -44,8 +44,8 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
           pinned: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.add_rounded, size: 28),
               onPressed: () => context.pushRoute(const DriftCreateAlbumRoute()),
+              icon: const Icon(Icons.add_rounded),
             ),
           ],
           showUploadButton: false,

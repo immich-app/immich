@@ -685,5 +685,75 @@ describe(PersonService.name, () => {
         ]),
       );
     });
+
+    it('should properly handle exif orientation when creating a face on an edited asset', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 100, orientation: '6' });
+
+      await ctx.newEdits(asset.id, {
+        edits: [
+          {
+            action: AssetEditAction.Mirror,
+            parameters: {
+              axis: MirrorAxis.Horizontal,
+            },
+          },
+          {
+            action: AssetEditAction.Mirror,
+            parameters: {
+              axis: MirrorAxis.Vertical,
+            },
+          },
+        ],
+      });
+
+      const auth = factory.auth({ user });
+
+      const dto: AssetFaceCreateDto = {
+        imageWidth: 100,
+        imageHeight: 100,
+        x: 10,
+        y: 10,
+        width: 80,
+        height: 80,
+        personId: person.id,
+        assetId: asset.id,
+      };
+
+      await sut.createFace(auth, dto);
+
+      const faces = sut.getFacesById(auth, { id: asset.id });
+      await expect(faces).resolves.toHaveLength(1);
+      await expect(faces).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            person: expect.objectContaining({ id: person.id }),
+            boundingBoxX1: 110,
+            boundingBoxY1: 10,
+            boundingBoxX2: 190,
+            boundingBoxY2: 90,
+          }),
+        ]),
+      );
+
+      // remove edits and verify the stored coordinates map to the original image
+      await ctx.newEdits(asset.id, { edits: [] });
+      const facesAfterRemovingEdits = sut.getFacesById(auth, { id: asset.id });
+
+      await expect(facesAfterRemovingEdits).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            person: expect.objectContaining({ id: person.id }),
+            boundingBoxX1: 10,
+            boundingBoxY1: 10,
+            boundingBoxX2: 90,
+            boundingBoxY2: 90,
+          }),
+        ]),
+      );
+    });
   });
 });

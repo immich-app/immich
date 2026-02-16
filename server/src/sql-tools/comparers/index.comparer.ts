@@ -1,7 +1,7 @@
 import { asRenameKey, haveEqualColumns } from 'src/sql-tools/helpers';
 import { Comparer, DatabaseIndex, Reason } from 'src/sql-tools/types';
 
-export const compareIndexes: Comparer<DatabaseIndex> = {
+export const compareIndexes = (): Comparer<DatabaseIndex> => ({
   getRenameKey: (index) => {
     if (index.override) {
       return index.override.value.sql.replace(index.name, 'INDEX_NAME');
@@ -59,4 +59,4 @@ export const compareIndexes: Comparer<DatabaseIndex> = {
 
     return [];
   },
-};
+});

@@ -1,7 +1,7 @@
 import { extname } from 'node:path';
 import { AssetType } from 'src/enum';
 
-const raw: Record<string, string[]> = {
+const raw = {
   '.3fr': ['image/3fr', 'image/x-hasselblad-3fr'],
   '.ari': ['image/ari', 'image/x-arriflex-ari'],
   '.arw': ['image/arw', 'image/x-sony-arw'],
@@ -41,6 +41,7 @@ const raw: Record<string, string[]> = {
  **/
 const webSupportedImage = {
   '.avif': ['image/avif'],
+  '.bmp': ['image/bmp'],
   '.gif': ['image/gif'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
@@ -48,10 +49,8 @@ const webSupportedImage = {
   '.webp': ['image/webp'],
 };
 
-const image: Record<string, string[]> = {
+const webUnsupportedImage = {
   ...raw,
-  ...webSupportedImage,
-  '.bmp': ['image/bmp'],
   '.heic': ['image/heic'],
   '.heif': ['image/heif'],
   '.hif': ['image/hif'],
@@ -62,6 +61,11 @@ const image: Record<string, string[]> = {
   '.svg': ['image/svg'],
   '.tif': ['image/tiff'],
   '.tiff': ['image/tiff'],
+};
+
+const image: Record<string, string[]> = {
+  ...webSupportedImage,
+  ...webUnsupportedImage,
 };
 
 const possiblyAnimatedImageExtensions = new Set(['.avif', '.gif', '.heic', '.heif', '.jxl', '.png', '.webp']);
@@ -120,6 +124,7 @@ export const mimeTypes = {
   sidecar,
   video,
   raw,
+  webUnsupportedImage,
 
   isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
   isImage: (filename: string) => isType(filename, image),

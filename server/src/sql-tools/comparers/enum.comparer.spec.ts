@@ -7,7 +7,7 @@ const testEnum: DatabaseEnum = { name: 'test', values: ['foo', 'bar'], synchroni
 describe('compareEnums', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareEnums.onExtra(testEnum)).toEqual([
+      expect(compareEnums().onExtra(testEnum)).toEqual([
         {
           enumName: 'test',
           type: 'EnumDrop',
@@ -19,7 +19,7 @@ describe('compareEnums', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareEnums.onMissing(testEnum)).toEqual([
+      expect(compareEnums().onMissing(testEnum)).toEqual([
         {
           type: 'EnumCreate',
           enum: testEnum,
@@ -31,13 +31,13 @@ describe('compareEnums', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareEnums.onCompare(testEnum, testEnum)).toEqual([]);
+      expect(compareEnums().onCompare(testEnum, testEnum)).toEqual([]);
     });
 
     it('should drop and recreate when values list is different', () => {
       const source = { name: 'test', values: ['foo', 'bar'], synchronize: true };
       const target = { name: 'test', values: ['foo', 'bar', 'world'], synchronize: true };
-      expect(compareEnums.onCompare(source, target)).toEqual([
+      expect(compareEnums().onCompare(source, target)).toEqual([
         {
           enumName: 'test',
           type: 'EnumDrop',

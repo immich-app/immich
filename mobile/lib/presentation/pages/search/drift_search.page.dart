@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -39,8 +40,15 @@ class DriftSearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textSearchType = useState<TextSearchType>(TextSearchType.context);
-    final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
+    final serverFeatures = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
+    final textSearchType = useState<TextSearchType>(
+      serverFeatures.smartSearch ? TextSearchType.context : TextSearchType.filename,
+    );
+    final searchHintText = useState<String>(
+      serverFeatures.smartSearch
+          ? 'sunrise_on_the_beach'.t(context: context)
+          : 'file_name_or_extension'.t(context: context),
+    );
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
     final filter = useState<SearchFilter>(
@@ -518,23 +526,26 @@ class DriftSearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.image_search_rounded),
-                    title: Text(
-                      'search_by_context'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                FeatureCheck(
+                  feature: (features) => features.smartSearch,
+                  child: MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.image_search_rounded),
+                      title: Text(
+                        'search_by_context'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.context,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.context,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.context;
+                      searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
-                  },
                 ),
                 MenuItemButton(
                   child: ListTile(

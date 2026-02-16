@@ -408,7 +408,7 @@ If you encounter issues:
 1. Check container logs: View → Output → Select "Dev Containers"
 2. Rebuild without cache: "Dev Containers: Rebuild Container Without Cache"
 3. Review [common Docker issues](https://docs.docker.com/desktop/troubleshoot/)
-4. Ask in [Discord](https://discord.immich.app) `#help-desk-support` channel
+4. Ask in [Discord](https://discord.immich.app) `#contributing` channel
 
 ## Mobile Development
 

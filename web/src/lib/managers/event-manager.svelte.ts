@@ -48,6 +48,7 @@ export type Events = {
 
   PersonUpdate: [PersonResponseDto];
   PersonThumbnailReady: [{ id: string }];
+  PersonAssetDelete: [{ id: string; assetId: string }];
 
   BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
   BackupDeleted: [{ filename: string }];
