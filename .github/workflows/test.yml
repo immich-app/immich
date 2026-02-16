@@ -446,12 +446,29 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
-      - name: Docker build
-        run: docker compose build
+      - name: Start Docker Compose
+        run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
       - name: Run e2e tests (api & cli)
+        env:
+          VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test
         if: ${{ !cancelled() }}
+      - name: Run e2e tests (maintenance)
+        env:
+          VITEST_DISABLE_DOCKER_SETUP: true
+        run: pnpm test:maintenance
+        if: ${{ !cancelled() }}
+      - name: Capture Docker logs
+        if: always()
+        run: docker compose logs --no-color > docker-compose-logs.txt
+        working-directory: ./e2e
+      - name: Archive Docker logs
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: e2e-server-docker-logs-${{ matrix.runner }}
+          path: e2e/docker-compose-logs.txt
   e2e-tests-web:
     name: End-to-End Tests (Web)
     needs: pre-job
@@ -501,9 +518,8 @@ jobs:
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
         env:
-          CI: true
           PLAYWRIGHT_DISABLE_WEBSERVER: true
-        run: npx playwright test --project=web
+        run: pnpm test:web
         if: ${{ !cancelled() }}
       - name: Archive e2e test (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -513,9 +529,8 @@ jobs:
           path: e2e/playwright-report/
       - name: Run ui tests (web)
         env:
-          CI: true
           PLAYWRIGHT_DISABLE_WEBSERVER: true
-        run: npx playwright test --project=ui
+        run: pnpm test:web:ui
         if: ${{ !cancelled() }}
       - name: Archive ui test (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -525,9 +540,8 @@ jobs:
           path: e2e/playwright-report/
       - name: Run maintenance tests
         env:
-          CI: true
           PLAYWRIGHT_DISABLE_WEBSERVER: true
-        run: npx playwright test --project=maintenance
+        run: pnpm test:web:maintenance
         if: ${{ !cancelled() }}
       - name: Archive maintenance tests (web) results
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -543,7 +557,7 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
-          name: docker-compose-logs-${{ matrix.runner }}
+          name: e2e-web-docker-logs-${{ matrix.runner }}
           path: e2e/docker-compose-logs.txt
   success-check-e2e:
     name: End-to-End Tests Success
