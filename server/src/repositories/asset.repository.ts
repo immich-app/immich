@@ -654,9 +654,16 @@ export class AssetRepository {
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.withoutGps, (qb) =>
-            qb
-              .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
-              .where((eb) => eb.and([eb('asset_exif.latitude', 'is', null), eb('asset_exif.longitude', 'is', null)])),
+            qb.where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('asset_exif')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where((eb) => eb.or([eb('latitude', 'is not', null), eb('longitude', 'is not', null)])),
+                ),
+              ),
+            ),
           )
           .$if(!!options.albumId, (qb) =>
             qb
