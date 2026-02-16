@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -962,6 +963,130 @@ void main() {
 
       expect(archivedWidgets, isNotEmpty);
       expect(nonArchivedWidgets, isNotEmpty);
+    });
+  });
+
+  group('ActionButtonBuilder.getViewerBottomBarTypes', () {
+    test('should return correct button types for shared album with activity', () {
+      final remoteAsset = createRemoteAsset();
+      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: album,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.addTo,
+        ActionButtonType.openActivity,
+        ActionButtonType.likeActivity,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(context);
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for local only asset', () {
+      final localAsset = createLocalAsset();
+      final context = ActionButtonContext(
+        asset: localAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.upload,
+        ActionButtonType.editImage,
+        ActionButtonType.deleteLocal,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.withButtonPosition(ButtonPosition.kebabMenu),
+      );
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for locked view', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: false,
+        isInLockedView: true,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.removeFromLockFolder,
+        ActionButtonType.deletePermanent,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.withButtonPosition(ButtonPosition.kebabMenu),
+      );
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
+    });
+
+    test('should return correct button types for remote only asset', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+        buttonPosition: ButtonPosition.bottomBar,
+      );
+
+      const expectedTypes = [
+        ActionButtonType.share,
+        ActionButtonType.editImage,
+        ActionButtonType.addTo,
+        ActionButtonType.delete,
+      ];
+
+      final bottomBarTypes = ActionButtonBuilder.getViewerBottomBarTypes(context);
+      final kebabTypes = ActionButtonBuilder.getViewerKebabMenuTypes(
+        context.withButtonPosition(ButtonPosition.kebabMenu),
+      );
+
+      expect(const ListEquality().equals(bottomBarTypes, expectedTypes), isTrue);
+      expect(bottomBarTypes.any(kebabTypes.contains), isFalse);
     });
   });
 }
