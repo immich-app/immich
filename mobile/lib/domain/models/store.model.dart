@@ -91,7 +91,10 @@ enum StoreKey<T> {
   cleanupCutoffDaysAgo<int>._(1011),
   cleanupDefaultsInitialized<bool>._(1012),
 
-  syncMigrationStatus<String>._(1013);
+  syncMigrationStatus<String>._(1013),
+
+  reviewOutOfSyncChangesAndroid<bool>._(1014),
+  trashSyncLastCleanup<int>._(1015);
 
   const StoreKey._(this.id);
   final int id;

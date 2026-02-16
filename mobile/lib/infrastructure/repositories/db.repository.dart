@@ -21,6 +21,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
@@ -66,6 +67,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    TrashSyncEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -97,7 +99,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -225,6 +227,11 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createIndex(v19.idxRemoteAssetLocalDateTimeDay);
             await m.createIndex(v19.idxRemoteAssetLocalDateTimeMonth);
             await m.createIndex(v19.idxStackPrimaryAssetId);
+          },
+          from19To20: (m, v20) async {
+            await m.create(v20.trashSyncEntity);
+            await m.createIndex(v20.idxTrashSyncIsSyncApproved);
+            await m.createIndex(v20.idxTrashSyncChecksumStatus);
           },
         ),
       );
