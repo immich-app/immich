@@ -18,9 +18,9 @@ class NetworkApiImpl: NetworkApi {
   }
   
   func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<Void, any Error>) -> Void) {
-    let importer = CertImporter(promptText: promptText, completion: { [weak self] _ in
+    let importer = CertImporter(promptText: promptText, completion: { [weak self] result in
       self?.activeImporter = nil
-      completion(())
+      completion(result)
     }, viewController: viewController)
     activeImporter = importer
     importer.load()
