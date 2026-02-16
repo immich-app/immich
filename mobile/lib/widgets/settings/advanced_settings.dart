@@ -166,9 +166,9 @@ class AdvancedSettings extends HookConsumerWidget {
   }
 }
 
-enum TrashSyncMode { none, auto, review }
+enum _TrashSyncMode { none, auto, review }
 
-final manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
+final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
   return ref.watch(localFilesManagerRepositoryProvider).hasManageMediaPermission();
 });
 
@@ -180,18 +180,18 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
     final autoSyncChanges = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final reviewOutOfSyncChanges = useAppSettingsState(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
 
-    final manageMediaAndroidPermission = ref.watch(manageMediaPermissionProvider);
+    final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
     final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
 
     final selectedTrashSyncMode = autoSyncChanges.value
-        ? TrashSyncMode.auto
+        ? _TrashSyncMode.auto
         : reviewOutOfSyncChanges.value
-        ? TrashSyncMode.review
-        : TrashSyncMode.none;
+        ? _TrashSyncMode.review
+        : _TrashSyncMode.none;
 
     Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
       final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
-      ref.invalidate(manageMediaPermissionProvider);
+      ref.invalidate(_manageMediaPermissionProvider);
       if (key == AppSettingsEnum.manageLocalMediaAndroid) {
         autoSyncChanges.value = result;
         if (result) {
@@ -207,13 +207,13 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       ref.invalidate(appSettingsServiceProvider);
     }
 
-    Future<void> handleTrashSyncModeChange(TrashSyncMode? mode) async {
+    Future<void> handleTrashSyncModeChange(_TrashSyncMode? mode) async {
       if (mode == null) {
         return;
       }
 
       switch (mode) {
-        case TrashSyncMode.none:
+        case _TrashSyncMode.none:
           if (!autoSyncChanges.value && !reviewOutOfSyncChanges.value) {
             break;
           }
@@ -221,13 +221,13 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
           reviewOutOfSyncChanges.value = false;
           ref.invalidate(appSettingsServiceProvider);
           break;
-        case TrashSyncMode.auto:
+        case _TrashSyncMode.auto:
           if (autoSyncChanges.value) {
             break;
           }
           await attemptToEnableSetting(AppSettingsEnum.manageLocalMediaAndroid);
           break;
-        case TrashSyncMode.review:
+        case _TrashSyncMode.review:
           if (reviewOutOfSyncChanges.value) {
             break;
           }
@@ -245,17 +245,17 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
             SettingsRadioGroup(
               title: 'off'.tr(),
               subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
-              value: TrashSyncMode.none,
+              value: _TrashSyncMode.none,
             ),
             SettingsRadioGroup(
               title: 'advanced_settings_sync_remote_deletions_title'.tr(),
               subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
-              value: TrashSyncMode.auto,
+              value: _TrashSyncMode.auto,
             ),
             SettingsRadioGroup(
               title: 'advanced_settings_review_remote_deletions_title'.tr(),
               subtitle: 'advanced_settings_review_remote_deletions_subtitle'.tr(),
-              value: TrashSyncMode.review,
+              value: _TrashSyncMode.review,
             ),
           ],
           groupBy: selectedTrashSyncMode,
@@ -275,7 +275,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
               : null,
           onActionTap: () async {
             await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
-            ref.invalidate(manageMediaPermissionProvider);
+            ref.invalidate(_manageMediaPermissionProvider);
           },
         ),
       ],

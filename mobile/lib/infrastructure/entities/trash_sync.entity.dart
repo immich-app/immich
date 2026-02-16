@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-@TableIndex(name: 'idx_trash_sync_is_sync_approved', columns: {#isSyncApproved})
-@TableIndex(name: 'idx_trash_sync_checksum_status', columns: {#checksum, #isSyncApproved})
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)')
+@TableIndex.sql(
+    'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)')
 class TrashSyncEntity extends Table with DriftDefaultsMixin {
   const TrashSyncEntity();
 

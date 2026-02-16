@@ -178,7 +178,7 @@ typedef $$TrashSyncEntityTableProcessedTableManager =
     >;
 i0.Index get idxTrashSyncIsSyncApproved => i0.Index(
   'idx_trash_sync_is_sync_approved',
-  'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
+  'CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
 );
 
 class $TrashSyncEntityTable extends i2.TrashSyncEntity
@@ -457,5 +457,5 @@ class TrashSyncEntityCompanion
 
 i0.Index get idxTrashSyncChecksumStatus => i0.Index(
   'idx_trash_sync_checksum_status',
-  'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
+  'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
 );

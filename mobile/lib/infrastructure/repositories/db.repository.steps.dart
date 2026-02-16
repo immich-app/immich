@@ -8877,23 +8877,20 @@ final class Schema20 extends i0.VersionedSchema {
   );
   final i1.Index idxTrashSyncIsSyncApproved = i1.Index(
     'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
+    'CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
   );
   final i1.Index idxTrashSyncChecksumStatus = i1.Index(
     'idx_trash_sync_checksum_status',
-    'CREATE INDEX idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
+    'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
   );
 }
 
 class Shape29 extends i0.VersionedTable {
   Shape29({required super.source, required super.alias}) : super.aliased();
-
   i1.GeneratedColumn<String> get checksum =>
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
-
   i1.GeneratedColumn<bool> get isSyncApproved =>
       columnsByName['is_sync_approved']! as i1.GeneratedColumn<bool>;
-
   i1.GeneratedColumn<DateTime> get remoteDeletedAt =>
       columnsByName['remote_deleted_at']! as i1.GeneratedColumn<DateTime>;
 }
@@ -8908,7 +8905,6 @@ i1.GeneratedColumn<bool> _column_102(String aliasedName) =>
         'CHECK ("is_sync_approved" IN (0, 1))',
       ),
     );
-
 i1.GeneratedColumn<DateTime> _column_103(String aliasedName) =>
     i1.GeneratedColumn<DateTime>(
       'remote_deleted_at',
