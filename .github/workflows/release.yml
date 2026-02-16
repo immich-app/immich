@@ -87,7 +87,8 @@ jobs:
           body_path: ${{ steps.changelog.outputs.path }}
           draft: true
           files: |
-            docker/docker-compose*.yml
+            docker/docker-compose.yml
+            docker/docker-compose.rootless.yml
             docker/example.env
             docker/hwaccel.ml.yml
             docker/hwaccel.transcoding.yml
