@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { forceDarkTheme } from '$lib/actions/force-dark-theme';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
@@ -442,6 +443,7 @@
   id="immich-asset-viewer"
   class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
+  use:forceDarkTheme
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
