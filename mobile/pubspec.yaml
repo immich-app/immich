@@ -95,7 +95,7 @@ dependencies:
   ok_http:
     git:
       url: https://github.com/mertalev/http
-      ref: 'fc43a0bf108c4705a11511f403802528ab1db716' # https://github.com/dart-lang/http/pull/1877
+      ref: 'cbe2199e515a6d184715fa129cad794356447d11' # https://github.com/dart-lang/http/pull/1877
       path: pkgs/ok_http/
 
 dev_dependencies:
