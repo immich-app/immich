@@ -1796,6 +1796,7 @@ export type TimeBucketAssetResponseDto = {
     thumbhash: (string | null)[];
     /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
     visibility: AssetVisibility[];
+    withoutGps?: boolean;
 };
 export type TimeBucketsResponseDto = {
     /** Number of assets in this time bucket */

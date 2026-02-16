@@ -23606,6 +23606,9 @@
               "$ref": "#/components/schemas/AssetVisibility"
             },
             "type": "array"
+          },
+          "withoutGps": {
+            "type": "boolean"
           }
         },
         "required": [
