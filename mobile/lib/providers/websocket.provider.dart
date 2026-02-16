@@ -206,6 +206,27 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     state.socket?.on('on_upload_success', _handleOnUploadSuccess);
   }
 
+  Future<void> waitForEvent(String event, bool Function(dynamic)? predicate, Duration timeout) {
+    final completer = Completer<void>();
+
+    void handler(dynamic data) {
+      if (predicate == null || predicate(data)) {
+        completer.complete();
+        state.socket?.off(event, handler);
+      }
+    }
+
+    state.socket?.on(event, handler);
+
+    return completer.future.timeout(
+      timeout,
+      onTimeout: () {
+        state.socket?.off(event, handler);
+        throw TimeoutException("Timeout waiting for event: $event");
+      },
+    );
+  }
+
   void addPendingChange(PendingAction action, dynamic value) {
     final now = DateTime.now();
     state = state.copyWith(
