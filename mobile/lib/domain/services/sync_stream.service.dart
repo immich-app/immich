@@ -203,10 +203,6 @@ class SyncStreamService {
             );
             await _handleRemoteTrashed(trashedAssetsMap, reviewMode);
             await _applyRemoteRestoreToLocal();
-            if (reviewMode) {
-              final result = await _trashSyncRepository.deleteOutdatedThrottled();
-              _logger.info("syncTrashedAssets, outdated deleted: $result");
-            }
           } else {
             _logger.warning("sync Trashed Assets cannot proceed because MANAGE_MEDIA permission is missing");
           }
