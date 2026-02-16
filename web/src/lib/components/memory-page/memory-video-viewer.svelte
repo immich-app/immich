@@ -4,6 +4,7 @@
   import { autoPlayVideo } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
+  import 'media-chrome/media-controller';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
@@ -24,14 +25,18 @@
 
 {#if showVideo}
   <div class="h-full w-full bg-pink-9000" transition:fade={{ duration: assetViewerFadeDuration }}>
-    <video
-      bind:this={videoPlayer}
-      autoplay={$autoPlayVideo}
-      playsinline
-      class="h-full w-full rounded-2xl object-contain transition-all"
-      src={getAssetPlaybackUrl({ id: asset.id })}
-      poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
-      draggable="false"
-    ></video>
+    <media-controller>
+      <!-- svelte-ignore a11y_media_has_caption -->
+      <video
+        bind:this={videoPlayer}
+        autoplay={$autoPlayVideo}
+        playsinline
+        disablepictureinpicture
+        class="h-full w-full rounded-2xl object-contain transition-all"
+        src={getAssetPlaybackUrl({ id: asset.id })}
+        poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
+        draggable="false"
+      ></video>
+    </media-controller>
   </div>
 {/if}
