@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/services/widget.service.dart';
 
 class SettingsHeader {
   String key = "";
@@ -59,6 +60,26 @@ class HeaderSettingsPage extends HookConsumerWidget {
       }),
     ];
 
+    Future<void> saveHeaders(List<SettingsHeader> headers) async {
+      final headersMap = {};
+      for (var header in headers) {
+        final key = header.key.trim();
+        final value = header.value.trim();
+
+        if (key.isEmpty || value.isEmpty) continue;
+        headersMap[key] = value;
+      }
+
+      var encoded = jsonEncode(headersMap);
+      await Store.put(StoreKey.customHeaders, encoded);
+
+      final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+      final accessToken = Store.tryGet(StoreKey.accessToken);
+      if (serverEndpoint != null && accessToken != null) {
+        await ref.read(widgetServiceProvider).writeCredentials(serverEndpoint, accessToken, encoded);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.t.headers_settings_tile_title),
@@ -85,20 +106,6 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ),
       ),
     );
-  }
-
-  saveHeaders(List<SettingsHeader> headers) {
-    final headersMap = {};
-    for (var header in headers) {
-      final key = header.key.trim();
-      final value = header.value.trim();
-
-      if (key.isEmpty || value.isEmpty) continue;
-      headersMap[key] = value;
-    }
-
-    var encoded = jsonEncode(headersMap);
-    Store.put(StoreKey.customHeaders, encoded);
   }
 }
 
