@@ -164,7 +164,7 @@ class _ProfileIndicator extends ConsumerWidget {
                 child: AbsorbPointer(
                   child: Builder(
                     builder: (context) => UserCircleAvatar(
-                      size: 32,
+                      size: 34,
                       user: user,
                       opacity: IconTheme.of(context).opacity ?? 1,
                       hasBorder: true,

@@ -38,7 +38,7 @@ class AppBarServerInfo extends HookConsumerWidget {
     const divider = Divider(thickness: 1);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -109,7 +109,7 @@ class _ServerInfoItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: contentFontSize,
                 color: context.colorScheme.onSurfaceSecondary,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
                 overflow: TextOverflow.ellipsis,
               ),
               textAlign: TextAlign.end,
