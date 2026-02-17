@@ -22,7 +22,7 @@ opentofu = "1.11.4"
 java = "21.0.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
-version = "1.30.0"
+version = "1.35.1"
 bin = "dcm"
 postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
 
