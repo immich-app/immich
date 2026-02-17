@@ -60,7 +60,13 @@ class NetworkApiImpl: NetworkApi {
   }
   
   func setRequestHeaders(headers: [String : String]) throws {
-    URLSessionManager.shared.session.configuration.httpAdditionalHeaders = headers
+    var filtered = headers
+    filtered.removeValue(forKey: "x-immich-user-token") // the session uses cookie auth
+    var current = URLSessionManager.shared.session.configuration.httpAdditionalHeaders as? [String: String] ?? [:]
+    current.removeValue(forKey: "User-Agent")
+    if filtered != current {
+      UserDefaults.standard.set(filtered, forKey: HEADERS_KEY)
+    }
   }
 }
 
