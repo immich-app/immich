@@ -87,39 +87,37 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
-  late PageController pageController;
+  late final _heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+  late final _pageController = PageController(initialPage: widget.initialIndex);
+  late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
 
   StreamSubscription? _reloadSubscription;
-
-  late final int heroOffset;
-  bool _assetReloadRequested = false;
-  int _totalAssets = 0;
-
-  late final AssetPreloader _preloader;
   KeepAliveLink? _stackChildrenKeepAlive;
+
+  bool _assetReloadRequested = false;
 
   @override
   void initState() {
     super.initState();
-    assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
-    pageController = PageController(initialPage: widget.initialIndex);
-    final timelineService = ref.read(timelineServiceProvider);
-    _totalAssets = timelineService.totalAssets;
-    _preloader = AssetPreloader(timelineService: timelineService, mounted: () => mounted);
-    WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
-    _reloadSubscription = EventStream.shared.listen(_onEvent);
-    heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+
     final asset = ref.read(currentAssetNotifier);
+    assert(asset != null, "Current asset should not be null when opening the AssetViewer");
     if (asset != null) _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+
+    _reloadSubscription = EventStream.shared.listen(_onEvent);
+
+    WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
   }
 
   @override
   void dispose() {
-    pageController.dispose();
+    _pageController.dispose();
     _preloader.dispose();
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     super.dispose();
   }
 
@@ -176,26 +174,26 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onTimelineReloadEvent() {
     final timelineService = ref.read(timelineServiceProvider);
-    _totalAssets = timelineService.totalAssets;
+    final totalAssets = timelineService.totalAssets;
 
-    if (_totalAssets == 0) {
+    if (totalAssets == 0) {
       context.maybePop();
       return;
     }
 
-    var index = pageController.page?.round() ?? 0;
+    var index = _pageController.page?.round() ?? 0;
     final currentAsset = ref.read(currentAssetNotifier);
     if (currentAsset != null) {
       final newIndex = timelineService.getIndex(currentAsset.heroTag);
       if (newIndex != null && newIndex != index) {
         index = newIndex;
-        pageController.jumpToPage(index);
+        _pageController.jumpToPage(index);
       }
     }
 
-    if (index >= _totalAssets) {
-      index = _totalAssets - 1;
-      pageController.jumpToPage(index);
+    if (index >= totalAssets) {
+      index = totalAssets - 1;
+      _pageController.jumpToPage(index);
     }
 
     if (_assetReloadRequested) {
@@ -264,15 +262,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
             PhotoViewGestureDetectorScope(
               axis: Axis.horizontal,
               child: PageView.builder(
-                controller: pageController,
+                controller: _pageController,
                 physics: isZoomed
                     ? const NeverScrollableScrollPhysics()
                     : CurrentPlatform.isIOS
                     ? const FastScrollPhysics()
                     : const FastClampingScrollPhysics(),
-                itemCount: _totalAssets,
+                itemCount: ref.read(timelineServiceProvider).totalAssets,
                 onPageChanged: (index) => _onAssetChanged(index),
-                itemBuilder: (context, index) => AssetPage(index: index, heroOffset: heroOffset),
+                itemBuilder: (context, index) => AssetPage(index: index, heroOffset: _heroOffset),
               ),
             ),
             if (!CurrentPlatform.isIOS)
