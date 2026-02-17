@@ -20,14 +20,12 @@
     text,
     subtitle = '',
     icon,
-    activeColor = 'bg-slate-300 dark:bg-white',
-    textColor = 'text-immich-fg',
+    activeColor = 'bg-slate-300 dark:bg-immich-dark-bg',
+    textColor = 'text-immich-fg dark:text-white',
     onClick,
     shortcut = null,
     shortcutLabel = '',
   }: Props = $props();
-
-  console.log(textColor);
 
   let id: string = generateId();
 
@@ -55,9 +53,9 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor}  focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 text-start text-sm font-medium {textColor} dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
     ? activeColor
-    : 'bg-slate-100 dark:bg-immich-dark-gray dark:text-immich-dark-primary'}"
+    : 'bg-slate-100 dark:bg-immich-dark-gray'}"
   role="menuitem"
 >
   {#if icon}
