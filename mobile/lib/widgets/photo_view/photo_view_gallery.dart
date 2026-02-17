@@ -284,6 +284,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
+            onDragCancel: pageOption.onDragCancel,
             onScaleEnd: pageOption.onScaleEnd,
             onLongPressStart: pageOption.onLongPressStart,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
@@ -321,6 +322,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             onDragStart: pageOption.onDragStart,
             onDragEnd: pageOption.onDragEnd,
             onDragUpdate: pageOption.onDragUpdate,
+            onDragCancel: pageOption.onDragCancel,
             onScaleEnd: pageOption.onScaleEnd,
             onLongPressStart: pageOption.onLongPressStart,
             gestureDetectorBehavior: pageOption.gestureDetectorBehavior,
@@ -367,6 +369,7 @@ class PhotoViewGalleryPageOptions {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     this.gestureDetectorBehavior,
@@ -397,6 +400,7 @@ class PhotoViewGalleryPageOptions {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     this.gestureDetectorBehavior,
@@ -454,8 +458,11 @@ class PhotoViewGalleryPageOptions {
   /// Mirror to [PhotoView.onDragDown]
   final PhotoViewImageDragEndCallback? onDragEnd;
 
-  /// Mirror to [PhotoView.onDraUpdate]
+  /// Mirror to [PhotoView.onDragUpdate]
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  /// Mirror to [PhotoView.onDragCancel]
+  final VoidCallback? onDragCancel;
 
   /// Mirror to [PhotoView.onTapDown]
   final PhotoViewImageTapDownCallback? onTapDown;
