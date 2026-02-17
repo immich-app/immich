@@ -14,33 +14,65 @@
 name: immich-dev
 
 services:
+  immich-app-base:
+    profiles: ['_base']
+    tmpfs:
+      - /tmp
+    volumes:
+      - ..:/usr/src/app
+      - pnpm_cache:/buildcache/pnpm_cache
+      - server_node_modules:/usr/src/app/server/node_modules
+      - web_node_modules:/usr/src/app/web/node_modules
+      - github_node_modules:/usr/src/app/.github/node_modules
+      - cli_node_modules:/usr/src/app/cli/node_modules
+      - docs_node_modules:/usr/src/app/docs/node_modules
+      - e2e_node_modules:/usr/src/app/e2e/node_modules
+      - sdk_node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app_node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
+
+  immich-init:
+    extends:
+      service: immich-app-base
+    profiles: !reset []
+    container_name: immich_init
+    image: immich-server-dev:latest
+    build:
+      context: ../
+      dockerfile: server/Dockerfile.dev
+      target: dev
+    command:
+      - |
+        pnpm install
+        touch /tmp/init-complete
+        exec tail -f /dev/null
+    volumes:
+      - pnpm_store_server:/buildcache/pnpm-store
+    restart: 'no'
+    healthcheck:
+      test: ['CMD', 'test', '-f', '/tmp/init-complete']
+      interval: 2s
+      timeout: 3s
+      retries: 300
+      start_period: 300s
+
   immich-server:
+    extends:
+      service: immich-app-base
+    profiles: !reset []
     container_name: immich_server
     command: ['immich-dev']
     image: immich-server-dev:latest
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
     build:
       context: ../
       dockerfile: server/Dockerfile.dev
       target: dev
     restart: unless-stopped
     volumes:
-      - ..:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
-      - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node_modules:/usr/src/app/server/node_modules
-      - web-node_modules:/usr/src/app/web/node_modules
-      - github-node_modules:/usr/src/app/.github/node_modules
-      - cli-node_modules:/usr/src/app/cli/node_modules
-      - docs-node_modules:/usr/src/app/docs/node_modules
-      - e2e-node_modules:/usr/src/app/e2e/node_modules
-      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
-      - app-node_modules:/usr/src/app/node_modules
-      - sveltekit:/usr/src/app/web/.svelte-kit
-      - coverage:/usr/src/app/web/coverage
+      - pnpm_store_server:/buildcache/pnpm-store
       - ../plugins:/build/corePlugin
     env_file:
       - .env
@@ -63,6 +95,8 @@ services:
       - 9231:9231
       - 2283:2283
     depends_on:
+      immich-init:
+        condition: service_healthy
       redis:
         condition: service_started
       database:
@@ -71,6 +105,9 @@ services:
       disable: false
 
   immich-web:
+    extends:
+      service: immich-app-base
+    profiles: !reset []
     container_name: immich_web
     image: immich-web-dev:latest
     build:
@@ -84,20 +121,11 @@ services:
       - 3000:3000
       - 24678:24678
     volumes:
-      - ..:/usr/src/app
-      - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node_modules:/usr/src/app/server/node_modules
-      - web-node_modules:/usr/src/app/web/node_modules
-      - github-node_modules:/usr/src/app/.github/node_modules
-      - cli-node_modules:/usr/src/app/cli/node_modules
-      - docs-node_modules:/usr/src/app/docs/node_modules
-      - e2e-node_modules:/usr/src/app/e2e/node_modules
-      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
-      - app-node_modules:/usr/src/app/node_modules
-      - sveltekit:/usr/src/app/web/.svelte-kit
-      - coverage:/usr/src/app/web/coverage
+      - pnpm_store_web:/buildcache/pnpm-store
     restart: unless-stopped
     depends_on:
+      immich-init:
+        condition: service_healthy
       immich-server:
         condition: service_started
 
@@ -116,7 +144,7 @@ services:
       - 3003:3003
     volumes:
       - ../machine-learning/immich_ml:/usr/src/immich_ml
-      - model-cache:/cache
+      - model_cache:/cache
     env_file:
       - .env
     depends_on:
@@ -156,7 +184,7 @@ services:
   #   image: prom/prometheus
   #   volumes:
   #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus-data:/prometheus
+  #     - prometheus_data:/prometheus
 
   # first login uses admin/admin
   # add data source for http://immich-prometheus:9090 to get started
@@ -167,20 +195,22 @@ services:
   #     - 3000:3000
   #   image: grafana/grafana:10.3.3-ubuntu
   #   volumes:
-  #     - grafana-data:/var/lib/grafana
+  #     - grafana_data:/var/lib/grafana
 
 volumes:
-  model-cache:
-  prometheus-data:
-  grafana-data:
-  pnpm-store:
-  server-node_modules:
-  web-node_modules:
-  github-node_modules:
-  cli-node_modules:
-  docs-node_modules:
-  e2e-node_modules:
-  sdk-node_modules:
-  app-node_modules:
+  model_cache:
+  prometheus_data:
+  grafana_data:
+  pnpm_cache:
+  pnpm_store_server:
+  pnpm_store_web:
+  server_node_modules:
+  web_node_modules:
+  github_node_modules:
+  cli_node_modules:
+  docs_node_modules:
+  e2e_node_modules:
+  sdk_node_modules:
+  app_node_modules:
   sveltekit:
   coverage:
