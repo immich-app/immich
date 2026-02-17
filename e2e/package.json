@@ -27,7 +27,7 @@
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^24.10.11",
+    "@types/node": "^24.10.13",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",
     "@types/supertest": "^6.0.2",
@@ -52,6 +52,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.13.0"
+    "node": "24.13.1"
   }
 }
