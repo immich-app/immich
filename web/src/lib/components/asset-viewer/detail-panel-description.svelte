@@ -1,12 +1,10 @@
 <script lang="ts">
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
+  import { shortcut } from '$lib/actions/shortcut';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
+  import { Textarea, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import { fromAction } from 'svelte/attachments';
 
   interface Props {
     asset: AssetResponseDto;
@@ -15,18 +13,16 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let description = $derived(asset.exifInfo?.description || '');
+  let description = $derived(asset.exifInfo?.description ?? '');
 
-  const handleFocusOut = async (newDescription: string) => {
+  const handleFocusOut = async () => {
+    const currentDescription = asset.exifInfo?.description ?? '';
+    if (description === currentDescription) {
+      return;
+    }
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { description: newDescription } });
-
-      asset.exifInfo = { ...asset.exifInfo, description: newDescription };
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('asset_description_updated'),
-      });
+      await updateAsset({ id: asset.id, updateAssetDto: { description } });
+      toastManager.success($t('asset_description_updated'));
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }
@@ -35,15 +31,23 @@
 
 {#if isOwner}
   <section class="px-4 mt-10">
-    <AutogrowTextarea
-      content={description}
-      class="max-h-[500px] w-full border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
-      onContentUpdate={handleFocusOut}
+    <Textarea
+      bind:value={description}
+      class="max-h-40 pl-0 outline-none border-b border-gray-500 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
+      rows={1}
+      grow
+      shape="rectangle"
+      onfocusout={handleFocusOut}
       placeholder={$t('add_a_description')}
+      data-testid="autogrow-textarea"
+      {@attach fromAction(shortcut, () => ({
+        shortcut: { key: 'Enter', ctrl: true },
+        onShortcut: (e) => e.currentTarget.blur(),
+      }))}
     />
   </section>
 {:else if description}
   <section class="px-4 mt-6">
-    <p class="break-words whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+    <p class="wrap-break-word whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
   </section>
 {/if}

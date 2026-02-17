@@ -27,7 +27,8 @@
   <a href="README_ko_KR.md">한국어</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
+  <a href="README_zh_CN.md">简体中文</a>
+  <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
@@ -37,11 +38,6 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Warnung
-
-- ⚠️ Das Projekt befindet sich in **sehr aktiver** Entwicklung.
-- ⚠️ Gehe von möglichen Fehlern und von Änderungen mit Breaking-Changes aus.
-- ⚠️ **Nutze die App auf keinen Fall als einziges Speichermedium für deine Fotos und Videos.**
 - ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
 
 > [!NOTE]
@@ -50,18 +46,18 @@
 
 ## Inhalt
 
-- [Offizielle Dokumentation](https://immich.app/docs)
-- [Über Immich](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
+- [Offizielle Dokumentation](https://docs.immich.app)
+- [Über Immich](https://docs.immich.app/overview/introduction)
+- [Installation](https://docs.immich.app/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funktionen](#funktionen)
-- [Übersetzungen](https://immich.app/docs/developer/translations)
-- [Beitragsrichtlinien](https://immich.app/docs/overview/support-the-project)
+- [Übersetzungen](https://docs.immich.app/developer/translations)
+- [Beitragsrichtlinien](https://docs.immich.app/overview/support-the-project)
 
 ## Demo
 
-Die Web-Demo kannst Du unter https://demo.immich.app finden. Für die Handy-App kannst Du `https://demo.immich.app` als `Server Endpoint URL` angeben.
+Die Web-Demo kannst Du unter https://demo.immich.app finden. Für die Smartphone-App kannst Du `https://demo.immich.app` als `Server Endpoint URL` angeben.
 
 ### Login Daten
 
@@ -92,7 +88,7 @@ Die Web-Demo kannst Du unter https://demo.immich.app finden. Für die Handy-App 
 | LivePhoto/MotionPhoto Sicherung und Wiedergabe       | Ja     | Ja    |
 | Unterstützung für 360-Grad-Bilder     	             | Nein   | Ja    |
 | Benutzerdefinierte Speicherstruktur                  | Ja     | Ja    |
-| Öffentliches Teilen                                  | Nein   | Ja    |
+| Öffentliches Teilen                                  | Ja     | Ja    |
 | Archiv und Favoriten                                 | Ja     | Ja    |
 | Globale Karte                                        | Ja     | Ja    |
 | Partnerfreigabe (Teilen)                             | Ja     | Ja    |
@@ -102,12 +98,12 @@ Die Web-Demo kannst Du unter https://demo.immich.app finden. Für die Handy-App 
 | Schreibgeschützte Gallerie                           | Ja     | Ja    |
 | Gestapelte Bilder                                    | Ja     | Ja    |
 | Tags                                                 | Nein   | Ja    |
-| Ordner-Ansicht                                       | Nein   | Ja    |
+| Ordner-Ansicht                                       | Ja     | Ja    |
 
 
 ## Übersetzungen
 
-Mehr zum Thema Übersetzungen kannst du [hier](https://immich.app/docs/developer/translations) erfahren.
+Mehr zum Thema Übersetzungen kannst du [hier](https://docs.immich.app/developer/translations) erfahren.
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />

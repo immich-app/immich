@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -44,7 +46,7 @@ void main() {
     test('converts int', () async {
       int? version = await sut.tryGet(StoreKey.version);
       expect(version, isNull);
-      await sut.insert(StoreKey.version, _kTestVersion);
+      await sut.upsert(StoreKey.version, _kTestVersion);
       version = await sut.tryGet(StoreKey.version);
       expect(version, _kTestVersion);
     });
@@ -52,7 +54,7 @@ void main() {
     test('converts string', () async {
       String? accessToken = await sut.tryGet(StoreKey.accessToken);
       expect(accessToken, isNull);
-      await sut.insert(StoreKey.accessToken, _kTestAccessToken);
+      await sut.upsert(StoreKey.accessToken, _kTestAccessToken);
       accessToken = await sut.tryGet(StoreKey.accessToken);
       expect(accessToken, _kTestAccessToken);
     });
@@ -60,7 +62,7 @@ void main() {
     test('converts datetime', () async {
       DateTime? backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);
       expect(backupFailedSince, isNull);
-      await sut.insert(StoreKey.backupFailedSince, _kTestBackupFailed);
+      await sut.upsert(StoreKey.backupFailedSince, _kTestBackupFailed);
       backupFailedSince = await sut.tryGet(StoreKey.backupFailedSince);
       expect(backupFailedSince, _kTestBackupFailed);
     });
@@ -68,7 +70,7 @@ void main() {
     test('converts bool', () async {
       bool? colorfulInterface = await sut.tryGet(StoreKey.colorfulInterface);
       expect(colorfulInterface, isNull);
-      await sut.insert(StoreKey.colorfulInterface, _kTestColorfulInterface);
+      await sut.upsert(StoreKey.colorfulInterface, _kTestColorfulInterface);
       colorfulInterface = await sut.tryGet(StoreKey.colorfulInterface);
       expect(colorfulInterface, _kTestColorfulInterface);
     });
@@ -76,7 +78,7 @@ void main() {
     test('converts user', () async {
       UserDto? user = await sut.tryGet(StoreKey.currentUser);
       expect(user, isNull);
-      await sut.insert(StoreKey.currentUser, _kTestUser);
+      await sut.upsert(StoreKey.currentUser, _kTestUser);
       user = await sut.tryGet(StoreKey.currentUser);
       expect(user, _kTestUser);
     });
@@ -99,7 +101,7 @@ void main() {
       final count = await db.storeValues.count();
       expect(count, isNot(isZero));
       await sut.deleteAll();
-      expectLater(await db.storeValues.count(), isZero);
+      unawaited(expectLater(await db.storeValues.count(), isZero));
     });
   });
 
@@ -108,10 +110,10 @@ void main() {
       await _populateStore(db);
     });
 
-    test('update()', () async {
+    test('upsert()', () async {
       int? version = await sut.tryGet(StoreKey.version);
       expect(version, _kTestVersion);
-      await sut.update(StoreKey.version, _kTestVersion + 10);
+      await sut.upsert(StoreKey.version, _kTestVersion + 10);
       version = await sut.tryGet(StoreKey.version);
       expect(version, _kTestVersion + 10);
     });
@@ -124,24 +126,33 @@ void main() {
 
     test('watch()', () async {
       final stream = sut.watch(StoreKey.version);
-      expectLater(stream, emitsInOrder([_kTestVersion, _kTestVersion + 10]));
+      unawaited(expectLater(stream, emitsInOrder([_kTestVersion, _kTestVersion + 10])));
       await pumpEventQueue();
-      await sut.update(StoreKey.version, _kTestVersion + 10);
+      await sut.upsert(StoreKey.version, _kTestVersion + 10);
     });
 
     test('watchAll()', () async {
       final stream = sut.watchAll();
-      expectLater(
-        stream,
-        emitsInAnyOrder([
-          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion)),
-          emits(StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed)),
-          emits(const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken)),
-          emits(const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface)),
-          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion + 10)),
-        ]),
+      unawaited(
+        expectLater(
+          stream,
+          emitsInOrder([
+            [
+              const StoreDto<Object>(StoreKey.version, _kTestVersion),
+              StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
+              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface),
+            ],
+            [
+              const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
+              StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
+              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface),
+            ],
+          ]),
+        ),
       );
-      await sut.update(StoreKey.version, _kTestVersion + 10);
+      await sut.upsert(StoreKey.version, _kTestVersion + 10);
     });
   });
 }

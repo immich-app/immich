@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
@@ -13,7 +13,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_act
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -43,12 +43,10 @@ class ArchiveBottomSheet extends ConsumerWidget {
           const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(source: ActionSource.timeline),
-          const StackActionButton(source: ActionSource.timeline),
+          if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
+          if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
         ],
-        if (multiselect.hasLocal) ...[
-          const DeleteLocalActionButton(source: ActionSource.timeline),
-          const UploadActionButton(source: ActionSource.timeline),
-        ],
+        if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
       ],
     );
   }

@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class SettingsHeader {
   String key = "";
@@ -60,7 +61,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('advanced_settings_proxy_headers_title').tr(),
+        title: Text(context.t.headers_settings_tile_title),
         centerTitle: false,
         actions: [
           IconButton(

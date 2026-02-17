@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import Combobox from '../combobox.svelte';
 
@@ -18,14 +19,14 @@
   ];
 </script>
 
-<div class="grid grid-auto-fit-40 gap-5">
-  <label class="immich-form-label" for="start-date">
-    <Combobox
-      label={$t('rating').toUpperCase()}
-      placeholder={$t('search_rating')}
-      {options}
-      selectedOption={rating === undefined ? undefined : options[rating]}
-      onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
-    />
-  </label>
+<div class="flex flex-col">
+  <Text class="mb-2" fontWeight="medium">{$t('rating')}</Text>
+  <Combobox
+    label={$t('rating')}
+    placeholder={$t('search_rating')}
+    hideLabel
+    {options}
+    selectedOption={rating === undefined ? undefined : options[rating]}
+    onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
+  />
 </div>

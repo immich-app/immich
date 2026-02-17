@@ -16,7 +16,9 @@ class StacksApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `stack.create` permission.
+  /// Create a stack
+  ///
+  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.create` permission.
+  /// Create a stack
+  ///
+  /// Create a new stack by providing a name and a list of asset IDs to include in the stack. If any of the provided asset IDs are primary assets of an existing stack, the existing stack will be merged into the newly created stack.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class StacksApi {
     return null;
   }
 
-  /// This endpoint requires the `stack.delete` permission.
+  /// Delete a stack
+  ///
+  /// Delete a specific stack by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -101,7 +107,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.delete` permission.
+  /// Delete a stack
+  ///
+  /// Delete a specific stack by its ID.
   ///
   /// Parameters:
   ///
@@ -113,7 +121,9 @@ class StacksApi {
     }
   }
 
-  /// This endpoint requires the `stack.delete` permission.
+  /// Delete stacks
+  ///
+  /// Delete multiple stacks by providing a list of stack IDs.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -145,7 +155,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.delete` permission.
+  /// Delete stacks
+  ///
+  /// Delete multiple stacks by providing a list of stack IDs.
   ///
   /// Parameters:
   ///
@@ -157,7 +169,9 @@ class StacksApi {
     }
   }
 
-  /// This endpoint requires the `stack.read` permission.
+  /// Retrieve a stack
+  ///
+  /// Retrieve a specific stack by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -190,7 +204,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.read` permission.
+  /// Retrieve a stack
+  ///
+  /// Retrieve a specific stack by its ID.
   ///
   /// Parameters:
   ///
@@ -210,7 +226,9 @@ class StacksApi {
     return null;
   }
 
-  /// This endpoint requires the `stack.update` permission.
+  /// Remove an asset from a stack
+  ///
+  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -246,7 +264,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.update` permission.
+  /// Remove an asset from a stack
+  ///
+  /// Remove a specific asset from a stack by providing the stack ID and asset ID.
   ///
   /// Parameters:
   ///
@@ -260,13 +280,16 @@ class StacksApi {
     }
   }
 
-  /// This endpoint requires the `stack.read` permission.
+  /// Retrieve stacks
+  ///
+  /// Retrieve a list of stacks.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
+  ///   Filter by primary asset ID
   Future<Response> searchStacksWithHttpInfo({ String? primaryAssetId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/stacks';
@@ -296,11 +319,14 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.read` permission.
+  /// Retrieve stacks
+  ///
+  /// Retrieve a list of stacks.
   ///
   /// Parameters:
   ///
   /// * [String] primaryAssetId:
+  ///   Filter by primary asset ID
   Future<List<StackResponseDto>?> searchStacks({ String? primaryAssetId, }) async {
     final response = await searchStacksWithHttpInfo( primaryAssetId: primaryAssetId, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -319,7 +345,9 @@ class StacksApi {
     return null;
   }
 
-  /// This endpoint requires the `stack.update` permission.
+  /// Update a stack
+  ///
+  /// Update an existing stack by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -354,7 +382,9 @@ class StacksApi {
     );
   }
 
-  /// This endpoint requires the `stack.update` permission.
+  /// Update a stack
+  ///
+  /// Update an existing stack by its ID.
   ///
   /// Parameters:
   ///

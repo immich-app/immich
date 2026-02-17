@@ -1,10 +1,8 @@
-import { AppRoute } from '$lib/constants';
-import { serverConfig } from '$lib/stores/server-config.store';
+import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+import { Route } from '$lib/route';
 import { getFormatter } from '$lib/utils/i18n';
 import { init } from '$lib/utils/server';
-
 import { redirect } from '@sveltejs/kit';
-import { get } from 'svelte/store';
 import { loadUser } from '../lib/utils/auth';
 import type { PageLoad } from './$types';
 
@@ -14,20 +12,24 @@ export const csr = true;
 export const load = (async ({ fetch }) => {
   try {
     await init(fetch);
-    const authenticated = await loadUser();
-    if (authenticated) {
-      redirect(302, AppRoute.PHOTOS);
+
+    if (serverConfigManager.value.maintenanceMode) {
+      redirect(307, Route.maintenanceMode());
     }
 
-    const { isInitialized } = get(serverConfig);
-    if (isInitialized) {
+    const authenticated = await loadUser();
+    if (authenticated) {
+      redirect(307, Route.photos());
+    }
+
+    if (serverConfigManager.value.isInitialized) {
       // Redirect to login page if there exists an admin account (i.e. server is initialized)
-      redirect(302, AppRoute.AUTH_LOGIN);
+      redirect(307, Route.login());
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (redirectError: any) {
-    if (redirectError?.status === 302) {
+    if (redirectError?.status === 307) {
       throw redirectError;
     }
   }

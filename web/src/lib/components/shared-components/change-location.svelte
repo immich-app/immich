@@ -1,16 +1,15 @@
 <script lang="ts">
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import type Map from '$lib/components/shared-components/map/map.svelte';
   import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import { lastChosenLocation } from '$lib/stores/asset-editor.store';
   import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
-  import { ConfirmModal } from '@immich/ui';
+  import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -21,14 +20,14 @@
 
   interface Props {
     asset?: AssetResponseDto | undefined;
-    onCancel: () => void;
-    onConfirm: (point: Point) => void;
+    point?: Point;
+    onClose: (point?: Point) => void;
   }
 
-  let { asset = undefined, onCancel, onConfirm }: Props = $props();
+  let { asset = undefined, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
-  let suggestedPlaces: PlacesResponseDto[] = $state([]);
+  let suggestedPlaces: PlacesResponseDto[] = $derived(places.slice(0, 5));
   let searchWord: string = $state('');
   let latestSearchTimeout: number;
   let showLoadingSpinner = $state(false);
@@ -38,31 +37,34 @@
 
   let previousLocation = get(lastChosenLocation);
 
-  let assetLat = $derived(asset?.exifInfo?.latitude ?? undefined);
-  let assetLng = $derived(asset?.exifInfo?.longitude ?? undefined);
+  let assetLat = $derived(initialPoint?.lat ?? asset?.exifInfo?.latitude ?? undefined);
+  let assetLng = $derived(initialPoint?.lng ?? asset?.exifInfo?.longitude ?? undefined);
 
   let mapLat = $derived(assetLat ?? previousLocation?.lat ?? undefined);
   let mapLng = $derived(assetLng ?? previousLocation?.lng ?? undefined);
 
-  let zoom = $derived(mapLat !== undefined && mapLng !== undefined ? 12.5 : 1);
+  let zoom = $derived(mapLat && mapLng ? 12.5 : 1);
 
   $effect(() => {
-    if (places) {
-      suggestedPlaces = places.slice(0, 5);
+    if (mapElement && initialPoint) {
+      mapElement.addClipMapMarker(initialPoint.lng, initialPoint.lat);
     }
+  });
+
+  $effect(() => {
     if (searchWord === '') {
       suggestedPlaces = [];
     }
   });
 
-  let point: Point | null = $state(null);
+  let point: Point | null = $state(initialPoint ?? null);
 
-  const handleConfirm = () => {
-    if (point) {
+  const handleConfirm = (confirmed?: boolean) => {
+    if (point && confirmed) {
       lastChosenLocation.set(point);
-      onConfirm(point);
+      onClose(point);
     } else {
-      onCancel();
+      onClose();
     }
   };
 
@@ -82,6 +84,27 @@
         places = [];
         showLoadingSpinner = false;
         return;
+      }
+
+      // Try to parse coordinate pair from search input in the format `LATITUDE, LONGITUDE` as floats
+      const coordinateParts = searchWord.split(',').map((part) => part.trim());
+      if (coordinateParts.length === 2) {
+        const coordinateLat = Number.parseFloat(coordinateParts[0]);
+        const coordinateLng = Number.parseFloat(coordinateParts[1]);
+
+        if (
+          !Number.isNaN(coordinateLat) &&
+          !Number.isNaN(coordinateLng) &&
+          coordinateLat >= -90 &&
+          coordinateLat <= 90 &&
+          coordinateLng >= -180 &&
+          coordinateLng <= 180
+        ) {
+          places = [];
+          showLoadingSpinner = false;
+          handleUseSuggested(coordinateLat, coordinateLng);
+          return;
+        }
       }
 
       searchPlaces({ name: searchWord })
@@ -109,6 +132,11 @@
     point = { lng: longitude, lat: latitude };
     mapElement?.addClipMapMarker(longitude, latitude);
   };
+
+  const onUpdate = (lat: number, lng: number) => {
+    point = { lat, lng };
+    mapElement?.addClipMapMarker(lng, lat);
+  };
 </script>
 
 <ConfirmModal
@@ -116,9 +144,9 @@
   title={$t('change_location')}
   icon={mdiMapMarkerMultipleOutline}
   size="medium"
-  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
+  onClose={handleConfirm}
 >
-  {#snippet promptSnippet()}
+  {#snippet prompt()}
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96 z-1">
         {#if suggestionContainer}
@@ -162,8 +190,8 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-[500px] min-h-[300px] w-full z-0">
-        {#await import('../shared-components/map/map.svelte')}
+      <div class="h-125 min-h-75 w-full z-0">
+        {#await import('$lib/components/shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex items-center justify-center h-full w-full">
@@ -197,14 +225,7 @@
       </div>
 
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
-        <CoordinatesInput
-          lat={point ? point.lat : assetLat}
-          lng={point ? point.lng : assetLng}
-          onUpdate={(lat, lng) => {
-            point = { lat, lng };
-            mapElement?.addClipMapMarker(lng, lat);
-          }}
-        />
+        <CoordinatesInput lat={point ? point.lat : assetLat} lng={point ? point.lng : assetLng} {onUpdate} />
       </div>
     </div>
   {/snippet}

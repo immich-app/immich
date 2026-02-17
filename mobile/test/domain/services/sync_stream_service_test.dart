@@ -1,14 +1,33 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' as drift;
+import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:openapi/api.dart';
 
+import '../../api.mocks.dart';
+import '../../fixtures/asset.stub.dart';
 import '../../fixtures/sync_stream.stub.dart';
 import '../../infrastructure/repository.mock.dart';
+import '../../mocks/asset_entity.mock.dart';
+import '../../repository.mocks.dart';
+import '../../service.mocks.dart';
 
 class _AbortCallbackWrapper {
   const _AbortCallbackWrapper();
@@ -30,15 +49,48 @@ void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
-  late Function(List<SyncEvent>, Function()) handleEventsCallback;
+  late DriftLocalAssetRepository mockLocalAssetRepo;
+  late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late LocalFilesManagerRepository mockLocalFilesManagerRepo;
+  late StorageRepository mockStorageRepo;
+  late MockApiService mockApi;
+  late MockServerApi mockServerApi;
+  late MockSyncMigrationRepository mockSyncMigrationRepo;
+  late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
+  late _MockAbortCallbackWrapper mockResetCallbackWrapper;
+  late Drift db;
+  late bool hasManageMediaPermission;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    registerFallbackValue(LocalAssetStub.image1);
+
+    db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(storeRepository: DriftStoreRepository(db));
+  });
+
+  tearDownAll(() async {
+    debugDefaultTargetPlatformOverride = null;
+    await Store.clear();
+    await db.close();
+  });
 
   successHandler(Invocation _) async => true;
 
-  setUp(() {
+  setUp(() async {
     mockSyncStreamRepo = MockSyncStreamRepository();
     mockSyncApiRepo = MockSyncApiRepository();
+    mockLocalAssetRepo = MockLocalAssetRepository();
+    mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
+    mockLocalFilesManagerRepo = MockLocalFilesManagerRepository();
+    mockStorageRepo = MockStorageRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
+    mockResetCallbackWrapper = _MockAbortCallbackWrapper();
+    mockApi = MockApiService();
+    mockServerApi = MockServerApi();
+    mockSyncMigrationRepo = MockSyncMigrationRepository();
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
@@ -46,7 +98,17 @@ void main() {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
+    when(() => mockSyncApiRepo.streamChanges(any(), onReset: any(named: 'onReset'))).thenAnswer((invocation) async {
+      handleEventsCallback = invocation.positionalArguments.first;
+    });
+
     when(() => mockSyncApiRepo.ack(any())).thenAnswer((_) async => {});
+    when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
+
+    when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
+    when(() => mockServerApi.getServerVersion()).thenAnswer(
+      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0),
+    );
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);
@@ -80,13 +142,34 @@ void main() {
     when(() => mockSyncStreamRepo.deletePeopleV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
+    when(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset()).thenAnswer(successHandler);
 
-    sut = SyncStreamService(syncApiRepository: mockSyncApiRepo, syncStreamRepository: mockSyncStreamRepo);
+    sut = SyncStreamService(
+      syncApiRepository: mockSyncApiRepo,
+      syncStreamRepository: mockSyncStreamRepo,
+      localAssetRepository: mockLocalAssetRepo,
+      trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+      localFilesManager: mockLocalFilesManagerRepo,
+      storageRepository: mockStorageRepo,
+      api: mockApi,
+      syncMigrationRepository: mockSyncMigrationRepo,
+    );
+
+    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
+    when(() => mockTrashedLocalAssetRepo.trashLocalAsset(any())).thenAnswer((_) async {});
+    when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
+    when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
+    hasManageMediaPermission = false;
+    when(() => mockLocalFilesManagerRepo.hasManageMediaPermission()).thenAnswer((_) async => hasManageMediaPermission);
+    when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((_) async => true);
+    when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((_) async => []);
+    when(() => mockStorageRepo.getAssetEntityForAsset(any())).thenAnswer((_) async => null);
+    await Store.put(StoreKey.manageLocalMediaAndroid, false);
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
     await sut.sync();
-    await handleEventsCallback(events, mockAbortCallbackWrapper.call);
+    await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
   }
 
   group("SyncStreamService - _handleEvents", () {
@@ -146,7 +229,13 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        localAssetRepository: mockLocalAssetRepo,
+        trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        localFilesManager: mockLocalFilesManagerRepo,
+        storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        api: mockApi,
+        syncMigrationRepository: mockSyncMigrationRepo,
       );
       await sut.sync();
 
@@ -156,7 +245,7 @@ void main() {
         when(() => cancellationChecker()).thenReturn(true);
       });
 
-      await handleEventsCallback(events, mockAbortCallbackWrapper.call);
+      await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
 
       verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
       verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
@@ -181,14 +270,24 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        localAssetRepository: mockLocalAssetRepo,
+        trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        localFilesManager: mockLocalFilesManagerRepo,
+        storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
+        api: mockApi,
+        syncMigrationRepository: mockSyncMigrationRepo,
       );
 
       await sut.sync();
 
       final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
-      final processingFuture = handleEventsCallback(events, mockAbortCallbackWrapper.call);
+      final processingFuture = handleEventsCallback(
+        events,
+        mockAbortCallbackWrapper.call,
+        mockResetCallbackWrapper.call,
+      );
       await pumpEventQueue();
 
       expect(handler1Started, isTrue);
@@ -284,6 +383,196 @@ void main() {
 
       verify(() => mockSyncStreamRepo.updateMemoriesV1(any())).called(1);
       verify(() => mockSyncApiRepo.ack(["5"])).called(1);
+    });
+  });
+
+  group("SyncStreamService - remote trash & restore", () {
+    setUp(() async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+      hasManageMediaPermission = true;
+    });
+
+    tearDown(() async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, false);
+      hasManageMediaPermission = false;
+    });
+
+    test("moves backed up local and merged assets to device trash when remote trash events are received", () async {
+      final localAsset = LocalAssetStub.image1.copyWith(id: 'local-only', checksum: 'checksum-local', remoteId: null);
+      final mergedAsset = LocalAssetStub.image2.copyWith(
+        id: 'merged-local',
+        checksum: 'checksum-merged',
+        remoteId: 'remote-merged',
+      );
+      final assetsByAlbum = {
+        'album-a': [localAsset],
+        'album-b': [mergedAsset],
+      };
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
+        final Iterable<String> requestedChecksums = invocation.positionalArguments.first as Iterable<String>;
+        expect(requestedChecksums.toSet(), equals({'checksum-local', 'checksum-merged', 'checksum-remote-only'}));
+        return assetsByAlbum;
+      });
+
+      final localEntity = MockAssetEntity();
+      when(() => localEntity.getMediaUrl()).thenAnswer((_) async => 'content://local-only');
+      when(() => mockStorageRepo.getAssetEntityForAsset(localAsset)).thenAnswer((_) async => localEntity);
+
+      final mergedEntity = MockAssetEntity();
+      when(() => mergedEntity.getMediaUrl()).thenAnswer((_) async => 'content://merged-local');
+      when(() => mockStorageRepo.getAssetEntityForAsset(mergedAsset)).thenAnswer((_) async => mergedEntity);
+
+      when(() => mockLocalFilesManagerRepo.moveToTrash(any())).thenAnswer((invocation) async {
+        final urls = invocation.positionalArguments.first as List<String>;
+        expect(urls, unorderedEquals(['content://local-only', 'content://merged-local']));
+        return true;
+      });
+
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-1',
+          checksum: localAsset.checksum!,
+          ack: 'asset-remote-local-1',
+          trashedAt: DateTime(2025, 5, 1),
+        ),
+        SyncStreamStub.assetTrashed(
+          id: 'remote-2',
+          checksum: mergedAsset.checksum!,
+          ack: 'asset-remote-merged-2',
+          trashedAt: DateTime(2025, 5, 2),
+        ),
+        SyncStreamStub.assetTrashed(
+          id: 'remote-3',
+          checksum: 'checksum-remote-only',
+          ack: 'asset-remote-only-3',
+          trashedAt: DateTime(2025, 5, 3),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashedLocalAssetRepo.trashLocalAsset(assetsByAlbum)).called(1);
+      verify(() => mockSyncApiRepo.ack(['asset-remote-only-3'])).called(1);
+    });
+
+    test("skips device trashing when no local assets match the remote trash payload", () async {
+      final events = [
+        SyncStreamStub.assetTrashed(
+          id: 'remote-only',
+          checksum: 'checksum-only',
+          ack: 'asset-remote-only-9',
+          trashedAt: DateTime(2025, 6, 1),
+        ),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).called(1);
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verifyNever(() => mockTrashedLocalAssetRepo.trashLocalAsset(any()));
+    });
+
+    test("does not request local deletions for permanent remote delete events", () async {
+      final events = [SyncStreamStub.assetDeleteV1];
+
+      await simulateEvents(events);
+
+      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any()));
+      verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
+      verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
+    });
+
+    test("restores trashed local assets once the matching remote assets leave the trash", () async {
+      final trashedAssets = [
+        LocalAssetStub.image1.copyWith(id: 'trashed-1', checksum: 'checksum-trash', remoteId: 'remote-1'),
+      ];
+      when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => trashedAssets);
+
+      final restoredIds = ['trashed-1'];
+      when(() => mockLocalFilesManagerRepo.restoreAssetsFromTrash(any())).thenAnswer((invocation) async {
+        final Iterable<LocalAsset> requestedAssets = invocation.positionalArguments.first as Iterable<LocalAsset>;
+        expect(requestedAssets, orderedEquals(trashedAssets));
+        return restoredIds;
+      });
+
+      final events = [
+        SyncStreamStub.assetModified(id: 'remote-1', checksum: 'checksum-trash', ack: 'asset-remote-1-11'),
+      ];
+
+      await simulateEvents(events);
+
+      verify(() => mockTrashedLocalAssetRepo.applyRestoredAssets(restoredIds)).called(1);
+    });
+  });
+
+  group('SyncStreamService - Sync Migration', () {
+    test('ensure that <2.5.0 migrations run', () async {
+      await Store.put(StoreKey.syncMigrationStatus, "[]");
+      when(
+        () => mockServerApi.getServerVersion(),
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1));
+
+      await sut.sync();
+
+      verifyInOrder([
+        () => mockSyncApiRepo.deleteSyncAck([
+          SyncEntityType.assetExifV1,
+          SyncEntityType.partnerAssetExifV1,
+          SyncEntityType.albumAssetExifCreateV1,
+          SyncEntityType.albumAssetExifUpdateV1,
+        ]),
+        () => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset(),
+      ]);
+
+      // should only run on server >2.5.0
+      verifyNever(
+        () => mockSyncApiRepo.deleteSyncAck([
+          SyncEntityType.assetV1,
+          SyncEntityType.partnerAssetV1,
+          SyncEntityType.albumAssetCreateV1,
+          SyncEntityType.albumAssetUpdateV1,
+        ]),
+      );
+    });
+    test('ensure that >=2.5.0 migrations run', () async {
+      await Store.put(StoreKey.syncMigrationStatus, "[]");
+      when(
+        () => mockServerApi.getServerVersion(),
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 5, patch_: 0));
+      await sut.sync();
+
+      verifyInOrder([
+        () => mockSyncApiRepo.deleteSyncAck([
+          SyncEntityType.assetExifV1,
+          SyncEntityType.partnerAssetExifV1,
+          SyncEntityType.albumAssetExifCreateV1,
+          SyncEntityType.albumAssetExifUpdateV1,
+        ]),
+        () => mockSyncApiRepo.deleteSyncAck([
+          SyncEntityType.assetV1,
+          SyncEntityType.partnerAssetV1,
+          SyncEntityType.albumAssetCreateV1,
+          SyncEntityType.albumAssetUpdateV1,
+        ]),
+      ]);
+
+      // v20260128_ResetAssetV1 writes that v20260128_CopyExifWidthHeightToAsset has been completed
+      verifyNever(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset());
+    });
+
+    test('ensure that migrations do not re-run', () async {
+      await Store.put(
+        StoreKey.syncMigrationStatus,
+        '["${SyncMigrationTask.v20260128_CopyExifWidthHeightToAsset.name}"]',
+      );
+
+      when(
+        () => mockServerApi.getServerVersion(),
+      ).thenAnswer((_) async => ServerVersionResponseDto(major: 2, minor: 4, patch_: 1));
+
+      await sut.sync();
+
+      verifyNever(() => mockSyncMigrationRepo.v20260128CopyExifWidthHeightToAsset());
     });
   });
 }

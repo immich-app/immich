@@ -1,20 +1,29 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
+  import OnboardingMobileApp from '$lib/components/onboarding-page/onboarding-mobile-app.svelte';
   import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
-  import { AppRoute, QueryParameter } from '$lib/constants';
-  import { OnboardingRole } from '$lib/models/onboarding-role';
-  import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
+  import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
+  import { Route } from '$lib/route';
   import { user } from '$lib/stores/user.store';
+  import { OnboardingRole } from '$lib/types';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
-  import { mdiCloudCheckOutline, mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
+  import {
+    mdiCellphoneArrowDownVariant,
+    mdiCloudCheckOutline,
+    mdiHarddisk,
+    mdiIncognito,
+    mdiThemeLightDark,
+    mdiTranslate,
+  } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -26,6 +35,7 @@
       | typeof OnboardingStorageTemplate
       | typeof OnboardingServerPrivacy
       | typeof OnboardingUserPrivacy
+      | typeof OnboardingMobileApp
       | typeof OnboardingLocale;
     role: OnboardingRole;
     title?: string;
@@ -76,10 +86,23 @@
       title: $t('admin.backup_onboarding_title'),
       icon: mdiCloudCheckOutline,
     },
+    {
+      name: 'mobile_app',
+      component: OnboardingMobileApp,
+      role: OnboardingRole.USER,
+      title: $t('mobile_app'),
+      icon: mdiCellphoneArrowDownVariant,
+    },
   ]);
 
-  let index = $state(0);
-  let userRole = $derived($user.isAdmin && !$serverConfig.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER);
+  const index = $derived.by(() => {
+    const stepState = page.url.searchParams.get('step');
+    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
+    return temporaryIndex === -1 ? 0 : temporaryIndex;
+  });
+  let userRole = $derived(
+    $user.isAdmin && !serverConfigManager.value.isOnboarded ? OnboardingRole.SERVER : OnboardingRole.USER,
+  );
 
   let onboardingStepCount = $derived(onboardingSteps.filter((step) => shouldRunStep(step.role, userRole)).length);
   let onboardingProgress = $derived(
@@ -89,15 +112,11 @@
   const shouldRunStep = (stepRole: OnboardingRole, userRole: OnboardingRole) => {
     return (
       stepRole === OnboardingRole.USER ||
-      (stepRole === OnboardingRole.SERVER && userRole === OnboardingRole.SERVER && !$serverConfig.isOnboarded)
+      (stepRole === OnboardingRole.SERVER &&
+        userRole === OnboardingRole.SERVER &&
+        !serverConfigManager.value.isOnboarded)
     );
   };
-
-  $effect(() => {
-    const stepState = $page.url.searchParams.get('step');
-    const temporaryIndex = onboardingSteps.findIndex((step) => step.name === stepState);
-    index = temporaryIndex === -1 ? 0 : temporaryIndex;
-  });
 
   const previousStepIndex = $derived(
     onboardingSteps.findLastIndex((step, i) => shouldRunStep(step.role, userRole) && i < index),
@@ -111,18 +130,16 @@
     if (nextStepIndex == -1) {
       if ($user.isAdmin) {
         await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
-        await retrieveServerConfig();
+        await serverConfigManager.loadServerConfig();
       }
 
       await setUserOnboarding({
         onboardingDto: { isOnboarded: true },
       });
 
-      await goto(AppRoute.PHOTOS);
+      await goto(Route.photos());
     } else {
-      await goto(
-        `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[nextStepIndex].name}`,
-      );
+      await goto(Route.onboarding({ step: onboardingSteps[nextStepIndex].name }));
     }
   };
 
@@ -131,16 +148,16 @@
       return;
     }
 
-    await goto(
-      `${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[previousStepIndex].name}`,
-    );
+    await goto(Route.onboarding({ step: onboardingSteps[previousStepIndex].name }));
   };
 
-  onMount(async () => {
-    await retrieveSystemConfig();
-  });
-
   const OnboardingStep = $derived(onboardingSteps[index].component);
+
+  onMount(async () => {
+    if (userRole === OnboardingRole.SERVER) {
+      await systemConfigManager.init();
+    }
+  });
 </script>
 
 <section id="onboarding-page" class="min-w-dvw flex min-h-dvh p-4">
@@ -151,7 +168,7 @@
         style="width: {(onboardingProgress / onboardingStepCount) * 100}%"
       ></div>
     </div>
-    <div class="py-8 flex place-content-center place-items-center m-auto">
+    <div class="py-8 flex place-content-center place-items-center m-auto w-[min(100%,800px)]">
       <OnboardingCard
         title={onboardingSteps[index].title}
         icon={onboardingSteps[index].icon}

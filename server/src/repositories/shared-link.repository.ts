@@ -12,6 +12,7 @@ import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 
 export type SharedLinkSearchOptions = {
   userId: string;
+  id?: string;
   albumId?: string;
 };
 
@@ -28,8 +29,8 @@ export class SharedLinkRepository {
         (eb) =>
           eb
             .selectFrom('shared_link_asset')
-            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinksId')
-            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetsId')
+            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
             .where('asset.deletedAt', 'is', null)
             .selectAll('asset')
             .innerJoinLateral(
@@ -53,13 +54,13 @@ export class SharedLinkRepository {
             .selectAll('album')
             .whereRef('album.id', '=', 'shared_link.albumId')
             .where('album.deletedAt', 'is', null)
-            .leftJoin('album_asset', 'album_asset.albumsId', 'album.id')
+            .leftJoin('album_asset', 'album_asset.albumId', 'album.id')
             .leftJoinLateral(
               (eb) =>
                 eb
                   .selectFrom('asset')
                   .selectAll('asset')
-                  .whereRef('album_asset.assetsId', '=', 'asset.id')
+                  .whereRef('album_asset.assetId', '=', 'asset.id')
                   .where('asset.deletedAt', 'is', null)
                   .innerJoinLateral(
                     (eb) =>
@@ -86,7 +87,16 @@ export class SharedLinkRepository {
               (join) => join.onTrue(),
             )
             .select((eb) =>
-              eb.fn.coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`).as('assets'),
+              eb.fn
+                .coalesce(
+                  eb.fn
+                    .jsonAgg('assets')
+                    .orderBy('assets.fileCreatedAt', 'asc')
+                    .filterWhere('assets.id', 'is not', null),
+
+                  sql`'[]'`,
+                )
+                .as('assets'),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
             .groupBy(['album.id', sql`"owner".*`])
@@ -109,18 +119,18 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
-  getAll({ userId, albumId }: SharedLinkSearchOptions) {
+  getAll({ userId, id, albumId }: SharedLinkSearchOptions) {
     return this.db
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .where('shared_link.userId', '=', userId)
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinksId', 'shared_link.id')
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
       .leftJoinLateral(
         (eb) =>
           eb
             .selectFrom('asset')
             .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-            .whereRef('asset.id', '=', 'shared_link_asset.assetsId')
+            .whereRef('asset.id', '=', 'shared_link_asset.assetId')
             .where('asset.deletedAt', 'is', null)
             .as('assets'),
         (join) => join.onTrue(),
@@ -167,6 +177,7 @@ export class SharedLinkRepository {
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
+      .$if(!!id, (eb) => eb.where('shared_link.id', '=', id!))
       .orderBy('shared_link.createdAt', 'desc')
       .distinctOn(['shared_link.createdAt'])
       .execute();
@@ -206,7 +217,7 @@ export class SharedLinkRepository {
     if (entity.assetIds && entity.assetIds.length > 0) {
       await this.db
         .insertInto('shared_link_asset')
-        .values(entity.assetIds!.map((assetsId) => ({ assetsId, sharedLinksId: id })))
+        .values(entity.assetIds!.map((assetId) => ({ assetId, sharedLinkId: id })))
         .execute();
     }
 
@@ -224,7 +235,7 @@ export class SharedLinkRepository {
     if (entity.assetIds && entity.assetIds.length > 0) {
       await this.db
         .insertInto('shared_link_asset')
-        .values(entity.assetIds!.map((assetsId) => ({ assetsId, sharedLinksId: id })))
+        .values(entity.assetIds!.map((assetId) => ({ assetId, sharedLinkId: id })))
         .execute();
     }
 
@@ -240,16 +251,16 @@ export class SharedLinkRepository {
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .where('shared_link.id', '=', id)
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinksId', 'shared_link.id')
+      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
       .leftJoinLateral(
         (eb) =>
           eb
             .selectFrom('asset')
-            .whereRef('asset.id', '=', 'shared_link_asset.assetsId')
+            .whereRef('asset.id', '=', 'shared_link_asset.assetId')
             .selectAll('asset')
             .innerJoinLateral(
               (eb) =>
-                eb.selectFrom('asset_exif').whereRef('asset_exif.assetId', '=', 'asset.id').selectAll().as('exif'),
+                eb.selectFrom('asset_exif').whereRef('asset_exif.assetId', '=', 'asset.id').selectAll().as('exifInfo'),
               (join) => join.onTrue(),
             )
             .as('assets'),

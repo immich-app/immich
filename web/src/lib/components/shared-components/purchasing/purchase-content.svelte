@@ -1,9 +1,8 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
-  import { Button, Heading } from '@immich/ui';
+  import { Button, Heading, LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './individual-purchase-option-card.svelte';
   import ServerPurchaseOptionCard from './server-purchase-option-card.svelte';
@@ -27,7 +26,7 @@
       await activateProduct(productKey, activationKey);
 
       onActivate();
-      purchaseStore.setPurchaseStatus(true);
+      authManager.isPurchased = true;
     } catch (error) {
       handleError(error, $t('purchase_failed_activation'));
     } finally {

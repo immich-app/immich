@@ -43,6 +43,7 @@ select
               "asset_exif"."projectionType",
               "asset_exif"."rating",
               "asset_exif"."state",
+              "asset_exif"."tags",
               "asset_exif"."timeZone"
             from
               "asset_exif"
@@ -89,9 +90,9 @@ select
                   "tag"."parentId"
                 from
                   "tag"
-                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagsId"
+                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
                 where
-                  "tag_asset"."assetsId" = "asset"."id"
+                  "tag_asset"."assetId" = "asset"."id"
               ) as agg
           ) as "tags",
           to_json("exifInfo") as "exifInfo"
@@ -127,6 +128,7 @@ select
               "asset_exif"."projectionType",
               "asset_exif"."rating",
               "asset_exif"."state",
+              "asset_exif"."tags",
               "asset_exif"."timeZone"
             from
               "asset_exif"
@@ -153,3 +155,10 @@ from
   left join "stack" on "stack"."id" = "asset"."stackId"
 where
   "asset"."id" = $1
+
+-- StackRepository.merge
+update "asset"
+set
+  "stackId" = $1
+where
+  "asset"."stackId" = $2

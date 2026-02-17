@@ -9,7 +9,10 @@ import 'package:flutter/painting.dart';
 
 /// An ImageStreamCompleter with support for loading multiple images.
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
-  ImageInfo? _initialImage;
+  void Function()? _onLastListenerRemoved;
+  int _listenerCount = 0;
+  // True once setImage() has been called at least once.
+  bool didProvideImage = false;
 
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
@@ -19,10 +22,18 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     Stream<ImageInfo> images, {
     ImageInfo? initialImage,
     InformationCollector? informationCollector,
+    void Function()? onLastListenerRemoved,
   }) {
-    _initialImage = initialImage;
+    if (initialImage != null) {
+      didProvideImage = true;
+      setImage(initialImage);
+    }
+    _onLastListenerRemoved = onLastListenerRemoved;
     images.listen(
-      _onImage,
+      (image) {
+        didProvideImage = true;
+        setImage(image);
+      },
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -35,33 +46,25 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     );
   }
 
-  void _onImage(ImageInfo image) {
-    setImage(image);
-    _initialImage?.dispose();
-    _initialImage = null;
-  }
-
   @override
   void addListener(ImageStreamListener listener) {
-    final initialImage = _initialImage;
-    if (initialImage != null) {
-      try {
-        listener.onImage(initialImage.clone(), true);
-      } catch (exception, stack) {
-        reportError(
-          context: ErrorDescription('by a synchronously-called image listener'),
-          exception: exception,
-          stack: stack,
-        );
-      }
-    }
     super.addListener(listener);
+    _listenerCount = _listenerCount + 1;
   }
 
   @override
-  void onDisposed() {
-    _initialImage?.dispose();
-    _initialImage = null;
-    super.onDisposed();
+  void removeListener(ImageStreamListener listener) {
+    super.removeListener(listener);
+    _listenerCount = _listenerCount - 1;
+
+    final bool onlyCacheListenerLeft = _listenerCount == 1 && !didProvideImage;
+    final bool noListenersAfterImage = _listenerCount == 0 && didProvideImage;
+
+    final onLastListenerRemoved = _onLastListenerRemoved;
+
+    if (onLastListenerRemoved != null && (noListenersAfterImage || onlyCacheListenerLeft)) {
+      _onLastListenerRemoved = null;
+      onLastListenerRemoved();
+    }
   }
 }

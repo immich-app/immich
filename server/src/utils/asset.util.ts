@@ -1,26 +1,32 @@
 import { BadRequestException } from '@nestjs/common';
-import { GeneratedImageType, StorageCore } from 'src/cores/storage.core';
-import { AssetFile } from 'src/database';
+import { StorageCore } from 'src/cores/storage.core';
+import { AssetFile, Exif } from 'src/database';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { AssetFileType, AssetType, AssetVisibility, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
-import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
+import { IBulkAsset, ImmichFile, UploadFile, UploadRequest } from 'src/types';
 import { checkAccess } from 'src/utils/access';
 
-export const getAssetFile = (files: AssetFile[], type: AssetFileType | GeneratedImageType) => {
-  return files.find((file) => file.type === type);
+export const getAssetFile = (files: AssetFile[], type: AssetFileType, { isEdited }: { isEdited: boolean }) => {
+  return files.find((file) => file.type === type && file.isEdited === isEdited);
 };
 
 export const getAssetFiles = (files: AssetFile[]) => ({
-  fullsizeFile: getAssetFile(files, AssetFileType.FullSize),
-  previewFile: getAssetFile(files, AssetFileType.Preview),
-  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail),
+  fullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: false }),
+  previewFile: getAssetFile(files, AssetFileType.Preview, { isEdited: false }),
+  thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, { isEdited: false }),
+  sidecarFile: getAssetFile(files, AssetFileType.Sidecar, { isEdited: false }),
+
+  editedFullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: true }),
+  editedPreviewFile: getAssetFile(files, AssetFileType.Preview, { isEdited: true }),
+  editedThumbnailFile: getAssetFile(files, AssetFileType.Preview, { isEdited: true }),
 });
 
 export const addAssets = async (
@@ -190,10 +196,34 @@ export function mapToUploadFile(file: ImmichFile): UploadFile {
   };
 }
 
-export const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
+export const asUploadRequest = (request: AuthRequest, file: Express.Multer.File): UploadRequest => {
   return {
     auth: request.user || null,
+    body: request.body,
     fieldName: file.fieldname as UploadFieldName,
     file: mapToUploadFile(file as ImmichFile),
   };
+};
+
+const isFlipped = (orientation?: string | null) => {
+  const value = Number(orientation);
+  return value && [5, 6, 7, 8, -90, 90].includes(value);
+};
+
+export const getDimensions = (exifInfo: ExifResponseDto | Exif) => {
+  const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+
+  if (!width || !height) {
+    return { width: 0, height: 0 };
+  }
+
+  if (isFlipped(exifInfo.orientation)) {
+    return { width: height, height: width };
+  }
+
+  return { width, height };
+};
+
+export const isPanorama = (asset: { exifInfo?: Exif | null; originalFileName: string }) => {
+  return asset.exifInfo?.projectionType === 'EQUIRECTANGULAR' || asset.originalFileName.toLowerCase().endsWith('.insp');
 };

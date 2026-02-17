@@ -1,13 +1,13 @@
 # External Library
 
-This guide walks you through adding an [External Library](/docs/features/libraries).
+This guide walks you through adding an [External Library](/features/libraries).
 This guide assumes you are running Immich in Docker and that the files you wish to access are stored
 in a directory on the same machine.
 
 # Mount the directory into the containers.
 
 Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
-If you want Immich to be able to delete the images in the external library or add metadata ([XMP sidecars](/docs/features/xmp-sidecars)), remove `:ro` from the end of the mount point.
+If you want Immich to be able to delete the images in the external library or add metadata ([XMP sidecars](/features/xmp-sidecars)), remove `:ro` from the end of the mount point.
 
 ```diff
 immich-server:
@@ -21,31 +21,26 @@ Restart Immich by running `docker compose up -d`.
 
 # Create the library
 
+:::info
+External library management requires administrator access and the steps below assume you are using an admin account.
+:::
+
 In the Immich web UI:
 
 - click the **Administration** link in the upper right corner.
   <img src={require('./img/administration-link.webp').default} width="50%" title="Administration link" />
 
-- Select the **External Libraries** tab
-  <img src={require('./img/external-libraries.webp').default} width="50%" title="External Libraries tab" />
-
-- Click the **Create Library** button
-  <img src={require('./img/create-external-library.webp').default} width="50%" title="Create Library button" />
+- Select the **External Libraries** tab and click the **Create Library** button
+  <img src={require('./img/create-external-library.webp').default} width="80%" title="Create Library button" />
 
 - In the dialog, select which user should own the new library
-  <img src={require('./img/library-owner.webp').default} width="50%" title="Library owner diaglog" />
+  <img src={require('./img/library-owner.webp').default} width="50%" title="Library owner dialog" />
 
-- Click the three-dots menu and select **Edit Import Paths**
-  <img src={require('./img/edit-import-paths.webp').default} width="50%" title="Edit Import Paths menu option" />
+- You are now entering the library management page.
+  <img src={require('./img/library-management-page.webp').default} width="80%" title="Library management page" />
 
-- Click Add path
-  <img src={require('./img/add-path-button.webp').default} width="50%" title="Add Path button" />
-
-- Enter **/home/user/photos1** as the path and click Add
-  <img src={require('./img/add-path-field.webp').default} width="50%" title="Add Path field" />
-
-- Save the new path
-  <img src={require('./img/path-save.webp').default} width="50%" title="Path Save button" />
+- Click `Add` in the Folder section to specify a path for scanning and enter **/home/user/photos1** as the path and click Add
+  <img src={require('./img/edit-import-path.webp').default} width="50%" title="Add an import path" />
 
 - Click the three-dots menu and select **Scan New Library Files**
   <img src={require('./img/scan-new-library-files.webp').default} width="50%" title="Scan New Library Files menu option" />
@@ -60,4 +55,3 @@ In the Immich web UI:
 
 - You should see non-zero Active jobs for
   Library, Generate Thumbnails, and Extract Metadata.
-  <img src={require('./img/job-status.webp').default} width="50%" title="Job Status display" />

@@ -13,16 +13,11 @@ part of openapi.api;
 class AlbumsAddAssetsResponseDto {
   /// Returns a new [AlbumsAddAssetsResponseDto] instance.
   AlbumsAddAssetsResponseDto({
-    required this.albumSuccessCount,
-    required this.assetSuccessCount,
     this.error,
     required this.success,
   });
 
-  int albumSuccessCount;
-
-  int assetSuccessCount;
-
+  /// Error reason
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -31,30 +26,25 @@ class AlbumsAddAssetsResponseDto {
   ///
   BulkIdErrorReason? error;
 
+  /// Operation success
   bool success;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AlbumsAddAssetsResponseDto &&
-    other.albumSuccessCount == albumSuccessCount &&
-    other.assetSuccessCount == assetSuccessCount &&
     other.error == error &&
     other.success == success;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (albumSuccessCount.hashCode) +
-    (assetSuccessCount.hashCode) +
     (error == null ? 0 : error!.hashCode) +
     (success.hashCode);
 
   @override
-  String toString() => 'AlbumsAddAssetsResponseDto[albumSuccessCount=$albumSuccessCount, assetSuccessCount=$assetSuccessCount, error=$error, success=$success]';
+  String toString() => 'AlbumsAddAssetsResponseDto[error=$error, success=$success]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'albumSuccessCount'] = this.albumSuccessCount;
-      json[r'assetSuccessCount'] = this.assetSuccessCount;
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
@@ -73,8 +63,6 @@ class AlbumsAddAssetsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AlbumsAddAssetsResponseDto(
-        albumSuccessCount: mapValueOfType<int>(json, r'albumSuccessCount')!,
-        assetSuccessCount: mapValueOfType<int>(json, r'assetSuccessCount')!,
         error: BulkIdErrorReason.fromJson(json[r'error']),
         success: mapValueOfType<bool>(json, r'success')!,
       );
@@ -124,8 +112,6 @@ class AlbumsAddAssetsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'albumSuccessCount',
-    'assetSuccessCount',
     'success',
   };
 }

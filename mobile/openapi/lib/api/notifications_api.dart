@@ -16,7 +16,9 @@ class NotificationsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `notification.delete` permission.
+  /// Delete a notification
+  ///
+  /// Delete a specific notification.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +51,9 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.delete` permission.
+  /// Delete a notification
+  ///
+  /// Delete a specific notification.
   ///
   /// Parameters:
   ///
@@ -61,7 +65,9 @@ class NotificationsApi {
     }
   }
 
-  /// This endpoint requires the `notification.delete` permission.
+  /// Delete notifications
+  ///
+  /// Delete a list of notifications at once.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -93,7 +99,9 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.delete` permission.
+  /// Delete notifications
+  ///
+  /// Delete a list of notifications at once.
   ///
   /// Parameters:
   ///
@@ -105,7 +113,9 @@ class NotificationsApi {
     }
   }
 
-  /// This endpoint requires the `notification.read` permission.
+  /// Get a notification
+  ///
+  /// Retrieve a specific notification identified by id.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -138,7 +148,9 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.read` permission.
+  /// Get a notification
+  ///
+  /// Retrieve a specific notification identified by id.
   ///
   /// Parameters:
   ///
@@ -158,19 +170,25 @@ class NotificationsApi {
     return null;
   }
 
-  /// This endpoint requires the `notification.read` permission.
+  /// Retrieve notifications
+  ///
+  /// Retrieve a list of notifications.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] id:
+  ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
+  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
+  ///   Filter by notification type
   ///
   /// * [bool] unread:
+  ///   Filter by unread status
   Future<Response> getNotificationsWithHttpInfo({ String? id, NotificationLevel? level, NotificationType? type, bool? unread, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/notifications';
@@ -209,17 +227,23 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.read` permission.
+  /// Retrieve notifications
+  ///
+  /// Retrieve a list of notifications.
   ///
   /// Parameters:
   ///
   /// * [String] id:
+  ///   Filter by notification ID
   ///
   /// * [NotificationLevel] level:
+  ///   Filter by notification level
   ///
   /// * [NotificationType] type:
+  ///   Filter by notification type
   ///
   /// * [bool] unread:
+  ///   Filter by unread status
   Future<List<NotificationDto>?> getNotifications({ String? id, NotificationLevel? level, NotificationType? type, bool? unread, }) async {
     final response = await getNotificationsWithHttpInfo( id: id, level: level, type: type, unread: unread, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -238,7 +262,9 @@ class NotificationsApi {
     return null;
   }
 
-  /// This endpoint requires the `notification.update` permission.
+  /// Update a notification
+  ///
+  /// Update a specific notification to set its read status.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -273,7 +299,9 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.update` permission.
+  /// Update a notification
+  ///
+  /// Update a specific notification to set its read status.
   ///
   /// Parameters:
   ///
@@ -295,7 +323,9 @@ class NotificationsApi {
     return null;
   }
 
-  /// This endpoint requires the `notification.update` permission.
+  /// Update notifications
+  ///
+  /// Update a list of notifications. Allows to bulk-set the read status of notifications.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -327,7 +357,9 @@ class NotificationsApi {
     );
   }
 
-  /// This endpoint requires the `notification.update` permission.
+  /// Update notifications
+  ///
+  /// Update a list of notifications. Allows to bulk-set the read status of notifications.
   ///
   /// Parameters:
   ///

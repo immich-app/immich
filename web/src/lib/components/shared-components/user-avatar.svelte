@@ -93,14 +93,14 @@
   {/if}
   {#if showFallback}
     <span
-      class="flex h-full w-full select-none items-center justify-center font-medium"
+      class="uppercase flex h-full w-full select-none items-center justify-center font-medium"
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}
       class:text-2xl={size === 'xxl'}
       class:text-3xl={size === 'xxxl'}
     >
-      {(user.name[0] || '').toUpperCase()}
+      {user.name[0] || ''}
     </span>
   {/if}
 </figure>

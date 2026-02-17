@@ -1,23 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { Asset, columns } from 'src/database';
+import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
-import { StorageAsset } from 'src/types';
 import {
   anyUuid,
   asUuid,
   toJson,
   withDefaultVisibility,
+  withEdits,
   withExif,
   withExifInner,
   withFaces,
-  withFacesAndPeople,
+  withFilePath,
   withFiles,
 } from 'src/utils/database';
+import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
 export class AssetJobRepository {
@@ -39,41 +40,63 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select((eb) => [
-        'id',
-        'sidecarPath',
-        'originalPath',
-        jsonArrayFrom(
-          eb
-            .selectFrom('tag')
-            .select(['tag.value'])
-            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-            .whereRef('asset.id', '=', 'tag_asset.assetsId'),
-        ).as('tags'),
-      ])
+      .select(['id', 'originalPath'])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [false], stream: true })
-  streamForThumbnailJob(force: boolean) {
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForSidecarCheckJob(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.thumbhash'])
-      .select(withFiles)
+      .where('asset.id', '=', asUuid(id))
+      .select(['id', 'originalPath'])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [{ force: false, fullsizeEnabled: true }], stream: true })
+  streamForThumbnailJob(options: { force: boolean | undefined; fullsizeEnabled: boolean }) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.isEdited'])
       .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .$if(!force, (qb) =>
+      .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden))
+      .$if(!options.force, (qb) =>
         qb
           // If there aren't any entries, metadata extraction hasn't run yet which is required for thumbnails
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-          .where((eb) =>
-            eb.or([
-              eb('asset_job_status.previewAt', 'is', null),
-              eb('asset_job_status.thumbnailAt', 'is', null),
+          .where(({ and, eb, exists, not, or, selectFrom }) => {
+            const file = (type: AssetFileType) =>
+              selectFrom('asset_file').whereRef('assetId', '=', 'asset.id').where('type', '=', sql.lit(type));
+
+            const conditions = [
+              not(exists(file(AssetFileType.Thumbnail))),
+              not(exists(file(AssetFileType.Preview))),
+              and([
+                eb('asset.isEdited', '=', sql.lit(true)),
+                not(exists(file(AssetFileType.FullSize).where('asset_file.isEdited', '=', sql.lit(true)))),
+              ]),
               eb('asset.thumbhash', 'is', null),
-            ]),
-          ),
+            ];
+
+            if (options.fullsizeEnabled) {
+              const isWebUnsupported = sql.join(
+                Object.keys(mimeTypes.webUnsupportedImage).map((ext) => sql.lit(`%${ext}`)),
+              );
+              conditions.push(
+                and([
+                  not(exists(file(AssetFileType.FullSize))),
+                  eb(sql`f_unaccent(asset."originalFileName")`, 'like', sql`any(array[${isWebUnsupported}]::text[])`),
+                ]),
+              );
+            }
+
+            return or(conditions);
+          }),
       )
       .stream();
   }
@@ -101,7 +124,16 @@ export class AssetJobRepository {
         'asset.thumbhash',
         'asset.type',
       ])
-      .select(withFiles)
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_file')
+            .select(columns.assetFilesForThumbnail)
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', 'in', [AssetFileType.Thumbnail, AssetFileType.Preview, AssetFileType.FullSize]),
+        ).as('files'),
+      )
+      .select(withEdits)
       .$call(withExifInner)
       .where('asset.id', '=', id)
       .executeTakeFirst();
@@ -113,8 +145,19 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(columns.asset)
       .select(withFaces)
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLockedPropertiesForMetadataExtraction(assetId: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.lockedProperties')
+      .where('asset_exif.assetId', '=', assetId)
+      .executeTakeFirst()
+      .then((row) => row?.lockedProperties ?? []);
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Thumbnail] })
@@ -133,7 +176,14 @@ export class AssetJobRepository {
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.deletedAt', 'is', null)
       .innerJoin('asset_job_status as job_status', 'assetId', 'asset.id')
-      .where('job_status.previewAt', 'is not', null);
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
   }
 
   @GenerateSql({ params: [], stream: true })
@@ -178,8 +228,17 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id', 'asset.visibility'])
       .$call(withExifInner)
-      .select((eb) => withFaces(eb, true))
+      .select((eb) => withFaces(eb, true, true))
       .select((eb) => withFiles(eb, AssetFileType.Preview))
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForOcr(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) => ['asset.visibility', withFilePath(eb, AssetFileType.Preview).as('previewFile')])
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -210,28 +269,34 @@ export class AssetJobRepository {
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.sidecarPath',
         'asset.encodedVideoPath',
         'asset.originalPath',
+        'asset.isOffline',
       ])
       .$call(withExif)
-      .select(withFacesAndPeople)
       .select(withFiles)
-      .leftJoin('stack', 'stack.id', 'asset.stackId')
       .leftJoinLateral(
         (eb) =>
           eb
-            .selectFrom('asset as stacked')
-            .select(['stack.id', 'stack.primaryAssetId'])
-            .select((eb) => eb.fn<Asset[]>('array_agg', [eb.table('stacked')]).as('assets'))
-            .where('stacked.deletedAt', 'is not', null)
-            .where('stacked.visibility', '=', AssetVisibility.Timeline)
-            .whereRef('stacked.stackId', '=', 'stack.id')
-            .groupBy('stack.id')
-            .as('stacked_assets'),
-        (join) => join.on('stack.id', 'is not', null),
+            .selectFrom('stack')
+            .whereRef('stack.id', '=', 'asset.stackId')
+            .select((eb) => [
+              'stack.id',
+              'stack.primaryAssetId',
+              jsonArrayFrom(
+                eb
+                  .selectFrom('asset as stack_asset')
+                  .select(['stack_asset.id'])
+                  .whereRef('stack_asset.stackId', '=', 'stack.id')
+                  .whereRef('stack_asset.id', '!=', 'stack.primaryAssetId')
+                  .where('stack_asset.visibility', '=', sql.val(AssetVisibility.Timeline))
+                  .where('stack_asset.status', '!=', sql.val(AssetStatus.Deleted)),
+              ).as('assets'),
+            ])
+            .as('stack_result'),
+        (join) => join.onTrue(),
       )
-      .select((eb) => toJson(eb, 'stacked_assets').as('stack'))
+      .select((eb) => toJson(eb, 'stack_result').as('stack'))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -288,26 +353,27 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
-        'asset.sidecarPath',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
+        'asset_exif.make',
+        'asset_exif.model',
+        'asset_exif.lensModel',
       ])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.deletedAt', 'is', null);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateJob(id: string): Promise<StorageAsset | undefined> {
-    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst() as Promise<
-      StorageAsset | undefined
-    >;
+  getForStorageTemplateJob(id: string) {
+    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
+    return this.storageTemplateAssetQuery().stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
@@ -325,18 +391,42 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id'])
       .$if(!force, (qb) =>
-        qb.where((eb) => eb.or([eb('asset.sidecarPath', '=', ''), eb('asset.sidecarPath', 'is', null)])),
+        qb.where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset_file')
+                .select('asset_file.id')
+                .whereRef('asset_file.assetId', '=', 'asset.id')
+                .where('asset_file.type', '=', AssetFileType.Sidecar),
+            ),
+          ),
+        ),
       )
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForDetectFacesJob(force?: boolean) {
     return this.assetsWithPreviews()
-      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
-      .orderBy('asset.createdAt', 'desc')
+      .orderBy('asset.fileCreatedAt', 'desc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForOcrJob(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .where('asset_job_status.ocrAt', 'is', null),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 

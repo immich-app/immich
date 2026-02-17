@@ -1,24 +1,27 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
+  import {
+    autoPlayVideo,
+    loopVideo as loopVideoPreference,
+    videoViewerMuted,
+    videoViewerVolume,
+  } from '$lib/stores/preferences.store';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import type { SwipeCustomEvent } from 'svelte-gestures';
-  import { swipe } from 'svelte-gestures';
-  import { t } from 'svelte-i18n';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
   interface Props {
     assetId: string;
     loopVideo: boolean;
     cacheKey: string | null;
+    playOriginalVideo: boolean;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -30,6 +33,7 @@
     assetId,
     loopVideo,
     cacheKey,
+    playOriginalVideo,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -39,18 +43,23 @@
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
-  let assetFileUrl = $state('');
-  let forceMuted = $state(false);
+  let assetFileUrl = $derived(
+    playOriginalVideo
+      ? getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Original, cacheKey })
+      : getAssetPlaybackUrl({ id: assetId, cacheKey }),
+  );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
 
   onMount(() => {
     // Show video after mount to ensure fading in.
     showVideo = true;
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
-    if (videoPlayer) {
-      forceMuted = false;
-      videoPlayer.load();
+  });
+
+  $effect(() => {
+    // reactive on `assetFileUrl` changes
+    if (assetFileUrl) {
+      videoPlayer?.load();
     }
   });
 
@@ -67,23 +76,27 @@
         onVideoStarted();
       }
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
         await tryForceMutedPlay(video);
         return;
       }
 
-      handleError(error, $t('errors.unable_to_play_video'));
+      // auto-play failed
     } finally {
       isLoading = false;
     }
   };
 
   const tryForceMutedPlay = async (video: HTMLVideoElement) => {
+    if (video.muted) {
+      return;
+    }
+
     try {
       video.muted = true;
       await handleCanPlay(video);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_play_video'));
+    } catch {
+      // muted auto-play failed
     }
   };
 
@@ -116,7 +129,7 @@
     {#if castManager.isCasting}
       <div class="place-content-center h-full place-items-center">
         <VideoRemoteViewer
-          poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+          poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
           {onVideoStarted}
           {onVideoEnded}
           {assetFileUrl}
@@ -126,28 +139,24 @@
       <video
         bind:this={videoPlayer}
         loop={$loopVideoPreference && loopVideo}
-        autoplay
+        autoplay={$autoPlayVideo}
         playsinline
         controls
+        disablePictureInPicture
         class="h-full object-contain"
-        use:swipe={() => ({})}
-        onswipe={onSwipe}
+        {...useSwipe(onSwipe)}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
-        onvolumechange={(e) => {
-          if (!forceMuted) {
-            $videoViewerMuted = e.currentTarget.muted;
-          }
-        }}
+        onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
         onseeking={() => (isScrubbing = true)}
         onseeked={() => (isScrubbing = false)}
         onplaying={(e) => {
           e.currentTarget.focus();
         }}
         onclose={() => onClose()}
-        muted={forceMuted || $videoViewerMuted}
+        muted={$videoViewerMuted}
         bind:volume={$videoViewerVolume}
-        poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+        poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
         src={assetFileUrl}
       >
       </video>

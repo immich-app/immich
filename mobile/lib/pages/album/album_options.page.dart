@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +53,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         final isSuccess = await ref.read(albumProvider.notifier).leaveAlbum(album);
 
         if (isSuccess) {
-          context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
+          unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
         } else {
           showErrorMessage();
         }
@@ -132,7 +134,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
         itemBuilder: (context, index) {
           final user = sharedUsers.value[index];
           return ListTile(
-            leading: UserCircleAvatar(user: user, radius: 22),
+            leading: UserCircleAvatar(user: user),
             title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(user.email, style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
             trailing: userId == user.id || isOwner ? const Icon(Icons.more_horiz_rounded) : const SizedBox(),
@@ -169,7 +171,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
                   album.activityEnabled = value;
                 }
               },
-              activeColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
+              activeThumbColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
               dense: true,
               title: Text(
                 "comments_and_likes",

@@ -1,12 +1,13 @@
 <script lang="ts" module>
   export interface SearchDateFilter {
-    takenBefore?: string;
-    takenAfter?: string;
+    takenBefore?: DateTime;
+    takenAfter?: DateTime;
   }
 </script>
 
 <script lang="ts">
-  import DateInput from '$lib/components/elements/date-input.svelte';
+  import { DatePicker, Text } from '@immich/ui';
+  import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,31 +15,23 @@
   }
 
   let { filters = $bindable() }: Props = $props();
+
+  let invalid = $derived(filters.takenAfter && filters.takenBefore && filters.takenAfter > filters.takenBefore);
 </script>
 
-<div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">
-  <label class="immich-form-label" for="start-date">
-    <span>{$t('start_date').toUpperCase()}</span>
-    <DateInput
-      class="immich-form-input w-full mt-1 hover:cursor-pointer"
-      type="date"
-      id="start-date"
-      name="start-date"
-      max={filters.takenBefore}
-      bind:value={filters.takenAfter}
-    />
-  </label>
+<div class="flex flex-col gap-1">
+  <div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">
+    <div>
+      <Text class="mb-2" fontWeight="medium">{$t('start_date')}</Text>
+      <DatePicker bind:value={filters.takenAfter} />
+    </div>
 
-  <label class="immich-form-label" for="end-date">
-    <span>{$t('end_date').toUpperCase()}</span>
-    <DateInput
-      class="immich-form-input w-full mt-1 hover:cursor-pointer"
-      type="date"
-      id="end-date"
-      name="end-date"
-      placeholder=""
-      min={filters.takenAfter}
-      bind:value={filters.takenBefore}
-    />
-  </label>
+    <div>
+      <Text class="mb-2" fontWeight="medium">{$t('end_date')}</Text>
+      <DatePicker bind:value={filters.takenBefore} />
+    </div>
+  </div>
+  {#if invalid}
+    <Text color="danger">{$t('start_date_before_end_date')}</Text>
+  {/if}
 </div>

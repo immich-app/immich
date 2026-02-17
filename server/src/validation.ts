@@ -33,6 +33,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { Property, PropertyOptions } from 'src/decorators';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class FileNotEmptyValidator extends FileValidator {
 }
 
 type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+export const ValidateUUID = (options?: UUIDOptions & PropertyOptions) => {
   const { optional, each, nullable, ...apiPropertyOptions } = {
     optional: false,
     each: false,
@@ -75,11 +76,54 @@ export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
   };
   return applyDecorators(
     IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
+    Property({ format: 'uuid', ...apiPropertyOptions }),
     optional ? Optional({ nullable }) : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
 };
+
+export function IsAxisAlignedRotation() {
+  return ValidateBy(
+    {
+      name: 'isAxisAlignedRotation',
+      validator: {
+        validate(value: any) {
+          return [0, 90, 180, 270].includes(value);
+        },
+        defaultMessage: buildMessage(
+          (eachPrefix) => eachPrefix + '$property must be one of the following values: 0, 90, 180, 270',
+          {},
+        ),
+      },
+    },
+    {},
+  );
+}
+
+@ValidatorConstraint({ name: 'uniqueEditActions' })
+class UniqueEditActionsValidator implements ValidatorConstraintInterface {
+  validate(edits: { action: string; parameters?: unknown }[]): boolean {
+    if (!Array.isArray(edits)) {
+      return true;
+    }
+
+    const actionSet = new Set<string>();
+    for (const edit of edits) {
+      const key = edit.action === 'mirror' ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
+      if (actionSet.has(key)) {
+        return false;
+      }
+      actionSet.add(key);
+    }
+    return true;
+  }
+
+  defaultMessage(): string {
+    return 'Duplicate edit actions are not allowed';
+  }
+}
+
+export const IsUniqueEditActions = () => Validate(UniqueEditActionsValidator);
 
 export class UUIDParamDto {
   @IsNotEmpty()
@@ -94,6 +138,16 @@ export class UUIDAssetIDParamDto {
 
   @ValidateUUID()
   assetId!: string;
+}
+
+export class FilenameParamDto {
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty({ format: 'string' })
+  @Matches(/^[a-zA-Z0-9_\-.]+$/, {
+    message: 'Filename contains invalid characters',
+  })
+  filename!: string;
 }
 
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
@@ -178,19 +232,20 @@ export const ValidateHexColor = () => {
   return applyDecorators(...decorators);
 };
 
-type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
+type DateOptions = OptionalOptions & { optional?: boolean; format?: 'date' | 'date-time' };
 export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
-  const { optional, nullable, format, ...apiPropertyOptions } = {
-    optional: false,
-    nullable: false,
-    format: 'date-time',
-    ...options,
-  };
+  const {
+    optional,
+    nullable = false,
+    emptyToNull = false,
+    format = 'date-time',
+    ...apiPropertyOptions
+  } = options || {};
 
-  const decorators = [
+  return applyDecorators(
     ApiProperty({ format, ...apiPropertyOptions }),
     IsDate(),
-    optional ? Optional({ nullable: true }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
     Transform(({ key, value }) => {
       if (value === null || value === undefined) {
         return value;
@@ -202,20 +257,30 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
 
       return new Date(value as string);
     }),
+  );
+};
+
+type StringOptions = OptionalOptions & { optional?: boolean; trim?: boolean };
+export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
+  const { optional, nullable, emptyToNull, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [
+    ApiProperty(apiPropertyOptions),
+    IsString(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
   ];
 
-  if (optional) {
-    decorators.push(Optional({ nullable }));
+  if (trim) {
+    decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
   }
 
   return applyDecorators(...decorators);
 };
 
-type BooleanOptions = { optional?: boolean; nullable?: boolean };
-export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
-  const { optional, nullable, ...apiPropertyOptions } = options || {};
+type BooleanOptions = OptionalOptions & { optional?: boolean };
+export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
+  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = options || {};
   const decorators = [
-    ApiProperty(apiPropertyOptions),
+    Property(apiPropertyOptions),
     IsBoolean(),
     Transform(({ value }) => {
       if (value == 'true') {
@@ -225,7 +290,7 @@ export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) =
       }
       return value;
     }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
   ];
 
   return applyDecorators(...decorators);

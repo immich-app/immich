@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -21,6 +25,7 @@ class SplashScreenPage extends StatefulHookConsumerWidget {
 
 class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   final log = Logger("SplashScreenPage");
+
   @override
   void initState() {
     super.initState();
@@ -47,30 +52,69 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
-      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (a) {
-          try {
-            wsProvider.connect();
-            infoProvider.getServerInfo();
-          } catch (e) {
-            log.severe('Failed establishing connection to the server: $e');
-          }
-        },
-        onError: (exception) => {
-          log.severe('Failed to update auth info with access token: $accessToken'),
-          ref.read(authProvider.notifier).logout(),
-          context.replaceRoute(const LoginRoute()),
-        },
+      final backgroundManager = ref.read(backgroundSyncProvider);
+      final backupProvider = ref.read(driftBackupProvider.notifier);
+
+      unawaited(
+        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+          (_) async {
+            try {
+              wsProvider.connect();
+              unawaited(infoProvider.getServerInfo());
+
+              if (Store.isBetaTimelineEnabled) {
+                bool syncSuccess = false;
+                await Future.wait([
+                  backgroundManager.syncLocal(full: true),
+                  backgroundManager.syncRemote().then((success) => syncSuccess = success),
+                ]);
+
+                if (syncSuccess) {
+                  await Future.wait([
+                    backgroundManager.hashAssets().then((_) {
+                      _resumeBackup(backupProvider);
+                    }),
+                    _resumeBackup(backupProvider),
+                    // TODO: Bring back when the soft freeze issue is addressed
+                    // backgroundManager.syncCloudIds(),
+                  ]);
+                } else {
+                  await backgroundManager.hashAssets();
+                }
+
+                if (Store.get(StoreKey.syncAlbums, false)) {
+                  await backgroundManager.syncLinkedAlbum();
+                }
+              }
+            } catch (e) {
+              log.severe('Failed establishing connection to the server: $e');
+            }
+          },
+          onError: (exception) => {
+            log.severe('Failed to update auth info with access token: $accessToken'),
+            ref.read(authProvider.notifier).logout(),
+            context.replaceRoute(const LoginRoute()),
+          },
+        ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
-      ref.read(authProvider.notifier).logout();
-      context.replaceRoute(const LoginRoute());
+      unawaited(ref.read(authProvider.notifier).logout());
+      unawaited(context.replaceRoute(const LoginRoute()));
       return;
     }
 
+    // clean install - change the default of the flag
+    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
-      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+      final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
+      if (needBetaMigration) {
+        await Store.put(StoreKey.needBetaMigration, false);
+        unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
+        return;
+      }
+
+      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 
     if (Store.isBetaTimelineEnabled) {
@@ -80,7 +124,18 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
     if (hasPermission) {
       // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup();
+      await ref.watch(backupProvider.notifier).resumeBackup();
+    }
+  }
+
+  Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
+    final isEnableBackup = Store.get(StoreKey.enableBackup, false);
+
+    if (isEnableBackup) {
+      final currentUser = Store.tryGet(StoreKey.currentUser);
+      if (currentUser != null) {
+        unawaited(notifier.startForegroundBackup(currentUser.id));
+      }
     }
   }
 

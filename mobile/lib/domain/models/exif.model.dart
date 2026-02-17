@@ -3,11 +3,10 @@ class ExifInfo {
   final int? fileSize;
   final String? description;
   final bool isFlipped;
-  final double? width;
-  final double? height;
   final String? orientation;
   final String? timeZone;
   final DateTime? dateTimeOriginal;
+  final int? rating;
 
   // GPS
   final double? latitude;
@@ -39,17 +38,16 @@ class ExifInfo {
 
   String get fNumber => f == null ? "" : f!.toStringAsFixed(1);
 
-  String get focalLength => mm == null ? "" : mm!.toStringAsFixed(1);
+  String get focalLength => mm == null ? "" : mm!.toStringAsFixed(3);
 
   const ExifInfo({
     this.assetId,
     this.fileSize,
     this.description,
     this.orientation,
-    this.width,
-    this.height,
     this.timeZone,
     this.dateTimeOriginal,
+    this.rating,
     this.isFlipped = false,
     this.latitude,
     this.longitude,
@@ -72,11 +70,10 @@ class ExifInfo {
     return other.fileSize == fileSize &&
         other.description == description &&
         other.isFlipped == isFlipped &&
-        other.width == width &&
-        other.height == height &&
         other.orientation == orientation &&
         other.timeZone == timeZone &&
         other.dateTimeOriginal == dateTimeOriginal &&
+        other.rating == rating &&
         other.latitude == latitude &&
         other.longitude == longitude &&
         other.city == city &&
@@ -98,10 +95,9 @@ class ExifInfo {
         description.hashCode ^
         orientation.hashCode ^
         isFlipped.hashCode ^
-        width.hashCode ^
-        height.hashCode ^
         timeZone.hashCode ^
         dateTimeOriginal.hashCode ^
+        rating.hashCode ^
         latitude.hashCode ^
         longitude.hashCode ^
         city.hashCode ^
@@ -123,11 +119,10 @@ class ExifInfo {
 fileSize: ${fileSize ?? 'NA'},
 description: ${description ?? 'NA'},
 orientation: ${orientation ?? 'NA'},
-width: ${width ?? 'NA'},
-height: ${height ?? 'NA'},
 isFlipped: $isFlipped,
 timeZone: ${timeZone ?? 'NA'},
 dateTimeOriginal: ${dateTimeOriginal ?? 'NA'},
+rating: ${rating ?? 'NA'},
 latitude: ${latitude ?? 'NA'},
 longitude: ${longitude ?? 'NA'},
 city: ${city ?? 'NA'},
@@ -150,6 +145,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
     String? orientation,
     String? timeZone,
     DateTime? dateTimeOriginal,
+    int? rating,
     double? latitude,
     double? longitude,
     String? city,
@@ -171,6 +167,7 @@ exposureSeconds: ${exposureSeconds ?? 'NA'},
       orientation: orientation ?? this.orientation,
       timeZone: timeZone ?? this.timeZone,
       dateTimeOriginal: dateTimeOriginal ?? this.dateTimeOriginal,
+      rating: rating ?? this.rating,
       isFlipped: isFlipped ?? this.isFlipped,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

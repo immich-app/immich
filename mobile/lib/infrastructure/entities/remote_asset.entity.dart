@@ -19,6 +19,13 @@ ON remote_asset_entity (owner_id, library_id, checksum)
 WHERE (library_id IS NOT NULL);
 ''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)')
+@TableIndex.sql(
+  "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME('%Y-%m-%d', local_date_time))",
+)
+@TableIndex.sql(
+  "CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME('%Y-%m', local_date_time))",
+)
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 
@@ -44,12 +51,14 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get libraryId => text().nullable()();
 
+  BoolColumn get isEdited => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  RemoteAsset toDto() => RemoteAsset(
+  RemoteAsset toDto({String? localId}) => RemoteAsset(
     id: id,
     name: name,
     ownerId: ownerId,
@@ -64,7 +73,8 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     thumbHash: thumbHash,
     visibility: visibility,
     livePhotoVideoId: livePhotoVideoId,
-    localId: null,
+    localId: localId,
     stackId: stackId,
+    isEdited: isEdited,
   );
 }

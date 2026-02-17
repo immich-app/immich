@@ -1,54 +1,56 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, PlaywrightTestConfig } from '@playwright/test';
+import dotenv from 'dotenv';
+import { cpus } from 'node:os';
+import { resolve } from 'node:path';
 
-export default defineConfig({
-  testDir: './src/web/specs',
+dotenv.config({ quiet: true, path: resolve(import.meta.dirname, '.env') });
+
+export const playwrightHost = process.env.PLAYWRIGHT_HOST ?? '127.0.0.1';
+export const playwrightDbHost = process.env.PLAYWRIGHT_DB_HOST ?? '127.0.0.1';
+export const playwriteBaseUrl = process.env.PLAYWRIGHT_BASE_URL ?? `http://${playwrightHost}:2285`;
+export const playwriteSlowMo = Number.parseInt(process.env.PLAYWRIGHT_SLOW_MO ?? '0');
+export const playwrightDisableWebserver = process.env.PLAYWRIGHT_DISABLE_WEBSERVER;
+
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS = '1';
+
+const config: PlaywrightTestConfig = {
+  testDir: './src/specs/server',
+  testMatch: /.*\.e2e-spec\.ts/,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  retries: process.env.CI ? 4 : 0,
   reporter: 'html',
   use: {
-    baseURL: 'http://127.0.0.1:2285',
+    baseURL: playwriteBaseUrl,
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    launchOptions: {
+      slowMo: playwriteSlowMo,
+    },
   },
 
-  testMatch: /.*\.e2e-spec\.ts/,
+  workers: process.env.CI ? 4 : Math.round(cpus().length * 0.75),
 
   projects: [
     {
-      name: 'chromium',
+      name: 'web',
       use: { ...devices['Desktop Chrome'] },
+      testDir: './src/specs/web',
+      workers: 1,
     },
-
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
+    {
+      name: 'ui',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: './src/ui/specs',
+      fullyParallel: true,
+      workers: process.env.CI ? 3 : Math.max(1, Math.round(cpus().length * 0.75) - 1),
+    },
+    {
+      name: 'maintenance',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: './src/specs/maintenance',
+      workers: 1,
+    },
   ],
 
   /* Run your local dev server before starting the tests */
@@ -59,4 +61,8 @@ export default defineConfig({
     stderr: 'pipe',
     reuseExistingServer: true,
   },
-});
+};
+if (playwrightDisableWebserver) {
+  delete config.webServer;
+}
+export default defineConfig(config);

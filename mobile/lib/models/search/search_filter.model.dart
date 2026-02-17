@@ -126,6 +126,41 @@ class SearchDateFilter {
   int get hashCode => takenBefore.hashCode ^ takenAfter.hashCode;
 }
 
+class SearchRatingFilter {
+  int? rating;
+  SearchRatingFilter({this.rating});
+
+  SearchRatingFilter copyWith({int? rating}) {
+    return SearchRatingFilter(rating: rating ?? this.rating);
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{'rating': rating};
+  }
+
+  factory SearchRatingFilter.fromMap(Map<String, dynamic> map) {
+    return SearchRatingFilter(rating: map['rating'] != null ? map['rating'] as int : null);
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory SearchRatingFilter.fromJson(String source) =>
+      SearchRatingFilter.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() => 'SearchRatingFilter(rating: $rating)';
+
+  @override
+  bool operator ==(covariant SearchRatingFilter other) {
+    if (identical(this, other)) return true;
+
+    return other.rating == rating;
+  }
+
+  @override
+  int get hashCode => rating.hashCode;
+}
+
 class SearchDisplayFilters {
   bool isNotInAlbum = false;
   bool isArchive = false;
@@ -176,11 +211,14 @@ class SearchFilter {
   String? context;
   String? filename;
   String? description;
+  String? ocr;
   String? language;
+  String? assetId;
   Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
+  SearchRatingFilter rating;
   SearchDisplayFilters display;
 
   // Enum
@@ -190,12 +228,15 @@ class SearchFilter {
     this.context,
     this.filename,
     this.description,
+    this.ocr,
     this.language,
+    this.assetId,
     required this.people,
     required this.location,
     required this.camera,
     required this.date,
     required this.display,
+    required this.rating,
     required this.mediaType,
   });
 
@@ -203,6 +244,8 @@ class SearchFilter {
     return (context == null || (context != null && context!.isEmpty)) &&
         (filename == null || (filename!.isEmpty)) &&
         (description == null || (description!.isEmpty)) &&
+        (assetId == null || (assetId!.isEmpty)) &&
+        (ocr == null || (ocr!.isEmpty)) &&
         people.isEmpty &&
         location.country == null &&
         location.state == null &&
@@ -214,6 +257,7 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
+        rating.rating == null &&
         mediaType == AssetType.other;
   }
 
@@ -222,11 +266,14 @@ class SearchFilter {
     String? filename,
     String? description,
     String? language,
+    String? ocr,
+    String? assetId,
     Set<PersonDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,
     SearchDisplayFilters? display,
+    SearchRatingFilter? rating,
     AssetType? mediaType,
   }) {
     return SearchFilter(
@@ -234,18 +281,21 @@ class SearchFilter {
       filename: filename ?? this.filename,
       description: description ?? this.description,
       language: language ?? this.language,
+      ocr: ocr ?? this.ocr,
+      assetId: assetId ?? this.assetId,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
       date: date ?? this.date,
       display: display ?? this.display,
+      rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -256,11 +306,14 @@ class SearchFilter {
         other.filename == filename &&
         other.description == description &&
         other.language == language &&
+        other.ocr == ocr &&
+        other.assetId == assetId &&
         other.people == people &&
         other.location == location &&
         other.camera == camera &&
         other.date == date &&
         other.display == display &&
+        other.rating == rating &&
         other.mediaType == mediaType;
   }
 
@@ -270,11 +323,14 @@ class SearchFilter {
         filename.hashCode ^
         description.hashCode ^
         language.hashCode ^
+        ocr.hashCode ^
+        assetId.hashCode ^
         people.hashCode ^
         location.hashCode ^
         camera.hashCode ^
         date.hashCode ^
         display.hashCode ^
+        rating.hashCode ^
         mediaType.hashCode;
   }
 }

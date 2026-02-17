@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -57,15 +56,15 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final enqueueCount = ref.watch(driftBackupProvider.select((state) => state.enqueueCount));
-
-    final enqueueTotalCount = ref.watch(driftBackupProvider.select((state) => state.enqueueTotalCount));
-
-    final isCanceling = ref.watch(driftBackupProvider.select((state) => state.isCanceling));
-
     final uploadTasks = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
 
-    final isUploading = uploadTasks.isNotEmpty;
+    final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
+
+    final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+
+    final errorCount = ref.watch(driftBackupProvider.select((state) => state.errorCount));
+
+    final isProcessing = uploadTasks.isNotEmpty || isSyncing || iCloudProgress.isNotEmpty;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -113,7 +112,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
               borderRadius: const BorderRadius.all(Radius.circular(20.5)),
               child: InkWell(
                 borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-                onTap: () => isCanceling ? null : _onToggle(!_isEnabled),
+                onTap: () => _onToggle(!_isEnabled),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
@@ -129,7 +128,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             ],
                           ),
                         ),
-                        child: isUploading
+                        child: isProcessing
                             ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                             : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
                       ),
@@ -141,44 +140,29 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  "enable_backup".t(context: context),
-                                  style: context.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: context.primaryColor,
+                                Flexible(
+                                  child: Text(
+                                    "enable_backup".t(context: context),
+                                    style: context.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.primaryColor,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            if (enqueueCount != enqueueTotalCount)
-                              Text(
-                                "queue_status".t(
-                                  context: context,
-                                  args: {'count': enqueueCount.toString(), 'total': enqueueTotalCount.toString()},
+                            if (errorCount > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                                  style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
                                 ),
-                                style: context.textTheme.labelLarge?.copyWith(
-                                  color: context.colorScheme.onSurfaceSecondary,
-                                ),
-                              ),
-                            if (isCanceling)
-                              Row(
-                                children: [
-                                  Text("canceling".t(), style: context.textTheme.labelLarge),
-                                  const SizedBox(width: 4),
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      backgroundColor: context.colorScheme.onSurface.withValues(alpha: 0.2),
-                                    ),
-                                  ),
-                                ],
                               ),
                           ],
                         ),
                       ),
-                      Switch.adaptive(value: _isEnabled, onChanged: (value) => isCanceling ? null : _onToggle(value)),
+                      Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
                     ],
                   ),
                 ),

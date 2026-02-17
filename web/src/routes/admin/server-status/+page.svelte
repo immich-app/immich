@@ -1,35 +1,32 @@
 <script lang="ts">
-  import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import { asyncTimeout } from '$lib/utils';
+  import ServerStatisticsPanel from '$lib/components/server-statistics/ServerStatisticsPanel.svelte';
   import { getServerStatistics } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { Container } from '@immich/ui';
+  import { onMount } from 'svelte';
   import type { PageData } from './$types';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
-  let { data = $bindable() }: Props = $props();
+  const { data }: Props = $props();
 
-  let running = true;
+  let stats = $state(data.stats);
 
-  onMount(async () => {
-    while (running) {
-      data.stats = await getServerStatistics();
-      await asyncTimeout(5000);
-    }
-  });
+  const updateStatistics = async () => {
+    stats = await getServerStatistics();
+  };
 
-  onDestroy(() => {
-    running = false;
+  onMount(() => {
+    const interval = setInterval(() => void updateStatistics(), 5000);
+
+    return () => clearInterval(interval);
   });
 </script>
 
-<AdminPageLayout title={data.meta.title}>
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <ServerStatsPanel stats={data.stats} />
-    </section>
-  </section>
+<AdminPageLayout breadcrumbs={[{ title: data.meta.title }]}>
+  <Container size="large" center>
+    <ServerStatisticsPanel {stats} />
+  </Container>
 </AdminPageLayout>

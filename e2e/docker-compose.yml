@@ -1,31 +1,39 @@
 name: immich-e2e
 
 services:
+  e2e-auth-server:
+    container_name: immich-e2e-auth-server
+    build:
+      context: ../e2e-auth-server
+    ports:
+      - 2286:2286
+
   immich-server:
     container_name: immich-e2e-server
     image: immich-server:latest
     build:
       context: ../
       dockerfile: server/Dockerfile
+      cache_from:
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-amd64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
+        - type=registry,ref=ghcr.io/immich-app/immich-server-build-cache:linux-arm64-cc099f297acd18c924b35ece3245215b53d106eb2518e3af6415931d055746cd-main
       args:
         - BUILD_ID=1234567890
         - BUILD_IMAGE=e2e
         - BUILD_SOURCE_REF=e2e
         - BUILD_SOURCE_COMMIT=e2eeeeeeeeeeeeeeeeee
     environment:
-      - DB_HOSTNAME=database
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
-      - DB_DATABASE_NAME=immich
-      - IMMICH_MACHINE_LEARNING_ENABLED=false
-      - IMMICH_TELEMETRY_INCLUDE=all
-      - IMMICH_ENV=testing
-      - IMMICH_PORT=2285
-      - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
+      DB_HOSTNAME: database
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE_NAME: immich
+      IMMICH_MACHINE_LEARNING_ENABLED: 'false'
+      IMMICH_TELEMETRY_INCLUDE: all
+      IMMICH_ENV: testing
+      IMMICH_PORT: '2285'
+      IMMICH_IGNORE_MOUNT_CHECK_ERRORS: 'true'
     volumes:
       - ./test-assets:/test-assets
-    extra_hosts:
-      - 'auth-server:host-gateway'
     depends_on:
       redis:
         condition: service_started
@@ -35,10 +43,14 @@ services:
       - 2285:2285
 
   redis:
-    image: redis:6.2-alpine@sha256:7fe72c486b910f6b1a9769c937dad5d63648ddee82e056f47417542dd40825bb
+    container_name: immich-e2e-redis
+    image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
+    healthcheck:
+      test: redis-cli ping || exit 1
 
   database:
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:0e763a2383d56f90364fcd72767ac41400cd30d2627f407f7e7960c9f1923c21
+    container_name: immich-e2e-postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
     environment:
       POSTGRES_PASSWORD: postgres
@@ -46,6 +58,7 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
+    shm_size: 128mb
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
       interval: 1s

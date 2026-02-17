@@ -6,7 +6,8 @@
 
   export type SearchFilter = {
     query: string;
-    queryType: 'smart' | 'metadata' | 'description';
+    ocr?: string;
+    queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
     tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
@@ -36,6 +37,7 @@
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
+  import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
@@ -46,8 +48,8 @@
 
   let { searchQuery, onClose }: Props = $props();
 
-  const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
-  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
+  const parseOptionalDate = (dateString?: DateTime) => (dateString ? parseUtcDate(dateString.toString()) : undefined);
+  const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day') || undefined;
   const formId = generateId();
 
   // combobox and all the search components have terrible support for value | null so we use empty string instead.
@@ -64,8 +66,17 @@
     return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 
+  let query = '';
+  if ('query' in searchQuery && searchQuery.query) {
+    query = searchQuery.query;
+  }
+  if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
+    query = searchQuery.originalFileName;
+  }
+
   let filter: SearchFilter = $state({
-    query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
+    query,
+    ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds:
@@ -82,6 +93,7 @@
     camera: {
       make: withNullAsUndefined(searchQuery.make),
       model: withNullAsUndefined(searchQuery.model),
+      lensModel: withNullAsUndefined(searchQuery.lensModel),
     },
     date: {
       takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
@@ -104,6 +116,7 @@
   const resetForm = () => {
     filter = {
       query: '',
+      ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
@@ -132,6 +145,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
+      ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       country: filter.location.country,
@@ -139,6 +153,7 @@
       city: filter.location.city,
       make: filter.camera.make,
       model: filter.camera.model,
+      lensModel: filter.camera.lensModel,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
       takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
@@ -173,7 +188,7 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
+      <div class="flex flex-col gap-5 pb-10" tabindex="-1">
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 

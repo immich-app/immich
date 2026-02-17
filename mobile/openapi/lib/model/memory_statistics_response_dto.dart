@@ -16,6 +16,7 @@ class MemoryStatisticsResponseDto {
     required this.total,
   });
 
+  /// Total number of memories
   int total;
 
   @override

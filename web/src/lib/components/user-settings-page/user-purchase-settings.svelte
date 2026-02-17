@@ -1,12 +1,11 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
 
-  import Icon from '$lib/components/elements/icon.svelte';
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dateFormats } from '$lib/constants';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
@@ -19,11 +18,10 @@
     isHttpError,
     type LicenseResponseDto,
   } from '@immich/sdk';
-  import { Button, modalManager } from '@immich/ui';
+  import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiKey } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  const { isPurchased } = purchaseStore;
 
   let isServerProduct = $state(false);
   let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
@@ -54,7 +52,7 @@
   };
 
   onMount(async () => {
-    if (!$isPurchased) {
+    if (!authManager.isPurchased) {
       return;
     }
 
@@ -74,7 +72,7 @@
       }
 
       await deleteIndividualProductKey();
-      purchaseStore.setPurchaseStatus(false);
+      authManager.isPurchased = false;
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
@@ -93,21 +91,21 @@
       }
 
       await deleteServerProductKey();
-      purchaseStore.setPurchaseStatus(false);
+      authManager.isPurchased = false;
     } catch (error) {
       handleError(error, $t('errors.failed_to_remove_product_key'));
     }
   };
 
   const onProductActivated = async () => {
-    purchaseStore.setPurchaseStatus(true);
+    authManager.isPurchased = true;
     await checkPurchaseInfo();
   };
 </script>
 
 <section class="my-4">
-  <div in:fade={{ duration: 500 }}>
-    {#if $isPurchased}
+  <div class="sm:ms-8" in:fade={{ duration: 500 }}>
+    {#if authManager.isPurchased}
       <!-- BADGE TOGGLE -->
       <div class="mb-4">
         <SettingSwitch
@@ -123,10 +121,10 @@
         <div
           class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon path={mdiKey} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
+          <Icon icon={mdiKey} size="56" class="text-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+            <p class="text-primary font-semibold text-lg">
               {$t('purchase_server_title')}
             </p>
 
@@ -155,10 +153,10 @@
         <div
           class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon path={mdiKey} size="56" class="text-immich-primary dark:text-immich-dark-primary" />
+          <Icon icon={mdiKey} size="56" class="text-primary" />
 
           <div>
-            <p class="text-immich-primary dark:text-immich-dark-primary font-semibold text-lg">
+            <p class="text-primary font-semibold text-lg">
               {$t('purchase_individual_title')}
             </p>
             {#if $user.license?.activatedAt}

@@ -4,9 +4,7 @@ sidebar_position: 95
 
 # Upgrading
 
-:::danger Read the release notes
-Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. You should read the release notes prior to updating and take special care when using automated tools like [Watchtower][watchtower].
-
+:::tip Breaking changes
 You can see versions that had breaking changes [here][breaking].
 :::
 
@@ -28,6 +26,16 @@ docker image prune
 [breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
 [releases]: https://github.com/immich-app/immich/releases
 
+## Versioning Policy
+
+Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`. We intend for breaking changes to be limited to major version releases.
+You can configure your Docker image to point to the current major version by using a metatag, such as `:v2`.
+
+Currently, we have no plans to backport patches to earlier versions. We encourage all users to run the most recent release of Immich.
+Switching back to an earlier version, even within the same minor release tag, is not supported.
+
+[semver]: https://semver.org/
+
 ## Migrating to VectorChord
 
 :::info
@@ -40,7 +48,7 @@ If you do not deploy Immich using Docker Compose and see a deprecation warning f
 
 Immich has migrated off of the deprecated pgvecto.rs database extension to its successor, [VectorChord](https://github.com/tensorchord/VectorChord), which comes with performance improvements in almost every aspect. This section will guide you on how to make this change in a Docker Compose setup.
 
-Before making any changes, please [back up your database](/docs/administration/backup-and-restore). While every effort has been made to make this migration as smooth as possible, there’s always a chance that something can go wrong.
+Before making any changes, please [back up your database](/administration/backup-and-restore). While every effort has been made to make this migration as smooth as possible, there’s always a chance that something can go wrong.
 
 After making a backup, please modify your `docker-compose.yml` file with the following information.
 
@@ -89,7 +97,7 @@ After making a backup, please modify your `docker-compose.yml` file with the fol
 If you deviated from the defaults of pg14 or pgvectors0.2.0, you must adjust the pg major version and pgvecto.rs version. If you are still using the default `docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0` image, you can just follow the changes above. For example, if the previous image is `docker.io/tensorchord/pgvecto-rs:pg16-v0.3.0`, the new image should be `ghcr.io/immich-app/postgres:16-vectorchord0.3.0-pgvectors0.3.0` instead of the image specified in the diff.
 :::
 
-After making these changes, you can start Immich as normal. Immich will make some changes to the DB during startup, which can take seconds to minutes to finish, depending on hardware and library size. In particular, it’s normal for the server logs to be seemingly stuck at `Reindexing clip_index` and `Reindexing face_index`for some time if you have over 100k assets in Immich and/or Immich is on a relatively weak server. If you see these logs and there are no errors, just give it time.
+After making these changes, you can start Immich as normal. Immich will make some changes to the DB during startup, which can take seconds to minutes to finish, depending on hardware and library size. In particular, it’s normal for the server logs to be seemingly stuck at `Reindexing clip_index` and `Reindexing face_index` for some time if you have over 100k assets in Immich and/or Immich is on a relatively weak server. If you see these logs and there are no errors, just give it time.
 
 :::danger
 After switching to VectorChord, you should not downgrade Immich below 1.133.0.
@@ -101,7 +109,7 @@ Please don’t hesitate to contact us on [GitHub](https://github.com/immich-app/
 
 #### I have a separate PostgreSQL instance shared with multiple services. How can I switch to VectorChord?
 
-Please see the [standalone PostgreSQL documentation](/docs/administration/postgres-standalone#migrating-to-vectorchord) for migration instructions. The migration path will be different depending on whether you’re currently using pgvecto.rs or pgvector, as well as whether Immich has superuser DB permissions.
+Please see the [standalone PostgreSQL documentation](/administration/postgres-standalone#migrating-to-vectorchord) for migration instructions. The migration path will be different depending on whether you’re currently using pgvecto.rs or pgvector, as well as whether Immich has superuser DB permissions.
 
 #### Why are so many lines removed from the `docker-compose.yml` file? Does this mean the health check is removed?
 

@@ -1,11 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
-  import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
@@ -19,15 +17,15 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 
   interface Props {
     assetId: string;
@@ -73,8 +71,8 @@
     isShowLoadingPeople = false;
   }
 
-  const onPersonThumbnail = (personId: string) => {
-    assetFaceGenerated.push(personId);
+  const onPersonThumbnailReady = ({ id }: { id: string }) => {
+    assetFaceGenerated.push(id);
     if (
       isEqual(assetFaceGenerated, peopleToCreate) &&
       loaderLoadingDoneTimeout &&
@@ -89,7 +87,6 @@
 
   onMount(() => {
     handlePromiseError(loadPeople());
-    return websocketEvents.on('on_person_thumbnail', onPersonThumbnail);
   });
 
   const isEqual = (a: string[], b: string[]): boolean => {
@@ -129,10 +126,7 @@
           }
         }
 
-        notificationController.show({
-          message: $t('people_edits_count', { values: { count: numberOfChanges } }),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }
@@ -181,6 +175,8 @@
 
       await deleteFace({ id: face.id, assetFaceDeleteDto: { force: false } });
 
+      eventManager.emit('PersonAssetDelete', { id: face.person.id, assetId });
+
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
       await assetViewingStore.setAssetId(assetId);
@@ -190,9 +186,11 @@
   };
 </script>
 
+<OnEvents {onPersonThumbnailReady} />
+
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
@@ -228,11 +226,11 @@
       {:else}
         {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
-          <div class="relative h-[115px] w-[95px]">
+          <div class="relative h-29 w-24">
             <div
               role="button"
               tabindex={index}
-              class="absolute start-0 top-0 h-[90px] w-[90px] cursor-default"
+              class="absolute start-0 top-0 h-22.5 w-22.5 cursor-default"
               onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
               onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
               onmouseleave={() => ($boundingBoxesArray = [])}
@@ -274,7 +272,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
+                  {#await zoomImageToBase64(face, assetId, assetType, assetViewerManager.imgRef)}
                     <ImageThumbnail
                       curve
                       shadow
@@ -308,7 +306,7 @@
                 </p>
               {/if}
 
-              <div class="absolute -end-[3px] -top-[3px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute -end-[3px] -top-[3px] h-5 w-5 rounded-full">
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <IconButton
                     shape="round"
@@ -332,17 +330,17 @@
                   />
                 {/if}
               </div>
-              <div class="absolute end-[33px] -top-[3px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute end-8 -top-[3px] h-5 w-5 rounded-full">
                 {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="24" />
+                    <Icon color="primary" icon={mdiAccountOff} aria-hidden size="24" />
                   </div>
                 {/if}
               </div>
               {#if face.person != null}
-                <div class="absolute -end-[3px] top-[33px] h-[20px] w-[20px] rounded-full">
+                <div class="absolute -end-[3px] top-8 h-5 w-5 rounded-full">
                   <IconButton
                     shape="round"
                     color="danger"

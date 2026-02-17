@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -12,9 +11,11 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -24,9 +25,9 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
     ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
     ref.watch(userServiceProvider),
-    ref.watch(uploadServiceProvider),
     ref.watch(secureStorageServiceProvider),
     ref.watch(widgetServiceProvider),
+    ref,
   );
 });
 
@@ -34,9 +35,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final UserService _userService;
-  final UploadService _uploadService;
+
   final SecureStorageService _secureStorageService;
   final WidgetService _widgetService;
+  final Ref _ref;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -45,9 +47,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._authService,
     this._apiService,
     this._userService,
-    this._uploadService,
+
     this._secureStorageService,
     this._widgetService,
+    this._ref,
   ) : super(
         const AuthState(
           deviceId: "",
@@ -87,7 +90,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
-      await _uploadService.cancelBackup();
+      await _ref.read(backgroundUploadServiceProvider).cancel();
+      _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
       await _cleanUp();
     }
@@ -150,10 +154,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _log.severe("Error getting user information from the server [API EXCEPTION]", stackTrace);
     } catch (error, stackTrace) {
       _log.severe("Error getting user information from the server [CATCH ALL]", error, stackTrace);
-
-      if (kDebugMode) {
-        debugPrint("Error getting user information from the server [CATCH ALL] $error $stackTrace");
-      }
+      dPrint(() => "Error getting user information from the server [CATCH ALL] $error $stackTrace");
     }
 
     // If the user is null, the login was not successful

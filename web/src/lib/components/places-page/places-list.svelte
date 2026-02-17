@@ -1,15 +1,14 @@
 <script lang="ts">
-  import PlacesCardGroup from './places-card-group.svelte';
-  import { groupBy } from 'lodash-es';
+  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOff } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
+  import { groupBy } from 'lodash-es';
+  import PlacesCardGroup from './places-card-group.svelte';
 
   import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
+  import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { run } from 'svelte/legacy';
 
   interface Props {
     places?: AssetResponseDto[];
@@ -70,39 +69,27 @@
     },
   };
 
-  let filteredPlaces: AssetResponseDto[] = $state([]);
-  let groupedPlaces: PlacesGroup[] = $state([]);
+  const filteredPlaces = $derived.by(() => {
+    const searchQueryNormalized = normalizeSearchString(searchQuery);
+    return searchQueryNormalized
+      ? places.filter((place) => normalizeSearchString(place.exifInfo?.city ?? '').includes(searchQueryNormalized))
+      : places;
+  });
 
-  let placesGroupOption: string = $state(PlacesGroupBy.None);
+  const placesGroupOption: string = $derived(getSelectedPlacesGroupOption(userSettings));
+  const groupingFunction = $derived(groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None]);
+  const groupedPlaces: PlacesGroup[] = $derived(groupingFunction(filteredPlaces));
 
-  let hasPlaces = $derived(places.length > 0);
-
-  // Step 1: Filter using the given search query.
-  run(() => {
-    if (searchQuery) {
-      const searchQueryNormalized = normalizeSearchString(searchQuery);
-
-      filteredPlaces = places.filter((place) => {
-        return normalizeSearchString(place.exifInfo?.city ?? '').includes(searchQueryNormalized);
-      });
-    } else {
-      filteredPlaces = places;
-    }
-
+  $effect(() => {
     searchResultCount = filteredPlaces.length;
   });
 
-  // Step 2: Group places.
-  run(() => {
-    placesGroupOption = getSelectedPlacesGroupOption(userSettings);
-    const groupFunc = groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None];
-    groupedPlaces = groupFunc(filteredPlaces);
-
+  $effect(() => {
     placesGroupIds = groupedPlaces.map(({ id }) => id);
   });
 </script>
 
-{#if hasPlaces}
+{#if places.length > 0}
   <!-- Album Cards -->
   {#if placesGroupOption === PlacesGroupBy.None}
     <PlacesCardGroup places={groupedPlaces[0].places} />
@@ -114,7 +101,7 @@
 {:else}
   <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
     <div class="flex flex-col content-center items-center text-center">
-      <Icon path={mdiMapMarkerOff} size="3.5em" />
+      <Icon icon={mdiMapMarkerOff} size="3.5em" />
       <p class="mt-5 text-3xl font-medium">{$t('no_places')}</p>
     </div>
   </div>

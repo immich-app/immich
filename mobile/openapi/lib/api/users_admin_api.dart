@@ -16,7 +16,9 @@ class UsersAdminApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  /// Create a user
+  ///
+  /// Create a new user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -48,7 +50,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  /// Create a user
+  ///
+  /// Create a new user.
   ///
   /// Parameters:
   ///
@@ -68,7 +72,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Delete a user
+  ///
+  /// Delete a user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -103,7 +109,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Delete a user
+  ///
+  /// Delete a user.
   ///
   /// Parameters:
   ///
@@ -125,7 +133,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve  a specific user by their ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -158,7 +168,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve a user
+  ///
+  /// Retrieve  a specific user by their ID.
   ///
   /// Parameters:
   ///
@@ -178,7 +190,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user preferences
+  ///
+  /// Retrieve the preferences of a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -211,7 +225,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user preferences
+  ///
+  /// Retrieve the preferences of a specific user.
   ///
   /// Parameters:
   ///
@@ -231,7 +247,69 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user sessions
+  ///
+  /// Retrieve all sessions for a specific user.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getUserSessionsAdminWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/users/{id}/sessions'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve user sessions
+  ///
+  /// Retrieve all sessions for a specific user.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<SessionResponseDto>?> getUserSessionsAdmin(String id,) async {
+    final response = await getUserSessionsAdminWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<SessionResponseDto>') as List)
+        .cast<SessionResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Retrieve user statistics
+  ///
+  /// Retrieve asset statistics for a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -240,10 +318,13 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/statistics'
@@ -280,17 +361,22 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Retrieve user statistics
+  ///
+  /// Retrieve asset statistics for a specific user.
   ///
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     final response = await getUserStatisticsAdminWithHttpInfo(id,  isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -306,7 +392,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -339,7 +427,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  /// Restore a deleted user
+  ///
+  /// Restore a previously deleted user.
   ///
   /// Parameters:
   ///
@@ -359,15 +449,19 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Search users
+  ///
+  /// Search for users.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] id:
+  ///   User ID filter
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted users
   Future<Response> searchUsersAdminWithHttpInfo({ String? id, bool? withDeleted, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users';
@@ -400,13 +494,17 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  /// Search users
+  ///
+  /// Search for users.
   ///
   /// Parameters:
   ///
   /// * [String] id:
+  ///   User ID filter
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted users
   Future<List<UserAdminResponseDto>?> searchUsersAdmin({ String? id, bool? withDeleted, }) async {
     final response = await searchUsersAdminWithHttpInfo( id: id, withDeleted: withDeleted, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -425,7 +523,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update a user
+  ///
+  /// Update an existing user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -460,7 +560,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update a user
+  ///
+  /// Update an existing user.
   ///
   /// Parameters:
   ///
@@ -482,7 +584,9 @@ class UsersAdminApi {
     return null;
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update user preferences
+  ///
+  /// Update the preferences of a specific user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -517,7 +621,9 @@ class UsersAdminApi {
     );
   }
 
-  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  /// Update user preferences
+  ///
+  /// Update the preferences of a specific user.
   ///
   /// Parameters:
   ///

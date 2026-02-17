@@ -65,5 +65,9 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
     tag: {
       checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
     },
+
+    workflow: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
   };
 };

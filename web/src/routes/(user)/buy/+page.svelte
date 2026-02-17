@@ -4,8 +4,8 @@
   import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
   import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { Route } from '$lib/route';
   import { Alert, Container, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -17,22 +17,21 @@
 
   let { data }: Props = $props();
   let showLicenseActivated = $state(false);
-  const { isPurchased } = purchaseStore;
 </script>
 
-<UserPageLayout title={$t('buy')}>
+<UserPageLayout title={data.meta.title}>
   <Container size="medium" center>
     <Stack gap={4} class="mt-4">
       {#if data.isActivated === false}
         <Alert icon={mdiAlertCircleOutline} color="danger" title={$t('purchase_failed_activation')} />
       {/if}
 
-      {#if $isPurchased}
+      {#if authManager.isPurchased}
         <SupporterBadge logoSize="lg" centered />
       {/if}
 
       {#if showLicenseActivated || data.isActivated === true}
-        <LicenseActivationSuccess onDone={() => goto(AppRoute.PHOTOS, { replaceState: false })} />
+        <LicenseActivationSuccess onDone={() => goto(Route.photos(), { replaceState: false })} />
       {:else}
         <LicenseContent
           onActivate={() => {

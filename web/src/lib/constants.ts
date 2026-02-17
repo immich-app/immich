@@ -1,62 +1,25 @@
+export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12}$/;
+
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
-  FAVORITE = 'favorite',
-  UNFAVORITE = 'unfavorite',
   TRASH = 'trash',
   DELETE = 'delete',
   RESTORE = 'restore',
   ADD = 'add',
   ADD_TO_ALBUM = 'add-to-album',
+  STACK = 'stack',
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
   REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
+  SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
+  RATING = 'rating',
 }
 
-export enum AppRoute {
-  ADMIN_USERS = '/admin/users',
-  ADMIN_LIBRARY_MANAGEMENT = '/admin/library-management',
-  ADMIN_SETTINGS = '/admin/system-settings',
-  ADMIN_STATS = '/admin/server-status',
-  ADMIN_JOBS = '/admin/jobs-status',
-  ADMIN_REPAIR = '/admin/repair',
-
-  ALBUMS = '/albums',
-  LIBRARIES = '/libraries',
-  ARCHIVE = '/archive',
-  FAVORITES = '/favorites',
-  PEOPLE = '/people',
-  PLACES = '/places',
-  PHOTOS = '/photos',
-  EXPLORE = '/explore',
-  SHARE = '/share',
-  SHARING = '/sharing',
-  SHARED_LINKS = '/shared-links',
-  SEARCH = '/search',
-  MAP = '/map',
-  USER_SETTINGS = '/user-settings',
-  MEMORY = '/memory',
-  TRASH = '/trash',
-  PARTNERS = '/partners',
-  BUY = '/buy',
-
-  AUTH_LOGIN = '/auth/login',
-  AUTH_REGISTER = '/auth/register',
-  AUTH_CHANGE_PASSWORD = '/auth/change-password',
-  AUTH_ONBOARDING = '/auth/onboarding',
-  AUTH_PIN_PROMPT = '/auth/pin-prompt',
-
-  UTILITIES = '/utilities',
-  DUPLICATES = '/utilities/duplicates',
-  LARGE_FILES = '/utilities/large-files',
-
-  FOLDERS = '/folders',
-  TAGS = '/tags',
-  LOCKED = '/locked',
-}
+export type SharedLinkTab = 'all' | 'album' | 'individual';
 
 export enum ProjectionType {
   EQUIRECTANGULAR = 'EQUIRECTANGULAR',
@@ -86,7 +49,6 @@ export enum QueryParameter {
   ACTION = 'action',
   ID = 'id',
   IS_OPEN = 'isOpen',
-  ONBOARDING_STEP = 'step',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
@@ -101,14 +63,13 @@ export enum SessionStorageKey {
   SCROLL_POSITION = 'scrollPosition',
 }
 
-export enum OpenSettingQueryParameterValue {
+// TODO split into user settings vs system settings
+export enum OpenQueryParam {
   OAUTH = 'oauth',
   JOB = 'job',
   STORAGE_TEMPLATE = 'storage-template',
-}
-
-export enum ActionQueryParameterValue {
-  MERGE = 'merge',
+  NOTIFICATIONS = 'notifications',
+  PURCHASE_SETTINGS = 'user-purchase-settings',
 }
 
 export const maximumLengthSearchPeople = 1000;
@@ -135,9 +96,10 @@ export enum QueryType {
   SMART = 'smart',
   METADATA = 'metadata',
   DESCRIPTION = 'description',
+  OCR = 'ocr',
 }
 
-export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION]);
+export const validQueryTypes = new Set([QueryType.SMART, QueryType.METADATA, QueryType.DESCRIPTION, QueryType.OCR]);
 
 export const locales = [
   { code: 'af-ZA', name: 'Afrikaans (South Africa)' },
@@ -294,13 +256,16 @@ export const langs: Lang[] = [
   { name: 'Bulgarian', code: 'bg', loader: () => import('$i18n/bg.json') },
   { name: 'Bislama', code: 'bi', loader: () => import('$i18n/bi.json') },
   { name: 'Bengali', code: 'bn', loader: () => import('$i18n/bn.json') },
+  { name: 'Breton', code: 'br', loader: () => import('$i18n/br.json') },
   { name: 'Catalan', code: 'ca', loader: () => import('$i18n/ca.json') },
   { name: 'Czech', code: 'cs', loader: () => import('$i18n/cs.json') },
   { name: 'Chuvash', code: 'cv', loader: () => import('$i18n/cv.json') },
   { name: 'Danish', code: 'da', loader: () => import('$i18n/da.json') },
   { name: 'German', code: 'de', loader: () => import('$i18n/de.json') },
+  { name: 'German (Switzerland)', code: 'de-CH', weblateCode: 'de_CH', loader: () => import('$i18n/de_CH.json') },
   defaultLang,
   { name: 'Greek', code: 'el', loader: () => import('$i18n/el.json') },
+  { name: 'Esperanto', code: 'eo', loader: () => import('$i18n/eo.json') },
   { name: 'Spanish', code: 'es', loader: () => import('$i18n/es.json') },
   { name: 'Estonian', code: 'et', loader: () => import('$i18n/et.json') },
   { name: 'Basque', code: 'eu', loader: () => import('$i18n/eu.json') },
@@ -308,17 +273,22 @@ export const langs: Lang[] = [
   { name: 'Finnish', code: 'fi', loader: () => import('$i18n/fi.json') },
   { name: 'Filipino', code: 'fil', loader: () => import('$i18n/fil.json') },
   { name: 'French', code: 'fr', loader: () => import('$i18n/fr.json') },
+  { name: 'Irish', code: 'ga', loader: () => import('$i18n/ga.json') },
   { name: 'Galician', code: 'gl', loader: () => import('$i18n/gl.json') },
+  { name: 'Alemannic', code: 'gsw', loader: () => import('$i18n/gsw.json') },
+  { name: 'Gujarati', code: 'gu', loader: () => import('$i18n/gu.json') },
   { name: 'Hebrew', code: 'he', loader: () => import('$i18n/he.json'), rtl: true },
   { name: 'Hindi', code: 'hi', loader: () => import('$i18n/hi.json') },
   { name: 'Croatian', code: 'hr', loader: () => import('$i18n/hr.json') },
   { name: 'Hungarian', code: 'hu', loader: () => import('$i18n/hu.json') },
   { name: 'Armenian', code: 'hy', loader: () => import('$i18n/hy.json') },
   { name: 'Indonesian', code: 'id', loader: () => import('$i18n/id.json') },
+  { name: 'Icelandic', code: 'is', loader: () => import('$i18n/is.json') },
   { name: 'Italian', code: 'it', loader: () => import('$i18n/it.json') },
   { name: 'Japanese', code: 'ja', loader: () => import('$i18n/ja.json') },
   { name: 'Georgian', code: 'ka', loader: () => import('$i18n/ka.json') },
   { name: 'Kazakh', code: 'kk', loader: () => import('$i18n/kk.json') },
+  { name: 'Khmer (Central)', code: 'km', loader: () => import('$i18n/km.json') },
   { name: 'Kurdish (Northern)', code: 'kmr', loader: () => import('$i18n/kmr.json'), rtl: true },
   { name: 'Kannada', code: 'kn', loader: () => import('$i18n/kn.json') },
   { name: 'Korean', code: 'ko', loader: () => import('$i18n/ko.json') },
@@ -340,6 +310,7 @@ export const langs: Lang[] = [
   { name: 'Portuguese (Brazil) ', code: 'pt-BR', weblateCode: 'pt_BR', loader: () => import('$i18n/pt_BR.json') },
   { name: 'Romanian', code: 'ro', loader: () => import('$i18n/ro.json') },
   { name: 'Russian', code: 'ru', loader: () => import('$i18n/ru.json') },
+  { name: 'Sinhala', code: 'si', loader: () => import('$i18n/si.json') },
   { name: 'Slovak', code: 'sk', loader: () => import('$i18n/sk.json') },
   { name: 'Slovenian', code: 'sl', loader: () => import('$i18n/sl.json') },
   { name: 'Albanian', code: 'sq', loader: () => import('$i18n/sq.json') },
@@ -357,7 +328,9 @@ export const langs: Lang[] = [
   { name: 'Turkish', code: 'tr', loader: () => import('$i18n/tr.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$i18n/uk.json') },
   { name: 'Urdu', code: 'ur', loader: () => import('$i18n/ur.json'), rtl: true },
+  { name: 'Uzbek', code: 'uz', loader: () => import('$i18n/uz.json') },
   { name: 'Vietnamese', code: 'vi', loader: () => import('$i18n/vi.json') },
+  { name: 'Cantonese (Traditional Han script)', code: 'yue_Hant', loader: () => import('$i18n/yue_Hant.json') },
   {
     name: 'Chinese (Traditional)',
     code: 'zh-TW',
@@ -367,8 +340,8 @@ export const langs: Lang[] = [
   {
     name: 'Chinese (Simplified)',
     code: 'zh-CN',
-    weblateCode: 'zh_SIMPLIFIED',
-    loader: () => import('$i18n/zh_SIMPLIFIED.json'),
+    weblateCode: 'zh_Hans',
+    loader: () => import('$i18n/zh_Hans.json'),
   },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];
@@ -421,6 +394,12 @@ export enum ToggleVisibility {
   HIDE_ALL = 'hide-all',
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
+}
+
+export enum BackupFileStatus {
+  OK,
+  DifferentVersion,
+  UnknownVersion,
 }
 
 export const assetViewerFadeDuration: number = 150;

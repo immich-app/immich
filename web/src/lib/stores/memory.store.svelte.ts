@@ -1,9 +1,11 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { user } from '$lib/stores/user.store';
 import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
 import { DateTime } from 'luxon';
+import { get } from 'svelte/store';
 
 type MemoryIndex = {
   memoryIndex: number;
@@ -20,12 +22,25 @@ export type MemoryAsset = MemoryIndex & {
 };
 
 class MemoryStoreSvelte {
+  #loading: Promise<void> | undefined;
+
   constructor() {
-    eventManager.on('auth.logout', () => this.clearCache());
+    eventManager.on({
+      AuthLogout: () => this.clearCache(),
+      AuthUserLoaded: () => this.initialize(),
+    });
+
+    // loaded event might have already happened
+    if (get(user)) {
+      void this.initialize();
+    }
+  }
+
+  ready() {
+    return this.initialize();
   }
 
   memories = $state<MemoryResponseDto[]>([]);
-  private initialized = false;
   private memoryAssets = $derived.by(() => {
     const memoryAssets: MemoryAsset[] = [];
     let previous: MemoryAsset | undefined;
@@ -101,21 +116,20 @@ class MemoryStoreSvelte {
     }
   }
 
-  async initialize() {
-    if (this.initialized) {
-      return;
-    }
-    this.initialized = true;
-
-    await this.loadAllMemories();
-  }
-
-  clearCache() {
-    this.initialized = false;
+  private clearCache() {
+    this.#loading = undefined;
     this.memories = [];
   }
 
-  private async loadAllMemories() {
+  private initialize() {
+    if (!this.#loading) {
+      this.#loading = this.load();
+    }
+
+    return this.#loading;
+  }
+
+  private async load() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
   }

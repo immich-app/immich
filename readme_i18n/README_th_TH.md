@@ -31,7 +31,8 @@
   <a href="README_de_DE.md">Deutsch</a>
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
-  <a href="README_zh_CN.md">中文</a>
+  <a href="README_zh_CN.md">简体中文</a>
+  <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
@@ -40,26 +41,25 @@
   <a href="README_vi_VN.md">Tiếng Việt</a>
 </p>
 
-## ข้อควรระวัง
 
-- ⚠️ โพรเจกต์นี้กำลังอยู่ระหว่างการพัฒนา**มีการเปลี่ยนแปลงบ่อยมาก**
-- ⚠️ อาจจะเกิดข้อผิดพลาดและการเปลี่ยนแปลงที่ส่งผลเสีย
-- ⚠️ **ห้ามใช้ระบบนี้เป็นวิธีการเดียวในการจัดเก็บภาพถ่ายและวิดีโอของคุณ**
-- ⚠️ ปฏิบัติตามแผนการสำรองข้อมูลแบบ [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) สำหรับภาพถ่ายและวิดีโอที่สำคัญของคุณอยู่เสมอ
+> [!WARNING]
+> ⚠️ ปฏิบัติตามแผนการสำรองข้อมูลแบบ [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) สำหรับภาพถ่ายและวิดีโอที่สำคัญของคุณอยู่เสมอ
+> 
+
 
 > [!NOTE]
 > คุณสามารถหาคู่มือหลัก รวมถึงคู่มือการติดตั้ง ได้ที่ https://immich.app/
 
 ## ลิงก์
 
-- [คู่มือ](https://immich.app/docs)
-- [เกี่ยวกับ](https://immich.app/docs/overview/introduction)
-- [การติดตั้ง](https://immich.app/docs/install/requirements)
+- [คู่มือ](https://docs.immich.app)
+- [เกี่ยวกับ](https://docs.immich.app/overview/introduction)
+- [การติดตั้ง](https://docs.immich.app/install/requirements)
 - [โรดแมป](https://immich.app/roadmap)
 - [สาธิต](#สาธิต)
 - [คุณสมบัติ](#คุณสมบัติ)
-- [การแปลภาษา](https://immich.app/docs/developer/translations)
-- [สนับสนุนโพรเจกต์](https://immich.app/docs/overview/support-the-project)
+- [การแปลภาษา](https://docs.immich.app/developer/translations)
+- [สนับสนุนโพรเจกต์](https://docs.immich.app/overview/support-the-project)
 
 ## สาธิต
 
@@ -106,7 +106,7 @@
 
 ## การแปลภาษา
 
-อ่านเพิ่มเติมเกี่ยวกับการแปล [ที่นี่](https://immich.app/docs/developer/translations)
+อ่านเพิ่มเติมเกี่ยวกับการแปล [ที่นี่](https://docs.immich.app/developer/translations)
 
 <a href="https://hosted.weblate.org/engage/immich/">
   <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="สถานะการแปล" />

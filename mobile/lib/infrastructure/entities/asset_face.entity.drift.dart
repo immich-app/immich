@@ -588,6 +588,10 @@ typedef $$AssetFaceEntityTableProcessedTableManager =
       i1.AssetFaceEntityData,
       i0.PrefetchHooks Function({bool assetId, bool personId})
     >;
+i0.Index get idxAssetFacePersonId => i0.Index(
+  'idx_asset_face_person_id',
+  'CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)',
+);
 
 class $AssetFaceEntityTable extends i2.AssetFaceEntity
     with i0.TableInfo<$AssetFaceEntityTable, i1.AssetFaceEntityData> {
@@ -1207,3 +1211,8 @@ class AssetFaceEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxAssetFaceAssetId => i0.Index(
+  'idx_asset_face_asset_id',
+  'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
+);

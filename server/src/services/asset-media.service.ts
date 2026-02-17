@@ -20,23 +20,26 @@ import {
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
+import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetType, AssetVisibility, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetVisibility,
+  CacheControl,
+  JobName,
+  Permission,
+  StorageFolder,
+} from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
-import { UploadFile } from 'src/types';
+import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
-import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
+import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-
-interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -57,10 +60,10 @@ export class AssetMediaService extends BaseService {
     return { id: assetId, status: AssetMediaStatus.DUPLICATE };
   }
 
-  canUploadFile({ auth, fieldName, file }: UploadRequest): true {
+  canUploadFile({ auth, fieldName, file, body }: UploadRequest): true {
     requireUploadAccess(auth);
 
-    const filename = file.originalName;
+    const filename = body.filename || file.originalName;
 
     switch (fieldName) {
       case UploadFieldName.ASSET_DATA: {
@@ -89,15 +92,15 @@ export class AssetMediaService extends BaseService {
     throw new BadRequestException(`Unsupported file type ${filename}`);
   }
 
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
+  getUploadFilename({ auth, fieldName, file, body }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const originalExtension = extname(file.originalName);
+    const extension = extname(body.filename || file.originalName);
 
     const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
+      [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
+      [UploadFieldName.PROFILE_DATA]: extension,
     };
 
     return sanitize(`${file.uuid}${lookup[fieldName]}`);
@@ -117,8 +120,8 @@ export class AssetMediaService extends BaseService {
   }
 
   async onUploadError(request: AuthRequest, file: Express.Multer.File) {
-    const uploadFilename = this.getUploadFilename(asRequest(request, file));
-    const uploadFolder = this.getUploadFolder(asRequest(request, file));
+    const uploadFilename = this.getUploadFilename(asUploadRequest(request, file));
+    const uploadFolder = this.getUploadFolder(asUploadRequest(request, file));
     const uploadPath = `${uploadFolder}/${uploadFilename}`;
 
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [uploadPath] } });
@@ -190,15 +193,24 @@ export class AssetMediaService extends BaseService {
     }
   }
 
-  async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+  async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
 
-    const asset = await this.findOrFail(id);
+    if (auth.sharedLink) {
+      dto.edited = true;
+    }
+
+    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
+      id,
+      dto.edited ?? false,
+    );
+
+    const path = editedPath ?? originalPath!;
 
     return new ImmichFileResponse({
-      path: asset.originalPath,
-      fileName: asset.originalFileName,
-      contentType: mimeTypes.lookup(asset.originalPath),
+      path,
+      fileName: getFileNameWithoutExtension(originalFileName) + getFilenameExtension(path),
+      contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
   }
@@ -210,37 +222,42 @@ export class AssetMediaService extends BaseService {
   ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
-    const asset = await this.findOrFail(id);
-    const size = dto.size ?? AssetMediaSize.THUMBNAIL;
-
-    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files ?? []);
-    let filepath = previewFile?.path;
-    if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
-      filepath = thumbnailFile.path;
-    } else if (size === AssetMediaSize.FULLSIZE) {
-      if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
-        // use original file for web supported images
-        return { targetSize: 'original' };
-      }
-      if (!fullsizeFile) {
-        // downgrade to preview if fullsize is not available.
-        // e.g. disabled or not yet (re)generated
-        return { targetSize: AssetMediaSize.PREVIEW };
-      }
-      filepath = fullsizeFile.path;
+    if (dto.size === AssetMediaSize.Original) {
+      throw new BadRequestException('May not request original file');
     }
 
-    if (!filepath) {
+    if (auth.sharedLink) {
+      dto.edited = true;
+    }
+
+    const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
+    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(
+      id,
+      size,
+      dto.edited ?? false,
+    );
+
+    if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !dto.edited) {
+      // use original file for web supported images
+      return { targetSize: 'original' };
+    }
+
+    if (dto.size === AssetMediaSize.FULLSIZE && !path) {
+      // downgrade to preview if fullsize is not available.
+      // e.g. disabled or not yet (re)generated
+      return { targetSize: AssetMediaSize.PREVIEW };
+    }
+
+    if (!path) {
       throw new NotFoundException('Asset media not found');
     }
-    let fileName = getFileNameWithoutExtension(asset.originalFileName);
-    fileName += `_${size}`;
-    fileName += getFilenameExtension(filepath);
+
+    const fileName = `${getFileNameWithoutExtension(originalFileName)}_${size}${getFilenameExtension(path)}`;
 
     return new ImmichFileResponse({
       fileName,
-      path: filepath,
-      contentType: mimeTypes.lookup(filepath),
+      path,
+      contentType: mimeTypes.lookup(path),
       cacheControl: CacheControl.PrivateWithCache,
     });
   }
@@ -248,10 +265,10 @@ export class AssetMediaService extends BaseService {
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
-    const asset = await this.findOrFail(id);
+    const asset = await this.assetRepository.getForVideo(id);
 
-    if (asset.type !== AssetType.Video) {
-      throw new BadRequestException('Asset is not a video');
+    if (!asset) {
+      throw new NotFoundException('Asset not found or asset is not a video');
     }
 
     const filepath = asset.encodedVideoPath || asset.originalPath;
@@ -318,7 +335,7 @@ export class AssetMediaService extends BaseService {
     });
 
     // handle duplicates with a success response
-    if (error.constraint_name === ASSET_CHECKSUM_CONSTRAINT) {
+    if (isAssetChecksumConstraint(error)) {
       const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
@@ -360,11 +377,17 @@ export class AssetMediaService extends BaseService {
       duration: dto.duration || null,
 
       livePhotoVideoId: null,
-      sidecarPath: sidecarPath || null,
     });
 
+    await (sidecarPath
+      ? this.assetRepository.upsertFile({ assetId, type: AssetFileType.Sidecar, path: sidecarPath })
+      : this.assetRepository.deleteFile({ assetId, type: AssetFileType.Sidecar }));
+
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
+    await this.assetRepository.upsertExif(
+      { assetId, fileSizeInByte: file.size },
+      { lockedPropertiesBehavior: 'override' },
+    );
     await this.jobRepository.queue({
       name: JobName.AssetExtractMetadata,
       data: { id: assetId, source: 'upload' },
@@ -390,11 +413,13 @@ export class AssetMediaService extends BaseService {
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
       livePhotoVideoId: asset.livePhotoVideoId,
-      sidecarPath: asset.sidecarPath,
     });
 
     const { size } = await this.storageRepository.stat(created.originalPath);
-    await this.assetRepository.upsertExif({ assetId: created.id, fileSizeInByte: size });
+    await this.assetRepository.upsertExif(
+      { assetId: created.id, fileSizeInByte: size },
+      { lockedPropertiesBehavior: 'override' },
+    );
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: created.id, source: 'copy' } });
     return created;
   }
@@ -420,14 +445,28 @@ export class AssetMediaService extends BaseService {
       visibility: dto.visibility ?? AssetVisibility.Timeline,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
-      sidecarPath: sidecarFile?.originalPath,
     });
 
+    if (dto.metadata?.length) {
+      await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
+    }
+
     if (sidecarFile) {
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        path: sidecarFile.originalPath,
+        type: AssetFileType.Sidecar,
+      });
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-    await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
+    await this.assetRepository.upsertExif(
+      { assetId: asset.id, fileSizeInByte: file.size },
+      { lockedPropertiesBehavior: 'override' },
+    );
+
+    await this.eventRepository.emit('AssetCreate', { asset });
+
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 
     return asset;
@@ -437,14 +476,5 @@ export class AssetMediaService extends BaseService {
     if (auth.user.quotaSizeInBytes !== null && auth.user.quotaSizeInBytes < auth.user.quotaUsageInBytes + size) {
       throw new BadRequestException('Quota has been exceeded!');
     }
-  }
-
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id, { files: true });
-    if (!asset) {
-      throw new NotFoundException('Asset not found');
-    }
-
-    return asset;
   }
 }

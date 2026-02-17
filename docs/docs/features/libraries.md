@@ -1,5 +1,9 @@
 # External Libraries
 
+:::info
+Currently an external library can only belong to a single user which is selected when the library is initially created.
+:::
+
 External libraries track assets stored in the filesystem outside of Immich. When the external library is scanned, Immich will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Immich, you need to scan the library for the changes to show up.
 
 If an external asset is deleted from disk, Immich will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Immich will be lost.
@@ -33,7 +37,7 @@ Sometimes, an external library will not scan correctly. This can happen if Immic
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
-To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the same in any microservices containers.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/mnt/photos`, check it with `ls /mnt/photos`. If you are using a dedicated microservices container, make sure to add the same mount point and check for availability within the microservices container as well.
 
 ### Exclusion Patterns
 
@@ -103,7 +107,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 
 :::tip
 The `ro` flag at the end only gives read-only access to the volumes.
-This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/docs/features/xmp-sidecars)).
+This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/features/xmp-sidecars)).
 :::
 
 :::info
@@ -114,46 +118,35 @@ _Remember to run `docker compose up -d` to register the changes. Make sure you c
 
 These actions must be performed by the Immich administrator.
 
-- Click on your avatar in the upper right corner
-- Click on Administration -> External Libraries
-- Click on Create an external library…
-- Select which user owns the library, this can not be changed later
-- Enter `/mnt/media/christmas-trip` then click Add
-- Click on Save
-- Click the drop-down menu on the newly created library
-- Click on Scan
-- Click the drop-down menu on the newly created library
-- Click on Rename Library and rename it to "Christmas Trip"
+- Click on your avatar in the upper right corner.
+- Click on `Administration -> External Libraries`.
+- Click on `Create Library`.
+- Select which user owns the library, this **can not** be changed later
+- You are now entering the library management page.
+- Click on `Add` in the `Folders` section.
+- Enter `/mnt/media/christmas-trip` then click Add.
+- Click on `Edit` Library and rename it to "Christmas Trip".
 
 NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/christmas-trip` path since all paths have to be what the Docker containers see.
 
 Next, we'll add an exclusion pattern to filter out raw files.
 
-- Click the drop-down menu on the newly-created Christmas library
-- Click on Manage
-- Click on Scan Settings
-- Click on Add Exclusion Pattern
-- Enter `**/Raw/**` and click save.
-- Click save
-- Click the drop-down menu on the newly created library
-- Click on Scan
+- Click on `Add` in the `Exclusion Patterns` section.
+- Enter `**/Raw/**` and click Add.
+- Click on `Scan`
 
 The christmas trip library will now be scanned in the background. In the meantime, let's add the videos and old photos to another library.
 
-- Click on Create External Library.
-
-:::note
-If you get an error here, please rename the other external library to something else. This is a bug that will be fixed in a future release.
-:::
-
-- Click the drop-down menu on the newly created library
-- Click Edit Import Paths
-- Click on Add Path
+- Go back to `Administration -> External Libraries`.
+- Click on `Create Library`.
+- Select which user owns the library,
+- You are now entering the library management page.
+- Click on `Add` in the `Folders` section.
 - Enter `/mnt/media/old-pics` then click Add
-- Click on Add Path
+- Click on `Add` in the `Folders` section.
 - Enter `/mnt/media/videos` then click Add
-- Click Save
-- Click on Scan
+- Click on `Scan`
+- Click on `Edit` Library and rename it to "Old videos and photos".
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
 

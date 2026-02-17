@@ -35,7 +35,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
   - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
   - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
-- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for ARM NN specific settings
+- Optional: Configure your `.env` file, see [environment variables](/install/environment-variables) for ARM NN specific settings
   - In particular, the `MACHINE_LEARNING_ANN_FP16_TURBO` can significantly improve performance at the cost of very slightly lower accuracy
 
 #### CUDA
@@ -49,13 +49,29 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - The GPU must be supported by ROCm. If it isn't officially supported, you can attempt to use the `HSA_OVERRIDE_GFX_VERSION` environmental variable: `HSA_OVERRIDE_GFX_VERSION=<a supported version, e.g. 10.3.0>`. If this doesn't work, you might need to also set `HSA_USE_SVM=0`.
 - The ROCm image is quite large and requires at least 35GiB of free disk space. However, pulling later updates to the service through Docker will generally only amount to a few hundred megabytes as the rest will be cached.
-- This backend is new and may experience some issues. For example, GPU power consumption can be higher than usual after running inference, even if the machine learning service is idle. In this case, it will only go back to normal after being idle for 5 minutes (configurable with the [MACHINE_LEARNING_MODEL_TTL](/docs/install/environment-variables) setting).
+- This backend is new and may experience some issues. For example, GPU power consumption can be higher than usual after running inference, even if the machine learning service is idle. In this case, it will only go back to normal after being idle for 5 minutes (configurable with the [MACHINE_LEARNING_MODEL_TTL](/install/environment-variables) setting).
 
 #### OpenVINO
 
 - Integrated GPUs are more likely to experience issues than discrete GPUs, especially for older processors or servers with low RAM.
-- Ensure the server's kernel version is new enough to use the device for hardware accceleration.
+- Ensure the server's kernel version is new enough to use the device for hardware acceleration.
 - Expect higher RAM usage when using OpenVINO compared to CPU processing.
+
+#### OpenVINO-WSL
+
+- Ensure your container can access the /dev/dri directory, you can verify this by doing `docker exec -t immich_machine_learning ls -la /dev/dri`. If this is not the case execute `getent group render` and `getent group video` on the WSL host, then add those groups to hwaccel.ml.yaml
+  ```yaml
+  openvino-wsl:
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dxg:/dev/dxg
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - /usr/lib/wsl:/usr/lib/wsl
+    group_add:
+      - 44 # Replace this number with the number you found with getent group video
+      - 992 # Replace this number with the number you found with getent group render
+  ```
 
 #### RKNN
 
@@ -64,14 +80,14 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - This is usually pre-installed on the device vendor's Linux images
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
-- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
+- Optional: Configure your `.env` file, see [environment variables](/install/environment-variables) for RKNN specific settings
   - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
 ## Setup
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
-2. In the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
-3. Still in `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.
+2. In `immich-machine-learning`, add one of -[armnn, cuda, rocm, openvino, rknn] to the `image` section's tag at the end of the line.
+3. Still in the `docker-compose.yml` under `immich-machine-learning`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 4. Redeploy the `immich-machine-learning` container with these updated settings.
 
 ### Confirming Device Usage

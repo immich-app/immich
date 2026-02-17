@@ -6,6 +6,7 @@ import {
   asset_delete_audit,
   asset_face_audit,
   asset_linked_to_hidden_person,
+  asset_metadata_audit,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
@@ -28,11 +29,15 @@ import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
+import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
+import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -45,10 +50,12 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { MoveTable } from 'src/schema/tables/move.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
 import { NotificationTable } from 'src/schema/tables/notification.table';
+import { OcrSearchTable } from 'src/schema/tables/ocr-search.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
 import { PersonTable } from 'src/schema/tables/person.table';
+import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
@@ -65,6 +72,7 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
+import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
@@ -80,9 +88,13 @@ export class ImmichDatabase {
     AlbumTable,
     ApiKeyTable,
     AssetAuditTable,
+    AssetEditTable,
     AssetFaceTable,
     AssetFaceAuditTable,
+    AssetMetadataTable,
+    AssetMetadataAuditTable,
     AssetJobStatusTable,
+    AssetOcrTable,
     AssetTable,
     AssetFileTable,
     AuditTable,
@@ -97,6 +109,7 @@ export class ImmichDatabase {
     MoveTable,
     NaturalEarthCountriesTable,
     NotificationTable,
+    OcrSearchTable,
     PartnerAuditTable,
     PartnerTable,
     PersonTable,
@@ -117,6 +130,12 @@ export class ImmichDatabase {
     UserMetadataAuditTable,
     UserTable,
     VersionHistoryTable,
+    PluginTable,
+    PluginFilterTable,
+    PluginActionTable,
+    WorkflowTable,
+    WorkflowFilterTable,
+    WorkflowActionTable,
   ];
 
   functions = [
@@ -136,6 +155,7 @@ export class ImmichDatabase {
     stack_delete_audit,
     person_delete_audit,
     user_metadata_audit,
+    asset_metadata_audit,
     asset_face_audit,
     asset_linked_to_hidden_person,
   ];
@@ -150,6 +170,8 @@ export interface Migrations {
 }
 
 export interface DB {
+  kysely_migrations: { timestamp: string; name: string };
+
   activity: ActivityTable;
 
   album: AlbumTable;
@@ -162,12 +184,17 @@ export interface DB {
   api_key: ApiKeyTable;
 
   asset: AssetTable;
+  asset_audit: AssetAuditTable;
+  asset_edit: AssetEditTable;
   asset_exif: AssetExifTable;
   asset_face: AssetFaceTable;
   asset_face_audit: AssetFaceAuditTable;
   asset_file: AssetFileTable;
+  asset_metadata: AssetMetadataTable;
+  asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
-  asset_audit: AssetAuditTable;
+  asset_ocr: AssetOcrTable;
+  ocr_search: OcrSearchTable;
 
   audit: AuditTable;
 
@@ -219,4 +246,12 @@ export interface DB {
   user_metadata_audit: UserMetadataAuditTable;
 
   version_history: VersionHistoryTable;
+
+  plugin: PluginTable;
+  plugin_filter: PluginFilterTable;
+  plugin_action: PluginActionTable;
+
+  workflow: WorkflowTable;
+  workflow_filter: WorkflowFilterTable;
+  workflow_action: WorkflowActionTable;
 }

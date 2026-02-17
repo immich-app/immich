@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
+import { ErrorMessages } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -15,7 +16,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobOf, SystemFlags } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
 
-const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
+const docsMessage = `Please see https://docs.immich.app/administration/system-integrity#folder-checks for more information.`;
 
 @Injectable()
 export class StorageService extends BaseService {
@@ -114,9 +115,7 @@ export class StorageService extends BaseService {
           this.logger.log(`Media location changed (from=${previous}, to=${current})`);
 
           if (!path.startsWith(previous)) {
-            throw new Error(
-              'Detected an inconsistent media location. For more information, see https://immich.app/errors#inconsistent-media-location',
-            );
+            throw new Error(ErrorMessages.InconsistentMediaLocation);
           }
 
           this.logger.warn(

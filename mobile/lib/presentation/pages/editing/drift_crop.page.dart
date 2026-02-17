@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,6 +9,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/hooks/crop_controller_hook.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 /// A widget for cropping an image.
 /// This widget uses [HookWidget] to manage its lifecycle and state. It allows
@@ -28,13 +31,15 @@ class DriftCropImagePage extends HookWidget {
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
         title: Text("crop".tr()),
-        leading: CloseButton(color: context.primaryColor),
+        leading: const ImmichCloseButton(),
         actions: [
-          IconButton(
-            icon: Icon(Icons.done_rounded, color: context.primaryColor, size: 24),
+          ImmichIconButton(
+            icon: Icons.done_rounded,
+            color: ImmichColor.primary,
+            variant: ImmichVariant.ghost,
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
-              context.pushRoute(DriftEditImageRoute(asset: asset, image: croppedImage, isEdited: true));
+              unawaited(context.pushRoute(DriftEditImageRoute(asset: asset, image: croppedImage, isEdited: true)));
             },
           ),
         ],
@@ -70,17 +75,17 @@ class DriftCropImagePage extends HookWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                IconButton(
-                                  icon: Icon(Icons.rotate_left, color: context.themeData.iconTheme.color),
-                                  onPressed: () {
-                                    cropController.rotateLeft();
-                                  },
+                                ImmichIconButton(
+                                  icon: Icons.rotate_left,
+                                  variant: ImmichVariant.ghost,
+                                  color: ImmichColor.secondary,
+                                  onPressed: () => cropController.rotateLeft(),
                                 ),
-                                IconButton(
-                                  icon: Icon(Icons.rotate_right, color: context.themeData.iconTheme.color),
-                                  onPressed: () {
-                                    cropController.rotateRight();
-                                  },
+                                ImmichIconButton(
+                                  icon: Icons.rotate_right,
+                                  variant: ImmichVariant.ghost,
+                                  color: ImmichColor.secondary,
+                                  onPressed: () => cropController.rotateRight(),
                                 ),
                               ],
                             ),

@@ -40,7 +40,7 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
         fontWeight: FontWeight.w600,
         fontSize: 18,
       ),
-      backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
+      backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.primary,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -61,14 +61,21 @@ ThemeData getThemeData({required ColorScheme colorScheme, required Locale locale
       ),
     ),
     chipTheme: const ChipThemeData(side: BorderSide.none),
-    sliderTheme: const SliderThemeData(thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7), trackHeight: 2.0),
+    sliderTheme: const SliderThemeData(
+      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
+      trackHeight: 2.0,
+      // ignore: deprecated_member_use
+      year2023: false,
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(type: BottomNavigationBarType.fixed),
     popupMenuTheme: const PopupMenuThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isDark ? colorScheme.surfaceContainer : colorScheme.surface,
-      labelTextStyle: const WidgetStatePropertyAll(TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      labelTextStyle: const WidgetStatePropertyAll(
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, overflow: TextOverflow.ellipsis),
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       focusedBorder: OutlineInputBorder(
@@ -147,9 +154,9 @@ ImmichTheme decolorizeSurfaces({required ImmichTheme theme}) {
 }
 
 String? _getFontFamilyFromLocale(Locale locale) {
-  if (localesNotSupportedByOverpass.contains(locale)) {
+  if (localesNotSupportedByAppFont.contains(locale)) {
     // Let Flutter use the default font
     return null;
   }
-  return 'Overpass';
+  return 'GoogleSans';
 }

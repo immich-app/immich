@@ -4,15 +4,16 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 
 class SheetPeopleDetails extends ConsumerStatefulWidget {
   const SheetPeopleDetails({super.key});
@@ -53,11 +54,8 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
-                  "people".t(context: context).toUpperCase(),
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  "people".t(context: context),
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
               SizedBox(
@@ -110,8 +108,6 @@ class _PeopleAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headers = ApiService.getRequestHeaders();
-
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 96),
       child: Padding(
@@ -129,7 +125,7 @@ class _PeopleAvatar extends StatelessWidget {
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
+                    backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                   ),
                 ),
               ),
@@ -158,11 +154,14 @@ class _PeopleAvatar extends StatelessWidget {
                     maxLines: 1,
                   ),
                   if (person.birthDate != null)
-                    Text(
-                      formatAge(person.birthDate!, assetFileCreatedAt),
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.textTheme.bodyMedium?.color?.withAlpha(175),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: context.textTheme.bodyMedium?.color?.withAlpha(175),
+                        ),
                       ),
                     ),
                 ],

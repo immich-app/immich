@@ -19,7 +19,7 @@ class PeopleResponseDto {
     required this.total,
   });
 
-  /// This property was added in v1.110.0
+  /// Whether there are more pages
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -28,10 +28,13 @@ class PeopleResponseDto {
   ///
   bool? hasNextPage;
 
+  /// Number of hidden people
   int hidden;
 
+  /// List of people
   List<PersonResponseDto> people;
 
+  /// Total number of people
   int total;
 
   @override

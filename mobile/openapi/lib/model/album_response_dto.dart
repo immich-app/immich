@@ -18,6 +18,7 @@ class AlbumResponseDto {
     this.albumUsers = const [],
     required this.assetCount,
     this.assets = const [],
+    this.contributorCounts = const [],
     required this.createdAt,
     required this.description,
     this.endDate,
@@ -33,20 +34,28 @@ class AlbumResponseDto {
     required this.updatedAt,
   });
 
+  /// Album name
   String albumName;
 
+  /// Thumbnail asset ID
   String? albumThumbnailAssetId;
 
   List<AlbumUserResponseDto> albumUsers;
 
+  /// Number of assets
   int assetCount;
 
   List<AssetResponseDto> assets;
 
+  List<ContributorCountResponseDto> contributorCounts;
+
+  /// Creation date
   DateTime createdAt;
 
+  /// Album description
   String description;
 
+  /// End date (latest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -55,12 +64,16 @@ class AlbumResponseDto {
   ///
   DateTime? endDate;
 
+  /// Has shared link
   bool hasSharedLink;
 
+  /// Album ID
   String id;
 
+  /// Activity feed enabled
   bool isActivityEnabled;
 
+  /// Last modified asset timestamp
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -69,6 +82,7 @@ class AlbumResponseDto {
   ///
   DateTime? lastModifiedAssetTimestamp;
 
+  /// Asset sort order
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -79,10 +93,13 @@ class AlbumResponseDto {
 
   UserResponseDto owner;
 
+  /// Owner user ID
   String ownerId;
 
+  /// Is shared album
   bool shared;
 
+  /// Start date (earliest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -91,6 +108,7 @@ class AlbumResponseDto {
   ///
   DateTime? startDate;
 
+  /// Last update date
   DateTime updatedAt;
 
   @override
@@ -100,6 +118,7 @@ class AlbumResponseDto {
     _deepEquality.equals(other.albumUsers, albumUsers) &&
     other.assetCount == assetCount &&
     _deepEquality.equals(other.assets, assets) &&
+    _deepEquality.equals(other.contributorCounts, contributorCounts) &&
     other.createdAt == createdAt &&
     other.description == description &&
     other.endDate == endDate &&
@@ -122,6 +141,7 @@ class AlbumResponseDto {
     (albumUsers.hashCode) +
     (assetCount.hashCode) +
     (assets.hashCode) +
+    (contributorCounts.hashCode) +
     (createdAt.hashCode) +
     (description.hashCode) +
     (endDate == null ? 0 : endDate!.hashCode) +
@@ -137,7 +157,7 @@ class AlbumResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, assets=$assets, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
+  String toString() => 'AlbumResponseDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, albumUsers=$albumUsers, assetCount=$assetCount, assets=$assets, contributorCounts=$contributorCounts, createdAt=$createdAt, description=$description, endDate=$endDate, hasSharedLink=$hasSharedLink, id=$id, isActivityEnabled=$isActivityEnabled, lastModifiedAssetTimestamp=$lastModifiedAssetTimestamp, order=$order, owner=$owner, ownerId=$ownerId, shared=$shared, startDate=$startDate, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -150,6 +170,7 @@ class AlbumResponseDto {
       json[r'albumUsers'] = this.albumUsers;
       json[r'assetCount'] = this.assetCount;
       json[r'assets'] = this.assets;
+      json[r'contributorCounts'] = this.contributorCounts;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'description'] = this.description;
     if (this.endDate != null) {
@@ -196,6 +217,7 @@ class AlbumResponseDto {
         albumUsers: AlbumUserResponseDto.listFromJson(json[r'albumUsers']),
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
+        contributorCounts: ContributorCountResponseDto.listFromJson(json[r'contributorCounts']),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         description: mapValueOfType<String>(json, r'description')!,
         endDate: mapDateTime(json, r'endDate', r''),

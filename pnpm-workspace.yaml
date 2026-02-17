@@ -2,15 +2,18 @@ packages:
   - cli
   - docs
   - e2e
+  - e2e-auth-server
+  - i18n
   - open-api/typescript-sdk
   - server
+  - plugins
   - web
   - .github
 ignoredBuiltDependencies:
   - '@nestjs/core'
+  - '@parcel/watcher'
   - '@scarf/scarf'
   - '@swc/core'
-  - bcrypt
   - canvas
   - core-js
   - core-js-pure
@@ -25,9 +28,10 @@ ignoredBuiltDependencies:
 onlyBuiltDependencies:
   - sharp
   - '@tailwindcss/oxide'
+  - bcrypt
 overrides:
   canvas: 2.11.2
-  sharp: ^0.34.2
+  sharp: ^0.34.5
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -51,6 +55,10 @@ packageExtensions:
   tailwind-variants:
     dependencies:
       tailwindcss: '>=4.1'
+  bcrypt:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
 dedupePeerDependents: false
 preferWorkspacePackages: true
 injectWorkspacePackages: true

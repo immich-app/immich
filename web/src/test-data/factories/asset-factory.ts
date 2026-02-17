@@ -6,6 +6,7 @@ import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
+  createdAt: Sync.each(() => faker.date.past().toISOString()),
   deviceAssetId: Sync.each(() => faker.string.uuid()),
   ownerId: Sync.each(() => faker.string.uuid()),
   deviceId: '',
@@ -27,11 +28,14 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
+  width: faker.number.int({ min: 100, max: 1000 }),
+  height: faker.number.int({ min: 100, max: 1000 }),
+  isEdited: false,
 });
 
 export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   id: Sync.each(() => faker.string.uuid()),
-  ratio: Sync.each(() => faker.number.int()),
+  ratio: Sync.each((i) => 0.2 + ((i * 0.618_034) % 3.8)), // deterministic random float between 0.2 and 4.0
   ownerId: Sync.each(() => faker.string.uuid()),
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   localDateTime: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),

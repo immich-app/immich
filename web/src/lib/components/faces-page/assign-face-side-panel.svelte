@@ -1,20 +1,19 @@
 <script lang="ts">
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import { AssetTypeEnum, getAllPeople, type AssetFaceResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
     editedFace: AssetFaceResponseDto;
@@ -62,7 +61,7 @@
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
-    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewerImgElement);
+    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, assetViewerManager.imgRef);
 
     onCreatePerson(newFeaturePhoto);
 
@@ -74,7 +73,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-[360px] overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
@@ -148,7 +147,7 @@
     {/if}
   </div>
   <div class="px-4 py-4 text-sm">
-    <h2 class="mb-8 mt-4 uppercase">{$t('all_people')}</h2>
+    <h2 class="mb-8 mt-4">{$t('all_people')}</h2>
     {#if isShowLoadingPeople}
       <div class="flex w-full justify-center">
         <LoadingSpinner />
@@ -158,7 +157,7 @@
         {#each showPeople as person (person.id)}
           {#if !editedFace.person || person.id !== editedFace.person.id}
             <div class="w-fit">
-              <button type="button" class="w-[90px]" onclick={() => onReassign(person)}>
+              <button type="button" class="w-22.5" onclick={() => onReassign(person)}>
                 <div class="relative">
                   <ImageThumbnail
                     curve

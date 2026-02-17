@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
@@ -17,7 +18,10 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
@@ -42,6 +46,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 
 @DriftDatabase(
   tables: [
+    AuthUserEntity,
     UserEntity,
     UserMetadataEntity,
     PartnerEntity,
@@ -53,11 +58,14 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     RemoteAlbumEntity,
     RemoteAlbumAssetEntity,
     RemoteAlbumUserEntity,
+    RemoteAssetCloudIdEntity,
     MemoryEntity,
     MemoryAssetEntity,
     StackEntity,
     PersonEntity,
     AssetFaceEntity,
+    StoreEntity,
+    TrashedLocalAssetEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -65,8 +73,31 @@ class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
+  Future<void> reset() async {
+    // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+    await exclusively(() async {
+      // https://stackoverflow.com/a/65743498/25690041
+      await customStatement('PRAGMA writable_schema = 1;');
+      await customStatement('DELETE FROM sqlite_master;');
+      await customStatement('VACUUM;');
+      await customStatement('PRAGMA writable_schema = 0;');
+      await customStatement('PRAGMA integrity_check');
+
+      await customStatement('PRAGMA user_version = 0');
+      await beforeOpen(
+        // ignore: invalid_use_of_internal_member
+        resolvedEngine.executor,
+        OpeningDetails(null, schemaVersion),
+      );
+      await customStatement('PRAGMA user_version = $schemaVersion');
+
+      // Refresh all stream queries
+      notifyUpdates({for (final table in allTables) TableUpdate.onTable(table)});
+    });
+  }
+
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -118,6 +149,83 @@ class Drift extends $Drift implements IDatabaseRepository {
           from6To7: (m, v7) async {
             await m.createIndex(v7.idxLatLng);
           },
+          from7To8: (m, v8) async {
+            await m.create(v8.storeEntity);
+          },
+          from8To9: (m, v9) async {
+            await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
+          },
+          from9To10: (m, v10) async {
+            await m.createTable(v10.authUserEntity);
+            await m.addColumn(v10.userEntity, v10.userEntity.avatarColor);
+            await m.alterTable(TableMigration(v10.userEntity));
+          },
+          from10To11: (m, v11) async {
+            await m.addColumn(v11.localAlbumAssetEntity, v11.localAlbumAssetEntity.marker_);
+          },
+          from11To12: (m, v12) async {
+            final localToUTCMapping = {
+              v12.localAssetEntity: [v12.localAssetEntity.createdAt, v12.localAssetEntity.updatedAt],
+              v12.localAlbumEntity: [v12.localAlbumEntity.updatedAt],
+            };
+
+            for (final entry in localToUTCMapping.entries) {
+              final table = entry.key;
+              await m.alterTable(
+                TableMigration(
+                  table,
+                  columnTransformer: {
+                    for (final column in entry.value)
+                      column: column.modify(const DateTimeModifier.utc()).strftime('%Y-%m-%dT%H:%M:%fZ'),
+                  },
+                ),
+              );
+            }
+          },
+          from12To13: (m, v13) async {
+            await m.create(v13.trashedLocalAssetEntity);
+            await m.createIndex(v13.idxTrashedLocalAssetChecksum);
+            await m.createIndex(v13.idxTrashedLocalAssetAlbum);
+          },
+          from13To14: (m, v14) async {
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.adjustmentTime);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.latitude);
+            await m.addColumn(v14.localAssetEntity, v14.localAssetEntity.longitude);
+          },
+          from14To15: (m, v15) async {
+            await m.alterTable(
+              TableMigration(
+                v15.trashedLocalAssetEntity,
+                columnTransformer: {v15.trashedLocalAssetEntity.source: Constant(TrashOrigin.localSync.index)},
+                newColumns: [v15.trashedLocalAssetEntity.source],
+              ),
+            );
+          },
+          from15To16: (m, v16) async {
+            // Add i_cloud_id to local and remote asset tables
+            await m.addColumn(v16.localAssetEntity, v16.localAssetEntity.iCloudId);
+            await m.createIndex(v16.idxLocalAssetCloudId);
+            await m.createTable(v16.remoteAssetCloudIdEntity);
+          },
+          from16To17: (m, v17) async {
+            await m.addColumn(v17.remoteAssetEntity, v17.remoteAssetEntity.isEdited);
+          },
+          from17To18: (m, v18) async {
+            await m.createIndex(v18.idxRemoteAssetCloudId);
+          },
+          from18To19: (m, v19) async {
+            await m.createIndex(v19.idxAssetFacePersonId);
+            await m.createIndex(v19.idxAssetFaceAssetId);
+            await m.createIndex(v19.idxLocalAlbumAssetAlbumAsset);
+            await m.createIndex(v19.idxPartnerSharedWithId);
+            await m.createIndex(v19.idxPersonOwnerId);
+            await m.createIndex(v19.idxRemoteAlbumOwnerId);
+            await m.createIndex(v19.idxRemoteAlbumAssetAlbumAsset);
+            await m.createIndex(v19.idxRemoteAssetStackId);
+            await m.createIndex(v19.idxRemoteAssetLocalDateTimeDay);
+            await m.createIndex(v19.idxRemoteAssetLocalDateTimeMonth);
+            await m.createIndex(v19.idxStackPrimaryAssetId);
+          },
         ),
       );
 
@@ -133,7 +241,9 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA busy_timeout = 30000'); // 30s
+      await customStatement('PRAGMA cache_size = -32000'); // 32MB
+      await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
 }

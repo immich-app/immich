@@ -1,11 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute, dateFormats } from '$lib/constants';
+  import { dateFormats } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -31,15 +32,15 @@
 </script>
 
 <tr
-  class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center even:bg-subtle/20 odd:bg-subtle/80 hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
-  onclick={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
+  class="flex w-full place-items-center border-3 border-transparent p-2 text-center even:bg-subtle/20 odd:bg-subtle/80 hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:px-5 md:py-2"
+  onclick={() => goto(Route.viewAlbum(album))}
   {oncontextmenu}
 >
   <td class="text-md text-ellipsis text-start w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">
     {album.albumName}
     {#if album.shared}
       <Icon
-        path={mdiShareVariantOutline}
+        icon={mdiShareVariantOutline}
         size="16"
         class="inline ms-1 opacity-70"
         title={album.ownerId === $user.id

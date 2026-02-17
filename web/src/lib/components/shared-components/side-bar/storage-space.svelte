@@ -4,9 +4,9 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { requestServerInfo } from '$lib/utils/auth';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import LoadingSpinner from '../loading-spinner.svelte';
 
   let usageClasses = $state('');
 
@@ -66,8 +66,8 @@
       })}
     </p>
 
-    <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-      <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
+    <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+      <div class="h-1.75 rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
     </div>
   {:else}
     <div class="mt-2">

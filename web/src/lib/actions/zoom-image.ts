@@ -1,25 +1,35 @@
-import { photoZoomState } from '$lib/stores/zoom-image.store';
-import { useZoomImageWheel } from '@zoom-image/svelte';
-import { get } from 'svelte/store';
+import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+import { createZoomImageWheel } from '@zoom-image/core';
 
-export const zoomImageAction = (node: HTMLElement) => {
-  const { createZoomImage, zoomImageState, setZoomImageState } = useZoomImageWheel();
+export const zoomImageAction = (node: HTMLElement, options?: { disabled?: boolean }) => {
+  const zoomInstance = createZoomImageWheel(node, { maxZoom: 10, initialState: assetViewerManager.zoomState });
 
-  createZoomImage(node, {
-    maxZoom: 10,
-  });
+  const unsubscribes = [
+    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
+    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
+  ];
 
-  const state = get(photoZoomState);
-  if (state) {
-    setZoomImageState(state);
-  }
+  const stopIfDisabled = (event: Event) => {
+    if (options?.disabled) {
+      event.stopImmediatePropagation();
+    }
+  };
 
-  const unsubscribes = [photoZoomState.subscribe(setZoomImageState), zoomImageState.subscribe(photoZoomState.set)];
+  node.addEventListener('wheel', stopIfDisabled, { capture: true });
+  node.addEventListener('pointerdown', stopIfDisabled, { capture: true });
+
+  node.style.overflow = 'visible';
   return {
+    update(newOptions?: { disabled?: boolean }) {
+      options = newOptions;
+    },
     destroy() {
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }
+      node.removeEventListener('wheel', stopIfDisabled, { capture: true });
+      node.removeEventListener('pointerdown', stopIfDisabled, { capture: true });
+      zoomInstance.cleanup();
     },
   };
 };

@@ -16,6 +16,7 @@ import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { updateLockedColumns } from 'src/utils/database';
 import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
@@ -82,14 +83,15 @@ export class TagService extends BaseService {
     ]);
 
     const items: Insertable<TagAssetTable>[] = [];
-    for (const tagsId of tagIds) {
-      for (const assetsId of assetIds) {
-        items.push({ tagsId, assetsId });
+    for (const tagId of tagIds) {
+      for (const assetId of assetIds) {
+        items.push({ tagId, assetId });
       }
     }
 
     const results = await this.tagRepository.upsertAssetIds(items);
-    for (const assetId of new Set(results.map((item) => item.assetsId))) {
+    for (const assetId of new Set(results.map((item) => item.assetId))) {
+      await this.updateTags(assetId);
       await this.eventRepository.emit('AssetTag', { assetId });
     }
 
@@ -107,6 +109,7 @@ export class TagService extends BaseService {
 
     for (const { id: assetId, success } of results) {
       if (success) {
+        await this.updateTags(assetId);
         await this.eventRepository.emit('AssetTag', { assetId });
       }
     }
@@ -125,6 +128,7 @@ export class TagService extends BaseService {
 
     for (const { id: assetId, success } of results) {
       if (success) {
+        await this.updateTags(assetId);
         await this.eventRepository.emit('AssetUntag', { assetId });
       }
     }
@@ -144,5 +148,13 @@ export class TagService extends BaseService {
       throw new BadRequestException('Tag not found');
     }
     return tag;
+  }
+
+  private async updateTags(assetId: string) {
+    const asset = await this.assetRepository.getById(assetId, { tags: true });
+    await this.assetRepository.upsertExif(
+      updateLockedColumns({ assetId, tags: asset?.tags?.map(({ value }) => value) ?? [] }),
+      { lockedPropertiesBehavior: 'append' },
+    );
   }
 }

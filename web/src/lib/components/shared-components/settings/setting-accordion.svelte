@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Icon } from '@immich/ui';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
@@ -64,7 +64,7 @@
 </script>
 
 <div
-  class="border-2 rounded-2xl border-primary/20 my-4 px-6 py-4 transition-all {isOpen
+  class="border-2 rounded-2xl border-primary/20 mt-4 px-6 py-4 transition-all {isOpen
     ? 'border-primary/60 shadow-md'
     : ''}"
   bind:this={accordionElement}
@@ -78,9 +78,9 @@
     <div>
       <div class="flex gap-2 place-items-center">
         {#if icon}
-          <Icon path={icon} class="text-immich-primary dark:text-immich-dark-primary" size="24" ariaHidden />
+          <Icon {icon} class="text-primary" size="24" aria-hidden />
         {/if}
-        <h2 class="font-medium text-immich-primary dark:text-immich-dark-primary">
+        <h2 class="font-medium text-primary">
           {title}
         </h2>
       </div>

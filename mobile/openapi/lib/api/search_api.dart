@@ -16,7 +16,9 @@ class SearchApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve assets by city
+  ///
+  /// Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAssetsByCityWithHttpInfo() async {
@@ -44,7 +46,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve assets by city
+  ///
+  /// Retrieve a list of assets with each asset belonging to a different city. This endpoint is used on the places pages to show a single thumbnail for each city the user has assets in.
   Future<List<AssetResponseDto>?> getAssetsByCity() async {
     final response = await getAssetsByCityWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -63,7 +67,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve explore data
+  ///
+  /// Retrieve data for the explore section, such as popular people and places.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getExploreDataWithHttpInfo() async {
@@ -91,7 +97,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve explore data
+  ///
+  /// Retrieve data for the explore section, such as popular people and places.
   Future<List<SearchExploreResponseDto>?> getExploreData() async {
     final response = await getExploreDataWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -110,25 +118,35 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve search suggestions
+  ///
+  /// Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
+  ///   Suggestion type
   ///
   /// * [String] country:
+  ///   Filter by country
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
+  ///   Include null values in suggestions
+  ///
+  /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] state:
-  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
+  ///   Filter by state/province
+  Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/suggestions';
 
@@ -144,6 +162,9 @@ class SearchApi {
     }
     if (includeNull != null) {
       queryParams.addAll(_queryParams('', 'includeNull', includeNull));
+    }
+    if (lensModel != null) {
+      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
     }
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
@@ -170,24 +191,34 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Retrieve search suggestions
+  ///
+  /// Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.
   ///
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
+  ///   Suggestion type
   ///
   /// * [String] country:
+  ///   Filter by country
   ///
   /// * [bool] includeNull:
-  ///   This property was added in v111.0.0
+  ///   Include null values in suggestions
+  ///
+  /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [String] model:
+  ///   Filter by camera model
   ///
   /// * [String] state:
-  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
-    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, make: make, model: model, state: state, );
+  ///   Filter by state/province
+  Future<List<String>?> getSearchSuggestions(SearchSuggestionType type, { String? country, bool? includeNull, String? lensModel, String? make, String? model, String? state, }) async {
+    final response = await getSearchSuggestionsWithHttpInfo(type,  country: country, includeNull: includeNull, lensModel: lensModel, make: make, model: model, state: state, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -204,7 +235,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Search asset statistics
+  ///
+  /// Retrieve statistical data about assets based on search criteria, such as the total matching count.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -236,7 +269,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.statistics` permission.
+  /// Search asset statistics
+  ///
+  /// Retrieve statistical data about assets based on search criteria, such as the total matching count.
   ///
   /// Parameters:
   ///
@@ -256,7 +291,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search assets by metadata
+  ///
+  /// Search for assets based on various metadata criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -288,7 +325,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search assets by metadata
+  ///
+  /// Search for assets based on various metadata criteria.
   ///
   /// Parameters:
   ///
@@ -308,74 +347,110 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
+  ///   Filter by album IDs
   ///
   /// * [String] city:
+  ///   Filter by city name
   ///
   /// * [String] country:
+  ///   Filter by country name
   ///
   /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
   ///
   /// * [DateTime] createdBefore:
+  ///   Filter by creation date (before)
   ///
   /// * [String] deviceId:
+  ///   Device ID to filter by
   ///
   /// * [bool] isEncoded:
+  ///   Filter by encoded status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isMotion:
+  ///   Filter by motion photo status
   ///
   /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
   ///
   /// * [bool] isOffline:
+  ///   Filter by offline status
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] libraryId:
+  ///   Library ID to filter by
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [int] minFileSize:
+  ///   Minimum file size in bytes
   ///
   /// * [String] model:
+  ///   Filter by camera model
+  ///
+  /// * [String] ocr:
+  ///   Filter by OCR text content
   ///
   /// * [List<String>] personIds:
+  ///   Filter by person IDs
   ///
   /// * [num] rating:
+  ///   Filter by rating
   ///
   /// * [num] size:
+  ///   Number of results to return
   ///
   /// * [String] state:
+  ///   Filter by state/province name
   ///
   /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
   ///
   /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
   ///
   /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
   ///
   /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
+  ///   Asset type filter
   ///
   /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
   ///
   /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted assets
   ///
   /// * [bool] withExif:
-  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+  ///   Include EXIF data in response
+  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/large-assets';
 
@@ -433,6 +508,9 @@ class SearchApi {
     }
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
+    }
+    if (ocr != null) {
+      queryParams.addAll(_queryParams('', 'ocr', ocr));
     }
     if (personIds != null) {
       queryParams.addAll(_queryParams('multi', 'personIds', personIds));
@@ -494,73 +572,109 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
   ///
   /// Parameters:
   ///
   /// * [List<String>] albumIds:
+  ///   Filter by album IDs
   ///
   /// * [String] city:
+  ///   Filter by city name
   ///
   /// * [String] country:
+  ///   Filter by country name
   ///
   /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
   ///
   /// * [DateTime] createdBefore:
+  ///   Filter by creation date (before)
   ///
   /// * [String] deviceId:
+  ///   Device ID to filter by
   ///
   /// * [bool] isEncoded:
+  ///   Filter by encoded status
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isMotion:
+  ///   Filter by motion photo status
   ///
   /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
   ///
   /// * [bool] isOffline:
+  ///   Filter by offline status
   ///
   /// * [String] lensModel:
+  ///   Filter by lens model
   ///
   /// * [String] libraryId:
+  ///   Library ID to filter by
   ///
   /// * [String] make:
+  ///   Filter by camera make
   ///
   /// * [int] minFileSize:
+  ///   Minimum file size in bytes
   ///
   /// * [String] model:
+  ///   Filter by camera model
+  ///
+  /// * [String] ocr:
+  ///   Filter by OCR text content
   ///
   /// * [List<String>] personIds:
+  ///   Filter by person IDs
   ///
   /// * [num] rating:
+  ///   Filter by rating
   ///
   /// * [num] size:
+  ///   Number of results to return
   ///
   /// * [String] state:
+  ///   Filter by state/province name
   ///
   /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
   ///
   /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
   ///
   /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
   ///
   /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
   ///
   /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
+  ///   Asset type filter
   ///
   /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
   ///
   /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted assets
   ///
   /// * [bool] withExif:
-  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
-    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
+  ///   Include EXIF data in response
+  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -577,15 +691,19 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Search people
+  ///
+  /// Search for people by name.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Person name to search for
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<Response> searchPersonWithHttpInfo(String name, { bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/person';
@@ -616,13 +734,17 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `person.read` permission.
+  /// Search people
+  ///
+  /// Search for people by name.
   ///
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Person name to search for
   ///
   /// * [bool] withHidden:
+  ///   Include hidden people
   Future<List<PersonResponseDto>?> searchPerson(String name, { bool? withHidden, }) async {
     final response = await searchPersonWithHttpInfo(name,  withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -641,13 +763,16 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search places
+  ///
+  /// Search for places by name.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Place name to search for
   Future<Response> searchPlacesWithHttpInfo(String name,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/places';
@@ -675,11 +800,14 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search places
+  ///
+  /// Search for places by name.
   ///
   /// Parameters:
   ///
   /// * [String] name (required):
+  ///   Place name to search for
   Future<List<PlacesResponseDto>?> searchPlaces(String name,) async {
     final response = await searchPlacesWithHttpInfo(name,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -698,7 +826,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search random assets
+  ///
+  /// Retrieve a random selection of assets based on the provided criteria.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -730,7 +860,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Search random assets
+  ///
+  /// Retrieve a random selection of assets based on the provided criteria.
   ///
   /// Parameters:
   ///
@@ -753,7 +885,9 @@ class SearchApi {
     return null;
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Smart asset search
+  ///
+  /// Perform a smart search for assets by using machine learning vectors to determine relevance.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -785,7 +919,9 @@ class SearchApi {
     );
   }
 
-  /// This endpoint requires the `asset.read` permission.
+  /// Smart asset search
+  ///
+  /// Perform a smart search for assets by using machine learning vectors to determine relevance.
   ///
   /// Parameters:
   ///

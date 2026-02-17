@@ -1,61 +1,92 @@
 import type { ThemeSetting } from '$lib/managers/theme-manager.svelte';
-import type { LoginResponseDto } from '@immich/sdk';
+import type { ReleaseEvent } from '$lib/types';
+import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
+import type { TreeNode } from '$lib/utils/tree-utils';
+import type {
+  AlbumResponseDto,
+  AlbumUserRole,
+  ApiKeyResponseDto,
+  AssetResponseDto,
+  LibraryResponseDto,
+  LoginResponseDto,
+  PersonResponseDto,
+  QueueResponseDto,
+  SharedLinkResponseDto,
+  SystemConfigDto,
+  TagResponseDto,
+  UserAdminResponseDto,
+  WorkflowResponseDto,
+} from '@immich/sdk';
 
-type Listener<EventMap extends Record<string, unknown[]>, K extends keyof EventMap> = (...params: EventMap[K]) => void;
+export type Events = {
+  AppInit: [];
 
-class EventManager<EventMap extends Record<string, unknown[]>> {
-  private listeners: {
-    [K in keyof EventMap]?: {
-      listener: Listener<EventMap, K>;
-      once?: boolean;
-    }[];
-  } = {};
+  AuthLogin: [LoginResponseDto];
+  AuthLogout: [];
+  AuthUserLoaded: [UserAdminResponseDto];
 
-  on<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => void) {
-    return this.addListener(key, listener, false);
-  }
+  LanguageChange: [{ name: string; code: string; rtl?: boolean }];
+  ThemeChange: [ThemeSetting];
 
-  once<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => void) {
-    return this.addListener(key, listener, true);
-  }
+  ApiKeyCreate: [ApiKeyResponseDto];
+  ApiKeyUpdate: [ApiKeyResponseDto];
+  ApiKeyDelete: [ApiKeyResponseDto];
 
-  off<K extends keyof EventMap>(key: K, listener: Listener<EventMap, K>) {
-    if (this.listeners[key]) {
-      this.listeners[key] = this.listeners[key].filter((item) => item.listener !== listener);
-    }
+  AssetUpdate: [AssetResponseDto];
+  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
+  AssetsArchive: [string[]];
+  AssetsDelete: [string[]];
+  AssetEditsApplied: [string];
+  AssetsTag: [string[]];
 
-    return this;
-  }
+  AlbumAddAssets: [];
+  AlbumUpdate: [AlbumResponseDto];
+  AlbumDelete: [AlbumResponseDto];
+  AlbumShare: [];
+  AlbumUserUpdate: [{ albumId: string; userId: string; role: AlbumUserRole }];
+  AlbumUserDelete: [{ albumId: string; userId: string }];
 
-  emit<T extends keyof EventMap>(key: T, ...params: EventMap[T]) {
-    if (!this.listeners[key]) {
-      return;
-    }
+  PersonUpdate: [PersonResponseDto];
+  PersonThumbnailReady: [{ id: string }];
+  PersonAssetDelete: [{ id: string; assetId: string }];
 
-    for (const { listener } of this.listeners[key]) {
-      listener(...params);
-    }
+  BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
+  BackupDeleted: [{ filename: string }];
+  BackupUpload: [{ progress: number; isComplete: boolean }];
 
-    // remove one time listeners
-    this.listeners[key] = this.listeners[key].filter((item) => !item.once);
-  }
+  QueueUpdate: [QueueResponseDto];
 
-  private addListener<T extends keyof EventMap>(key: T, listener: (...params: EventMap[T]) => void, once: boolean) {
-    if (!this.listeners[key]) {
-      this.listeners[key] = [];
-    }
+  SharedLinkCreate: [SharedLinkResponseDto];
+  SharedLinkUpdate: [SharedLinkResponseDto];
+  SharedLinkDelete: [SharedLinkResponseDto];
 
-    this.listeners[key].push({ listener, once });
+  TagCreate: [TagResponseDto];
+  TagUpdate: [TagResponseDto];
+  TagDelete: [TreeNode];
 
-    return this;
-  }
-}
+  UserPinCodeReset: [];
 
-export const eventManager = new EventManager<{
-  'app.init': [];
-  'user.login': [];
-  'auth.login': [LoginResponseDto];
-  'auth.logout': [];
-  'language.change': [{ name: string; code: string; rtl?: boolean }];
-  'theme.change': [ThemeSetting];
-}>();
+  UserAdminCreate: [UserAdminResponseDto];
+  UserAdminUpdate: [UserAdminResponseDto];
+  UserAdminRestore: [UserAdminResponseDto];
+  // soft deleted
+  UserAdminDelete: [UserAdminResponseDto];
+  // confirmed permanently deleted from server
+  UserAdminDeleted: [{ id: string }];
+
+  SessionLocked: [];
+
+  SystemConfigUpdate: [SystemConfigDto];
+
+  LibraryCreate: [LibraryResponseDto];
+  LibraryUpdate: [LibraryResponseDto];
+  LibraryDelete: [{ id: string }];
+
+  WorkflowCreate: [WorkflowResponseDto];
+  WorkflowUpdate: [WorkflowResponseDto];
+  WorkflowDelete: [WorkflowResponseDto];
+
+  ReleaseEvent: [ReleaseEvent];
+};
+
+export const eventManager = new BaseEventManager<Events>();

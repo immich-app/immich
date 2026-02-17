@@ -25,7 +25,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
         }
 
         return GestureDetector(
-          onTap: () => context.pushRoute(const DriftAlbumOptionsRoute()),
+          onTap: () => context.pushRoute(DriftAlbumOptionsRoute(album: currentAlbum)),
           child: SizedBox(
             height: 50,
             child: ListView.builder(
@@ -33,7 +33,7 @@ class RemoteAlbumSharedUserIcons extends ConsumerWidget {
               itemBuilder: ((context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 4.0),
-                  child: UserCircleAvatar(user: sharedUsers[index], radius: 18, size: 36, hasBorder: true),
+                  child: UserCircleAvatar(user: sharedUsers[index], size: 36, hasBorder: true),
                 );
               }),
               itemCount: sharedUsers.length,

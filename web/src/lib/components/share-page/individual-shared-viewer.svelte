@@ -1,28 +1,27 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
-  import { AppRoute, AssetAction } from '$lib/constants';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, Logo, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-  import DownloadAction from '../photos-page/actions/download-action.svelte';
-  import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
-  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -34,7 +33,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
+  let assets = $derived(sharedLink.assets);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -63,17 +62,14 @@
 
       const added = data.filter((item) => item.success).length;
 
-      notificationController.show({
-        message: $t('assets_added_count', { values: { count: added } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_added_count', { values: { count: added } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
     }
   };
 
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets);
+    assetInteraction.selectAssets(assets.map((asset) => toTimelineAsset(asset)));
   };
 
   const handleAction = async (action: Action) => {
@@ -81,7 +77,7 @@
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
-        await goto(AppRoute.PHOTOS);
+        await goto(Route.photos());
         break;
       }
     }
@@ -111,9 +107,11 @@
         {/if}
       </AssetSelectControlBar>
     {:else}
-      <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
+      <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
-          <ImmichLogoSmallLink />
+          <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+            <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+          </a>
         {/snippet}
 
         {#snippet trailing()}
@@ -141,20 +139,14 @@
         {/snippet}
       </ControlAppBar>
     {/if}
-    <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
   {:else if assets.length === 1}
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
-      <AssetViewer
-        {asset}
-        showCloseButton={false}
-        onAction={handleAction}
-        onPrevious={() => Promise.resolve(false)}
-        onNext={() => Promise.resolve(false)}
-        onRandom={() => Promise.resolve(undefined)}
-        onClose={() => {}}
-      />
+      {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+        <AssetViewer cursor={{ current: asset }} onAction={handleAction} />
+      {/await}
     {/await}
   {/if}
 </section>

@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AlbumUserRole) {
     return AlbumUserRoleTypeTransformer().encode(value).toString();
   }
+  if (value is AssetEditAction) {
+    return AssetEditActionTypeTransformer().encode(value).toString();
+  }
   if (value is AssetJobName) {
     return AssetJobNameTypeTransformer().encode(value).toString();
   }
@@ -91,20 +94,26 @@ String parameterToString(dynamic value) {
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }
-  if (value is JobCommand) {
-    return JobCommandTypeTransformer().encode(value).toString();
-  }
   if (value is JobName) {
     return JobNameTypeTransformer().encode(value).toString();
   }
   if (value is LogLevel) {
     return LogLevelTypeTransformer().encode(value).toString();
   }
+  if (value is MaintenanceAction) {
+    return MaintenanceActionTypeTransformer().encode(value).toString();
+  }
   if (value is ManualJobName) {
     return ManualJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is MemorySearchOrder) {
+    return MemorySearchOrderTypeTransformer().encode(value).toString();
+  }
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is MirrorAxis) {
+    return MirrorAxisTypeTransformer().encode(value).toString();
   }
   if (value is NotificationLevel) {
     return NotificationLevelTypeTransformer().encode(value).toString();
@@ -121,6 +130,21 @@ String parameterToString(dynamic value) {
   if (value is Permission) {
     return PermissionTypeTransformer().encode(value).toString();
   }
+  if (value is PluginContextType) {
+    return PluginContextTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is PluginTriggerType) {
+    return PluginTriggerTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueCommand) {
+    return QueueCommandTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueJobStatus) {
+    return QueueJobStatusTypeTransformer().encode(value).toString();
+  }
+  if (value is QueueName) {
+    return QueueNameTypeTransformer().encode(value).toString();
+  }
   if (value is ReactionLevel) {
     return ReactionLevelTypeTransformer().encode(value).toString();
   }
@@ -135,6 +159,9 @@ String parameterToString(dynamic value) {
   }
   if (value is SourceType) {
     return SourceTypeTypeTransformer().encode(value).toString();
+  }
+  if (value is StorageFolder) {
+    return StorageFolderTypeTransformer().encode(value).toString();
   }
   if (value is SyncEntityType) {
     return SyncEntityTypeTypeTransformer().encode(value).toString();

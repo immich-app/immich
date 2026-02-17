@@ -28,7 +28,7 @@ The metrics in immich are grouped into API (endpoint calls and response times), 
 Immich will not expose an endpoint for metrics by default. To enable this endpoint, you can add the `IMMICH_TELEMETRY_INCLUDE=all` environmental variable to your `.env` file. Note that only the server container currently use this variable.
 
 :::tip
-`IMMICH_TELEMETRY_INCLUDE=all` enables all metrics. For a more granular configuration you can enumerate the telemetry metrics that should be included as a comma separated list (e.g. `IMMICH_TELEMETRY_INCLUDE=repo,api`). Alternatively, you can also exclude specific metrics with `IMMICH_TELEMETRY_EXCLUDE`. For more information refer to the [environment section](/docs/install/environment-variables.md#prometheus).
+`IMMICH_TELEMETRY_INCLUDE=all` enables all metrics. For a more granular configuration you can enumerate the telemetry metrics that should be included as a comma separated list (e.g. `IMMICH_TELEMETRY_INCLUDE=repo,api`). Alternatively, you can also exclude specific metrics with `IMMICH_TELEMETRY_EXCLUDE`. For more information refer to the [environment section](/install/environment-variables.md#prometheus).
 :::
 
 The next step is to configure a new or existing Prometheus instance to scrape this endpoint. The following steps assume that you do not have an existing Prometheus instance, but the steps will be similar either way.
@@ -66,9 +66,9 @@ The provided file is just a starting point. There are a ton of ways to configure
 After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the immich server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
 
 :::note
-To see exactly what metrics are made available, you can additionally add `8081:8081` to the server container's ports and `8082:8082` to the microservices container's ports.
+To see exactly what metrics are made available, you can additionally add `8081:8081` (API metrics) and `8082:8082` (microservices metrics) to the immich_server container's ports.
 Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
-To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/docs/install/environment-variables/#general).
+To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/install/environment-variables/#general).
 :::
 
 ### Usage
@@ -111,5 +111,41 @@ You can make your first dashboard to get started. Don't forget to save it freque
 You can then make a new panel, specifying Prometheus as the data source for it.
 
 -- TODO: add images and more details here
+
+## Structured Logging
+
+In addition to Prometheus metrics, Immich supports structured JSON logging which is ideal for log aggregation systems like Grafana Loki, ELK Stack, Datadog, Splunk, and others.
+
+### Configuration
+
+By default, Immich outputs human-readable console logs. To enable JSON logging, set the `IMMICH_LOG_FORMAT` environment variable:
+
+```bash
+IMMICH_LOG_FORMAT=json
+```
+
+:::tip
+The default is `IMMICH_LOG_FORMAT=console` for human-readable logs with colors during development. For production deployments using log aggregation, use `IMMICH_LOG_FORMAT=json`.
+:::
+
+### JSON Log Format
+
+When enabled, logs are output in structured JSON format:
+
+```json
+{"level":"log","pid":36,"timestamp":1766533331507,"message":"Initialized websocket server","context":"WebsocketRepository"}
+{"level":"warn","pid":48,"timestamp":1766533331629,"message":"Unable to open /build/www/index.html, skipping SSR.","context":"ApiService"}
+{"level":"error","pid":36,"timestamp":1766533331690,"message":"Failed to load plugin immich-core:","context":"Error"}
+```
+
+This format includes:
+
+- `level`: Log level (log, warn, error, etc.)
+- `pid`: Process ID
+- `timestamp`: Unix timestamp in milliseconds
+- `message`: Log message
+- `context`: Service or component that generated the log
+
+For more information on log formats, see [`IMMICH_LOG_FORMAT`](/install/environment-variables.md#general).
 
 [prom-file]: https://github.com/immich-app/immich/releases/latest/download/prometheus.yml

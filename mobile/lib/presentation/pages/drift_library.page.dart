@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -11,8 +12,8 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
@@ -178,12 +179,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
                       mainAxisSpacing: 8,
                       physics: const NeverScrollableScrollPhysics(),
                       children: people.take(4).map((person) {
-                        return CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            getFaceThumbnailUrl(person.id),
-                            headers: ApiService.getRequestHeaders(),
-                          ),
-                        );
+                        return CircleAvatar(backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)));
                       }).toList(),
                     );
                   },
@@ -302,7 +298,9 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
                         }).toList();
                       },
                       error: (error, _) {
-                        return [Center(child: Text('Error: $error'))];
+                        return [
+                          Center(child: Text('error_saving_image'.tr(args: [error.toString()]))),
+                        ];
                       },
                       loading: () {
                         return [const Center(child: CircularProgressIndicator())];

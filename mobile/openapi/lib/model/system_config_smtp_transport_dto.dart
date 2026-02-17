@@ -17,19 +17,29 @@ class SystemConfigSmtpTransportDto {
     required this.ignoreCert,
     required this.password,
     required this.port,
+    required this.secure,
     required this.username,
   });
 
+  /// SMTP server hostname
   String host;
 
+  /// Whether to ignore SSL certificate errors
   bool ignoreCert;
 
+  /// SMTP password
   String password;
 
+  /// SMTP server port
+  ///
   /// Minimum value: 0
   /// Maximum value: 65535
   num port;
 
+  /// Whether to use secure connection (TLS/SSL)
+  bool secure;
+
+  /// SMTP username
   String username;
 
   @override
@@ -38,6 +48,7 @@ class SystemConfigSmtpTransportDto {
     other.ignoreCert == ignoreCert &&
     other.password == password &&
     other.port == port &&
+    other.secure == secure &&
     other.username == username;
 
   @override
@@ -47,10 +58,11 @@ class SystemConfigSmtpTransportDto {
     (ignoreCert.hashCode) +
     (password.hashCode) +
     (port.hashCode) +
+    (secure.hashCode) +
     (username.hashCode);
 
   @override
-  String toString() => 'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, username=$username]';
+  String toString() => 'SystemConfigSmtpTransportDto[host=$host, ignoreCert=$ignoreCert, password=$password, port=$port, secure=$secure, username=$username]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -58,6 +70,7 @@ class SystemConfigSmtpTransportDto {
       json[r'ignoreCert'] = this.ignoreCert;
       json[r'password'] = this.password;
       json[r'port'] = this.port;
+      json[r'secure'] = this.secure;
       json[r'username'] = this.username;
     return json;
   }
@@ -75,6 +88,7 @@ class SystemConfigSmtpTransportDto {
         ignoreCert: mapValueOfType<bool>(json, r'ignoreCert')!,
         password: mapValueOfType<String>(json, r'password')!,
         port: num.parse('${json[r'port']}'),
+        secure: mapValueOfType<bool>(json, r'secure')!,
         username: mapValueOfType<String>(json, r'username')!,
       );
     }
@@ -127,6 +141,7 @@ class SystemConfigSmtpTransportDto {
     'ignoreCert',
     'password',
     'port',
+    'secure',
     'username',
   };
 }

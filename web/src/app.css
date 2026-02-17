@@ -4,7 +4,7 @@
 /* @import '/usr/ui/dist/theme/default.css'; */
 
 @utility immich-form-input {
-  @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
 }
 
 @utility immich-form-label {
@@ -49,7 +49,7 @@
 }
 
 @theme {
-  --font-immich-mono: Overpass Mono, monospace;
+  --font-mono: 'GoogleSansCode', monospace;
 
   --spacing-18: 4.5rem;
 
@@ -76,14 +76,6 @@
     --immich-dark-gray: 33 33 33;
   }
 
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: rgb(var(--immich-ui-default-border));
-  }
-
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
@@ -92,25 +84,25 @@
 
 @layer utilities {
   @font-face {
-    font-family: 'Overpass';
-    src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
-    font-weight: 1 999;
+    font-family: 'GoogleSans';
+    src: url('$lib/assets/fonts/GoogleSans/GoogleSans.ttf') format('truetype-variations');
+    font-weight: 410 900;
     font-style: normal;
     ascent-override: 106.25%;
     size-adjust: 106.25%;
   }
 
   @font-face {
-    font-family: 'Overpass Mono';
-    src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
-    font-weight: 1 999;
+    font-family: 'GoogleSansCode';
+    src: url('$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf') format('truetype-variations');
+    font-weight: 1 900;
     font-style: monospace;
-    ascent-override: 106.25%;
-    size-adjust: 106.25%;
   }
 
   :root {
-    font-family: 'Overpass', sans-serif;
+    font-family: 'GoogleSans', sans-serif;
+    letter-spacing: 0.1px;
+
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: calc(4.5rem + 4px);
     --navbar-height-md: calc(4.5rem + 4px - 14px);
@@ -167,5 +159,15 @@
 
   .icon-white-drop-shadow {
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.8));
+  }
+}
+
+.maplibregl-popup {
+  .maplibregl-popup-tip {
+    @apply border-t-subtle! translate-y-[-1px];
+  }
+
+  .maplibregl-popup-content {
+    @apply bg-subtle rounded-lg;
   }
 }

@@ -13,9 +13,22 @@ part of openapi.api;
 class MemoriesUpdate {
   /// Returns a new [MemoriesUpdate] instance.
   MemoriesUpdate({
+    this.duration,
     this.enabled,
   });
 
+  /// Memory duration in seconds
+  ///
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  int? duration;
+
+  /// Whether memories are enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,18 +39,25 @@ class MemoriesUpdate {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoriesUpdate &&
+    other.duration == duration &&
     other.enabled == enabled;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (duration == null ? 0 : duration!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode);
 
   @override
-  String toString() => 'MemoriesUpdate[enabled=$enabled]';
+  String toString() => 'MemoriesUpdate[duration=$duration, enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.duration != null) {
+      json[r'duration'] = this.duration;
+    } else {
+    //  json[r'duration'] = null;
+    }
     if (this.enabled != null) {
       json[r'enabled'] = this.enabled;
     } else {
@@ -55,6 +75,7 @@ class MemoriesUpdate {
       final json = value.cast<String, dynamic>();
 
       return MemoriesUpdate(
+        duration: mapValueOfType<int>(json, r'duration'),
         enabled: mapValueOfType<bool>(json, r'enabled'),
       );
     }

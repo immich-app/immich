@@ -3,22 +3,19 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import { Route } from '$lib/route';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -60,6 +57,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -94,27 +92,25 @@
       return;
     }
 
-    notificationController.show({
-      message: $featureFlags.trash
-        ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
-        : $t('permanently_deleted_assets_count', { values: { count: trashedCount } }),
-      type: NotificationType.Info,
-    });
+    const message = featureFlagsManager.value.trash
+      ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
+      : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
+    toastManager.success(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
+        await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
-        await correctDuplicatesIndexAndGo(duplicatesIndex);
+        await navigateToIndex(duplicatesIndex);
       },
-      trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
-      trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
+      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('delete_duplicates_confirmation') : undefined,
+      trashIds.length > 0 && !featureFlagsManager.value.trash ? $t('permanently_delete') : undefined,
     );
   };
 
@@ -123,7 +119,7 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-    await correctDuplicatesIndexAndGo(duplicatesIndex);
+    await navigateToIndex(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
@@ -133,7 +129,7 @@
     );
 
     let prompt, confirmText;
-    if ($featureFlags.trash) {
+    if (featureFlagsManager.value.trash) {
       prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
       confirmText = $t('confirm');
     } else {
@@ -143,7 +139,7 @@
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
+        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !featureFlagsManager.value.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
             ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
@@ -156,7 +152,7 @@
         deletedNotification(idsToDelete.length);
 
         page.url.searchParams.delete('index');
-        await goto(`${AppRoute.DUPLICATES}`);
+        await goto(Route.duplicatesUtility());
       },
       prompt,
       confirmText,
@@ -171,40 +167,40 @@
 
         duplicates = [];
 
-        notificationController.show({
-          message: $t('resolved_all_duplicates'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
-        await goto(`${AppRoute.DUPLICATES}`);
+        await goto(Route.duplicatesUtility());
       },
       $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
       $t('confirm'),
     );
   };
 
-  const handleFirst = async () => {
-    await correctDuplicatesIndexAndGo(0);
+  const handleFirst = () => navigateToIndex(0);
+  const handlePrevious = () => navigateToIndex(Math.max(duplicatesIndex - 1, 0));
+  const handlePreviousShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handlePrevious();
   };
-  const handlePrevious = async () => {
-    await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
+  const handleNext = async () => navigateToIndex(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+  const handleNextShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handleNext();
   };
-  const handleNext = async () => {
-    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
-  };
-  const handleLast = async () => {
-    await correctDuplicatesIndexAndGo(duplicates.length - 1);
-  };
-  const correctDuplicatesIndexAndGo = async (index: number) => {
-    page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
-    await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
-  };
+  const handleLast = () => navigateToIndex(duplicates.length - 1);
+
+  const navigateToIndex = async (index: number) =>
+    goto(Route.duplicatesUtility({ index: correctDuplicatesIndex(index) }));
 </script>
 
 <svelte:document
   use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePreviousShortcut },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNextShortcut },
   ]}
 />
 
@@ -267,8 +263,8 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="max-w-216 mx-auto mb-16">
-          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
+        <div class="max-w-5xl mx-auto mb-16">
+          <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
             <div class="flex text-xs text-black">
               <Button
                 size="small"
@@ -291,6 +287,9 @@
                 {$t('previous')}
               </Button>
             </div>
+            <p class="border px-3 md:px-6 py-1 dark:bg-subtle rounded-lg text-xs md:text-sm">
+              {duplicatesIndex + 1} / {duplicates.length.toLocaleString($locale)}
+            </p>
             <div class="flex text-xs text-black">
               <Button
                 size="small"

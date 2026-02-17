@@ -67,13 +67,31 @@ enum StoreKey<T> {
   loadOriginalVideo<bool>._(136),
   manageLocalMediaAndroid<bool>._(137),
 
+  // Read-only Mode settings
+  readonlyModeEnabled<bool>._(138),
+
+  autoPlayVideo<bool>._(139),
+  albumGridView<bool>._(140),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
   betaTimeline<bool>._(1002),
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
-  useWifiForUploadPhotos<bool>._(1005);
+  useWifiForUploadPhotos<bool>._(1005),
+  needBetaMigration<bool>._(1006),
+  // TODO: Remove this after patching open-api
+  shouldResetSync<bool>._(1007),
+
+  // Free up space
+  cleanupKeepFavorites<bool>._(1008),
+  cleanupKeepMediaType<int>._(1009),
+  cleanupKeepAlbumIds<String>._(1010),
+  cleanupCutoffDaysAgo<int>._(1011),
+  cleanupDefaultsInitialized<bool>._(1012),
+
+  syncMigrationStatus<String>._(1013);
 
   const StoreKey._(this.id);
   final int id;

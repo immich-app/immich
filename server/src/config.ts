@@ -15,7 +15,7 @@ import {
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
-export interface SystemConfig {
+export type SystemConfig = {
   backup: {
     database: {
       enabled: boolean;
@@ -54,6 +54,11 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     urls: string[];
+    availabilityChecks: {
+      enabled: boolean;
+      timeout: number;
+      interval: number;
+    };
     clip: {
       enabled: boolean;
       modelName: string;
@@ -68,6 +73,13 @@ export interface SystemConfig {
       minScore: number;
       minFaces: number;
       maxDistance: number;
+    };
+    ocr: {
+      enabled: boolean;
+      modelName: string;
+      minDetectionScore: number;
+      minRecognitionScore: number;
+      maxResolution: number;
     };
   };
   map: {
@@ -154,6 +166,7 @@ export interface SystemConfig {
         ignoreCert: boolean;
         host: string;
         port: number;
+        secure: boolean;
         username: string;
         password: string;
       };
@@ -174,7 +187,9 @@ export interface SystemConfig {
   user: {
     deleteDelay: number;
   };
-}
+};
+
+export type MachineLearningConfig = SystemConfig['machineLearning'];
 
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
@@ -191,7 +206,7 @@ export const defaults = Object.freeze<SystemConfig>({
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus, AudioCodec.PcmS16le],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     targetResolution: '720',
     maxBitrate: '0',
@@ -219,6 +234,9 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
+    [QueueName.Ocr]: { concurrency: 1 },
+    [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.Editor]: { concurrency: 2 },
   },
   logging: {
     enabled: true,
@@ -227,6 +245,11 @@ export const defaults = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      interval: 30_000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -241,6 +264,13 @@ export const defaults = Object.freeze<SystemConfig>({
       minScore: 0.7,
       maxDistance: 0.5,
       minFaces: 3,
+    },
+    ocr: {
+      enabled: true,
+      modelName: 'PP-OCRv5_mobile',
+      minDetectionScore: 0.5,
+      minRecognitionScore: 0.8,
+      maxResolution: 736,
     },
   },
   map: {
@@ -289,11 +319,13 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       size: 250,
       quality: 80,
+      progressive: false,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
+      progressive: false,
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
@@ -301,6 +333,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       format: ImageFormat.Jpeg,
       quality: 80,
+      progressive: false,
     },
   },
   newVersionCheck: {
@@ -344,6 +377,7 @@ export const defaults = Object.freeze<SystemConfig>({
         ignoreCert: false,
         host: '',
         port: 587,
+        secure: false,
         username: '',
         password: '',
       },

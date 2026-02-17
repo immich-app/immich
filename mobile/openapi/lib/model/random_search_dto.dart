@@ -28,6 +28,7 @@ class RandomSearchDto {
     this.libraryId,
     this.make,
     this.model,
+    this.ocr,
     this.personIds = const [],
     this.rating,
     this.size,
@@ -47,12 +48,16 @@ class RandomSearchDto {
     this.withStacked,
   });
 
+  /// Filter by album IDs
   List<String> albumIds;
 
+  /// Filter by city name
   String? city;
 
+  /// Filter by country name
   String? country;
 
+  /// Filter by creation date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -61,6 +66,7 @@ class RandomSearchDto {
   ///
   DateTime? createdAfter;
 
+  /// Filter by creation date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -69,6 +75,7 @@ class RandomSearchDto {
   ///
   DateTime? createdBefore;
 
+  /// Device ID to filter by
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -77,6 +84,7 @@ class RandomSearchDto {
   ///
   String? deviceId;
 
+  /// Filter by encoded status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -85,6 +93,7 @@ class RandomSearchDto {
   ///
   bool? isEncoded;
 
+  /// Filter by favorite status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -93,6 +102,7 @@ class RandomSearchDto {
   ///
   bool? isFavorite;
 
+  /// Filter by motion photo status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -101,6 +111,7 @@ class RandomSearchDto {
   ///
   bool? isMotion;
 
+  /// Filter assets not in any album
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -109,6 +120,7 @@ class RandomSearchDto {
   ///
   bool? isNotInAlbum;
 
+  /// Filter by offline status
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -117,10 +129,13 @@ class RandomSearchDto {
   ///
   bool? isOffline;
 
+  /// Filter by lens model
   String? lensModel;
 
+  /// Library ID to filter by
   String? libraryId;
 
+  /// Filter by camera make
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -129,10 +144,23 @@ class RandomSearchDto {
   ///
   String? make;
 
+  /// Filter by camera model
   String? model;
 
+  /// Filter by OCR text content
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? ocr;
+
+  /// Filter by person IDs
   List<String> personIds;
 
+  /// Filter by rating
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
   ///
@@ -143,6 +171,8 @@ class RandomSearchDto {
   ///
   num? rating;
 
+  /// Number of results to return
+  ///
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -153,10 +183,13 @@ class RandomSearchDto {
   ///
   num? size;
 
+  /// Filter by state/province name
   String? state;
 
+  /// Filter by tag IDs
   List<String>? tagIds;
 
+  /// Filter by taken date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -165,6 +198,7 @@ class RandomSearchDto {
   ///
   DateTime? takenAfter;
 
+  /// Filter by taken date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -173,6 +207,7 @@ class RandomSearchDto {
   ///
   DateTime? takenBefore;
 
+  /// Filter by trash date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -181,6 +216,7 @@ class RandomSearchDto {
   ///
   DateTime? trashedAfter;
 
+  /// Filter by trash date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -189,6 +225,7 @@ class RandomSearchDto {
   ///
   DateTime? trashedBefore;
 
+  /// Asset type filter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -197,6 +234,7 @@ class RandomSearchDto {
   ///
   AssetTypeEnum? type;
 
+  /// Filter by update date (after)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -205,6 +243,7 @@ class RandomSearchDto {
   ///
   DateTime? updatedAfter;
 
+  /// Filter by update date (before)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -213,6 +252,7 @@ class RandomSearchDto {
   ///
   DateTime? updatedBefore;
 
+  /// Filter by visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -221,6 +261,7 @@ class RandomSearchDto {
   ///
   AssetVisibility? visibility;
 
+  /// Include deleted assets
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -229,6 +270,7 @@ class RandomSearchDto {
   ///
   bool? withDeleted;
 
+  /// Include EXIF data in response
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -237,6 +279,7 @@ class RandomSearchDto {
   ///
   bool? withExif;
 
+  /// Include assets with people
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -245,6 +288,7 @@ class RandomSearchDto {
   ///
   bool? withPeople;
 
+  /// Include stacked assets
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -270,6 +314,7 @@ class RandomSearchDto {
     other.libraryId == libraryId &&
     other.make == make &&
     other.model == model &&
+    other.ocr == ocr &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.rating == rating &&
     other.size == size &&
@@ -306,6 +351,7 @@ class RandomSearchDto {
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
+    (ocr == null ? 0 : ocr!.hashCode) +
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
@@ -325,7 +371,7 @@ class RandomSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -399,6 +445,11 @@ class RandomSearchDto {
       json[r'model'] = this.model;
     } else {
     //  json[r'model'] = null;
+    }
+    if (this.ocr != null) {
+      json[r'ocr'] = this.ocr;
+    } else {
+    //  json[r'ocr'] = null;
     }
       json[r'personIds'] = this.personIds;
     if (this.rating != null) {
@@ -510,6 +561,7 @@ class RandomSearchDto {
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
+        ocr: mapValueOfType<String>(json, r'ocr'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

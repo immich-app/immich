@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { FormModal, Icon } from '@immich/ui';
   import { mdiClose, mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -10,7 +10,7 @@
   import Combobox, { type ComboBoxOption } from '../components/shared-components/combobox.svelte';
 
   interface Props {
-    onClose: (success?: true) => void;
+    onClose: (updated?: boolean) => void;
     assetIds: string[];
   }
 
@@ -26,8 +26,13 @@
     allTags = await getAllTags();
   });
 
-  const handleSubmit = async () => {
-    await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+  const onSubmit = async () => {
+    if (selectedIds.size === 0) {
+      return;
+    }
+
+    const updatedIds = await tagAssets({ tagIds: [...selectedIds], assetIds, showNotification: false });
+    eventManager.emit('AssetsTag', updatedIds);
     onClose(true);
   };
 
@@ -48,60 +53,53 @@
   const handleRemove = (tag: string) => {
     selectedIds.delete(tag);
   };
-
-  const onsubmit = async (event: Event) => {
-    event.preventDefault();
-    await handleSubmit();
-  };
 </script>
 
-<Modal size="small" title={$t('tag_assets')} icon={mdiTag} {onClose}>
-  <ModalBody>
-    <form {onsubmit} autocomplete="off" id="create-tag-form">
-      <div class="my-4 flex flex-col gap-2">
-        <Combobox
-          onSelect={handleSelect}
-          label={$t('tag')}
-          {allowCreate}
-          defaultFirstOption
-          options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
-          placeholder={$t('search_tags')}
-          forceFocus
-        />
-      </div>
-    </form>
+<FormModal
+  size="small"
+  title={$t('tag_assets')}
+  icon={mdiTag}
+  {onClose}
+  {onSubmit}
+  submitText={$t('tag_assets')}
+  onOpenAutoFocus={(event) => event.preventDefault()}
+  {disabled}
+>
+  <div class="my-4 flex flex-col gap-2">
+    <Combobox
+      onSelect={handleSelect}
+      label={$t('tag')}
+      {allowCreate}
+      defaultFirstOption
+      options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
+      placeholder={$t('search_tags')}
+      forceFocus
+    />
+  </div>
 
-    <section class="flex flex-wrap pt-2 gap-1">
-      {#each selectedIds as tagId (tagId)}
-        {@const tag = tagMap[tagId]}
-        {#if tag}
-          <div class="flex group transition-all">
-            <span
-              class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary roudned-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-            >
-              <p class="text-sm">
-                {tag.value}
-              </p>
-            </span>
+  <section class="flex flex-wrap pt-2 gap-1">
+    {#each selectedIds as tagId (tagId)}
+      {@const tag = tagMap[tagId]}
+      {#if tag}
+        <div class="flex group transition-all">
+          <span
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+          >
+            <p class="text-sm">
+              {tag.value}
+            </p>
+          </span>
 
-            <button
-              type="button"
-              class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-              title={$t('remove_tag')}
-              onclick={() => handleRemove(tagId)}
-            >
-              <Icon path={mdiClose} />
-            </button>
-          </div>
-        {/if}
-      {/each}
-    </section>
-  </ModalBody>
-
-  <ModalFooter>
-    <HStack fullWidth>
-      <Button shape="round" fullWidth color="secondary" onclick={() => onClose()}>{$t('cancel')}</Button>
-      <Button type="submit" shape="round" fullWidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
-    </HStack>
-  </ModalFooter>
-</Modal>
+          <button
+            type="button"
+            class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            title={$t('remove_tag')}
+            onclick={() => handleRemove(tagId)}
+          >
+            <Icon icon={mdiClose} />
+          </button>
+        </div>
+      {/if}
+    {/each}
+  </section>
+</FormModal>

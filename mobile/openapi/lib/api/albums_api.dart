@@ -16,7 +16,9 @@ class AlbumsApi {
 
   final ApiClient apiClient;
 
-  /// This endpoint requires the `albumAsset.create` permission.
+  /// Add assets to an album
+  ///
+  /// Add multiple assets to a specific album by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -62,7 +64,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumAsset.create` permission.
+  /// Add assets to an album
+  ///
+  /// Add multiple assets to a specific album by its ID.
   ///
   /// Parameters:
   ///
@@ -91,7 +95,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `albumAsset.create` permission.
+  /// Add assets to albums
+  ///
+  /// Send a list of asset IDs and album IDs to add each asset to each album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -134,7 +140,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumAsset.create` permission.
+  /// Add assets to albums
+  ///
+  /// Send a list of asset IDs and album IDs to add each asset to each album.
   ///
   /// Parameters:
   ///
@@ -158,7 +166,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `albumUser.create` permission.
+  /// Share album with users
+  ///
+  /// Share an album with multiple users. Each user can be given a specific role in the album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -193,7 +203,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumUser.create` permission.
+  /// Share album with users
+  ///
+  /// Share an album with multiple users. Each user can be given a specific role in the album.
   ///
   /// Parameters:
   ///
@@ -215,7 +227,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `album.create` permission.
+  /// Create an album
+  ///
+  /// Create a new album. The album can also be created with initial users and assets.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -247,7 +261,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.create` permission.
+  /// Create an album
+  ///
+  /// Create a new album. The album can also be created with initial users and assets.
   ///
   /// Parameters:
   ///
@@ -267,7 +283,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `album.delete` permission.
+  /// Delete an album
+  ///
+  /// Delete a specific album by its ID. Note the album is initially trashed and then immediately scheduled for deletion, but relies on a background job to complete the process.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -300,7 +318,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.delete` permission.
+  /// Delete an album
+  ///
+  /// Delete a specific album by its ID. Note the album is initially trashed and then immediately scheduled for deletion, but relies on a background job to complete the process.
   ///
   /// Parameters:
   ///
@@ -312,7 +332,9 @@ class AlbumsApi {
     }
   }
 
-  /// This endpoint requires the `album.read` permission.
+  /// Retrieve an album
+  ///
+  /// Retrieve information about a specific album by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -325,6 +347,7 @@ class AlbumsApi {
   /// * [String] slug:
   ///
   /// * [bool] withoutAssets:
+  ///   Exclude assets from response
   Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
@@ -361,7 +384,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.read` permission.
+  /// Retrieve an album
+  ///
+  /// Retrieve information about a specific album by its ID.
   ///
   /// Parameters:
   ///
@@ -372,6 +397,7 @@ class AlbumsApi {
   /// * [String] slug:
   ///
   /// * [bool] withoutAssets:
+  ///   Exclude assets from response
   Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, withoutAssets: withoutAssets, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -387,7 +413,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `album.statistics` permission.
+  /// Retrieve album statistics
+  ///
+  /// Returns statistics about the albums available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> getAlbumStatisticsWithHttpInfo() async {
@@ -415,7 +443,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.statistics` permission.
+  /// Retrieve album statistics
+  ///
+  /// Returns statistics about the albums available to the authenticated user.
   Future<AlbumStatisticsResponseDto?> getAlbumStatistics() async {
     final response = await getAlbumStatisticsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -431,16 +461,19 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `album.read` permission.
+  /// List all albums
+  ///
+  /// Retrieve a list of albums available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
   Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums';
@@ -473,14 +506,17 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.read` permission.
+  /// List all albums
+  ///
+  /// Retrieve a list of albums available to the authenticated user.
   ///
   /// Parameters:
   ///
   /// * [String] assetId:
-  ///   Only returns albums that contain the asset Ignores the shared parameter undefined: get all albums
+  ///   Filter albums containing this asset ID (ignores shared parameter)
   ///
   /// * [bool] shared:
+  ///   Filter by shared status: true = only shared, false = not shared, undefined = all owned albums
   Future<List<AlbumResponseDto>?> getAllAlbums({ String? assetId, bool? shared, }) async {
     final response = await getAllAlbumsWithHttpInfo( assetId: assetId, shared: shared, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -499,7 +535,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `albumAsset.delete` permission.
+  /// Remove assets from an album
+  ///
+  /// Remove multiple assets from a specific album by its ID.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -534,7 +572,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumAsset.delete` permission.
+  /// Remove assets from an album
+  ///
+  /// Remove multiple assets from a specific album by its ID.
   ///
   /// Parameters:
   ///
@@ -559,7 +599,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `albumUser.delete` permission.
+  /// Remove user from album
+  ///
+  /// Remove a user from an album. Use an ID of \"me\" to leave a shared album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -595,7 +637,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumUser.delete` permission.
+  /// Remove user from album
+  ///
+  /// Remove a user from an album. Use an ID of \"me\" to leave a shared album.
   ///
   /// Parameters:
   ///
@@ -609,7 +653,9 @@ class AlbumsApi {
     }
   }
 
-  /// This endpoint requires the `album.update` permission.
+  /// Update an album
+  ///
+  /// Update the information of a specific album by its ID. This endpoint can be used to update the album name, description, sort order, etc. However, it is not used to add or remove assets or users from the album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -644,7 +690,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `album.update` permission.
+  /// Update an album
+  ///
+  /// Update the information of a specific album by its ID. This endpoint can be used to update the album name, description, sort order, etc. However, it is not used to add or remove assets or users from the album.
   ///
   /// Parameters:
   ///
@@ -666,7 +714,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// This endpoint requires the `albumUser.update` permission.
+  /// Update user role
+  ///
+  /// Change the role for a specific user in a specific album.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -704,7 +754,9 @@ class AlbumsApi {
     );
   }
 
-  /// This endpoint requires the `albumUser.update` permission.
+  /// Update user role
+  ///
+  /// Change the role for a specific user in a specific album.
   ///
   /// Parameters:
   ///

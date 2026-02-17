@@ -1,14 +1,12 @@
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
-import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
 /// so that a single large image does not evict all small images
 final class CustomImageCache implements ImageCache {
+  final _thumbhash = ImageCache()..maximumSize = 0;
   final _small = ImageCache();
   final _large = ImageCache()..maximumSize = 5; // Maximum 5 images
 
@@ -37,15 +35,13 @@ final class CustomImageCache implements ImageCache {
   }
 
   /// Gets the cache for the given key
-  /// [_large] is used for [ImmichLocalImageProvider] and [ImmichRemoteImageProvider]
-  /// [_small] is used for [ImmichLocalThumbnailProvider] and [ImmichRemoteThumbnailProvider]
-  ImageCache _cacheForKey(Object key) =>
-      (key is ImmichLocalImageProvider ||
-          key is ImmichRemoteImageProvider ||
-          key is LocalFullImageProvider ||
-          key is RemoteFullImageProvider)
-      ? _large
-      : _small;
+  ImageCache _cacheForKey(Object key) {
+    return switch (key) {
+      LocalFullImageProvider() || RemoteFullImageProvider() => _large,
+      ThumbHashProvider() => _thumbhash,
+      _ => _small,
+    };
+  }
 
   @override
   bool containsKey(Object key) {

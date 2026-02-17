@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiCheckCircle } from '@mdi/js';
   import type { Action } from 'svelte/action';
   import AlbumListItemDetails from './album-list-item-details.svelte';
@@ -35,15 +35,13 @@
     });
   };
 
-  let albumNameArray: string[] = $state(['', '', '']);
-
   // This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
   // It is used to highlight the search query in the album name
-  $effect(() => {
+  const albumNameArray: string[] = $derived.by(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
     let findLength = searchQuery.length;
-    albumNameArray = [
+    return [
       albumName.slice(0, findIndex),
       albumName.slice(findIndex, findIndex + findLength),
       albumName.slice(findIndex + findLength),
@@ -56,7 +54,7 @@
     onMultiSelect();
   };
 
-  let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
   let mouseOver = $state(false);
   const onMouseEnter = () => {
     if (usingMobileDevice) {
@@ -136,7 +134,7 @@
     <span class="h-16 w-16 shrink-0 rounded-xl bg-slate-300">
       {#if album.albumThumbnailAssetId}
         <img
-          src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
+          src={getAssetMediaUrl({ id: album.albumThumbnailAssetId })}
           alt={album.albumName}
           class={['h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg']}
           data-testid="album-image"
@@ -165,10 +163,10 @@
     >
       {#if multiSelected}
         <div class="rounded-full">
-          <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
         </div>
       {:else}
-        <Icon path={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
+        <Icon icon={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
       {/if}
     </button>
   {/if}

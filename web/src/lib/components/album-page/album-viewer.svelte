@@ -1,26 +1,28 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import CastButton from '$lib/cast/cast-button.svelte';
+  import ActionButton from '$lib/components/ActionButton.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { handleDownloadAlbum } from '$lib/services/album.service';
+  import { getGlobalActions } from '$lib/services/app.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { featureFlags } from '$lib/stores/server-config.store';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
-  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+  import { IconButton, Logo } from '@immich/ui';
+  import { mdiDownload, mdiFileImagePlusOutline, mdiPresentationPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import DownloadAction from '../photos-page/actions/download-action.svelte';
-  import AssetGrid from '../photos-page/asset-grid.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
 
@@ -33,11 +35,11 @@
 
   const album = sharedLink.album as AlbumResponseDto;
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  let { isViewing: showAssetViewer, setAssetId } = assetViewingStore;
+  let { slideshowState, slideshowNavigation } = slideshowStore;
 
-  const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ albumId: album.id, order: album.order }));
-  onDestroy(() => timelineManager.destroy());
+  const options = $derived({ albumId: album.id, order: album.order });
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   const assetInteraction = new AssetInteraction();
 
@@ -47,6 +49,18 @@
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
+
+  const handleStartSlideshow = async () => {
+    const asset =
+      $slideshowNavigation === SlideshowNavigation.Shuffle
+        ? await timelineManager.getRandomAsset()
+        : timelineManager.months[0]?.dayGroups[0]?.viewerAssets[0]?.asset;
+    if (asset) {
+      handlePromiseError(setAssetId(asset.id).then(() => ($slideshowState = SlideshowState.PlaySlideshow)));
+    }
+  };
+
+  const { Cast } = $derived(getGlobalActions($t));
 </script>
 
 <svelte:document
@@ -61,12 +75,10 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <Timeline enableRouting={true} {album} bind:timelineManager {options} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
-      <h1
-        class="text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary"
-      >
+      <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">
         {album.albumName}
       </h1>
 
@@ -83,7 +95,7 @@
         </p>
       {/if}
     </section>
-  </AssetGrid>
+  </Timeline>
 </main>
 
 <header>
@@ -101,11 +113,13 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink />
+        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+          <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+        </a>
       {/snippet}
 
       {#snippet trailing()}
-        <CastButton />
+        <ActionButton action={Cast} />
 
         {#if sharedLink.allowUpload}
           <IconButton
@@ -121,14 +135,22 @@
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <IconButton
             shape="round"
+            variant="ghost"
+            color="secondary"
+            aria-label={$t('slideshow')}
+            onclick={handleStartSlideshow}
+            icon={mdiPresentationPlay}
+          />
+          <IconButton
+            shape="round"
             color="secondary"
             variant="ghost"
             aria-label={$t('download')}
-            onclick={() => downloadAlbum(album)}
+            onclick={() => handleDownloadAlbum(album)}
             icon={mdiDownload}
           />
         {/if}
-        {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
+        {#if sharedLink.showMetadata && featureFlagsManager.value.map}
           <AlbumMap {album} />
         {/if}
         <ThemeButton />

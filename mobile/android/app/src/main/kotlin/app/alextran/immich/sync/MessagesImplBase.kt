@@ -1,14 +1,27 @@
 package app.alextran.immich.sync
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
+import android.util.Base64
 import androidx.core.database.getStringOrNull
+import app.alextran.immich.core.ImmichPlugin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
-import java.io.FileInputStream
 import java.security.MessageDigest
+import kotlin.coroutines.cancellation.CancellationException
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -16,11 +29,15 @@ sealed class AssetResult {
 }
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   private val ctx: Context = context.applicationContext
 
+  private var hashTask: Job? = null
+
   companion object {
-    private const val TAG = "NativeSyncApiImplBase"
+    private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
+    private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+    private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -65,6 +82,16 @@ open class NativeSyncApiImplBase(context: Context) {
     sortOrder,
   )
 
+  protected fun getCursor(
+    volume: String,
+    queryArgs: Bundle
+  ): Cursor? = ctx.contentResolver.query(
+    MediaStore.Files.getContentUri(volume),
+    ASSET_PROJECTION,
+    queryArgs,
+    null
+  )
+
   protected fun getAssets(cursor: Cursor?): Sequence<AssetResult> {
     return sequence {
       cursor?.use { c ->
@@ -85,9 +112,15 @@ open class NativeSyncApiImplBase(context: Context) {
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
+          val name = c.getStringOrNull(nameColumn)
+          val bucketId = c.getStringOrNull(bucketIdColumn)
+          val path = c.getStringOrNull(dataColumn)
 
-          val path = c.getString(dataColumn)
-          if (path.isNullOrBlank() || !File(path).exists()) {
+          // Skip assets with invalid metadata
+          if (
+            name.isNullOrBlank() || bucketId.isNullOrBlank() ||
+            path.isNullOrBlank() || !File(path).exists()
+          ) {
             yield(AssetResult.InvalidAsset(id))
             continue
           }
@@ -97,7 +130,6 @@ open class NativeSyncApiImplBase(context: Context) {
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2
             else -> 0
           }
-          val name = c.getString(nameColumn)
           // Date taken is milliseconds since epoch, Date added is seconds since epoch
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
             ?: c.getLong(dateAddedColumn)
@@ -108,7 +140,6 @@ open class NativeSyncApiImplBase(context: Context) {
           // Duration is milliseconds
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
-          val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
@@ -215,23 +246,80 @@ open class NativeSyncApiImplBase(context: Context) {
       .toList()
   }
 
-  fun hashPaths(paths: List<String>): List<ByteArray?> {
-    val buffer = ByteArray(HASH_BUFFER_SIZE)
-    val digest = MessageDigest.getInstance("SHA-1")
+  fun hashAssets(
+    assetIds: List<String>,
+    // allowNetworkAccess is only used on the iOS implementation
+    @Suppress("UNUSED_PARAMETER") allowNetworkAccess: Boolean,
+    callback: (Result<List<HashResult>>) -> Unit
+  ) {
+    if (assetIds.isEmpty()) {
+      completeWhenActive(callback, Result.success(emptyList()))
+      return
+    }
 
-    return paths.map { path ->
+    hashTask?.cancel()
+    hashTask = CoroutineScope(Dispatchers.IO).launch {
       try {
-        FileInputStream(path).use { file ->
-          var bytesRead: Int
-          while (file.read(buffer).also { bytesRead = it } > 0) {
-            digest.update(buffer, 0, bytesRead)
+        val results = assetIds.map { assetId ->
+          async {
+            hashSemaphore.withPermit {
+              ensureActive()
+              hashAsset(assetId)
+            }
           }
-        }
-        digest.digest()
+        }.awaitAll()
+
+        completeWhenActive(callback, Result.success(results))
+      } catch (e: CancellationException) {
+        completeWhenActive(
+          callback, Result.failure(
+            FlutterError(
+              HASHING_CANCELLED_CODE,
+              "Hashing operation was cancelled",
+              null
+            )
+          )
+        )
       } catch (e: Exception) {
-        Log.w(TAG, "Failed to hash file $path: $e")
-        null
+        completeWhenActive(callback, Result.failure(e))
       }
     }
+  }
+
+  private suspend fun hashAsset(assetId: String): HashResult {
+    return try {
+      val assetUri = ContentUris.withAppendedId(
+        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+        assetId.toLong()
+      )
+
+      val digest = MessageDigest.getInstance("SHA-1")
+      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
+        var bytesRead: Int
+        val buffer = ByteArray(HASH_BUFFER_SIZE)
+        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+          currentCoroutineContext().ensureActive()
+          digest.update(buffer, 0, bytesRead)
+        }
+      } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
+
+      val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
+      HashResult(assetId, null, hashString)
+    } catch (e: SecurityException) {
+      HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
+    } catch (e: Exception) {
+      HashResult(assetId, "Failed to hash asset: ${e.message}", null)
+    }
+  }
+
+  fun cancelHashing() {
+    hashTask?.cancel()
+    hashTask = null
+  }
+
+  // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs
+  @Suppress("unused", "UNUSED_PARAMETER")
+  fun getCloudIdForAssetIds(assetIds: List<String>): List<CloudIdResult> {
+    return emptyList()
   }
 }

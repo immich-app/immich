@@ -14,19 +14,24 @@ class SystemConfigJobDto {
   /// Returns a new [SystemConfigJobDto] instance.
   SystemConfigJobDto({
     required this.backgroundTask,
+    required this.editor,
     required this.faceDetection,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
     required this.notifications,
+    required this.ocr,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
     required this.thumbnailGeneration,
     required this.videoConversion,
+    required this.workflow,
   });
 
   JobSettingsDto backgroundTask;
+
+  JobSettingsDto editor;
 
   JobSettingsDto faceDetection;
 
@@ -38,6 +43,8 @@ class SystemConfigJobDto {
 
   JobSettingsDto notifications;
 
+  JobSettingsDto ocr;
+
   JobSettingsDto search;
 
   JobSettingsDto sidecar;
@@ -48,51 +55,62 @@ class SystemConfigJobDto {
 
   JobSettingsDto videoConversion;
 
+  JobSettingsDto workflow;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
     other.backgroundTask == backgroundTask &&
+    other.editor == editor &&
     other.faceDetection == faceDetection &&
     other.library_ == library_ &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
     other.notifications == notifications &&
+    other.ocr == ocr &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
     other.thumbnailGeneration == thumbnailGeneration &&
-    other.videoConversion == videoConversion;
+    other.videoConversion == videoConversion &&
+    other.workflow == workflow;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (backgroundTask.hashCode) +
+    (editor.hashCode) +
     (faceDetection.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
     (notifications.hashCode) +
+    (ocr.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
     (thumbnailGeneration.hashCode) +
-    (videoConversion.hashCode);
+    (videoConversion.hashCode) +
+    (workflow.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, editor=$editor, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'editor'] = this.editor;
       json[r'faceDetection'] = this.faceDetection;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
       json[r'notifications'] = this.notifications;
+      json[r'ocr'] = this.ocr;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
       json[r'thumbnailGeneration'] = this.thumbnailGeneration;
       json[r'videoConversion'] = this.videoConversion;
+      json[r'workflow'] = this.workflow;
     return json;
   }
 
@@ -106,16 +124,19 @@ class SystemConfigJobDto {
 
       return SystemConfigJobDto(
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
+        editor: JobSettingsDto.fromJson(json[r'editor'])!,
         faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
         library_: JobSettingsDto.fromJson(json[r'library'])!,
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
         notifications: JobSettingsDto.fromJson(json[r'notifications'])!,
+        ocr: JobSettingsDto.fromJson(json[r'ocr'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
         thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
         videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
+        workflow: JobSettingsDto.fromJson(json[r'workflow'])!,
       );
     }
     return null;
@@ -164,16 +185,19 @@ class SystemConfigJobDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'backgroundTask',
+    'editor',
     'faceDetection',
     'library',
     'metadataExtraction',
     'migration',
     'notifications',
+    'ocr',
     'search',
     'sidecar',
     'smartSearch',
     'thumbnailGeneration',
     'videoConversion',
+    'workflow',
   };
 }
 

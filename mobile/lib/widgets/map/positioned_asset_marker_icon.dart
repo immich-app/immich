@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class PositionedAssetMarkerIcon extends StatelessWidget {
   final Point<num> point;
   final String assetRemoteId;
+  final String assetThumbhash;
   final double size;
   final int durationInMilliseconds;
 
@@ -18,6 +18,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
   const PositionedAssetMarkerIcon({
     required this.point,
     required this.assetRemoteId,
+    required this.assetThumbhash,
     this.size = 100,
     this.durationInMilliseconds = 100,
     this.onTap,
@@ -35,7 +36,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
         onTap: () => onTap?.call(),
         child: SizedBox.square(
           dimension: size,
-          child: _AssetMarkerIcon(id: assetRemoteId, key: Key(assetRemoteId)),
+          child: _AssetMarkerIcon(id: assetRemoteId, thumbhash: assetThumbhash, key: Key(assetRemoteId)),
         ),
       ),
     );
@@ -43,14 +44,14 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
 }
 
 class _AssetMarkerIcon extends StatelessWidget {
-  const _AssetMarkerIcon({required this.id, super.key});
+  const _AssetMarkerIcon({required this.id, required this.thumbhash, super.key});
 
   final String id;
+  final String thumbhash;
 
   @override
   Widget build(BuildContext context) {
     final imageUrl = getThumbnailUrlForRemoteId(id);
-    final cacheKey = getThumbnailCacheKeyForRemoteId(id);
     return LayoutBuilder(
       builder: (context, constraints) {
         return Stack(
@@ -76,12 +77,7 @@ class _AssetMarkerIcon extends StatelessWidget {
                 backgroundColor: context.colorScheme.onSurface,
                 child: CircleAvatar(
                   radius: constraints.maxHeight * 0.37,
-                  backgroundImage: CachedNetworkImageProvider(
-                    imageUrl,
-                    cacheKey: cacheKey,
-                    headers: ApiService.getRequestHeaders(),
-                    errorListener: (_) => const Icon(Icons.image_not_supported_outlined),
-                  ),
+                  backgroundImage: RemoteImageProvider(url: imageUrl),
                 ),
               ),
             ),

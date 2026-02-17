@@ -28,6 +28,8 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'AssetResponseDto':
       if (value is Map) {
         addDefault(value, 'visibility', 'timeline');
+        addDefault(value, 'createdAt', DateTime.now().toIso8601String());
+        addDefault(value, 'isEdited', false);
       }
       break;
     case 'UserAdminResponseDto':
@@ -45,6 +47,20 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
         addDefault(value, 'hasProfileImage', false);
       }
+    case 'SyncAssetV1':
+      if (value is Map) {
+        addDefault(value, 'isEdited', false);
+      }
+    case 'ServerFeaturesDto':
+      if (value is Map) {
+        addDefault(value, 'ocr', false);
+      }
+      break;
+    case 'MemoriesResponse':
+      if (value is Map) {
+        addDefault(value, 'duration', 5);
+      }
+      break;
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
@@ -42,42 +45,45 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return SliverAnimatedOpacity(
-      duration: Durations.medium1,
-      opacity: isMultiSelectEnabled ? 0 : 1,
-      sliver: SliverAppBar(
-        floating: floating,
-        pinned: pinned,
-        snap: snap,
-        expandedHeight: expandedHeight,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        title: title ?? const _ImmichLogoWithText(),
-        actions: [
-          if (isCasting)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: IconButton(
-                onPressed: () {
-                  showDialog(context: context, builder: (context) => const CastDialog());
-                },
+    return SliverIgnorePointer(
+      ignoring: isMultiSelectEnabled,
+      sliver: SliverAnimatedOpacity(
+        duration: Durations.medium1,
+        opacity: isMultiSelectEnabled ? 0 : 1,
+        sliver: SliverAppBar(
+          backgroundColor: context.colorScheme.surface,
+          surfaceTintColor: context.colorScheme.surfaceTint,
+          elevation: 0,
+          scrolledUnderElevation: 1.0,
+          floating: floating,
+          pinned: pinned,
+          snap: snap,
+          expandedHeight: expandedHeight,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
+          automaticallyImplyLeading: false,
+          centerTitle: false,
+          title: title ?? const _ImmichLogoWithText(),
+          actions: [
+            const _SyncStatusIndicator(),
+            if (isCasting && !isReadonlyModeEnabled)
+              IconButton(
+                onPressed: () => showDialog(context: context, builder: (context) => const CastDialog()),
                 icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
               ),
-            ),
-          const _SyncStatusIndicator(),
-          if (actions != null)
-            ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
-          if (kDebugMode || kProfileMode)
-            IconButton(
-              icon: const Icon(Icons.science_rounded),
-              onPressed: () => context.pushRoute(const FeatInDevRoute()),
-            ),
-          if (showUploadButton) const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
-          const Padding(padding: EdgeInsets.only(right: 20), child: _ProfileIndicator()),
-        ],
+            if (actions != null) ...actions!,
+            if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
+              IconButton(
+                onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
+                icon: const Icon(Icons.palette_rounded),
+              ),
+            if (showUploadButton && !isReadonlyModeEnabled) const _BackupIndicator(),
+            const _ProfileIndicator(),
+            const SizedBox(width: 8),
+          ],
+        ),
       ),
     );
   }
@@ -87,45 +93,14 @@ class _ImmichLogoWithText extends StatelessWidget {
   const _ImmichLogoWithText();
 
   @override
-  Widget build(BuildContext context) {
-    return Builder(
-      builder: (BuildContext context) {
-        return Row(
-          children: [
-            Builder(
-              builder: (context) {
-                return Badge(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                  backgroundColor: context.primaryColor,
-                  alignment: Alignment.centerRight,
-                  offset: const Offset(16, -8),
-                  label: Text(
-                    'β',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'OverpassMono',
-                      height: 1.2,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 3.0),
-                    child: SvgPicture.asset(
-                      context.isDarkTheme
-                          ? 'assets/immich-logo-inline-dark.svg'
-                          : 'assets/immich-logo-inline-light.svg',
-                      height: 40,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => AnimatedOpacity(
+    opacity: IconTheme.of(context).opacity ?? 1,
+    duration: kThemeChangeDuration,
+    child: SvgPicture.asset(
+      context.isDarkTheme ? 'assets/immich-logo-inline-dark.svg' : 'assets/immich-logo-inline-light.svg',
+      height: 40,
+    ),
+  );
 }
 
 class _ProfileIndicator extends ConsumerWidget {
@@ -133,68 +108,98 @@ class _ProfileIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
-    const widgetSize = 30.0;
+    final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
+    final serverInfoState = ref.watch(serverInfoProvider);
 
-    return InkWell(
-      onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
-      borderRadius: const BorderRadius.all(Radius.circular(12)),
-      child: Badge(
-        label: Container(
-          decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(widgetSize / 2)),
-          child: const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: widgetSize / 2),
+    const widgetSize = 32.0;
+
+    // TODO: remove this when update Flutter version newer than 3.35.7
+    final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
+
+    void toggleReadonlyMode() {
+      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
+
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text(
+            (isReadonlyModeEnabled ? "readonly_mode_disabled" : "readonly_mode_enabled").tr(),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+          ),
+        ),
+      );
+    }
+
+    return IconButton(
+      onPressed: () => showDialog(
+        context: context,
+        useRootNavigator: false,
+        barrierDismissible: !isIpad,
+        builder: (ctx) => const ImmichAppBarDialog(),
+      ),
+      onLongPress: () => toggleReadonlyMode(),
+      icon: Badge(
+        label: _BadgeLabel(
+          Icon(
+            Icons.info,
+            color: serverInfoState.versionStatus == VersionStatus.error
+                ? context.colorScheme.error
+                : context.primaryColor,
+            size: widgetSize / 2,
+            semanticLabel: 'new_version_available'.tr(),
+          ),
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible:
-            serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+        isLabelVisible: versionWarningPresent,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
             : Semantics(
                 label: "logged_in_as".tr(namedArgs: {"user": user.name}),
-                child: UserCircleAvatar(radius: 17, size: 31, user: user),
+                child: AbsorbPointer(
+                  child: Builder(
+                    builder: (context) => UserCircleAvatar(
+                      size: 34,
+                      user: user,
+                      opacity: IconTheme.of(context).opacity ?? 1,
+                      hasBorder: true,
+                    ),
+                  ),
+                ),
               ),
       ),
     );
   }
 }
 
+const double _kBadgeWidgetSize = 30.0;
+
 class _BackupIndicator extends ConsumerWidget {
   const _BackupIndicator();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const widgetSize = 30.0;
     final indicatorIcon = _getBackupBadgeIcon(context, ref);
-    final badgeBackground = context.colorScheme.surfaceContainer;
 
-    return InkWell(
-      onTap: () => context.pushRoute(const DriftBackupRoute()),
-      borderRadius: const BorderRadius.all(Radius.circular(12)),
-      child: Badge(
-        label: Container(
-          width: widgetSize / 2,
-          height: widgetSize / 2,
-          decoration: BoxDecoration(
-            color: badgeBackground,
-            border: Border.all(color: context.colorScheme.outline.withValues(alpha: .3)),
-            borderRadius: BorderRadius.circular(widgetSize / 2),
-          ),
-          child: indicatorIcon,
-        ),
+    return IconButton(
+      onPressed: () => context.pushRoute(const DriftBackupRoute()),
+      icon: Badge(
+        label: indicatorIcon,
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
         isLabelVisible: indicatorIcon != null,
         offset: const Offset(-2, -12),
-        child: Icon(Icons.backup_rounded, size: widgetSize, color: context.primaryColor),
+        child: Icon(Icons.backup_rounded, size: _kBadgeWidgetSize, color: context.primaryColor),
       ),
     );
   }
 
   Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
     final backupStateStream = ref.watch(settingsProvider).watch(Setting.enableBackup);
+    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
     final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
@@ -206,38 +211,74 @@ class _BackupIndicator extends ConsumerWidget {
         final backupEnabled = snapshot.data ?? false;
 
         if (!backupEnabled) {
-          return Icon(
-            Icons.cloud_off_rounded,
-            size: 9,
-            color: iconColor,
-            semanticLabel: 'backup_controller_page_backup'.tr(),
+          return _BadgeLabel(
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 9,
+              color: iconColor,
+              semanticLabel: 'backup_controller_page_backup'.tr(),
+            ),
+          );
+        }
+
+        if (hasError) {
+          return _BadgeLabel(
+            Icon(
+              Icons.warning_rounded,
+              size: 12,
+              color: context.colorScheme.error,
+              semanticLabel: 'backup_controller_page_backup'.tr(),
+            ),
+            backgroundColor: context.colorScheme.errorContainer,
           );
         }
 
         if (isUploading) {
-          return Container(
-            padding: const EdgeInsets.all(3.5),
-            child: Theme(
-              data: context.themeData.copyWith(
-                progressIndicatorTheme: context.themeData.progressIndicatorTheme.copyWith(year2023: true),
-              ),
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                strokeCap: StrokeCap.round,
-                valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-                semanticsLabel: 'backup_controller_page_backup'.tr(),
+          return _BadgeLabel(
+            Container(
+              padding: const EdgeInsets.all(3.5),
+              child: Theme(
+                data: context.themeData.copyWith(
+                  progressIndicatorTheme: context.themeData.progressIndicatorTheme.copyWith(year2023: true),
+                ),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  strokeCap: StrokeCap.round,
+                  valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+                  semanticsLabel: 'backup_controller_page_backup'.tr(),
+                ),
               ),
             ),
           );
         }
 
-        return Icon(
-          Icons.check_outlined,
-          size: 9,
-          color: iconColor,
-          semanticLabel: 'backup_controller_page_backup'.tr(),
+        return _BadgeLabel(
+          Icon(Icons.check_outlined, size: 9, color: iconColor, semanticLabel: 'backup_controller_page_backup'.tr()),
         );
       },
+    );
+  }
+}
+
+class _BadgeLabel extends StatelessWidget {
+  final Widget indicator;
+  final Color? backgroundColor;
+
+  const _BadgeLabel(this.indicator, {this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final opacity = IconTheme.of(context).opacity ?? 1;
+
+    return Container(
+      width: _kBadgeWidgetSize / 2,
+      height: _kBadgeWidgetSize / 2,
+      decoration: BoxDecoration(
+        color: (backgroundColor ?? context.colorScheme.surfaceContainer).withValues(alpha: opacity),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: .3 * opacity)),
+        borderRadius: BorderRadius.circular(_kBadgeWidgetSize / 2),
+      ),
+      child: indicator,
     );
   }
 }
@@ -277,7 +318,7 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
   @override
   Widget build(BuildContext context) {
     final syncStatus = ref.watch(syncStatusProvider);
-    final isSyncing = syncStatus.isRemoteSyncing;
+    final isSyncing = syncStatus.isRemoteSyncing || syncStatus.isLocalSyncing;
 
     // Control animations based on sync status
     if (isSyncing) {
@@ -297,23 +338,30 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
       return const SizedBox.shrink();
     }
 
-    return AnimatedBuilder(
-      animation: Listenable.merge([_rotationAnimation, _dismissalAnimation]),
-      builder: (context, child) {
-        return Padding(
-          padding: EdgeInsets.only(right: isSyncing ? 16 : 0),
-          child: Transform.scale(
-            scale: isSyncing ? 1.0 : _dismissalAnimation.value,
-            child: Opacity(
-              opacity: isSyncing ? 1.0 : _dismissalAnimation.value,
-              child: Transform.rotate(
-                angle: _rotationAnimation.value * 2 * 3.14159 * -1, // Rotate counter-clockwise
-                child: Icon(Icons.sync, size: 24, color: context.primaryColor),
-              ),
-            ),
-          ),
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: IconTheme.of(context).opacity ?? 1),
+        duration: kThemeChangeDuration,
+        builder: (context, opacity, child) {
+          return AnimatedBuilder(
+            animation: Listenable.merge([_rotationAnimation, _dismissalAnimation]),
+            builder: (context, child) {
+              final dismissalValue = isSyncing ? 1.0 : _dismissalAnimation.value;
+              return IconTheme(
+                data: IconTheme.of(context).copyWith(opacity: opacity * dismissalValue),
+                child: Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.identity()
+                    ..scaleByDouble(dismissalValue, dismissalValue, dismissalValue, 1.0)
+                    ..rotateZ(-_rotationAnimation.value * 2 * math.pi),
+                  child: const Icon(Icons.sync),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

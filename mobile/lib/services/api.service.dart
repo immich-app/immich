@@ -3,21 +3,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:immich_mobile/utils/user_agent.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
 
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
-  late OAuthApi oAuthApi;
+  late AuthenticationApi oAuthApi;
   late AlbumsApi albumsApi;
   late AssetsApi assetsApi;
   late SearchApi searchApi;
@@ -32,7 +32,7 @@ class ApiService implements Authentication {
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
-  late ViewApi viewApi;
+  late ViewsApi viewApi;
   late MemoriesApi memoriesApi;
   late SessionsApi sessionsApi;
 
@@ -56,7 +56,7 @@ class ApiService implements Authentication {
     }
     usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
-    oAuthApi = OAuthApi(_apiClient);
+    oAuthApi = AuthenticationApi(_apiClient);
     albumsApi = AlbumsApi(_apiClient);
     assetsApi = AssetsApi(_apiClient);
     serverInfoApi = ServerApi(_apiClient);
@@ -71,7 +71,7 @@ class ApiService implements Authentication {
     downloadApi = DownloadApi(_apiClient);
     trashApi = TrashApi(_apiClient);
     stacksApi = StacksApi(_apiClient);
-    viewApi = ViewApi(_apiClient);
+    viewApi = ViewsApi(_apiClient);
     memoriesApi = MemoriesApi(_apiClient);
     sessionsApi = SessionsApi(_apiClient);
   }
@@ -86,7 +86,7 @@ class ApiService implements Authentication {
     setEndpoint(endpoint);
 
     // Save in local database for next startup
-    Store.put(StoreKey.serverEndpoint, endpoint);
+    await Store.put(StoreKey.serverEndpoint, endpoint);
     return endpoint;
   }
 
@@ -155,7 +155,7 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+      dPrint(() => "Could not locate /.well-known/immich at $baseUrl");
     }
 
     return "";

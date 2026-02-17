@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -6,7 +8,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 
@@ -27,7 +28,18 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   Set<BaseAsset> selectedAssets = {};
 
   @override
+  void initState() {
+    super.initState();
+    albumTitleController.addListener(_onTitleChanged);
+  }
+
+  void _onTitleChanged() {
+    setState(() {});
+  }
+
+  @override
   void dispose() {
+    albumTitleController.removeListener(_onTitleChanged);
     albumTitleController.dispose();
     albumDescriptionController.dispose();
     albumTitleTextFieldFocusNode.dispose();
@@ -119,7 +131,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
           final asset = selectedAssets.elementAt(index);
           return GestureDetector(
             onTap: onBackgroundTapped,
-            child: Thumbnail(asset: asset),
+            child: Thumbnail.fromAsset(asset: asset),
           );
         }, childCount: selectedAssets.length),
       ),
@@ -178,8 +190,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         );
 
     if (album != null) {
-      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-      context.replaceRoute(RemoteAlbumRoute(album: album));
+      unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
     }
   }
 

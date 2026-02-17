@@ -1,6 +1,10 @@
+import 'dart:io';
+
 const int noDbId = -9223372036854775808; // from Isar
 const double downloadCompleted = -1;
 const double downloadFailed = -2;
+
+const String kMobileMetadataKey = "mobile-app";
 
 // Number of log entries to retain on app start
 const int kLogTruncateLimit = 2000;
@@ -10,7 +14,7 @@ const int kSyncEventBatchSize = 5000;
 const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
-const int kBatchHashFileLimit = 256;
+final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
@@ -26,7 +30,7 @@ const String kDownloadGroupLivePhoto = 'group_livephoto';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;
-const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
@@ -45,3 +49,17 @@ const List<(String, String)> kWidgetNames = [
 
 const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
+
+const int kMinMonthsToEnableScrubberSnap = 12;
+
+const String kImmichAppStoreLink = "https://apps.apple.com/app/immich/id1613945652";
+const String kImmichPlayStoreLink = "https://play.google.com/store/apps/details?id=app.alextran.immich";
+const String kImmichLatestRelease = "https://github.com/immich-app/immich/releases/latest";
+
+const int kPhotoTabIndex = 0;
+const int kSearchTabIndex = 1;
+const int kAlbumTabIndex = 2;
+const int kLibraryTabIndex = 3;
+
+// Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)
+const int kDriftMaxChunk = 32000;

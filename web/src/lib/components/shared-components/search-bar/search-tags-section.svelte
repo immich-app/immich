@@ -1,9 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Checkbox, Label } from '@immich/ui';
+  import { Checkbox, Icon, Label, Text } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -44,11 +43,13 @@
 {#if $preferences?.tags?.enabled}
   <div id="location-selection">
     <form autocomplete="off" id="create-tag-form">
-      <div class="my-4 flex flex-col gap-2">
+      <div class="mb-4 flex flex-col">
+        <Text class="py-3" fontWeight="medium">{$t('tags')}</Text>
         <Combobox
           disabled={selectedTags === null}
+          hideLabel
           onSelect={handleSelect}
-          label={$t('tags').toUpperCase()}
+          label={$t('tags')}
           defaultFirstOption
           options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
           bind:selectedOption
@@ -64,7 +65,7 @@
             selectedTags = checked ? null : new SvelteSet();
           }}
         />
-        <Label label={$t('untagged')} for="untagged-checkbox" />
+        <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
       </div>
     </form>
 
@@ -87,7 +88,7 @@
               title={$t('remove_tag')}
               onclick={() => handleRemove(tagId)}
             >
-              <Icon path={mdiClose} />
+              <Icon icon={mdiClose} />
             </button>
           </div>
         {/if}

@@ -21,6 +21,7 @@ class ServerFeaturesDto {
     required this.map,
     required this.oauth,
     required this.oauthAutoLaunch,
+    required this.ocr,
     required this.passwordLogin,
     required this.reverseGeocoding,
     required this.search,
@@ -29,32 +30,49 @@ class ServerFeaturesDto {
     required this.trash,
   });
 
+  /// Whether config file is available
   bool configFile;
 
+  /// Whether duplicate detection is enabled
   bool duplicateDetection;
 
+  /// Whether email notifications are enabled
   bool email;
 
+  /// Whether facial recognition is enabled
   bool facialRecognition;
 
+  /// Whether face import is enabled
   bool importFaces;
 
+  /// Whether map feature is enabled
   bool map;
 
+  /// Whether OAuth is enabled
   bool oauth;
 
+  /// Whether OAuth auto-launch is enabled
   bool oauthAutoLaunch;
 
+  /// Whether OCR is enabled
+  bool ocr;
+
+  /// Whether password login is enabled
   bool passwordLogin;
 
+  /// Whether reverse geocoding is enabled
   bool reverseGeocoding;
 
+  /// Whether search is enabled
   bool search;
 
+  /// Whether sidecar files are supported
   bool sidecar;
 
+  /// Whether smart search is enabled
   bool smartSearch;
 
+  /// Whether trash feature is enabled
   bool trash;
 
   @override
@@ -67,6 +85,7 @@ class ServerFeaturesDto {
     other.map == map &&
     other.oauth == oauth &&
     other.oauthAutoLaunch == oauthAutoLaunch &&
+    other.ocr == ocr &&
     other.passwordLogin == passwordLogin &&
     other.reverseGeocoding == reverseGeocoding &&
     other.search == search &&
@@ -85,6 +104,7 @@ class ServerFeaturesDto {
     (map.hashCode) +
     (oauth.hashCode) +
     (oauthAutoLaunch.hashCode) +
+    (ocr.hashCode) +
     (passwordLogin.hashCode) +
     (reverseGeocoding.hashCode) +
     (search.hashCode) +
@@ -93,7 +113,7 @@ class ServerFeaturesDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, ocr=$ocr, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -105,6 +125,7 @@ class ServerFeaturesDto {
       json[r'map'] = this.map;
       json[r'oauth'] = this.oauth;
       json[r'oauthAutoLaunch'] = this.oauthAutoLaunch;
+      json[r'ocr'] = this.ocr;
       json[r'passwordLogin'] = this.passwordLogin;
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'search'] = this.search;
@@ -131,6 +152,7 @@ class ServerFeaturesDto {
         map: mapValueOfType<bool>(json, r'map')!,
         oauth: mapValueOfType<bool>(json, r'oauth')!,
         oauthAutoLaunch: mapValueOfType<bool>(json, r'oauthAutoLaunch')!,
+        ocr: mapValueOfType<bool>(json, r'ocr')!,
         passwordLogin: mapValueOfType<bool>(json, r'passwordLogin')!,
         reverseGeocoding: mapValueOfType<bool>(json, r'reverseGeocoding')!,
         search: mapValueOfType<bool>(json, r'search')!,
@@ -192,6 +214,7 @@ class ServerFeaturesDto {
     'map',
     'oauth',
     'oauthAutoLaunch',
+    'ocr',
     'passwordLogin',
     'reverseGeocoding',
     'search',

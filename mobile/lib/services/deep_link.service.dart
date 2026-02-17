@@ -1,22 +1,27 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
 import 'package:immich_mobile/domain/services/memory.service.dart';
+import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/memory.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final deepLinkServiceProvider = Provider(
   (ref) => DeepLinkService(
@@ -28,9 +33,10 @@ final deepLinkServiceProvider = Provider(
     // Below is used for beta timeline
     ref.watch(timelineFactoryProvider),
     ref.watch(beta_asset_provider.assetServiceProvider),
-    ref.watch(currentRemoteAlbumProvider.notifier),
     ref.watch(remoteAlbumServiceProvider),
     ref.watch(driftMemoryServiceProvider),
+    ref.watch(driftPeopleServiceProvider),
+    ref.watch(currentUserProvider),
   ),
 );
 
@@ -45,9 +51,11 @@ class DeepLinkService {
   /// Used for beta timeline
   final TimelineFactory _betaTimelineFactory;
   final beta_asset_service.AssetService _betaAssetService;
-  final CurrentAlbumNotifier _betaCurrentAlbumNotifier;
   final RemoteAlbumService _betaRemoteAlbumService;
-  final DriftMemoryService _betaMemoryServiceProvider;
+  final DriftMemoryService _betaMemoryService;
+  final DriftPeopleService _betaPeopleService;
+
+  final UserDto? _currentUser;
 
   const DeepLinkService(
     this._memoryService,
@@ -57,29 +65,32 @@ class DeepLinkService {
     this._currentAlbum,
     this._betaTimelineFactory,
     this._betaAssetService,
-    this._betaCurrentAlbumNotifier,
     this._betaRemoteAlbumService,
-    this._betaMemoryServiceProvider,
+    this._betaMemoryService,
+    this._betaPeopleService,
+    this._currentUser,
   );
 
   DeepLink _handleColdStart(PageRouteInfo<dynamic> route, bool isColdStart) {
     return DeepLink([
       // we need something to segue back to if the app was cold started
       // TODO: use MainTimelineRoute this when beta is default
-      if (isColdStart) (Store.isBetaTimelineEnabled) ? const MainTimelineRoute() : const PhotosRoute(),
+      if (isColdStart) (Store.isBetaTimelineEnabled) ? const TabShellRoute() : const PhotosRoute(),
       route,
     ]);
   }
 
-  Future<DeepLink> handleScheme(PlatformDeepLink link, bool isColdStart) async {
+  Future<DeepLink> handleScheme(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     // get everything after the scheme, since Uri cannot parse path
     final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
     PageRouteInfo<dynamic>? deepLinkRoute = switch (intent) {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
-      "asset" => await _buildAssetDeepLink(queryParams['id'] ?? ''),
+      "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
+      "activity" => await _buildActivityDeepLink(queryParams['albumId'] ?? ''),
       _ => null,
     };
 
@@ -95,20 +106,26 @@ class DeepLinkService {
     return _handleColdStart(deepLinkRoute, isColdStart);
   }
 
-  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, bool isColdStart) async {
+  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     final path = link.uri.path;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
     final assetRegex = RegExp('/photos/($uuidRegex)');
     final albumRegex = RegExp('/albums/($uuidRegex)');
+    final peopleRegex = RegExp('/people/($uuidRegex)');
 
     PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildAssetDeepLink(assetId);
+      deepLinkRoute = await _buildAssetDeepLink(assetId, ref);
     } else if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
+    } else if (peopleRegex.hasMatch(path)) {
+      final peopleId = peopleRegex.firstMatch(path)?.group(1) ?? '';
+      deepLinkRoute = await _buildPeopleDeepLink(peopleId);
+    } else if (path == "/memory") {
+      deepLinkRoute = await _buildMemoryDeepLink(null);
     }
 
     // Deep link resolution failed, safely handle it based on the app state
@@ -120,17 +137,33 @@ class DeepLinkService {
     return _handleColdStart(deepLinkRoute, isColdStart);
   }
 
-  Future<PageRouteInfo?> _buildMemoryDeepLink(String memoryId) async {
+  Future<PageRouteInfo?> _buildMemoryDeepLink(String? memoryId) async {
     if (Store.isBetaTimelineEnabled) {
-      final memory = await _betaMemoryServiceProvider.get(memoryId);
+      List<DriftMemory> memories = [];
 
-      if (memory == null) {
+      if (memoryId == null) {
+        if (_currentUser == null) {
+          return null;
+        }
+
+        memories = await _betaMemoryService.getMemoryLane(_currentUser.id);
+      } else {
+        final memory = await _betaMemoryService.get(memoryId);
+        if (memory != null) {
+          memories = [memory];
+        }
+      }
+
+      if (memories.isEmpty) {
         return null;
       }
 
-      return DriftMemoryRoute(memories: [memory], memoryIndex: 0);
+      return DriftMemoryRoute(memories: memories, memoryIndex: 0);
     } else {
       // TODO: Remove this when beta is default
+      if (memoryId == null) {
+        return null;
+      }
       final memory = await _memoryService.getMemoryById(memoryId);
 
       if (memory == null) {
@@ -141,14 +174,18 @@ class DeepLinkService {
     }
   }
 
-  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId) async {
+  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref) async {
     if (Store.isBetaTimelineEnabled) {
       final asset = await _betaAssetService.getRemoteAsset(assetId);
       if (asset == null) {
         return null;
       }
 
-      return AssetViewerRoute(initialIndex: 0, timelineService: _betaTimelineFactory.fromAssets([asset]));
+      AssetViewer.setAsset(ref, asset);
+      return AssetViewerRoute(
+        initialIndex: 0,
+        timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+      );
     } else {
       // TODO: Remove this when beta is default
       final asset = await _assetService.getAssetByRemoteId(assetId);
@@ -171,7 +208,6 @@ class DeepLinkService {
         return null;
       }
 
-      _betaCurrentAlbumNotifier.setAlbum(album);
       return RemoteAlbumRoute(album: album);
     } else {
       // TODO: Remove this when beta is default
@@ -184,5 +220,33 @@ class DeepLinkService {
       _currentAlbum.set(album);
       return AlbumViewerRoute(albumId: album.id);
     }
+  }
+
+  Future<PageRouteInfo?> _buildActivityDeepLink(String albumId) async {
+    if (Store.isBetaTimelineEnabled == false) {
+      return null;
+    }
+
+    final album = await _betaRemoteAlbumService.get(albumId);
+
+    if (album == null || album.isActivityEnabled == false) {
+      return null;
+    }
+
+    return DriftActivitiesRoute(album: album);
+  }
+
+  Future<PageRouteInfo?> _buildPeopleDeepLink(String personId) async {
+    if (Store.isBetaTimelineEnabled == false) {
+      return null;
+    }
+
+    final person = await _betaPeopleService.get(personId);
+
+    if (person == null) {
+      return null;
+    }
+
+    return DriftPersonRoute(person: person);
   }
 }

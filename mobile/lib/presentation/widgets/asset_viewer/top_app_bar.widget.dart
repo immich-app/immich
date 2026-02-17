@@ -3,20 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -33,54 +33,41 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
-
-    final previousRouteName = ref.watch(previousRouteNameProvider);
-    final showViewInTimelineButton =
-        previousRouteName != TabShellRoute.name &&
-        previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
+    if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
+      ref.watch(albumActivityProvider(album.id, asset.id));
+    }
+
     if (!showControls) {
       opacity = 0;
     }
 
-    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
+      if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.navigateTo(const DriftActivitiesRoute());
+            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
           },
         ),
-      if (showViewInTimelineButton)
-        IconButton(
-          onPressed: () async {
-            await context.maybePop();
-            await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
-            EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
-          },
-          icon: const Icon(Icons.image_search),
-          tooltip: 'view_in_timeline',
-        ),
+
       if (asset.hasRemote && isOwner && !asset.isFavorite)
-        const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
+        const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
-      if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
-      const _KebabMenu(),
+        const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+
+      ViewerKebabMenu(originalTheme: originalTheme),
     ];
 
-    final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
-      const _KebabMenu(),
-    ];
+    final lockedViewActions = <Widget>[ViewerKebabMenu(originalTheme: originalTheme)];
 
     return IgnorePointer(
       ignoring: opacity < 255,
@@ -93,7 +80,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet
+          actions: isShowingSheet || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions
@@ -105,20 +92,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(60.0);
-}
-
-class _KebabMenu extends ConsumerWidget {
-  const _KebabMenu();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      onPressed: () {
-        EventStream.shared.emit(const ViewerOpenBottomSheetEvent());
-      },
-      icon: const Icon(Icons.more_vert_rounded),
-    );
-  }
 }
 
 class _AppBarBackButton extends ConsumerWidget {

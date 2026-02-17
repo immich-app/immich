@@ -2,6 +2,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import {
     createPartner,
     getPartners,
@@ -11,12 +12,10 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, Text } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
-  import Icon from '../elements/icon.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;
@@ -104,7 +103,7 @@
 
     try {
       for (const user of users) {
-        await createPartner({ id: user.id });
+        await createPartner({ partnerCreateDto: { sharedWithId: user.id } });
       }
 
       await refreshPartners();
@@ -115,7 +114,7 @@
 
   const handleShowOnTimelineChanged = async (partner: PartnerSharing, inTimeline: boolean) => {
     try {
-      await updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
+      await updatePartner({ id: partner.user.id, partnerUpdateDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
     } catch (error) {
@@ -158,17 +157,19 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_with_partner', { values: { partner: partner.user.name } }).toUpperCase()}
-            </p>
-            <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
+            <Text class="my-4" size="small" fontWeight="medium">
+              {$t('shared_with_partner', { values: { partner: partner.user.name } })}
+            </Text>
+            <Text size="tiny" fontWeight="medium"
+              >{$t('partner_can_access', { values: { partner: partner.user.name } })}</Text
+            >
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} />
+                <Icon icon={mdiCheck} />
                 {$t('partner_can_access_assets')}
               </li>
               <li class="flex gap-2 place-items-center py-1">
-                <Icon path={mdiCheck} />
+                <Icon icon={mdiCheck} />
                 {$t('partner_can_access_location')}
               </li>
             </ul>
@@ -177,9 +178,10 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_from_partner', { values: { partner: partner.user.name } }).toUpperCase()}
-            </p>
+            <Text class="my-4" size="small" fontWeight="medium">
+              {$t('shared_from_partner', { values: { partner: partner.user.name } })}
+            </Text>
+
             <SettingSwitch
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}

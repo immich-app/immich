@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -12,12 +10,12 @@ import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-// import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -106,7 +104,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
         }
 
-        debugPrint("Attempting to connect to websocket");
+        dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
           endpoint.origin,
@@ -122,12 +120,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         );
 
         socket.onConnect((_) {
-          debugPrint("Established Websocket Connection");
+          dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket, pendingChanges: state.pendingChanges);
         });
 
         socket.onDisconnect((_) {
-          debugPrint("Disconnect to Websocket Connection");
+          dPrint(() => "Disconnect to Websocket Connection");
           state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
         });
 
@@ -146,18 +144,19 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           socket.on('on_asset_hidden', _handleOnAssetHidden);
         } else {
           socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+          socket.on('AssetEditReadyV1', _handleSyncAssetEditReady);
         }
 
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
-        debugPrint("[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
+        dPrint(() => "[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
       }
     }
   }
 
   void disconnect() {
-    debugPrint("Attempting to disconnect from websocket");
+    dPrint(() => "Attempting to disconnect from websocket");
 
     _batchedAssetUploadReady.clear();
 
@@ -194,14 +193,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void stopListeningToBetaEvents() {
     state.socket?.off('AssetUploadReadyV1');
+    state.socket?.off('AssetEditReadyV1');
   }
 
   void startListeningToBetaEvents() {
     state.socket?.on('AssetUploadReadyV1', _handleSyncAssetUploadReady);
+    state.socket?.on('AssetEditReadyV1', _handleSyncAssetEditReady);
   }
 
   void listenUploadEvent() {
-    debugPrint("Start listening to event on_upload_success");
+    dPrint(() => "Start listening to event on_upload_success");
     state.socket?.on('on_upload_success', _handleOnUploadSuccess);
   }
 
@@ -309,7 +310,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     final serverVersion = ServerVersion.fromDto(serverVersionDto);
     final releaseVersion = ServerVersion.fromDto(releaseVersionDto);
-    _ref.read(serverInfoProvider.notifier).handleNewRelease(serverVersion, releaseVersion);
+    _ref.read(serverInfoProvider.notifier).handleReleaseInfo(serverVersion, releaseVersion);
   }
 
   void _handleSyncAssetUploadReady(dynamic data) {
@@ -317,13 +318,24 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     _batchDebouncer.run(_processBatchedAssetUploadReady);
   }
 
+  void _handleSyncAssetEditReady(dynamic data) {
+    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditBatch([data]));
+  }
+
   void _processBatchedAssetUploadReady() {
     if (_batchedAssetUploadReady.isEmpty) {
       return;
     }
 
+    final isSyncAlbumEnabled = Store.get(StoreKey.syncAlbums, false);
     try {
-      unawaited(_ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()));
+      unawaited(
+        _ref.read(backgroundSyncProvider).syncWebsocketBatch(_batchedAssetUploadReady.toList()).then((_) {
+          if (isSyncAlbumEnabled) {
+            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+          }
+        }),
+      );
     } catch (error) {
       _log.severe("Error processing batched AssetUploadReadyV1 events: $error");
     }

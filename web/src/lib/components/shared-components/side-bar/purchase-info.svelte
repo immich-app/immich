@@ -1,18 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { OpenQueryParam } from '$lib/constants';
+  import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
-  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { Route } from '$lib/route';
   import { preferences } from '$lib/stores/user.store';
   import { getAccountAge } from '$lib/utils/auth';
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, Logo, modalManager, SupporterBadge } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
@@ -23,8 +21,6 @@
   let hoverButton = $state(false);
 
   let showBuyButton = $state(getButtonVisibility());
-
-  const { isPurchased } = purchaseStore;
 
   const openPurchaseModal = async () => {
     await modalManager.show(PurchaseModal);
@@ -74,15 +70,15 @@
 </script>
 
 <div class="license-status ps-4 text-sm">
-  {#if $isPurchased && $preferences.purchase.showSupportBadge}
+  {#if authManager.isPurchased && $preferences.purchase.showSupportBadge}
     <button
-      onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
-      class="w-full"
+      onclick={() => goto(Route.userSettings({ isOpen: OpenQueryParam.PURCHASE_SETTINGS }))}
+      class="w-full mt-2"
       type="button"
     >
-      <SupporterBadge />
+      <SupporterBadge size="small" effect="always" />
     </button>
-  {:else if !$isPurchased && showBuyButton && getAccountAge() > 14}
+  {:else if !authManager.isPurchased && showBuyButton && getAccountAge() > 14}
     <button
       type="button"
       onclick={openPurchaseModal}
@@ -94,20 +90,14 @@
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
-          <div class="h-6 w-6">
-            <ImmichLogo noText class="h-[24px]" />
-          </div>
-          <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
+          <Logo variant="icon" size="tiny" />
+          <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
           </p>
         </div>
 
         <div>
-          <Icon
-            path={mdiInformationOutline}
-            class="hidden sidebar:flex text-immich-primary dark:text-immich-dark-primary font-medium"
-            size="18"
-          />
+          <Icon icon={mdiInformationOutline} class="hidden sidebar:flex text-primary font-medium" size="18" />
         </div>
       </div>
     </button>
@@ -118,7 +108,7 @@
   {#if showMessage}
     <dialog
       open
-      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-125 absolute bottom-19 start-64 bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
@@ -127,7 +117,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <ImmichLogo noText class="h-[32px]" />
+          <Logo variant="icon" size="small" />
         </div>
         <IconButton
           shape="round"
@@ -143,7 +133,7 @@
         />
       </div>
 
-      <h1 class="text-lg font-medium my-3 dark:text-immich-dark-primary text-immich-primary">
+      <h1 class="text-lg font-medium my-3 text-primary">
         {$t('purchase_panel_title')}
       </h1>
 
