@@ -8,18 +8,18 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class SheetLocationDetails extends ConsumerStatefulWidget {
-  const SheetLocationDetails({super.key});
+class LocationDetails extends ConsumerStatefulWidget {
+  const LocationDetails({super.key});
 
   @override
-  ConsumerState createState() => _SheetLocationDetailsState();
+  ConsumerState createState() => _LocationDetailsState();
 }
 
-class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
+class _LocationDetailsState extends ConsumerState<LocationDetails> {
   MapLibreMapController? _mapController;
 
   String? _getLocationName(ExifInfo? exifInfo) {
@@ -42,7 +42,6 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
 
   void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
     final currentExif = current.valueOrNull;
-
     if (currentExif != null && currentExif.hasCoordinates) {
       _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentExif.latitude!, currentExif.longitude!)));
     }
