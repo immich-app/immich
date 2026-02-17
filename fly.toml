@@ -16,26 +16,28 @@ primary_region = 'ord'
   REDIS_HOSTNAME = 'immich-dragonfly.internal'
   REDIS_PORT = '6379'
   STORAGE_S3_ENABLED = 'true'
-  STORAGE_S3_BUCKET = 'user-media'
+  STORAGE_S3_ARCHIVE_BUCKET = 'user-media'
+  STORAGE_S3_HOT_BUCKET = 'user-media'
   STORAGE_S3_ENDPOINT = 'https://t3.storage.dev'
   STORAGE_S3_PREFIX = 'users/'
   STORAGE_S3_REGION = 'auto'
   # OAuth config via secrets
 
-# Single process group - each machine runs API + all workers
-# Jobs are processed locally using machine-prefixed queues
-# Scaling is handled by Fly's HTTP-based autoscaling
+# Web = API only, Worker = job processing only
+# Uses upstream IMMICH_WORKERS_INCLUDE/EXCLUDE env vars
 [processes]
-  app = "start.sh"
+  web = "env IMMICH_WORKERS_EXCLUDE=microservices start.sh"
+  worker = "env IMMICH_WORKERS_INCLUDE=microservices start.sh"
 
-# HTTP service with Fly autoscaling
+# HTTP service - Fly proxy auto-starts/stops web machines on traffic
+# Workers are scaled by immich-autoscaler based on queue depth
 [http_service]
   internal_port = 2283
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 1
-  processes = ["app"]
+  processes = ["web"]
 
   [http_service.concurrency]
     type = 'requests'
@@ -49,7 +51,7 @@ primary_region = 'ord'
     method = "GET"
     path = "/api/server/ping"
 
-# Machine-level health check
+# Machine-level health check (web only - workers don't serve HTTP)
 [[checks]]
   name = "health"
   port = 2283
@@ -59,16 +61,22 @@ primary_region = 'ord'
   grace_period = "30s"
   method = "GET"
   path = "/api/server/ping"
-  processes = ["app"]
+  processes = ["web"]
 
-# Single VM config - sized for both API and worker tasks
+# Web: lightweight API server
 [[vm]]
-  processes = ["app"]
+  processes = ["web"]
+  memory = '1gb'
+  cpus = 1
+  cpu_kind = "shared"
+
+# Worker: heavier job processing (video transcoding, thumbnails, etc.)
+[[vm]]
+  processes = ["worker"]
   memory = '4gb'
   cpus = 2
   cpu_kind = "performance"
 
 # Give workers time to finish current job before SIGKILL (matches 10-min lock duration)
-# This applies to all process groups but only affects workers (web shuts down quickly)
 kill_timeout = "660s"
 kill_signal = "SIGTERM"

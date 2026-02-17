@@ -110,7 +110,7 @@ ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE
 
 VOLUME /data
 EXPOSE 2283
-ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
+ENTRYPOINT ["tini", "--"]
 CMD ["start.sh"]
 
 HEALTHCHECK CMD immich-healthcheck
