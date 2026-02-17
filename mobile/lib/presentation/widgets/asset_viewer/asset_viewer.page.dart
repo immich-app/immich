@@ -21,6 +21,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/hdr_image_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -588,6 +589,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
     if (displayAsset.isImage && !isPlayingMotionVideo) {
+      if (CurrentPlatform.isIOS17OrAbove) {
+        return _hdrImageBuilder(ctx, displayAsset);
+      }
       return _imageBuilder(ctx, displayAsset);
     }
 
@@ -613,6 +617,46 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         height: size.height,
         color: backgroundColor,
         child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+      ),
+    );
+  }
+
+  PhotoViewGalleryPageOptions _hdrImageBuilder(BuildContext ctx, BaseAsset asset) {
+    final screenW = ctx.width;
+    final screenH = ctx.height;
+    Size childSize;
+    if (asset.width != null && asset.height != null && asset.width! > 0 && asset.height! > 0) {
+      final imgW = asset.width!.toDouble();
+      final imgH = asset.height!.toDouble();
+      final s = (screenW / imgW) < (screenH / imgH) ? screenW / imgW : screenH / imgH;
+      childSize = Size(imgW * s, imgH * s);
+    } else {
+      childSize = Size(screenW, screenH);
+    }
+
+    return PhotoViewGalleryPageOptions.customChild(
+      onDragStart: _onDragStart,
+      onDragUpdate: _onDragUpdate,
+      onDragEnd: _onDragEnd,
+      onTapDown: _onTapDown,
+      onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      filterQuality: FilterQuality.none,
+      childSize: childSize,
+      initialScale: PhotoViewComputedScale.contained,
+      minScale: PhotoViewComputedScale.contained,
+      maxScale: PhotoViewComputedScale.covered * 5,
+      basePosition: Alignment.center,
+      tightMode: true,
+      disableScaleGestures: showingBottomSheet,
+      child: HDRImageViewer(
+        asset: asset,
+        image: Image(
+          key: ValueKey(asset),
+          image: getFullImageProvider(asset, size: ctx.sizeData),
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        ),
       ),
     );
   }
