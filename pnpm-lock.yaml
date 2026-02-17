@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^24.10.11
+        specifier: ^24.10.13
         version: 24.10.13
       '@vitest/coverage-v8':
         specifier: ^3.0.0
@@ -220,7 +220,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^24.10.11
+        specifier: ^24.10.13
         version: 24.10.13
       '@types/pg':
         specifier: ^8.15.1
@@ -320,7 +320,7 @@ importers:
         version: 1.1.0
     devDependencies:
       '@types/node':
-        specifier: ^24.10.11
+        specifier: ^24.10.13
         version: 24.10.13
       typescript:
         specifier: ^5.3.3
@@ -639,7 +639,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@types/node':
-        specifier: ^24.10.11
+        specifier: ^24.10.13
         version: 24.10.13
       '@types/nodemailer':
         specifier: ^7.0.0
@@ -11330,6 +11330,7 @@ packages:
   tar@7.5.7:
     resolution: {integrity: sha512-fov56fJiRuThVFXD6o6/Q354S7pnWMJIVlDBYijsTNx6jKSE4pvrDTs6lUnmGvNyfJwFQQwWy3owKz1ucIhveQ==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   terser-webpack-plugin@5.3.16:
     resolution: {integrity: sha512-h9oBFCWrq78NyWWVcSwZarJkZ01c2AyGrzs1crmHZO3QUg9D61Wu4NPjBy69n7JqylFF5y+CsUZYmYEIZ3mR+Q==}
