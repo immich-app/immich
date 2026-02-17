@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
-import 'package:immich_mobile/widgets/map/asset_market_icon.dart';
+import 'package:immich_mobile/widgets/map/asset_marker_icon.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 /// A non-interactive thumbnail of a map in the given coordinates with optional markers
