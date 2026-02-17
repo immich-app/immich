@@ -180,18 +180,49 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   }
 
   let multiBar: MultiBar | undefined;
+  let totalSize = 0;
+  const statsMap = new Map<string, Stats>();
+
+  // Calculate total size first
+  for (const filepath of files) {
+    const stats = await stat(filepath);
+    statsMap.set(filepath, stats);
+    totalSize += stats.size;
+  }
 
   if (progress) {
     multiBar = new MultiBar(
-      { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+      {
+        format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
+        formatValue: (v: number, options, type) => {
+          // Don't format percentage
+          if (type === 'percentage') {
+            return v.toString();
+          }
+          return byteSize(v).toString();
+        },
+        etaBuffer: 100, // Increase samples for ETA calculation
+      },
       Presets.shades_classic,
     );
+
+    // Ensure we restore cursor on interrupt
+    process.on('SIGINT', () => {
+      if (multiBar) {
+        multiBar.stop();
+      }
+      process.exit(0);
+    });
   } else {
-    console.log(`Received ${files.length} files, hashing...`);
+    console.log(`Received ${files.length} files (${byteSize(totalSize)}), hashing...`);
   }
 
-  const hashProgressBar = multiBar?.create(files.length, 0, { message: 'Hashing files          ' });
-  const checkProgressBar = multiBar?.create(files.length, 0, { message: 'Checking for duplicates' });
+  const hashProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Hashing files          ',
+  });
+  const checkProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Checking for duplicates',
+  });
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
@@ -211,7 +242,13 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         }
       }
 
-      checkProgressBar?.increment(assets.length);
+      // Update progress based on total size of processed files
+      let processedSize = 0;
+      for (const asset of assets) {
+        const stats = statsMap.get(asset.id);
+        processedSize += stats?.size || 0;
+      }
+      checkProgressBar?.increment(processedSize);
     },
     { concurrency, retry: 3 },
   );
@@ -221,6 +258,10 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
     async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
+      const stats = statsMap.get(filepath);
+      if (!stats) {
+        throw new Error(`Stats not found for ${filepath}`);
+      }
       const dto = { id: filepath, checksum: await sha1(filepath) };
 
       results.push(dto);
@@ -231,7 +272,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         void checkBulkUploadQueue.push(batch);
       }
 
-      hashProgressBar?.increment();
+      hashProgressBar?.increment(stats.size);
       return results;
     },
     { concurrency, retry: 3 },
