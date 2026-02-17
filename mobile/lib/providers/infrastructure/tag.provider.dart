@@ -1,6 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/tags_api.repository.dart';
+import 'package:immich_mobile/providers/asset_tags.provider.dart';
+
+final tagProvider = AsyncNotifierProvider<TagNotifier, Set<Tag>>(TagNotifier.new);
 
 class TagNotifier extends AsyncNotifier<Set<Tag>> {
   @override
@@ -16,6 +19,10 @@ class TagNotifier extends AsyncNotifier<Set<Tag>> {
   Future<void> bulkTagAssets(List<String> assetIds, List<String> tagIds) async {
     final repo = ref.read(tagsApiRepositoryProvider);
     await repo.bulkTagAssets(assetIds, tagIds);
+
+    for (final assetId in assetIds) {
+      ref.invalidate(assetTagsProvider(assetId));
+    }
   }
 
   Future<List<Tag>> upsertTags(List<String> tags) async {
@@ -29,6 +36,8 @@ class TagNotifier extends AsyncNotifier<Set<Tag>> {
     state = AsyncValue.data({...?state.valueOrNull, ...upsertedTags});
     return upsertedTags;
   }
-}
 
-final tagProvider = AsyncNotifierProvider<TagNotifier, Set<Tag>>(TagNotifier.new);
+  Iterable<Tag> getTags(Set<String> ids) {
+    return state.requireValue.where((t) => ids.contains(t.id));
+  }
+}

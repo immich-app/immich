@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -113,6 +114,16 @@ class AssetService {
     } catch (error, stack) {
       log.severe('Error while getting remote asset info: ${error.toString()}', error, stack);
 
+      return null;
+    }
+  }
+
+  Future<List<Tag>?> getRemoteTagsOfAsset(String remoteId) async {
+    try {
+      final AssetResponseDto? dto = await _apiService.assetsApi.getAssetInfo(remoteId);
+      return dto?.tags.map((t) => Tag.fromDto(t)).toList();
+    } catch (error, stack) {
+      log.severe('Error while getting remote asset info: ${error.toString()}', error, stack);
       return null;
     }
   }

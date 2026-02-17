@@ -8,21 +8,21 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
-Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext context, Set<String>? initialSelection}) {
+Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext context, Set<String>? excludeTagIds}) {
   return showDialog<(Set<String>, Set<String>)?>(
     context: context,
-    builder: (context) => _TagPickerModal(initialSelection: initialSelection),
+    builder: (context) => _TagPickerModal(excludedTagIds: excludeTagIds),
   );
 }
 
 class _TagPickerModal extends HookConsumerWidget {
-  final Set<String>? initialSelection;
+  final Set<String>? excludedTagIds;
 
-  const _TagPickerModal({this.initialSelection});
+  const _TagPickerModal({this.excludedTagIds});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedTagIds = useState<Set<String>>(initialSelection ?? {});
+    final selectedTagIds = useState<Set<String>>({});
     final newTagValues = useState<Set<String>>({});
 
     void onSelectExistingTag(Iterable<Tag> tags) {
@@ -61,6 +61,7 @@ class _TagPickerModal extends HookConsumerWidget {
           onSelectExistingTag: onSelectExistingTag,
           filter: selectedTagIds.value,
           onSelectNewTag: onSelectNewTag,
+          excludedTagIds: excludedTagIds,
         ),
       ),
     );
@@ -68,9 +69,16 @@ class _TagPickerModal extends HookConsumerWidget {
 }
 
 class TagPicker extends HookConsumerWidget {
-  const TagPicker({super.key, required this.onSelectExistingTag, required this.filter, this.onSelectNewTag});
+  const TagPicker({
+    super.key,
+    required this.onSelectExistingTag,
+    required this.filter,
+    this.onSelectNewTag,
+    this.excludedTagIds,
+  });
 
   final Set<String> filter;
+  final Set<String>? excludedTagIds;
 
   /// Callback when existing tags are selected/deselected.
   final Function(Iterable<Tag>) onSelectExistingTag;
@@ -106,8 +114,12 @@ class TagPicker extends HookConsumerWidget {
         Expanded(
           child: tags.widgetWhen(
             onData: (tags) {
+              var includedTags = tags;
+              if (excludedTagIds?.isNotEmpty ?? false) {
+                includedTags = tags.where((t) => !excludedTagIds!.contains(t.id)).toSet();
+              }
               final trimmedQuery = _trimSlashes(searchQuery.value);
-              final queryResult = tags
+              final queryResult = includedTags
                   .where((t) => t.value.toLowerCase().contains(trimmedQuery.toLowerCase()))
                   .toList();
               final showCreateTile =

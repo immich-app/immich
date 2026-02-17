@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -132,6 +133,14 @@ class DriftSearchPage extends HookConsumerWidget {
 
           if (preFilter.location.city != null) {
             locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
+          }
+
+          if (preFilter.tagIds?.isNotEmpty ?? false) {
+            final tags = ref.read(tagProvider.notifier).getTags(preFilter.tagIds!.toSet());
+            tagCurrentFilterWidget.value = Text(
+              tags.map((t) => t.value).join(", "),
+              style: context.textTheme.labelLarge,
+            );
           }
         });
       }

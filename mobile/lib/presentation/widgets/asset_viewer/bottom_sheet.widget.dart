@@ -6,12 +6,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetType;
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
@@ -19,6 +25,8 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/she
 import 'package:immich_mobile/presentation/widgets/asset_viewer/rating_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/asset_tags.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -29,6 +37,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
 const _kSeparator = '  •  ';
 
@@ -206,11 +215,9 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
-    final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider)
-        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
+    final userPreferences = ref.watch(userMetadataPreferencesProvider);
+    final tags = (asset is RemoteAsset) ? ref.watch(assetTagsProvider(asset.id)) : const AsyncValue<List<Tag>>.data([]);
 
-    // Build file info tile based on asset type
     Widget buildFileInfoTile() {
       if (asset is LocalAsset) {
         final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
@@ -288,8 +295,28 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
         ],
+        // Tags
+        if (asset is RemoteAsset && (userPreferences.value?.tagsEnabled ?? false)) ...[
+          SheetTile(
+            title: 'tags'.t(context: context),
+            titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+          tags.widgetWhen(
+            onData: (tags) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ...tags.map((tag) => _AssetTagChip(tag: tag, isOwner: isOwner, asset: asset)),
+                  if (isOwner) _AssetAddTagChip(isOwner: isOwner, remoteId: asset.id),
+                ],
+              ),
+            ),
+          ),
+        ],
         // Rating bar
-        if (isRatingEnabled) ...[
+        if (userPreferences.value?.ratingsEnabled ?? false) ...[
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Column(
@@ -402,6 +429,171 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
             focusedErrorBorder: InputBorder.none,
           ),
           onTapOutside: (_) => saveDescription(currentExifInfo?.description),
+        ),
+      ),
+    );
+  }
+}
+
+class _AssetAddTagChip extends ConsumerWidget {
+  final bool isOwner;
+  final String remoteId;
+
+  const _AssetAddTagChip({required this.isOwner, required this.remoteId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tags = ref.watch(assetTagsProvider(remoteId));
+    return _BaseChip(
+      label: 'add_tag'.t(context: context),
+      onLabelTap: () async {
+        final result = await showTagPickerModal(context: context, excludeTagIds: tags.value?.map((t) => t.id).toSet());
+        if (result == null) return;
+
+        final (existingTagIds, newTagValues) = result;
+        final tagIdsToAdd = <String>[...existingTagIds];
+
+        try {
+          // Create new tags if any
+          if (newTagValues.isNotEmpty) {
+            final newTags = await ref.read(tagProvider.notifier).upsertTags(newTagValues.toList());
+            tagIdsToAdd.addAll(newTags.map((tag) => tag.id));
+          }
+
+          // Add all tags to asset
+          if (tagIdsToAdd.isNotEmpty) {
+            await ref.read(assetTagsProvider(remoteId).notifier).addTags(tagIdsToAdd);
+          }
+        } catch (error) {
+          ImmichToast.show(
+            context: context,
+            msg: 'errors.failed_to_add_tags'.t(context: context),
+            toastType: ToastType.error,
+          );
+        }
+      },
+      icon: Icons.add,
+      labelColor: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.1),
+      borderColor: context.colorScheme.outline.withValues(alpha: 0.4),
+    );
+  }
+}
+
+class _AssetTagChip extends ConsumerWidget {
+  final Tag tag;
+  final bool isOwner;
+  final BaseAsset asset;
+
+  const _AssetTagChip({required this.tag, required this.isOwner, required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _BaseChip(
+      label: tag.value,
+      onLabelTap: () {
+        ref
+            .read(searchPreFilterProvider.notifier)
+            .setFilter(
+              SearchFilter(
+                tagIds: [tag.id],
+                people: {},
+                location: SearchLocationFilter(),
+                camera: SearchCameraFilter(),
+                date: SearchDateFilter(),
+                display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+                rating: SearchRatingFilter(),
+                mediaType: AssetType.other,
+              ),
+            );
+        unawaited(context.navigateTo(const DriftSearchRoute()));
+      },
+      icon: isOwner ? Icons.close : null,
+      onIconTap: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('${'remove_tag'.t(context: context)}?'),
+            titleTextStyle: const TextStyle(fontSize: 20.0),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('cancel'.t(context: context)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'remove'.t(context: context),
+                  style: TextStyle(color: context.colorScheme.error),
+                ),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true) return;
+        try {
+          await ref.read(assetTagsProvider((asset as RemoteAsset).id).notifier).deleteTags([tag.id]);
+        } catch (error) {
+          ImmichToast.show(
+            context: context,
+            msg: 'errors.failed_to_remove_tag'.t(context: context),
+            toastType: ToastType.error,
+          );
+        }
+      },
+    );
+  }
+}
+
+class _BaseChip extends ConsumerWidget {
+  final String label;
+  final VoidCallback? onLabelTap;
+  final IconData? icon;
+  final VoidCallback? onIconTap;
+  final Color? labelColor;
+  final Color? borderColor;
+
+  const _BaseChip({required this.label, this.icon, this.onLabelTap, this.onIconTap, this.labelColor, this.borderColor});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onLabelTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: labelColor ?? context.primaryColor.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: borderColor ?? context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceVariant),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              if (icon != null) ...[
+                const SizedBox(width: 6),
+                InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: onIconTap,
+                  splashColor: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  child: Container(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(icon, size: 16, color: context.colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
