@@ -2,6 +2,7 @@ import Foundation
 import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
+let HEADERS_KEY = "immich.request_headers"
 
 /// Manages a shared URLSession with SSL configuration support.
 class URLSessionManager: NSObject {
@@ -28,8 +29,12 @@ class URLSessionManager: NSObject {
     config.timeoutIntervalForResource = 300
     
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
-    config.httpAdditionalHeaders = ["User-Agent": "Immich_iOS_\(version)"]
-    
+    var headers: [String: String] = ["User-Agent": "Immich_iOS_\(version)"]
+    if let saved = UserDefaults.standard.dictionary(forKey: HEADERS_KEY) as? [String: String] {
+      headers.merge(saved) { _, new in new }
+    }
+    config.httpAdditionalHeaders = headers
+
     return config
   }()
   
