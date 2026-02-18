@@ -192,11 +192,13 @@ jobs:
           ' >> $GITHUB_OUTPUT
 
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy docs/build --project-name=${{ steps.docs-output.outputs.projectName }} --branch=${{ steps.parameters.outputs.name }}
+        working-directory: docs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT_NAME: ${{ steps.docs-output.outputs.projectName }}
+          BRANCH_NAME: ${{ steps.parameters.outputs.name }}
+        run: mise run //docs:deploy
 
       - name: Deploy Docs Release Domain
         if: ${{ steps.parameters.outputs.event == 'release' }}
