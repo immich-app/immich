@@ -3,6 +3,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getDisplayMetrics, getNaturalSize } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
@@ -78,17 +79,13 @@
   });
 
   $effect(() => {
-    const { actualWidth, actualHeight } = getContainedSize(htmlElement);
-    const offsetArea = {
-      width: (containerWidth - actualWidth) / 2,
-      height: (containerHeight - actualHeight) / 2,
-    };
+    const metrics = getDisplayMetrics(htmlElement);
 
     const imageBoundingBox = {
-      top: offsetArea.height,
-      left: offsetArea.width,
-      width: containerWidth - offsetArea.width * 2,
-      height: containerHeight - offsetArea.height * 2,
+      top: metrics.offsetY,
+      left: metrics.offsetX,
+      width: metrics.displayWidth,
+      height: metrics.displayHeight,
     };
 
     if (!canvas) {
@@ -112,32 +109,6 @@
     faceRect.setCoords();
     positionFaceSelector();
   });
-
-  const getContainedSize = (
-    img: HTMLImageElement | HTMLVideoElement,
-  ): { actualWidth: number; actualHeight: number } => {
-    if (img instanceof HTMLImageElement) {
-      const ratio = img.naturalWidth / img.naturalHeight;
-      let actualWidth = img.height * ratio;
-      let actualHeight = img.height;
-      if (actualWidth > img.width) {
-        actualWidth = img.width;
-        actualHeight = img.width / ratio;
-      }
-      return { actualWidth, actualHeight };
-    } else if (img instanceof HTMLVideoElement) {
-      const ratio = img.videoWidth / img.videoHeight;
-      let actualWidth = img.clientHeight * ratio;
-      let actualHeight = img.clientHeight;
-      if (actualWidth > img.clientWidth) {
-        actualWidth = img.clientWidth;
-        actualHeight = img.clientWidth / ratio;
-      }
-      return { actualWidth, actualHeight };
-    }
-
-    return { actualWidth: 0, actualHeight: 0 };
-  };
 
   const cancel = () => {
     isFaceEditMode.value = false;
@@ -229,48 +200,22 @@
     }
 
     const { left, top, width, height } = faceRect.getBoundingRect();
-    const { actualWidth, actualHeight } = getContainedSize(htmlElement);
+    const metrics = getDisplayMetrics(htmlElement);
+    const natural = getNaturalSize(htmlElement);
 
-    const offsetArea = {
-      width: (containerWidth - actualWidth) / 2,
-      height: (containerHeight - actualHeight) / 2,
+    const x1Coeff = (left - metrics.offsetX) / metrics.displayWidth;
+    const y1Coeff = (top - metrics.offsetY) / metrics.displayHeight;
+    const x2Coeff = (left + width - metrics.offsetX) / metrics.displayWidth;
+    const y2Coeff = (top + height - metrics.offsetY) / metrics.displayHeight;
+
+    return {
+      imageWidth: natural.width,
+      imageHeight: natural.height,
+      x: Math.floor(x1Coeff * natural.width),
+      y: Math.floor(y1Coeff * natural.height),
+      width: Math.floor((x2Coeff - x1Coeff) * natural.width),
+      height: Math.floor((y2Coeff - y1Coeff) * natural.height),
     };
-
-    const x1Coeff = (left - offsetArea.width) / actualWidth;
-    const y1Coeff = (top - offsetArea.height) / actualHeight;
-    const x2Coeff = (left + width - offsetArea.width) / actualWidth;
-    const y2Coeff = (top + height - offsetArea.height) / actualHeight;
-
-    // transpose to the natural image location
-    if (htmlElement instanceof HTMLImageElement) {
-      const x1 = x1Coeff * htmlElement.naturalWidth;
-      const y1 = y1Coeff * htmlElement.naturalHeight;
-      const x2 = x2Coeff * htmlElement.naturalWidth;
-      const y2 = y2Coeff * htmlElement.naturalHeight;
-
-      return {
-        imageWidth: htmlElement.naturalWidth,
-        imageHeight: htmlElement.naturalHeight,
-        x: Math.floor(x1),
-        y: Math.floor(y1),
-        width: Math.floor(x2 - x1),
-        height: Math.floor(y2 - y1),
-      };
-    } else if (htmlElement instanceof HTMLVideoElement) {
-      const x1 = x1Coeff * htmlElement.videoWidth;
-      const y1 = y1Coeff * htmlElement.videoHeight;
-      const x2 = x2Coeff * htmlElement.videoWidth;
-      const y2 = y2Coeff * htmlElement.videoHeight;
-
-      return {
-        imageWidth: htmlElement.videoWidth,
-        imageHeight: htmlElement.videoHeight,
-        x: Math.floor(x1),
-        y: Math.floor(y1),
-        width: Math.floor(x2 - x1),
-        height: Math.floor(y2 - y1),
-      };
-    }
   };
 
   const tagFace = async (person: PersonResponseDto) => {
