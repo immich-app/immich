@@ -28,7 +28,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
       marker.value = await controller.value?.addMarkerAtLatLng(initialLatLng);
     }
 
-    Future<void> onMapClick(Point<num> point, LatLng centre) async {
+    Future<void> onMapClick(Point<num> _, LatLng centre) async {
       selectedLatLng.value = centre;
       await controller.value?.animateCamera(CameraUpdate.newLatLng(centre));
       if (marker.value != null) {
