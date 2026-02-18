@@ -79,6 +79,16 @@ class JobName {
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
   static const ocr = JobName._(r'Ocr');
   static const workflowRun = JobName._(r'WorkflowRun');
+  static const integrityUntrackedFilesQueueAll = JobName._(r'IntegrityUntrackedFilesQueueAll');
+  static const integrityUntrackedFiles = JobName._(r'IntegrityUntrackedFiles');
+  static const integrityUntrackedRefresh = JobName._(r'IntegrityUntrackedRefresh');
+  static const integrityMissingFilesQueueAll = JobName._(r'IntegrityMissingFilesQueueAll');
+  static const integrityMissingFiles = JobName._(r'IntegrityMissingFiles');
+  static const integrityMissingFilesRefresh = JobName._(r'IntegrityMissingFilesRefresh');
+  static const integrityChecksumFiles = JobName._(r'IntegrityChecksumFiles');
+  static const integrityChecksumFilesRefresh = JobName._(r'IntegrityChecksumFilesRefresh');
+  static const integrityDeleteReportType = JobName._(r'IntegrityDeleteReportType');
+  static const integrityDeleteReports = JobName._(r'IntegrityDeleteReports');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -138,6 +148,16 @@ class JobName {
     ocrQueueAll,
     ocr,
     workflowRun,
+    integrityUntrackedFilesQueueAll,
+    integrityUntrackedFiles,
+    integrityUntrackedRefresh,
+    integrityMissingFilesQueueAll,
+    integrityMissingFiles,
+    integrityMissingFilesRefresh,
+    integrityChecksumFiles,
+    integrityChecksumFilesRefresh,
+    integrityDeleteReportType,
+    integrityDeleteReports,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -232,6 +252,16 @@ class JobNameTypeTransformer {
         case r'OcrQueueAll': return JobName.ocrQueueAll;
         case r'Ocr': return JobName.ocr;
         case r'WorkflowRun': return JobName.workflowRun;
+        case r'IntegrityUntrackedFilesQueueAll': return JobName.integrityUntrackedFilesQueueAll;
+        case r'IntegrityUntrackedFiles': return JobName.integrityUntrackedFiles;
+        case r'IntegrityUntrackedRefresh': return JobName.integrityUntrackedRefresh;
+        case r'IntegrityMissingFilesQueueAll': return JobName.integrityMissingFilesQueueAll;
+        case r'IntegrityMissingFiles': return JobName.integrityMissingFiles;
+        case r'IntegrityMissingFilesRefresh': return JobName.integrityMissingFilesRefresh;
+        case r'IntegrityChecksumFiles': return JobName.integrityChecksumFiles;
+        case r'IntegrityChecksumFilesRefresh': return JobName.integrityChecksumFilesRefresh;
+        case r'IntegrityDeleteReportType': return JobName.integrityDeleteReportType;
+        case r'IntegrityDeleteReports': return JobName.integrityDeleteReports;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

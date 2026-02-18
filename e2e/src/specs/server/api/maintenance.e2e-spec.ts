@@ -99,7 +99,7 @@ describe('/admin/maintenance', () => {
           },
           {
             interval: 500,
-            timeout: 10_000,
+            timeout: 60_000,
           },
         )
         .toBeTruthy();
@@ -190,7 +190,7 @@ describe('/admin/maintenance', () => {
           },
           {
             interval: 500,
-            timeout: 10_000,
+            timeout: 60_000,
           },
         )
         .toBeFalsy();

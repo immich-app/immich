@@ -70,6 +70,20 @@ export type DatabaseBackupListResponseDto = {
 export type DatabaseBackupUploadDto = {
     file?: Blob;
 };
+export type IntegrityReportDto = {
+    id: string;
+    path: string;
+    "type": IntegrityReportType;
+};
+export type IntegrityReportResponseDto = {
+    items: IntegrityReportDto[];
+    nextCursor?: string;
+};
+export type IntegrityReportSummaryResponseDto = {
+    checksum_mismatch: number;
+    missing_file: number;
+    untracked_file: number;
+};
 export type SetMaintenanceModeDto = {
     /** Maintenance action */
     action: MaintenanceAction;
@@ -1259,6 +1273,7 @@ export type QueuesResponseLegacyDto = {
     editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
     facialRecognition: QueueResponseLegacyDto;
+    integrityCheck: QueueResponseLegacyDto;
     library: QueueResponseLegacyDto;
     metadataExtraction: QueueResponseLegacyDto;
     migration: QueueResponseLegacyDto;
@@ -2460,6 +2475,21 @@ export type SystemConfigImageDto = {
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
+export type SystemConfigIntegrityChecksumJob = {
+    cronExpression: string;
+    enabled: boolean;
+    percentageLimit: number;
+    timeLimit: number;
+};
+export type SystemConfigIntegrityJob = {
+    cronExpression: string;
+    enabled: boolean;
+};
+export type SystemConfigIntegrityChecks = {
+    checksumFiles: SystemConfigIntegrityChecksumJob;
+    missingFiles: SystemConfigIntegrityJob;
+    untrackedFiles: SystemConfigIntegrityJob;
+};
 export type JobSettingsDto = {
     /** Concurrency */
     concurrency: number;
@@ -2468,6 +2498,7 @@ export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
     editor: JobSettingsDto;
     faceDetection: JobSettingsDto;
+    integrityCheck: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
     migration: JobSettingsDto;
@@ -2670,6 +2701,7 @@ export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
+    integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
@@ -3374,6 +3406,73 @@ export function downloadDatabaseBackup({ filename }: {
         status: 200;
         data: Blob;
     }>(`/admin/database-backups/${encodeURIComponent(filename)}`, {
+        ...opts
+    }));
+}
+/**
+ * Get integrity report by type
+ */
+export function getIntegrityReport({ cursor, limit, $type }: {
+    cursor?: string;
+    limit?: number;
+    $type: IntegrityReportType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: IntegrityReportResponseDto;
+    }>(`/admin/integrity/report${QS.query(QS.explode({
+        cursor,
+        limit,
+        "type": $type
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Delete integrity report item
+ */
+export function deleteIntegrityReport({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/admin/integrity/report/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Download flagged file
+ */
+export function getIntegrityReportFile({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/integrity/report/${encodeURIComponent(id)}/file`, {
+        ...opts
+    }));
+}
+/**
+ * Export integrity report by type as CSV
+ */
+export function getIntegrityReportCsv({ $type }: {
+    $type: IntegrityReportType;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/admin/integrity/report/${encodeURIComponent($type)}/csv`, {
+        ...opts
+    }));
+}
+/**
+ * Get integrity report summary
+ */
+export function getIntegrityReportSummary(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: IntegrityReportSummaryResponseDto;
+    }>("/admin/integrity/summary", {
         ...opts
     }));
 }
@@ -6794,6 +6893,11 @@ export enum UserAvatarColor {
     Gray = "gray",
     Amber = "amber"
 }
+export enum IntegrityReportType {
+    UntrackedFile = "untracked_file",
+    MissingFile = "missing_file",
+    ChecksumMismatch = "checksum_mismatch"
+}
 export enum MaintenanceAction {
     Start = "start",
     End = "end",
@@ -7062,7 +7166,16 @@ export enum ManualJobName {
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
     MemoryCreate = "memory-create",
-    BackupDatabase = "backup-database"
+    BackupDatabase = "backup-database",
+    IntegrityMissingFiles = "integrity-missing-files",
+    IntegrityUntrackedFiles = "integrity-untracked-files",
+    IntegrityChecksumMismatch = "integrity-checksum-mismatch",
+    IntegrityMissingFilesRefresh = "integrity-missing-files-refresh",
+    IntegrityUntrackedFilesRefresh = "integrity-untracked-files-refresh",
+    IntegrityChecksumMismatchRefresh = "integrity-checksum-mismatch-refresh",
+    IntegrityMissingFilesDeleteAll = "integrity-missing-files-delete-all",
+    IntegrityUntrackedFilesDeleteAll = "integrity-untracked-files-delete-all",
+    IntegrityChecksumMismatchDeleteAll = "integrity-checksum-mismatch-delete-all"
 }
 export enum QueueName {
     ThumbnailGeneration = "thumbnailGeneration",
@@ -7082,6 +7195,7 @@ export enum QueueName {
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
     Workflow = "workflow",
+    IntegrityCheck = "integrityCheck",
     Editor = "editor"
 }
 export enum QueueCommand {
@@ -7176,7 +7290,17 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
-    WorkflowRun = "WorkflowRun"
+    WorkflowRun = "WorkflowRun",
+    IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
+    IntegrityUntrackedFiles = "IntegrityUntrackedFiles",
+    IntegrityUntrackedRefresh = "IntegrityUntrackedRefresh",
+    IntegrityMissingFilesQueueAll = "IntegrityMissingFilesQueueAll",
+    IntegrityMissingFiles = "IntegrityMissingFiles",
+    IntegrityMissingFilesRefresh = "IntegrityMissingFilesRefresh",
+    IntegrityChecksumFiles = "IntegrityChecksumFiles",
+    IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
+    IntegrityDeleteReportType = "IntegrityDeleteReportType",
+    IntegrityDeleteReports = "IntegrityDeleteReports"
 }
 export enum SearchSuggestionType {
     Country = "country",
