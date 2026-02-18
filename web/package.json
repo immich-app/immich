@@ -28,7 +28,7 @@
     "@immich/justified-layout-wasm": "^0.4.3",
     "@immich/sdk": "workspace:*",
     "@immich/ui": "^0.63.0",
-    "@mapbox/mapbox-gl-rtl-text": "0.2.3",
+    "@mapbox/mapbox-gl-rtl-text": "0.3.0",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.14.0",
     "@photo-sphere-viewer/equirectangular-video-adapter": "^5.14.0",
