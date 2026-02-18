@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:collection/collection.dart';
 
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 
 class ManualUploadState {
-  final Completer<void> cancelToken;
-
   // Current Backup Asset
   final CurrentUploadAsset currentUploadAsset;
   final int currentAssetIndex;
@@ -30,7 +26,6 @@ class ManualUploadState {
     required this.progressInFileSpeeds,
     required this.progressInFileSpeedUpdateTime,
     required this.progressInFileSpeedUpdateSentBytes,
-    required this.cancelToken,
     required this.currentUploadAsset,
     required this.totalAssetsToUpload,
     required this.currentAssetIndex,
@@ -45,7 +40,6 @@ class ManualUploadState {
     List<double>? progressInFileSpeeds,
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
-    Completer<void>? cancelToken,
     CurrentUploadAsset? currentUploadAsset,
     int? totalAssetsToUpload,
     int? successfulUploads,
@@ -59,7 +53,6 @@ class ManualUploadState {
       progressInFileSpeeds: progressInFileSpeeds ?? this.progressInFileSpeeds,
       progressInFileSpeedUpdateTime: progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
       progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ?? this.progressInFileSpeedUpdateSentBytes,
-      cancelToken: cancelToken ?? this.cancelToken,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
       totalAssetsToUpload: totalAssetsToUpload ?? this.totalAssetsToUpload,
       currentAssetIndex: currentAssetIndex ?? this.currentAssetIndex,
@@ -70,7 +63,7 @@ class ManualUploadState {
 
   @override
   String toString() {
-    return 'ManualUploadState(progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, cancelToken: $cancelToken, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
+    return 'ManualUploadState(progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, currentUploadAsset: $currentUploadAsset, totalAssetsToUpload: $totalAssetsToUpload, successfulUploads: $successfulUploads, currentAssetIndex: $currentAssetIndex, showDetailedNotification: $showDetailedNotification)';
   }
 
   @override
@@ -85,7 +78,6 @@ class ManualUploadState {
         collectionEquals(other.progressInFileSpeeds, progressInFileSpeeds) &&
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
         other.progressInFileSpeedUpdateSentBytes == progressInFileSpeedUpdateSentBytes &&
-        other.cancelToken == cancelToken &&
         other.currentUploadAsset == currentUploadAsset &&
         other.totalAssetsToUpload == totalAssetsToUpload &&
         other.currentAssetIndex == currentAssetIndex &&
@@ -101,7 +93,6 @@ class ManualUploadState {
         progressInFileSpeeds.hashCode ^
         progressInFileSpeedUpdateTime.hashCode ^
         progressInFileSpeedUpdateSentBytes.hashCode ^
-        cancelToken.hashCode ^
         currentUploadAsset.hashCode ^
         totalAssetsToUpload.hashCode ^
         currentAssetIndex.hashCode ^

@@ -108,7 +108,6 @@ class DriftBackupState {
   final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
-  final Completer<void>? cancelToken;
 
   final Map<String, double> iCloudDownloadProgress;
 
@@ -120,7 +119,6 @@ class DriftBackupState {
     required this.isSyncing,
     this.error = BackupError.none,
     required this.uploadItems,
-    this.cancelToken,
     this.iCloudDownloadProgress = const {},
   });
 
@@ -132,7 +130,6 @@ class DriftBackupState {
     bool? isSyncing,
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
-    Completer<void>? cancelToken,
     Map<String, double>? iCloudDownloadProgress,
   }) {
     return DriftBackupState(
@@ -143,7 +140,6 @@ class DriftBackupState {
       isSyncing: isSyncing ?? this.isSyncing,
       error: error ?? this.error,
       uploadItems: uploadItems ?? this.uploadItems,
-      cancelToken: cancelToken ?? this.cancelToken,
       iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
     );
   }
@@ -152,7 +148,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, iCloudDownloadProgress: $iCloudDownloadProgress)';
   }
 
   @override
@@ -167,8 +163,7 @@ class DriftBackupState {
         other.isSyncing == isSyncing &&
         other.error == error &&
         mapEquals(other.iCloudDownloadProgress, iCloudDownloadProgress) &&
-        mapEquals(other.uploadItems, uploadItems) &&
-        other.cancelToken == cancelToken;
+        mapEquals(other.uploadItems, uploadItems);
   }
 
   @override
@@ -180,7 +175,6 @@ class DriftBackupState {
         isSyncing.hashCode ^
         error.hashCode ^
         uploadItems.hashCode ^
-        cancelToken.hashCode ^
         iCloudDownloadProgress.hashCode;
   }
 }
@@ -210,6 +204,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   final ForegroundUploadService _foregroundUploadService;
   final BackgroundUploadService _backgroundUploadService;
   final UploadSpeedManager _uploadSpeedManager;
+  Completer<void>? _cancelToken;
 
   final _logger = Logger("DriftBackupNotifier");
 
@@ -259,18 +254,17 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   Future<void> startForegroundBackup(String userId) {
     // Cancel any existing backup before starting a new one
-    if (state.cancelToken != null) {
+    if (_cancelToken != null) {
       stopForegroundBackup();
     }
 
     state = state.copyWith(error: BackupError.none);
 
-    final cancelToken = Completer<void>();
-    state = state.copyWith(cancelToken: cancelToken);
+    _cancelToken = Completer<void>();
 
     return _foregroundUploadService.uploadCandidates(
       userId,
-      cancelToken,
+      _cancelToken!,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
@@ -281,9 +275,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void stopForegroundBackup() {
-    state.cancelToken?.complete();
+    _cancelToken?.complete();
+    _cancelToken = null;
     _uploadSpeedManager.clear();
-    state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
+    state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {});
   }
 
   void _handleICloudProgress(String localAssetId, double progress) {
@@ -299,7 +294,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupProgress(String localAssetId, String filename, int bytes, int totalBytes) {
-    if (state.cancelToken == null) {
+    if (_cancelToken == null) {
       return;
     }
 
