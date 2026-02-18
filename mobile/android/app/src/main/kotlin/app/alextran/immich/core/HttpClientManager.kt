@@ -10,6 +10,7 @@ import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
 import okhttp3.Headers
 import okhttp3.OkHttpClient
+import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.net.Socket
@@ -28,6 +29,7 @@ const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
 private const val CERT_ALIAS = "client_cert"
 private const val PREFS_NAME = "immich.ssl"
 private const val PREFS_CERT_ALIAS = "immich.client_cert"
+private const val PREFS_HEADERS = "immich.request_headers"
 
 /**
  * Manages a shared OkHttpClient with SSL configuration support.
@@ -50,7 +52,7 @@ object HttpClientManager {
   var keyChainAlias: String? = null
     private set
 
-  var headers: Headers = Headers.headersOf("User-Agent", USER_AGENT)
+  var headers: Headers = Headers.headersOf()
 
   val isMtls: Boolean get() = keyChainAlias != null || keyStore.containsAlias(CERT_ALIAS)
 
@@ -62,6 +64,16 @@ object HttpClientManager {
       appContext = context.applicationContext
       prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
       keyChainAlias = prefs.getString(PREFS_CERT_ALIAS, null)
+
+      val savedHeaders = prefs.getString(PREFS_HEADERS, null)
+      if (savedHeaders != null) {
+        val json = JSONObject(savedHeaders)
+        val builder = Headers.Builder()
+        for (key in json.keys()) {
+          builder.add(key, json.getString(key))
+        }
+        headers = builder.build()
+      }
 
       val cacheDir = File(File(context.cacheDir, "okhttp"), "api")
       client = build(cacheDir)
@@ -129,9 +141,14 @@ object HttpClientManager {
   }
 
   fun setRequestHeaders(headerMap: Map<String, String>) {
-    val builder = Headers.Builder()
-    headerMap.forEach { (key, value) -> builder.add(key, value) }
-    headers = builder.build()
+    synchronized(this) {
+      val builder = Headers.Builder()
+      headerMap.forEach { (key, value) -> builder[key] = value }
+      val newHeaders = builder.build()
+      if (headers == newHeaders) return
+      headers = newHeaders
+      prefs.edit { putString(PREFS_HEADERS, JSONObject(headerMap).toString()) }
+    }
   }
 
   private fun build(cacheDir: File): OkHttpClient {
@@ -152,7 +169,8 @@ object HttpClientManager {
     return OkHttpClient.Builder()
       .addInterceptor {
         val builder = it.request().newBuilder()
-        headers.forEach { (key, value) -> builder.addHeader(key, value) }
+        builder.header("User-Agent", USER_AGENT)
+        headers.forEach { (key, value) -> builder.header(key, value) }
         it.proceed(builder.build())
       }
       .connectionPool(connectionPool)
