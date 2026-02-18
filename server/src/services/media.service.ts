@@ -39,7 +39,7 @@ import {
   VideoInterfaces,
   VideoStreamInfo,
 } from 'src/types';
-import { getAssetFiles, getDimensions } from 'src/utils/asset.util';
+import { getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -68,6 +68,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
     let jobs: JobItem[] = [];
 
     const queueAll = async () => {
@@ -75,17 +76,13 @@ export class MediaService extends BaseService {
       jobs = [];
     };
 
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob(!!force)) {
-      const assetFiles = getAssetFiles(asset.files);
-
-      if (!assetFiles.previewFile || !assetFiles.thumbnailFile || !asset.thumbhash || force) {
+    const fullsizeEnabled = config.image.fullsize.enabled;
+    for await (const asset of this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled })) {
+      if (force || !asset.isEdited) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
 
-      if (
-        asset.edits.length > 0 &&
-        (!assetFiles.editedPreviewFile || !assetFiles.editedThumbnailFile || !assetFiles.editedFullsizeFile || force)
-      ) {
+      if (asset.isEdited) {
         jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
       }
 
@@ -182,7 +179,7 @@ export class MediaService extends BaseService {
 
     const generated = await this.generateEditedThumbnails(asset, config);
     await this.syncFiles(
-      asset.files.filter((asset) => asset.isEdited),
+      asset.files.filter((file) => file.isEdited),
       generated?.files ?? [],
     );
 
@@ -308,7 +305,6 @@ export class MediaService extends BaseService {
       isEdited: useEdits,
       isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
     });
-    previewFile.isProgressive = !!image.preview.progressive && image.preview.format !== ImageFormat.Webp;
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: image.thumbnail.format,
@@ -349,10 +345,9 @@ export class MediaService extends BaseService {
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
         format: extracted.format,
-        isEdited: useEdits,
+        isEdited: false,
         isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
       });
-      fullsizeFile.isProgressive = !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp;
       this.storageCore.ensureFolders(fullsizeFile.path);
 
       // Write the buffer to disk with essential EXIF data

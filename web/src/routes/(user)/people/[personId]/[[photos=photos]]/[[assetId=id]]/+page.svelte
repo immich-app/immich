@@ -33,7 +33,6 @@
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -61,7 +60,6 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
-  let { isViewing: showAssetViewer } = assetViewingStore;
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
@@ -106,16 +104,13 @@
   });
 
   const handleEscape = async () => {
-    if ($showAssetViewer) {
-      return;
-    }
     if (assetInteraction.selectionActive) {
       assetInteraction.clearMultiselect();
       return;
-    } else {
-      await goto(previousRoute);
-      return;
     }
+
+    await goto(previousRoute);
+    return;
   };
 
   const updateAssetCount = async () => {
@@ -302,6 +297,14 @@
     person = response;
   };
 
+  const handlePersonAssetDelete = async ({ id, assetId }: { id: string; assetId: string }) => {
+    if (id !== person.id) {
+      return;
+    }
+    timelineManager.removeAssets([assetId]);
+    await updateAssetCount();
+  };
+
   const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
@@ -320,7 +323,12 @@
   };
 </script>
 
-<OnEvents {onPersonUpdate} onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
+<OnEvents
+  {onPersonUpdate}
+  onPersonAssetDelete={handlePersonAssetDelete}
+  onAssetsDelete={updateAssetCount}
+  onAssetsArchive={updateAssetCount}
+/>
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"

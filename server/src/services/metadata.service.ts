@@ -32,6 +32,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
+import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -307,7 +308,6 @@ export class MetadataService extends BaseService {
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
     const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
       this.assetRepository.update({
         id: asset.id,
         duration: this.getDuration(exifTags),
@@ -322,6 +322,7 @@ export class MetadataService extends BaseService {
       }),
     ];
 
+    await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
     await this.applyTagList(asset);
 
     if (this.isMotionPhoto(asset, exifTags)) {
@@ -431,14 +432,16 @@ export class MetadataService extends BaseService {
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, tags } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
       {
         description: asset.exifInfo.description,
-        dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
+        // the kysely type is wrong here; fixed in 0.28.3
+        dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
         rating: asset.exifInfo.rating,
         tags: asset.exifInfo.tags,
+        timeZone: asset.exifInfo.timeZone,
       },
       lockedProperties,
     );
@@ -447,7 +450,7 @@ export class MetadataService extends BaseService {
       <Tags>{
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: dateTimeOriginal ? String(dateTimeOriginal) : undefined,
+        DateTimeOriginal: mergeTimeZone(dateTimeOriginal, timeZone)?.toISO(),
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
@@ -522,6 +525,15 @@ export class MetadataService extends BaseService {
       const sidecarDate = result?.dateTime;
       if (sidecarDate) {
         for (const tag of EXIF_DATE_TAGS) {
+          delete mediaTags[tag];
+        }
+
+        // exiftool-vendored derives tz information from the date.
+        // if the sidecar file has date information, we also assume the tz information come from there.
+        //
+        // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
+        // and as such the tags aren't overwritten when returning all tags.
+        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
           delete mediaTags[tag];
         }
       }
@@ -894,8 +906,8 @@ export class MetadataService extends BaseService {
     }
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
-    if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
+    let timeZone = exifTags.zone ?? null;
+    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -903,7 +915,7 @@ export class MetadataService extends BaseService {
 
     if (timeZone) {
       this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
       );
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);

@@ -102,6 +102,10 @@ export const getKyselyConfig = (
     }),
     log(event) {
       if (event.level === 'error') {
+        if (isAssetChecksumConstraint(event.error)) {
+          return;
+        }
+
         console.error('Query failed :', {
           durationMs: event.queryDurationMillis,
           error: event.error,

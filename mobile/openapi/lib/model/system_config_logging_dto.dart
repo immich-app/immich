@@ -17,6 +17,7 @@ class SystemConfigLoggingDto {
     required this.level,
   });
 
+  /// Enabled
   bool enabled;
 
   LogLevel level;

@@ -16,6 +16,7 @@ class BulkIdsDto {
     this.ids = const [],
   });
 
+  /// IDs to process
   List<String> ids;
 
   @override

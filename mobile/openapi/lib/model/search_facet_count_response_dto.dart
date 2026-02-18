@@ -17,8 +17,10 @@ class SearchFacetCountResponseDto {
     required this.value,
   });
 
+  /// Number of assets with this facet value
   int count;
 
+  /// Facet value
   String value;
 
   @override

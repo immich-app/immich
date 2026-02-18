@@ -1,6 +1,6 @@
 import { Comparer, DatabaseEnum, Reason } from 'src/sql-tools/types';
 
-export const compareEnums: Comparer<DatabaseEnum> = {
+export const compareEnums = (): Comparer<DatabaseEnum> => ({
   onMissing: (source) => [
     {
       type: 'EnumCreate',
@@ -35,4 +35,4 @@ export const compareEnums: Comparer<DatabaseEnum> = {
 
     return [];
   },
-};
+});

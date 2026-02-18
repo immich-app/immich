@@ -17,8 +17,11 @@ class DuplicateDetectionConfig {
     required this.maxDistance,
   });
 
+  /// Whether the task is enabled
   bool enabled;
 
+  /// Maximum distance threshold for duplicate detection
+  ///
   /// Minimum value: 0.001
   /// Maximum value: 0.1
   double maxDistance;

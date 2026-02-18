@@ -18,6 +18,7 @@ class SessionCreateDto {
     this.duration,
   });
 
+  /// Device OS
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,6 +27,7 @@ class SessionCreateDto {
   ///
   String? deviceOS;
 
+  /// Device type
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,7 +36,7 @@ class SessionCreateDto {
   ///
   String? deviceType;
 
-  /// session duration, in seconds
+  /// Session duration in seconds
   ///
   /// Minimum value: 1
   ///

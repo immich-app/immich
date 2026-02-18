@@ -61,7 +61,7 @@ export const createAffineMatrix = (
   );
 };
 
-type Point = { x: number; y: number };
+export type Point = { x: number; y: number };
 
 type TransformState = {
   points: Point[];
@@ -73,29 +73,33 @@ type TransformState = {
  * Transforms an array of points through a series of edit operations (crop, rotate, mirror).
  * Points should be in absolute pixel coordinates relative to the starting dimensions.
  */
-const transformPoints = (
+export const transformPoints = (
   points: Point[],
   edits: AssetEditActionItem[],
   startingDimensions: ImageDimensions,
+  { inverse = false } = {},
 ): TransformState => {
   let currentWidth = startingDimensions.width;
   let currentHeight = startingDimensions.height;
   let transformedPoints = [...points];
 
-  // Handle crop first
-  const crop = edits.find((edit) => edit.action === 'crop');
-  if (crop) {
-    const { x: cropX, y: cropY, width: cropWidth, height: cropHeight } = crop.parameters;
-    transformedPoints = transformedPoints.map((p) => ({
-      x: p.x - cropX,
-      y: p.y - cropY,
-    }));
-    currentWidth = cropWidth;
-    currentHeight = cropHeight;
+  // Handle crop first if not inverting
+  if (!inverse) {
+    const crop = edits.find((edit) => edit.action === 'crop');
+    if (crop) {
+      const { x: cropX, y: cropY, width: cropWidth, height: cropHeight } = crop.parameters;
+      transformedPoints = transformedPoints.map((p) => ({
+        x: p.x - cropX,
+        y: p.y - cropY,
+      }));
+      currentWidth = cropWidth;
+      currentHeight = cropHeight;
+    }
   }
 
   // Apply rotate and mirror transforms
-  for (const edit of edits) {
+  const editSequence = inverse ? edits.toReversed() : edits;
+  for (const edit of editSequence) {
     let matrix: Matrix = identity();
     if (edit.action === 'rotate') {
       const angleDegrees = edit.parameters.angle;
@@ -105,7 +109,7 @@ const transformPoints = (
 
       matrix = compose(
         translate(newWidth / 2, newHeight / 2),
-        rotate(angleRadians),
+        rotate(inverse ? -angleRadians : angleRadians),
         translate(-currentWidth / 2, -currentHeight / 2),
       );
 
@@ -123,6 +127,18 @@ const transformPoints = (
     }
 
     transformedPoints = transformedPoints.map((p) => applyToPoint(matrix, p));
+  }
+
+  // Handle crop last if inverting
+  if (inverse) {
+    const crop = edits.find((edit) => edit.action === 'crop');
+    if (crop) {
+      const { x: cropX, y: cropY } = crop.parameters;
+      transformedPoints = transformedPoints.map((p) => ({
+        x: p.x + cropX,
+        y: p.y + cropY,
+      }));
+    }
   }
 
   return {

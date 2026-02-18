@@ -165,7 +165,7 @@ class AppRouter extends RootStackRouter {
   late final List<AutoRoute> routes = [
     AutoRoute(page: SplashScreenRoute.page, initial: true),
     AutoRoute(page: PermissionOnboardingRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: LoginRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: LoginRoute.page),
     AutoRoute(page: ChangePasswordRoute.page),
     AutoRoute(page: SearchRoute.page, guards: [_authGuard, _duplicateGuard], maintainState: false),
     AutoRoute(

@@ -25,24 +25,34 @@ class SyncPersonV1 {
     required this.updatedAt,
   });
 
+  /// Birth date
   DateTime? birthDate;
 
+  /// Color
   String? color;
 
+  /// Created at
   DateTime createdAt;
 
+  /// Face asset ID
   String? faceAssetId;
 
+  /// Person ID
   String id;
 
+  /// Is favorite
   bool isFavorite;
 
+  /// Is hidden
   bool isHidden;
 
+  /// Person name
   String name;
 
+  /// Owner ID
   String ownerId;
 
+  /// Updated at
   DateTime updatedAt;
 
   @override

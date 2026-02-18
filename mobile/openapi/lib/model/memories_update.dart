@@ -17,6 +17,8 @@ class MemoriesUpdate {
     this.enabled,
   });
 
+  /// Memory duration in seconds
+  ///
   /// Minimum value: 1
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -26,6 +28,7 @@ class MemoriesUpdate {
   ///
   int? duration;
 
+  /// Whether memories are enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

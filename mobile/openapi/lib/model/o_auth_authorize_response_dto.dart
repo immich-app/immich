@@ -16,6 +16,7 @@ class OAuthAuthorizeResponseDto {
     required this.url,
   });
 
+  /// OAuth authorization URL
   String url;
 
   @override

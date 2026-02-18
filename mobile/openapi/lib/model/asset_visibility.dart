@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Asset visibility
 class AssetVisibility {
   /// Instantiate a new enum with the provided [value].
   const AssetVisibility._(this.value);

@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, AssetMetadataKey, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -246,6 +246,66 @@ describe(AssetService.name, () => {
       });
     });
 
+    it('should delete a stacked primary asset (2 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
+
+      const stackRepo = ctx.get(StackRepository);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(stackRepo.getById(stack.id)).resolves.toBe(undefined);
+    });
+
+    it('should delete a stacked primary asset (3 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // new primary asset is picked
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toMatchObject({ primaryAssetId: asset2.id });
+    });
+
+    it('should delete a stacked primary asset (3 trashed assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      await ctx.get(AssetRepository).updateAll([asset1.id, asset2.id, asset3.id], {
+        deletedAt: new Date(),
+        status: AssetStatus.Deleted,
+      });
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toBe(undefined);
+    });
+
     it('should not delete offline assets', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
@@ -338,6 +398,23 @@ describe(AssetService.name, () => {
         }),
       );
     });
+
+    it('should update dateTimeOriginal with time zone UTC+0', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
   });
 
   describe('updateAll', () => {
@@ -396,6 +473,67 @@ describe(AssetService.name, () => {
       );
     });
 
+    it('should relatively update assets with timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC+5' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -1441 });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-18T18:10:00+00:00',
+            timeZone: 'UTC+5',
+            lockedProperties: ['timeZone', 'dateTimeOriginal'],
+          }),
+        }),
+      );
+    });
+
+    it('should relatively update assets and set a timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11, timeZone: 'UTC+5' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+            timeZone: 'UTC+5',
+          }),
+        }),
+      );
+    });
+
+    it('should set asset time zones to UTC', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], timeZone: 'UTC' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:11:00+00:00',
+            timeZone: 'UTC',
+          }),
+        }),
+      );
+    });
+
     it('should update dateTimeOriginal', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -426,6 +564,23 @@ describe(AssetService.name, () => {
       await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
         expect.objectContaining({
           exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with UTC time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
         }),
       );
     });

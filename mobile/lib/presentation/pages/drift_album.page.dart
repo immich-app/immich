@@ -33,7 +33,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   @override
   Widget build(BuildContext context) {
     final albumCount = ref.watch(remoteAlbumProvider.select((state) => state.albums.length));
-    final showScrollbar = albumCount > 10;
+    final showScrollbar = albumCount > 20;
 
     final scrollView = CustomScrollView(
       controller: _scrollController,
@@ -44,8 +44,8 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
           pinned: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.add_rounded, size: 28),
               onPressed: () => context.pushRoute(const DriftCreateAlbumRoute()),
+              icon: const Icon(Icons.add_rounded),
             ),
           ],
           showUploadButton: false,

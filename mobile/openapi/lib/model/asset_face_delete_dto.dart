@@ -16,6 +16,7 @@ class AssetFaceDeleteDto {
     required this.force,
   });
 
+  /// Force delete even if person has other faces
   bool force;
 
   @override
