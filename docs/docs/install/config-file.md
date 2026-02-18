@@ -257,9 +257,11 @@ In your `.env` file, the variables `UPLOAD_LOCATION` and `DB_DATA_LOCATION` conc
 However, the variable `IMMICH_CONFIG_FILE` concerns the location inside the container, and informs the `immich-server` container that a configuration file is present.
 
 It is recommended to reuse this variable in your `docker-compose.yml`:
+
 ```yaml
 volumes:
 ...
   - ./configuration.yml:${IMMICH_CONFIG_FILE}
 ```
+
 ::
