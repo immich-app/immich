@@ -15,6 +15,7 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { type ContentMetrics, getContentMetrics } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
@@ -52,6 +53,7 @@
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
+  let visibleImageReady: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
 
@@ -67,11 +69,23 @@
     $boundingBoxesArray = [];
   });
 
-  let ocrBoxes = $derived(
-    ocrManager.showOverlay && assetViewerManager.imgRef
-      ? getOcrBoundingBoxes(ocrManager.data, assetViewerManager.zoomState, assetViewerManager.imgRef)
-      : [],
-  );
+  const overlayMetrics = $derived.by((): ContentMetrics => {
+    if (!assetViewerManager.imgRef || !visibleImageReady) {
+      return { contentWidth: 0, contentHeight: 0, offsetX: 0, offsetY: 0 };
+    }
+
+    const { contentWidth, contentHeight, offsetX, offsetY } = getContentMetrics(assetViewerManager.imgRef);
+    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
+
+    return {
+      contentWidth: contentWidth * currentZoom,
+      contentHeight: contentHeight * currentZoom,
+      offsetX: offsetX * currentZoom + currentPositionX,
+      offsetY: offsetY * currentZoom + currentPositionY,
+    };
+  });
+
+  let ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
 
   let isOcrActive = $derived(ocrManager.showOverlay);
 
@@ -176,6 +190,7 @@
         imageLoaded = false;
         originalImageLoaded = false;
         imageError = false;
+        visibleImageReady = false;
       });
     }
     lastUrl = imageLoaderUrl;
@@ -226,6 +241,7 @@
       <img
         bind:this={assetViewerManager.imgRef}
         src={imageLoaderUrl}
+        onload={() => (visibleImageReady = true)}
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
@@ -233,7 +249,7 @@
         draggable="false"
       />
       <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, assetViewerManager.zoomState, assetViewerManager.imgRef) as boundingbox}
+      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
