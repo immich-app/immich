@@ -980,6 +980,7 @@
     "show_all_metadata": "Show all selected metadata",
     "show_all_metadata_hint_on": "Showing all selected metadata for each asset",
     "show_all_metadata_hint_off": "Only show fields that differ across assets",
+    "show_labels": "Show labels",
     "select_all": "Select All",
     "unselect_all": "Unselect All",
     "asset_properties_label": "Asset Properties",

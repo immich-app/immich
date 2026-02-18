@@ -18,6 +18,7 @@
 
   const handleToggleAll = (value: boolean) => {
     const next: MetadataPreference = {
+      ...currentSelection,
       fileCreatedAt: value,
       fileModifiedAt: value,
       originalFileName: value,
@@ -81,6 +82,12 @@
           <Button color={!showAll ? 'primary' : 'secondary'} onclick={() => (showAll = false)}
             >{$t('duplicates_metadata_modal.show_all_metadata_hint_off')}</Button
           >
+        </div>
+        <div
+          class="flex gap-2 items-start mt-2 p-2 border rounded-lg border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50"
+        >
+          <Checkbox id="showLabels-checkbox" bind:checked={currentSelection.showLabels} />
+          <Label label={$t('duplicates_metadata_modal.show_labels')} for="showLabels-checkbox" class="font-medium" />
         </div>
       </VStack>
 

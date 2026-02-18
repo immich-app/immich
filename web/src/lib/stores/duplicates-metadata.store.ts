@@ -1,6 +1,9 @@
 import { writable } from 'svelte/store';
 
 export interface MetadataPreference {
+  // Display Options
+  showLabels: boolean;
+
   // Asset Properties
   fileCreatedAt: boolean;
   fileModifiedAt: boolean;
@@ -34,6 +37,7 @@ export interface MetadataPreference {
 }
 
 const initialMetadataPreference: MetadataPreference = {
+  showLabels: true,
   fileCreatedAt: true,
   fileModifiedAt: false,
   originalFileName: true,
