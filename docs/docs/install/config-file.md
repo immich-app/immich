@@ -8,7 +8,8 @@ A config file can be provided as an alternative to the UI configuration.
 
 ### Step 1 - Create a new config file
 
-In JSON format, create a new config file (e.g. `immich.json`) and put it in a location that can be accessed by Immich.
+In JSON format, create a new config file (e.g. `immich.json`) and put it in a location mounted in the container that can be accessed by Immich.
+YAML-formatted config files are also supported.
 The default configuration looks like this:
 
 <details>
@@ -251,15 +252,12 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
 For more information, refer to the [Environment Variables](/install/environment-variables.md) section.
 
-:::tip
-YAML-formatted config files are also supported.
-:::
-
 :::info Docker Compose
-In your `.env` file, the variables `UPLOAD_LOCATION` and `DB_DATA_LOCATION` concern the location on the host. However, the variable `IMMICH_CONFIG_FILE` concerns the location inside the container, and informs the `immich-server` container that a configuration file is present.
+In your `.env` file, the variables `UPLOAD_LOCATION` and `DB_DATA_LOCATION` concern the location on the host.
+However, the variable `IMMICH_CONFIG_FILE` concerns the location inside the container, and informs the `immich-server` container that a configuration file is present.
 
 It is recommended to reuse this variable in your `docker-compose.yml`:
-```
+```yaml
 volumes:
 ...
   - ./configuration.yml:${IMMICH_CONFIG_FILE}
