@@ -60,7 +60,8 @@ fix_permissions() {
         "${IMMICH_WORKSPACE}/server/node_modules" \
         "${IMMICH_WORKSPACE}/server/dist" \
         "${IMMICH_WORKSPACE}/web/node_modules" \
-        "${IMMICH_WORKSPACE}/web/dist"; do
+        "${IMMICH_WORKSPACE}/web/dist" \
+        "/buildcache/pnpm-store"; do
         if [ -d "$dir" ]; then
             run_cmd sudo chown node -R "$dir"
         fi

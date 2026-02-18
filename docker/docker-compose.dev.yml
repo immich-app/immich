@@ -16,6 +16,8 @@ name: immich-dev
 services:
   immich-app-base:
     profiles: ['_base']
+    build:
+      context: ../
     tmpfs:
       - /tmp
     volumes:

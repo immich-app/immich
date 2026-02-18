@@ -2,6 +2,7 @@
   "name": "Immich - Backend, Frontend and ML",
   "service": "immich-server",
   "runServices": [
+    "immich-init",
     "immich-server",
     "redis",
     "database",
@@ -52,7 +53,7 @@
               "problemMatcher": []
             },
             {
-              "label": "Immich API Server (Nest)",
+              "label": "API Server (Nest)",
               "dependsOn": ["Fix Permissions, Install Dependencies"],
               "type": "shell",
               "command": "[ -f /immich-devcontainer/container-start-backend.sh ] && /immich-devcontainer/container-start-backend.sh || exit 0",
@@ -73,7 +74,7 @@
               "problemMatcher": []
             },
             {
-              "label": "Immich Web Server (Vite)",
+              "label": "Web Server (Vite)",
               "dependsOn": ["Fix Permissions, Install Dependencies"],
               "type": "shell",
               "command": "[ -f /immich-devcontainer/container-start-frontend.sh ] && /immich-devcontainer/container-start-frontend.sh || exit 0",
