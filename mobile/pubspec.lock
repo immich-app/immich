@@ -1267,8 +1267,8 @@ packages:
     dependency: "direct main"
     description:
       path: "pkgs/ok_http"
-      ref: cbe2199e515a6d184715fa129cad794356447d11
-      resolved-ref: cbe2199e515a6d184715fa129cad794356447d11
+      ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
+      resolved-ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
       url: "https://github.com/mertalev/http"
     source: git
     version: "0.1.1-wip"

@@ -154,11 +154,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     _batchedAssetUploadReady.clear();
 
-    var socket = state.socket?.disconnect();
-
-    if (socket?.disconnected == true) {
-      state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
-    }
+    state.socket?.dispose();
+    state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
   }
 
   void stopListenToEvent(String eventName) {
