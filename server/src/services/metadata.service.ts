@@ -38,9 +38,8 @@ import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
-/** constants got image metadata validation */
-const POSTGRES_INT_MAX = 2147483647;
-const POSTGRES_INT_MIN = -2147483648;
+const POSTGRES_INT_MAX = 2_147_483_647;
+const POSTGRES_INT_MIN = -2_147_483_648;
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -94,22 +93,10 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
-    return null;
-  }
-
-  return value ?? null;
-};
-
-const validateInteger = (value: number | undefined): number | null => {
-  const val = validate(value);
-
-  if (val === null) {
-    return null;
-  }
-
-  // Check if value is within PostgreSQL INTEGER range
-  if (val < POSTGRES_INT_MIN || val > POSTGRES_INT_MAX) {
+  if (
+    typeof value === 'number' &&
+    (Number.isNaN(value) || !Number.isFinite(value) || value < POSTGRES_INT_MIN || value > POSTGRES_INT_MAX)
+  ) {
     return null;
   }
 
@@ -294,8 +281,8 @@ export class MetadataService extends BaseService {
 
       // image/file
       fileSizeInByte: stats.size,
-      exifImageHeight: validateInteger(height),
-      exifImageWidth: validateInteger(width),
+      exifImageHeight: validate(height),
+      exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
@@ -324,8 +311,8 @@ export class MetadataService extends BaseService {
     };
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validateInteger(height) : validateInteger(width);
-    const assetHeight = isSidewards ? validateInteger(width) : validateInteger(height);
+    const assetWidth = isSidewards ? validate(height) : validate(width);
+    const assetHeight = isSidewards ? validate(width) : validate(height);
 
     const tasks = new Tasks();
 
