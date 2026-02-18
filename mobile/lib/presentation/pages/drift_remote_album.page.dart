@@ -201,7 +201,8 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
           onActivity: () => showActivity(context),
         ),
-        bottomSheet: RemoteAlbumBottomSheet(album: _album),
+        bottomWidgetBuilder: (_, _, selectionEnabled) =>
+            selectionEnabled ? RemoteAlbumBottomSheet(album: _album) : null,
       ),
     );
   }

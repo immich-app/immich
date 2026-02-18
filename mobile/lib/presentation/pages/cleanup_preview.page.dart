@@ -35,7 +35,7 @@ class CleanupPreviewPage extends StatelessWidget {
             return timelineService;
           }),
         ],
-        child: const Timeline(appBar: null, bottomSheet: null, groupBy: GroupAssetsBy.day, readOnly: true),
+        child: const Timeline(appBar: null, groupBy: GroupAssetsBy.day, readOnly: true),
       ),
     );
   }

@@ -30,8 +30,7 @@ import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 typedef TimelineBottomWidgetBuilder =
-Widget? Function(BuildContext context, bool isSelectionMode, bool isMultiSelectEnabled);
-
+    Widget? Function(BuildContext context, bool forceSelectionMode, bool selectionEnabled);
 
 class _TimelineRestorationState extends ChangeNotifier {
   int? _restoreAssetIndex;
@@ -72,24 +71,18 @@ class Timeline extends StatefulWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    @Deprecated('Use bottomWidgetBuilder instead') this.bottomSheet,
     this.bottomWidgetBuilder,
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
     this.initialScrollOffset,
     this.readOnly = false,
-  }) : assert(
-         bottomWidgetBuilder == null || bottomSheet == null,
-         'Cannot provide both bottomSheet and bottomWidgetBuilder',
-       );
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final bool showStorageIndicator;
   final Widget? appBar;
-  @Deprecated('Use bottomWidgetBuilder instead')
-  final Widget? bottomSheet;
   final TimelineBottomWidgetBuilder? bottomWidgetBuilder;
   final bool withStack;
   final GroupAssetsBy? groupBy;
@@ -121,10 +114,10 @@ class _TimelineState extends State<Timeline> {
   @override
   Widget build(BuildContext context) {
     final effectiveBottomWidgetBuilder =
-        bottomWidgetBuilder ??
-        (_, isSelectionMode, isMultiSelectEnabled) {
-          if (!isSelectionMode && isMultiSelectEnabled) {
-            return bottomSheet ?? const GeneralBottomSheet(minChildSize: 0.23);
+        widget.bottomWidgetBuilder ??
+        (_, forceSelectionMode, selectionEnabled) {
+          if (!forceSelectionMode && selectionEnabled) {
+            return const GeneralBottomSheet(minChildSize: 0.23);
           }
           return null;
         };
@@ -419,14 +412,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   Widget build(BuildContext _) {
     final asyncSegments = ref.watch(timelineSegmentProvider);
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
-    final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
-    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final forceSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
+    final selectionEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return PopScope(
-      canPop: !isMultiSelectEnabled,
+      canPop: !selectionEnabled,
       onPopInvokedWithResult: (_, __) {
-        if (isMultiSelectEnabled) {
+        if (selectionEnabled) {
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
@@ -440,7 +433,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
           const scrubberBottomPadding = 100.0;
           const bottomSheetOpenModifier = 120.0;
-          final bottomWidget = widget.bottomWidgetBuilder?.call(context, isSelectionMode, isMultiSelectEnabled);
+          final bottomWidget = widget.bottomWidgetBuilder?.call(context, forceSelectionMode, selectionEnabled);
           final bottomPadding =
               context.padding.bottom +
               (widget.appBar == null ? 0 : scrubberBottomPadding) +
@@ -451,7 +444,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             physics: _scrollPhysics,
             cacheExtent: maxHeight * 2,
             slivers: [
-              if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+              if (forceSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
               if (widget.topSliverWidget != null) widget.topSliverWidget!,
               _SliverSegmentedList(
                 segments: segments,
@@ -538,7 +531,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   child: Stack(
                     children: [
                       timeline,
-                      if (!isSelectionMode && isMultiSelectEnabled)
+                      if (!forceSelectionMode && selectionEnabled)
                         Positioned(
                           top: MediaQuery.paddingOf(context).top,
                           left: 25,

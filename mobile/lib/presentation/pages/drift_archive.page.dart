@@ -32,7 +32,7 @@ class DriftArchivePage extends StatelessWidget {
           title: 'archive'.t(context: context),
           icon: Icons.archive_outlined,
         ),
-        bottomSheet: const ArchiveBottomSheet(),
+        bottomWidgetBuilder: (_, _, selectionEnabled) => selectionEnabled ? const ArchiveBottomSheet() : null,
       ),
     );
   }

@@ -48,7 +48,7 @@ class DriftTrashPage extends StatelessWidget {
             );
           },
         ),
-        bottomSheet: const TrashBottomBar(),
+        bottomWidgetBuilder: (_, _, selectionEnabled) => selectionEnabled ? const TrashBottomBar() : null,
       ),
     );
   }

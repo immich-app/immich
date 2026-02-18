@@ -747,7 +747,8 @@ class _SearchResultGrid extends ConsumerWidget {
             key: ValueKey(assets.length),
             groupBy: GroupAssetsBy.none,
             appBar: null,
-            bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
+            bottomWidgetBuilder: (_, _, selectionEnabled) =>
+                selectionEnabled ? const GeneralBottomSheet(minChildSize: 0.20) : null,
             snapToMonth: false,
             initialScrollOffset: ref.read(paginatedSearchProvider.select((s) => s.scrollOffset)),
           ),
