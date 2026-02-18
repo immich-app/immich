@@ -439,6 +439,7 @@ class BackgroundService {
       ),
     );
 
+    _cancellationToken?.complete();
     _cancellationToken = Completer<void>();
     final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 

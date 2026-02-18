@@ -68,7 +68,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           progressInFileSpeeds: const [],
           progressInFileSpeedUpdateTime: DateTime.now(),
           progressInFileSpeedUpdateSentBytes: 0,
-          cancelToken: Completer<void>(),
           autoBackup: Store.get(StoreKey.autoBackup, false),
           backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
           backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
@@ -102,6 +101,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final FileMediaRepository _fileMediaRepository;
   final BackupAlbumService _backupAlbumService;
   final Ref ref;
+  Completer<void>? _cancelToken;
 
   ///
   /// UI INTERACTION
@@ -454,7 +454,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
 
       // Perform Backup
-      state = state.copyWith(cancelToken: Completer<void>());
+      _cancelToken?.complete();
+      _cancelToken = Completer<void>();
 
       final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
@@ -465,7 +466,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
       await _backupService.backupAsset(
         assetsWillBeBackup,
-        state.cancelToken,
+        _cancelToken!,
         pmProgressHandler: pmProgressHandler,
         onSuccess: _onAssetUploaded,
         onProgress: _onUploadProgress,
@@ -494,10 +495,10 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (state.backupProgress != BackUpProgressEnum.inProgress) {
       notifyBackgroundServiceCanRun();
     }
-    state.cancelToken.complete();
+    _cancelToken?.complete();
+    _cancelToken = null;
     state = state.copyWith(
       backupProgress: BackUpProgressEnum.idle,
-      cancelToken: Completer<void>(),
       progressInPercentage: 0.0,
       progressInFileSize: "0 B / 0 B",
       progressInFileSpeed: 0,
