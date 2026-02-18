@@ -160,7 +160,11 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve(['/data/user1/photo.jpg']);
+        })(),
+      );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -196,7 +200,11 @@ describe(LibraryService.name, () => {
       });
 
       mocks.storage.checkFileExists.mockResolvedValue(true);
-      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve(['/data/user1/photo.jpg']);
+        })(),
+      );
       mocks.library.get.mockResolvedValue(library);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
@@ -215,7 +223,11 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockResolvedValue(['/data/user1/photo.jpg']);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve(['/data/user1/photo.jpg']);
+        })(),
+      );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -244,7 +256,11 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockResolvedValue([]);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -262,7 +278,11 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockResolvedValue([]);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -277,7 +297,11 @@ describe(LibraryService.name, () => {
       const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockResolvedValue([]);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.library.streamAssetIds.mockReturnValue(makeStream([asset]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });

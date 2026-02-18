@@ -1,4 +1,3 @@
-import { walk } from '@immich/walkrs';
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
@@ -198,19 +197,19 @@ export class StorageRepository {
     };
   }
 
-  async walk(walkOptions: WalkOptionsDto): Promise<string[]> {
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[], void, unknown> {
     const { pathsToWalk, exclusionPatterns, includeHidden } = walkOptions;
     if (pathsToWalk.length === 0) {
-      return [];
+      return;
     }
 
-    const extensions = mimeTypes.getSupportedFileExtensions().map((ext) => ext.toLowerCase());
+    const { walk } = await import('@immich/walkrs');
 
-    return await walk({
+    yield* walk({
       paths: pathsToWalk.map((p) => path.resolve(p)),
       includeHidden: includeHidden ?? false,
       exclusionPatterns,
-      extensions,
+      extensions: mimeTypes.getSupportedFileExtensions(),
     });
   }
 

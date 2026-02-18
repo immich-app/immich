@@ -36,6 +36,10 @@ import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
+import { Tasks } from 'src/utils/tasks';
+
+const POSTGRES_INT_MAX = 2_147_483_647;
+const POSTGRES_INT_MIN = -2_147_483_648;
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -89,7 +93,10 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
+  if (
+    typeof value === 'number' &&
+    (Number.isNaN(value) || !Number.isFinite(value) || value < POSTGRES_INT_MIN || value > POSTGRES_INT_MAX)
+  ) {
     return null;
   }
 
@@ -307,33 +314,38 @@ export class MetadataService extends BaseService {
     const assetWidth = isSidewards ? validate(height) : validate(width);
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
-    const promises: Promise<unknown>[] = [
-      this.assetRepository.update({
-        id: asset.id,
-        duration: this.getDuration(exifTags),
-        localDateTime: dates.localDateTime,
-        fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-        fileModifiedAt: stats.mtime,
+    const tasks = new Tasks();
 
-        // only update the dimensions if they don't already exist
-        // we don't want to overwrite width/height that are modified by edits
-        width: asset.width == null ? assetWidth : undefined,
-        height: asset.height == null ? assetHeight : undefined,
-      }),
-    ];
+    tasks.push(
+      () =>
+        this.assetRepository.update({
+          id: asset.id,
+          duration: this.getDuration(exifTags),
+          localDateTime: dates.localDateTime,
+          fileCreatedAt: dates.dateTimeOriginal ?? undefined,
+          fileModifiedAt: stats.mtime,
 
-    await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
-    await this.applyTagList(asset);
+          // only update the dimensions if they don't already exist
+          // we don't want to overwrite width/height that are modified by edits
+          width: asset.width == null ? assetWidth : undefined,
+          height: asset.height == null ? assetHeight : undefined,
+        }),
+      async () => {
+        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
+        await this.applyTagList(asset);
+      },
+    );
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
+      tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
+      tasks.push(() => this.applyTaggedFaces(asset, exifTags));
     }
 
-    await Promise.all(promises);
+    await tasks.all();
+
     if (exifData.livePhotoCID) {
       await this.linkLivePhotos(asset, exifData);
     }
@@ -525,6 +537,15 @@ export class MetadataService extends BaseService {
       const sidecarDate = result?.dateTime;
       if (sidecarDate) {
         for (const tag of EXIF_DATE_TAGS) {
+          delete mediaTags[tag];
+        }
+
+        // exiftool-vendored derives tz information from the date.
+        // if the sidecar file has date information, we also assume the tz information come from there.
+        //
+        // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
+        // and as such the tags aren't overwritten when returning all tags.
+        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
           delete mediaTags[tag];
         }
       }
@@ -897,8 +918,8 @@ export class MetadataService extends BaseService {
     }
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
-    if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
+    let timeZone = exifTags.zone ?? null;
+    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -906,7 +927,7 @@ export class MetadataService extends BaseService {
 
     if (timeZone) {
       this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
       );
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);

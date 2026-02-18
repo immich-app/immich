@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
-    "@immich/walkrs": "0.0.0",
+    "@immich/walkrs": "^0.0.12",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
@@ -73,7 +73,6 @@
     "cron": "4.4.0",
     "exiftool-vendored": "^34.3.0",
     "express": "^5.1.0",
-    "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
     "handlebars": "^4.7.8",
@@ -136,7 +135,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.10.11",
+    "@types/node": "^24.10.13",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -168,7 +167,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "24.13.0"
+    "node": "24.13.1"
   },
   "overrides": {
     "sharp": "^0.34.5"

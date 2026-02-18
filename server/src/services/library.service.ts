@@ -395,15 +395,7 @@ export class LibraryService extends BaseService {
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
 
-    let stat: Stats;
-    try {
-      stat = await this.storageRepository.stat(assetPath);
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        this.logger.error(`File not found during import: ${assetPath} (original path: ${filePath})`);
-      }
-      throw error;
-    }
+    const stat = await this.storageRepository.stat(assetPath);
 
     return {
       ownerId,
@@ -647,44 +639,41 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    const crawlStart = Date.now();
-
-    const pathsOnDisk = await this.storageRepository.walk({
+    const fileGenerator = this.storageRepository.walk({
       pathsToWalk: validImportPaths,
-      includeHidden: false,
+      includeHidden: false, // TODO: make this configurable?
       exclusionPatterns: library.exclusionPatterns,
     });
 
-    this.logger.log(
-      `Found ${pathsOnDisk.length} file(s) on disk in ${((Date.now() - crawlStart) / 1000).toFixed(2)}s, queuing for import...`,
-    );
+    const walkStart = Date.now();
+    let progressCounter = 0;
+    let lastLoggedMilestone = 0;
 
-    let importCount = 0;
+    for await (const paths of fileGenerator) {
+      progressCounter += paths.length;
 
-    for (let i = 0; i < pathsOnDisk.length; i += JOBS_LIBRARY_PAGINATION_SIZE) {
-      const pathChunk = pathsOnDisk.slice(i, i + JOBS_LIBRARY_PAGINATION_SIZE);
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathChunk);
+      await this.jobRepository.queue({
+        name: JobName.LibrarySyncFiles,
+        data: {
+          libraryId: library.id,
+          paths,
+          progressCounter,
+        },
+      });
 
-      if (paths.length > 0) {
-        importCount += paths.length;
-
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: {
-            libraryId: library.id,
-            paths,
-            progressCounter: i + pathChunk.length,
-          },
-        });
+      const currentMilestone = Math.floor(progressCounter / 100_000);
+      // Log every 100k files found to give some feedback on progress for large libraries
+      if (currentMilestone > lastLoggedMilestone) {
+        const roundedCount = currentMilestone * 100_000;
+        this.logger.log(
+          `Disk walk found ${roundedCount} file(s) so far (${((Date.now() - walkStart) / 1000).toFixed(2)}s elapsed) for library ${library.id}...`,
+        );
+        lastLoggedMilestone = currentMilestone;
       }
-
-      this.logger.log(
-        `Processed ${i + pathChunk.length} file(s): ${paths.length} of current batch of ${pathChunk.length} will be imported to library ${library.id}...`,
-      );
     }
 
     this.logger.log(
-      `Finished disk crawl, ${pathsOnDisk.length} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
+      `Finished disk walk, ${progressCounter} file(s) found on disk in ${((Date.now() - walkStart) / 1000).toFixed(2)}s for library ${library.id}`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });

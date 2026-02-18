@@ -30,14 +30,14 @@ const createTestFiles = async (basePath: string, files: string[]) => {
 
 const tests: Test[] = [
   {
-    test: 'should return empty when crawling an empty path list',
+    test: 'should return empty when walking an empty path list',
     options: {
       pathsToWalk: [],
     },
     files: {},
   },
   {
-    test: 'should crawl a single path',
+    test: 'should walk a single path',
     options: {
       pathsToWalk: ['/photos/'],
     },
@@ -80,11 +80,11 @@ const tests: Test[] = [
       '/photos/raw/image.jpg': false,
       '/photos/raw2/image.jpg': true,
       '/photos/folder/raw/image.jpg': false,
-      '/photos/crawl/image.jpg': true,
+      '/photos/walk/image.jpg': true,
     },
   },
   {
-    test: 'should crawl multiple paths',
+    test: 'should walk multiple paths',
     options: {
       pathsToWalk: ['/photos/', '/images/', '/albums/'],
     },
@@ -95,7 +95,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path without trailing slash',
+    test: 'should walk a single path without trailing slash',
     options: {
       pathsToWalk: ['/photos'],
     },
@@ -104,7 +104,7 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single path',
+    test: 'should walk a single path',
     options: {
       pathsToWalk: ['/photos/'],
     },
@@ -206,7 +206,7 @@ describe(StorageRepository.name, () => {
     ({ sut } = setup());
   });
 
-  describe('crawl', () => {
+  describe('walk', () => {
     for (const { test, options, files } of tests) {
       describe(test, () => {
         const fileList = Object.keys(files);
@@ -227,7 +227,10 @@ describe(StorageRepository.name, () => {
             pathsToWalk: options.pathsToWalk.map((p) => path.join(tempDir, p.replace(/^\//, ''))),
           };
 
-          const actual = await sut.walk(adjustedOptions);
+          const actual: string[] = [];
+          for await (const batch of sut.walk(adjustedOptions)) {
+            actual.push(...batch);
+          }
           const expected = Object.entries(files)
             .filter((entry) => entry[1])
             .map(([file]) => path.join(tempDir, file.replace(/^\//, '')));
