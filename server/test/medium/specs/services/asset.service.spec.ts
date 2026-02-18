@@ -398,6 +398,23 @@ describe(AssetService.name, () => {
         }),
       );
     });
+
+    it('should update dateTimeOriginal with time zone UTC+0', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
   });
 
   describe('updateAll', () => {
@@ -456,7 +473,7 @@ describe(AssetService.name, () => {
       );
     });
 
-    it('should relatively update an assets with timezone', async () => {
+    it('should relatively update assets with timezone', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
       const { user } = await ctx.newUser();
@@ -477,7 +494,7 @@ describe(AssetService.name, () => {
       );
     });
 
-    it('should relatively update an assets and set a timezone', async () => {
+    it('should relatively update assets and set a timezone', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
       const { user } = await ctx.newUser();
@@ -492,6 +509,26 @@ describe(AssetService.name, () => {
           exifInfo: expect.objectContaining({
             dateTimeOriginal: '2023-11-19T18:00:00+00:00',
             timeZone: 'UTC+5',
+          }),
+        }),
+      );
+    });
+
+    it('should set asset time zones to UTC', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], timeZone: 'UTC' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:11:00+00:00',
+            timeZone: 'UTC',
           }),
         }),
       );
@@ -527,6 +564,23 @@ describe(AssetService.name, () => {
       await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
         expect.objectContaining({
           exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
+        }),
+      );
+    });
+
+    it('should update dateTimeOriginal with UTC time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
         }),
       );
     });

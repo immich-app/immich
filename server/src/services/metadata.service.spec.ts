@@ -295,7 +295,7 @@ describe(MetadataService.name, () => {
         id: asset.id,
         duration: null,
         fileCreatedAt: asset.fileCreatedAt,
-        fileModifiedAt: asset.fileCreatedAt,
+        fileModifiedAt: asset.fileModifiedAt,
         localDateTime: asset.fileCreatedAt,
         width: null,
         height: null,
@@ -919,7 +919,7 @@ describe(MetadataService.name, () => {
         Orientation: 0,
         ProfileDescription: 'extensive description',
         ProjectionType: 'equirectangular',
-        tz: 'UTC-11:30',
+        zone: 'UTC-11:30',
         TagsList: ['parent/child'],
         Rating: 3,
       };
@@ -955,7 +955,7 @@ describe(MetadataService.name, () => {
           orientation: tags.Orientation?.toString(),
           profileDescription: tags.ProfileDescription,
           projectionType: 'EQUIRECTANGULAR',
-          timeZone: tags.tz,
+          timeZone: tags.zone,
           rating: tags.Rating,
           country: null,
           state: null,
@@ -987,7 +987,7 @@ describe(MetadataService.name, () => {
 
       const tags: ImmichTags = {
         DateTimeOriginal: ExifDateTime.fromISO(someDate + '+00:00'),
-        tz: undefined,
+        zone: undefined,
       };
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
       mockReadTags(tags);

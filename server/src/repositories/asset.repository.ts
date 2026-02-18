@@ -1008,12 +1008,12 @@ export class AssetRepository {
     return count;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, true] })
-  async getForOriginal(id: string, isEdited: boolean) {
+  private buildGetForOriginal(ids: string[], isEdited: boolean) {
     return this.db
       .selectFrom('asset')
+      .select('asset.id')
       .select('originalFileName')
-      .where('asset.id', '=', id)
+      .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
         qb
           .leftJoin('asset_file', (join) =>
@@ -1024,8 +1024,17 @@ export class AssetRepository {
           )
           .select('asset_file.path as editedPath'),
       )
-      .select('originalPath')
-      .executeTakeFirstOrThrow();
+      .select('originalPath');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  getForOriginal(id: string, isEdited: boolean) {
+    return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], true] })
+  getForOriginals(ids: string[], isEdited: boolean) {
+    return this.buildGetForOriginal(ids, isEdited).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
