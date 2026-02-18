@@ -192,16 +192,11 @@ jobs:
           ' >> $GITHUB_OUTPUT
 
       - name: Publish to Cloudflare Pages
-        # TODO: Action is deprecated
-        uses: cloudflare/pages-action@f0a1cd58cd66095dee69bfa18fa5efd1dde93bca # v1.5.0
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN_PAGES_UPLOAD }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: ${{ steps.docs-output.outputs.projectName }}
-          workingDirectory: 'docs'
-          directory: 'build'
-          branch: ${{ steps.parameters.outputs.name }}
-          wranglerVersion: '3'
+          command: pages deploy docs/build --project-name=${{ steps.docs-output.outputs.projectName }} --branch=${{ steps.parameters.outputs.name }}
 
       - name: Deploy Docs Release Domain
         if: ${{ steps.parameters.outputs.event == 'release' }}
