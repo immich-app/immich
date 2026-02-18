@@ -36,6 +36,7 @@ import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
+import { Tasks } from 'src/utils/tasks';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -307,33 +308,38 @@ export class MetadataService extends BaseService {
     const assetWidth = isSidewards ? validate(height) : validate(width);
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
-    const promises: Promise<unknown>[] = [
-      this.assetRepository.update({
-        id: asset.id,
-        duration: this.getDuration(exifTags),
-        localDateTime: dates.localDateTime,
-        fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-        fileModifiedAt: stats.mtime,
+    const tasks = new Tasks();
 
-        // only update the dimensions if they don't already exist
-        // we don't want to overwrite width/height that are modified by edits
-        width: asset.width == null ? assetWidth : undefined,
-        height: asset.height == null ? assetHeight : undefined,
-      }),
-    ];
+    tasks.push(
+      () =>
+        this.assetRepository.update({
+          id: asset.id,
+          duration: this.getDuration(exifTags),
+          localDateTime: dates.localDateTime,
+          fileCreatedAt: dates.dateTimeOriginal ?? undefined,
+          fileModifiedAt: stats.mtime,
 
-    await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
-    await this.applyTagList(asset);
+          // only update the dimensions if they don't already exist
+          // we don't want to overwrite width/height that are modified by edits
+          width: asset.width == null ? assetWidth : undefined,
+          height: asset.height == null ? assetHeight : undefined,
+        }),
+      async () => {
+        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
+        await this.applyTagList(asset);
+      },
+    );
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
+      tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
+      tasks.push(() => this.applyTaggedFaces(asset, exifTags));
     }
 
-    await Promise.all(promises);
+    await tasks.all();
+
     if (exifData.livePhotoCID) {
       await this.linkLivePhotos(asset, exifData);
     }
