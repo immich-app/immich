@@ -20,8 +20,8 @@
     text,
     subtitle = '',
     icon,
-    activeColor = 'bg-slate-300',
-    textColor = 'text-immich-fg dark:text-immich-dark-bg',
+    activeColor = 'bg-slate-300 dark:bg-gray-600',
+    textColor = 'text-immich-fg dark:text-immich-dark-fg',
     onClick,
     shortcut = null,
     shortcutLabel = '',
@@ -53,9 +53,9 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 dark:border-gray-700 flex gap-2 items-center {isActive
     ? activeColor
-    : 'bg-slate-100'}"
+    : 'bg-slate-100 dark:bg-gray-900'}"
   role="menuitem"
 >
   {#if icon}
@@ -65,13 +65,13 @@
     <div class="flex justify-between">
       {text}
       {#if shortcutLabel}
-        <span class="text-gray-500 ps-4">
+        <span class="text-gray-500 dark:text-gray-400 ps-4">
           {shortcutLabel}
         </span>
       {/if}
     </div>
     {#if subtitle}
-      <p class="text-xs text-gray-500">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
         {subtitle}
       </p>
     {/if}
