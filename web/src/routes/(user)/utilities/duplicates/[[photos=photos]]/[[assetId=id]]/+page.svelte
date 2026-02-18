@@ -6,9 +6,11 @@
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import DuplicatesMetadataModal from '$lib/modals/DuplicatesMetadataModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { metadataPreferenceStore, showAllMetadataStore } from '$lib/stores/duplicates-metadata.store';
   import { locale } from '$lib/stores/preferences.store';
   import { stackAssets } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
@@ -22,6 +24,7 @@
     mdiChevronRight,
     mdiInformationOutline,
     mdiKeyboard,
+    mdiListStatus,
     mdiPageFirst,
     mdiPageLast,
     mdiTrashCanOutline,
@@ -227,6 +230,15 @@
       >
         <Text class="hidden md:block">{$t('keep_all')}</Text>
       </Button>
+      <Button
+        leadingIcon={mdiListStatus}
+        onclick={() => modalManager.show(DuplicatesMetadataModal)}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('duplicates_metadata_modal.button')}</Text>
+      </Button>
       <IconButton
         shape="round"
         variant="ghost"
@@ -262,6 +274,8 @@
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
+          selectedMetadataFields={$metadataPreferenceStore}
+          showAllMetadata={$showAllMetadataStore}
         />
         <div class="max-w-5xl mx-auto mb-16">
           <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">

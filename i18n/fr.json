@@ -1210,7 +1210,6 @@
   "features_setting_description": "Gérer les fonctionnalités de l'application",
   "file_name_or_extension": "Nom du fichier ou extension",
   "file_name_text": "Nom du fichier",
-  "file_name_with_value": "Nom du fichier : {file_name}",
   "file_size": "Taille du fichier",
   "filename": "Nom du fichier",
   "filetype": "Type de fichier",

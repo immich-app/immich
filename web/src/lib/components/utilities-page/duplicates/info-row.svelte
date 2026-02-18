@@ -13,8 +13,13 @@
   let { icon, children, borderBottom = true, highlight = false, title }: Props = $props();
 </script>
 
-<div class="grid grid-cols-[25px_1fr] w-full px-1 py-0.5" class:border-b={borderBottom} {title}>
+<div class="grid grid-cols-[25px_1fr_1fr] w-full px-1 py-0.5" class:border-b={borderBottom} {title}>
   <Icon {icon} size="18" class="text-dark/25 {highlight ? 'text-primary/75' : ''}" />
+  {#if title}
+    <Text size="tiny" class="text-immich-fg/50 dark:text-immich-dark-fg/50 self-center truncate px-1">
+      {title}
+    </Text>
+  {/if}
   <div class="justify-self-end text-end rounded px-1 transition-colors w-full overflow-hidden">
     <Text
       size="tiny"

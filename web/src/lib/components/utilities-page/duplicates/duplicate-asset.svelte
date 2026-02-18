@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
@@ -8,33 +9,57 @@
   import { Icon } from '@immich/ui';
   import {
     mdiBookmarkOutline,
+    mdiBrightness6,
     mdiCalendar,
+    mdiCamera,
+    mdiCameraIris,
+    mdiCameraOutline,
     mdiClock,
-    mdiFile,
+    mdiClockEditOutline,
+    mdiCrosshairsGps,
+    mdiEarth,
+    mdiFileClockOutline,
+    mdiFileEditOutline,
+    mdiFileImageOutline,
     mdiFitToScreen,
     mdiFolderOutline,
     mdiHeart,
     mdiImageMultipleOutline,
-    mdiImageOutline,
     mdiMagnifyPlus,
     mdiMapMarkerOutline,
+    mdiPanorama,
+    mdiPhoneRotateLandscape,
+    mdiRayStartArrow,
+    mdiStarOutline,
+    mdiTextBox,
+    mdiTimerOutline,
+    mdiWeightKilogram,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import InfoRow from './info-row.svelte';
 
   interface Props {
-    assets: AssetResponseDto[];
     asset: AssetResponseDto;
     isSelected: boolean;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
+    selectedMetadataFields: MetadataPreference;
+    differingMetadataFields: { [key: string]: boolean | undefined };
+    showAllMetadata?: boolean;
   }
 
-  let { assets, asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let {
+    asset,
+    isSelected,
+    onSelectAsset,
+    onViewAsset,
+    selectedMetadataFields,
+    differingMetadataFields,
+    showAllMetadata = false,
+  }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
-
   let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
 
   let timeZone = $derived(asset.exifInfo?.timeZone);
@@ -44,43 +69,12 @@
       : fromISODateTimeUTC(asset.localDateTime),
   );
 
-  const isDifferent = (getter: (asset: AssetResponseDto) => string | undefined): boolean => {
-    return new Set(assets.map((asset) => getter(asset))).size > 1;
-  };
+  // Whether a field is selected AND (differs OR showAllMetadata)
+  const isVisible = (key: keyof MetadataPreference): boolean =>
+    !!selectedMetadataFields[key] && !!differingMetadataFields[key];
 
-  const hasDifferentValues = $derived({
-    fileName: isDifferent((a) => a.originalFileName),
-    fileSize: isDifferent((a) => getFileSize(a)),
-    resolution: isDifferent((a) => getAssetResolution(a)),
-    originalPath: isDifferent((a) => a.originalPath ?? $t('unknown')),
-    date: isDifferent((a) => {
-      const tz = a.exifInfo?.timeZone;
-      const dt =
-        tz && a.exifInfo?.dateTimeOriginal
-          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-          : fromISODateTimeUTC(a.localDateTime);
-      return dt?.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
-    }),
-    time: isDifferent((a) => {
-      const tz = a.exifInfo?.timeZone;
-      const dt =
-        tz && a.exifInfo?.dateTimeOriginal
-          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-          : fromISODateTimeUTC(a.localDateTime);
-      return dt?.toLocaleString(
-        {
-          hour: 'numeric',
-          minute: '2-digit',
-          second: '2-digit',
-          timeZoneName: tz ? 'shortOffset' : undefined,
-        },
-        { locale: $locale },
-      );
-    }),
-    location: isDifferent(
-      (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
-    ),
-  });
+  // Whether to highlight a row (only when in differences-only mode and it differs)
+  const isHighlighted = (key: keyof MetadataPreference): boolean => !showAllMetadata && !!differingMetadataFields[key];
 
   const getBasePath = (fullpath: string, fileName: string): string => {
     if (fileName && fullpath.endsWith(fileName)) {
@@ -110,7 +104,7 @@
       aria-pressed={isSelected}
       aria-label={$t('keep')}
     >
-      <!-- THUMBNAIL-->
+      <!-- THUMBNAIL -->
       <img
         src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
@@ -168,69 +162,216 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    <InfoRow
-      icon={mdiImageOutline}
-      highlight={hasDifferentValues.fileName}
-      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
-    >
-      {asset.originalFileName}
-    </InfoRow>
+    <!-- Visibility is derived from preference in metadata store -->
+    {#if isVisible('originalFileName')}
+      <InfoRow icon={mdiFileImageOutline} highlight={false} title={$t('file_name_text')}>
+        {asset.originalFileName}
+      </InfoRow>
+    {/if}
+    {#if isVisible('originalPath')}
+      <InfoRow icon={mdiFolderOutline} highlight={false} title={$t('path')}>
+        {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
+      </InfoRow>
+    {/if}
 
-    <InfoRow
-      icon={mdiFolderOutline}
-      highlight={hasDifferentValues.originalPath}
-      title={$t('full_path', { values: { path: asset.originalPath } })}
-    >
-      {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
-    </InfoRow>
+    {#if isVisible('fileCreatedAt')}
+      <InfoRow icon={mdiFileClockOutline} highlight={isHighlighted('fileCreatedAt')} title={$t('created_at')}>
+        {asset.fileCreatedAt}
+      </InfoRow>
+    {/if}
+    {#if isVisible('fileSize')}
+      <InfoRow icon={mdiWeightKilogram} highlight={false} title={$t('file_size')}>
+        {getFileSize(asset)}
+      </InfoRow>
+    {/if}
 
-    <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
-      {getFileSize(asset)}
-    </InfoRow>
+    {#if isVisible('resolution')}
+      <InfoRow icon={mdiFitToScreen} highlight={false} title={$t('resolution')}>
+        {getAssetResolution(asset) || $t('unknown')}
+      </InfoRow>
+    {/if}
 
-    <InfoRow icon={mdiFitToScreen} highlight={hasDifferentValues.resolution} title={$t('resolution')}>
-      {getAssetResolution(asset)}
-    </InfoRow>
+    {#if isVisible('fileModifiedAt')}
+      <InfoRow icon={mdiFileEditOutline} highlight={isHighlighted('fileModifiedAt')} title={$t('updated_at')}>
+        {asset.fileModifiedAt}
+      </InfoRow>
+    {/if}
 
-    <InfoRow icon={mdiCalendar} highlight={hasDifferentValues.date} title={$t('date')}>
-      {#if dateTime}
-        {dateTime.toLocaleString(
-          {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          },
-          { locale: $locale },
-        )}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
+    {#if isVisible('dateTimeOriginal')}
+      <InfoRow
+        icon={mdiCalendar}
+        highlight={isHighlighted('dateTimeOriginal')}
+        title={$t('duplicates_metadata_modal.date_time_original')}
+      >
+        {#if dateTime}
+          {dateTime.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale })}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
 
-    <InfoRow icon={mdiClock} highlight={hasDifferentValues.time} title={$t('time')}>
-      {#if dateTime}
-        {dateTime.toLocaleString(
-          {
-            hour: 'numeric',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZoneName: timeZone ? 'shortOffset' : undefined,
-          },
-          { locale: $locale },
-        )}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
+    {#if isVisible('dateTimeOriginal')}
+      <InfoRow icon={mdiClock} highlight={isHighlighted('dateTimeOriginal')} title={$t('time')}>
+        {#if dateTime}
+          {dateTime.toLocaleString(
+            {
+              hour: 'numeric',
+              minute: '2-digit',
+              second: '2-digit',
+              timeZoneName: timeZone ? 'shortOffset' : undefined,
+            },
+            { locale: $locale },
+          )}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
 
-    <InfoRow icon={mdiMapMarkerOutline} highlight={hasDifferentValues.location} title={$t('location')}>
-      {#if locationParts.length > 0}
-        {locationParts.join(', ')}
-      {:else}
-        {$t('unknown')}
-      {/if}
-    </InfoRow>
+    {#if isVisible('city') || isVisible('state') || isVisible('country')}
+      <InfoRow
+        icon={mdiMapMarkerOutline}
+        highlight={isHighlighted('city') || isHighlighted('state') || isHighlighted('country')}
+        title={$t('location')}
+      >
+        {#if locationParts.length > 0}
+          {locationParts.join(', ')}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
 
+    {#if isVisible('timeZone')}
+      <InfoRow icon={mdiEarth} highlight={isHighlighted('timeZone')} title={$t('timezone')}>
+        {asset.exifInfo?.timeZone || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('latitude') || isVisible('longitude')}
+      <InfoRow
+        icon={mdiCrosshairsGps}
+        highlight={isHighlighted('latitude') || isHighlighted('longitude')}
+        title={$t('gps')}
+      >
+        {#if asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null}
+          {asset.exifInfo.latitude.toFixed(4)}, {asset.exifInfo.longitude.toFixed(4)}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('make')}
+      <InfoRow icon={mdiCameraOutline} highlight={isHighlighted('make')} title={$t('make')}>
+        {asset.exifInfo?.make || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('model')}
+      <InfoRow icon={mdiCamera} highlight={isHighlighted('model')} title={$t('model')}>
+        {asset.exifInfo?.model || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('lensModel')}
+      <InfoRow icon={mdiCameraIris} highlight={isHighlighted('lensModel')} title={$t('lens_model')}>
+        {asset.exifInfo?.lensModel || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('fNumber')}
+      <InfoRow
+        icon={mdiCameraIris}
+        highlight={isHighlighted('fNumber')}
+        title={$t('duplicates_metadata_modal.f_number')}
+      >
+        {#if asset.exifInfo?.fNumber != null}
+          f/{asset.exifInfo.fNumber.toFixed(1)}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('focalLength')}
+      <InfoRow
+        icon={mdiRayStartArrow}
+        highlight={isHighlighted('focalLength')}
+        title={$t('duplicates_metadata_modal.focal_length')}
+      >
+        {#if asset.exifInfo?.focalLength != null}
+          {asset.exifInfo.focalLength} mm
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('iso')}
+      <InfoRow icon={mdiBrightness6} highlight={isHighlighted('iso')} title={$t('duplicates_metadata_modal.iso')}>
+        {#if asset.exifInfo?.iso != null}
+          ISO {asset.exifInfo.iso}
+        {:else}
+          {$t('unknown')}
+        {/if}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('exposureTime')}
+      <InfoRow
+        icon={mdiTimerOutline}
+        highlight={isHighlighted('exposureTime')}
+        title={$t('duplicates_metadata_modal.exposure_time')}
+      >
+        {asset.exifInfo?.exposureTime || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('description')}
+      <InfoRow icon={mdiTextBox} highlight={isHighlighted('description')} title={$t('description')}>
+        {asset.exifInfo?.description || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('rating')}
+      <InfoRow icon={mdiStarOutline} highlight={isHighlighted('rating')} title={$t('rating')}>
+        {asset.exifInfo?.rating != null ? `${asset.exifInfo.rating} stars` : $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('orientation')}
+      <InfoRow
+        icon={mdiPhoneRotateLandscape}
+        highlight={isHighlighted('orientation')}
+        title={$t('duplicates_metadata_modal.orientation')}
+      >
+        {asset.exifInfo?.orientation || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('projectionType')}
+      <InfoRow
+        icon={mdiPanorama}
+        highlight={isHighlighted('projectionType')}
+        title={$t('duplicates_metadata_modal.projection_type')}
+      >
+        {asset.exifInfo?.projectionType || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    {#if isVisible('modifyDate')}
+      <InfoRow
+        icon={mdiClockEditOutline}
+        highlight={isHighlighted('modifyDate')}
+        title={$t('duplicates_metadata_modal.modify_date')}
+      >
+        {asset.exifInfo?.modifyDate || $t('unknown')}
+      </InfoRow>
+    {/if}
+
+    <!-- Albums always shown, not part of metadata preference -->
     <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}

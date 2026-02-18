@@ -1204,7 +1204,6 @@
   "features_setting_description": "Configurar as funcionalidades da aplicação",
   "file_name_or_extension": "Nome do ficheiro ou extensão",
   "file_name_text": "Nome do ficheiro",
-  "file_name_with_value": "Nome do ficheiro: {file_name}",
   "file_size": "Tamanho do ficheiro",
   "filename": "Nome do ficheiro",
   "filetype": "Tipo de ficheiro",
