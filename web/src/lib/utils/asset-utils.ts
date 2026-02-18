@@ -1,15 +1,13 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, sleep, withError } from '$lib/utils';
+import { downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -23,7 +21,6 @@ import {
   createStack,
   deleteAssets,
   deleteStacks,
-  getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
   getStack,
@@ -74,7 +71,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
             text: $t('view_album'),
             color: 'primary',
             onClick() {
-              return goto(`${AppRoute.ALBUMS}/${albumId}`);
+              return goto(Route.viewAlbum({ id: albumId }));
             },
           },
         },
@@ -232,48 +229,6 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   }
 };
 
-export const downloadFile = async (asset: AssetResponseDto) => {
-  const $t = get(t);
-  const assets = [
-    {
-      filename: asset.originalFileName,
-      id: asset.id,
-      size: asset.exifInfo?.fileSizeInByte || 0,
-    },
-  ];
-
-  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
-    return asset.originalPath.includes('encoded-video');
-  };
-
-  if (asset.livePhotoVideoId) {
-    const motionAsset = await getAssetInfo({ ...authManager.params, id: asset.livePhotoVideoId });
-    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
-      assets.push({
-        filename: motionAsset.originalFileName,
-        id: asset.livePhotoVideoId,
-        size: motionAsset.exifInfo?.fileSizeInByte || 0,
-      });
-    }
-  }
-
-  const queryParams = asQueryString(authManager.params);
-
-  for (const [i, { filename, id }] of assets.entries()) {
-    if (i !== 0) {
-      // play nice with Safari
-      await sleep(500);
-    }
-
-    try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
-      downloadUrl(getBaseUrl() + `/assets/${id}/original` + (queryParams ? `?${queryParams}` : ''), filename);
-    } catch (error) {
-      handleError(error, $t('errors.error_downloading', { values: { filename } }));
-    }
-  }
-};
-
 /**
  * Returns the lowercase filename extension without a dot (.) and
  * an empty string when not found.
@@ -320,31 +275,25 @@ export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
 }
 
 export function getAssetResolution(asset: AssetResponseDto): string {
-  const { width, height } = getAssetRatio(asset);
-
-  if (width === 235 && height === 235) {
+  if (!asset.width || !asset.height) {
     return 'Invalid Data';
   }
 
-  return `${width} x ${height}`;
+  return `${asset.width} x ${asset.height}`;
 }
 
 /**
  * Returns aspect ratio for the asset
  */
 export function getAssetRatio(asset: AssetResponseDto) {
-  let height = asset.exifInfo?.exifImageHeight || 235;
-  let width = asset.exifInfo?.exifImageWidth || 235;
-  if (isFlipped(asset.exifInfo?.orientation)) {
-    [width, height] = [height, width];
-  }
-  return { width, height };
+  return asset.width && asset.height ? asset.width / asset.height : null;
 }
 
 // list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
 const supportedImageMimeTypes = new Set([
   'image/apng',
   'image/avif',
+  'image/bmp',
   'image/gif',
   'image/jpeg',
   'image/png',
@@ -353,8 +302,17 @@ const supportedImageMimeTypes = new Set([
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
 if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif').add('image/jxl');
+  supportedImageMimeTypes.add('image/heic').add('image/heif');
 }
+
+function checkJxlSupport(): void {
+  const img = new Image();
+  img.addEventListener('load', () => {
+    supportedImageMimeTypes.add('image/jxl');
+  });
+  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+}
+checkJxlSupport();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise
@@ -476,21 +434,23 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
 };
 
 export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetInteraction) => {
-  if (get(isSelectingAllAssets)) {
+  if (assetInteraction.selectAll) {
     // Selection is already ongoing
     return;
   }
-  isSelectingAllAssets.set(true);
+  assetInteraction.selectAll = true;
 
   try {
     for (const monthGroup of timelineManager.months) {
-      await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      if (!monthGroup.isLoaded) {
+        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+      }
 
-      if (!get(isSelectingAllAssets)) {
+      if (!assetInteraction.selectAll) {
         assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(assetsSnapshot([...monthGroup.assetsIterator()]));
+      assetInteraction.selectAssets([...monthGroup.assetsIterator()]);
 
       for (const dateGroup of monthGroup.dayGroups) {
         assetInteraction.addGroupToMultiselectGroup(dateGroup.groupTitle);
@@ -499,12 +459,12 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   } catch (error) {
     const $t = get(t);
     handleError(error, $t('errors.error_selecting_all_assets'));
-    isSelectingAllAssets.set(false);
+    assetInteraction.selectAll = false;
   }
 };
 
 export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
-  isSelectingAllAssets.set(false);
+  assetInteraction.selectAll = false;
   assetInteraction.clearMultiselect();
 };
 
@@ -557,6 +517,16 @@ export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+export const getNextAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index + 1] : undefined;
+};
+
+export const getPreviousAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
+  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  return index >= 0 ? assets[index - 1] : undefined;
+};
+
 export const canCopyImageToClipboard = (): boolean => {
   return !!(navigator.clipboard && globalThis.ClipboardItem);
 };
@@ -588,4 +558,13 @@ const imgToBlob = async (imageElement: HTMLImageElement) => {
 export const copyImageToClipboard = async (source: HTMLImageElement) => {
   // do not await, so the Safari clipboard write happens in the context of the user gesture
   await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
+};
+
+export const navigateToAsset = async (targetAsset: AssetResponseDto | undefined | null) => {
+  if (!targetAsset) {
+    return false;
+  }
+
+  await navigate({ targetRoute: 'current', assetId: targetAsset.id });
+  return true;
 };

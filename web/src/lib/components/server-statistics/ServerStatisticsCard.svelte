@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Code, Icon, Text } from '@immich/ui';
+  import { Icon, Text } from '@immich/ui';
 
   interface Props {
     icon: string;
@@ -23,13 +23,13 @@
 <div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
     <Icon {icon} size="40" />
-    <Text size="large" fontWeight="bold" class="uppercase">{title}</Text>
+    <Text size="giant" fontWeight="medium">{title}</Text>
   </div>
 
-  <div class="relative mx-auto font-mono text-2xl font-semibold">
-    <span class="text-gray-400 dark:text-gray-600">{zeros()}</span><span>{value}</span>
+  <div class="mx-auto font-mono text-2xl font-medium">
+    <span class="text-gray-300 dark:text-gray-600">{zeros()}</span><span>{value}</span>
     {#if unit}
-      <Code color="muted" class="absolute -top-5 end-1 font-light p-0">{unit}</Code>
+      <code class="font-mono text-base font-normal">{unit}</code>
     {/if}
   </div>
 </div>

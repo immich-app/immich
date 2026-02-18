@@ -22,7 +22,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: 'Checkout'
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ steps.generate-token.outputs.token }}
@@ -39,7 +39,7 @@ jobs:
           cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Fix formatting
-        run: pnpm --recursive install && pnpm run --recursive --parallel fix:format
+        run: pnpm --recursive install && pnpm run --recursive --if-present --parallel format:fix
 
       - name: Commit and push
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4

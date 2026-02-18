@@ -185,13 +185,15 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Asset ID
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<Response> deleteAssetMetadataWithHttpInfo(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  ///   Metadata key
+  Future<Response> deleteAssetMetadataWithHttpInfo(String id, String key,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/metadata/{key}'
       .replaceAll('{id}', id)
-      .replaceAll('{key}', key.toString());
+      .replaceAll('{key}', key);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -221,9 +223,11 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Asset ID
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<void> deleteAssetMetadata(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  ///   Metadata key
+  Future<void> deleteAssetMetadata(String id, String key,) async {
     final response = await deleteAssetMetadataWithHttpInfo(id, key,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -278,6 +282,54 @@ class AssetsApi {
     }
   }
 
+  /// Delete asset metadata
+  ///
+  /// Delete metadata key-value pairs for multiple assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkDeleteDto] assetMetadataBulkDeleteDto (required):
+  Future<Response> deleteBulkAssetMetadataWithHttpInfo(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/metadata';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataBulkDeleteDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Delete asset metadata
+  ///
+  /// Delete metadata key-value pairs for multiple assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkDeleteDto] assetMetadataBulkDeleteDto (required):
+  Future<void> deleteBulkAssetMetadata(AssetMetadataBulkDeleteDto assetMetadataBulkDeleteDto,) async {
+    final response = await deleteBulkAssetMetadataWithHttpInfo(assetMetadataBulkDeleteDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Download original asset
   ///
   /// Downloads the original file of the specified asset.
@@ -288,10 +340,13 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///   Return edited asset if available
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadAssetWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> downloadAssetWithHttpInfo(String id, { bool? edited, String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
       .replaceAll('{id}', id);
@@ -303,6 +358,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -332,11 +390,14 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///   Return edited asset if available
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadAsset(String id, { String? key, String? slug, }) async {
-    final response = await downloadAssetWithHttpInfo(id,  key: key, slug: slug, );
+  Future<MultipartFile?> downloadAsset(String id, { bool? edited, String? key, String? slug, }) async {
+    final response = await downloadAssetWithHttpInfo(id,  edited: edited, key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -345,6 +406,67 @@ class AssetsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Apply edits to an existing asset
+  ///
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetEditActionListDto] assetEditActionListDto (required):
+  Future<Response> editAssetWithHttpInfo(String id, AssetEditActionListDto assetEditActionListDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetEditActionListDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Apply edits to an existing asset
+  ///
+  /// Apply a series of edit actions (crop, rotate, mirror) to the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetEditActionListDto] assetEditActionListDto (required):
+  Future<AssetEditsDto?> editAsset(String id, AssetEditActionListDto assetEditActionListDto,) async {
+    final response = await editAssetWithHttpInfo(id, assetEditActionListDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetEditsDto',) as AssetEditsDto;
     
     }
     return null;
@@ -359,6 +481,7 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<Response> getAllUserAssetsByDeviceIdWithHttpInfo(String deviceId,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/device/{deviceId}'
@@ -392,6 +515,7 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   Future<List<String>?> getAllUserAssetsByDeviceId(String deviceId,) async {
     final response = await getAllUserAssetsByDeviceIdWithHttpInfo(deviceId,);
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -406,6 +530,63 @@ class AssetsApi {
         .cast<String>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Retrieve edits for an existing asset
+  ///
+  /// Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetEditsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Retrieve edits for an existing asset
+  ///
+  /// Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<AssetEditsDto?> getAssetEdits(String id,) async {
+    final response = await getAssetEditsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetEditsDto',) as AssetEditsDto;
+    
     }
     return null;
   }
@@ -551,13 +732,15 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Asset ID
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  ///   Metadata key
+  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, String key,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/metadata/{key}'
       .replaceAll('{id}', id)
-      .replaceAll('{key}', key.toString());
+      .replaceAll('{key}', key);
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -587,9 +770,11 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Asset ID
   ///
-  /// * [AssetMetadataKey] key (required):
-  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, AssetMetadataKey key,) async {
+  /// * [String] key (required):
+  ///   Metadata key
+  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, String key,) async {
     final response = await getAssetMetadataByKeyWithHttpInfo(id, key,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -673,10 +858,13 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<Response> getAssetStatisticsWithHttpInfo({ bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/statistics';
@@ -719,10 +907,13 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<AssetStatsResponseDto?> getAssetStatistics({ bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     final response = await getAssetStatisticsWithHttpInfo( isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -747,6 +938,7 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [num] count:
+  ///   Number of random assets to return
   Future<Response> getRandomWithHttpInfo({ num? count, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/random';
@@ -783,6 +975,7 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [num] count:
+  ///   Number of random assets to return
   Future<List<AssetResponseDto>?> getRandom({ num? count, }) async {
     final response = await getRandomWithHttpInfo( count: count, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -873,6 +1066,55 @@ class AssetsApi {
     return null;
   }
 
+  /// Remove edits from an existing asset
+  ///
+  /// Removes all edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> removeAssetEditsWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/edits'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Remove edits from an existing asset
+  ///
+  /// Removes all edit actions (crop, rotate, mirror) associated with the specified asset.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> removeAssetEdits(String id,) async {
+    final response = await removeAssetEditsWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Replace asset
   ///
   /// Replace the asset with new file, without changing its id.
@@ -884,22 +1126,29 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   Future<Response> replaceAssetWithHttpInfo(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/original'
@@ -976,22 +1225,29 @@ class AssetsApi {
   /// * [String] id (required):
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   Future<AssetMediaResponseDto?> replaceAsset(String id, MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? duration, String? filename, }) async {
     final response = await replaceAssetWithHttpInfo(id, assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, duration: duration, filename: filename, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1228,6 +1484,65 @@ class AssetsApi {
     }
   }
 
+  /// Upsert asset metadata
+  ///
+  /// Upsert metadata key-value pairs for multiple assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkUpsertDto] assetMetadataBulkUpsertDto (required):
+  Future<Response> updateBulkAssetMetadataWithHttpInfo(AssetMetadataBulkUpsertDto assetMetadataBulkUpsertDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/metadata';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataBulkUpsertDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Upsert asset metadata
+  ///
+  /// Upsert metadata key-value pairs for multiple assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetMetadataBulkUpsertDto] assetMetadataBulkUpsertDto (required):
+  Future<List<AssetMetadataBulkResponseDto>?> updateBulkAssetMetadata(AssetMetadataBulkUpsertDto assetMetadataBulkUpsertDto,) async {
+    final response = await updateBulkAssetMetadataWithHttpInfo(assetMetadataBulkUpsertDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataBulkResponseDto>') as List)
+        .cast<AssetMetadataBulkResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Upload asset
   ///
   /// Uploads a new asset to the server.
@@ -1237,16 +1552,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
-  ///
-  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
@@ -1256,17 +1574,26 @@ class AssetsApi {
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   ///
   /// * [bool] isFavorite:
+  ///   Mark as favorite
   ///
   /// * [String] livePhotoVideoId:
+  ///   Live photo video ID
+  ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata:
+  ///   Asset metadata items
   ///
   /// * [MultipartFile] sidecarData:
+  ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  ///   Asset visibility
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
 
@@ -1364,16 +1691,19 @@ class AssetsApi {
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
+  ///   Asset file data
   ///
   /// * [String] deviceAssetId (required):
+  ///   Device asset ID
   ///
   /// * [String] deviceId (required):
+  ///   Device ID
   ///
   /// * [DateTime] fileCreatedAt (required):
+  ///   File creation date
   ///
   /// * [DateTime] fileModifiedAt (required):
-  ///
-  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
+  ///   File modification date
   ///
   /// * [String] key:
   ///
@@ -1383,18 +1713,27 @@ class AssetsApi {
   ///   sha1 checksum that can be used for duplicate detection before the file is uploaded
   ///
   /// * [String] duration:
+  ///   Duration (for videos)
   ///
   /// * [String] filename:
+  ///   Filename
   ///
   /// * [bool] isFavorite:
+  ///   Mark as favorite
   ///
   /// * [String] livePhotoVideoId:
+  ///   Live photo video ID
+  ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata:
+  ///   Asset metadata items
   ///
   /// * [MultipartFile] sidecarData:
+  ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
-    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, metadata,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
+  ///   Asset visibility
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, metadata: metadata, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -1410,7 +1749,7 @@ class AssetsApi {
 
   /// View asset thumbnail
   ///
-  /// Retrieve the thumbnail image for the specified asset.
+  /// Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -1418,12 +1757,16 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///   Return edited asset if available
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
+  ///   Asset media size
   ///
   /// * [String] slug:
-  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
+  Future<Response> viewAssetWithHttpInfo(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -1435,6 +1778,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (edited != null) {
+      queryParams.addAll(_queryParams('', 'edited', edited));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -1461,19 +1807,23 @@ class AssetsApi {
 
   /// View asset thumbnail
   ///
-  /// Retrieve the thumbnail image for the specified asset.
+  /// Retrieve the thumbnail image for the specified asset. Viewing the fullsize thumbnail might redirect to downloadAsset, which requires a different permission.
   ///
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
+  /// * [bool] edited:
+  ///   Return edited asset if available
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
+  ///   Asset media size
   ///
   /// * [String] slug:
-  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
-    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, slug: slug, );
+  Future<MultipartFile?> viewAsset(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
+    final response = await viewAssetWithHttpInfo(id,  edited: edited, key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

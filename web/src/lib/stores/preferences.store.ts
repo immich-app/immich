@@ -9,7 +9,7 @@ export interface ThemeSetting {
 }
 
 // Locale to use for formatting dates, numbers, etc.
-export const locale = persisted<string | undefined>('locale', 'default', {
+export const locale = persisted('locale', 'default', {
   serializer: {
     parse: (text) => text || 'default',
     stringify: (object) => object ?? '',
@@ -58,8 +58,6 @@ export const mapSettings = persistedObject<MapSettings>('map-settings', defaultM
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
 export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
-
-export const isShowDetail = persisted<boolean>('info-opened', false, {});
 
 export interface AlbumViewSettings {
   view: string;

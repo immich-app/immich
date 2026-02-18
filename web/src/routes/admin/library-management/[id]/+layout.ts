@@ -1,4 +1,4 @@
-import { AppRoute } from '$lib/constants';
+import { Route } from '$lib/route';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getLibrary, getLibraryStatistics, type LibraryResponseDto } from '@immich/sdk';
@@ -13,7 +13,7 @@ export const load = (async ({ params: { id }, url }) => {
   try {
     library = await getLibrary({ id });
   } catch {
-    redirect(302, AppRoute.ADMIN_LIBRARIES);
+    redirect(307, Route.libraries());
   }
 
   const statistics = await getLibraryStatistics({ id });

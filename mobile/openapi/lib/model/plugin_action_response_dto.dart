@@ -22,18 +22,25 @@ class PluginActionResponseDto {
     required this.title,
   });
 
+  /// Action description
   String description;
 
+  /// Action ID
   String id;
 
+  /// Method name
   String methodName;
 
+  /// Plugin ID
   String pluginId;
 
+  /// Action schema
   Object? schema;
 
+  /// Supported contexts
   List<PluginContextType> supportedContexts;
 
+  /// Action title
   String title;
 
   @override

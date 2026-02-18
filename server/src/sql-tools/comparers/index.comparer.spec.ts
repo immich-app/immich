@@ -13,7 +13,7 @@ const testIndex: DatabaseIndex = {
 describe('compareIndexes', () => {
   describe('onExtra', () => {
     it('should work', () => {
-      expect(compareIndexes.onExtra(testIndex)).toEqual([
+      expect(compareIndexes().onExtra(testIndex)).toEqual([
         {
           type: 'IndexDrop',
           indexName: 'test',
@@ -25,7 +25,7 @@ describe('compareIndexes', () => {
 
   describe('onMissing', () => {
     it('should work', () => {
-      expect(compareIndexes.onMissing(testIndex)).toEqual([
+      expect(compareIndexes().onMissing(testIndex)).toEqual([
         {
           type: 'IndexCreate',
           index: testIndex,
@@ -37,7 +37,7 @@ describe('compareIndexes', () => {
 
   describe('onCompare', () => {
     it('should work', () => {
-      expect(compareIndexes.onCompare(testIndex, testIndex)).toEqual([]);
+      expect(compareIndexes().onCompare(testIndex, testIndex)).toEqual([]);
     });
 
     it('should drop and recreate when column list is different', () => {
@@ -55,7 +55,7 @@ describe('compareIndexes', () => {
         unique: true,
         synchronize: true,
       };
-      expect(compareIndexes.onCompare(source, target)).toEqual([
+      expect(compareIndexes().onCompare(source, target)).toEqual([
         {
           indexName: 'test',
           type: 'IndexDrop',

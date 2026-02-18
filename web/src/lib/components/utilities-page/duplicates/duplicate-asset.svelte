@@ -1,6 +1,6 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -101,7 +101,7 @@
   }
 </script>
 
-<div class="min-w-60 transition-colors border rounded-lg">
+<div class="min-w-60 transition-colors border rounded-lg flex-1">
   <div class="relative w-full">
     <button
       type="button"
@@ -112,7 +112,7 @@
     >
       <!-- THUMBNAIL-->
       <img
-        src={getAssetThumbnailUrl(asset.id)}
+        src={getAssetMediaUrl({ id: asset.id })}
         alt={$getAltText(toTimelineAsset(asset))}
         title={assetData}
         class="h-60 object-cover w-full rounded-t-md"
@@ -168,7 +168,11 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    <InfoRow icon={mdiImageOutline} highlight={hasDifferentValues.fileName} title={$t('file_name')}>
+    <InfoRow
+      icon={mdiImageOutline}
+      highlight={hasDifferentValues.fileName}
+      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
+    >
       {asset.originalFileName}
     </InfoRow>
 

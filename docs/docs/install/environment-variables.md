@@ -17,11 +17,11 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable           | Description                     |  Default  | Containers               |
-| :----------------- | :------------------------------ | :-------: | :----------------------- |
-| `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
-| `UPLOAD_LOCATION`  | Host path for uploads           |           | server                   |
-| `DB_DATA_LOCATION` | Host path for Postgres database |           | database                 |
+| Variable           | Description                     | Default | Containers               |
+| :----------------- | :------------------------------ | :-----: | :----------------------- |
+| `IMMICH_VERSION`   | Image tags                      |  `v2`   | server, machine learning |
+| `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
+| `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
@@ -34,6 +34,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
+| `IMMICH_LOG_FORMAT`                 | Log output format (`console`, `json`)                                                     |          `console`           | server                   | api, microservices |
 | `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |           `/data`            | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |

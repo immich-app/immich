@@ -18,7 +18,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -42,6 +43,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
@@ -73,7 +75,7 @@ Future<void> initApp() async {
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
 
-  if (kReleaseMode && Platform.isAndroid) {
+  if (Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
       dPrint(() => "Enabled high refresh mode");
@@ -112,7 +114,7 @@ Future<void> initApp() async {
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
-  await FileDownloader().trackTasks();
+  unawaited(FileDownloader().trackTasks());
 
   LicenseRegistry.addLicense(() async* {
     for (final license in nonPubLicenses.entries) {
@@ -217,8 +219,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
           ref
               .read(backgroundWorkerFgServiceProvider)
               .saveNotificationMessage(
-                IntlKeys.uploading_media.t(),
-                IntlKeys.backup_background_service_default_notification.t(),
+                StaticTranslations.instance.uploading_media,
+                StaticTranslations.instance.backup_background_service_default_notification,
               );
         }
       } else {
@@ -237,6 +239,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   }
 
   @override
+  void reassemble() {
+    if (kDebugMode) {
+      NetworkRepository.reset();
+    }
+    super.reassemble();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final immichTheme = ref.watch(immichThemeProvider);
@@ -252,6 +262,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
+        builder: (context, child) => ImmichTranslationProvider(
+          translations: ImmichTranslations(
+            submit: "submit".t(context: context),
+            password: "password".t(context: context),
+          ),
+          child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
+        ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref)],

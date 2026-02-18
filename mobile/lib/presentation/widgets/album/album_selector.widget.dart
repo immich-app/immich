@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -14,14 +15,15 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -86,7 +88,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   }
 
   void onSearch(String searchTerm, QuickFilterMode filterMode) {
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.read(currentUserProvider)?.id;
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
     filterAlbums();
@@ -137,6 +139,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         .read(remoteAlbumProvider.notifier)
         .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       sortedAlbums = sorted;
     });
@@ -148,6 +154,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   Future<void> filterAlbums() async {
     if (filter.query == null) {
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         shownAlbums = sortedAlbums;
       });
@@ -158,6 +168,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final filteredAlbums = ref
         .read(remoteAlbumProvider.notifier)
         .searchAlbums(sortedAlbums, filter.query!, filter.userId, filter.mode);
+
+    if (!mounted) {
+      return;
+    }
 
     setState(() {
       shownAlbums = filteredAlbums;
@@ -173,7 +187,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.watch(currentUserProvider.select((user) => user?.id));
 
     // refilter and sort when albums change
     ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {
@@ -268,6 +282,8 @@ class _SortButtonState extends ConsumerState<_SortButton> {
       setState(() {
         albumSortOption = sortMode;
         isSorting = true;
+        // reset sort order to default state when switching option
+        albumSortIsReverse = false;
       });
     }
 
@@ -280,6 +296,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveOrder = albumSortOption.effectiveOrder(albumSortIsReverse);
     return MenuAnchor(
       controller: widget.controller,
       style: MenuStyle(
@@ -294,7 +311,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
           .map(
             (sortMode) => MenuItemButton(
               leadingIcon: albumSortOption == sortMode
-                  ? albumSortIsReverse
+                  ? effectiveOrder == SortOrder.desc
                         ? Icon(
                             Icons.keyboard_arrow_down,
                             color: albumSortOption == sortMode
@@ -310,18 +327,17 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () => onMenuTapped(sortMode),
               style: ButtonStyle(
-                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(16, 16, 32, 16)),
+                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(12, 12, 24, 12)),
                 backgroundColor: WidgetStateProperty.all(
                   albumSortOption == sortMode ? context.colorScheme.primary : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
                 ),
               ),
               child: Text(
                 sortMode.label.t(context: context),
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: context.textTheme.labelLarge?.copyWith(
                   color: albumSortOption == sortMode
                       ? context.colorScheme.onPrimary
                       : context.colorScheme.onSurface.withAlpha(185),
@@ -343,16 +359,13 @@ class _SortButtonState extends ConsumerState<_SortButton> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(right: 5),
-                child: albumSortIsReverse
-                    ? const Icon(Icons.keyboard_arrow_down)
-                    : const Icon(Icons.keyboard_arrow_up_rounded),
+                child: effectiveOrder == SortOrder.desc
+                    ? Icon(Icons.keyboard_arrow_down, color: context.colorScheme.onSurface)
+                    : Icon(Icons.keyboard_arrow_up_rounded, color: context.colorScheme.onSurface),
               ),
               Text(
                 albumSortOption.label.t(context: context),
-                style: context.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: context.colorScheme.onSurface.withAlpha(225),
-                ),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(225)),
               ),
               isSorting
                   ? SizedBox(
@@ -542,7 +555,11 @@ class _QuickSortAndViewMode extends StatelessWidget {
               initialIsReverse: currentIsReverse,
             ),
             IconButton(
-              icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
+              icon: Icon(
+                isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined,
+                size: 24,
+                color: context.colorScheme.onSurface,
+              ),
               onPressed: onToggleViewMode,
             ),
           ],
@@ -662,6 +679,8 @@ class _GridAlbumCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+
     return GestureDetector(
       onTap: () => onAlbumSelected(album),
       child: Card(
@@ -680,12 +699,22 @@ class _GridAlbumCard extends ConsumerWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: SizedBox(
                   width: double.infinity,
-                  child: album.thumbnailAssetId != null
-                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
-                      : Container(
-                          color: context.colorScheme.surfaceContainerHighest,
-                          child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
-                        ),
+                  child: FutureBuilder(
+                    future: albumThumbnailAsset,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data != null) {
+                        return Thumbnail.remote(
+                          remoteId: album.thumbnailAssetId!,
+                          thumbhash: snapshot.data!.thumbHash ?? "",
+                        );
+                      }
+
+                      return Container(
+                        color: context.colorScheme.surfaceContainerHighest,
+                        child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

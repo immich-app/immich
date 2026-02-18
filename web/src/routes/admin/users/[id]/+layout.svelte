@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
   import AdminCard from '$lib/components/AdminCard.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -7,7 +7,7 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { Route } from '$lib/route';
   import { getUserAdminActions } from '$lib/services/user-admin.service';
   import { locale } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
@@ -17,7 +17,7 @@
     Alert,
     Badge,
     Code,
-    CommandPaletteContext,
+    CommandPaletteDefaultProvider,
     Container,
     getByteUnitString,
     Heading,
@@ -48,10 +48,7 @@
 
   const { children, data }: Props = $props();
 
-  let user = $state(data.user);
-  const userPreferences = $state(data.userPreferences);
-  const userStatistics = $state(data.userStatistics);
-  const userSessions = $state(data.userSessions);
+  const { user, userPreferences, userStatistics, userSessions } = $derived(data);
   const TiB = 1024 ** 4;
   const usage = $derived(user.quotaUsageInBytes ?? 0);
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
@@ -79,15 +76,16 @@
 
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
-  const onUpdate = (update: UserAdminResponseDto) => {
+  const onUpdate = async (update: UserAdminResponseDto) => {
     if (update.id === user.id) {
-      user = update;
+      data.user = update;
+      await invalidateAll();
     }
   };
 
   const onUserAdminDeleted = async ({ id }: { id: string }) => {
     if (id === user.id) {
-      await goto(AppRoute.ADMIN_USERS);
+      await goto(Route.users());
     }
   };
 </script>
@@ -99,10 +97,10 @@
   {onUserAdminDeleted}
 />
 
-<CommandPaletteContext commands={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
+<CommandPaletteDefaultProvider name={$t('user')} actions={[ResetPassword, ResetPinCode, Update, Delete, Restore]} />
 
 <AdminPageLayout
-  breadcrumbs={[{ title: $t('admin.user_management'), href: AppRoute.ADMIN_USERS }, { title: user.name }]}
+  breadcrumbs={[{ title: $t('admin.user_management'), href: Route.users() }, { title: user.name }]}
   actions={[ResetPassword, ResetPinCode, Update, Restore, MenuItemType.Divider, Delete]}
 >
   <div>
@@ -198,8 +196,8 @@
               })}
             >
               <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
-              <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
+              <div class="mt-4 h-1.75 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                <div class="h-1.75 rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
               </div>
             </div>
           {/if}

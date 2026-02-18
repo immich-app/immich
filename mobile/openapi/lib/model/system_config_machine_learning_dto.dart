@@ -28,6 +28,7 @@ class SystemConfigMachineLearningDto {
 
   DuplicateDetectionConfig duplicateDetection;
 
+  /// Enabled
   bool enabled;
 
   FacialRecognitionConfig facialRecognition;

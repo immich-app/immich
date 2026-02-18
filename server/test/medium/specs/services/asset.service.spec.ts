@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
@@ -246,6 +246,66 @@ describe(AssetService.name, () => {
       });
     });
 
+    it('should delete a stacked primary asset (2 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
+
+      const stackRepo = ctx.get(StackRepository);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(stackRepo.getById(stack.id)).resolves.toBe(undefined);
+    });
+
+    it('should delete a stacked primary asset (3 assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // new primary asset is picked
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toMatchObject({ primaryAssetId: asset2.id });
+    });
+
+    it('should delete a stacked primary asset (3 trashed assets)', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset3 } = await ctx.newAsset({ ownerId: user.id });
+      const { stack, result } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id, asset3.id]);
+
+      await ctx.get(AssetRepository).updateAll([asset1.id, asset2.id, asset3.id], {
+        deletedAt: new Date(),
+        status: AssetStatus.Deleted,
+      });
+
+      expect(result).toMatchObject({ primaryAssetId: asset1.id });
+
+      await sut.handleAssetDeletion({ id: asset1.id, deleteOnDisk: true });
+
+      // stack is deleted as well
+      await expect(ctx.get(StackRepository).getById(stack.id)).resolves.toBe(undefined);
+    });
+
     it('should not delete offline assets', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(EventRepository).emit.mockResolvedValue();
@@ -338,6 +398,23 @@ describe(AssetService.name, () => {
         }),
       );
     });
+
+    it('should update dateTimeOriginal with time zone UTC+0', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
   });
 
   describe('updateAll', () => {
@@ -396,6 +473,67 @@ describe(AssetService.name, () => {
       );
     });
 
+    it('should relatively update assets with timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC+5' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -1441 });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-18T18:10:00+00:00',
+            timeZone: 'UTC+5',
+            lockedProperties: ['timeZone', 'dateTimeOriginal'],
+          }),
+        }),
+      );
+    });
+
+    it('should relatively update assets and set a timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11, timeZone: 'UTC+5' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+            timeZone: 'UTC+5',
+          }),
+        }),
+      );
+    });
+
+    it('should set asset time zones to UTC', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], timeZone: 'UTC' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:11:00+00:00',
+            timeZone: 'UTC',
+          }),
+        }),
+      );
+    });
+
     it('should update dateTimeOriginal', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -428,6 +566,196 @@ describe(AssetService.name, () => {
           exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
         }),
       );
+    });
+
+    it('should update dateTimeOriginal with UTC time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
+  });
+
+  describe('upsertBulkMetadata', () => {
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const items = [{ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } }];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(1);
+      expect(metadata[0]).toEqual(
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } }),
+      );
+    });
+
+    it('should work on conflict', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'old-id' } });
+
+      // verify existing metadata
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'old-id' } }),
+      ]);
+
+      const items = [{ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'new-id' } }];
+      await sut.upsertBulkMetadata(auth, { items });
+
+      // verify updated metadata
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'new-id' } }),
+      ]);
+    });
+
+    it('should work with multiple assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+
+      const items = [
+        { assetId: asset1.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset2.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } },
+      ];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata1 = await ctx.get(AssetRepository).getMetadata(asset1.id);
+      expect(metadata1).toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } }),
+      ]);
+
+      const metadata2 = await ctx.get(AssetRepository).getMetadata(asset2.id);
+      expect(metadata2).toEqual([
+        expect.objectContaining({ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } }),
+      ]);
+    });
+
+    it('should work with multiple metadata for the same asset', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const items = [
+        { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
+        { assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } },
+      ];
+
+      await sut.upsertBulkMetadata(auth, { items });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: AssetMetadataKey.MobileApp,
+            value: { iCloudId: 'id1' },
+          }),
+          expect.objectContaining({
+            key: 'some-other-key',
+            value: { foo: 'bar' },
+          }),
+        ]),
+      );
+    });
+  });
+
+  describe('deleteBulkMetadata', () => {
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'foo' } });
+
+      await sut.deleteBulkMetadata(auth, { items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }] });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(0);
+    });
+
+    it('should work even if the item does not exist', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await sut.deleteBulkMetadata(auth, { items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }] });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata.length).toEqual(0);
+    });
+
+    it('should work with multiple assets', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset1.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset2.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id2' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [
+          { assetId: asset1.id, key: AssetMetadataKey.MobileApp },
+          { assetId: asset2.id, key: AssetMetadataKey.MobileApp },
+        ],
+      });
+
+      await expect(ctx.get(AssetRepository).getMetadata(asset1.id)).resolves.toEqual([]);
+      await expect(ctx.get(AssetRepository).getMetadata(asset2.id)).resolves.toEqual([]);
+    });
+
+    it('should work with multiple metadata for the same asset', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      await ctx.newMetadata({ assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [
+          { assetId: asset.id, key: AssetMetadataKey.MobileApp },
+          { assetId: asset.id, key: 'some-other-key' },
+        ],
+      });
+
+      await expect(ctx.get(AssetRepository).getMetadata(asset.id)).resolves.toEqual([]);
+    });
+
+    it('should not delete unspecified keys', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newMetadata({ assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } });
+      await ctx.newMetadata({ assetId: asset.id, key: 'some-other-key', value: { foo: 'bar' } });
+
+      await sut.deleteBulkMetadata(auth, {
+        items: [{ assetId: asset.id, key: AssetMetadataKey.MobileApp }],
+      });
+
+      const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
+      expect(metadata).toEqual([expect.objectContaining({ key: 'some-other-key', value: { foo: 'bar' } })]);
     });
   });
 });

@@ -15,6 +15,7 @@ from
   "asset_ocr"
 where
   "asset_ocr"."assetId" = $1
+  and "asset_ocr"."isVisible" = $2
 
 -- OcrRepository.upsert
 with
@@ -66,3 +67,12 @@ with
   )
 select
   1 as "dummy"
+
+-- OcrRepository.updateOcrVisibilities
+begin
+update "ocr_search"
+set
+  "text" = $1
+where
+  "assetId" = $2
+commit

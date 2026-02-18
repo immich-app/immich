@@ -102,25 +102,21 @@ export class DayGroup {
   }
 
   runAssetCallback(ids: Set<string>, callback: (asset: TimelineAsset) => void | { remove?: boolean }) {
-    if (ids.size === 0) {
-      return {
-        moveAssets: [] as MoveAsset[],
-        processedIds: new SvelteSet<string>(),
-        unprocessedIds: ids,
-        changedGeometry: false,
-      };
-    }
     const unprocessedIds = new SvelteSet<string>(ids);
     const processedIds = new SvelteSet<string>();
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;
-    for (const assetId of unprocessedIds) {
-      const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
-      if (index === -1) {
+
+    if (ids.size === 0) {
+      return { moveAssets, processedIds, unprocessedIds, changedGeometry };
+    }
+
+    for (let index = this.viewerAssets.length - 1; index >= 0; index--) {
+      const { id: assetId, asset } = this.viewerAssets[index];
+      if (!ids.has(assetId)) {
         continue;
       }
 
-      const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
       const callbackResult = callback(asset);
       let remove = (callbackResult as { remove?: boolean } | undefined)?.remove ?? false;

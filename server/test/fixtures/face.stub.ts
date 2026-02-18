@@ -1,13 +1,13 @@
 import { SourceType } from 'src/enum';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { personStub } from 'test/fixtures/person.stub';
 
 export const faceStub = {
   face1: Object.freeze({
     id: 'assetFaceId1',
-    assetId: assetStub.image.id,
+    assetId: 'asset-id',
     asset: {
-      ...assetStub.image,
+      ...AssetFactory.create({ id: 'asset-id' }),
       libraryId: null,
       updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
       stackId: null,
@@ -25,11 +25,12 @@ export const faceStub = {
     deletedAt: new Date(),
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   primaryFace1: Object.freeze({
     id: 'assetFaceId2',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: personStub.primaryPerson.id,
     person: personStub.primaryPerson,
     boundingBoxX1: 0,
@@ -43,11 +44,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   mergeFace1: Object.freeze({
     id: 'assetFaceId3',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: personStub.mergePerson.id,
     person: personStub.mergePerson,
     boundingBoxX1: 0,
@@ -61,11 +63,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   noPerson1: Object.freeze({
     id: 'assetFaceId8',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: null,
     person: null,
     boundingBoxX1: 0,
@@ -79,11 +82,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   noPerson2: Object.freeze({
     id: 'assetFaceId9',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: null,
     person: null,
     boundingBoxX1: 0,
@@ -97,11 +101,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   fromExif1: Object.freeze({
     id: 'assetFaceId9',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: personStub.randomPerson.id,
     person: personStub.randomPerson,
     boundingBoxX1: 100,
@@ -114,11 +119,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   fromExif2: Object.freeze({
     id: 'assetFaceId9',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: personStub.randomPerson.id,
     person: personStub.randomPerson,
     boundingBoxX1: 0,
@@ -131,11 +137,12 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
   withBirthDate: Object.freeze({
     id: 'assetFaceId10',
-    assetId: assetStub.image.id,
-    asset: assetStub.image,
+    assetId: 'asset-id',
+    asset: AssetFactory.create({ id: 'asset-id' }),
     personId: personStub.withBirthDate.id,
     person: personStub.withBirthDate,
     boundingBoxX1: 0,
@@ -148,5 +155,6 @@ export const faceStub = {
     deletedAt: null,
     updatedAt: new Date('2023-01-01T00:00:00Z'),
     updateId: '0d1173e3-4d80-4d76-b41e-57d56de21125',
+    isVisible: true,
   }),
 };

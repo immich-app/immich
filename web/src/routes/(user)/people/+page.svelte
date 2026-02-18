@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
@@ -9,9 +8,10 @@
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
+  import { QueryParameter, SessionStorageKey } from '$lib/constants';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
+  import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { handlePromiseError } from '$lib/utils';
@@ -205,24 +205,7 @@
   };
 
   const handleMergePeople = async (detail: PersonResponseDto) => {
-    await goto(
-      `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
-    );
-  };
-
-  const handleChangeBirthDate = async (person: PersonResponseDto) => {
-    const updatedPerson = await modalManager.show(PersonEditBirthDateModal, { person });
-
-    if (!updatedPerson) {
-      return;
-    }
-
-    people = people.map((person: PersonResponseDto) => {
-      if (person.id === updatedPerson.id) {
-        return updatedPerson;
-      }
-      return person;
-    });
+    await goto(Route.viewPerson(detail, { previousRoute: Route.people(), action: 'merge' }));
   };
 
   const onResetSearchBar = async () => {
@@ -230,6 +213,7 @@
   };
 
   let people = $derived(data.people.people);
+
   let visiblePeople = $derived(people.filter((people) => !people.isHidden));
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
@@ -293,9 +277,20 @@
       (person) => person.name.toLowerCase() === name.toLowerCase() && person.id !== personId && person.name,
     );
   };
+
+  const onPersonUpdate = (response: PersonResponseDto) => {
+    people = people.map((person: PersonResponseDto) => {
+      if (person.id === response.id) {
+        return response;
+      }
+      return person;
+    });
+  };
 </script>
 
 <svelte:window bind:innerHeight />
+
+<OnEvents {onPersonUpdate} />
 
 <UserPageLayout
   title={$t('people')}
@@ -304,7 +299,7 @@
     [
       scrollMemory,
       {
-        routeStartsWith: AppRoute.PEOPLE,
+        routeStartsWith: Route.people(),
         beforeSave: () => {
           if (currentPage) {
             sessionStorage.setItem(SessionStorageKey.INFINITE_SCROLL_PAGE, currentPage.toString());
@@ -353,7 +348,6 @@
         >
           <PeopleCard
             {person}
-            onSetBirthDate={() => handleChangeBirthDate(person)}
             onMergePeople={() => handleMergePeople(person)}
             onHidePerson={() => handleHidePerson(person)}
             onToggleFavorite={() => handleToggleFavorite(person)}
@@ -386,18 +380,17 @@
 
 {#if selectHidden}
   <dialog
-    open
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
-    class="absolute start-0 top-0 h-full w-full bg-light"
-    aria-modal="true"
+    class="fixed inset-0 h-full w-full max-w-none max-h-none bg-light"
     aria-labelledby="manage-visibility-title"
-    use:focusTrap
+    {@attach (dialog) => dialog.showModal()}
   >
     <ManagePeopleVisibility
-      bind:people
+      {people}
       totalPeopleCount={data.people.total}
       titleId="manage-visibility-title"
       onClose={() => (selectHidden = false)}
+      onUpdate={(updatedPeople) => (people = updatedPeople.slice())}
       {loadNextPage}
     />
   </dialog>

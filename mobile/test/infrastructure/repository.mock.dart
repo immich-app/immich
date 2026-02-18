@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
@@ -45,6 +46,8 @@ class MockStorageRepository extends Mock implements StorageRepository {}
 class MockDriftBackupRepository extends Mock implements DriftBackupRepository {}
 
 class MockUploadRepository extends Mock implements UploadRepository {}
+
+class MockSyncMigrationRepository extends Mock implements SyncMigrationRepository {}
 
 // API Repos
 class MockUserApiRepository extends Mock implements UserApiRepository {}
