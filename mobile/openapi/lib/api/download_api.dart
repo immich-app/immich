@@ -24,17 +24,17 @@ class DownloadApi {
   ///
   /// Parameters:
   ///
-  /// * [DownloadArchiveAssetsDto] downloadArchiveAssetsDto (required):
+  /// * [DownloadArchiveDto] downloadArchiveDto (required):
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveAssetsDto downloadArchiveAssetsDto, { String? key, String? slug, }) async {
+  Future<Response> downloadArchiveWithHttpInfo(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/download/archive';
 
     // ignore: prefer_final_locals
-    Object? postBody = downloadArchiveAssetsDto;
+    Object? postBody = downloadArchiveDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -67,13 +67,13 @@ class DownloadApi {
   ///
   /// Parameters:
   ///
-  /// * [DownloadArchiveAssetsDto] downloadArchiveAssetsDto (required):
+  /// * [DownloadArchiveDto] downloadArchiveDto (required):
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> downloadArchive(DownloadArchiveAssetsDto downloadArchiveAssetsDto, { String? key, String? slug, }) async {
-    final response = await downloadArchiveWithHttpInfo(downloadArchiveAssetsDto,  key: key, slug: slug, );
+  Future<MultipartFile?> downloadArchive(DownloadArchiveDto downloadArchiveDto, { String? key, String? slug, }) async {
+    final response = await downloadArchiveWithHttpInfo(downloadArchiveDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

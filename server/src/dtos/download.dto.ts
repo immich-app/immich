@@ -34,7 +34,7 @@ export class DownloadArchiveInfo {
   assetIds!: string[];
 }
 
-export class DownloadArchiveAssetsDto extends AssetIdsDto {
+export class DownloadArchiveDto extends AssetIdsDto {
   @ValidateBoolean({ optional: true, description: 'Download edited asset if available' })
   edited?: boolean;
 }

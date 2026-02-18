@@ -1013,7 +1013,7 @@ export class AssetRepository {
       .selectFrom('asset')
       .select('asset.id')
       .select('originalFileName')
-      .where('asset.id', '=', anyUuid(ids))
+      .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
         qb
           .leftJoin('asset_file', (join) =>
@@ -1028,12 +1028,12 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, true] })
-  async getForOriginal(id: string, isEdited: boolean) {
+  getForOriginal(id: string, isEdited: boolean) {
     return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, true] })
-  async getForOriginals(ids: string[], isEdited: boolean) {
+  @GenerateSql({ params: [[DummyValue.UUID], true] })
+  getForOriginals(ids: string[], isEdited: boolean) {
     return this.buildGetForOriginal(ids, isEdited).execute();
   }
 

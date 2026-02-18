@@ -5052,7 +5052,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DownloadArchiveAssetsDto"
+                "$ref": "#/components/schemas/DownloadArchiveDto"
               }
             }
           },
@@ -17662,7 +17662,7 @@
         },
         "type": "object"
       },
-      "DownloadArchiveAssetsDto": {
+      "DownloadArchiveDto": {
         "properties": {
           "assetIds": {
             "description": "Asset IDs",

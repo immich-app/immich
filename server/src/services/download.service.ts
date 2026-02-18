@@ -2,12 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthDto } from 'src/dtos/auth.dto';
-import {
-  DownloadArchiveAssetsDto,
-  DownloadArchiveInfo,
-  DownloadInfoDto,
-  DownloadResponseDto,
-} from 'src/dtos/download.dto';
+import { DownloadArchiveDto, DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
@@ -84,11 +79,11 @@ export class DownloadService extends BaseService {
     return { totalSize, archives };
   }
 
-  async downloadArchive(auth: AuthDto, dto: DownloadArchiveAssetsDto): Promise<ImmichReadStream> {
+  async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
-    const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited!);
+    const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited ?? false);
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
@@ -108,11 +103,7 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = originalPath;
-
-      if (dto.edited && editedPath) {
-        realpath = editedPath;
-      }
+      let realpath = dto.edited && editedPath ? editedPath : originalPath;
 
       try {
         realpath = await this.storageRepository.realpath(realpath);

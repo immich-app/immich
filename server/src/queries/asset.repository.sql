@@ -597,7 +597,7 @@ from
   and "asset_file"."isEdited" = $1
   and "asset_file"."type" = $2
 where
-  "asset"."id" = any ($3::uuid[])
+  "asset"."id" in ($3)
 
 -- AssetRepository.getForOriginals
 select
@@ -611,7 +611,7 @@ from
   and "asset_file"."isEdited" = $1
   and "asset_file"."type" = $2
 where
-  "asset"."id" = any ($3::uuid[])
+  "asset"."id" in ($3)
 
 -- AssetRepository.getForThumbnail
 select
