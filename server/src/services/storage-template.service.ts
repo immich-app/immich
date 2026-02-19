@@ -309,11 +309,12 @@ export class StorageTemplateService extends BaseService {
       let albumName = null;
       let albumStartDate = null;
       let albumEndDate = null;
+      const assetForMetadata = stillPhoto || asset;
+
       if (this.template.needsAlbum) {
         // For motion videos, use the still photo's album information since motion videos
         // don't have album metadata attached directly
-        const albumLookupAsset = stillPhoto || asset;
-        const albums = await this.albumRepository.getByAssetId(albumLookupAsset.ownerId, albumLookupAsset.id);
+        const albums = await this.albumRepository.getByAssetId(assetForMetadata.ownerId, assetForMetadata.id);
         const album = albums?.[0];
         if (album) {
           albumName = album.albumName || null;
@@ -328,18 +329,16 @@ export class StorageTemplateService extends BaseService {
 
       // For motion videos that are part of live photos, use the still photo's date
       // to ensure both parts end up in the same folder
-      const assetForDateTemplate = stillPhoto || asset;
-
       const storagePath = this.render(this.template.compiled, {
-        asset: assetForDateTemplate,
+        asset: assetForMetadata,
         filename: sanitized,
         extension,
         albumName,
         albumStartDate,
         albumEndDate,
-        make: assetForDateTemplate.make,
-        model: assetForDateTemplate.model,
-        lensModel: assetForDateTemplate.lensModel,
+        make: assetForMetadata.make,
+        model: assetForMetadata.model,
+        lensModel: assetForMetadata.lensModel,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;

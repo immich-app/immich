@@ -633,6 +633,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."deletedAt" is null
+  and "asset"."visibility" != $2
 
 -- AssetJobRepository.streamForDeletedJob
 select
