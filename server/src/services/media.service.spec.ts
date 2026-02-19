@@ -21,8 +21,8 @@ import {
 } from 'src/enum';
 import { MediaService } from 'src/services/media.service';
 import { JobCounts, RawImageInfo } from 'src/types';
+import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
-import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub, personThumbnailStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
@@ -108,7 +108,7 @@ describe(MediaService.name, () => {
     it('should queue all people with missing thumbnail path', async () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([AssetFactory.create()]));
       mocks.person.getAll.mockReturnValue(makeStream([personStub.noThumbnail, personStub.noThumbnail]));
-      mocks.person.getRandomFace.mockResolvedValueOnce(faceStub.face1);
+      mocks.person.getRandomFace.mockResolvedValueOnce(AssetFaceFactory.create());
 
       await sut.handleQueueGenerateThumbnails({ force: false });
 
