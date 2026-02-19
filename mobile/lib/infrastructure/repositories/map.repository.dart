@@ -27,8 +27,8 @@ class DriftMapRepository extends DriftDatabaseRepository {
         condition = condition & _db.remoteAssetEntity.isFavorite.equals(true);
       }
 
-      final from = options.customTimeRange.from;
-      final to = options.customTimeRange.to;
+      final from = options.timeRange.from;
+      final to = options.timeRange.to;
 
       if (from != null || to != null) {
         if (from != null) {
