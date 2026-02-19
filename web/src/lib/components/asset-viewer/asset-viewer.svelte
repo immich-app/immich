@@ -398,7 +398,7 @@
 
   const onAssetUpdate = (update: AssetResponseDto) => {
     if (asset.id === update.id) {
-      cursor.current = update;
+      cursor = { ...cursor, current: update };
     }
   };
 
