@@ -167,9 +167,7 @@
       }),
     );
 
-    if (!sharedLink) {
-      await handleGetAllAlbums();
-    }
+    await onAlbumAddAssets();
   });
 
   onDestroy(() => {
@@ -182,7 +180,7 @@
     syncAssetViewerOpenClass(false);
   });
 
-  const handleGetAllAlbums = async () => {
+  const onAlbumAddAssets = async () => {
     if (authManager.isSharedLink) {
       return;
     }
@@ -303,10 +301,6 @@
   };
   const handleAction = async (action: Action) => {
     switch (action.type) {
-      case AssetAction.ADD_TO_ALBUM: {
-        await handleGetAllAlbums();
-        break;
-      }
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         eventManager.emit('AssetsDelete', [asset.id]);
@@ -369,7 +363,7 @@
 
   const refresh = async () => {
     await refreshStack();
-    await handleGetAllAlbums();
+    await onAlbumAddAssets();
     ocrManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
@@ -441,7 +435,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
-<OnEvents {onAssetReplace} {onAssetUpdate} />
+<OnEvents {onAssetReplace} {onAssetUpdate} {onAlbumAddAssets} />
 
 <svelte:document bind:fullscreenElement />
 

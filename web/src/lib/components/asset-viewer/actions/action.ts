@@ -1,6 +1,6 @@
 import type { AssetAction } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto, StackResponseDto } from '@immich/sdk';
+import type { AssetResponseDto, PersonResponseDto, StackResponseDto } from '@immich/sdk';
 
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
@@ -8,7 +8,6 @@ type ActionMap = {
   [AssetAction.TRASH]: { asset: TimelineAsset };
   [AssetAction.DELETE]: { asset: TimelineAsset };
   [AssetAction.RESTORE]: { asset: TimelineAsset };
-  [AssetAction.ADD_TO_ALBUM]: { asset: TimelineAsset; album: AlbumResponseDto };
   [AssetAction.STACK]: { stack: StackResponseDto };
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.SET_STACK_PRIMARY_ASSET]: { stack: StackResponseDto };

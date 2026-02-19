@@ -3,7 +3,6 @@
   import ActionButton from '$lib/components/ActionButton.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
@@ -102,6 +101,7 @@
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    AddToAlbum,
     ZoomIn,
     ZoomOut,
     Copy,
@@ -129,6 +129,7 @@
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    AddToAlbum,
     ZoomIn,
     ZoomOut,
     Copy,
@@ -181,13 +182,11 @@
         <ActionMenuItem action={Download} />
         <ActionMenuItem action={DownloadOriginal} />
 
-        {#if !isLocked}
-          {#if asset.isTrashed}
-            <RestoreAction {asset} {onAction} />
-          {:else}
-            <AddToAlbumAction {asset} {onAction} />
-          {/if}
+        {#if !isLocked && asset.isTrashed}
+          <RestoreAction {asset} {onAction} />
         {/if}
+
+        <ActionMenuItem action={AddToAlbum} />
 
         {#if isOwner}
           <AddToStackAction {asset} {stack} {onAction} />
