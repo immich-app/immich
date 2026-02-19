@@ -17,7 +17,7 @@ import { Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import micromatch from 'micromatch';
-import { Stats, createReadStream } from 'node:fs';
+import { Stats, createReadStream, existsSync } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
@@ -446,7 +446,20 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
+export const findSidecar = async (filepath: string): Promise<string | null> => {
+  const assetPath = path.parse(filepath);
+  const noExtension = path.join(assetPath.dir, assetPath.name);
+
+  // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+  for (const sidecarPath of [`${noExtension}.xmp`, `${filepath}.xmp`]) {
+    if (existsSync(sidecarPath)) {
+      return sidecarPath;
+    }
+  }
+  return null;
+};
+
+export const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
   let fileCount = 0;
   if (options.delete) {
     fileCount += uploaded.length;
@@ -474,7 +487,15 @@ const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: Uplo
 
   const chunkDelete = async (files: Asset[]) => {
     for (const assetBatch of chunk(files, options.concurrency)) {
-      await Promise.all(assetBatch.map((input: Asset) => unlink(input.filepath)));
+      await Promise.all(
+        assetBatch.map(async (input: Asset) => {
+          await unlink(input.filepath);
+          const sidecarPath = await findSidecar(input.filepath);
+          if (sidecarPath) {
+            await unlink(sidecarPath);
+          }
+        }),
+      );
       deletionProgress.update(assetBatch.length);
     }
   };
