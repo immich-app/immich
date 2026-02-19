@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
@@ -147,6 +148,7 @@
   };
 
   onMount(async () => {
+    syncAssetViewerOpenClass(true);
     unsubscribes.push(
       slideshowState.subscribe((value) => {
         if (value === SlideshowState.PlaySlideshow) {
@@ -177,6 +179,7 @@
 
     activityManager.reset();
     assetViewerManager.closeEditor();
+    syncAssetViewerOpenClass(false);
   });
 
   const handleGetAllAlbums = async () => {
@@ -358,6 +361,12 @@
       handlePromiseError(activityManager.init(album.id, asset.id));
     }
   });
+
+  const syncAssetViewerOpenClass = (isOpen: boolean) => {
+    if (browser) {
+      document.body.classList.toggle('asset-viewer-open', isOpen);
+    }
+  };
 
   const refresh = async () => {
     await refreshStack();
