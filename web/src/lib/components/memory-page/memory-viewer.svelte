@@ -48,7 +48,6 @@
     mdiImageSearch,
     mdiPause,
     mdiPlay,
-    mdiPlus,
     mdiSelectAll,
     mdiVolumeHigh,
     mdiVolumeOff,
@@ -339,10 +338,7 @@
         onclick={handleSelectAll}
       />
 
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
+      <AddToAlbum />
 
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
 
