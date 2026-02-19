@@ -14,6 +14,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { DB } from 'src/schema';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
+import { AssetOwnerFilter, PartnerDateConstraint } from 'src/utils/asset.util';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -78,10 +79,11 @@ export class MapRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
   getMapMarkers(
-    ownerIds: string[],
+    ownerFilter: AssetOwnerFilter,
     albumIds: string[],
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
+    const { userIds: ownerIds = [], partnerDateConstraints } = ownerFilter;
     return this.db
       .selectFrom('asset')
       .innerJoin('asset_exif', (builder) =>
@@ -119,6 +121,12 @@ export class MapRepository {
 
         if (ownerIds.length > 0) {
           expression.push(eb('ownerId', 'in', ownerIds));
+        }
+
+        if (partnerDateConstraints?.length) {
+          for (const pc of partnerDateConstraints) {
+            expression.push(eb.and([eb('ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]));
+          }
         }
 
         if (albumIds.length > 0) {

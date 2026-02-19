@@ -75,7 +75,10 @@ describe(AssetService.name, () => {
 
       await sut.getRandom(authStub.admin, 1);
 
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
+      expect(mocks.asset.getRandom).toHaveBeenCalledWith(
+        { userIds: [authStub.admin.user.id], partnerDateConstraints: [] },
+        1,
+      );
     });
 
     it('should not include partner assets if not in timeline', async () => {
@@ -87,7 +90,7 @@ describe(AssetService.name, () => {
 
       await sut.getRandom(auth, 1);
 
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id], 1);
+      expect(mocks.asset.getRandom).toHaveBeenCalledWith({ userIds: [auth.user.id], partnerDateConstraints: [] }, 1);
     });
 
     it('should include partner assets if in timeline', async () => {
@@ -99,7 +102,10 @@ describe(AssetService.name, () => {
 
       await sut.getRandom(auth, 1);
 
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id, partner.sharedById], 1);
+      expect(mocks.asset.getRandom).toHaveBeenCalledWith(
+        { userIds: [auth.user.id, partner.sharedById], partnerDateConstraints: [] },
+        1,
+      );
     });
   });
 

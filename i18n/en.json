@@ -1670,6 +1670,8 @@
   "partner_can_access": "{partner} can access",
   "partner_can_access_assets": "All your photos and videos except those in Archived and Deleted",
   "partner_can_access_location": "The location where your photos were taken",
+  "partner_sharing_from_date": "Share from date",
+  "partner_sharing_from_date_description": "Only share photos and videos taken from this date onward",
   "partner_list_user_photos": "{user}'s photos",
   "partner_list_view_all": "View all",
   "partner_page_empty_message": "Your photos are not yet shared with any partner.",

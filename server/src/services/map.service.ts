@@ -2,15 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
 import { BaseService } from 'src/services/base.service';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { AssetOwnerFilter, getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
 
 @Injectable()
 export class MapService extends BaseService {
   async getMapMarkers(auth: AuthDto, options: MapMarkerDto): Promise<MapMarkerResponseDto[]> {
-    const userIds = [auth.user.id];
+    const ownerFilter: AssetOwnerFilter = { userIds: [auth.user.id] };
     if (options.withPartners) {
-      const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
-      userIds.push(...partnerIds);
+      const partners = await getMyPartners({ userId: auth.user.id, repository: this.partnerRepository });
+      for (const partner of partners) {
+        if (partner.shareFromDate) {
+          (ownerFilter.partnerDateConstraints ??= []).push({
+            userId: partner.id,
+            shareFromDate: partner.shareFromDate,
+          });
+        } else {
+          ownerFilter.userIds!.push(partner.id);
+        }
+      }
     }
 
     // TODO convert to SQL join
@@ -23,7 +32,7 @@ export class MapService extends BaseService {
       albumIds.push(...ownedAlbums.map((album) => album.id), ...sharedAlbums.map((album) => album.id));
     }
 
-    return this.mapRepository.getMapMarkers(userIds, albumIds, options);
+    return this.mapRepository.getMapMarkers(ownerFilter, albumIds, options);
   }
 
   async reverseGeocode(dto: MapReverseGeocodeDto) {

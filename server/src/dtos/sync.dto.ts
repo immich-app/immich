@@ -106,6 +106,8 @@ export class SyncPartnerV1 {
   sharedWithId!: string;
   @ApiProperty({ description: 'In timeline' })
   inTimeline!: boolean;
+  @ApiProperty({ description: 'Share from date' })
+  shareFromDate!: Date | null;
 }
 
 @ExtraModel()

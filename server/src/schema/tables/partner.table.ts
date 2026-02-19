@@ -44,6 +44,9 @@ export class PartnerTable {
   @Column({ type: 'boolean', default: false })
   inTimeline!: Generated<boolean>;
 
+  @Column({ type: 'date', nullable: true })
+  shareFromDate!: Date | null;
+
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

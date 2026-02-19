@@ -8,6 +8,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetOwnerFilter, PartnerDateConstraint } from 'src/utils/asset.util';
 import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -18,10 +19,9 @@ export interface SearchAssetIdOptions {
   id?: string;
 }
 
-export interface SearchUserIdOptions {
+export interface SearchUserIdOptions extends AssetOwnerFilter {
   deviceId?: string;
   libraryId?: string | null;
-  userIds?: string[];
 }
 
 export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
@@ -390,14 +390,25 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  getAssetsByCity(userIds: string[]) {
+  getAssetsByCity(ownerFilter: AssetOwnerFilter) {
+    const { userIds = [], partnerDateConstraints } = ownerFilter;
     return this.db
       .withRecursive('cte', (qb) => {
         const base = qb
           .selectFrom('asset_exif')
           .select(['city', 'assetId'])
           .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-          .where('asset.ownerId', '=', anyUuid(userIds))
+          .$if(!partnerDateConstraints?.length, (qb) => qb.where('asset.ownerId', '=', anyUuid(userIds)))
+          .$if(!!partnerDateConstraints?.length, (qb) =>
+            qb.where((eb) =>
+              eb.or([
+                ...(userIds.length ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
+                ...partnerDateConstraints!.map((pc) =>
+                  eb.and([eb('asset.ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+                ),
+              ]),
+            ),
+          )
           .where('asset.visibility', '=', AssetVisibility.Timeline)
           .where('asset.type', '=', AssetType.Image)
           .where('asset.deletedAt', 'is', null)
@@ -413,7 +424,20 @@ export class SearchRepository {
                 .selectFrom('asset_exif')
                 .select(['city', 'assetId'])
                 .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-                .where('asset.ownerId', '=', anyUuid(userIds))
+                .$if(!partnerDateConstraints?.length, (qb) => qb.where('asset.ownerId', '=', anyUuid(userIds)))
+                .$if(!!partnerDateConstraints?.length, (qb) =>
+                  qb.where((eb) =>
+                    eb.or([
+                      ...(userIds.length ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
+                      ...partnerDateConstraints!.map((pc) =>
+                        eb.and([
+                          eb('asset.ownerId', '=', pc.userId),
+                          eb('asset.localDateTime', '>=', pc.shareFromDate),
+                        ]),
+                      ),
+                    ]),
+                  ),
+                )
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
                 .where('asset.type', '=', AssetType.Image)
                 .where('asset.deletedAt', 'is', null)
@@ -448,14 +472,14 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const res = await this.getExifField('country', userIds).execute();
+  async getCountries(ownerFilter: AssetOwnerFilter): Promise<string[]> {
+    const res = await this.getExifField('country', ownerFilter).execute();
     return res.map((row) => row.country!);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds)
+  async getStates(ownerFilter: AssetOwnerFilter, { country }: GetStatesOptions): Promise<string[]> {
+    const res = await this.getExifField('state', ownerFilter)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .execute();
 
@@ -463,8 +487,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds)
+  async getCities(ownerFilter: AssetOwnerFilter, { country, state }: GetCitiesOptions): Promise<string[]> {
+    const res = await this.getExifField('city', ownerFilter)
       .$if(!!country, (qb) => qb.where('country', '=', country!))
       .$if(!!state, (qb) => qb.where('state', '=', state!))
       .execute();
@@ -473,8 +497,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
-    const res = await this.getExifField('make', userIds)
+  async getCameraMakes(ownerFilter: AssetOwnerFilter, { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
+    const res = await this.getExifField('make', ownerFilter)
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -483,8 +507,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('model', userIds)
+  async getCameraModels(ownerFilter: AssetOwnerFilter, { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('model', ownerFilter)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
@@ -493,8 +517,8 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraLensModels(userIds: string[], { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds)
+  async getCameraLensModels(ownerFilter: AssetOwnerFilter, { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('lensModel', ownerFilter)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .execute();
@@ -504,14 +528,25 @@ export class SearchRepository {
 
   private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
     field: K,
-    userIds: string[],
+    ownerFilter: AssetOwnerFilter,
   ) {
+    const { userIds, partnerDateConstraints } = ownerFilter;
     return this.db
       .selectFrom('asset_exif')
       .select(field)
       .distinctOn(field)
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
-      .where('ownerId', '=', anyUuid(userIds))
+      .$if(!partnerDateConstraints?.length, (qb) => qb.where('ownerId', '=', anyUuid(userIds!)))
+      .$if(!!partnerDateConstraints?.length, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            ...(userIds?.length ? [eb('ownerId', '=', anyUuid(userIds))] : []),
+            ...partnerDateConstraints!.map((pc) =>
+              eb.and([eb('ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+            ),
+          ]),
+        ),
+      )
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);

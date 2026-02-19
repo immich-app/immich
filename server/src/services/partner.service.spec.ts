@@ -61,6 +61,25 @@ describe(PartnerService.name, () => {
       });
     });
 
+    it('should create a partner with shareFromDate', async () => {
+      const user1 = factory.user();
+      const user2 = factory.user();
+      const shareFromDate = new Date('2024-01-01');
+      const partner = factory.partner({ sharedBy: user1, sharedWith: user2, shareFromDate });
+      const auth = factory.auth({ user: { id: user1.id } });
+
+      mocks.partner.get.mockResolvedValue(void 0);
+      mocks.partner.create.mockResolvedValue(partner);
+
+      await expect(sut.create(auth, { sharedWithId: user2.id, shareFromDate })).resolves.toBeDefined();
+
+      expect(mocks.partner.create).toHaveBeenCalledWith({
+        sharedById: partner.sharedById,
+        sharedWithId: partner.sharedWithId,
+        shareFromDate,
+      });
+    });
+
     it('should throw an error when the partner already exists', async () => {
       const user1 = factory.user();
       const user2 = factory.user();
@@ -109,19 +128,79 @@ describe(PartnerService.name, () => {
       await expect(sut.update(auth, user2.id, { inTimeline: false })).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should update partner', async () => {
+    it('should update inTimeline from receiver', async () => {
+      const user1 = factory.user();
+      const user2 = factory.user();
+      const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
+      const auth = factory.auth({ user: { id: user2.id } });
+
+      mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user1.id]));
+      mocks.partner.update.mockResolvedValue(partner);
+
+      await expect(sut.update(auth, user1.id, { inTimeline: true })).resolves.toBeDefined();
+      expect(mocks.partner.update).toHaveBeenCalledWith(
+        { sharedById: user1.id, sharedWithId: user2.id },
+        { inTimeline: true },
+      );
+    });
+
+    it('should update shareFromDate from sharer', async () => {
+      const user1 = factory.user();
+      const user2 = factory.user();
+      const shareFromDate = new Date('2024-06-01');
+      const partner = factory.partner({ sharedBy: user1, sharedWith: user2, shareFromDate });
+      const auth = factory.auth({ user: { id: user1.id } });
+
+      mocks.partner.get.mockResolvedValue(partner);
+      mocks.partner.update.mockResolvedValue(partner);
+
+      await expect(sut.update(auth, user2.id, { shareFromDate })).resolves.toBeDefined();
+      expect(mocks.partner.update).toHaveBeenCalledWith(
+        { sharedById: user1.id, sharedWithId: user2.id },
+        { shareFromDate },
+      );
+    });
+
+    it('should clear shareFromDate', async () => {
       const user1 = factory.user();
       const user2 = factory.user();
       const partner = factory.partner({ sharedBy: user1, sharedWith: user2 });
       const auth = factory.auth({ user: { id: user1.id } });
 
-      mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user2.id]));
+      mocks.partner.get.mockResolvedValue(partner);
       mocks.partner.update.mockResolvedValue(partner);
 
-      await expect(sut.update(auth, user2.id, { inTimeline: true })).resolves.toBeDefined();
+      await expect(sut.update(auth, user2.id, { shareFromDate: null })).resolves.toBeDefined();
       expect(mocks.partner.update).toHaveBeenCalledWith(
-        { sharedById: user2.id, sharedWithId: user1.id },
-        { inTimeline: true },
+        { sharedById: user1.id, sharedWithId: user2.id },
+        { shareFromDate: null },
+      );
+    });
+
+    it('should reject when both inTimeline and shareFromDate are set', async () => {
+      const auth = factory.auth();
+      const user2 = factory.user();
+
+      await expect(
+        sut.update(auth, user2.id, { inTimeline: true, shareFromDate: new Date('2024-01-01') }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject when no update fields are provided', async () => {
+      const auth = factory.auth();
+      const user2 = factory.user();
+
+      await expect(sut.update(auth, user2.id, {})).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should reject shareFromDate update when partner not found', async () => {
+      const auth = factory.auth();
+      const user2 = factory.user();
+
+      mocks.partner.get.mockResolvedValue(void 0);
+
+      await expect(sut.update(auth, user2.id, { shareFromDate: new Date('2024-01-01') })).rejects.toBeInstanceOf(
+        BadRequestException,
       );
     });
   });

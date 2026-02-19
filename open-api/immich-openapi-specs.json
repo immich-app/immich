@@ -19400,6 +19400,12 @@
       },
       "PartnerCreateDto": {
         "properties": {
+          "shareFromDate": {
+            "description": "Only share assets from this date onward",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "sharedWithId": {
             "description": "User ID to share with",
             "format": "uuid",
@@ -19452,6 +19458,11 @@
           "profileImagePath": {
             "description": "Profile image path",
             "type": "string"
+          },
+          "shareFromDate": {
+            "description": "Share assets from this date onward",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -19469,11 +19480,14 @@
           "inTimeline": {
             "description": "Show partner assets in timeline",
             "type": "boolean"
+          },
+          "shareFromDate": {
+            "description": "Only share assets from this date onward",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
           }
         },
-        "required": [
-          "inTimeline"
-        ],
         "type": "object"
       },
       "PeopleResponse": {
@@ -23276,6 +23290,12 @@
             "description": "In timeline",
             "type": "boolean"
           },
+          "shareFromDate": {
+            "description": "Share from date",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
           "sharedById": {
             "description": "Shared by ID",
             "type": "string"
@@ -23287,6 +23307,7 @@
         },
         "required": [
           "inTimeline",
+          "shareFromDate",
           "sharedById",
           "sharedWithId"
         ],

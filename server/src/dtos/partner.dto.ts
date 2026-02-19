@@ -1,18 +1,22 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UserResponseDto } from 'src/dtos/user.dto';
 import { PartnerDirection } from 'src/repositories/partner.repository';
-import { ValidateEnum, ValidateUUID } from 'src/validation';
+import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class PartnerCreateDto {
   @ValidateUUID({ description: 'User ID to share with' })
   sharedWithId!: string;
+
+  @ValidateDate({ optional: true, nullable: true, description: 'Only share assets from this date onward' })
+  shareFromDate?: Date | null;
 }
 
 export class PartnerUpdateDto {
-  @ApiProperty({ description: 'Show partner assets in timeline' })
-  @IsNotEmpty()
-  inTimeline!: boolean;
+  @ValidateBoolean({ optional: true, description: 'Show partner assets in timeline' })
+  inTimeline?: boolean;
+
+  @ValidateDate({ optional: true, nullable: true, description: 'Only share assets from this date onward' })
+  shareFromDate?: Date | null;
 }
 
 export class PartnerSearchDto {
@@ -23,4 +27,7 @@ export class PartnerSearchDto {
 export class PartnerResponseDto extends UserResponseDto {
   @ApiPropertyOptional({ description: 'Show in timeline' })
   inTimeline?: boolean;
+
+  @ApiPropertyOptional({ description: 'Share assets from this date onward' })
+  shareFromDate?: string | null;
 }

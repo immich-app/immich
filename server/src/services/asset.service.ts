@@ -37,13 +37,15 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import {
+  AssetOwnerFilter,
   getAssetFiles,
   getDimensions,
-  getMyPartnerIds,
+  getMyPartners,
   isPanorama,
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
+  PartnerDateConstraint,
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
@@ -61,13 +63,27 @@ export class AssetService extends BaseService {
   }
 
   async getRandom(auth: AuthDto, count: number): Promise<AssetResponseDto[]> {
-    const partnerIds = await getMyPartnerIds({
+    const ownerFilter = await this.buildOwnerFilter(auth);
+    const assets = await this.assetRepository.getRandom(ownerFilter, count);
+    return assets.map((a) => mapAsset(a, { auth }));
+  }
+
+  private async buildOwnerFilter(auth: AuthDto): Promise<AssetOwnerFilter> {
+    const userIds = [auth.user.id];
+    const partnerDateConstraints: PartnerDateConstraint[] = [];
+    const partners = await getMyPartners({
       userId: auth.user.id,
       repository: this.partnerRepository,
       timelineEnabled: true,
     });
-    const assets = await this.assetRepository.getRandom([auth.user.id, ...partnerIds], count);
-    return assets.map((a) => mapAsset(a, { auth }));
+    for (const partner of partners) {
+      if (partner.shareFromDate) {
+        partnerDateConstraints.push({ userId: partner.id, shareFromDate: partner.shareFromDate });
+      } else {
+        userIds.push(partner.id);
+      }
+    }
+    return { userIds, partnerDateConstraints };
   }
 
   async getUserAssetsByDeviceId(auth: AuthDto, deviceId: string) {

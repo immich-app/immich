@@ -5,7 +5,7 @@ import { AssetVisibility, Permission } from 'src/enum';
 import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
 
 @Injectable()
 export class TimelineService extends BaseService {
@@ -28,20 +28,37 @@ export class TimelineService extends BaseService {
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
     let userIds: string[] | undefined = undefined;
+    let partnerDateConstraints: PartnerDateConstraint[] | undefined = undefined;
 
     if (userId) {
-      userIds = [userId];
+      if (userId !== auth.user.id) {
+        const partner = await this.partnerRepository.get({ sharedById: userId, sharedWithId: auth.user.id });
+        if (partner?.shareFromDate) {
+          partnerDateConstraints = [{ userId, shareFromDate: partner.shareFromDate }];
+        } else {
+          userIds = [userId];
+        }
+      } else {
+        userIds = [userId];
+      }
+
       if (dto.withPartners) {
-        const partnerIds = await getMyPartnerIds({
+        const partners = await getMyPartners({
           userId: auth.user.id,
           repository: this.partnerRepository,
           timelineEnabled: true,
         });
-        userIds.push(...partnerIds);
+        for (const partner of partners) {
+          if (partner.shareFromDate) {
+            (partnerDateConstraints ??= []).push({ userId: partner.id, shareFromDate: partner.shareFromDate });
+          } else {
+            (userIds ??= []).push(partner.id);
+          }
+        }
       }
     }
 
-    return { ...options, userIds };
+    return { ...options, userIds, partnerDateConstraints };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

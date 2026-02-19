@@ -9,14 +9,17 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class PartnerService extends BaseService {
-  async create(auth: AuthDto, { sharedWithId }: PartnerCreateDto): Promise<PartnerResponseDto> {
+  async create(auth: AuthDto, {sharedWithId, shareFromDate}: PartnerCreateDto): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
     const exists = await this.partnerRepository.get(partnerId);
     if (exists) {
       throw new BadRequestException(`Partner already exists`);
     }
 
-    const partner = await this.partnerRepository.create(partnerId);
+    const partner = await this.partnerRepository.create({
+      ...partnerId,
+      ...(shareFromDate !== undefined && { shareFromDate }),
+    });
     return this.mapPartner(partner, PartnerDirection.SharedBy);
   }
 
@@ -39,12 +42,29 @@ export class PartnerService extends BaseService {
       .map((partner) => this.mapPartner(partner, direction));
   }
 
-  async update(auth: AuthDto, sharedById: string, dto: PartnerUpdateDto): Promise<PartnerResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.PartnerUpdate, ids: [sharedById] });
-    const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
+  async update(auth: AuthDto, id: string, dto: PartnerUpdateDto): Promise<PartnerResponseDto> {
+    if (dto.inTimeline !== undefined && dto.shareFromDate !== undefined) {
+      throw new BadRequestException('Cannot update both inTimeline and shareFromDate in the same request');
+    }
 
-    const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
-    return this.mapPartner(entity, PartnerDirection.SharedWith);
+    if (dto.inTimeline !== undefined) {
+      await this.requireAccess({ auth, permission: Permission.PartnerUpdate, ids: [id] });
+      const partnerId: PartnerIds = { sharedById: id, sharedWithId: auth.user.id };
+      const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
+      return this.mapPartner(entity, PartnerDirection.SharedWith);
+    }
+
+    if (dto.shareFromDate !== undefined) {
+      const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId: id };
+      const partner = await this.partnerRepository.get(partnerId);
+      if (!partner) {
+        throw new BadRequestException('Partner not found');
+      }
+      const entity = await this.partnerRepository.update(partnerId, { shareFromDate: dto.shareFromDate });
+      return this.mapPartner(entity, PartnerDirection.SharedBy);
+    }
+
+    throw new BadRequestException('No update fields provided');
   }
 
   private mapPartner(partner: Partner, direction: PartnerDirection): PartnerResponseDto {
@@ -53,6 +73,10 @@ export class PartnerService extends BaseService {
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
     ) as PartnerResponseDto;
 
-    return { ...user, inTimeline: partner.inTimeline };
+    return {
+      ...user,
+      inTimeline: partner.inTimeline,
+      shareFromDate: partner.shareFromDate?.toISOString().split('T')[0] ?? null,
+    };
   }
 }

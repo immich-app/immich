@@ -563,7 +563,7 @@ class PartnerSync extends BaseSync {
   getCreatedAfter({ nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
     return this.db
       .selectFrom('partner')
-      .select(['sharedById', 'createId'])
+      .select(['sharedById', 'shareFromDate', 'createId'])
       .where('sharedWithId', '=', userId)
       .$if(!!afterCreateId, (qb) => qb.where('createId', '>=', afterCreateId!))
       .where('createId', '<', nowId)
@@ -588,7 +588,7 @@ class PartnerSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     const userId = options.userId;
     return this.upsertQuery('partner', options)
-      .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
+      .select(['sharedById', 'sharedWithId', 'inTimeline', 'shareFromDate', 'updateId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
       .stream();
   }
@@ -596,11 +596,12 @@ class PartnerSync extends BaseSync {
 
 class PartnerAssetsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
-  getBackfill(options: SyncBackfillOptions, partnerId: string) {
+  getBackfill(options: SyncBackfillOptions, partnerId: string, shareFromDate?: Date | null) {
     return this.backfillQuery('asset', options)
       .select(columns.syncAsset)
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
+      .$if(!!shareFromDate, (qb) => qb.where('asset.localDateTime', '>=', shareFromDate!))
       .stream();
   }
 
@@ -619,8 +620,11 @@ class PartnerAssetsSync extends BaseSync {
     return this.upsertQuery('asset', options)
       .select(columns.syncAsset)
       .select('asset.updateId')
-      .where('ownerId', 'in', (eb) =>
-        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
+      .innerJoin('partner', (join) =>
+        join.onRef('partner.sharedById', '=', 'asset.ownerId').on('partner.sharedWithId', '=', options.userId),
+      )
+      .where((eb) =>
+        eb.or([eb('partner.shareFromDate', 'is', null), eb('asset.localDateTime', '>=', eb.ref('partner.shareFromDate'))]),
       )
       .stream();
   }
@@ -628,12 +632,13 @@ class PartnerAssetsSync extends BaseSync {
 
 class PartnerAssetExifsSync extends BaseSync {
   @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
-  getBackfill(options: SyncBackfillOptions, partnerId: string) {
+  getBackfill(options: SyncBackfillOptions, partnerId: string, shareFromDate?: Date | null) {
     return this.backfillQuery('asset_exif', options)
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('asset.ownerId', '=', partnerId)
+      .$if(!!shareFromDate, (qb) => qb.where('asset.localDateTime', '>=', shareFromDate!))
       .stream();
   }
 
@@ -642,13 +647,12 @@ class PartnerAssetExifsSync extends BaseSync {
     return this.upsertQuery('asset_exif', options)
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
-      .where('assetId', 'in', (eb) =>
-        eb
-          .selectFrom('asset')
-          .select('id')
-          .where('ownerId', 'in', (eb) =>
-            eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
-          ),
+      .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+      .innerJoin('partner', (join) =>
+        join.onRef('partner.sharedById', '=', 'asset.ownerId').on('partner.sharedWithId', '=', options.userId),
+      )
+      .where((eb) =>
+        eb.or([eb('partner.shareFromDate', 'is', null), eb('asset.localDateTime', '>=', eb.ref('partner.shareFromDate'))]),
       )
       .stream();
   }

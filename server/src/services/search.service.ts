@@ -21,7 +21,7 @@ import {
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { AssetOwnerFilter, getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
@@ -59,13 +59,13 @@ export class SearchService extends BaseService {
 
     const page = dto.page ?? 1;
     const size = dto.size || 250;
-    const userIds = await this.getUserIdsToSearch(auth);
+    const ownerFilter = await this.getOwnerFilter(auth);
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
+        ...ownerFilter,
         checksum,
-        userIds,
         orderDirection: dto.order ?? AssetOrder.Desc,
       },
     );
@@ -74,11 +74,11 @@ export class SearchService extends BaseService {
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
-    const userIds = await this.getUserIdsToSearch(auth);
+    const ownerFilter = await this.getOwnerFilter(auth);
 
     return await this.searchRepository.searchStatistics({
       ...dto,
-      userIds,
+      ...ownerFilter,
     });
   }
 
@@ -87,8 +87,8 @@ export class SearchService extends BaseService {
       requireElevatedPermission(auth);
     }
 
-    const userIds = await this.getUserIdsToSearch(auth);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    const ownerFilter = await this.getOwnerFilter(auth);
+    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, ...ownerFilter });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -97,8 +97,8 @@ export class SearchService extends BaseService {
       requireElevatedPermission(auth);
     }
 
-    const userIds = await this.getUserIdsToSearch(auth);
-    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, { ...dto, userIds });
+    const ownerFilter = await this.getOwnerFilter(auth);
+    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, { ...dto, ...ownerFilter });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
@@ -112,7 +112,7 @@ export class SearchService extends BaseService {
       throw new BadRequestException('Smart search is not enabled');
     }
 
-    const userIds = this.getUserIdsToSearch(auth);
+    const ownerFilterPromise = this.getOwnerFilter(auth);
     let embedding;
     if (dto.query) {
       const key = machineLearning.clip.modelName + dto.query + dto.language;
@@ -137,48 +137,49 @@ export class SearchService extends BaseService {
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;
+    const ownerFilter = await ownerFilterPromise;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding },
+      { ...dto, ...ownerFilter, userIds: ownerFilter.userIds ?? [auth.user.id], embedding },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
-    const userIds = await this.getUserIdsToSearch(auth);
-    const assets = await this.searchRepository.getAssetsByCity(userIds);
+    const ownerFilter = await this.getOwnerFilter(auth);
+    const assets = await this.searchRepository.getAssetsByCity(ownerFilter);
     return assets.map((asset) => mapAsset(asset));
   }
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
-    const userIds = await this.getUserIdsToSearch(auth);
-    const suggestions = await this.getSuggestions(userIds, dto);
+    const ownerFilter = await this.getOwnerFilter(auth);
+    const suggestions = await this.getSuggestions(ownerFilter, dto);
     if (dto.includeNull) {
       suggestions.push(null);
     }
     return suggestions;
   }
 
-  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
+  private getSuggestions(ownerFilter: AssetOwnerFilter, dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(ownerFilter);
       }
       case SearchSuggestionType.STATE: {
-        return this.searchRepository.getStates(userIds, dto);
+        return this.searchRepository.getStates(ownerFilter, dto);
       }
       case SearchSuggestionType.CITY: {
-        return this.searchRepository.getCities(userIds, dto);
+        return this.searchRepository.getCities(ownerFilter, dto);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.searchRepository.getCameraMakes(userIds, dto);
+        return this.searchRepository.getCameraMakes(ownerFilter, dto);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.searchRepository.getCameraModels(userIds, dto);
+        return this.searchRepository.getCameraModels(ownerFilter, dto);
       }
       case SearchSuggestionType.CAMERA_LENS_MODEL: {
-        return this.searchRepository.getCameraLensModels(userIds, dto);
+        return this.searchRepository.getCameraLensModels(ownerFilter, dto);
       }
       default: {
         return Promise.resolve([]);
@@ -186,13 +187,22 @@ export class SearchService extends BaseService {
     }
   }
 
-  private async getUserIdsToSearch(auth: AuthDto): Promise<string[]> {
-    const partnerIds = await getMyPartnerIds({
+  private async getOwnerFilter(auth: AuthDto): Promise<AssetOwnerFilter> {
+    const userIds = [auth.user.id];
+    const partnerDateConstraints: PartnerDateConstraint[] = [];
+    const partners = await getMyPartners({
       userId: auth.user.id,
       repository: this.partnerRepository,
       timelineEnabled: true,
     });
-    return [auth.user.id, ...partnerIds];
+    for (const partner of partners) {
+      if (partner.shareFromDate) {
+        partnerDateConstraints.push({ userId: partner.id, shareFromDate: partner.shareFromDate });
+      } else {
+        userIds.push(partner.id);
+      }
+    }
+    return { userIds, partnerDateConstraints };
   }
 
   private mapResponse(assets: MapAsset[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {

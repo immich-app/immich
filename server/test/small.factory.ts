@@ -137,6 +137,7 @@ const partnerFactory = (partner: Partial<Partner> = {}) => {
     updatedAt: newDate(),
     updateId: newUuidV7(),
     inTimeline: true,
+    shareFromDate: null,
     ...partner,
   };
 };

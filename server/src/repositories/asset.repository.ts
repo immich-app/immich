@@ -12,6 +12,7 @@ import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetOwnerFilter } from 'src/utils/asset.util';
 import {
   anyUuid,
   asUuid,
@@ -49,14 +50,13 @@ interface LivePhotoSearchOptions {
   type: AssetType;
 }
 
-interface AssetBuilderOptions {
+interface AssetBuilderOptions extends AssetOwnerFilter {
   isFavorite?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
   tagId?: string;
   personId?: string;
-  userIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
   status?: AssetStatus;
@@ -92,8 +92,7 @@ interface AssetFullSyncOptions {
   limit: number;
 }
 
-interface AssetDeltaSyncOptions {
-  userIds: string[];
+interface AssetDeltaSyncOptions extends AssetOwnerFilter {
   updatedAfter: Date;
   limit: number;
 }
@@ -628,13 +627,24 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
   }
 
-  getRandom(userIds: string[], take: number) {
+  getRandom(ownerFilter: AssetOwnerFilter, take: number) {
+    const { userIds, partnerDateConstraints } = ownerFilter;
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
       .$call(withExif)
       .$call(withDefaultVisibility)
-      .where('ownerId', '=', anyUuid(userIds))
+      .$if(!partnerDateConstraints?.length, (qb) => qb.where('ownerId', '=', anyUuid(userIds!)))
+      .$if(!!partnerDateConstraints?.length, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            ...(userIds?.length ? [eb('ownerId', '=', anyUuid(userIds))] : []),
+            ...partnerDateConstraints!.map((pc) =>
+              eb.and([eb('ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+            ),
+          ]),
+        ),
+      )
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -665,7 +675,16 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds || !!options.partnerDateConstraints?.length, (qb) =>
+            qb.where((eb) =>
+              eb.or([
+                ...(options.userIds?.length ? [eb('asset.ownerId', '=', anyUuid(options.userIds!))] : []),
+                ...(options.partnerDateConstraints ?? []).map((pc) =>
+                  eb.and([eb('asset.ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+                ),
+              ]),
+            ),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -736,7 +755,16 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
+          .$if(!!options.userIds || !!options.partnerDateConstraints?.length, (qb) =>
+            qb.where((eb) =>
+              eb.or([
+                ...(options.userIds?.length ? [eb('asset.ownerId', '=', anyUuid(options.userIds!))] : []),
+                ...(options.partnerDateConstraints ?? []).map((pc) =>
+                  eb.and([eb('asset.ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+                ),
+              ]),
+            ),
+          )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -894,7 +922,19 @@ export class AssetRepository {
         (join) => join.on('stack.id', 'is not', null),
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
-      .where('asset.ownerId', '=', anyUuid(options.userIds))
+      .$if(!options.partnerDateConstraints?.length, (qb) =>
+        qb.where('asset.ownerId', '=', anyUuid(options.userIds ?? [])),
+      )
+      .$if(!!options.partnerDateConstraints?.length, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            ...(options.userIds?.length ? [eb('asset.ownerId', '=', anyUuid(options.userIds))] : []),
+            ...options.partnerDateConstraints!.map((pc) =>
+              eb.and([eb('asset.ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
+            ),
+          ]),
+        ),
+      )
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)

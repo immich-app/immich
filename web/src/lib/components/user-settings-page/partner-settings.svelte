@@ -13,7 +13,7 @@
     type UserResponseDto,
   } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager, Text } from '@immich/ui';
-  import { mdiCheck, mdiClose } from '@mdi/js';
+  import { mdiCheck, mdiClose, mdiCloseCircle } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -22,6 +22,7 @@
     sharedByMe: boolean;
     sharedWithMe: boolean;
     inTimeline: boolean;
+    shareFromDate: string | null;
   }
 
   interface Props {
@@ -52,6 +53,7 @@
           sharedByMe: true,
           sharedWithMe: false,
           inTimeline: candidate.inTimeline ?? false,
+          shareFromDate: candidate.shareFromDate ?? null,
         },
       ];
     }
@@ -67,6 +69,7 @@
             sharedByMe: false,
             sharedWithMe: true,
             inTimeline: candidate.inTimeline ?? false,
+            shareFromDate: null,
           },
         ];
       } else {
@@ -95,15 +98,20 @@
   };
 
   const handleCreatePartners = async () => {
-    const users = await modalManager.show(PartnerSelectionModal, { user });
+    const result = await modalManager.show(PartnerSelectionModal, { user });
 
-    if (!users) {
+    if (!result) {
       return;
     }
 
     try {
-      for (const user of users) {
-        await createPartner({ partnerCreateDto: { sharedWithId: user.id } });
+      for (const selectedUser of result.users) {
+        await createPartner({
+          partnerCreateDto: {
+            sharedWithId: selectedUser.id,
+            shareFromDate: result.shareFromDate,
+          },
+        });
       }
 
       await refreshPartners();
@@ -117,6 +125,17 @@
       await updatePartner({ id: partner.user.id, partnerUpdateDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_timeline_display_status'));
+    }
+  };
+
+  const handleShareFromDateChanged = async (partner: PartnerSharing, value: string) => {
+    try {
+      const shareFromDate = value || null;
+      await updatePartner({ id: partner.user.id, partnerUpdateDto: { shareFromDate } });
+
+      partner.shareFromDate = shareFromDate;
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
@@ -173,6 +192,35 @@
                 {$t('partner_can_access_location')}
               </li>
             </ul>
+
+            <div class="mt-4">
+              <label for="shareFromDate-{partner.user.id}" class="font-medium text-primary text-sm">
+                {$t('partner_sharing_from_date')}
+              </label>
+              <p class="text-sm dark:text-immich-dark-fg">
+                {$t('partner_sharing_from_date_description')}
+              </p>
+              <div class="flex items-center gap-2 mt-2">
+                <input
+                  class="immich-form-input w-full"
+                  id="shareFromDate-{partner.user.id}"
+                  type="date"
+                  value={partner.shareFromDate ?? ''}
+                  onchange={(e) => handleShareFromDateChanged(partner, e.currentTarget.value)}
+                />
+                {#if partner.shareFromDate}
+                  <IconButton
+                    shape="round"
+                    color="secondary"
+                    variant="ghost"
+                    size="small"
+                    icon={mdiCloseCircle}
+                    aria-label={$t('clear_value')}
+                    onclick={() => handleShareFromDateChanged(partner, '')}
+                  />
+                {/if}
+              </div>
+            </div>
           {/if}
 
           <!-- this user is sharing assets with me -->

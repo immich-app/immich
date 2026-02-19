@@ -58,7 +58,7 @@ describe(MapService.name, () => {
       const markers = await sut.getMapMarkers(auth, { withPartners: true });
 
       expect(mocks.map.getMapMarkers).toHaveBeenCalledWith(
-        [auth.user.id, partner.sharedById],
+        { userIds: [auth.user.id, partner.sharedById] },
         expect.arrayContaining([]),
         { withPartners: true },
       );

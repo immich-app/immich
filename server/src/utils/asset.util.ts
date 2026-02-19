@@ -115,16 +115,30 @@ export type PartnerIdOptions = {
   /** only include partners with `inTimeline: true` */
   timelineEnabled?: boolean;
 };
-export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: PartnerIdOptions) => {
-  const partnerIds = new Set<string>();
+
+export type PartnerDateConstraint = {
+  userId: string;
+  shareFromDate: Date;
+};
+
+export interface AssetOwnerFilter {
+  userIds?: string[];
+  partnerDateConstraints?: PartnerDateConstraint[];
+}
+
+export type PartnerInfo = {
+  id: string;
+  shareFromDate: Date | null;
+};
+
+export const getMyPartners = async ({ userId, repository, timelineEnabled }: PartnerIdOptions): Promise<PartnerInfo[]> => {
+  const result: PartnerInfo[] = [];
   const partners = await repository.getAll(userId);
   for (const partner of partners) {
-    // ignore deleted users
     if (!partner.sharedBy || !partner.sharedWith) {
       continue;
     }
 
-    // wrong direction
     if (partner.sharedWithId !== userId) {
       continue;
     }
@@ -133,10 +147,15 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
       continue;
     }
 
-    partnerIds.add(partner.sharedById);
+    result.push({ id: partner.sharedById, shareFromDate: partner.shareFromDate });
   }
 
-  return [...partnerIds];
+  return result;
+};
+
+export const getMyPartnerIds = async (options: PartnerIdOptions) => {
+  const partners = await getMyPartners(options);
+  return partners.map((p) => p.id);
 };
 
 export type AssetHookRepositories = { asset: AssetRepository; event: EventRepository };

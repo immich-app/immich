@@ -1476,14 +1476,20 @@ export type PartnerResponseDto = {
     profileChangedAt: string;
     /** Profile image path */
     profileImagePath: string;
+    /** Share assets from this date onward */
+    shareFromDate?: string | null;
 };
 export type PartnerCreateDto = {
+    /** Only share assets from this date onward */
+    shareFromDate?: string | null;
     /** User ID to share with */
     sharedWithId: string;
 };
 export type PartnerUpdateDto = {
     /** Show partner assets in timeline */
-    inTimeline: boolean;
+    inTimeline?: boolean;
+    /** Only share assets from this date onward */
+    shareFromDate?: string | null;
 };
 export type PeopleResponseDto = {
     /** Whether there are more pages */
@@ -3169,6 +3175,8 @@ export type SyncPartnerDeleteV1 = {
 export type SyncPartnerV1 = {
     /** In timeline */
     inTimeline: boolean;
+    /** Share from date */
+    shareFromDate: string | null;
     /** Shared by ID */
     sharedById: string;
     /** Shared with ID */

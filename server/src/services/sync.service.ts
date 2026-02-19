@@ -30,7 +30,7 @@ import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
-import { getMyPartnerIds } from 'src/utils/asset.util';
+import { getMyPartnerIds, getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';
@@ -315,6 +315,7 @@ export class SyncService extends BaseService {
         const backfill = this.syncRepository.partnerAsset.getBackfill(
           { ...options, afterUpdateId: startId, beforeUpdateId: endId },
           partner.sharedById,
+          partner.shareFromDate,
         );
 
         for await (const { updateId, ...data } of backfill) {
@@ -377,6 +378,7 @@ export class SyncService extends BaseService {
         const backfill = this.syncRepository.partnerAssetExif.getBackfill(
           { ...options, afterUpdateId: startId, beforeUpdateId: endId },
           partner.sharedById,
+          partner.shareFromDate,
         );
 
         for await (const { updateId, ...data } of backfill) {
@@ -873,7 +875,8 @@ export class SyncService extends BaseService {
     }
 
     // app does not have the correct partners synced
-    const partnerIds = await getMyPartnerIds({ userId: auth.user.id, repository: this.partnerRepository });
+    const partners = await getMyPartners({ userId: auth.user.id, repository: this.partnerRepository });
+    const partnerIds = partners.map((p) => p.id);
     const userIds = [auth.user.id, ...partnerIds];
     if (!setIsEqual(new Set(userIds), new Set(dto.userIds))) {
       return FULL_SYNC;
@@ -881,8 +884,23 @@ export class SyncService extends BaseService {
 
     await this.requireAccess({ auth, permission: Permission.TimelineRead, ids: dto.userIds });
 
+    const unconstrained = [auth.user.id];
+    const partnerDateConstraints: PartnerDateConstraint[] = [];
+    for (const partner of partners) {
+      if (partner.shareFromDate) {
+        partnerDateConstraints.push({ userId: partner.id, shareFromDate: partner.shareFromDate });
+      } else {
+        unconstrained.push(partner.id);
+      }
+    }
+
     const limit = 10_000;
-    const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });
+    const upserted = await this.assetRepository.getChangedDeltaSync({
+      limit,
+      updatedAfter: dto.updatedAfter,
+      userIds: unconstrained,
+      partnerDateConstraints,
+    });
 
     // too many changes, need to do a full sync
     if (upserted.length === limit) {
