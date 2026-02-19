@@ -339,7 +339,6 @@
         };
         break;
       }
-      case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
         break;
