@@ -148,6 +148,10 @@
     color: #3a3a3a;
   }
 
+  body.asset-viewer-open {
+    background-color: black;
+  }
+
   input:focus-visible {
     outline-offset: 0px !important;
     outline: none !important;

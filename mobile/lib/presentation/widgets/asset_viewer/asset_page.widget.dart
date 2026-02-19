@@ -139,8 +139,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
-        < -kTouchSlop => _DragIntent.scroll,
-        > kTouchSlop => _DragIntent.dismiss,
+        < 0 => _DragIntent.scroll,
+        > 0 => _DragIntent.dismiss,
         _ => _DragIntent.none,
       };
     }
@@ -371,9 +371,10 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final viewportHeight = MediaQuery.heightOf(context);
     final imageHeight = _getImageHeight(viewportWidth, viewportHeight, displayAsset);
 
-    final margin = (viewportHeight - imageHeight) / 2;
-    final overflowBoxHeight = margin + imageHeight - (kMinInteractiveDimension / 2);
-    _snapOffset = (margin + imageHeight) - (viewportHeight / 4);
+    final detailsOffset = (viewportHeight + imageHeight - kMinInteractiveDimension) / 2;
+    final snapTarget = viewportHeight / 3;
+
+    _snapOffset = detailsOffset - snapTarget;
 
     if (_proxyScrollController.hasClients) {
       _proxyScrollController.snapPosition.snapOffset = _snapOffset;
@@ -418,7 +419,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                   ignoring: !_showingDetails,
                   child: Column(
                     children: [
-                      SizedBox(height: overflowBoxHeight),
+                      SizedBox(height: detailsOffset),
                       GestureDetector(
                         onVerticalDragStart: _beginDrag,
                         onVerticalDragUpdate: _updateDrag,
@@ -427,7 +428,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         child: AnimatedOpacity(
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
-                          child: AssetDetails(minHeight: _snapOffset + viewportHeight - overflowBoxHeight),
+                          child: AssetDetails(minHeight: viewportHeight - snapTarget),
                         ),
                       ),
                     ],

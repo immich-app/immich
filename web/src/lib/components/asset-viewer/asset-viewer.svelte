@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
@@ -147,6 +148,7 @@
   };
 
   onMount(async () => {
+    syncAssetViewerOpenClass(true);
     unsubscribes.push(
       slideshowState.subscribe((value) => {
         if (value === SlideshowState.PlaySlideshow) {
@@ -177,6 +179,7 @@
 
     activityManager.reset();
     assetViewerManager.closeEditor();
+    syncAssetViewerOpenClass(false);
   });
 
   const handleGetAllAlbums = async () => {
@@ -359,6 +362,12 @@
     }
   });
 
+  const syncAssetViewerOpenClass = (isOpen: boolean) => {
+    if (browser) {
+      document.body.classList.toggle('asset-viewer-open', isOpen);
+    }
+  };
+
   const refresh = async () => {
     await refreshStack();
     await handleGetAllAlbums();
@@ -389,7 +398,7 @@
 
   const onAssetUpdate = (update: AssetResponseDto) => {
     if (asset.id === update.id) {
-      cursor.current = update;
+      cursor = { ...cursor, current: update };
     }
   };
 
@@ -425,7 +434,6 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
-      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
       !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );

@@ -404,15 +404,19 @@ export class AssetService extends BaseService {
   async getOcr(auth: AuthDto, id: string): Promise<AssetOcrResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const ocr = await this.ocrRepository.getByAssetId(id);
-    const asset = await this.assetRepository.getById(id, { exifInfo: true, edits: true });
+    const asset = await this.assetRepository.getForOcr(id);
 
-    if (!asset || !asset.exifInfo || !asset.edits) {
+    if (!asset) {
       throw new BadRequestException('Asset not found');
     }
 
-    const dimensions = getDimensions(asset.exifInfo);
+    const dimensions = getDimensions({
+      exifImageHeight: asset.exifImageHeight,
+      exifImageWidth: asset.exifImageWidth,
+      orientation: asset.orientation,
+    });
 
-    return ocr.map((item) => transformOcrBoundingBox(item, asset.edits!, dimensions));
+    return ocr.map((item) => transformOcrBoundingBox(item, asset.edits, dimensions));
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {
@@ -551,7 +555,7 @@ export class AssetService extends BaseService {
   async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
 
-    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const asset = await this.assetRepository.getForEdit(id);
     if (!asset) {
       throw new BadRequestException('Asset not found');
     }
@@ -576,15 +580,21 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Editing SVG images is not supported');
     }
 
+    // check that crop parameters will not go out of bounds
+    const { width: assetWidth, height: assetHeight } = getDimensions(asset);
+
+    if (!assetWidth || !assetHeight) {
+      throw new BadRequestException('Asset dimensions are not available for editing');
+    }
+
     const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
     if (cropIndex > 0) {
       throw new BadRequestException('Crop action must be the first edit action');
     }
-
     const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
     if (crop) {
       // check that crop parameters will not go out of bounds
-      const { width: assetWidth, height: assetHeight } = getDimensions(asset.exifInfo!);
+      const { width: assetWidth, height: assetHeight } = getDimensions(asset);
 
       if (!assetWidth || !assetHeight) {
         throw new BadRequestException('Asset dimensions are not available for editing');
