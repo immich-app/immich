@@ -45,7 +45,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   late PhotoViewControllerValue _initialPhotoViewState;
 
-  bool _blockGestures = false;
   bool _showingDetails = false;
   bool _isZoomed = false;
 
@@ -58,7 +57,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
   Drag? _drag;
-  bool _dragInProgress = false;
   bool _shouldPopOnDrag = false;
 
   @override
@@ -137,9 +135,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _updateDrag(DragUpdateDetails details) {
-    if (_blockGestures) return;
-
-    _dragInProgress = true;
+    if (_dragStart == null) return;
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
@@ -160,16 +156,12 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _endDrag(DragEndDetails details) {
-    _dragInProgress = false;
+    if (_dragStart == null) return;
 
-    if (_blockGestures) {
-      _blockGestures = false;
-      return;
-    }
+    _dragStart = null;
 
     final intent = _dragIntent;
     _dragIntent = _DragIntent.none;
-    _dragStart = null;
 
     switch (intent) {
       case _DragIntent.none:
@@ -201,10 +193,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewScaleStateController scaleStateController,
   ) {
     _viewController = controller;
-    if (!_showingDetails && _isZoomed) {
-      _blockGestures = true;
-      return;
-    }
+    if (!_showingDetails && _isZoomed) return;
     _beginDrag(details);
   }
 
@@ -235,7 +224,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
-    if (!_showingDetails && !_dragInProgress) _viewer.toggleControls();
+    if (!_showingDetails && _dragStart == null) _viewer.toggleControls();
   }
 
   void _onLongPress(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue) =>
@@ -249,7 +238,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
-      if (!_dragInProgress) _viewer.setControls(false);
+      if (_dragStart == null) _viewer.setControls(false);
 
       ref.read(videoPlayerControlsProvider.notifier).pause();
       return;
