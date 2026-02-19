@@ -42,7 +42,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
   import { ImageCarousel } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -134,10 +134,7 @@
 
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <AddToAlbum />
 
     {#if isAllUserOwned}
       <FavoriteAction
