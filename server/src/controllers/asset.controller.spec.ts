@@ -213,6 +213,22 @@ describe(AssetController.name, () => {
         expect(body).toEqual(factory.responses.badRequest());
       }
     });
+
+    it('should convert rating 0 to null', async () => {
+      const assetId = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send({ rating: 0 });
+      expect(service.update).toHaveBeenCalledWith(undefined, assetId, { rating: null });
+      expect(status).toBe(200);
+    });
+
+    it('should leave correct ratings as-is', async () => {
+      const assetId = factory.uuid();
+      for (const test of [{ rating: -1 }, { rating: 1 }, { rating: 5 }]) {
+        const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send(test);
+        expect(service.update).toHaveBeenCalledWith(undefined, assetId, test);
+        expect(status).toBe(200);
+      }
+    });
   });
 
   describe('GET /assets/statistics', () => {
