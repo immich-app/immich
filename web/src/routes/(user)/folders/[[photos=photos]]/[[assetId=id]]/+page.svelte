@@ -31,7 +31,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { IconButton, Text } from '@immich/ui';
-  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -130,10 +130,7 @@
         icon={mdiSelectAll}
         onclick={handleSelectAllAssets}
       />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
-        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
-      </ButtonContextMenu>
+      <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
