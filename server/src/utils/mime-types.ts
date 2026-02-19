@@ -139,20 +139,15 @@ export const mimeTypes = {
   /** return an extension (including a leading `.`) for a mime-type */
   toExtension,
   assetType: (filename: string) => {
-    // Check file extension first to handle cases like MXF (application/mxf) that are video containers
-    if (isType(filename, video)) {
-      return AssetType.Video;
-    }
-    if (isType(filename, image)) {
-      return AssetType.Image;
-    }
-    // Fallback to mime type check for any edge cases
     const contentType = lookup(filename);
     if (contentType.startsWith('image/')) {
       return AssetType.Image;
-    } else if (contentType.startsWith('video/')) {
+    }
+
+    if (contentType.startsWith('video/') || contentType === 'application/mxf') {
       return AssetType.Video;
     }
+
     return AssetType.Other;
   },
   getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
