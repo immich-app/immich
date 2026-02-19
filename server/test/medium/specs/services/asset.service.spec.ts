@@ -641,6 +641,57 @@ describe(AssetService.name, () => {
     });
   });
 
+  describe('getOcr', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({ x1: 0.1, x2: 0.3, x3: 0.3, x4: 0.1, y1: 0.2, y2: 0.2, y3: 0.4, y4: 0.4 }),
+      ]);
+    });
+
+    it('should apply rotation', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      await ctx.database
+        .insertInto('asset_edit')
+        .values({ assetId: asset.id, action: AssetEditAction.Rotate, parameters: { angle: 90 }, sequence: 1 })
+        .execute();
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({
+          x1: 0.6,
+          x2: 0.8,
+          x3: 0.8,
+          x4: 0.6,
+          y1: expect.any(Number),
+          y2: expect.any(Number),
+          y3: 0.3,
+          y4: 0.3,
+        }),
+      ]);
+    });
+  });
+
   describe('upsertBulkMetadata', () => {
     it('should work', async () => {
       const { sut, ctx } = setup();
