@@ -143,8 +143,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
-        < -kTouchSlop => _DragIntent.scroll,
-        > kTouchSlop => _DragIntent.dismiss,
+        < 0 => _DragIntent.scroll,
+        > 0 => _DragIntent.dismiss,
         _ => _DragIntent.none,
       };
     }
