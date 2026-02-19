@@ -1,6 +1,6 @@
 import "package:openapi/api.dart" as api show AssetEditAction;
 
-enum AssetEditAction { rotate, crop, mirror, other }
+enum AssetEditAction { rotate, crop, mirror, filter, other }
 
 extension AssetEditActionExtension on AssetEditAction {
   api.AssetEditAction? toDto() {
@@ -8,6 +8,7 @@ extension AssetEditActionExtension on AssetEditAction {
       AssetEditAction.rotate => api.AssetEditAction.rotate,
       AssetEditAction.crop => api.AssetEditAction.crop,
       AssetEditAction.mirror => api.AssetEditAction.mirror,
+      AssetEditAction.filter => api.AssetEditAction.filter,
       AssetEditAction.other => null,
     };
   }

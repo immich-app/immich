@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math';
+import 'dart:ui' as ui;
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/utils/matrix.utils.dart';
 import 'package:openapi/api.dart' hide AssetEditAction;
@@ -67,4 +69,51 @@ NormalizedTransform normalizeTransformEdits(List<AssetEdit> edits) {
     mirrorHorizontal: false,
     mirrorVertical: isCloseToZero(a) ? b == c : a == -d,
   );
+}
+
+class MatrixAdjustmentPainter extends CustomPainter {
+  final ui.Image image;
+  final ColorFilter? filter;
+
+  const MatrixAdjustmentPainter({required this.image, this.filter});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..colorFilter = filter;
+
+    final srcRect = Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+    final dstRect = Rect.fromLTWH(0, 0, size.width, size.height);
+
+    canvas.drawImageRect(image, srcRect, dstRect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant MatrixAdjustmentPainter oldDelegate) {
+    return oldDelegate.image != image || oldDelegate.filter != filter;
+  }
+}
+
+/// Helper to resolve an ImageProvider to a ui.Image
+Future<ui.Image> resolveImage(ImageProvider provider) {
+  final completer = Completer<ui.Image>();
+  final stream = provider.resolve(const ImageConfiguration());
+
+  late final ImageStreamListener listener;
+  listener = ImageStreamListener(
+    (ImageInfo info, bool sync) {
+      if (!completer.isCompleted) {
+        completer.complete(info.image);
+      }
+      stream.removeListener(listener);
+    },
+    onError: (error, stackTrace) {
+      if (!completer.isCompleted) {
+        completer.completeError(error, stackTrace);
+      }
+      stream.removeListener(listener);
+    },
+  );
+
+  stream.addListener(listener);
+  return completer.future;
 }
