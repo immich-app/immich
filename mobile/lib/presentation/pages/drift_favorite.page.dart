@@ -32,7 +32,7 @@ class DriftFavoritePage extends StatelessWidget {
           title: 'favorites'.t(context: context),
           icon: Icons.favorite_outline,
         ),
-        bottomWidgetBuilder: (_, _, selectionEnabled) => selectionEnabled ? const FavoriteBottomSheet() : null,
+        bottomSheet: const FavoriteBottomSheet(),
       ),
     );
   }

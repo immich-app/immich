@@ -8,9 +8,9 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
@@ -32,7 +32,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
         appBar: MesmerizingSliverAppBar(title: partner.name, icon: Icons.person_outline),
         topSliverWidget: _InfoBox(partner: partner),
         topSliverWidgetHeight: 110,
-        bottomWidgetBuilder: (_, _, selectionEnabled) => selectionEnabled ? const PartnerDetailBottomSheet() : null,
+        bottomSheet: const PartnerDetailBottomSheet(),
       ),
     );
   }

@@ -25,7 +25,7 @@ class LocalTimelinePage extends StatelessWidget {
       ],
       child: Timeline(
         appBar: MesmerizingSliverAppBar(title: album.name),
-        bottomWidgetBuilder: (_, _, selectionEnabled) => selectionEnabled ? const LocalAlbumBottomSheet() : null,
+        bottomSheet: const LocalAlbumBottomSheet(),
         showStorageIndicator: true,
       ),
     );

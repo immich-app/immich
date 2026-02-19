@@ -62,8 +62,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
               onPopInvokedWithResult: (didPop, _) => didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
               child: Timeline(
                 appBar: MesmerizingSliverAppBar(title: 'locked_folder'.t(context: context)),
-                bottomWidgetBuilder: (_, _, selectionEnabled) =>
-                    selectionEnabled ? const LockedFolderBottomSheet() : null,
+                bottomSheet: const LockedFolderBottomSheet(),
               ),
             ),
     );
