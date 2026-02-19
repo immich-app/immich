@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 class MapCustomTimeRange extends StatelessWidget {
   const MapCustomTimeRange({super.key, required this.customTimeRange, required this.onChanged});
 
-  final CustomTimeRange customTimeRange;
-  final Function(CustomTimeRange) onChanged;
+  final TimeRange customTimeRange;
+  final Function(TimeRange) onChanged;
 
   @override
   Widget build(BuildContext context) {

@@ -21,7 +21,8 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
   void initState() {
     super.initState();
     final mapState = ref.read(mapStateProvider);
-    useCustomRange = mapState.customTimeRange.isValid;
+    final timeRange = mapState.customTimeRange;
+    useCustomRange = timeRange.from != null || timeRange.to != null;
   }
 
   @override
@@ -75,7 +76,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = false;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const CustomTimeRange());
+                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
                     }),
                     child: Text("remove_custom_date_range".t(context: context)),
                   ),
@@ -91,7 +92,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = true;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const CustomTimeRange());
+                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
                     }),
                     child: Text("use_custom_date_range".t(context: context)),
                   ),
