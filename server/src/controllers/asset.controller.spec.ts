@@ -207,7 +207,7 @@ describe(AssetController.name, () => {
     });
 
     it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
+      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: -2 }]) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
         expect(body).toEqual(factory.responses.badRequest());

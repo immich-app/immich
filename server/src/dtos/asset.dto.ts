@@ -57,11 +57,11 @@ export class UpdateAssetBase {
   longitude?: number;
 
   @ApiProperty({ description: 'Rating' })
-  @Optional()
+  @Optional({ nullable: true })
   @IsInt()
   @Max(5)
   @Min(-1)
-  rating?: number;
+  rating?: number | null;
 
   @ApiProperty({ description: 'Asset description' })
   @Optional()

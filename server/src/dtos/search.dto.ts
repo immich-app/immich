@@ -103,12 +103,17 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true, description: 'Filter by album IDs' })
   albumIds?: string[];
 
-  @ApiPropertyOptional({ type: 'number', description: 'Filter by rating', minimum: -1, maximum: 5 })
-  @Optional()
+  @ApiPropertyOptional({
+    type: 'number',
+    description: 'Filter by rating. -1 means rejected, null unrated, 1-5 the star rating',
+    minimum: -1,
+    maximum: 5,
+  })
+  @Optional({ nullable: true })
   @IsInt()
   @Max(5)
   @Min(-1)
-  rating?: number;
+  rating?: number | null;
 
   @ApiPropertyOptional({ description: 'Filter by OCR text content' })
   @IsString()
