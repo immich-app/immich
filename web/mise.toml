@@ -1,6 +1,3 @@
-[env]
-IMMICH_SERVER_URL = "https://demo.immich.app"
-
 [tasks.install]
 run = "pnpm install --filter immich-web --frozen-lockfile"
 
@@ -16,6 +13,10 @@ run = "pnpm run preview"
 [tasks.start]
 depends = [":install", "//:sdk:install", "//:sdk:build"]
 run = "pnpm run dev"
+
+[tasks."start-demo"]
+env.IMMICH_SERVER_URL = "https://demo.immich.app"
+run = { task = ":start" }
 
 [tasks.test]
 run = "pnpm run test"
