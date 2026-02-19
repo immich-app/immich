@@ -359,9 +359,9 @@ describe('findSidecar', () => {
     expect(result).toBe(sidecarPath1);
   });
 
-  it('should return null when no sidecar file exists', async () => {
+  it('should return undefined when no sidecar file exists', async () => {
     const result = await findSidecar(testFilePath);
-    expect(result).toBeNull();
+    expect(result).toBeUndefined();
   });
 });
 
