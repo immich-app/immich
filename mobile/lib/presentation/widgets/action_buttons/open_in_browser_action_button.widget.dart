@@ -24,7 +24,7 @@ class OpenInBrowserActionButton extends ConsumerWidget {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint).replaceFirst('/api', '');
     final url = '$serverEndpoint/photos/$remoteId';
     if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
   }
 
