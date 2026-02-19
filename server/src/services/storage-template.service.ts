@@ -10,6 +10,7 @@ import {
   AssetFileType,
   AssetPathType,
   AssetType,
+  AssetVisibility,
   DatabaseLock,
   JobName,
   JobStatus,
@@ -150,23 +151,13 @@ export class StorageTemplateService extends BaseService {
     if (!asset) {
       return JobStatus.Failed;
     }
+    // Skip hidden assets
+    if (asset.visibility === AssetVisibility.Hidden) {
+      return JobStatus.Skipped;
+    }
 
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
-
-    // Check if this is a motion video that belongs to a live photo
-    // If so, we need to use the still photo's album and date info for path calculation
-    if (asset.type === AssetType.Video) {
-      const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(id);
-      if (stillPhoto) {
-        // This is a motion video part of a live photo - use still photo's info for migration
-        const stillPhotoFilename = stillPhoto.originalFileName || stillPhoto.id;
-        const motionFilename = getLivePhotoMotionFilename(stillPhotoFilename, asset.originalPath);
-        await this.moveAsset(asset, { storageLabel, filename: motionFilename }, stillPhoto);
-        return JobStatus.Success;
-      }
-    }
-
     const filename = asset.originalFileName || asset.id;
     await this.moveAsset(asset, { storageLabel, filename });
 
@@ -198,16 +189,13 @@ export class StorageTemplateService extends BaseService {
     const users = await this.userRepository.getList();
 
     for await (const asset of assets) {
+      // Skip hidden assets
+      if (asset.visibility === AssetVisibility.Hidden) {
+        continue;
+      }
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
-      if (asset.type === AssetType.Video) {
-        const stillPhoto = await this.assetJobRepository.getStillPhotoForMotionVideo(asset.id);
-        // This is a motion video part of a live photo - this case we would want to skip the current iteration since the migration will be handled by the still
-        if (stillPhoto) {
-          continue;
-        }
-      }
       await this.moveAsset(asset, { storageLabel, filename });
 
       // move motion part of live photo

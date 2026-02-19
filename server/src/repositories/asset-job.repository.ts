@@ -353,6 +353,7 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
+        'asset.visibility',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
@@ -369,11 +370,6 @@ export class AssetJobRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getForStorageTemplateJob(id: string) {
     return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getStillPhotoForMotionVideo(motionVideoId: string) {
-    return this.storageTemplateAssetQuery().where('asset.livePhotoVideoId', '=', motionVideoId).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
