@@ -22,7 +22,7 @@ class TimelineMapOptions {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
-  final CustomTimeRange customTimeRange;
+  final TimeRange customTimeRange;
 
   const TimelineMapOptions({
     required this.bounds,
@@ -30,7 +30,7 @@ class TimelineMapOptions {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
-    this.customTimeRange = const CustomTimeRange(),
+    this.customTimeRange = const TimeRange(),
   });
 }
 
@@ -531,13 +531,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.customTimeRange.isValid) {
+    final from = options.customTimeRange.from;
+    final to = options.customTimeRange.to;
+
+    if (from != null || to != null) {
       // Use custom from/to filters
-      if (options.customTimeRange.from != null) {
-        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(options.customTimeRange.from!));
+      if (from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
       }
-      if (options.customTimeRange.to != null) {
-        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(options.customTimeRange.to!));
+      if (to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
       }
     } else if (options.relativeDays > 0) {
       // Use relative days
@@ -582,13 +585,16 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.customTimeRange.isValid) {
+    final from = options.customTimeRange.from;
+    final to = options.customTimeRange.to;
+
+    if (from != null || to != null) {
       // Use custom from/to filters
-      if (options.customTimeRange.from != null) {
-        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(options.customTimeRange.from!));
+      if (from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from));
       }
-      if (options.customTimeRange.to != null) {
-        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(options.customTimeRange.to!));
+      if (to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to));
       }
     } else if (options.relativeDays > 0) {
       // Use relative days

@@ -9,20 +9,18 @@ import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class CustomTimeRange {
+class TimeRange {
   final DateTime? from;
   final DateTime? to;
 
-  const CustomTimeRange({this.from, this.to});
+  const TimeRange({this.from, this.to});
 
-  bool get isValid => from != null || to != null;
-
-  CustomTimeRange copyWith({DateTime? from, DateTime? to}) {
-    return CustomTimeRange(from: from ?? this.from, to: to ?? this.to);
+  TimeRange copyWith({DateTime? from, DateTime? to}) {
+    return TimeRange(from: from ?? this.from, to: to ?? this.to);
   }
 
-  CustomTimeRange clearFrom() => CustomTimeRange(to: to);
-  CustomTimeRange clearTo() => CustomTimeRange(from: from);
+  TimeRange clearFrom() => TimeRange(to: to);
+  TimeRange clearTo() => TimeRange(from: from);
 }
 
 class MapState {
@@ -32,7 +30,7 @@ class MapState {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
-  final CustomTimeRange customTimeRange;
+  final TimeRange customTimeRange;
 
   const MapState({
     this.themeMode = ThemeMode.system,
@@ -41,7 +39,7 @@ class MapState {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
-    this.customTimeRange = const CustomTimeRange(),
+    this.customTimeRange = const TimeRange(),
   });
 
   @override
@@ -59,7 +57,7 @@ class MapState {
     bool? includeArchived,
     bool? withPartners,
     int? relativeDays,
-    CustomTimeRange? customTimeRange,
+    TimeRange? customTimeRange,
   }) {
     return MapState(
       bounds: bounds ?? this.bounds,
@@ -125,7 +123,7 @@ class MapStateNotifier extends Notifier<MapState> {
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
-  void setCustomTimeRange(CustomTimeRange range) {
+  void setCustomTimeRange(TimeRange range) {
     ref
         .read(appSettingsServiceProvider)
         .setSetting(AppSettingsEnum.mapCustomFrom, range.from == null ? "" : range.from!.toIso8601String());
@@ -148,7 +146,7 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
       relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
-      customTimeRange: CustomTimeRange(
+      customTimeRange: TimeRange(
         from: customFrom.isNotEmpty ? DateTime.parse(customFrom) : null,
         to: customTo.isNotEmpty ? DateTime.parse(customTo) : null,
       ),
