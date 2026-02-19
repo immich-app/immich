@@ -446,7 +446,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-export const findSidecar = async (filepath: string): Promise<string | null> => {
+export const findSidecar = async (filepath: string): Promise<string | undefined> => {
   const assetPath = path.parse(filepath);
   const noExtension = path.join(assetPath.dir, assetPath.name);
 
@@ -456,7 +456,7 @@ export const findSidecar = async (filepath: string): Promise<string | null> => {
       return sidecarPath;
     }
   }
-  return null;
+  return undefined;
 };
 
 export const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {

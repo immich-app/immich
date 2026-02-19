@@ -7,7 +7,15 @@ import { describe, expect, it, MockedFunction, vi } from 'vitest';
 import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
-import { checkForDuplicates, deleteFiles, findSidecar, getAlbumName, startWatch, uploadFiles, UploadOptionsDto } from 'src/commands/asset';
+import {
+  checkForDuplicates,
+  deleteFiles,
+  findSidecar,
+  getAlbumName,
+  startWatch,
+  uploadFiles,
+  UploadOptionsDto,
+} from 'src/commands/asset';
 
 vi.mock('@immich/sdk');
 
