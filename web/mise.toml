@@ -14,6 +14,7 @@ run = "pnpm run build:stats"
 run = "pnpm run preview"
 
 [tasks.start]
+depends = [":install", "//:sdk:install", "//:sdk:build"]
 run = "pnpm run dev"
 
 [tasks.test]
