@@ -355,3 +355,12 @@ from
   "person"
 where
   "id" in ($1)
+
+-- PersonRepository.getFeaturedPeopleOfAsset
+select
+  "person"."id"
+from
+  "person"
+  inner join "asset_face" on "asset_face"."id" = "person"."faceAssetId"
+where
+  "asset_face"."assetId" = $1

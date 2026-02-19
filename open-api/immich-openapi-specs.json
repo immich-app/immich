@@ -18154,6 +18154,7 @@
           "PersonCleanup",
           "PersonFileMigration",
           "PersonGenerateThumbnail",
+          "PersonNewFeaturePhoto",
           "SessionCleanup",
           "SendMail",
           "SidecarQueueAll",

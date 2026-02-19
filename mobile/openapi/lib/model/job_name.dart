@@ -65,6 +65,7 @@ class JobName {
   static const personCleanup = JobName._(r'PersonCleanup');
   static const personFileMigration = JobName._(r'PersonFileMigration');
   static const personGenerateThumbnail = JobName._(r'PersonGenerateThumbnail');
+  static const personNewFeaturePhoto = JobName._(r'PersonNewFeaturePhoto');
   static const sessionCleanup = JobName._(r'SessionCleanup');
   static const sendMail = JobName._(r'SendMail');
   static const sidecarQueueAll = JobName._(r'SidecarQueueAll');
@@ -124,6 +125,7 @@ class JobName {
     personCleanup,
     personFileMigration,
     personGenerateThumbnail,
+    personNewFeaturePhoto,
     sessionCleanup,
     sendMail,
     sidecarQueueAll,
@@ -218,6 +220,7 @@ class JobNameTypeTransformer {
         case r'PersonCleanup': return JobName.personCleanup;
         case r'PersonFileMigration': return JobName.personFileMigration;
         case r'PersonGenerateThumbnail': return JobName.personGenerateThumbnail;
+        case r'PersonNewFeaturePhoto': return JobName.personNewFeaturePhoto;
         case r'SessionCleanup': return JobName.sessionCleanup;
         case r'SendMail': return JobName.sendMail;
         case r'SidecarQueueAll': return JobName.sidecarQueueAll;

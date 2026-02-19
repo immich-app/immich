@@ -7,6 +7,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
@@ -31,6 +32,7 @@ const setup = (db?: Kysely<DB>) => {
       SharedLinkAssetRepository,
       StackRepository,
       UserRepository,
+      PersonRepository,
     ],
     mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
   });
@@ -583,6 +585,35 @@ describe(AssetService.name, () => {
           exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
         }),
       );
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should queue a new feature photo job for persons that had this asset as featured photo', async () => {
+      const { sut, ctx } = setup();
+      const jobMock = ctx.getMock(JobRepository);
+      const eventMock = ctx.getMock(EventRepository);
+
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { assetFace } = await ctx.newAssetFace({
+        assetId: asset.id,
+        isVisible: true,
+        deletedAt: null,
+      });
+      const { person } = await ctx.newPerson({ ownerId: user.id, faceAssetId: assetFace.id });
+
+      jobMock.queue.mockResolvedValue();
+      eventMock.emit.mockResolvedValue();
+
+      await sut.deleteAll(auth, { ids: [asset.id], force: false });
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.PersonNewFeaturePhoto,
+        data: { id: person.id },
+      });
     });
   });
 
