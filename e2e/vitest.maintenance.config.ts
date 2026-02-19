@@ -15,7 +15,7 @@ if (!skipDockerSetup) {
 export default defineConfig({
   test: {
     retry: process.env.CI ? 4 : 0,
-    include: ['src/specs/server/**/*.e2e-spec.ts'],
+    include: ['src/specs/maintenance/server/**/*.e2e-spec.ts'],
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',

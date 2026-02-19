@@ -295,7 +295,7 @@ describe(MetadataService.name, () => {
         id: asset.id,
         duration: null,
         fileCreatedAt: asset.fileCreatedAt,
-        fileModifiedAt: asset.fileCreatedAt,
+        fileModifiedAt: asset.fileModifiedAt,
         localDateTime: asset.fileCreatedAt,
         width: null,
         height: null,

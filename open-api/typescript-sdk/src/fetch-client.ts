@@ -1134,9 +1134,11 @@ export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
 };
-export type AssetIdsDto = {
+export type DownloadArchiveDto = {
     /** Asset IDs */
     assetIds: string[];
+    /** Download edited asset if available */
+    edited?: boolean;
 };
 export type DownloadInfoDto = {
     /** Album ID to download */
@@ -2316,6 +2318,10 @@ export type SharedLinkEditDto = {
     showMetadata?: boolean;
     /** Custom URL slug */
     slug?: string | null;
+};
+export type AssetIdsDto = {
+    /** Asset IDs */
+    assetIds: string[];
 };
 export type AssetIdsResponseDto = {
     /** Asset ID */
@@ -4441,10 +4447,10 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
 /**
  * Download asset archive
  */
-export function downloadArchive({ key, slug, assetIdsDto }: {
+export function downloadArchive({ key, slug, downloadArchiveDto }: {
     key?: string;
     slug?: string;
-    assetIdsDto: AssetIdsDto;
+    downloadArchiveDto: DownloadArchiveDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4455,7 +4461,7 @@ export function downloadArchive({ key, slug, assetIdsDto }: {
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
-        body: assetIdsDto
+        body: downloadArchiveDto
     })));
 }
 /**
