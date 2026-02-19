@@ -19,7 +19,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -71,10 +71,7 @@
     <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <AddToAlbum />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <ChangeDate menuItem />

@@ -74,11 +74,6 @@ class ImmichSliverAppBar extends ConsumerWidget {
                 icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
               ),
             if (actions != null) ...actions!,
-            if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
-              IconButton(
-                onPressed: () => context.pushRoute(const ImmichUIShowcaseRoute()),
-                icon: const Icon(Icons.palette_rounded),
-              ),
             if (showUploadButton && !isReadonlyModeEnabled) const _BackupIndicator(),
             const _ProfileIndicator(),
             const SizedBox(width: 8),
