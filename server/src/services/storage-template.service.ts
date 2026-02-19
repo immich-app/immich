@@ -189,10 +189,6 @@ export class StorageTemplateService extends BaseService {
     const users = await this.userRepository.getList();
 
     for await (const asset of assets) {
-      // Skip hidden assets
-      if (asset.visibility === AssetVisibility.Hidden) {
-        continue;
-      }
       const user = users.find((user) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
