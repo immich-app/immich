@@ -31,15 +31,15 @@ export class TimelineService extends BaseService {
     let partnerDateConstraints: PartnerDateConstraint[] | undefined = undefined;
 
     if (userId) {
-      if (userId !== auth.user.id) {
+      if (userId === auth.user.id) {
+        userIds = [userId];
+      } else {
         const partner = await this.partnerRepository.get({ sharedById: userId, sharedWithId: auth.user.id });
         if (partner?.shareFromDate) {
           partnerDateConstraints = [{ userId, shareFromDate: partner.shareFromDate }];
         } else {
           userIds = [userId];
         }
-      } else {
-        userIds = [userId];
       }
 
       if (dto.withPartners) {

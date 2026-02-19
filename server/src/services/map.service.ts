@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MapMarkerDto, MapMarkerResponseDto, MapReverseGeocodeDto } from 'src/dtos/map.dto';
 import { BaseService } from 'src/services/base.service';
-import { AssetOwnerFilter, getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
+import { AssetOwnerFilter, getMyPartners } from 'src/utils/asset.util';
 
 @Injectable()
 export class MapService extends BaseService {

@@ -14,7 +14,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { DB } from 'src/schema';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table';
-import { AssetOwnerFilter, PartnerDateConstraint } from 'src/utils/asset.util';
+import { AssetOwnerFilter } from 'src/utils/asset.util';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;

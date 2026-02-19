@@ -30,7 +30,7 @@ import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
 import { SyncAck } from 'src/types';
-import { getMyPartnerIds, getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
+import { getMyPartners, PartnerDateConstraint } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { setIsEqual } from 'src/utils/set';
 import { fromAck, serialize, SerializeOptions, toAck } from 'src/utils/sync';

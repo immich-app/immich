@@ -8,7 +8,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AssetOwnerFilter, PartnerDateConstraint } from 'src/utils/asset.util';
+import { AssetOwnerFilter } from 'src/utils/asset.util';
 import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -402,7 +402,7 @@ export class SearchRepository {
           .$if(!!partnerDateConstraints?.length, (qb) =>
             qb.where((eb) =>
               eb.or([
-                ...(userIds.length ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
+                ...(userIds.length > 0 ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
                 ...partnerDateConstraints!.map((pc) =>
                   eb.and([eb('asset.ownerId', '=', pc.userId), eb('asset.localDateTime', '>=', pc.shareFromDate)]),
                 ),
@@ -428,7 +428,7 @@ export class SearchRepository {
                 .$if(!!partnerDateConstraints?.length, (qb) =>
                   qb.where((eb) =>
                     eb.or([
-                      ...(userIds.length ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
+                      ...(userIds.length > 0 ? [eb('asset.ownerId', '=', anyUuid(userIds))] : []),
                       ...partnerDateConstraints!.map((pc) =>
                         eb.and([
                           eb('asset.ownerId', '=', pc.userId),
