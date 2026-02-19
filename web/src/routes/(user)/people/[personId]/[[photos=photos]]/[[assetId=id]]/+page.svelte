@@ -25,6 +25,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -472,6 +473,15 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
+        {#if assetInteraction.selectedAssets.length === 1}
+          <SetFeaturedPhotoAction
+            {person}
+            menuItem
+            onPersonUpdate={(updatedPerson) => {
+              data = { ...data, person: updatedPerson };
+            }}
+          />
+        {/if}
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
