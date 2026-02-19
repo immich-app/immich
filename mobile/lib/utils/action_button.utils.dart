@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -70,6 +71,7 @@ enum ActionButtonType {
   download,
   upload,
   unstack,
+  openInBrowser,
   archive,
   unarchive,
   moveToLockFolder,
@@ -138,6 +140,7 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.isStacked,
+      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView && !context.isArchived,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
@@ -215,6 +218,12 @@ enum ActionButtonType {
       ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.openInBrowser => OpenInBrowserActionButton(
+        remoteId: context.asset.remoteId!,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+        iconColor: context.originalTheme?.iconTheme.color,
+      ),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
         iconOnly: iconOnly,
