@@ -6,7 +6,6 @@ export enum AssetAction {
   TRASH = 'trash',
   DELETE = 'delete',
   RESTORE = 'restore',
-  ADD_TO_ALBUM = 'add-to-album',
   STACK = 'stack',
   UNSTACK = 'unstack',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
