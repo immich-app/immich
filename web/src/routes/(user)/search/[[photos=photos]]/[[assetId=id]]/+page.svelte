@@ -44,7 +44,7 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -339,10 +339,7 @@
             icon={mdiSelectAll}
             onclick={handleSelectAll}
           />
-          <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-            <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
-          </ButtonContextMenu>
+          <AddToAlbum {onAddToAlbum} />
           {#if isAllUserOwned}
             <FavoriteAction
               removeFavorite={assetInteraction.isAllFavorite}
@@ -357,6 +354,7 @@
             />
 
             <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+              <AddToAlbum menuItem {onAddToAlbum} />
               <DownloadAction menuItem />
               <ChangeDate menuItem />
               <ChangeDescription menuItem />

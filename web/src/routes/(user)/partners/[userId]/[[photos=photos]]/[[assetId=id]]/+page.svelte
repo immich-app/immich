@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
@@ -10,8 +9,7 @@
   import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
-  import { mdiArrowLeft, mdiPlus } from '@mdi/js';
-  import { t } from 'svelte-i18n';
+  import { mdiArrowLeft } from '@mdi/js';
   import type { PageData } from './$types';
 
   interface Props {
@@ -46,10 +44,7 @@
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
     <CreateSharedLink />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <AddToAlbum />
     <DownloadAction />
   </AssetSelectControlBar>
 {:else}

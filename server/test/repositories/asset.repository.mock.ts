@@ -54,5 +54,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getForOriginals: vitest.fn(),
     getForThumbnail: vitest.fn(),
     getForVideo: vitest.fn(),
+    getForEdit: vitest.fn(),
+    getForOcr: vitest.fn(),
   };
 };
