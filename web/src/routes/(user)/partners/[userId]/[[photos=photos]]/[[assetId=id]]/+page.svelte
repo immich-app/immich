@@ -11,6 +11,7 @@
   import { AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     data: PageData;
@@ -51,7 +52,7 @@
   <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-        {data.partner.name}'s photos
+        {$t('partner_list_user_photos', { values: { user: data.partner.name } })}
       </p>
     {/snippet}
   </ControlAppBar>
