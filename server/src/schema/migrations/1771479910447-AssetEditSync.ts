@@ -6,14 +6,15 @@ export async function up(db: Kysely<any>): Promise<void> {
   LANGUAGE PLPGSQL
   AS $$
     BEGIN
-      INSERT INTO asset_edit_audit ("assetId")
-      SELECT "assetId"
+      INSERT INTO asset_edit_audit ("editId", "assetId")
+      SELECT "id", "assetId"
       FROM OLD;
       RETURN NULL;
     END
   $$;`.execute(db);
   await sql`CREATE TABLE "asset_edit_audit" (
   "id" uuid NOT NULL DEFAULT immich_uuid_v7(),
+  "editId" uuid NOT NULL,
   "assetId" uuid NOT NULL,
   "deletedAt" timestamp with time zone NOT NULL DEFAULT clock_timestamp(),
   CONSTRAINT "asset_edit_audit_pkey" PRIMARY KEY ("id")
@@ -28,12 +29,8 @@ export async function up(db: Kysely<any>): Promise<void> {
   FOR EACH STATEMENT
   WHEN (pg_trigger_depth() = 0)
   EXECUTE FUNCTION asset_edit_audit();`.execute(db);
-  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('function_asset_edit_audit', '{"type":"function","name":"asset_edit_audit","sql":"CREATE OR REPLACE FUNCTION asset_edit_audit()\\n  RETURNS TRIGGER\\n  LANGUAGE PLPGSQL\\n  AS $$\\n    BEGIN\\n      INSERT INTO asset_edit_audit (\\"assetId\\")\\n      SELECT \\"assetId\\"\\n      FROM OLD;\\n      RETURN NULL;\\n    END\\n  $$;"}'::jsonb);`.execute(
-    db,
-  );
-  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_asset_edit_audit', '{"type":"trigger","name":"asset_edit_audit","sql":"CREATE OR REPLACE TRIGGER \\"asset_edit_audit\\"\\n  AFTER DELETE ON \\"asset_edit\\"\\n  REFERENCING OLD TABLE AS \\"old\\"\\n  FOR EACH STATEMENT\\n  WHEN (pg_trigger_depth() = 0)\\n  EXECUTE FUNCTION asset_edit_audit();"}'::jsonb);`.execute(
-    db,
-  );
+  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('function_asset_edit_audit', '{"type":"function","name":"asset_edit_audit","sql":"CREATE OR REPLACE FUNCTION asset_edit_audit()\\n  RETURNS TRIGGER\\n  LANGUAGE PLPGSQL\\n  AS $$\\n    BEGIN\\n      INSERT INTO asset_edit_audit (\\"editId\\", \\"assetId\\")\\n      SELECT \\"id\\", \\"assetId\\"\\n      FROM OLD;\\n      RETURN NULL;\\n    END\\n  $$;"}'::jsonb);`.execute(db);
+  await sql`INSERT INTO "migration_overrides" ("name", "value") VALUES ('trigger_asset_edit_audit', '{"type":"trigger","name":"asset_edit_audit","sql":"CREATE OR REPLACE TRIGGER \\"asset_edit_audit\\"\\n  AFTER DELETE ON \\"asset_edit\\"\\n  REFERENCING OLD TABLE AS \\"old\\"\\n  FOR EACH STATEMENT\\n  WHEN (pg_trigger_depth() = 0)\\n  EXECUTE FUNCTION asset_edit_audit();"}'::jsonb);`.execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {

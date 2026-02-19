@@ -6,6 +6,9 @@ export class AssetEditAuditTable {
   @PrimaryGeneratedUuidV7Column()
   id!: Generated<string>;
 
+  @Column({ type: 'uuid' })
+  editId!: string;
+
   @Column({ type: 'uuid', index: true })
   assetId!: string;
 

@@ -293,8 +293,8 @@ export const asset_edit_audit = registerFunction({
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO asset_edit_audit ("assetId")
-      SELECT "assetId"
+      INSERT INTO asset_edit_audit ("editId", "assetId")
+      SELECT "id", "assetId"
       FROM OLD;
       RETURN NULL;
     END`,
