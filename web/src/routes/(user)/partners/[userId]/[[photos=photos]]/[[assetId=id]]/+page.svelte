@@ -52,7 +52,7 @@
   <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-        {$t('partner_photos', { values: { name: data.partner.name } })}
+        {$t('partner_list_user_photos', { values: { user: data.partner.name } })}
       </p>
     {/snippet}
   </ControlAppBar>
