@@ -140,7 +140,7 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.isStacked,
-      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView && !context.isArchived,
+      ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
             context.currentAlbum != null &&
