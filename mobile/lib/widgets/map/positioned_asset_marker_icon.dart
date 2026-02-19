@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/map/asset_market_icon.dart';
+import 'package:immich_mobile/widgets/map/asset_marker_icon.dart';
 
 class PositionedAssetMarkerIcon extends StatelessWidget {
   final Point<num> point;
