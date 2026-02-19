@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
@@ -10,9 +9,9 @@
   import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetVisibility } from '@immich/sdk';
-  import { mdiArrowLeft, mdiPlus } from '@mdi/js';
-  import { t } from 'svelte-i18n';
+  import { mdiArrowLeft } from '@mdi/js';
   import type { PageData } from './$types';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     data: PageData;
@@ -46,17 +45,14 @@
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
     <CreateSharedLink />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <AddToAlbum />
     <DownloadAction />
   </AssetSelectControlBar>
 {:else}
   <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
-        {data.partner.name}'s photos
+        {$t('partner_list_user_photos', { values: { user: data.partner.name } })}
       </p>
     {/snippet}
   </ControlAppBar>
