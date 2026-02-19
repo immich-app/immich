@@ -605,6 +605,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      MISE_CEILING_PATHS: ${{ github.workspace }}
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}/machine-learning/mise.toml
     defaults:
       run:
         working-directory: ./machine-learning
