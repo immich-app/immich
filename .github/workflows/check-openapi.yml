@@ -5,11 +5,6 @@ on:
     paths:
       - 'open-api/**'
       - '.github/workflows/check-openapi.yml'
-  push:
-    branches: [main]
-    paths:
-      - 'open-api/**'
-      - '.github/workflows/check-openapi.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
