@@ -116,6 +116,12 @@ class MapStateNotifier extends Notifier<MapState> {
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
+  void setRelativeTime(int relativeDays) {
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapRelativeDate, relativeDays);
+    state = state.copyWith(relativeDays: relativeDays);
+    EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
   void setTimeRange(TimeRange range) {
     ref
         .read(appSettingsServiceProvider)
