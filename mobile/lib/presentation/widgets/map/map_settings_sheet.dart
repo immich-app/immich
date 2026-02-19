@@ -92,7 +92,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = true;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
+                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
                     }),
                     child: Text("use_custom_date_range".t(context: context)),
                   ),
