@@ -40,7 +40,7 @@
     "@zoom-image/core": "^0.42.0",
     "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",
-    "fabric": "^6.5.4",
+    "fabric": "^7.0.0",
     "geo-coordinates-parser": "^1.7.4",
     "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
