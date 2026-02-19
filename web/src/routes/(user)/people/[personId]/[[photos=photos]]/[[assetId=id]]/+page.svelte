@@ -25,7 +25,6 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -42,7 +41,13 @@
   import { isExternalUrl } from '$lib/utils/navigation';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { ContextMenuButton, LoadingSpinner, modalManager, toastManager, type ActionItem } from '@immich/ui';
-  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
+  import {
+    mdiAccountBoxOutline,
+    mdiAccountMultipleCheckOutline,
+    mdiArrowLeft,
+    mdiDotsVertical,
+    mdiFaceManProfile,
+  } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -150,6 +155,19 @@
     assetInteraction.clearMultiselect();
 
     viewMode = PersonPageViewMode.VIEW_ASSETS;
+  };
+
+  const updateFeaturedPhotoUsingCurrentSelection = async () => {
+    if (assetInteraction.selectedAssets.length === 1) {
+      const [firstAsset] = assetInteraction.selectedAssets;
+      try {
+        person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: firstAsset.id } });
+        toastManager.success($t('feature_photo_updated'));
+        assetInteraction.clearMultiselect();
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_set_feature_photo'));
+      }
+    }
   };
 
   const handleMergeSuggestion = async (): Promise<{ merged: boolean }> => {
@@ -474,12 +492,10 @@
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
         {#if assetInteraction.selectedAssets.length === 1}
-          <SetFeaturedPhotoAction
-            {person}
-            menuItem
-            onPersonUpdate={(updatedPerson) => {
-              data = { ...data, person: updatedPerson };
-            }}
+          <MenuOption
+            text={$t('set_as_featured_photo')}
+            icon={mdiFaceManProfile}
+            onClick={() => updateFeaturedPhotoUsingCurrentSelection()}
           />
         {/if}
         <ArchiveAction
