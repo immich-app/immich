@@ -7468,7 +7468,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
@@ -21620,6 +21620,7 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
+          "oauthSid",
           "token",
           "updatedAt"
         ],
@@ -21678,6 +21679,7 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
+          "oauthSid",
           "updatedAt"
         ],
         "type": "object"

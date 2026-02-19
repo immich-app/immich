@@ -101,10 +101,6 @@ export class AuthService extends BaseService {
         throw new BadRequestException('Invalid logout token: no claims found');
       }
 
-      if (!claims.sub && !claims.sid) {
-        throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
-      }
-
       if (claims.sub && !claims.sid) {
         const user = await this.userRepository.getByOAuthId(claims.sub);
         if (!user) {
@@ -119,6 +115,8 @@ export class AuthService extends BaseService {
           throw new BadRequestException('User not found');
         }
         await this.sessionRepository.invalidateByOAuthSidAndUserId(claims.sid, user.id);
+      } else {
+        throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
       }
     } catch (error: Error | any) {
       this.logger.error(`Error backchannel logout: ${error.message}`);
@@ -594,7 +592,7 @@ export class AuthService extends BaseService {
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,
       userId: user.id,
-      oauthSid,
+      oauthSid: oauthSid ?? null,
     });
 
     return mapLoginResponse(user, token);

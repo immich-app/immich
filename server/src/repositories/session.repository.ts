@@ -32,7 +32,7 @@ export class SessionRepository {
   get(id: string) {
     return this.db
       .selectFrom('session')
-      .select(['id', 'expiresAt', 'pinExpiresAt'])
+      .select(['id', 'expiresAt', 'pinExpiresAt', 'oauthSid'])
       .where('id', '=', id)
       .executeTakeFirst();
   }
@@ -103,16 +103,12 @@ export class SessionRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async invalidateByOAuthSid(oauthSid: string) {
-    await this.db.deleteFrom('session').where('oauthSid', '=', asUuid(oauthSid)).execute();
+    await this.db.deleteFrom('session').where('oauthSid', '=', oauthSid).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async invalidateByOAuthSidAndUserId(oauthSid: string, userId: string) {
-    await this.db
-      .deleteFrom('session')
-      .where('oauthSid', '=', asUuid(oauthSid))
-      .where('userId', '=', asUuid(userId))
-      .execute();
+    await this.db.deleteFrom('session').where('oauthSid', '=', oauthSid).where('userId', '=', asUuid(userId)).execute();
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })

@@ -115,6 +115,7 @@ export class OAuthController {
   }
 
   @Post('backchannel-logout')
+  @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Backchannel OAuth logout',
     description:

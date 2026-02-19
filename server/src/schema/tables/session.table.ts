@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
+  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
@@ -13,6 +14,7 @@ import {
 
 @Table({ name: 'session' })
 @UpdatedAtTrigger('session_updatedAt')
+@Index({ columns: ['oauthSid'] })
 export class SessionTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;

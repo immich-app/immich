@@ -21,7 +21,7 @@ class SessionResponseDto {
     this.expiresAt,
     required this.id,
     required this.isPendingSyncReset,
-    this.oauthSid,
+    required this.oauthSid,
     required this.updatedAt,
   });
 
@@ -191,6 +191,7 @@ class SessionResponseDto {
     'deviceType',
     'id',
     'isPendingSyncReset',
+    'oauthSid',
     'updatedAt',
   };
 }

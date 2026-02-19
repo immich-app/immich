@@ -417,6 +417,7 @@ Class | Method | HTTP request | Description
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
  - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
  - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
+ - [DownloadArchiveDto](doc//DownloadArchiveDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponse](doc//DownloadResponse.md)

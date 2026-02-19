@@ -82,7 +82,7 @@ export class OAuthRepository {
     expectedState: string,
     codeVerifier: string,
   ): Promise<{ profile: OAuthProfile; oauthSid?: string }> {
-    const { authorizationCodeGrant, fetchUserInfo, tokenIntrospection, ...oidc } = await import('openid-client');
+    const { authorizationCodeGrant, fetchUserInfo, ...oidc } = await import('openid-client');
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
@@ -95,8 +95,10 @@ export class OAuthRepository {
 
       let sid: string | undefined;
       if (tokens.id_token) {
-        const claims = await tokenIntrospection(client, tokens.id_token);
-        sid = claims.sid;
+        const claims = tokens.claims();
+        if (typeof claims?.sid === 'string') {
+          sid = claims.sid;
+        }
       }
 
       return { profile, oauthSid: sid };

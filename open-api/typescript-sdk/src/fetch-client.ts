@@ -439,7 +439,7 @@ export type SessionResponseDto = {
     /** Is pending sync reset */
     isPendingSyncReset: boolean;
     /** OAuth session ID */
-    oauthSid?: string | null;
+    oauthSid: string | null;
     /** Last update date */
     updatedAt: string;
 };
@@ -2235,7 +2235,7 @@ export type SessionCreateResponseDto = {
     /** Is pending sync reset */
     isPendingSyncReset: boolean;
     /** OAuth session ID */
-    oauthSid?: string | null;
+    oauthSid: string | null;
     /** Session token */
     token: string;
     /** Last update date */
