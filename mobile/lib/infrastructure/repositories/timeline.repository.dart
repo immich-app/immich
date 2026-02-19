@@ -21,7 +21,7 @@ class TimelineMapOptions {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
-  final TimeRange customTimeRange;
+  final TimeRange timeRange;
 
   const TimelineMapOptions({
     required this.bounds,
@@ -29,7 +29,7 @@ class TimelineMapOptions {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
-    this.customTimeRange = const TimeRange(),
+    this.timeRange = const TimeRange(),
   });
 }
 
@@ -555,8 +555,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    final from = options.customTimeRange.from;
-    final to = options.customTimeRange.to;
+    final from = options.timeRange.from;
+    final to = options.timeRange.to;
 
     if (from != null || to != null) {
       // Use custom from/to filters
@@ -609,8 +609,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    final from = options.customTimeRange.from;
-    final to = options.customTimeRange.to;
+    final from = options.timeRange.from;
+    final to = options.timeRange.to;
 
     if (from != null || to != null) {
       // Use custom from/to filters

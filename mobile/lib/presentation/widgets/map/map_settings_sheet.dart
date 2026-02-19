@@ -21,7 +21,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
   void initState() {
     super.initState();
     final mapState = ref.read(mapStateProvider);
-    final timeRange = mapState.customTimeRange;
+    final timeRange = mapState.timeRange;
     useCustomRange = timeRange.from != null || timeRange.to != null;
   }
 
@@ -64,10 +64,10 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                 onChanged: (withPartners) => ref.read(mapStateProvider.notifier).switchWithPartners(withPartners),
               ),
               if (useCustomRange) ...[
-                MapCustomTimeRange(
-                  customTimeRange: mapState.customTimeRange,
+                MapTimeRange(
+                  timeRange: mapState.timeRange,
                   onChanged: (range) {
-                    ref.read(mapStateProvider.notifier).setCustomTimeRange(range);
+                    ref.read(mapStateProvider.notifier).setTimeRange(range);
                   },
                 ),
                 Align(
@@ -76,7 +76,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = false;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
+                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
                     }),
                     child: Text("remove_custom_date_range".t(context: context)),
                   ),

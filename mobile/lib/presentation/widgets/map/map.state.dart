@@ -29,7 +29,7 @@ class MapState {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
-  final TimeRange customTimeRange;
+  final TimeRange timeRange;
 
   const MapState({
     this.themeMode = ThemeMode.system,
@@ -38,7 +38,7 @@ class MapState {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
-    this.customTimeRange = const TimeRange(),
+    this.timeRange = const TimeRange(),
   });
 
   @override
@@ -56,7 +56,7 @@ class MapState {
     bool? includeArchived,
     bool? withPartners,
     int? relativeDays,
-    TimeRange? customTimeRange,
+    TimeRange? timeRange,
   }) {
     return MapState(
       bounds: bounds ?? this.bounds,
@@ -65,7 +65,7 @@ class MapState {
       includeArchived: includeArchived ?? this.includeArchived,
       withPartners: withPartners ?? this.withPartners,
       relativeDays: relativeDays ?? this.relativeDays,
-      customTimeRange: customTimeRange ?? this.customTimeRange,
+      timeRange: timeRange ?? this.timeRange,
     );
   }
 
@@ -74,8 +74,7 @@ class MapState {
     onlyFavorites: onlyFavorites,
     includeArchived: includeArchived,
     withPartners: withPartners,
-    relativeDays: relativeDays,
-    customTimeRange: customTimeRange,
+    timeRange: timeRange,
   );
 }
 
@@ -129,7 +128,7 @@ class MapStateNotifier extends Notifier<MapState> {
     ref
         .read(appSettingsServiceProvider)
         .setSetting(AppSettingsEnum.mapCustomTo, range.to == null ? "" : range.to!.toIso8601String());
-    state = state.copyWith(customTimeRange: range);
+    state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -143,7 +142,7 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: mapConfig.withPartners,
       relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
-      customTimeRange: TimeRange(
+      timeRange: TimeRange(
         from: customFrom.isNotEmpty ? DateTime.parse(customFrom) : null,
         to: customTo.isNotEmpty ? DateTime.parse(customTo) : null,
       ),
