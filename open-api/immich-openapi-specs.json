@@ -16149,7 +16149,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
@@ -16220,7 +16228,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
