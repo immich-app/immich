@@ -696,7 +696,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.value?.tagsEnabled ?? false)
+                    if (userPreferences.valueOrNull?.tagsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.sell_outlined,
                         onTap: showTagPicker,
@@ -722,14 +722,13 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.value?.ratingsEnabled ?? false) ...[
+                    if (userPreferences.valueOrNull?.ratingsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
                         label: 'search_filter_star_rating'.t(context: context),
                         currentFilter: ratingCurrentFilterWidget.value,
                       ),
-                    ],
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,
