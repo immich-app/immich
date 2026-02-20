@@ -219,7 +219,7 @@ enum ActionButtonType {
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.openInBrowser => OpenInBrowserActionButton(
-        remoteId: (context.asset as RemoteAsset).id,
+        remoteId: context.asset.remoteId!,
         origin: context.timelineOrigin,
         iconOnly: iconOnly,
         menuItem: menuItem,
