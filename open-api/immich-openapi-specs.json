@@ -2760,6 +2760,253 @@
         "x-immich-state": "Stable"
       }
     },
+    "/asset-files": {
+      "get": {
+        "description": "Returns a metadata about a specific asset file.",
+        "operationId": "searchAssetFiles",
+        "parameters": [
+          {
+            "name": "assetId",
+            "required": true,
+            "in": "query",
+            "description": "Asset ID to filter files by",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isEdited",
+            "required": false,
+            "in": "query",
+            "description": "The file was generated from an edit",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isProgressive",
+            "required": false,
+            "in": "query",
+            "description": "The file is a progressively encoded JPEG",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "Filter by type of file",
+            "schema": {
+              "$ref": "#/components/schemas/AssetFileType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetFileResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "assetFile.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/asset-files/{id}": {
+      "delete": {
+        "description": "Delete a file and remove it from the database.",
+        "operationId": "deleteAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Delete an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "assetFile.delete",
+        "x-immich-state": "Beta"
+      },
+      "get": {
+        "description": "Returns a metadata about a specific asset file.",
+        "operationId": "getAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetFileResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "assetFile.read",
+        "x-immich-state": "Beta"
+      }
+    },
+    "/asset-files/{id}/download": {
+      "get": {
+        "description": "Serve the contents of a specific asset file.",
+        "operationId": "downloadAssetFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Download an asset file",
+        "tags": [
+          "Asset files"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "assetFile.download",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets": {
       "delete": {
         "description": "Deletes multiple assets at the same time.",
@@ -15165,6 +15412,10 @@
       "description": "An asset is an image or video that has been uploaded to Immich."
     },
     {
+      "name": "Asset files",
+      "description": "An asset file is a file associated with an asset, including edited versions, thumbnails, etc."
+    },
+    {
       "name": "Authentication",
       "description": "Endpoints related to user authentication, including OAuth."
     },
@@ -16422,6 +16673,63 @@
           "imageWidth"
         ],
         "type": "object"
+      },
+      "AssetFileResponseDto": {
+        "properties": {
+          "createdAt": {
+            "description": "Creation date",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset file ID",
+            "type": "string"
+          },
+          "isEdited": {
+            "description": "The file was generated from an edit",
+            "type": "boolean"
+          },
+          "isProgressive": {
+            "description": "The file is a progressively encoded JPEG",
+            "type": "boolean"
+          },
+          "path": {
+            "description": "File path",
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetFileType"
+              }
+            ],
+            "description": "Type of file"
+          },
+          "updatedAt": {
+            "description": "Update date",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "createdAt",
+          "id",
+          "isEdited",
+          "isProgressive",
+          "path",
+          "type",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AssetFileType": {
+        "enum": [
+          "fullsize",
+          "preview",
+          "thumbnail",
+          "sidecar"
+        ],
+        "type": "string"
       },
       "AssetFullSyncDto": {
         "properties": {
@@ -19643,6 +19951,9 @@
           "asset.replace",
           "asset.copy",
           "asset.derive",
+          "assetFile.read",
+          "assetFile.delete",
+          "assetFile.download",
           "asset.edit.get",
           "asset.edit.create",
           "asset.edit.delete",
