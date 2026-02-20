@@ -46,8 +46,6 @@ export class SessionResponseDto {
   appVersion!: string | null;
   @ApiProperty({ description: 'Is pending sync reset' })
   isPendingSyncReset!: boolean;
-  @ApiProperty({ description: 'OAuth session ID' })
-  oauthSid!: string | null;
 }
 
 export class SessionCreateResponseDto extends SessionResponseDto {
@@ -65,5 +63,4 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,
   isPendingSyncReset: entity.isPendingSyncReset,
-  oauthSid: entity.oauthSid ?? null,
 });

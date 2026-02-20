@@ -32,12 +32,6 @@ export class SessionService extends BaseService {
       throw new BadRequestException('This endpoint can only be used with a session token');
     }
 
-    let oauthSid: string | null = null;
-    const parentSession = await this.sessionRepository.get(auth.session.id);
-    if (parentSession) {
-      oauthSid = parentSession.oauthSid;
-    }
-
     const token = this.cryptoRepository.randomBytesAsText(32);
     const tokenHashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.create({
@@ -47,7 +41,6 @@ export class SessionService extends BaseService {
       deviceType: dto.deviceType,
       deviceOS: dto.deviceOS,
       token: tokenHashed,
-      oauthSid,
     });
 
     return { ...mapSession(session), token };

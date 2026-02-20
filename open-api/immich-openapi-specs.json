@@ -21614,11 +21614,6 @@
             "description": "Is pending sync reset",
             "type": "boolean"
           },
-          "oauthSid": {
-            "description": "OAuth session ID",
-            "nullable": true,
-            "type": "string"
-          },
           "token": {
             "description": "Session token",
             "type": "string"
@@ -21636,7 +21631,6 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
-          "oauthSid",
           "token",
           "updatedAt"
         ],
@@ -21677,11 +21671,6 @@
             "description": "Is pending sync reset",
             "type": "boolean"
           },
-          "oauthSid": {
-            "description": "OAuth session ID",
-            "nullable": true,
-            "type": "string"
-          },
           "updatedAt": {
             "description": "Last update date",
             "type": "string"
@@ -21695,7 +21684,6 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
-          "oauthSid",
           "updatedAt"
         ],
         "type": "object"

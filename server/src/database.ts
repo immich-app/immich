@@ -239,7 +239,6 @@ export type Session = {
   appVersion: string | null;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
-  oauthSid: string | null;
 };
 
 export type Exif = Omit<Selectable<AssetExifTable>, 'updatedAt' | 'updateId' | 'lockedProperties'>;
@@ -356,7 +355,7 @@ export const columns = {
   ],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
-  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion', 'session.oauthSid'],
+  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   authSharedLink: [
     'shared_link.id',
     'shared_link.userId',

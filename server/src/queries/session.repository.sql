@@ -4,7 +4,8 @@
 select
   "id",
   "expiresAt",
-  "pinExpiresAt"
+  "pinExpiresAt",
+  "oauthSid"
 from
   "session"
 where
@@ -24,7 +25,6 @@ select
   "session"."updatedAt",
   "session"."pinExpiresAt",
   "session"."appVersion",
-  "session"."oauthSid",
   (
     select
       to_json(obj)
@@ -78,12 +78,12 @@ where
 -- SessionRepository.invalidateByOAuthSid
 delete from "session"
 where
-  "oauthSid" = $1::uuid
+  "oauthSid" = $1
 
 -- SessionRepository.invalidateByOAuthSidAndUserId
 delete from "session"
 where
-  "oauthSid" = $1::uuid
+  "oauthSid" = $1
   and "userId" = $2::uuid
 
 -- SessionRepository.invalidateByUserId

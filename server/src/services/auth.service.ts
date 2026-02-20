@@ -1,7 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isString } from 'class-validator';
 import { parse } from 'cookie';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
@@ -95,34 +94,41 @@ export class AuthService extends BaseService {
   }
 
   async backchannelLogout(dto: OAuthBackchannelLogoutDto): Promise<void> {
-    try {
-      const claims = await this.validateLogoutToken(dto.logout_token);
-      if (!claims) {
-        throw new BadRequestException('Invalid logout token: no claims found');
-      }
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new Error('Received backchannel logout request but OAuth is disabled');
+    }
 
-      if (claims.sub && !claims.sid) {
-        const user = await this.userRepository.getByOAuthId(claims.sub);
-        if (!user) {
-          throw new BadRequestException('User not found');
-        }
-        await this.sessionRepository.invalidateByUserId({ userId: user.id });
-      } else if (!claims.sub && claims.sid) {
-        await this.sessionRepository.invalidateByOAuthSid(claims.sid);
-      } else if (claims.sub && claims.sid) {
-        const user = await this.userRepository.getByOAuthId(claims.sub);
-        if (!user) {
-          throw new BadRequestException('User not found');
-        }
-        await this.sessionRepository.invalidateByOAuthSidAndUserId(claims.sid, user.id);
-      } else {
-        throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
-      }
+    let claims;
+    try {
+      claims = await this.oauthRepository.validateLogoutToken(oauth, dto.logout_token);
     } catch (error: Error | any) {
       this.logger.error(`Error backchannel logout: ${error.message}`);
       this.logger.error(error);
 
-      throw new BadRequestException('Error backchannel logout');
+      throw new BadRequestException('Error backchannel logout: token validation failed');
+    }
+
+    if (!claims) {
+      throw new BadRequestException('Invalid logout token: no claims found');
+    }
+
+    if (claims.sub && !claims.sid) {
+      const user = await this.userRepository.getByOAuthId(claims.sub);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      await this.sessionRepository.invalidateByUserId({ userId: user.id });
+    } else if (!claims.sub && claims.sid) {
+      await this.sessionRepository.invalidateByOAuthSid(claims.sid);
+    } else if (claims.sub && claims.sid) {
+      const user = await this.userRepository.getByOAuthId(claims.sub);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      await this.sessionRepository.invalidateByOAuthSidAndUserId(claims.sid, user.id);
+    } else {
+      throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
     }
   }
 
@@ -307,7 +313,7 @@ export class AuthService extends BaseService {
 
     const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
-    const { profile, oauthSid: oauthSid } = await this.oauthRepository.getProfileAndOAuthSid(
+    const { profile, sid: oauthSid } = await this.oauthRepository.getProfileAndOAuthSid(
       oauth,
       url,
       expectedState,
@@ -414,6 +420,7 @@ export class AuthService extends BaseService {
     const { oauth } = await this.getConfig({ withCache: false });
     const {
       profile: { sub: oauthId },
+      sid,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
@@ -421,11 +428,19 @@ export class AuthService extends BaseService {
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
+    if (auth.session) {
+      await this.sessionRepository.update(auth.session.id, { oauthSid: sid });
+    }
+
     const user = await this.userRepository.update(auth.user.id, { oauthId });
     return mapUserAdmin(user);
   }
 
   async unlink(auth: AuthDto): Promise<UserAdminResponseDto> {
+    if (auth.session) {
+      await this.sessionRepository.update(auth.session.id, { oauthSid: null });
+    }
+
     const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
     return mapUserAdmin(user);
   }
@@ -628,47 +643,5 @@ export class AuthService extends BaseService {
       expiresAt: session?.expiresAt?.toISOString(),
       pinExpiresAt: session?.pinExpiresAt?.toISOString(),
     };
-  }
-
-  async validateLogoutToken(logoutToken: string): Promise<{ sub?: string; sid?: string } | null> {
-    const { oauth } = await this.getConfig({ withCache: false });
-
-    if (!oauth.enabled) {
-      throw new Error('Received logout token but OAuth is disabled');
-    }
-
-    const jwksUri = await this.oauthRepository.getJwksUri(oauth);
-
-    try {
-      const JWKS = createRemoteJWKSet(new URL(jwksUri));
-
-      const { payload } = await jwtVerify(logoutToken, JWKS, {
-        issuer: oauth.issuerUrl,
-        audience: oauth.clientId,
-        algorithms: ['RS256'],
-      });
-
-      // Validate specific Logout Token claims (RFC 8963):
-      // "events" claim must exist and contain the backchannel-logout event
-      const events = payload.events as Record<string, any> | undefined;
-      if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
-        throw new Error('Missing backchannel-logout event claim');
-      }
-
-      // "nonce" must not be present
-      if (payload.nonce) {
-        throw new Error('Logout token must not contain a nonce');
-      }
-
-      return {
-        sub: payload.sub,
-        sid: payload.sid as string | undefined,
-      };
-    } catch (error: Error | any) {
-      this.logger.error(`Error validating JWT logout token: ${error.message}`);
-      this.logger.error(error);
-
-      throw new Error('Error validating JWT logout token', { cause: error });
-    }
   }
 }

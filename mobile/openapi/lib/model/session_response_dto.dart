@@ -21,7 +21,6 @@ class SessionResponseDto {
     this.expiresAt,
     required this.id,
     required this.isPendingSyncReset,
-    required this.oauthSid,
     required this.updatedAt,
   });
 
@@ -55,9 +54,6 @@ class SessionResponseDto {
   /// Is pending sync reset
   bool isPendingSyncReset;
 
-  /// OAuth session ID
-  String? oauthSid;
-
   /// Last update date
   String updatedAt;
 
@@ -71,7 +67,6 @@ class SessionResponseDto {
     other.expiresAt == expiresAt &&
     other.id == id &&
     other.isPendingSyncReset == isPendingSyncReset &&
-    other.oauthSid == oauthSid &&
     other.updatedAt == updatedAt;
 
   @override
@@ -85,11 +80,10 @@ class SessionResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (isPendingSyncReset.hashCode) +
-    (oauthSid == null ? 0 : oauthSid!.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, oauthSid=$oauthSid, updatedAt=$updatedAt]';
+  String toString() => 'SessionResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -109,11 +103,6 @@ class SessionResponseDto {
     }
       json[r'id'] = this.id;
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
-    if (this.oauthSid != null) {
-      json[r'oauthSid'] = this.oauthSid;
-    } else {
-    //  json[r'oauthSid'] = null;
-    }
       json[r'updatedAt'] = this.updatedAt;
     return json;
   }
@@ -135,7 +124,6 @@ class SessionResponseDto {
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
-        oauthSid: mapValueOfType<String>(json, r'oauthSid'),
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }
@@ -191,7 +179,6 @@ class SessionResponseDto {
     'deviceType',
     'id',
     'isPendingSyncReset',
-    'oauthSid',
     'updatedAt',
   };
 }
