@@ -76,8 +76,7 @@ private class NetworkApiImpl() : NetworkApi {
   }
 
   override fun getClientPointer(): Long {
-    val client = HttpClientManager.getClient()
-    return NativeBuffer.createGlobalRef(client)
+    return HttpClientManager.getClientPointer()
   }
 
   override fun setRequestHeaders(headers: Map<String, String>) {
