@@ -197,7 +197,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    _viewController = controller;
     if (!_showingDetails && _isZoomed) return;
     _beginDrag(details);
   }
