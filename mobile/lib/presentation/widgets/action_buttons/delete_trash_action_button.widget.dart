@@ -23,9 +23,14 @@ class DeleteTrashActionButton extends ConsumerWidget {
       return;
     }
 
-    final confirmDelete =
-        await showDialog<bool>(context: context, builder: (context) => const TrashDeleteDialog()) ?? false;
+    final selectCount = ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
 
+    final confirmDelete =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => TrashDeleteDialog(count: selectCount),
+        ) ??
+        false;
     if (!confirmDelete) {
       return;
     }
