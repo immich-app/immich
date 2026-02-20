@@ -403,23 +403,6 @@ export const uploadFiles = async (
 const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
-  const assetPath = path.parse(input);
-  const noExtension = path.join(assetPath.dir, assetPath.name);
-
-  const sidecarsFiles = await Promise.all(
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    [`${noExtension}.xmp`, `${input}.xmp`].map(async (sidecarPath) => {
-      try {
-        const stats = await stat(sidecarPath);
-        return new UploadFile(sidecarPath, stats.size);
-      } catch {
-        return false;
-      }
-    }),
-  );
-
-  const sidecarData = sidecarsFiles.find((file): file is UploadFile => file !== false);
-
   const formData = new FormData();
   formData.append('deviceAssetId', `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, ''));
   formData.append('deviceId', 'CLI');
@@ -429,8 +412,15 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   formData.append('isFavorite', 'false');
   formData.append('assetData', new UploadFile(input, stats.size));
 
-  if (sidecarData) {
-    formData.append('sidecarData', sidecarData);
+  const sidecarPath = findSidecar(input);
+  if (sidecarPath) {
+    try {
+      const stats = await stat(sidecarPath);
+      const sidecarData = new UploadFile(sidecarPath, stats.size);
+      formData.append('sidecarData', sidecarData);
+    } catch {
+      // noop
+    }
   }
 
   const response = await fetch(`${baseUrl}/assets`, {
@@ -446,7 +436,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-export const findSidecar = async (filepath: string): Promise<string | undefined> => {
+export const findSidecar = (filepath: string): string | undefined => {
   const assetPath = path.parse(filepath);
   const noExtension = path.join(assetPath.dir, assetPath.name);
 
@@ -456,7 +446,6 @@ export const findSidecar = async (filepath: string): Promise<string | undefined>
       return sidecarPath;
     }
   }
-  return undefined;
 };
 
 export const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
@@ -490,7 +479,7 @@ export const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], option
       await Promise.all(
         assetBatch.map(async (input: Asset) => {
           await unlink(input.filepath);
-          const sidecarPath = await findSidecar(input.filepath);
+          const sidecarPath = findSidecar(input.filepath);
           if (sidecarPath) {
             await unlink(sidecarPath);
           }

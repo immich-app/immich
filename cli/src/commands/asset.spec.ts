@@ -332,35 +332,35 @@ describe('findSidecar', () => {
     fs.rmSync(testDir, { recursive: true, force: true });
   });
 
-  it('should find sidecar file with photo.xmp naming convention', async () => {
+  it('should find sidecar file with photo.xmp naming convention', () => {
     const sidecarPath = path.join(testDir, 'test.xmp');
     fs.writeFileSync(sidecarPath, 'xmp data');
 
-    const result = await findSidecar(testFilePath);
+    const result = findSidecar(testFilePath);
     expect(result).toBe(sidecarPath);
   });
 
-  it('should find sidecar file with photo.ext.xmp naming convention', async () => {
+  it('should find sidecar file with photo.ext.xmp naming convention', () => {
     const sidecarPath = path.join(testDir, 'test.jpg.xmp');
     fs.writeFileSync(sidecarPath, 'xmp data');
 
-    const result = await findSidecar(testFilePath);
+    const result = findSidecar(testFilePath);
     expect(result).toBe(sidecarPath);
   });
 
-  it('should prefer photo.ext.xmp over photo.xmp when both exist', async () => {
+  it('should prefer photo.ext.xmp over photo.xmp when both exist', () => {
     const sidecarPath1 = path.join(testDir, 'test.xmp');
     const sidecarPath2 = path.join(testDir, 'test.jpg.xmp');
     fs.writeFileSync(sidecarPath1, 'xmp data 1');
     fs.writeFileSync(sidecarPath2, 'xmp data 2');
 
-    const result = await findSidecar(testFilePath);
+    const result = findSidecar(testFilePath);
     // Should return the first one found (photo.xmp) based on the order in the code
     expect(result).toBe(sidecarPath1);
   });
 
-  it('should return undefined when no sidecar file exists', async () => {
-    const result = await findSidecar(testFilePath);
+  it('should return undefined when no sidecar file exists', () => {
+    const result = findSidecar(testFilePath);
     expect(result).toBeUndefined();
   });
 });
