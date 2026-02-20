@@ -5052,7 +5052,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/DownloadArchiveDto"
               }
             }
           },
@@ -16117,7 +16117,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
@@ -16188,7 +16196,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
@@ -17660,6 +17676,26 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "DownloadArchiveDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "edited": {
+            "description": "Download edited asset if available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
         "type": "object"
       },
       "DownloadArchiveInfo": {
