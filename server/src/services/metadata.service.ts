@@ -289,8 +289,8 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace ?? null,
 
       // camera
-      make: exifTags.Make ?? exifTags?.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
-      model: exifTags.Model ?? exifTags?.Device?.ModelName ?? exifTags.AndroidModel ?? null,
+      make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
+      model: exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? null,
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
@@ -590,10 +590,10 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {
-    const asset = await this.assetRepository.getById(id, { exifInfo: true });
+    const asset = await this.assetRepository.getForMetadataExtractionTags(id);
     const results = await upsertTags(this.tagRepository, {
       userId: ownerId,
-      tags: asset?.exifInfo?.tags ?? [],
+      tags: asset?.tags ?? [],
     });
     await this.tagRepository.replaceAssetTags(
       id,

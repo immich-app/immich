@@ -118,7 +118,15 @@ export class AssetEditActionListDto {
     Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,
   )
   @ApiProperty({
-    anyOf: Object.values(actionToClass).map((target) => ({ $ref: getSchemaPath(target) })),
+    items: {
+      anyOf: Object.values(actionToClass).map((type) => ({ $ref: getSchemaPath(type) })),
+      discriminator: {
+        propertyName: 'action',
+        mapping: Object.fromEntries(
+          Object.entries(actionToClass).map(([action, type]) => [action, getSchemaPath(type)]),
+        ),
+      },
+    },
     description: 'List of edit actions to apply (crop, rotate, or mirror)',
   })
   edits!: AssetEditActionItem[];

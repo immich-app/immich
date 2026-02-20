@@ -37,13 +37,12 @@ run = "pnpm install --filter @immich/sdk --frozen-lockfile"
 
 [tasks."sdk:build"]
 dir = "open-api/typescript-sdk"
-env._.path = "./node_modules/.bin"
-run = "tsc"
+run = "pnpm run build"
 
 # i18n tasks
 [tasks."i18n:format"]
 dir = "i18n"
-run = { task = ":i18n:format-fix" }
+run = "pnpm run format"
 
 [tasks."i18n:format-fix"]
 dir = "i18n"

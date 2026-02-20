@@ -1874,22 +1874,6 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [ImmichUIShowcasePage]
-class ImmichUIShowcaseRoute extends PageRouteInfo<void> {
-  const ImmichUIShowcaseRoute({List<PageRouteInfo>? children})
-    : super(ImmichUIShowcaseRoute.name, initialChildren: children);
-
-  static const String name = 'ImmichUIShowcaseRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ImmichUIShowcasePage();
-    },
-  );
-}
-
-/// generated route for
 /// [LibraryPage]
 class LibraryRoute extends PageRouteInfo<void> {
   const LibraryRoute({List<PageRouteInfo>? children})

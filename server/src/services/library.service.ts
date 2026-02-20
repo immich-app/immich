@@ -248,9 +248,11 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
+    const newPaths = await this.assetRepository.filterNewExternalAssetPaths(library.id, job.paths);
+
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
-      job.paths.map((path) =>
+      newPaths.map((path) =>
         this.processEntity(path, library.ownerId, job.libraryId)
           .then((asset) => assetImports.push(asset))
           .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
@@ -654,7 +656,7 @@ export class LibraryService extends BaseService {
       const paths: string[] = [];
       for (const item of walkItems) {
         if (item.type === 'error') {
-          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message}`);
+          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message} for library ${library.id}`);
         } else {
           paths.push(item.path);
         }
