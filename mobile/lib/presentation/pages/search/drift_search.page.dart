@@ -150,10 +150,12 @@ class DriftSearchPage extends HookConsumerWidget {
       handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(people: value);
 
-        peopleCurrentFilterWidget.value = Text(
-          value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', '),
-          style: context.textTheme.labelLarge,
-        );
+        final label = value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        if (label.isNotEmpty) {
+          peopleCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
+        } else {
+          peopleCurrentFilterWidget.value = null;
+        }
       }
 
       handleClear() {
