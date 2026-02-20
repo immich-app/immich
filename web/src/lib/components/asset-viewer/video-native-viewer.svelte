@@ -168,6 +168,7 @@
           loop={$loopVideoPreference && loopVideo}
           autoplay={$autoPlayVideo}
           disablePictureInPicture
+          playsinline
           {...useSwipe(onSwipe)}
           class="h-full object-contain"
           oncanplay={(e) => handleCanPlay(e.currentTarget)}
