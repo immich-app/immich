@@ -1,9 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { SourceType } from 'src/enum';
-import { asset_face_source_type } from 'src/schema/enums';
-import { asset_face_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { PersonTable } from 'src/schema/tables/person.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -15,7 +9,13 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { SourceType } from 'src/enum';
+import { asset_face_source_type } from 'src/schema/enums';
+import { asset_face_audit } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 
 @Table({ name: 'asset_face' })
 @UpdatedAtTrigger('asset_face_updatedAt')

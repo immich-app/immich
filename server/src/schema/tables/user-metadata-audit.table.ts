@@ -1,6 +1,6 @@
+import { Column, CreateDateColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
 import { UserMetadataKey } from 'src/enum';
-import { Column, CreateDateColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
 @Table('user_metadata_audit')
 export class UserMetadataAuditTable {

@@ -8,7 +8,6 @@ import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
   AssetOrder,
   AssetType,
-  DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -392,23 +391,6 @@ export type JobItem =
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
-
-export type DatabaseConnectionURL = {
-  connectionType: 'url';
-  url: string;
-};
-
-export type DatabaseConnectionParts = {
-  connectionType: 'parts';
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  database: string;
-  ssl?: DatabaseSslMode;
-};
-
-export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
 
 export interface ExtensionVersion {
   name: VectorExtension;

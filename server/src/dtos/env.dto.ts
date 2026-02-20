@@ -1,6 +1,7 @@
+import { DatabaseSslMode } from '@immich/sql-tools';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { DatabaseSslMode, ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
+import { ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
 
 export class EnvDto {

@@ -52,9 +52,9 @@ class Workers {
     try {
       const value = await systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
       return value?.isMaintenanceMode || false;
-    } catch (error) {
+    } catch (error: Error | any) {
       // Table doesn't exist (migrations haven't run yet)
-      if (error instanceof PostgresError && error.code === '42P01') {
+      if ((error as PostgresError).code === '42P01') {
         return false;
       }
 

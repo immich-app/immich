@@ -1,6 +1,3 @@
-import { PluginTriggerType } from 'src/enum';
-import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { PluginTriggerType } from 'src/enum';
+import { PluginActionTable, PluginFilterTable } from 'src/schema/tables/plugin.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
 
 @Table('workflow')

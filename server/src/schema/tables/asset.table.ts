@@ -1,10 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
-import { asset_delete_audit } from 'src/schema/functions';
-import { LibraryTable } from 'src/schema/tables/library.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -17,7 +10,14 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { asset_delete_audit } from 'src/schema/functions';
+import { LibraryTable } from 'src/schema/tables/library.table';
+import { StackTable } from 'src/schema/tables/stack.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
 @Table('asset')
