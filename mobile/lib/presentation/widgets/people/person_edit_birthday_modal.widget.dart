@@ -90,6 +90,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
             selectedDate: _selectedDate,
             locale: context.locale,
             minimumDate: DateTime(1800, 1, 1),
+            maximumDate: DateTime(DateTime.now().year, 12, 31),
             onDateTimeChanged: (DateTime value) {
               setState(() {
                 _selectedDate = value;
