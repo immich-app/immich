@@ -85,6 +85,7 @@ class Timeline extends StatelessWidget {
             appBar: appBar,
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
+            persistentBottomBar: persistentBottomBar,
             snapToMonth: snapToMonth,
             initialScrollOffset: initialScrollOffset,
             maxWidth: constraints.maxWidth,
@@ -468,7 +469,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 child: Stack(
                   children: [
                     timeline,
-                    if (!isSelectionMode && isMultiSelectEnabled) ...[
+                    if (isBottomWidgetVisible)
                       Positioned(
                         top: MediaQuery.paddingOf(context).top,
                         left: 25,
@@ -477,8 +478,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                           child: Center(child: _MultiSelectStatusButton()),
                         ),
                       ),
-                      if (widget.bottomSheet != null) widget.bottomSheet!,
-                    ],
+                    if (isBottomWidgetVisible) widget.bottomSheet!,
                   ],
                 ),
               ),
