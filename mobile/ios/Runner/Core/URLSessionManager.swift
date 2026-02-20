@@ -3,6 +3,7 @@ import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
+private let APP_GROUP = "group.app.immich.share"
 
 /// Manages a shared URLSession with SSL configuration support.
 class URLSessionManager: NSObject {
@@ -24,6 +25,7 @@ class URLSessionManager: NSObject {
       directory: cacheDir
     )
     
+    config.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
     config.httpMaximumConnectionsPerHost = 64
     config.timeoutIntervalForRequest = 60
     config.timeoutIntervalForResource = 300
