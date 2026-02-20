@@ -52,7 +52,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
 
   double _snapOffset = 0.0;
-  double _lastScrollOffset = 0.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
@@ -91,7 +90,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _showDetails() {
     if (!_proxyScrollController.hasClients || _snapOffset <= 0) return;
-    _lastScrollOffset = _proxyScrollController.offset;
     _proxyScrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
 
@@ -105,18 +103,16 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _onScroll() {
     final offset = _proxyScrollController.offset;
-    if (offset > SnapScrollPhysics.minSnapDistance && offset > _lastScrollOffset) {
+    if (offset > SnapScrollPhysics.minSnapDistance) {
       _viewer.setShowingDetails(true);
     } else if (offset < SnapScrollPhysics.minSnapDistance - kTouchSlop) {
       _viewer.setShowingDetails(false);
     }
-    _lastScrollOffset = offset;
   }
 
   void _beginDrag(DragStartDetails details) {
     _dragStart = details;
     _shouldPopOnDrag = false;
-    _lastScrollOffset = _proxyScrollController.hasClients ? _proxyScrollController.offset : 0.0;
 
     if (_viewController != null) {
       _initialPhotoViewState = _viewController!.value;
