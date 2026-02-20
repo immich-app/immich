@@ -24,6 +24,7 @@ type MetricGroupOptions = { enabled: boolean };
 
 export class MetricGroupRepository {
   private enabled = false;
+  private observableGauges = new Map<string, () => number>();
 
   constructor(private metricService: MetricService) {}
 
@@ -42,6 +43,15 @@ export class MetricGroupRepository {
   addToHistogram(name: string, value: number, options?: MetricOptions): void {
     if (this.enabled) {
       this.metricService.getHistogram(name, options).record(value);
+    }
+  }
+
+  setObservableGauge(name: string, valueCallback: () => number, options?: MetricOptions): void {
+    if (this.enabled && !this.observableGauges.has(name)) {
+      this.observableGauges.set(name, valueCallback);
+      this.metricService.getObservableGauge(name, options).addCallback((observableResult) => {
+        observableResult.observe(valueCallback());
+      });
     }
   }
 
