@@ -74,7 +74,7 @@ class Timeline extends StatefulWidget {
     this.snapToMonth = true,
     this.initialScrollOffset,
     this.readOnly = false,
-    this.withPersistentBottomBar = false,
+    this.persistentBottomBar = false,
   });
 
   final Widget? topSliverWidget;
@@ -88,7 +88,7 @@ class Timeline extends StatefulWidget {
   final bool snapToMonth;
   final double? initialScrollOffset;
   final bool readOnly;
-  final bool withPersistentBottomBar;
+  final bool persistentBottomBar;
 
   @override
   State<Timeline> createState() => _TimelineState();
@@ -145,7 +145,7 @@ class _TimelineState extends State<Timeline> {
                 appBar: widget.appBar,
                 bottomSheet: widget.bottomSheet,
                 withScrubber: widget.withScrubber,
-                withPersistentBottomBar: widget.withPersistentBottomBar,
+                persistentBottomBar: widget.persistentBottomBar,
                 snapToMonth: widget.snapToMonth,
                 initialScrollOffset: widget.initialScrollOffset,
               ),
@@ -176,7 +176,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
-    this.withPersistentBottomBar = false,
+    this.persistentBottomBar = false,
     this.snapToMonth = true,
     this.initialScrollOffset,
   });
@@ -186,7 +186,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
-  final bool withPersistentBottomBar;
+  final bool persistentBottomBar;
   final bool snapToMonth;
   final double? initialScrollOffset;
 
@@ -411,7 +411,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
-        widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.withPersistentBottomBar);
+        widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
