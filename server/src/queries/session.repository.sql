@@ -4,8 +4,7 @@
 select
   "id",
   "expiresAt",
-  "pinExpiresAt",
-  "oauthSid"
+  "pinExpiresAt"
 from
   "session"
 where
@@ -75,18 +74,7 @@ delete from "session"
 where
   "id" = $1::uuid
 
--- SessionRepository.invalidateByOAuthSid
-delete from "session"
-where
-  "oauthSid" = $1
-
--- SessionRepository.invalidateByOAuthSidAndUserId
-delete from "session"
-where
-  "oauthSid" = $1
-  and "userId" = $2::uuid
-
--- SessionRepository.invalidateByUserId
+-- SessionRepository.invalidateAll
 delete from "session"
 where
   "userId" = $1
