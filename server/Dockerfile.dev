@@ -27,16 +27,14 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 FROM dev AS dev-container-server
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install sudo inetutils-ping openjdk-21-jre-headless \
+  apt-get install inetutils-ping openjdk-21-jre-headless \
   vim nano curl \
   -y --no-install-recommends --fix-missing
 
-RUN usermod -aG sudo node && \
-  echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-  mkdir -p /workspaces/immich
+RUN mkdir -p /workspaces && \
+  ln -s /usr/src/app /workspaces/immich
 
-RUN chown node:node -R /workspaces
-COPY --chown=node:node --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
+COPY --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
 
 WORKDIR /workspaces/immich
 
