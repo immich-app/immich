@@ -1705,6 +1705,8 @@
   "permanently_delete": "Permanently delete",
   "permanently_delete_assets_count": "Permanently delete {count, plural, one {asset} other {assets}}",
   "permanently_delete_assets_prompt": "Are you sure you want to permanently delete {count, plural, one {this asset?} other {these <b>#</b> assets?}} This will also remove {count, plural, one {it from its} other {them from their}} album(s).",
+  "permanently_delete_from_trash": "Permanently delete from trash",
+  "permanently_delete_from_trash_prompt": "Are you sure you want to permanently delete these assets from the trash? This action cannot be undone.",
   "permanently_deleted_asset": "Permanently deleted asset",
   "permanently_deleted_assets_count": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
   "permission": "Permission",
