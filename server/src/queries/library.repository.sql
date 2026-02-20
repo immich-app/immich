@@ -36,27 +36,37 @@ select
       (
         "asset"."type" = $1
         and "asset"."visibility" != $2
+        and "asset"."isOffline" = $3
       )
   ) as "photos",
   count(*) filter (
     where
       (
-        "asset"."type" = $3
-        and "asset"."visibility" != $4
+        "asset"."type" = $4
+        and "asset"."visibility" != $5
+        and "asset"."isOffline" = $6
       )
   ) as "videos",
-  coalesce(sum("asset_exif"."fileSizeInByte"), $5) as "usage"
+  count(*) filter (
+    where
+      (
+        "asset"."isOffline" = $7
+        and "asset"."visibility" != $8
+      )
+  ) as "offline",
+  coalesce(sum("asset_exif"."fileSizeInByte"), $9) as "usage"
 from
   "library"
   inner join "asset" on "asset"."libraryId" = "library"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "library"."id" = $6
+  "library"."id" = $10
 group by
   "library"."id"
 select
   0::int as "photos",
   0::int as "videos",
+  0::int as "offline",
   0::int as "usage",
   0::int as "total"
 from

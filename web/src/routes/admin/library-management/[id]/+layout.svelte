@@ -14,10 +14,19 @@
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
   } from '$lib/services/library.service';
+  import type { ByteUnit } from '$lib/utils/byte-units';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import type { LibraryResponseDto } from '@immich/sdk';
+
+  import type { LibraryResponseDto, LibraryStatsResponseDto } from '@immich/sdk';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
-  import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
+  import {
+    mdiCameraIris,
+    mdiChartPie,
+    mdiFileDocumentRemoveOutline,
+    mdiFilterMinusOutline,
+    mdiFolderOutline,
+    mdiPlayCircle,
+  } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { LayoutData } from './$types';
@@ -29,8 +38,32 @@
 
   const { children, data }: Props = $props();
 
-  const statistics = data.statistics;
-  const [storageUsage, unit] = getBytesWithUnit(statistics.usage);
+  let statistics = $state<LibraryStatsResponseDto | undefined>(undefined);
+  let storageUsage = $state<number | undefined>(undefined);
+  let unit = $state<ByteUnit | undefined>(undefined);
+
+  $effect(() => {
+    if (statistics) {
+      const [usage, u] = getBytesWithUnit(statistics.usage);
+      storageUsage = usage;
+      unit = u;
+    } else {
+      storageUsage = undefined;
+      unit = undefined;
+    }
+  });
+
+  const loadStatistics = async () => {
+    try {
+      statistics = await data.statisticsPromise;
+    } catch (error) {
+      console.error('Failed to load statistics:', error);
+    }
+  };
+
+  $effect(() => {
+    void loadStatistics();
+  });
 
   let library = $state(data.library);
 
@@ -61,8 +94,8 @@
     <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 w-full">
       <Heading tag="h1" size="large" class="col-span-full my-4">{library.name}</Heading>
       <div class="flex flex-col lg:flex-row gap-4 col-span-full">
-        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={statistics.photos} />
-        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={statistics.videos} />
+        <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={statistics?.photos} />
+        <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={statistics?.videos} />
         <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} value={storageUsage} {unit} />
       </div>
 
@@ -112,6 +145,10 @@
           </tbody>
         </table>
       </AdminCard>
+
+      <div class="flex flex-col lg:flex-row gap-4">
+        <ServerStatisticsCard icon={mdiFileDocumentRemoveOutline} title={$t('offline')} value={statistics?.offline} />
+      </div>
     </div>
     {@render children?.()}
   </Container>

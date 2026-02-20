@@ -5,11 +5,11 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
   await authenticate(url, { admin: true });
-  const stats = await getServerStatistics();
+  const statsPromise = getServerStatistics();
   const $t = await getFormatter();
 
   return {
-    stats,
+    statsPromise,
     meta: {
       title: $t('server_stats'),
     },

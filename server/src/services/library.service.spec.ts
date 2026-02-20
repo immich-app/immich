@@ -681,12 +681,19 @@ describe(LibraryService.name, () => {
     it('should return library statistics', async () => {
       const library = factory.library();
 
-      mocks.library.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
+      mocks.library.getStatistics.mockResolvedValue({
+        photos: 10,
+        videos: 0,
+        total: 10,
+        usage: 1337,
+        offline: 67,
+      });
       await expect(sut.getStatistics(library.id)).resolves.toEqual({
         photos: 10,
         videos: 0,
         total: 10,
         usage: 1337,
+        offline: 67,
       });
 
       expect(mocks.library.getStatistics).toHaveBeenCalledWith(library.id);

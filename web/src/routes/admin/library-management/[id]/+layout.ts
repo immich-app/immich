@@ -16,12 +16,12 @@ export const load = (async ({ params: { id }, url }) => {
     redirect(307, Route.libraries());
   }
 
-  const statistics = await getLibraryStatistics({ id });
+  const statisticsPromise = getLibraryStatistics({ id });
   const $t = await getFormatter();
 
   return {
     library,
-    statistics,
+    statisticsPromise,
     meta: {
       title: $t('admin.library_details'),
     },
