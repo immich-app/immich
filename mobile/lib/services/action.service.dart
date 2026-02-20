@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
@@ -22,6 +23,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
+import 'package:immich_mobile/widgets/common/tag_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -35,6 +37,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(trashedLocalAssetRepository),
     ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
+    ref.watch(tagProvider.notifier),
   ),
 );
 
@@ -47,6 +50,7 @@ class ActionService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
+  final TagNotifier _tagService;
 
   const ActionService(
     this._assetApiRepository,
@@ -57,6 +61,7 @@ class ActionService {
     this._trashedLocalAssetRepository,
     this._assetMediaRepository,
     this._downloadRepository,
+    this._tagService,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -219,6 +224,26 @@ class ActionService {
     await _assetApiRepository.updateRating(assetId, rating);
     await _remoteAssetRepository.updateRating(assetId, rating);
 
+    return true;
+  }
+
+  Future<bool> tagAssets(List<String> remoteIds, BuildContext context) async {
+    final tagResults = await showTagPickerModal(context: context);
+    if (tagResults == null) {
+      // user cancelled
+      return false;
+    }
+
+    final selectedTagIds = tagResults.$1;
+    final selectedNewTagValues = tagResults.$2;
+
+    if (selectedNewTagValues.isNotEmpty) {
+      final upsertedTags = await _tagService.upsertTags(selectedNewTagValues.toList());
+      selectedTagIds.addAll(upsertedTags.map((t) => t.id));
+    }
+    if (selectedTagIds.isNotEmpty) {
+      await _tagService.bulkTagAssets(remoteIds, selectedTagIds.toList());
+    }
     return true;
   }
 

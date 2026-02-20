@@ -13,6 +13,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAlbumRepository extends Mock implements AlbumRepository {}
@@ -46,3 +47,5 @@ class MockPartnerRepository extends Mock implements PartnerRepository {}
 class MockPartnerApiRepository extends Mock implements PartnerApiRepository {}
 
 class MockLocalFilesManagerRepository extends Mock implements LocalFilesManagerRepository {}
+
+class MockTagNotifier extends Mock implements TagNotifier {}
