@@ -53,6 +53,7 @@ object HttpClientManager {
     private set
 
   var headers: Headers = Headers.headersOf()
+    private set
 
   val isMtls: Boolean get() = keyChainAlias != null || keyStore.containsAlias(CERT_ALIAS)
 

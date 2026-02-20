@@ -321,7 +321,6 @@ class BackupService {
             onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
 
-          baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.fields['deviceAssetId'] = asset.localId!;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] = asset.fileCreatedAt.toUtc().toIso8601String();
