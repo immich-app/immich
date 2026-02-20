@@ -323,6 +323,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         row.deletedAt.isNull() & row.ownerId.equals(userId) & row.visibility.equalsValue(AssetVisibility.archive),
     groupBy: groupBy,
     origin: TimelineOrigin.archive,
+    joinLocal: true,
   );
 
   TimelineQuery locked(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
