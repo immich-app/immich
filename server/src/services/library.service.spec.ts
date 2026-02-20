@@ -162,7 +162,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockReturnValue(
         (async function* () {
-          yield await Promise.resolve(['/data/user1/photo.jpg']);
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
         })(),
       );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
@@ -202,7 +202,7 @@ describe(LibraryService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.storage.walk.mockReturnValue(
         (async function* () {
-          yield await Promise.resolve(['/data/user1/photo.jpg']);
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
         })(),
       );
       mocks.library.get.mockResolvedValue(library);
@@ -225,7 +225,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.walk.mockReturnValue(
         (async function* () {
-          yield await Promise.resolve(['/data/user1/photo.jpg']);
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
         })(),
       );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);

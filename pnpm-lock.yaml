@@ -344,8 +344,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@immich/walkrs':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: ^0.0.13
+        version: 0.0.13
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.13(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.13)(bullmq@5.68.0)
@@ -3023,8 +3023,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@immich/walkrs@0.0.12':
-    resolution: {integrity: sha512-I5ZhLJwYalf24bPX6rsSe6NQC9nKH/Sc/HQ2i7ZfD3dLnXZn7Cq7UQC7d0tVkMSM7rNQCjuL8r7ldUrWg4t2Vg==}
+  '@immich/walkrs@0.0.13':
+    resolution: {integrity: sha512-qKDoXFgy3d2Z7SIJBn25BcNyQnPLAp2zZEBcewpWxG5+qAXDPi3M3sweJ9qJ11Eha+YlmpUO3c8yd5CCBeq96A==}
     engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@1.0.2':
@@ -14929,7 +14929,7 @@ snapshots:
     transitivePeerDependencies:
       - '@sveltejs/kit'
 
-  '@immich/walkrs@0.0.12': {}
+  '@immich/walkrs@0.0.13': {}
 
   '@inquirer/ansi@1.0.2': {}
 

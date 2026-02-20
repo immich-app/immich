@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
-    "@immich/walkrs": "^0.0.12",
+    "@immich/walkrs": "^0.0.13",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",

@@ -1,3 +1,4 @@
+import type { WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
@@ -197,7 +198,7 @@ export class StorageRepository {
     };
   }
 
-  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[], void, unknown> {
+  async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<WalkItem[], void, unknown> {
     const { pathsToWalk, exclusionPatterns, includeHidden } = walkOptions;
     if (pathsToWalk.length === 0) {
       return;

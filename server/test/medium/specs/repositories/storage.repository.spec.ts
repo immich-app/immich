@@ -1,7 +1,8 @@
+import type { WalkError, WalkItem } from '@immich/walkrs' with { 'resolution-mode': 'import' };
 import { Kysely } from 'kysely';
 import fs from 'node:fs/promises';
 import os from 'node:os';
-import path from 'node:path';
+import path, { join } from 'node:path';
 import { WalkOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -229,7 +230,11 @@ describe(StorageRepository.name, () => {
 
           const actual: string[] = [];
           for await (const batch of sut.walk(adjustedOptions)) {
-            actual.push(...batch);
+            for (const item of batch) {
+              if (item.type === 'entry') {
+                actual.push(item.path);
+              }
+            }
           }
           const expected = Object.entries(files)
             .filter((entry) => entry[1])
@@ -239,5 +244,90 @@ describe(StorageRepository.name, () => {
         });
       });
     }
+
+    it('should handle access denied errors gracefully', async () => {
+      const testDir = await fs.mkdtemp(join(os.tmpdir(), 'immich-test-access-denied-'));
+      const restrictedDir = join(testDir, 'restricted');
+      const restrictedFile = join(restrictedDir, 'file.jpg');
+      const accessibleFile = join(testDir, 'accessible.jpg');
+
+      try {
+        // Create test directory structure
+        await fs.mkdir(restrictedDir, { recursive: true });
+        await fs.writeFile(accessibleFile, 'accessible content');
+        await fs.writeFile(restrictedFile, 'restricted content');
+
+        // Remove all permissions from restricted directory to simulate access denied
+        await fs.chmod(restrictedDir, 0o000);
+
+        const actual: string[] = [];
+        const errors: WalkItem[] = [];
+        for await (const batch of sut.walk({ pathsToWalk: [testDir] })) {
+          for (const item of batch) {
+            if (item.type === 'entry') {
+              actual.push(item.path);
+            } else {
+              errors.push(item);
+            }
+          }
+        }
+
+        // Should successfully walk accessible file but skip restricted directory
+        expect(actual).toContain(accessibleFile);
+        expect(actual).not.toContain(restrictedFile);
+        // Should have encountered an error for the restricted directory
+        expect(errors.length).toBe(1);
+        expect(errors.some((e) => e.type === 'error' && e.message?.includes('restricted'))).toBe(true);
+      } finally {
+        // Cleanup: restore permissions before deletion
+        try {
+          await fs.chmod(restrictedDir, 0o755);
+        } catch {
+          // Ignore errors if directory was already deleted or permissions cannot be restored
+        }
+        await fs.rm(testDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should return error details for access denied paths', async () => {
+      const testDir = await fs.mkdtemp(join(os.tmpdir(), 'immich-test-access-denied-'));
+      const restrictedDir = join(testDir, 'restricted');
+      const restrictedFile = join(restrictedDir, 'file.jpg');
+      const accessibleFile = join(testDir, 'accessible.jpg');
+
+      try {
+        // Create test directory structure
+        await fs.mkdir(restrictedDir, { recursive: true });
+        await fs.writeFile(accessibleFile, 'accessible content');
+        await fs.writeFile(restrictedFile, 'restricted content');
+
+        // Remove all permissions from restricted directory to simulate access denied
+        await fs.chmod(restrictedDir, 0o000);
+
+        const errors: WalkError[] = [];
+        for await (const batch of sut.walk({ pathsToWalk: [testDir] })) {
+          for (const item of batch) {
+            if (item.type === 'error') {
+              errors.push(item);
+            }
+          }
+        }
+
+        // Should have error details including path and message
+        expect(errors.length).toBe(1);
+        const restrictedError = errors.find((e) => e.type === 'error' && e.message?.includes('restricted'));
+        expect(restrictedError).toBeDefined();
+        expect(restrictedError?.type).toBe('error');
+        expect(restrictedError?.message).toBeDefined();
+      } finally {
+        // Cleanup: restore permissions before deletion
+        try {
+          await fs.chmod(restrictedDir, 0o755);
+        } catch {
+          // Ignore errors if directory was already deleted or permissions cannot be restored
+        }
+        await fs.rm(testDir, { recursive: true, force: true });
+      }
+    });
   });
 });

@@ -4,6 +4,7 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
+
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -639,7 +640,7 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    const fileGenerator = this.storageRepository.walk({
+    const fileWalker = this.storageRepository.walk({
       pathsToWalk: validImportPaths,
       includeHidden: false, // TODO: make this configurable?
       exclusionPatterns: library.exclusionPatterns,
@@ -649,7 +650,20 @@ export class LibraryService extends BaseService {
     let progressCounter = 0;
     let lastLoggedMilestone = 0;
 
-    for await (const paths of fileGenerator) {
+    for await (const walkItems of fileWalker) {
+      const paths: string[] = [];
+      for (const item of walkItems) {
+        if (item.type === 'error') {
+          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message}`);
+        } else {
+          paths.push(item.path);
+        }
+      }
+
+      if (paths.length === 0) {
+        continue;
+      }
+
       progressCounter += paths.length;
 
       await this.jobRepository.queue({
