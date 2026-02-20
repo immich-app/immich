@@ -118,15 +118,11 @@ export class AuthService extends BaseService {
       if (!user) {
         throw new BadRequestException('User not found');
       }
-      await this.sessionRepository.invalidateByUserId({ userId: user.id });
+      await this.sessionRepository.invalidateAll({ userId: user.id });
     } else if (!claims.sub && claims.sid) {
-      await this.sessionRepository.invalidateByOAuthSid(claims.sid);
+      await this.sessionRepository.invalidateOAuth({ oauthSid: claims.sid });
     } else if (claims.sub && claims.sid) {
-      const user = await this.userRepository.getByOAuthId(claims.sub);
-      if (!user) {
-        throw new BadRequestException('User not found');
-      }
-      await this.sessionRepository.invalidateByOAuthSidAndUserId(claims.sid, user.id);
+      await this.sessionRepository.invalidateOAuth({ oauthSid: claims.sid, oauthId: claims.sub });
     } else {
       throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
     }
