@@ -25,14 +25,15 @@
 
 {#if showVideo}
   <div class="h-full w-full bg-pink-9000" transition:fade={{ duration: assetViewerFadeDuration }}>
-    <media-controller>
+    <media-controller nohotkeys class="h-full w-full rounded-2xl object-contain transition-all">
       <!-- svelte-ignore a11y_media_has_caption -->
       <video
         bind:this={videoPlayer}
+        slot="media"
         autoplay={$autoPlayVideo}
         playsinline
         disablepictureinpicture
-        class="h-full w-full rounded-2xl object-contain transition-all"
+        class="h-full w-full"
         src={getAssetPlaybackUrl({ id: asset.id })}
         poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
         draggable="false"
