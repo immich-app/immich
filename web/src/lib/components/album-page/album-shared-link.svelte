@@ -1,9 +1,8 @@
 <script lang="ts">
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import { getSharedLinkActions } from '$lib/services/shared-link.service';
   import { locale } from '$lib/stores/preferences.store';
   import type { AlbumResponseDto, SharedLinkResponseDto } from '@immich/sdk';
-  import { Text } from '@immich/ui';
+  import { ActionButton, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 

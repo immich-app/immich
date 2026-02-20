@@ -419,11 +419,6 @@
     }
     onSelect(asset);
 
-    if (singleSelect) {
-      timelineManager.scrollTo(0);
-      return;
-    }
-
     const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
 

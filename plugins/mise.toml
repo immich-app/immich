@@ -1,7 +1,7 @@
 [tools]
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
-"github:extism/js-pdk" = "1.5.1"
+"github:extism/js-pdk" = "1.6.0"
 
 [tasks.install]
 run = "pnpm install --frozen-lockfile"

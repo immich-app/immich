@@ -29,7 +29,38 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-class Timeline extends ConsumerWidget {
+class _TimelineRestorationState extends ChangeNotifier {
+  int? _restoreAssetIndex;
+  bool _shouldRestoreAssetPosition = false;
+
+  int? get restoreAssetIndex => _restoreAssetIndex;
+  bool get shouldRestoreAssetPosition => _shouldRestoreAssetPosition;
+
+  void setRestoreAssetIndex(int? index) {
+    _restoreAssetIndex = index;
+    notifyListeners();
+  }
+
+  void setShouldRestoreAssetPosition(bool should) {
+    _shouldRestoreAssetPosition = should;
+    notifyListeners();
+  }
+
+  void clearRestoreAssetIndex() {
+    _restoreAssetIndex = null;
+    notifyListeners();
+  }
+}
+
+class _TimelineRestorationProvider extends InheritedNotifier<_TimelineRestorationState> {
+  const _TimelineRestorationProvider({required super.notifier, required super.child});
+
+  static _TimelineRestorationState of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_TimelineRestorationProvider>()!.notifier!;
+  }
+}
+
+class Timeline extends StatefulWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -43,6 +74,7 @@ class Timeline extends ConsumerWidget {
     this.snapToMonth = true,
     this.initialScrollOffset,
     this.readOnly = false,
+    this.persistentBottomBar = false,
   });
 
   final Widget? topSliverWidget;
@@ -56,38 +88,70 @@ class Timeline extends ConsumerWidget {
   final bool snapToMonth;
   final double? initialScrollOffset;
   final bool readOnly;
+  final bool persistentBottomBar;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<Timeline> createState() => _TimelineState();
+}
+
+class _TimelineState extends State<Timeline> {
+  double? _lastWidth;
+  late final _TimelineRestorationState _restorationState;
+
+  @override
+  void initState() {
+    super.initState();
+    _restorationState = _TimelineRestorationState();
+  }
+
+  @override
+  void dispose() {
+    _restorationState.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
-        builder: (_, constraints) => ProviderScope(
-          overrides: [
-            timelineArgsProvider.overrideWithValue(
-              TimelineArgs(
-                maxWidth: constraints.maxWidth,
-                maxHeight: constraints.maxHeight,
-                columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
-                showStorageIndicator: showStorageIndicator,
-                withStack: withStack,
-                groupBy: groupBy,
+        builder: (_, constraints) {
+          if (_lastWidth != null && _lastWidth != constraints.maxWidth) {
+            _restorationState.setShouldRestoreAssetPosition(true);
+          }
+          _lastWidth = constraints.maxWidth;
+          return _TimelineRestorationProvider(
+            notifier: _restorationState,
+            child: ProviderScope(
+              key: ValueKey(_lastWidth),
+              overrides: [
+                timelineArgsProvider.overrideWith(
+                  (ref) => TimelineArgs(
+                    maxWidth: constraints.maxWidth,
+                    maxHeight: constraints.maxHeight,
+                    columnCount: ref.watch(settingsProvider.select((s) => s.get(Setting.tilesPerRow))),
+                    showStorageIndicator: widget.showStorageIndicator,
+                    withStack: widget.withStack,
+                    groupBy: widget.groupBy,
+                  ),
+                ),
+                if (widget.readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+              ],
+              child: _SliverTimeline(
+                key: const ValueKey('_sliver_timeline'),
+                topSliverWidget: widget.topSliverWidget,
+                topSliverWidgetHeight: widget.topSliverWidgetHeight,
+                appBar: widget.appBar,
+                bottomSheet: widget.bottomSheet,
+                withScrubber: widget.withScrubber,
+                persistentBottomBar: widget.persistentBottomBar,
+                snapToMonth: widget.snapToMonth,
+                initialScrollOffset: widget.initialScrollOffset,
               ),
             ),
-            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-          ],
-          child: _SliverTimeline(
-            key: const ValueKey('_sliver_timeline'),
-            topSliverWidget: topSliverWidget,
-            topSliverWidgetHeight: topSliverWidgetHeight,
-            appBar: appBar,
-            bottomSheet: bottomSheet,
-            withScrubber: withScrubber,
-            snapToMonth: snapToMonth,
-            initialScrollOffset: initialScrollOffset,
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -112,6 +176,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
+    this.persistentBottomBar = false,
     this.snapToMonth = true,
     this.initialScrollOffset,
   });
@@ -121,6 +186,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
+  final bool persistentBottomBar;
   final bool snapToMonth;
   final double? initialScrollOffset;
 
@@ -141,7 +207,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   int _perRow = 4;
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
-  int? _restoreAssetIndex;
 
   @override
   void initState() {
@@ -182,13 +247,16 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   }
 
   void _restoreAssetPosition(_) {
-    if (_restoreAssetIndex == null) return;
+    final restorationState = _TimelineRestorationProvider.of(context);
+    if (!restorationState.shouldRestoreAssetPosition || restorationState.restoreAssetIndex == null) return;
 
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
-      final targetSegment = segments.lastWhereOrNull((segment) => segment.firstAssetIndex <= _restoreAssetIndex!);
+      final targetSegment = segments.lastWhereOrNull(
+        (segment) => segment.firstAssetIndex <= restorationState.restoreAssetIndex!,
+      );
       if (targetSegment != null) {
-        final assetIndexInSegment = _restoreAssetIndex! - targetSegment.firstAssetIndex;
+        final assetIndexInSegment = restorationState.restoreAssetIndex! - targetSegment.firstAssetIndex;
         final newColumnCount = ref.read(timelineArgsProvider).columnCount;
         final rowIndexInSegment = (assetIndexInSegment / newColumnCount).floor();
         final targetRowIndex = targetSegment.firstIndex + 1 + rowIndexInSegment;
@@ -200,7 +268,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         });
       }
     });
-    _restoreAssetIndex = null;
+    restorationState.clearRestoreAssetIndex();
   }
 
   int? _getCurrentAssetIndex(List<Segment> segments) {
@@ -341,6 +409,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
+    final isBottomWidgetVisible =
+        widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -411,7 +482,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               onNotification: (notification) {
                 final currentIndex = _getCurrentAssetIndex(segments);
                 if (currentIndex != null && mounted) {
-                  _restoreAssetIndex = currentIndex;
+                  _TimelineRestorationProvider.of(context).setRestoreAssetIndex(currentIndex);
                 }
                 return false;
               },
@@ -430,12 +501,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                         final targetAssetIndex = _getCurrentAssetIndex(segments);
 
                         if (newPerRow != _perRow) {
+                          final restorationState = _TimelineRestorationProvider.of(context);
                           setState(() {
                             _scaleFactor = newScaleFactor;
                             _perRow = newPerRow;
-                            _restoreAssetIndex = targetAssetIndex;
                           });
 
+                          restorationState.setRestoreAssetIndex(targetAssetIndex);
+                          restorationState.setShouldRestoreAssetPosition(true);
                           ref.read(settingsProvider.notifier).set(Setting.tilesPerRow, _perRow);
                         }
                       };
@@ -454,7 +527,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   child: Stack(
                     children: [
                       timeline,
-                      if (!isSelectionMode && isMultiSelectEnabled) ...[
+                      if (isMultiSelectStatusVisible)
                         Positioned(
                           top: MediaQuery.paddingOf(context).top,
                           left: 25,
@@ -463,8 +536,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                             child: Center(child: _MultiSelectStatusButton()),
                           ),
                         ),
-                        if (widget.bottomSheet != null) widget.bottomSheet!,
-                      ],
+                      if (isBottomWidgetVisible) widget.bottomSheet!,
                     ],
                   ),
                 ),

@@ -10,7 +10,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -25,6 +24,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
@@ -34,7 +34,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
-  import { IconButton, toastManager } from '@immich/ui';
+  import { ActionButton, IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
     mdiChevronDown,
@@ -48,7 +48,6 @@
     mdiImageSearch,
     mdiPause,
     mdiPlay,
-    mdiPlus,
     mdiSelectAll,
     mdiVolumeHigh,
     mdiVolumeOff,
@@ -328,6 +327,7 @@
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
+      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
       <CreateSharedLink />
       <IconButton
         shape="round"
@@ -338,10 +338,7 @@
         onclick={handleSelectAll}
       />
 
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
+      <ActionButton action={Actions.AddToAlbum} />
 
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
 
