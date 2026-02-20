@@ -132,9 +132,18 @@ object HttpClientManager {
     }
   }
 
+  private var clientGlobalRef: Long = 0L
+
   @JvmStatic
   fun getClient(): OkHttpClient {
     return client
+  }
+
+  fun getClientPointer(): Long {
+    if (clientGlobalRef == 0L) {
+      clientGlobalRef = NativeBuffer.createGlobalRef(client)
+    }
+    return clientGlobalRef
   }
 
   fun addClientChangedListener(listener: () -> Unit) {
