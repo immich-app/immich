@@ -872,10 +872,9 @@ export class MediaService extends BaseService {
 
   private resolveFinalImageFormat(isTransparent: boolean, format: ImageFormat, assetId: string): ImageFormat {
     if (isTransparent && format === ImageFormat.Jpeg) {
-      this.logger.debug(
-        `Overriding output format from ${format} to ${ImageFormat.Webp} to preserve alpha channel for asset ${assetId}`,
+      this.logger.warn(
+        `Asset ${assetId} has transparency but the configured format is ${format} which does not support it, consider using a format that does, such as ${ImageFormat.Webp}`,
       );
-      return ImageFormat.Webp;
     }
     return format;
   }
