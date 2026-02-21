@@ -94,11 +94,19 @@ void main() {
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
-    when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
+    when(() => mockSyncApiRepo.streamChanges(any(), serverVersion: any(named: 'serverVersion'))).thenAnswer((
+      invocation,
+    ) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
-    when(() => mockSyncApiRepo.streamChanges(any(), onReset: any(named: 'onReset'))).thenAnswer((invocation) async {
+    when(
+      () => mockSyncApiRepo.streamChanges(
+        any(),
+        onReset: any(named: 'onReset'),
+        serverVersion: any(named: 'serverVersion'),
+      ),
+    ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -106,9 +114,9 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
-    when(() => mockServerApi.getServerVersion()).thenAnswer(
-      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0),
-    );
+    when(
+      () => mockServerApi.getServerVersion(),
+    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0));
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);

@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -72,8 +73,14 @@ void main() {
 
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onDataCallback,
+    SemVer serverVersion,
   ) {
-    return sut.streamChanges(onDataCallback, batchSize: testBatchSize, httpClient: mockHttpClient);
+    return sut.streamChanges(
+      onDataCallback,
+      batchSize: testBatchSize,
+      httpClient: mockHttpClient,
+      serverVersion: serverVersion,
+    );
   }
 
   test('streamChanges stops processing stream when abort is called', () async {
@@ -94,7 +101,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
 
     // Give the stream subscription time to start (longer delay to account for mock delay)
     await Future.delayed(const Duration(milliseconds: 50));
@@ -145,7 +152,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -197,7 +204,7 @@ void main() {
       }
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -244,7 +251,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final streamChangesFuture = streamChanges(onDataCallback);
+    final streamChangesFuture = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
 
     await Future.delayed(const Duration(milliseconds: 50));
 
@@ -271,7 +278,7 @@ void main() {
       onDataCallCount++;
     }
 
-    final future = streamChanges(onDataCallback);
+    final future = streamChanges(onDataCallback, const SemVer(major: 2, minor: 5, patch: 0));
 
     errorBodyController.add(utf8.encode('{"error":"Unauthorized"}'));
     await errorBodyController.close();
