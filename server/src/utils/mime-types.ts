@@ -77,7 +77,7 @@ const extensionOverrides: Record<string, string> = {
   'image/jpeg': '.jpg',
 };
 
-const alphaCapableExtensions = new Set([
+const transparentCapableExtensions = new Set([
   '.avif',
   '.bmp',
   '.gif',
@@ -149,7 +149,7 @@ export const mimeTypes = {
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
-  canHaveAlpha: (filename: string) => alphaCapableExtensions.has(extname(filename).toLowerCase()),
+  canBeTransparent: (filename: string) => transparentCapableExtensions.has(extname(filename).toLowerCase()),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
   /** return an extension (including a leading `.`) for a mime-type */

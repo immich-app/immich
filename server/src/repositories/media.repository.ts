@@ -142,13 +142,7 @@ export class MediaRepository {
 
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
     const pipeline = await this.getImageDecodingPipeline(input, options);
-    let hasAlpha = false;
-    if (options.checkAlpha) {
-      const metadata = await pipeline.metadata();
-      hasAlpha = metadata.hasAlpha ?? false;
-    }
-    const { data, info } = await pipeline.raw().toBuffer({ resolveWithObject: true });
-    return { data, info, hasAlpha };
+    return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
   private async applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): Promise<sharp.Sharp> {
@@ -315,9 +309,9 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
-    const { width = 0, height = 0 } = await sharp(input).metadata();
-    return { width, height };
+  async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    return { width, height, isTransparent: hasAlpha };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {

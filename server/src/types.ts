@@ -62,7 +62,6 @@ type DecodeImageOptions = {
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size?: number;
   orientation?: ExifOrientation;
-  checkAlpha?: boolean;
 }
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;

@@ -257,7 +257,7 @@ export class MediaService extends BaseService {
     return extracted;
   }
 
-  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number, checkAlpha?: boolean) {
+  private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
     const { image } = await this.getConfig({ withCache: true });
     const colorspace = this.isSRGB(exifInfo) ? Colorspace.Srgb : image.colorspace;
     const decodeOptions: DecodeToBufferOptions = {
@@ -265,11 +265,10 @@ export class MediaService extends BaseService {
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
       size: targetSize,
       orientation: exifInfo.orientation ? Number(exifInfo.orientation) : undefined,
-      checkAlpha,
     };
 
-    const { info, data, hasAlpha } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
-    return { info, data, colorspace, hasAlpha };
+    const { info, data } = await this.mediaRepository.decodeImage(thumbSource, decodeOptions);
+    return { info, data, colorspace };
   }
 
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
@@ -281,15 +280,19 @@ export class MediaService extends BaseService {
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
-    const checkAlpha = !extracted && mimeTypes.canHaveAlpha(asset.originalPath);
-    const { data, info, colorspace, hasAlpha } = await this.decodeImage(
-      extracted ? extracted.buffer : asset.originalPath,
+    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
+    const { data, info, colorspace } = await this.decodeImage(
+      thumbSource,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
       convertFullsize ? undefined : image.preview.size,
-      checkAlpha,
     );
+
+    let isTransparent = false;
+    if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
+      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
+    }
 
     return {
       extracted,
@@ -298,17 +301,17 @@ export class MediaService extends BaseService {
       colorspace,
       convertFullsize,
       generateFullsize,
-      hasAlpha,
+      isTransparent,
     };
   }
 
   private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
     // Handle embedded preview extraction for RAW files
     const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
-    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, hasAlpha } = extractedImage;
+    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } = extractedImage;
 
-    const previewFormat = this.resolveFinalImageFormat(hasAlpha, image.preview.format, asset.id);
-    const thumbnailFormat = this.resolveFinalImageFormat(hasAlpha, image.thumbnail.format, asset.id);
+    const previewFormat = this.resolveFinalImageFormat(isTransparent, image.preview.format, asset.id);
+    const thumbnailFormat = this.resolveFinalImageFormat(isTransparent, image.thumbnail.format, asset.id);
 
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
@@ -336,7 +339,7 @@ export class MediaService extends BaseService {
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
-      const fullsizeFormat = this.resolveFinalImageFormat(hasAlpha, image.fullsize.format, asset.id);
+      const fullsizeFormat = this.resolveFinalImageFormat(isTransparent, image.fullsize.format, asset.id);
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
@@ -768,7 +771,7 @@ export class MediaService extends BaseService {
   }
 
   private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
+    const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
   }
@@ -867,8 +870,8 @@ export class MediaService extends BaseService {
     return generated;
   }
 
-  private resolveFinalImageFormat(sourceHasAlpha: boolean, format: ImageFormat, assetId: string): ImageFormat {
-    if (sourceHasAlpha && format === ImageFormat.Jpeg) {
+  private resolveFinalImageFormat(isTransparent: boolean, format: ImageFormat, assetId: string): ImageFormat {
+    if (isTransparent && format === ImageFormat.Jpeg) {
       this.logger.debug(
         `Overriding output format from ${format} to ${ImageFormat.Webp} to preserve alpha channel for asset ${assetId}`,
       );
