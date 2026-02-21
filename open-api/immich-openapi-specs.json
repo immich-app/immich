@@ -16328,11 +16328,15 @@
           },
           "imageHeight": {
             "description": "Image height in pixels",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           },
           "person": {
             "$ref": "#/components/schemas/PersonResponseDto",
@@ -16430,11 +16434,15 @@
           },
           "imageHeight": {
             "description": "Image height in pixels",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           },
           "sourceType": {
             "description": "Face detection source type",
@@ -19385,8 +19393,8 @@
         "properties": {
           "year": {
             "description": "Year for on this day memory",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
+            "maximum": 9999,
+            "minimum": 1,
             "type": "integer"
           }
         },
@@ -19535,7 +19543,9 @@
           },
           "hidden": {
             "description": "Number of hidden people",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           },
           "people": {
             "items": {
@@ -19545,7 +19555,9 @@
           },
           "total": {
             "description": "Total number of people",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
           }
         },
         "required": [
@@ -25271,11 +25283,13 @@
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
+            "minimum": 0,
             "nullable": true,
             "type": "number"
           },
           "quotaUsageInBytes": {
             "description": "Storage usage in bytes",
+            "minimum": 0,
             "nullable": true,
             "type": "number"
           },

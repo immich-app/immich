@@ -64,9 +64,13 @@ class UserAdminResponseDto {
   String profileImagePath;
 
   /// Storage quota in bytes
+  ///
+  /// Minimum value: 0
   num? quotaSizeInBytes;
 
   /// Storage usage in bytes
+  ///
+  /// Minimum value: 0
   num? quotaUsageInBytes;
 
   /// Require password change on next login

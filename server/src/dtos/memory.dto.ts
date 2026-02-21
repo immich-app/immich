@@ -45,6 +45,8 @@ export const OnThisDaySchema = z
   .object({
     year: z
       .int()
+      .min(1)
+      .max(9999)
       .refine((val) => /^\d{4}$/.test(String(val)), {
         message: 'Year must be exactly 4 digits',
       })

@@ -29,12 +29,18 @@ class PeopleResponseDto {
   bool? hasNextPage;
 
   /// Number of hidden people
-  num hidden;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int hidden;
 
   List<PersonResponseDto> people;
 
   /// Total number of people
-  num total;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int total;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
@@ -77,9 +83,9 @@ class PeopleResponseDto {
 
       return PeopleResponseDto(
         hasNextPage: mapValueOfType<bool>(json, r'hasNextPage'),
-        hidden: num.parse('${json[r'hidden']}'),
+        hidden: mapValueOfType<int>(json, r'hidden')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
-        total: num.parse('${json[r'total']}'),
+        total: mapValueOfType<int>(json, r'total')!,
       );
     }
     return null;

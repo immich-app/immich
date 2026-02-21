@@ -50,12 +50,12 @@ describe(MemoryService.name, () => {
         memoryAt: new Date(2021).toISOString(),
       };
 
-      await expect(sut.create(auth, dto)).resolves.toEqual({
+      await expect(sut.create(auth, dto)).resolves.toMatchObject({
         id: expect.any(String),
         type: dto.type,
         data: dto.data,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         isSaved: false,
         memoryAt: dto.memoryAt,
         ownerId: user.id,

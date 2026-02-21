@@ -51,10 +51,16 @@ class AssetFaceWithoutPersonResponseDto {
   String id;
 
   /// Image height in pixels
-  num imageHeight;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int imageHeight;
 
   /// Image width in pixels
-  num imageWidth;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int imageWidth;
 
   /// Face detection source type
   AssetFaceWithoutPersonResponseDtoSourceTypeEnum? sourceType;
@@ -116,8 +122,8 @@ class AssetFaceWithoutPersonResponseDto {
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
         boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
         id: mapValueOfType<String>(json, r'id')!,
-        imageHeight: num.parse('${json[r'imageHeight']}'),
-        imageWidth: num.parse('${json[r'imageWidth']}'),
+        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
+        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         sourceType: AssetFaceWithoutPersonResponseDtoSourceTypeEnum.fromJson(json[r'sourceType']),
       );
     }

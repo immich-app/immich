@@ -121,8 +121,8 @@ export const UserAdminResponseSchema = UserResponseSchema.extend({
   deletedAt: z.iso.datetime().describe('Deletion date').nullable(),
   updatedAt: z.iso.datetime().describe('Last update date'),
   oauthId: z.string().describe('OAuth ID'),
-  quotaSizeInBytes: z.number().describe('Storage quota in bytes').nullable(),
-  quotaUsageInBytes: z.number().describe('Storage usage in bytes').nullable(),
+  quotaSizeInBytes: z.number().nonnegative().describe('Storage quota in bytes').nullable(),
+  quotaUsageInBytes: z.number().nonnegative().describe('Storage usage in bytes').nullable(),
   status: UserStatusSchema,
   license: UserLicenseSchema.nullable(),
 }).meta({ id: 'UserAdminResponseDto' });
