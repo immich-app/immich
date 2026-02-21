@@ -61,7 +61,6 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         PaintingBinding.instance.imageCache.evict(this);
         return;
       } else if (image == null) {
-        _log.warning('Image request completed with null image');
         return;
       }
       yield image;
