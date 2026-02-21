@@ -9,26 +9,37 @@ import 'package:web_socket/web_socket.dart';
 
 class NetworkRepository {
   static http.Client? _client;
-  static late Pointer<Void> _clientPointer;
+  static Pointer<Void>? _clientPointer;
 
   static Future<void> init() async {
-    _clientPointer = Pointer<Void>.fromAddress(await networkApi.getClientPointer());
+    final clientPointer = Pointer<Void>.fromAddress(await networkApi.getClientPointer());
+    if (clientPointer == _clientPointer) {
+      return;
+    }
+    _clientPointer = clientPointer;
     _client?.close();
     if (Platform.isIOS) {
-      final session = URLSession.fromRawPointer(_clientPointer.cast());
+      final session = URLSession.fromRawPointer(clientPointer.cast());
       _client = CupertinoClient.fromSharedSession(session);
     } else {
-      _client = OkHttpClient.fromJniGlobalRef(_clientPointer);
+      _client = OkHttpClient.fromJniGlobalRef(clientPointer);
+    }
+  }
+
+  static Future<void> setHeaders(Map<String, String> headers, List<String> serverUrls) async {
+    await networkApi.setRequestHeaders(headers, serverUrls);
+    if (Platform.isIOS) {
+      await init();
     }
   }
 
   // ignore: avoid-unused-parameters
   static Future<WebSocket> createWebSocket(Uri uri, {Map<String, String>? headers, Iterable<String>? protocols}) {
     if (Platform.isIOS) {
-      final session = URLSession.fromRawPointer(_clientPointer.cast());
+      final session = URLSession.fromRawPointer(_clientPointer!.cast());
       return CupertinoWebSocket.connectWithSession(session, uri, protocols: protocols);
     } else {
-      return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer, uri, protocols: protocols);
+      return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer!, uri, protocols: protocols);
     }
   }
 

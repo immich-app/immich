@@ -8,7 +8,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -91,7 +90,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
-      await networkApi.setRequestHeaders(const {}, const []);
+      await _apiService.updateHeaders();
       await _ref.read(backgroundUploadServiceProvider).cancel();
       _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
@@ -126,7 +125,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> saveAuthInfo({required String accessToken}) async {
     await _apiService.setAccessToken(accessToken);
-    await networkApi.setRequestHeaders(ApiService.getRequestHeaders(), ApiService.getServerUrls());
+    await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final customHeaders = Store.tryGet(StoreKey.customHeaders);

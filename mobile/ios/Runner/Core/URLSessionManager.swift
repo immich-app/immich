@@ -6,41 +6,34 @@ let HEADERS_KEY = "immich.request_headers"
 let SERVER_URL_KEY = "immich.server_url"
 let APP_GROUP = "group.app.immich.share"
 
+extension UserDefaults {
+  static let group = UserDefaults(suiteName: APP_GROUP)!
+}
+
 /// Manages a shared URLSession with SSL configuration support.
+/// Old sessions are kept alive by Dart's FFI retain until all isolates release them.
 class URLSessionManager: NSObject {
   static let shared = URLSessionManager()
   
-  let session: URLSession
+  private(set) var session: URLSession
   let delegate: URLSessionManagerDelegate
-  static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
-  private let configuration = {
-    let config = URLSessionConfiguration.default
-    
-    let cacheDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
+  private static let cacheDir: URL = {
+    let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
       .first!
       .appendingPathComponent("api", isDirectory: true)
-    try! FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-    
-    config.urlCache = URLCache(
-      memoryCapacity: 0,
-      diskCapacity: 1024 * 1024 * 1024,
-      directory: cacheDir
-    )
-    
-    config.httpCookieStorage = cookieStorage
-    config.httpMaximumConnectionsPerHost = 64
-    config.timeoutIntervalForRequest = 60
-    config.timeoutIntervalForResource = 300
-    
-    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
-    var headers: [String: String] = ["User-Agent": "Immich_iOS_\(version)"]
-    if let saved = UserDefaults(suiteName: APP_GROUP)?.dictionary(forKey: HEADERS_KEY) as? [String: String] {
-      headers.merge(saved) { _, new in new }
-    }
-    config.httpAdditionalHeaders = headers
-
-    return config
+    try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    return dir
   }()
+  private static let urlCache = URLCache(
+    memoryCapacity: 0,
+    diskCapacity: 1024 * 1024 * 1024,
+    directory: cacheDir
+  )
+  private static let userAgent: String = {
+    let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+    return "Immich_iOS_\(version)"
+  }()
+  static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
   
   var sessionPointer: UnsafeMutableRawPointer {
     Unmanaged.passUnretained(session).toOpaque()
@@ -48,8 +41,27 @@ class URLSessionManager: NSObject {
   
   private override init() {
     delegate = URLSessionManagerDelegate()
-    session = URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    session = Self.buildSession(delegate: delegate)
     super.init()
+  }
+
+  func recreateSession() {
+    session = Self.buildSession(delegate: delegate)
+  }
+
+  private static func buildSession(delegate: URLSessionManagerDelegate) -> URLSession {
+    let config = URLSessionConfiguration.default
+    config.urlCache = urlCache
+    config.httpCookieStorage = cookieStorage
+    config.httpMaximumConnectionsPerHost = 64
+    config.timeoutIntervalForRequest = 60
+    config.timeoutIntervalForResource = 300
+
+    var headers = UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] ?? [:]
+    headers["User-Agent"] = headers["User-Agent"] ?? userAgent
+    config.httpAdditionalHeaders = headers
+
+    return URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
   }
 }
 
