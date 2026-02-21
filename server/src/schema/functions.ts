@@ -286,21 +286,3 @@ export const asset_edit_delete = registerFunction({
     END
   `,
 });
-
-export const asset_linked_to_hidden_person = registerFunction({
-  name: 'asset_linked_to_hidden_person',
-  arguments: ['asset_id uuid'],
-  returnType: 'boolean',
-  language: 'PLPGSQL',
-  behavior: 'stable',
-  body: `
-    BEGIN
-      RETURN EXISTS (
-        SELECT 1
-        FROM asset_face
-        INNER JOIN person ON person.id = asset_face."personId"
-        WHERE asset_face."assetId" = asset_id
-          AND person."isHidden" = TRUE
-      );
-    END`,
-});

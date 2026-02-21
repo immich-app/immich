@@ -5,7 +5,6 @@ import {
   album_user_delete_audit,
   asset_delete_audit,
   asset_face_audit,
-  asset_linked_to_hidden_person,
   asset_metadata_audit,
   f_concat_ws,
   f_unaccent,
@@ -157,7 +156,6 @@ export class ImmichDatabase {
     user_metadata_audit,
     asset_metadata_audit,
     asset_face_audit,
-    asset_linked_to_hidden_person,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
