@@ -310,8 +310,11 @@ export class MediaService extends BaseService {
     const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
     const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } = extractedImage;
 
-    const previewFormat = this.resolveFinalImageFormat(isTransparent, image.preview.format, asset.id);
-    const thumbnailFormat = this.resolveFinalImageFormat(isTransparent, image.thumbnail.format, asset.id);
+    const previewFormat = image.preview.format;
+    this.warnOnTransparencyLoss(isTransparent, previewFormat, asset.id);
+
+    const thumbnailFormat = image.thumbnail.format;
+    this.warnOnTransparencyLoss(isTransparent, thumbnailFormat, asset.id);
 
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
@@ -339,7 +342,8 @@ export class MediaService extends BaseService {
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
-      const fullsizeFormat = this.resolveFinalImageFormat(isTransparent, image.fullsize.format, asset.id);
+      const fullsizeFormat = image.fullsize.format;
+      this.warnOnTransparencyLoss(isTransparent, fullsizeFormat, asset.id);
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
@@ -870,14 +874,12 @@ export class MediaService extends BaseService {
     return generated;
   }
 
-  private resolveFinalImageFormat(isTransparent: boolean, format: ImageFormat, assetId: string): ImageFormat {
+  private warnOnTransparencyLoss(isTransparent: boolean, format: ImageFormat, assetId: string) {
     if (isTransparent && format === ImageFormat.Jpeg) {
-      this.logger.debug(
-        `Overriding output format from ${format} to ${ImageFormat.Webp} to preserve alpha channel for asset ${assetId}`,
+      this.logger.warn(
+        `Asset ${assetId} has transparency but the configured format is ${format} which does not support it, consider using a format that does, such as ${ImageFormat.Webp}`,
       );
-      return ImageFormat.Webp;
     }
-    return format;
   }
 
   private getImageFile(asset: ThumbnailPathEntity, options: ImagePathOptions & { isProgressive: boolean }) {
