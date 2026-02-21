@@ -127,10 +127,6 @@
       await handleCloseSelectAssets();
       return;
     }
-    if (viewMode === AlbumPageViewMode.OPTIONS) {
-      viewMode = AlbumPageViewMode.VIEW;
-      return;
-    }
     if ($showAssetViewer) {
       return;
     }
@@ -138,7 +134,7 @@
       cancelMultiselect(assetInteraction);
       return;
     }
-    return;
+    await goto(Route.albums());
   };
 
   const refreshAlbum = async () => {
@@ -311,8 +307,17 @@
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share, Close } = $derived(getAlbumActions($t, album, viewMode));
+  const { Share } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineInteraction.selectedAssets));
+
+  const Close = $derived({
+    title: $t('go_back'),
+    type: $t('command'),
+    icon: mdiArrowLeft,
+    onAction: handleEscape,
+    $if: () => !$showAssetViewer,
+    shortcuts: { key: 'Escape' },
+  });
 </script>
 
 <OnEvents
