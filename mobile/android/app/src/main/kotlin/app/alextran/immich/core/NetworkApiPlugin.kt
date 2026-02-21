@@ -79,7 +79,7 @@ private class NetworkApiImpl() : NetworkApi {
     return HttpClientManager.getClientPointer()
   }
 
-  override fun setRequestHeaders(headers: Map<String, String>) {
+  override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>) {
     HttpClientManager.setRequestHeaders(headers)
   }
 }

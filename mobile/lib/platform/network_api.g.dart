@@ -281,7 +281,7 @@ class NetworkApi {
     }
   }
 
-  Future<void> setRequestHeaders(Map<String, String> headers) async {
+  Future<void> setRequestHeaders(Map<String, String> headers, List<String> serverUrls) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NetworkApi.setRequestHeaders$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -289,7 +289,7 @@ class NetworkApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[headers]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[headers, serverUrls]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);

@@ -3,7 +3,8 @@ import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
-private let APP_GROUP = "group.app.immich.share"
+let SERVER_URL_KEY = "immich.server_url"
+let APP_GROUP = "group.app.immich.share"
 
 /// Manages a shared URLSession with SSL configuration support.
 class URLSessionManager: NSObject {
@@ -11,6 +12,7 @@ class URLSessionManager: NSObject {
   
   let session: URLSession
   let delegate: URLSessionManagerDelegate
+  static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
   private let configuration = {
     let config = URLSessionConfiguration.default
     
@@ -25,14 +27,14 @@ class URLSessionManager: NSObject {
       directory: cacheDir
     )
     
-    config.httpCookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
+    config.httpCookieStorage = cookieStorage
     config.httpMaximumConnectionsPerHost = 64
     config.timeoutIntervalForRequest = 60
     config.timeoutIntervalForResource = 300
     
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
     var headers: [String: String] = ["User-Agent": "Immich_iOS_\(version)"]
-    if let saved = UserDefaults.standard.dictionary(forKey: HEADERS_KEY) as? [String: String] {
+    if let saved = UserDefaults(suiteName: APP_GROUP)?.dictionary(forKey: HEADERS_KEY) as? [String: String] {
       headers.merge(saved) { _, new in new }
     }
     config.httpAdditionalHeaders = headers

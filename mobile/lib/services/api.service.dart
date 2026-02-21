@@ -174,6 +174,31 @@ class ApiService implements Authentication {
     }
   }
 
+  static List<String> getServerUrls() {
+    final urls = <String>[];
+    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
+      urls.add(serverEndpoint);
+    }
+    final serverUrl = Store.tryGet(StoreKey.serverUrl);
+    if (serverUrl != null && serverUrl.isNotEmpty) {
+      urls.add(serverUrl);
+    }
+    final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+    if (localEndpoint != null && localEndpoint.isNotEmpty) {
+      urls.add(localEndpoint);
+    }
+    final externalJson = Store.tryGet(StoreKey.externalEndpointList);
+    if (externalJson != null) {
+      final List<dynamic> list = jsonDecode(externalJson);
+      for (final entry in list) {
+        final url = entry['url'] as String?;
+        if (url != null && url.isNotEmpty) urls.add(url);
+      }
+    }
+    return urls;
+  }
+
   static Map<String, String> getRequestHeaders() {
     var accessToken = Store.get(StoreKey.accessToken, "");
     var customHeadersStr = Store.get(StoreKey.customHeaders, "");

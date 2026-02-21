@@ -43,5 +43,5 @@ abstract class NetworkApi {
 
   int getClientPointer();
 
-  void setRequestHeaders(Map<String, String> headers);
+  void setRequestHeaders(Map<String, String> headers, List<String> serverUrls);
 }
