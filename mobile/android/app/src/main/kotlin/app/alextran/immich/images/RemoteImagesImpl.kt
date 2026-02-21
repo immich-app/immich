@@ -15,6 +15,8 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.Credentials
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
@@ -189,6 +191,11 @@ private class CronetImageFetcher(context: Context, cacheDir: File) : ImageFetche
     val callback = FetchCallback(onSuccess, onFailure, ::onComplete)
     val requestBuilder = engine.newUrlRequestBuilder(url, callback, executor)
     HttpClientManager.headers.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
+    url.toHttpUrlOrNull()?.let { httpUrl ->
+      if (httpUrl.username.isNotEmpty()) {
+        requestBuilder.addHeader("Authorization", Credentials.basic(httpUrl.username, httpUrl.password))
+      }
+    }
     val request = requestBuilder.build()
     signal.setOnCancelListener(request::cancel)
     request.start()

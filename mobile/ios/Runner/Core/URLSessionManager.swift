@@ -68,15 +68,17 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
     didReceive challenge: URLAuthenticationChallenge,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
-    handleChallenge(challenge, completionHandler: completionHandler)
+    handleChallenge(challenge, task: task, completionHandler: completionHandler)
   }
   
   func handleChallenge(
     _ challenge: URLAuthenticationChallenge,
+    task: URLSessionTask? = nil,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
     switch challenge.protectionSpace.authenticationMethod {
     case NSURLAuthenticationMethodClientCertificate: handleClientCertificate(completion: completionHandler)
+    case NSURLAuthenticationMethodHTTPBasic: handleBasicAuth(task: task, completion: completionHandler)
     default: completionHandler(.performDefaultHandling, nil)
     }
   }
@@ -100,5 +102,19 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       return completion(.useCredential, credential)
     }
     completion(.performDefaultHandling, nil)
+  }
+  
+  private func handleBasicAuth(
+    task: URLSessionTask?,
+    completion: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+  ) {
+    guard let url = task?.originalRequest?.url,
+      let user = url.user,
+      let password = url.password
+    else {
+      return completion(.performDefaultHandling, nil)
+    }
+    let credential = URLCredential(user: user, password: password, persistence: .forSession)
+    completion(.useCredential, credential)
   }
 }

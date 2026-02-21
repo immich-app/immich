@@ -5,10 +5,12 @@ import android.content.SharedPreferences
 import android.security.KeyChain
 import androidx.core.content.edit
 import app.alextran.immich.BuildConfig
+import app.alextran.immich.NativeBuffer
 import okhttp3.Cache
 import okhttp3.ConnectionPool
 import okhttp3.Dispatcher
 import okhttp3.Headers
+import okhttp3.Credentials
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -178,9 +180,14 @@ object HttpClientManager {
 
     return OkHttpClient.Builder()
       .addInterceptor {
-        val builder = it.request().newBuilder()
+        val request = it.request()
+        val builder = request.newBuilder()
         builder.header("User-Agent", USER_AGENT)
         headers.forEach { (key, value) -> builder.header(key, value) }
+        val url = request.url
+        if (url.username.isNotEmpty()) {
+          builder.header("Authorization", Credentials.basic(url.username, url.password))
+        }
         it.proceed(builder.build())
       }
       .connectionPool(connectionPool)
