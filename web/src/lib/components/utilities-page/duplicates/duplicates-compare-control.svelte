@@ -4,17 +4,17 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { suggestBestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,19 +24,18 @@
   let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
 
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
-
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
+  $effect(() => {
+    if (assets.length === 0) {
+      selectedAssetIds = new SvelteSet<string>();
       return;
     }
 
-    selectedAssetIds.add(suggestedAsset.id);
+    const suggestedAsset = suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
+
+    selectedAssetIds = new SvelteSet<string>([suggestedAsset.id]);
   });
 
   onDestroy(() => {
@@ -105,7 +104,7 @@
   ]}
 />
 
-<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-256 mx-auto mb-4 py-6 px-0.2">
+<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-5xl mx-auto mb-4 py-6 px-0.2">
   <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">

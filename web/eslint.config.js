@@ -130,6 +130,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/require-await': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'svelte/no-unnecessary-state-wrap': ['error', { allowReassign: true }],
     },
   },
   {

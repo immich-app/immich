@@ -1,6 +1,11 @@
+import {
+  type DuplicateTiePreferencesSvelte,
+  findDuplicateTiePreference,
+} from '$lib/stores/duplicate-tie-preferences-manager.svelte';
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
-import { sortBy } from 'lodash-es';
+
+const sizeOf = (asset: AssetResponseDto) => asset.exifInfo?.fileSizeInByte ?? 0;
 
 /**
  * Suggests the best duplicate asset to keep from a list of duplicates.
@@ -8,23 +13,34 @@ import { sortBy } from 'lodash-es';
  * The best asset is determined by the following criteria:
  *  - Largest image file size in bytes
  *  - Largest count of exif data
+ *  - Optional source preference (internal vs external)
  *
- * @param assets List of duplicate assets
- * @returns The best asset to keep
  */
-export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  let duplicateAssets = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte ?? 0);
-
-  // Update the list to only include assets with the largest file size
-  duplicateAssets = duplicateAssets.filter(
-    (asset) => asset.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
-  );
-
-  // If there are multiple assets with the same file size, sort the list by the count of exif data
-  if (duplicateAssets.length >= 2) {
-    duplicateAssets = sortBy(duplicateAssets, getExifCount);
+export function suggestBestDuplicate(
+  assets: AssetResponseDto[],
+  preference: DuplicateTiePreferencesSvelte | undefined,
+): AssetResponseDto | undefined {
+  if (assets.length === 0) {
+    return;
   }
+  let candidates = filterBySizeAndExif(assets);
 
-  // Return the last asset in the list
-  return duplicateAssets.pop();
+  const source = findDuplicateTiePreference(preference, 'source');
+  if (source && candidates.length > 1) {
+    candidates = filterBySource(candidates, source.priority);
+  }
+  return candidates[0];
+}
+
+const filterBySizeAndExif = (assets: AssetResponseDto[]): AssetResponseDto[] => {
+  const maxSize = Math.max(...assets.map((asset) => sizeOf(asset)));
+  const sizeFilteredAssets = assets.filter((assets) => sizeOf(assets) === maxSize);
+
+  const maxExif = Math.max(...sizeFilteredAssets.map((asset) => getExifCount(asset)));
+  return sizeFilteredAssets.filter((assets) => getExifCount(assets) === maxExif);
+};
+
+const filterBySource = (assets: AssetResponseDto[], priority: 'internal' | 'external'): AssetResponseDto[] => {
+  const filtered = assets.filter((asset) => (priority === 'external') === !!asset.libraryId);
+  return filtered.length > 0 ? filtered : assets;
 };
