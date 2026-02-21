@@ -27,9 +27,19 @@ class DriftMapRepository extends DriftDatabaseRepository {
         condition = condition & _db.remoteAssetEntity.isFavorite.equals(true);
       }
 
-      if (options.relativeDays != 0) {
-        final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
-        condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate);
+      final from = options.timeRange.from;
+      final to = options.timeRange.to;
+
+      if (from != null || to != null) {
+        if (from != null) {
+          condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from);
+        }
+        if (to != null) {
+          condition = condition & _db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to);
+        }
+      } else if (options.relativeDays > 0) {
+        final fromDate = DateTime.now().subtract(Duration(days: options.relativeDays));
+        condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(fromDate);
       }
 
       return condition;

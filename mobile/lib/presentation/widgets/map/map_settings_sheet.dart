@@ -2,20 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
+import 'package:immich_mobile/widgets/map/map_settings/map_custom_time_range.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_list_tile.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_settings_time_dropdown.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_theme_picker.dart';
 
-class DriftMapSettingsSheet extends HookConsumerWidget {
+class DriftMapSettingsSheet extends ConsumerStatefulWidget {
   const DriftMapSettingsSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DriftMapSettingsSheet> createState() => _DriftMapSettingsSheetState();
+}
+
+class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
+  late bool useCustomRange;
+
+  @override
+  void initState() {
+    super.initState();
+    final mapState = ref.read(mapStateProvider);
+    final timeRange = mapState.timeRange;
+    useCustomRange = timeRange.from != null || timeRange.to != null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mapState = ref.watch(mapStateProvider);
 
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.6,
+      initialChildSize: useCustomRange ? 0.7 : 0.6,
       builder: (ctx, scrollController) => SingleChildScrollView(
         controller: scrollController,
         child: Card(
@@ -47,10 +63,41 @@ class DriftMapSettingsSheet extends HookConsumerWidget {
                 selected: mapState.withPartners,
                 onChanged: (withPartners) => ref.read(mapStateProvider.notifier).switchWithPartners(withPartners),
               ),
-              MapTimeDropDown(
-                relativeTime: mapState.relativeDays,
-                onTimeChange: (time) => ref.read(mapStateProvider.notifier).setRelativeTime(time),
-              ),
+              if (useCustomRange) ...[
+                MapTimeRange(
+                  timeRange: mapState.timeRange,
+                  onChanged: (range) {
+                    ref.read(mapStateProvider.notifier).setTimeRange(range);
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => setState(() {
+                      useCustomRange = false;
+                      ref.read(mapStateProvider.notifier).setRelativeTime(0);
+                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
+                    }),
+                    child: Text("remove_custom_date_range".t(context: context)),
+                  ),
+                ),
+              ] else ...[
+                MapTimeDropDown(
+                  relativeTime: mapState.relativeDays,
+                  onTimeChange: (time) => ref.read(mapStateProvider.notifier).setRelativeTime(time),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => setState(() {
+                      useCustomRange = true;
+                      ref.read(mapStateProvider.notifier).setRelativeTime(0);
+                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
+                    }),
+                    child: Text("use_custom_date_range".t(context: context)),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
             ],
           ),
