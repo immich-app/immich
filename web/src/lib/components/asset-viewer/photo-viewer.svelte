@@ -25,6 +25,7 @@
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
   import { fade } from 'svelte/transition';
   import type { AssetCursor } from './asset-viewer.svelte';
 
@@ -184,7 +185,7 @@
   let hoveredFaces = $state<typeof $boundingBoxesArray>([]);
 
   let faceToPersonMap = $derived.by(() => {
-    const map = new Map<AssetFaceWithoutPersonResponseDto, string>();
+    const map = new SvelteMap<AssetFaceWithoutPersonResponseDto, string>();
     if (asset.people) {
       for (const person of asset.people) {
         if (person.faces) {
@@ -197,9 +198,7 @@
     return map;
   });
 
-  let allFaces = $derived(
-    asset.people?.flatMap((person) => person.faces || []) || []
-  );
+  let allFaces = $derived(asset.people?.flatMap((person) => person.faces || []) || []);
 
   const handleImageMouseMove = (event: MouseEvent) => {
     if (!assetViewerManager.imgRef || !element || isFaceEditMode.value || ocrManager.showOverlay) {
@@ -215,7 +214,7 @@
     const faceBoxes = getBoundingBox(allFaces, assetViewerManager.zoomState, assetViewerManager.imgRef);
 
     const hoveredFaceIndices: number[] = [];
-    faceBoxes.forEach((box, index) => {
+    for (const [index, box] of faceBoxes.entries()) {
       if (
         mouseX >= box.left &&
         mouseX <= box.left + box.width &&
@@ -224,7 +223,7 @@
       ) {
         hoveredFaceIndices.push(index);
       }
-    });
+    }
 
     if (hoveredFaceIndices.length > 0) {
       hoveredFaces = hoveredFaceIndices.map((i) => allFaces[i]);
@@ -241,15 +240,13 @@
     $hoveredPersonId = null;
   };
 
-  let displayedBoundingBoxes = $derived(
-    $boundingBoxesArray.length > 0 ? $boundingBoxesArray : hoveredFaces
-  );
+  let displayedBoundingBoxes = $derived($boundingBoxesArray.length > 0 ? $boundingBoxesArray : hoveredFaces);
 
   let hoveredPersonName = $derived.by(() => {
     if (!$hoveredPersonId || !asset.people) {
       return null;
     }
-    const person = asset.people.find(p => p.id === $hoveredPersonId);
+    const person = asset.people.find((p) => p.id === $hoveredPersonId);
     return person?.name || null;
   });
 </script>
@@ -275,6 +272,7 @@
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  role="presentation"
   onmousemove={handleImageMouseMove}
   onmouseleave={handleImageMouseLeave}
 >
