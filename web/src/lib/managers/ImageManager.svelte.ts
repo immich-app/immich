@@ -32,12 +32,6 @@ class ImageManager {
       }
     }
   }
-
-  cancelPreloadUrl(url: string | undefined) {
-    if (url) {
-      cancelImageUrl(url);
-    }
-  }
 }
 
 export const imageManager = new ImageManager();
