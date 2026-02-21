@@ -64,6 +64,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  withoutGps?: boolean;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -653,6 +654,18 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.withoutGps, (qb) =>
+            qb.where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('asset_exif')
+                    .whereRef('assetId', '=', 'asset.id')
+                    .where((eb) => eb.or([eb('latitude', 'is not', null), eb('longitude', 'is not', null)])),
+                ),
+              ),
+            ),
+          )
           .$if(!!options.albumId, (qb) =>
             qb
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
@@ -764,6 +777,9 @@ export class AssetRepository {
                 (join) => join.onTrue(),
               )
               .select('stack'),
+          )
+          .$if(!!options.withoutGps, (qb) =>
+            qb.where((eb) => eb.and([eb('asset_exif.latitude', 'is', null), eb('asset_exif.longitude', 'is', null)])),
           )
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
