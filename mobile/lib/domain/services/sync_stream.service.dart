@@ -282,6 +282,8 @@ class SyncStreamService {
         return _syncStreamRepository.deletePeopleV1(data.cast());
       case SyncEntityType.assetFaceV1:
         return _syncStreamRepository.updateAssetFacesV1(data.cast());
+      case SyncEntityType.assetFaceV2:
+        return _syncStreamRepository.updateAssetFacesV2(data.cast());
       case SyncEntityType.assetFaceDeleteV1:
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       default:

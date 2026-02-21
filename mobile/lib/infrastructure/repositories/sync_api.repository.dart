@@ -190,6 +190,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.personV1: SyncPersonV1.fromJson,
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
+  SyncEntityType.assetFaceV2: SyncAssetFaceV2.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
   SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
