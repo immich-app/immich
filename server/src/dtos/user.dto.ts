@@ -63,7 +63,7 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
 
 export const UserAdminSearchSchema = z
   .object({
-    withDeleted: z.boolean().optional().describe('Include deleted users'),
+    withDeleted: z.coerce.boolean().optional().describe('Include deleted users'),
     id: z.uuidv4().optional().describe('User ID filter'),
   })
   .meta({ id: 'UserAdminSearchDto' });

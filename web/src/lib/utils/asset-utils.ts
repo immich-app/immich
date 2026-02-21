@@ -331,7 +331,7 @@ export const deleteStack = async (stackIds: string[]) => {
 
     const assets = stacks.flatMap((stack) => stack.assets);
     for (const asset of assets) {
-      asset.stack = null;
+      asset.stack = undefined;
     }
 
     return assets;
