@@ -49,8 +49,10 @@ class SharedLinkResponseDto {
   /// Creation date
   DateTime createdAt;
 
+  /// Link description
   String? description;
 
+  /// Expiration date
   DateTime? expiresAt;
 
   /// Shared link ID
@@ -59,13 +61,16 @@ class SharedLinkResponseDto {
   /// Encryption key (base64url)
   String key;
 
+  /// Has password
   String? password;
 
   /// Show metadata
   bool showMetadata;
 
+  /// Custom URL slug
   String? slug;
 
+  /// Access token
   String? token;
 
   /// Shared link type

@@ -115,20 +115,20 @@ export class SharedLinkPasswordDto {
 export const SharedLinkResponseSchema = z
   .object({
     id: z.string().describe('Shared link ID'),
-    description: z.string().nullable().describe('Link description'),
-    password: z.string().nullable().describe('Has password'),
-    token: z.string().nullish().describe('Access token'),
+    description: z.string().describe('Link description').nullable(),
+    password: z.string().describe('Has password').nullable(),
+    token: z.string().describe('Access token').nullish(),
     userId: z.string().describe('Owner user ID'),
     key: z.string().describe('Encryption key (base64url)'),
     type: SharedLinkTypeSchema,
     createdAt: z.iso.datetime().describe('Creation date'),
-    expiresAt: z.iso.datetime().nullable().describe('Expiration date'),
+    expiresAt: z.iso.datetime().describe('Expiration date').nullable(),
     assets: z.array(AssetResponseSchema),
     album: AlbumResponseSchema.optional(),
     allowUpload: z.boolean().describe('Allow uploads'),
     allowDownload: z.boolean().describe('Allow downloads'),
     showMetadata: z.boolean().describe('Show metadata'),
-    slug: z.string().nullable().describe('Custom URL slug'),
+    slug: z.string().describe('Custom URL slug').nullable(),
   })
   .describe('Shared link response')
   .meta({ id: 'SharedLinkResponseDto' });

@@ -78,9 +78,9 @@ export const UserAdminCreateSchema = z
     password: z.string().describe('User password'),
     name: z.string().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
-    pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code'),
-    storageLabel: z.string().nullable().optional().describe('Storage label'),
-    quotaSizeInBytes: z.int().min(0).nullable().optional().describe('Storage quota in bytes'),
+    pinCode: z.string().regex(pinCodeRegex).describe('PIN code').nullish(),
+    storageLabel: z.string().describe('Storage label').nullish(),
+    quotaSizeInBytes: z.int().min(0).describe('Storage quota in bytes').nullish(),
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
     notify: z.boolean().optional().describe('Send notification email'),
     isAdmin: z.boolean().optional().describe('Grant admin privileges'),
@@ -93,12 +93,12 @@ export const UserAdminUpdateSchema = z
   .object({
     email: z.email({ pattern: z.regexes.html5Email }).optional().describe('User email'),
     password: z.string().optional().describe('User password'),
-    pinCode: z.string().regex(pinCodeRegex).nullable().optional().describe('PIN code'),
+    pinCode: z.string().regex(pinCodeRegex).describe('PIN code').nullish(),
     name: z.string().optional().describe('User name'),
     avatarColor: UserAvatarColorSchema.nullish(),
-    storageLabel: z.string().nullable().optional().describe('Storage label'),
+    storageLabel: z.string().describe('Storage label').nullish(),
     shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
-    quotaSizeInBytes: z.int().min(0).nullable().optional().describe('Storage quota in bytes'),
+    quotaSizeInBytes: z.int().min(0).describe('Storage quota in bytes').nullish(),
     isAdmin: z.boolean().optional().describe('Grant admin privileges'),
   })
   .meta({ id: 'UserAdminUpdateDto' });
@@ -114,15 +114,15 @@ export const UserAdminDeleteSchema = z
 export class UserAdminDeleteDto extends createZodDto(UserAdminDeleteSchema) {}
 
 export const UserAdminResponseSchema = UserResponseSchema.extend({
-  storageLabel: z.string().nullable().describe('Storage label'),
+  storageLabel: z.string().describe('Storage label').nullable(),
   shouldChangePassword: z.boolean().describe('Require password change on next login'),
   isAdmin: z.boolean().describe('Is admin user'),
   createdAt: z.iso.datetime().describe('Creation date'),
-  deletedAt: z.iso.datetime().nullable().describe('Deletion date'),
+  deletedAt: z.iso.datetime().describe('Deletion date').nullable(),
   updatedAt: z.iso.datetime().describe('Last update date'),
   oauthId: z.string().describe('OAuth ID'),
-  quotaSizeInBytes: z.number().nullable().describe('Storage quota in bytes'),
-  quotaUsageInBytes: z.number().nullable().describe('Storage usage in bytes'),
+  quotaSizeInBytes: z.number().describe('Storage quota in bytes').nullable(),
+  quotaUsageInBytes: z.number().describe('Storage usage in bytes').nullable(),
   status: UserStatusSchema,
   license: UserLicenseSchema.nullable(),
 }).meta({ id: 'UserAdminResponseDto' });

@@ -54,8 +54,11 @@ class UserAdminCreateDto {
   /// User password
   String password;
 
+  /// PIN code
   String? pinCode;
 
+  /// Storage quota in bytes
+  ///
   /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
@@ -69,6 +72,7 @@ class UserAdminCreateDto {
   ///
   bool? shouldChangePassword;
 
+  /// Storage label
   String? storageLabel;
 
   @override

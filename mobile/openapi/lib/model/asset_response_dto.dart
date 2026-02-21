@@ -62,6 +62,7 @@ class AssetResponseDto {
   /// Device ID
   String deviceId;
 
+  /// Duplicate group ID
   String? duplicateId;
 
   /// Video duration (for videos)
@@ -87,8 +88,7 @@ class AssetResponseDto {
   /// Asset height
   ///
   /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? height;
+  num? height;
 
   /// Asset ID
   String id;
@@ -108,8 +108,10 @@ class AssetResponseDto {
   /// Is trashed
   bool isTrashed;
 
+  /// Library ID
   String? libraryId;
 
+  /// Live photo video ID
   String? livePhotoVideoId;
 
   /// The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.
@@ -179,8 +181,7 @@ class AssetResponseDto {
   /// Asset width
   ///
   /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int? width;
+  num? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
@@ -375,7 +376,9 @@ class AssetResponseDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
-        height: mapValueOfType<int>(json, r'height'),
+        height: json[r'height'] == null
+            ? null
+            : num.parse('${json[r'height']}'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isEdited: mapValueOfType<bool>(json, r'isEdited')!,
@@ -399,7 +402,9 @@ class AssetResponseDto {
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         visibility: AssetResponseDtoVisibilityEnum.fromJson(json[r'visibility'])!,
-        width: mapValueOfType<int>(json, r'width'),
+        width: json[r'width'] == null
+            ? null
+            : num.parse('${json[r'width']}'),
       );
     }
     return null;

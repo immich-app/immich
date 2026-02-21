@@ -16983,15 +16983,9 @@
             "type": "string"
           },
           "duplicateId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Duplicate group ID"
+            "description": "Duplicate group ID",
+            "nullable": true,
+            "type": "string"
           },
           "duration": {
             "description": "Video duration (for videos)",
@@ -17018,10 +17012,9 @@
           },
           "height": {
             "description": "Asset height",
-            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           },
           "id": {
             "description": "Asset ID",
@@ -17048,28 +17041,16 @@
             "type": "boolean"
           },
           "libraryId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid",
-                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Library ID"
+            "description": "Library ID",
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
           },
           "livePhotoVideoId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Live photo video ID"
+            "description": "Live photo video ID",
+            "nullable": true,
+            "type": "string"
           },
           "localDateTime": {
             "description": "The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.",
@@ -17157,10 +17138,9 @@
           },
           "width": {
             "description": "Asset width",
-            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "integer"
+            "type": "number"
           }
         },
         "required": [
@@ -21805,28 +21785,16 @@
             "type": "string"
           },
           "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Link description"
+            "description": "Link description",
+            "nullable": true,
+            "type": "string"
           },
           "expiresAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Expiration date"
+            "description": "Expiration date",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
           },
           "id": {
             "description": "Shared link ID",
@@ -21837,41 +21805,23 @@
             "type": "string"
           },
           "password": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Has password"
+            "description": "Has password",
+            "nullable": true,
+            "type": "string"
           },
           "showMetadata": {
             "description": "Show metadata",
             "type": "boolean"
           },
           "slug": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Custom URL slug"
+            "description": "Custom URL slug",
+            "nullable": true,
+            "type": "string"
           },
           "token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Access token"
+            "description": "Access token",
+            "nullable": true,
+            "type": "string"
           },
           "type": {
             "description": "Shared link type",
@@ -25214,44 +25164,26 @@
             "type": "string"
           },
           "pinCode": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^\\d{6}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "PIN code"
+            "description": "PIN code",
+            "nullable": true,
+            "pattern": "^\\d{6}$",
+            "type": "string"
           },
           "quotaSizeInBytes": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 9007199254740991
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage quota in bytes"
+            "description": "Storage quota in bytes",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
           },
           "shouldChangePassword": {
             "description": "Require password change on next login",
             "type": "boolean"
           },
           "storageLabel": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage label"
+            "description": "Storage label",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -25295,17 +25227,11 @@
             "type": "string"
           },
           "deletedAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Deletion date"
+            "description": "Deletion date",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
           },
           "email": {
             "description": "User email",
@@ -25344,26 +25270,14 @@
             "type": "string"
           },
           "quotaSizeInBytes": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage quota in bytes"
+            "description": "Storage quota in bytes",
+            "nullable": true,
+            "type": "number"
           },
           "quotaUsageInBytes": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage usage in bytes"
+            "description": "Storage usage in bytes",
+            "nullable": true,
+            "type": "number"
           },
           "shouldChangePassword": {
             "description": "Require password change on next login",
@@ -25380,15 +25294,9 @@
             "type": "string"
           },
           "storageLabel": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage label"
+            "description": "Storage label",
+            "nullable": true,
+            "type": "string"
           },
           "updatedAt": {
             "description": "Last update date",
@@ -25456,44 +25364,26 @@
             "type": "string"
           },
           "pinCode": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^\\d{6}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "PIN code"
+            "description": "PIN code",
+            "nullable": true,
+            "pattern": "^\\d{6}$",
+            "type": "string"
           },
           "quotaSizeInBytes": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 9007199254740991
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage quota in bytes"
+            "description": "Storage quota in bytes",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
           },
           "shouldChangePassword": {
             "description": "Require password change on next login",
             "type": "boolean"
           },
           "storageLabel": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Storage label"
+            "description": "Storage label",
+            "nullable": true,
+            "type": "string"
           }
         },
         "type": "object"

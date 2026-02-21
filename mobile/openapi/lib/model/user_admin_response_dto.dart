@@ -37,6 +37,7 @@ class UserAdminResponseDto {
   /// Creation date
   DateTime createdAt;
 
+  /// Deletion date
   DateTime? deletedAt;
 
   /// User email
@@ -62,8 +63,10 @@ class UserAdminResponseDto {
   /// Profile image path
   String profileImagePath;
 
+  /// Storage quota in bytes
   num? quotaSizeInBytes;
 
+  /// Storage usage in bytes
   num? quotaUsageInBytes;
 
   /// Require password change on next login
@@ -72,6 +75,7 @@ class UserAdminResponseDto {
   /// User status
   UserAdminResponseDtoStatusEnum status;
 
+  /// Storage label
   String? storageLabel;
 
   /// Last update date

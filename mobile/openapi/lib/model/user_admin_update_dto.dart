@@ -62,8 +62,11 @@ class UserAdminUpdateDto {
   ///
   String? password;
 
+  /// PIN code
   String? pinCode;
 
+  /// Storage quota in bytes
+  ///
   /// Minimum value: 0
   /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
@@ -77,6 +80,7 @@ class UserAdminUpdateDto {
   ///
   bool? shouldChangePassword;
 
+  /// Storage label
   String? storageLabel;
 
   @override

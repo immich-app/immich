@@ -32,10 +32,10 @@ const SanitizedAssetResponseSchema = z
         'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
       ),
     duration: z.string().describe('Video duration (for videos)'),
-    livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
+    livePhotoVideoId: z.string().describe('Live photo video ID').nullish(),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
-    width: z.int().nonnegative().describe('Asset width').nullable(),
-    height: z.int().nonnegative().describe('Asset height').nullable(),
+    width: z.number().nonnegative().describe('Asset width').nullable(),
+    height: z.number().nonnegative().describe('Asset height').nullable(),
   })
   .meta({ id: 'SanitizedAssetResponseDto' });
 
@@ -58,7 +58,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     deviceId: z.string().describe('Device ID'),
     ownerId: z.string().describe('Owner user ID'),
     owner: UserResponseSchema.optional(),
-    libraryId: z.uuidv4().nullish().describe('Library ID'),
+    libraryId: z.uuidv4().describe('Library ID').nullish(),
     originalPath: z.string().describe('Original file path'),
     originalFileName: z.string().describe('Original file name'),
     fileCreatedAt: z.iso
@@ -87,7 +87,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
     unassignedFaces: z.array(AssetFaceWithoutPersonResponseSchema).optional(),
     checksum: z.string().describe('Base64 encoded SHA1 hash'),
     stack: AssetStackResponseSchema.nullish(),
-    duplicateId: z.string().nullish().describe('Duplicate group ID'),
+    duplicateId: z.string().describe('Duplicate group ID').nullish(),
     resized: z.boolean().optional().describe('Is resized'),
     isEdited: z.boolean().describe('Is edited'),
   }).shape,
