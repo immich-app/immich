@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
@@ -12,8 +11,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
-import 'package:immich_mobile/models/map/map_event.model.dart';
+import 'package:immich_mobile/models/map/map_event.model.dart' as app;
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
@@ -26,25 +26,25 @@ import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/map/asset_marker_icon.dart';
 import 'package:immich_mobile/widgets/map/map_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_asset_grid.dart';
 import 'package:immich_mobile/widgets/map/map_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
-import 'package:immich_mobile/widgets/map/positioned_asset_marker_icon.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 @RoutePage()
 class MapPage extends HookConsumerWidget {
   const MapPage({super.key, this.initialLocation});
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapController = useRef<MapLibreMapController?>(null);
+    final mapController = useRef<MapController?>(null);
     final markers = useRef<List<MapMarker>>([]);
     final markersInBounds = useRef<List<MapMarker>>([]);
-    final bottomSheetStreamController = useStreamController<MapEvent>();
-    final selectedMarker = useValueNotifier<_AssetMarkerMeta?>(null);
+    final bottomSheetStreamController = useStreamController<app.MapEvent>();
+    final selectedMarker = useValueNotifier<MapMarker?>(null);
     final assetsDebouncer = useDebouncer();
     final layerDebouncer = useDebouncer(interval: const Duration(seconds: 1));
     final isLoading = useProcessingOverlay();
@@ -55,19 +55,17 @@ class MapPage extends HookConsumerWidget {
 
     // updates the markersInBounds value with the map markers that are visible in the current
     // map camera bounds
-    Future<void> updateAssetsInBounds() async {
-      // Guard map not created
-      if (mapController.value == null) {
-        return;
-      }
+    void updateAssetsInBounds() {
+      if (mapController.value == null) return;
 
-      final bounds = await mapController.value!.getVisibleRegion();
+      final bounds = mapController.value!.getVisibleRegion();
       final inBounds = markers.value
-          .where((m) => bounds.contains(LatLng(m.latLng.latitude, m.latLng.longitude)))
+          .where((m) => bounds.contains(Geographic(lat: m.latLng.lat, lon: m.latLng.lon)))
           .toList();
+
       // Notify bottom sheet to update asset grid only when there are new assets
       if (markersInBounds.value.length != inBounds.length) {
-        bottomSheetStreamController.add(MapAssetsInBoundsUpdated(inBounds.map((e) => e.assetRemoteId).toList()));
+        bottomSheetStreamController.add(app.MapAssetsInBoundsUpdated(inBounds.map((e) => e.assetRemoteId).toList()));
       }
       markersInBounds.value = inBounds;
     }
@@ -99,57 +97,67 @@ class MapPage extends HookConsumerWidget {
 
     // Refetch markers when map state is changed
     ref.listen(mapStateNotifierProvider, (_, current) {
-      if (current.shouldRefetchMarkers) {
-        markerDebouncer.run(() {
-          ref.invalidate(mapMarkersProvider);
-          // Reset marker
-          selectedMarker.value = null;
-          loadMarkers();
-          ref.read(mapStateNotifierProvider.notifier).setRefetchMarkers(false);
-        });
-      }
+      if (!current.shouldRefetchMarkers) return;
+
+      markerDebouncer.run(() {
+        ref.invalidate(mapMarkersProvider);
+        // Reset marker
+        selectedMarker.value = null;
+        loadMarkers();
+        ref.read(mapStateNotifierProvider.notifier).setRefetchMarkers(false);
+      });
     });
 
-    // updates the selected markers position based on the current map camera
-    Future<void> updateAssetMarkerPosition(MapMarker marker, {bool shouldAnimate = true}) async {
-      final assetPoint = await mapController.value!.toScreenLocation(marker.latLng);
-      selectedMarker.value = _AssetMarkerMeta(point: assetPoint, marker: marker, shouldAnimate: shouldAnimate);
-      (assetPoint, marker, shouldAnimate);
+    void selectMarker(MapMarker marker) {
+      selectedMarker.value = marker;
     }
 
     // finds the nearest asset marker from the tap point and store it as the selectedMarker
-    Future<void> onMarkerClicked(Point<double> point, LatLng _) async {
-      // Guard map not created
-      if (mapController.value == null) {
-        return;
-      }
-      final latlngBound = await mapController.value!.getBoundsFromPoint(point, 50);
-      final marker = markersInBounds.value.firstWhereOrNull(
-        (m) => latlngBound.contains(LatLng(m.latLng.latitude, m.latLng.longitude)),
+    void onMarkerClicked(Offset point) {
+      if (mapController.value == null) return;
+
+      final features = mapController.value!.featuresInRect(
+        Rect.fromCircle(center: point, radius: 50),
+        layerIds: [MapUtils.defaultHeatMapLayerId],
       );
 
+      final featureId = features.firstOrNull?.id?.toString();
+
+      final marker = featureId != null
+          ? markersInBounds.value.firstWhereOrNull((m) => m.assetRemoteId == featureId)
+          : null;
+
       if (marker != null) {
-        await updateAssetMarkerPosition(marker);
-      } else {
-        // If no asset was previously selected and no new asset is available, close the bottom sheet
-        if (selectedMarker.value == null) {
-          bottomSheetStreamController.add(const MapCloseBottomSheet());
-        }
-        selectedMarker.value = null;
+        selectMarker(marker);
+        return;
       }
+
+      if (selectedMarker.value == null) {
+        // If no asset was previously selected and no new asset is available,
+        // close the bottom sheet.
+        bottomSheetStreamController.add(const app.MapCloseBottomSheet());
+        return;
+      }
+
+      selectedMarker.value = null;
     }
 
-    void onMapCreated(MapLibreMapController controller) async {
+    void onMapCreated(MapController controller) {
       mapController.value = controller;
-      controller.addListener(() {
-        if (controller.isCameraMoving && selectedMarker.value != null) {
-          updateAssetMarkerPosition(selectedMarker.value!.marker, shouldAnimate: false);
-        }
-      });
+    }
+
+    void onMapEvent(MapEvent event) {
+      switch (event) {
+        case MapEventClick():
+          onMarkerClicked(event.screenPoint);
+        case MapEventCameraIdle():
+          assetsDebouncer.run(updateAssetsInBounds);
+        default:
+      }
     }
 
     Future<void> onMarkerTapped() async {
-      final assetId = selectedMarker.value?.marker.assetRemoteId;
+      final assetId = selectedMarker.value?.assetRemoteId;
       if (assetId == null) {
         return;
       }
@@ -171,14 +179,10 @@ class MapPage extends HookConsumerWidget {
 
     /// BOTTOM SHEET CALLBACKS
 
-    Future<void> onMapMoved() async {
-      assetsDebouncer.run(updateAssetsInBounds);
-    }
-
     void onBottomSheetScrolled(String assetRemoteId) {
       final assetMarker = markersInBounds.value.firstWhereOrNull((m) => m.assetRemoteId == assetRemoteId);
       if (assetMarker != null) {
-        updateAssetMarkerPosition(assetMarker);
+        selectMarker(assetMarker);
       }
     }
 
@@ -187,10 +191,11 @@ class MapPage extends HookConsumerWidget {
       if (mapController.value != null && assetMarker != null) {
         // Offset the latitude a little to show the marker just above the viewports center
         final offset = context.isMobile ? 0.02 : 0;
-        final latlng = LatLng(assetMarker.latLng.latitude - offset, assetMarker.latLng.longitude);
+        final latlng = Geographic(lat: assetMarker.latLng.lat - offset, lon: assetMarker.latLng.lon);
         mapController.value!.animateCamera(
-          CameraUpdate.newLatLngZoom(latlng, mapZoomToAssetLevel),
-          duration: const Duration(milliseconds: 800),
+          center: latlng,
+          zoom: mapZoomToAssetLevel,
+          nativeDuration: Durations.extralong2,
         );
       }
     }
@@ -211,8 +216,9 @@ class MapPage extends HookConsumerWidget {
 
       if (mapController.value != null && location != null) {
         await mapController.value!.animateCamera(
-          CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), mapZoomToAssetLevel),
-          duration: const Duration(milliseconds: 800),
+          center: Geographic(lat: location.latitude, lon: location.longitude),
+          zoom: mapZoomToAssetLevel,
+          nativeDuration: Durations.extralong2,
         );
       }
     }
@@ -234,9 +240,8 @@ class MapPage extends HookConsumerWidget {
                     style: style,
                     selectedMarker: selectedMarker,
                     onMapCreated: onMapCreated,
-                    onMapMoved: onMapMoved,
-                    onMapClicked: onMarkerClicked,
-                    onStyleLoaded: reloadLayers,
+                    onMapEvent: onMapEvent,
+                    onStyleLoaded: (_) => reloadLayers(),
                     onMarkerTapped: onMarkerTapped,
                   ),
                   // Should be a part of the body and not scaffold::bottomsheet for the
@@ -266,9 +271,8 @@ class MapPage extends HookConsumerWidget {
                           style: style,
                           selectedMarker: selectedMarker,
                           onMapCreated: onMapCreated,
-                          onMapMoved: onMapMoved,
-                          onMapClicked: onMarkerClicked,
-                          onStyleLoaded: reloadLayers,
+                          onMapEvent: onMapEvent,
+                          onStyleLoaded: (_) => reloadLayers(),
                           onMarkerTapped: onMarkerTapped,
                         ),
                         Positioned(
@@ -302,32 +306,19 @@ class MapPage extends HookConsumerWidget {
   }
 }
 
-class _AssetMarkerMeta {
-  final Point<num> point;
-  final MapMarker marker;
-  final bool shouldAnimate;
-
-  const _AssetMarkerMeta({required this.point, required this.marker, required this.shouldAnimate});
-
-  @override
-  String toString() => '_AssetMarkerMeta(point: $point, marker: $marker, shouldAnimate: $shouldAnimate)';
-}
-
 class _MapWithMarker extends StatelessWidget {
   final AsyncValue<String> style;
-  final MapCreatedCallback onMapCreated;
-  final OnCameraIdleCallback onMapMoved;
-  final OnMapClickCallback onMapClicked;
-  final OnStyleLoadedCallback onStyleLoaded;
+  final void Function(MapController) onMapCreated;
+  final void Function(MapEvent) onMapEvent;
+  final void Function(StyleController) onStyleLoaded;
   final Function()? onMarkerTapped;
-  final ValueNotifier<_AssetMarkerMeta?> selectedMarker;
-  final LatLng? initialLocation;
+  final ValueNotifier<MapMarker?> selectedMarker;
+  final Geographic? initialLocation;
 
   const _MapWithMarker({
     required this.style,
     required this.onMapCreated,
-    required this.onMapMoved,
-    required this.onMapClicked,
+    required this.onMapEvent,
     required this.onStyleLoaded,
     required this.selectedMarker,
     this.onMarkerTapped,
@@ -336,48 +327,44 @@ class _MapWithMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (ctx, constraints) => SizedBox(
-        height: constraints.maxHeight,
-        width: constraints.maxWidth,
-        child: Stack(
-          children: [
-            style.widgetWhen(
-              onData: (style) => MapLibreMap(
-                attributionButtonMargins: const Point(8, kToolbarHeight),
-                initialCameraPosition: CameraPosition(
-                  target: initialLocation ?? const LatLng(0, 0),
-                  zoom: initialLocation != null ? 12 : 0,
-                ),
-                styleString: style,
-                // This is needed to update the selectedMarker's position on map camera updates
-                // The changes are notified through the mapController ValueListener which is added in [onMapCreated]
-                trackCameraPosition: true,
-                onMapCreated: onMapCreated,
-                onCameraIdle: onMapMoved,
-                onMapClick: onMapClicked,
-                onStyleLoadedCallback: onStyleLoaded,
-                tiltGesturesEnabled: false,
-                dragEnabled: false,
-                myLocationEnabled: false,
-                attributionButtonPosition: AttributionButtonPosition.topRight,
-                rotateGesturesEnabled: false,
-              ),
-            ),
-            ValueListenableBuilder(
-              valueListenable: selectedMarker,
-              builder: (ctx, value, _) => value != null
-                  ? PositionedAssetMarkerIcon(
-                      point: value.point,
-                      assetRemoteId: value.marker.assetRemoteId,
-                      assetThumbhash: '',
-                      durationInMilliseconds: value.shouldAnimate ? 100 : 0,
-                      onTap: onMarkerTapped,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
+    return style.widgetWhen(
+      onData: (style) => MapLibreMap(
+        options: MapOptions(
+          initCenter: initialLocation ?? const Geographic(lat: 0, lon: 0),
+          initZoom: initialLocation != null ? 12 : 0,
+          initStyle: style,
+          gestures: const MapGestures.all(pitch: false, rotate: false),
         ),
+        onMapCreated: onMapCreated,
+        onStyleLoaded: onStyleLoaded,
+        onEvent: onMapEvent,
+        children: [
+          ValueListenableBuilder<MapMarker?>(
+            valueListenable: selectedMarker,
+            builder: (ctx, marker, _) => marker != null
+                ? WidgetLayer(
+                    markers: [
+                      Marker(
+                        point: marker.latLng,
+                        size: const Size(100, 100),
+                        alignment: Alignment.bottomCenter,
+                        child: GestureDetector(
+                          onTap: () => onMarkerTapped?.call(),
+                          child: SizedBox.square(
+                            dimension: 100,
+                            child: AssetMarkerIcon(
+                              id: marker.assetRemoteId,
+                              thumbhash: '',
+                              key: Key(marker.assetRemoteId),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }

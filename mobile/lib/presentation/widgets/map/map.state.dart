@@ -7,11 +7,11 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 class MapState {
   final ThemeMode themeMode;
-  final LatLngBounds bounds;
+  final LngLatBounds bounds;
   final bool onlyFavorites;
   final bool includeArchived;
   final bool withPartners;
@@ -35,7 +35,7 @@ class MapState {
   int get hashCode => bounds.hashCode;
 
   MapState copyWith({
-    LatLngBounds? bounds,
+    LngLatBounds? bounds,
     ThemeMode? themeMode,
     bool? onlyFavorites,
     bool? includeArchived,
@@ -64,7 +64,7 @@ class MapState {
 class MapStateNotifier extends Notifier<MapState> {
   MapStateNotifier();
 
-  bool setBounds(LatLngBounds bounds) {
+  bool setBounds(LngLatBounds bounds) {
     if (state.bounds == bounds) {
       return false;
     }
@@ -113,14 +113,14 @@ class MapStateNotifier extends Notifier<MapState> {
       includeArchived: appSettingsService.getSetting(AppSettingsEnum.mapIncludeArchived),
       withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
       relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
-      bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+      bounds: const LngLatBounds(longitudeWest: 0, longitudeEast: 0, latitudeSouth: 0, latitudeNorth: 0),
     );
   }
 }
 
 // This provider watches the markers from the map service and serves the markers.
 // It should be used only after the map service provider is overridden
-final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LatLngBounds?>((ref, bounds) async {
+final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LngLatBounds?>((ref, bounds) async {
   final mapService = ref.watch(mapServiceProvider);
   final markers = await mapService.getMarkers(bounds);
   final features = List.filled(markers.length, const <String, dynamic>{});
@@ -131,7 +131,7 @@ final mapMarkerProvider = FutureProvider.family<Map<String, dynamic>, LatLngBoun
       'id': marker.assetId,
       'geometry': {
         'type': 'Point',
-        'coordinates': [marker.location.longitude, marker.location.latitude],
+        'coordinates': [marker.location.lon, marker.location.lat],
       },
     };
   }

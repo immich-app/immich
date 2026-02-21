@@ -33,13 +33,9 @@ class MapBottomSheet extends HookConsumerWidget {
     final isBottomSheetOpened = useRef(false);
 
     void handleMapEvents(MapEvent event) async {
-      if (event is MapCloseBottomSheet) {
-        await sheetController.animateTo(
-          0.1,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.linearToEaseOut,
-        );
-      }
+      if (event is! MapCloseBottomSheet) return;
+
+      await sheetController.animateTo(0.1, duration: const Duration(milliseconds: 200), curve: Curves.linearToEaseOut);
     }
 
     useOnStreamChange<MapEvent>(mapEventStream, onData: handleMapEvents);

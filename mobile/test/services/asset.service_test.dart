@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/asset.service.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -85,9 +85,9 @@ void main() {
       expect(receivedDatetime.every((d) => d == dateTime), isTrue);
     });
 
-    test("asset is updated with LatLng", () async {
+    test("asset is updated with Geographic", () async {
       final assets = [AssetStub.image1, AssetStub.image2];
-      final latLng = const LatLng(37.7749, -122.4194);
+      final latLng = const Geographic(lat: 37.7749, lon: -122.4194);
       await sut.changeLocation(assets, latLng);
 
       verify(() => assetsApi.updateAssets(any())).called(1);
@@ -95,7 +95,7 @@ void main() {
       upsertExifCallback.called(1);
       final receivedAssets = upsertExifCallback.captured.firstOrNull as List<Object>? ?? [];
       final receivedCoords = receivedAssets.cast<Asset>().map(
-        (a) => LatLng(a.exifInfo?.latitude ?? 0, a.exifInfo?.longitude ?? 0),
+        (a) => Geographic(lat: a.exifInfo?.latitude ?? 0, lon: a.exifInfo?.longitude ?? 0),
       );
       expect(receivedCoords.every((l) => l == latLng), isTrue);
     });

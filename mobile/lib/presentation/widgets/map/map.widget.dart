@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -20,27 +19,10 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
-
-class CustomSourceProperties implements SourceProperties {
-  final Map<String, dynamic> data;
-  const CustomSourceProperties({required this.data});
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      "type": "geojson",
-      "data": data,
-      // "cluster": true,
-      // "clusterRadius": 1,
-      // "clusterMinPoints": 5,
-      // "tolerance": 0.1,
-    };
-  }
-}
+import 'package:maplibre/maplibre.dart';
 
 class DriftMap extends ConsumerStatefulWidget {
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
   const DriftMap({super.key, this.initialLocation});
 
@@ -49,7 +31,7 @@ class DriftMap extends ConsumerStatefulWidget {
 }
 
 class _DriftMapState extends ConsumerState<DriftMap> {
-  MapLibreMapController? mapController;
+  MapController? mapController;
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
@@ -69,7 +51,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     super.dispose();
   }
 
-  void onMapCreated(MapLibreMapController controller) {
+  void onMapCreated(MapController controller) {
     mapController = controller;
   }
 
@@ -81,43 +63,23 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       return;
     }
 
-    await controller.addSource(
-      MapUtils.defaultSourceId,
-      const CustomSourceProperties(data: {'type': 'FeatureCollection', 'features': []}),
+    await controller.style!.addSource(
+      GeoJsonSource(id: MapUtils.defaultSourceId, data: jsonEncode({'type': 'FeatureCollection', 'features': []})),
     );
 
-    if (Platform.isAndroid) {
-      await controller.addCircleLayer(
-        MapUtils.defaultSourceId,
-        MapUtils.defaultHeatMapLayerId,
-        const CircleLayerProperties(
-          circleRadius: 10,
-          circleColor: "rgba(150,86,34,0.7)",
-          circleBlur: 1.0,
-          circleOpacity: 0.7,
-          circleStrokeWidth: 0.1,
-          circleStrokeColor: "rgba(203,46,19,0.5)",
-          circleStrokeOpacity: 0.7,
-        ),
-      );
-    }
-
-    if (Platform.isIOS) {
-      await controller.addHeatmapLayer(
-        MapUtils.defaultSourceId,
-        MapUtils.defaultHeatMapLayerId,
-        MapUtils.defaultHeatmapLayerProperties,
-      );
-    }
+    await controller.style!.addLayer(
+      const HeatmapStyleLayer(
+        id: MapUtils.defaultHeatMapLayerId,
+        sourceId: MapUtils.defaultSourceId,
+        paint: MapUtils.defaultHeatmapLayerPaint,
+      ),
+    );
 
     _debouncer.run(() => setBounds(forceReload: true));
-    controller.addListener(onMapMoved);
   }
 
-  void onMapMoved() {
-    if (mapController!.isCameraMoving || !mounted) {
-      return;
-    }
+  void onMapEvent(MapEvent event) {
+    if (event is! MapEventCameraIdle || !mounted) return;
 
     _debouncer.run(setBounds);
   }
@@ -136,7 +98,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       return;
     }
 
-    final bounds = await controller.getVisibleRegion();
+    final bounds = controller.getVisibleRegion();
     unawaited(
       _reloadMutex.run(() async {
         if (mounted && (ref.read(mapStateProvider.notifier).setBounds(bounds) || forceReload)) {
@@ -153,7 +115,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       return;
     }
 
-    await controller.setGeoJsonSource(MapUtils.defaultSourceId, markers);
+    await controller.style!.updateGeoJsonSource(id: MapUtils.defaultSourceId, data: jsonEncode(markers));
   }
 
   Future<void> onZoomToLocation() async {
@@ -173,8 +135,9 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     final controller = mapController;
     if (controller != null && location != null) {
       await controller.animateCamera(
-        CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), MapUtils.mapZoomToAssetLevel),
-        duration: const Duration(milliseconds: 800),
+        center: Geographic(lat: location.latitude, lon: location.longitude),
+        zoom: MapUtils.mapZoomToAssetLevel,
+        nativeDuration: Durations.extralong2,
       );
     }
   }
@@ -183,7 +146,12 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),
+        _Map(
+          initialLocation: widget.initialLocation,
+          onMapCreated: onMapCreated,
+          onMapReady: onMapReady,
+          onMapEvent: onMapEvent,
+        ),
         _DynamicBottomSheet(bottomSheetOffset: bottomSheetOffset),
         _DynamicMyLocationButton(onZoomToLocation: onZoomToLocation, bottomSheetOffset: bottomSheetOffset),
       ],
@@ -192,13 +160,13 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 }
 
 class _Map extends StatelessWidget {
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
-  const _Map({this.initialLocation, required this.onMapCreated, required this.onMapReady});
+  const _Map({this.initialLocation, required this.onMapCreated, required this.onMapReady, required this.onMapEvent});
 
-  final MapCreatedCallback onMapCreated;
-
+  final void Function(MapController) onMapCreated;
   final VoidCallback onMapReady;
+  final void Function(MapEvent) onMapEvent;
 
   @override
   Widget build(BuildContext context) {
@@ -206,16 +174,15 @@ class _Map extends StatelessWidget {
     return MapThemeOverride(
       mapBuilder: (style) => style.widgetWhen(
         onData: (style) => MapLibreMap(
-          initialCameraPosition: initialLocation == null
-              ? const CameraPosition(target: LatLng(0, 0), zoom: 0)
-              : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
-          compassEnabled: false,
-          rotateGesturesEnabled: false,
-          styleString: style,
+          options: MapOptions(
+            initCenter: initialLocation ?? const Geographic(lat: 0, lon: 0),
+            initZoom: initialLocation == null ? 0 : MapUtils.mapZoomToAssetLevel,
+            initStyle: style,
+            gestures: const MapGestures.all(rotate: false),
+          ),
           onMapCreated: onMapCreated,
-          onStyleLoadedCallback: onMapReady,
-          attributionButtonPosition: AttributionButtonPosition.topRight,
-          attributionButtonMargins: const Point(8, kToolbarHeight),
+          onStyleLoaded: (_) => onMapReady(),
+          onEvent: onMapEvent,
         ),
       ),
     );

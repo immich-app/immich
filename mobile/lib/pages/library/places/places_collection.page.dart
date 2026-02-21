@@ -15,12 +15,12 @@ import 'package:immich_mobile/providers/search/search_page_state.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 @RoutePage()
 class PlacesCollectionPage extends HookConsumerWidget {
   const PlacesCollectionPage({super.key, this.currentLocation});
-  final LatLng? currentLocation;
+  final Geographic? currentLocation;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final places = ref.watch(getAllPlacesProvider);
@@ -61,7 +61,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
                 child: MapThumbnail(
                   onTap: (_, __) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
                   zoom: 8,
-                  centre: currentLocation ?? const LatLng(21.44950, -157.91959),
+                  centre: currentLocation ?? const Geographic(lat: 21.44950, lon: -157.91959),
                   showAttribution: false,
                   themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),

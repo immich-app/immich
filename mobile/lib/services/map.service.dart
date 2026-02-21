@@ -1,23 +1,14 @@
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:logging/logging.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapService with ErrorLoggerMixin {
   final ApiService _apiService;
   @override
   final logger = Logger("MapService");
 
-  MapService(this._apiService) {
-    _setMapUserAgentHeader();
-  }
-
-  Future<void> _setMapUserAgentHeader() async {
-    final userAgent = await getUserAgentString();
-    await setHttpHeaders({'User-Agent': userAgent});
-  }
+  MapService(this._apiService);
 
   Future<Iterable<MapMarker>> getMapMarkers({
     bool? isFavorite,

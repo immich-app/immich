@@ -1,14 +1,11 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:immich_mobile/widgets/map/asset_marker_icon.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 /// A non-interactive thumbnail of a map in the given coordinates with optional markers
 ///
@@ -16,8 +13,8 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 /// [showMarkerPin] to true which would display a marker pin instead. If both are provided,
 /// [assetMarkerRemoteId] will take precedence
 class MapThumbnail extends HookConsumerWidget {
-  final Function(Point<double>, LatLng)? onTap;
-  final LatLng centre;
+  final Function(Offset, Geographic)? onTap;
+  final Geographic centre;
   final String? assetMarkerRemoteId;
   final String? assetThumbhash;
   final bool showMarkerPin;
@@ -26,7 +23,7 @@ class MapThumbnail extends HookConsumerWidget {
   final double width;
   final ThemeMode? themeMode;
   final bool showAttribution;
-  final MapCreatedCallback? onCreated;
+  final void Function(MapController)? onCreated;
 
   const MapThumbnail({
     super.key,
@@ -45,26 +42,19 @@ class MapThumbnail extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useRef<MapLibreMapController?>(null);
     final styleLoaded = useState(false);
 
-    Future<void> onMapCreated(MapLibreMapController mapController) async {
-      controller.value = mapController;
-      styleLoaded.value = false;
-      onCreated?.call(mapController);
-    }
-
-    Future<void> onStyleLoaded() async {
-      try {
-        if (showMarkerPin && controller.value != null) {
-          await controller.value?.addMarkerAtLatLng(centre);
-        }
-      } finally {
-        // Calling methods on the controller after it is disposed will throw an error
-        // We do not have a way to check if the controller is disposed for now
-        // https://github.com/maplibre/flutter-maplibre-gl/issues/192
+    Future<void> onStyleLoaded(StyleController style) async {
+      if (showMarkerPin) {
+        await style.addImageFromAssets(id: 'mapMarker', asset: 'assets/location-pin.png');
       }
       styleLoaded.value = true;
+    }
+
+    void onEvent(MapEvent event) {
+      if (event is MapEventClick && onTap != null) {
+        onTap!(event.screenPoint, event.point);
+      }
     }
 
     return MapThemeOverride(
@@ -80,37 +70,41 @@ class MapThumbnail extends HookConsumerWidget {
         width: width,
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(15)),
-          child: Stack(
-            alignment: AlignmentGeometry.topCenter,
-            children: [
-              style.widgetWhen(
-                onData: (style) => MapLibreMap(
-                  initialCameraPosition: CameraPosition(target: centre, zoom: zoom),
-                  styleString: style,
-                  onMapCreated: onMapCreated,
-                  onStyleLoadedCallback: onStyleLoaded,
-                  onMapClick: onTap,
-                  doubleClickZoomEnabled: false,
-                  dragEnabled: false,
-                  zoomGesturesEnabled: false,
-                  tiltGesturesEnabled: false,
-                  scrollGesturesEnabled: false,
-                  rotateGesturesEnabled: false,
-                  myLocationEnabled: false,
-                  attributionButtonMargins: showAttribution == false ? const Point(-100, 0) : null,
-                ),
+          child: style.widgetWhen(
+            onData: (style) => MapLibreMap(
+              options: MapOptions(
+                initCenter: Geographic(lat: centre.lat + 0.002, lon: centre.lon),
+                initZoom: zoom,
+                initStyle: style,
+                gestures: const MapGestures.none(),
               ),
-              if (assetMarkerRemoteId != null && assetThumbhash != null)
-                Container(
-                  width: width,
-                  height: height / 2,
-                  alignment: Alignment.bottomCenter,
-                  child: SizedBox.square(
-                    dimension: height / 2.5,
-                    child: AssetMarkerIcon(id: assetMarkerRemoteId!, thumbhash: assetThumbhash!),
+              onMapCreated: onCreated,
+              onStyleLoaded: onStyleLoaded,
+              onEvent: onEvent,
+              layers: [
+                if (showMarkerPin)
+                  MarkerLayer(
+                    points: [Feature(geometry: Point(centre))],
+                    iconImage: 'mapMarker',
+                    iconSize: 0.15,
+                    iconAnchor: IconAnchor.bottom,
+                    iconAllowOverlap: true,
                   ),
-                ),
-            ],
+              ],
+              children: [
+                if (assetMarkerRemoteId != null && assetThumbhash != null)
+                  WidgetLayer(
+                    markers: [
+                      Marker(
+                        point: centre,
+                        size: Size.square(height / 2),
+                        alignment: Alignment.bottomCenter,
+                        child: AssetMarkerIcon(id: assetMarkerRemoteId!, thumbhash: assetThumbhash!),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
           ),
         ),
       ),

@@ -6,7 +6,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart' hide Marker;
 
 class DriftMapRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -42,7 +42,7 @@ class DriftMapRepository extends DriftDatabaseRepository {
 
   Future<List<Marker>> _watchMapMarker({
     Expression<bool> Function($RemoteAssetEntityTable row)? assetFilter,
-    LatLngBounds? bounds,
+    LngLatBounds? bounds,
   }) async {
     final assetId = _db.remoteExifEntity.assetId;
     final latitude = _db.remoteExifEntity.latitude;
@@ -66,20 +66,21 @@ class DriftMapRepository extends DriftDatabaseRepository {
     final rows = await query.get();
     return List.generate(rows.length, (i) {
       final row = rows[i];
-      return Marker(assetId: row.read(assetId)!, location: LatLng(row.read(latitude)!, row.read(longitude)!));
+      return Marker(
+        assetId: row.read(assetId)!,
+        location: Geographic(lat: row.read(latitude)!, lon: row.read(longitude)!),
+      );
     }, growable: false);
   }
 }
 
 extension MapBounds on $RemoteExifEntityTable {
-  Expression<bool> inBounds(LatLngBounds bounds) {
-    final southwest = bounds.southwest;
-    final northeast = bounds.northeast;
-
-    final latInBounds = latitude.isBetweenValues(southwest.latitude, northeast.latitude);
-    final longInBounds = southwest.longitude <= northeast.longitude
-        ? longitude.isBetweenValues(southwest.longitude, northeast.longitude)
-        : (longitude.isBiggerOrEqualValue(southwest.longitude) | longitude.isSmallerOrEqualValue(northeast.longitude));
+  Expression<bool> inBounds(LngLatBounds bounds) {
+    final latInBounds = latitude.isBetweenValues(bounds.latitudeSouth, bounds.latitudeNorth);
+    final longInBounds = bounds.longitudeWest <= bounds.longitudeEast
+        ? longitude.isBetweenValues(bounds.longitudeWest, bounds.longitudeEast)
+        : (longitude.isBiggerOrEqualValue(bounds.longitudeWest) |
+              longitude.isSmallerOrEqualValue(bounds.longitudeEast));
     return latInBounds & longInBounds;
   }
 }

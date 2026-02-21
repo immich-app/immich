@@ -84,8 +84,13 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with Widget
       data: _isDarkTheme
           ? getThemeData(colorScheme: appTheme.dark, locale: locale)
           : getThemeData(colorScheme: appTheme.light, locale: locale),
-      child: widget.mapBuilder.call(
-        ref.watch(mapStateNotifierProvider.select((v) => _isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched)),
+      // Key on _isDarkTheme to force MapLibreMap recreation on theme change,
+      // since initStyle is only applied on creation.
+      child: KeyedSubtree(
+        key: ValueKey(_isDarkTheme),
+        child: widget.mapBuilder.call(
+          ref.watch(mapStateNotifierProvider.select((v) => _isDarkTheme ? v.darkStyleFetched : v.lightStyleFetched)),
+        ),
       ),
     );
   }

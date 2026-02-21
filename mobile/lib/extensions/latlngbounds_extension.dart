@@ -1,20 +1,23 @@
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
-extension WithinBounds on LatLngBounds {
+extension WithinBounds on LngLatBounds {
   /// Checks whether [point] is inside bounds
-  bool contains(LatLng point) {
-    final sw = point;
-    final ne = point;
-    return containsBounds(LatLngBounds(southwest: sw, northeast: ne));
+  bool contains(Geographic point) {
+    return containsBounds(
+      LngLatBounds(
+        longitudeWest: point.lon,
+        longitudeEast: point.lon,
+        latitudeSouth: point.lat,
+        latitudeNorth: point.lat,
+      ),
+    );
   }
 
   /// Checks whether [bounds] is contained inside bounds
-  bool containsBounds(LatLngBounds bounds) {
-    final sw = bounds.southwest;
-    final ne = bounds.northeast;
-    return (sw.latitude >= southwest.latitude) &&
-        (ne.latitude <= northeast.latitude) &&
-        (sw.longitude >= southwest.longitude) &&
-        (ne.longitude <= northeast.longitude);
+  bool containsBounds(LngLatBounds bounds) {
+    return (bounds.latitudeSouth >= latitudeSouth) &&
+        (bounds.latitudeNorth <= latitudeNorth) &&
+        (bounds.longitudeWest >= longitudeWest) &&
+        (bounds.longitudeEast <= longitudeEast);
   }
 }

@@ -1,9 +1,9 @@
 import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart' hide Marker;
 
-typedef MapMarkerSource = Future<List<Marker>> Function(LatLngBounds? bounds);
+typedef MapMarkerSource = Future<List<Marker>> Function(LngLatBounds? bounds);
 
 typedef MapQuery = ({MapMarkerSource markerSource});
 
@@ -21,5 +21,5 @@ class MapService {
 
   MapService(MapQuery query) : _markerSource = query.markerSource;
 
-  Future<List<Marker>> Function(LatLngBounds? bounds) get getMarkers => _markerSource;
+  Future<List<Marker>> Function(LngLatBounds? bounds) get getMarkers => _markerSource;
 }

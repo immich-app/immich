@@ -22,7 +22,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
-import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
+import 'package:maplibre/maplibre.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final actionServiceProvider = Provider<ActionService>(
@@ -131,12 +131,12 @@ class ActionService {
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
-    maplibre.LatLng? initialLatLng;
+    maplibre.Geographic? initialLatLng;
     if (remoteIds.length == 1) {
       final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
 
       if (exif?.latitude != null && exif?.longitude != null) {
-        initialLatLng = maplibre.LatLng(exif!.latitude!, exif.longitude!);
+        initialLatLng = maplibre.Geographic(lat: exif!.latitude!, lon: exif.longitude!);
       }
     }
 

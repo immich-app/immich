@@ -12,11 +12,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 class TimelineMapOptions {
-  final LatLngBounds bounds;
+  final LngLatBounds bounds;
   final bool onlyFavorites;
   final bool includeArchived;
   final bool withPartners;

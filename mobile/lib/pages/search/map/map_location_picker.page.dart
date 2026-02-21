@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -7,36 +5,34 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 @RoutePage()
 class MapLocationPickerPage extends HookConsumerWidget {
-  final LatLng initialLatLng;
+  final Geographic initialLatLng;
 
-  const MapLocationPickerPage({super.key, this.initialLatLng = const LatLng(0, 0)});
+  const MapLocationPickerPage({super.key, this.initialLatLng = const Geographic(lat: 0, lon: 0)});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedLatLng = useValueNotifier<LatLng>(initialLatLng);
-    final controller = useRef<MapLibreMapController?>(null);
-    final marker = useRef<Symbol?>(null);
+    final selectedLatLng = useValueNotifier<Geographic>(initialLatLng);
+    final currentLatLng = useValueListenable(selectedLatLng);
+    final controller = useRef<MapController?>(null);
 
-    Future<void> onStyleLoaded() async {
-      marker.value = await controller.value?.addMarkerAtLatLng(initialLatLng);
+    Future<void> onStyleLoaded(StyleController style) async {
+      await style.addImageFromAssets(id: 'mapMarker', asset: 'assets/location-pin.png');
     }
 
-    Future<void> onMapClick(Point<num> _, LatLng centre) async {
-      selectedLatLng.value = centre;
-      await controller.value?.animateCamera(CameraUpdate.newLatLng(centre));
-      if (marker.value != null) {
-        await controller.value?.updateSymbol(marker.value!, SymbolOptions(geometry: centre));
-      }
+    void onEvent(MapEvent event) {
+      if (event is! MapEventClick) return;
+
+      selectedLatLng.value = event.point;
+      controller.value?.animateCamera(center: event.point);
     }
 
-    void onClose([LatLng? selected]) {
+    void onClose([Geographic? selected]) {
       context.maybePop(selected);
     }
 
@@ -47,9 +43,9 @@ class MapLocationPickerPage extends HookConsumerWidget {
         return;
       }
 
-      var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
+      var currentLatLng = Geographic(lat: currentLocation.latitude, lon: currentLocation.longitude);
       selectedLatLng.value = currentLatLng;
-      await controller.value?.animateCamera(CameraUpdate.newLatLngZoom(currentLatLng, 12));
+      await controller.value?.animateCamera(center: currentLatLng, zoom: 12);
     }
 
     return MapThemeOverride(
@@ -66,18 +62,24 @@ class MapLocationPickerPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
               ),
               child: MapLibreMap(
-                initialCameraPosition: CameraPosition(
-                  target: initialLatLng,
-                  zoom: (initialLatLng.latitude == 0 && initialLatLng.longitude == 0) ? 1 : 12,
+                options: MapOptions(
+                  initCenter: initialLatLng,
+                  initZoom: (initialLatLng.lat == 0 && initialLatLng.lon == 0) ? 1 : 12,
+                  initStyle: style,
+                  gestures: const MapGestures.all(pitch: false),
                 ),
-                styleString: style,
                 onMapCreated: (mapController) => controller.value = mapController,
-                onStyleLoadedCallback: onStyleLoaded,
-                onMapClick: onMapClick,
-                dragEnabled: false,
-                tiltGesturesEnabled: false,
-                myLocationEnabled: false,
-                attributionButtonMargins: const Point(20, 15),
+                onStyleLoaded: onStyleLoaded,
+                onEvent: onEvent,
+                layers: [
+                  MarkerLayer(
+                    points: [Feature(geometry: Point(currentLatLng))],
+                    iconImage: 'mapMarker',
+                    iconSize: 0.15,
+                    iconAnchor: IconAnchor.bottom,
+                    iconAllowOverlap: true,
+                  ),
+                ],
               ),
             ),
           ),
@@ -117,7 +119,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class _BottomBar extends StatelessWidget {
-  final ValueNotifier<LatLng> selectedLatLng;
+  final ValueNotifier<Geographic> selectedLatLng;
   final Function() onUseLocation;
   final Function() onGetCurrentLocation;
 
@@ -140,8 +142,7 @@ class _BottomBar extends StatelessWidget {
                 const SizedBox(width: 15),
                 ValueListenableBuilder(
                   valueListenable: selectedLatLng,
-                  builder: (_, value, __) =>
-                      Text("${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}"),
+                  builder: (_, value, __) => Text("${value.lat.toStringAsFixed(4)}, ${value.lon.toStringAsFixed(4)}"),
                 ),
               ],
             ),
