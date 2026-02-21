@@ -318,6 +318,7 @@ export class AlbumRepository {
     await db
       .insertInto('album_asset')
       .values(assetIds.map((assetId) => ({ albumId, assetId })))
+      .onConflict((oc) => oc.columns(['albumId', 'assetId']).doNothing())
       .execute();
   }
 
@@ -326,7 +327,11 @@ export class AlbumRepository {
     if (values.length === 0) {
       return;
     }
-    await this.db.insertInto('album_asset').values(values).execute();
+    await this.db
+      .insertInto('album_asset')
+      .values(values)
+      .onConflict((oc) => oc.columns(['albumId', 'assetId']).doNothing())
+      .execute();
   }
 
   /**

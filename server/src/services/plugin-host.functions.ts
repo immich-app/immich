@@ -7,6 +7,7 @@ import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { requireAccess } from 'src/utils/access';
 
@@ -20,6 +21,7 @@ export class PluginHostFunctions {
     private albumRepository: AlbumRepository,
     private accessRepository: AccessRepository,
     private cryptoRepository: CryptoRepository,
+    private personRepository: PersonRepository,
     private logger: LoggingRepository,
     private pluginJwtSecret: string,
   ) {}
@@ -33,6 +35,7 @@ export class PluginHostFunctions {
       'extism:host/user': {
         updateAsset: (cp: CurrentPlugin, offs: bigint) => this.handleUpdateAsset(cp, offs),
         addAssetToAlbum: (cp: CurrentPlugin, offs: bigint) => this.handleAddAssetToAlbum(cp, offs),
+        getFacesForAsset: (cp: CurrentPlugin, offs: bigint) => this.handleGetFacesForAsset(cp, offs),
       },
     };
   }
@@ -116,5 +119,29 @@ export class PluginHostFunctions {
     this.logger.log(`Adding asset ${assetId} to album ${albumId}`);
     await this.albumRepository.addAssetIds(albumId, [assetId]);
     return 0;
+  }
+
+  /**
+   * Host function wrapper for getFacesForAsset.
+   * Reads the input from the plugin, parses it, and returns faces data.
+   */
+  private async handleGetFacesForAsset(cp: CurrentPlugin, offs: bigint) {
+    const input = JSON.parse(cp.read(offs)!.text());
+    const result = await this.getFacesForAsset(input);
+    return cp.store(JSON.stringify(result));
+  }
+
+  async getFacesForAsset(input: { authToken: string; assetId: string }) {
+    const { authToken, assetId } = input;
+
+    const auth = this.validateToken(authToken);
+
+    await requireAccess(this.accessRepository, {
+      auth: { user: { id: auth.userId } } as any,
+      permission: Permission.AssetRead,
+      ids: [assetId],
+    });
+
+    return this.personRepository.getFaces(assetId);
   }
 }

@@ -537,6 +537,12 @@ export class PersonService extends BaseService {
     if (personId) {
       this.logger.debug(`Assigning face ${id} to person ${personId}`);
       await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
+
+      await this.eventRepository.emit('PersonRecognized', {
+        assetId: face.assetId,
+        ownerId: face.asset.ownerId,
+        personId,
+      });
     }
 
     return JobStatus.Success;
