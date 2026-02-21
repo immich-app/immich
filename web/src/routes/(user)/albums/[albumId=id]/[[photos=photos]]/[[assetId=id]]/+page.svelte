@@ -305,9 +305,10 @@
       return;
     }
 
-    album.albumUsers = album.albumUsers.map((albumUser) =>
+    const albumUsers = album.albumUsers.map((albumUser) =>
       albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
     );
+    album = { ...album, albumUsers };
   };
 
   const { Cast } = $derived(getGlobalActions($t));
@@ -352,7 +353,7 @@
                 id={album.id}
                 albumName={album.albumName}
                 {isOwned}
-                onUpdate={(albumName) => (album.albumName = albumName)}
+                onUpdate={(albumName) => (album = { ...album, albumName })}
               />
 
               {#if album.assetCount > 0}
@@ -401,8 +402,11 @@
                   <ActionButton action={Share} />
                 </div>
               {/if}
-              <!-- ALBUM DESCRIPTION -->
-              <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
+              <AlbumDescription
+                id={album.id}
+                {isOwned}
+                bind:description={() => album.description, (description) => (album = { ...album, description })}
+              />
             </section>
           {/if}
 
