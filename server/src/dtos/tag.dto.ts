@@ -67,8 +67,8 @@ export function mapTag(entity: Tag): TagResponseDto {
     parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
-    createdAt: entity.createdAt.toISOString(),
-    updatedAt: entity.updatedAt.toISOString(),
+    createdAt: new Date(entity.createdAt).toISOString(),
+    updatedAt: new Date(entity.updatedAt).toISOString(),
     color: entity.color ?? undefined,
   };
 }

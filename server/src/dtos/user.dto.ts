@@ -57,7 +57,7 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
-    profileChangedAt: entity.profileChangedAt.toISOString(),
+    profileChangedAt: new Date(entity.profileChangedAt).toISOString(),
   };
 };
 
@@ -140,9 +140,9 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     storageLabel: entity.storageLabel,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
-    createdAt: entity.createdAt.toISOString(),
-    deletedAt: entity.deletedAt?.toISOString() ?? null,
-    updatedAt: entity.updatedAt.toISOString(),
+    createdAt: new Date(entity.createdAt).toISOString(),
+    deletedAt: entity.deletedAt != null ? new Date(entity.deletedAt).toISOString() : null,
+    updatedAt: new Date(entity.updatedAt).toISOString(),
     oauthId: entity.oauthId,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,

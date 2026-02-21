@@ -55,9 +55,9 @@ export class SessionCreateResponseDto extends SessionResponseDto {
 
 export const mapSession = (entity: Session, currentId?: string): SessionResponseDto => ({
   id: entity.id,
-  createdAt: entity.createdAt.toISOString(),
-  updatedAt: entity.updatedAt.toISOString(),
-  expiresAt: entity.expiresAt?.toISOString(),
+  createdAt: new Date(entity.createdAt).toISOString(),
+  updatedAt: new Date(entity.updatedAt).toISOString(),
+  expiresAt: entity.expiresAt != null ? new Date(entity.expiresAt).toISOString() : undefined,
   current: currentId === entity.id,
   appVersion: entity.appVersion,
   deviceOS: entity.deviceOS,

@@ -220,7 +220,7 @@ export function mapPerson(person: Person): PersonResponseDto {
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: person.updatedAt?.toISOString(),
+    updatedAt: person.updatedAt != null ? new Date(person.updatedAt).toISOString() : undefined,
   };
 }
 

@@ -77,7 +77,7 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
     return {
       id: activity.id,
       assetId: activity.assetId,
-      createdAt: activity.createdAt.toISOString(),
+      createdAt: new Date(activity.createdAt).toISOString(),
       type: ReactionType.COMMENT,
       user: {
         id: activity.user.id,
