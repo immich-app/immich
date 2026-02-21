@@ -216,7 +216,8 @@ select
           "asset_file"."path",
           "asset_file"."type",
           "asset_file"."isEdited",
-          "asset_file"."isProgressive"
+          "asset_file"."isProgressive",
+          "asset_file"."isTransparent"
         from
           "asset_file"
         where

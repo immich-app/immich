@@ -43,4 +43,7 @@ export class AssetFileTable {
 
   @Column({ type: 'boolean', default: false })
   isProgressive!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  isTransparent!: Generated<boolean>;
 }
