@@ -430,6 +430,12 @@ export class SyncAssetFaceV2 extends SyncAssetFaceV1 {
   isVisible!: boolean;
 }
 
+export function syncAssetFaceV2ToV1(faceV2: SyncAssetFaceV2): SyncAssetFaceV1 {
+  const { deletedAt: _, isVisible: __, ...faceV1 } = faceV2;
+
+  return faceV1;
+}
+
 @ExtraModel()
 export class SyncAssetFaceDeleteV1 {
   @ApiProperty({ description: 'Asset face ID' })

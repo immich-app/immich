@@ -12,6 +12,7 @@ import {
   AssetFullSyncDto,
   SyncAckDeleteDto,
   SyncAckSetDto,
+  syncAssetFaceV2ToV1,
   SyncAssetV1,
   SyncItem,
   SyncStreamDto,
@@ -792,19 +793,20 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AssetFaceV1;
     const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+      const v1 = syncAssetFaceV2ToV1(data);
+      send(response, { type: upsertType, ids: [updateId], data: v1 });
     }
   }
 
   private async syncAssetFacesV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
     const deleteType = SyncEntityType.AssetFaceDeleteV1;
-    const deletes = this.syncRepository.assetFaceV2.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    const deletes = this.syncRepository.assetFace.getDeletes({ ...options, ack: checkpointMap[deleteType] });
     for await (const { id, ...data } of deletes) {
       send(response, { type: deleteType, ids: [id], data });
     }
 
     const upsertType = SyncEntityType.AssetFaceV2;
-    const upserts = this.syncRepository.assetFaceV2.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
