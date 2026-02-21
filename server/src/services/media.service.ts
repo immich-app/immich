@@ -52,6 +52,7 @@ interface UpsertFileOptions {
   path: string;
   isEdited: boolean;
   isProgressive: boolean;
+  isTransparent: boolean;
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
@@ -321,12 +322,14 @@ export class MediaService extends BaseService {
       format: previewFormat,
       isEdited: useEdits,
       isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
+      isTransparent,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: thumbnailFormat,
       isEdited: useEdits,
       isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
+      isTransparent,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
@@ -350,6 +353,7 @@ export class MediaService extends BaseService {
         format: fullsizeFormat,
         isEdited: useEdits,
         isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
+        isTransparent,
       });
       const fullsizeOptions = {
         ...baseOptions,
@@ -364,6 +368,7 @@ export class MediaService extends BaseService {
         format: extracted.format,
         isEdited: false,
         isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isTransparent,
       });
       this.storageCore.ensureFolders(fullsizeFile.path);
 
@@ -510,12 +515,14 @@ export class MediaService extends BaseService {
       format: image.preview.format,
       isEdited: false,
       isProgressive: false,
+      isTransparent: false,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: image.thumbnail.format,
       isEdited: false,
       isProgressive: false,
+      isTransparent: false,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
@@ -802,7 +809,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private async syncFiles(oldFiles: (AssetFile & { isProgressive: boolean })[], newFiles: UpsertFileOptions[]) {
+  private async syncFiles(
+    oldFiles: (AssetFile & { isProgressive: boolean; isTransparent: boolean })[],
+    newFiles: UpsertFileOptions[],
+  ) {
     const toUpsert: UpsertFileOptions[] = [];
     const pathsToDelete: string[] = [];
     const toDelete = new Set(oldFiles);
@@ -814,7 +824,11 @@ export class MediaService extends BaseService {
       }
 
       // upsert new file path
-      if (existingFile?.path !== newFile.path || existingFile.isProgressive !== newFile.isProgressive) {
+      if (
+        existingFile?.path !== newFile.path ||
+        existingFile.isProgressive !== newFile.isProgressive ||
+        existingFile.isTransparent !== newFile.isTransparent
+      ) {
         toUpsert.push(newFile);
 
         // delete old file from disk
@@ -882,7 +896,10 @@ export class MediaService extends BaseService {
     }
   }
 
-  private getImageFile(asset: ThumbnailPathEntity, options: ImagePathOptions & { isProgressive: boolean }) {
+  private getImageFile(
+    asset: ThumbnailPathEntity,
+    options: ImagePathOptions & { isProgressive: boolean; isTransparent: boolean },
+  ) {
     const path = StorageCore.getImagePath(asset, options);
     return {
       assetId: asset.id,
@@ -890,6 +907,7 @@ export class MediaService extends BaseService {
       path,
       isEdited: options.isEdited,
       isProgressive: options.isProgressive,
+      isTransparent: options.isTransparent,
     };
   }
 }
