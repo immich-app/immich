@@ -100,7 +100,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     var encoded = jsonEncode(headersMap);
     await Store.put(StoreKey.customHeaders, encoded);
-    await networkApi.setRequestHeaders(ApiService.getRequestHeaders());
+    await networkApi.setRequestHeaders(ApiService.getRequestHeaders(), ApiService.getServerUrls());
   }
 }
 

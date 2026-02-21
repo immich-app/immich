@@ -184,7 +184,7 @@ interface NetworkApi {
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
   fun hasCertificate(): Boolean
   fun getClientPointer(): Long
-  fun setRequestHeaders(headers: Map<String, String>)
+  fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>)
 
   companion object {
     /** The codec used by NetworkApi. */
@@ -286,8 +286,9 @@ interface NetworkApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val headersArg = args[0] as Map<String, String>
+            val serverUrlsArg = args[1] as List<String>
             val wrapped: List<Any?> = try {
-              api.setRequestHeaders(headersArg)
+              api.setRequestHeaders(headersArg, serverUrlsArg)
               listOf(null)
             } catch (exception: Throwable) {
               NetworkPigeonUtils.wrapError(exception)

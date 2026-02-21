@@ -59,13 +59,43 @@ class NetworkApiImpl: NetworkApi {
     return Int64(Int(bitPattern: pointer))
   }
   
-  func setRequestHeaders(headers: [String : String]) throws {
-    var filtered = headers
-    filtered.removeValue(forKey: "x-immich-user-token") // the session uses cookie auth
-    var current = URLSessionManager.shared.session.configuration.httpAdditionalHeaders as? [String: String] ?? [:]
-    current.removeValue(forKey: "User-Agent")
-    if filtered != current {
-      UserDefaults.standard.set(filtered, forKey: HEADERS_KEY)
+  func setRequestHeaders(headers: [String : String], serverUrls: [String]) throws {
+    var headers = headers
+    if let token = headers.removeValue(forKey: "x-immich-user-token") {
+      for serverUrl in serverUrls {
+        guard let url = URL(string: serverUrl), let domain = url.host else { continue }
+        let isSecure = serverUrl.hasPrefix("https")
+        let cookies: [(String, String, Bool)] = [
+          ("immich_access_token", token, true),
+          ("immich_is_authenticated", "true", false),
+          ("immich_auth_type", "password", true),
+        ]
+        let expiry = Date().addingTimeInterval(400 * 24 * 60 * 60)
+        for (name, value, httpOnly) in cookies {
+          var properties: [HTTPCookiePropertyKey: Any] = [
+            .name: name,
+            .value: value,
+            .domain: domain,
+            .path: "/",
+            .expires: expiry,
+          ]
+          if isSecure { properties[.secure] = "TRUE" }
+          if httpOnly { properties[.init("HttpOnly")] = "TRUE" }
+          if let cookie = HTTPCookie(properties: properties) {
+            URLSessionManager.cookieStorage.setCookie(cookie)
+          }
+        }
+      }
+    } else {
+      URLSessionManager.cookieStorage.removeCookies(since: .distantPast)
+    }
+
+    guard let groupDefaults = UserDefaults(suiteName: APP_GROUP) else { return }
+    if headers != groupDefaults.dictionary(forKey: HEADERS_KEY) as? [String: String] {
+      groupDefaults.set(headers, forKey: HEADERS_KEY)
+    }
+    if serverUrls.first != groupDefaults.string(forKey: SERVER_URL_KEY) {
+      groupDefaults.set(serverUrls.first, forKey: SERVER_URL_KEY)
     }
   }
 }
