@@ -30,7 +30,6 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
     icon: mdiSync,
     onAction: () => handleScanAllLibraries(),
     shortcuts: { shift: true, key: 'r' },
-    $if: () => libraries.length > 0,
   };
 
   const Create: ActionItem = {
