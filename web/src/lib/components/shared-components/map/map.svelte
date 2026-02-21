@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
   import { addProtocol, setRTLTextPlugin } from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
 

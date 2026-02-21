@@ -4,7 +4,6 @@ import { JobStatus } from 'src/enum';
 import { TagService } from 'src/services/tag.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { tagResponseStub, tagStub } from 'test/fixtures/tag.stub';
-import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(TagService.name, () => {
@@ -192,10 +191,7 @@ describe(TagService.name, () => {
     it('should upsert records', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
-      mocks.asset.getById.mockResolvedValue({
-        ...factory.asset(),
-        tags: [factory.tag({ value: 'tag-1' }), factory.tag({ value: 'tag-2' })],
-      });
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }, { value: 'tag-2' }] });
       mocks.tag.upsertAssetIds.mockResolvedValue([
         { tagId: 'tag-1', assetId: 'asset-1' },
         { tagId: 'tag-1', assetId: 'asset-2' },
@@ -246,10 +242,7 @@ describe(TagService.name, () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.addAssetIds.mockResolvedValue();
-      mocks.asset.getById.mockResolvedValue({
-        ...factory.asset(),
-        tags: [factory.tag({ value: 'tag-1' })],
-      });
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }] });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
 
       await expect(
@@ -278,6 +271,7 @@ describe(TagService.name, () => {
     it('should throw an error for an invalid id', async () => {
       mocks.tag.getAssetIds.mockResolvedValue(new Set());
       mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await expect(sut.removeAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'not_found' },
@@ -288,6 +282,7 @@ describe(TagService.name, () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await expect(
         sut.removeAssets(authStub.admin, 'tag-1', {

@@ -76,6 +76,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/x-sony-sr2', extension: '.sr2' },
     { mimetype: 'image/x-sony-srf', extension: '.srf' },
     { mimetype: 'image/x3f', extension: '.x3f' },
+    { mimetype: 'application/mxf', extension: '.mxf' },
     { mimetype: 'video/3gpp', extension: '.3gp' },
     { mimetype: 'video/3gpp', extension: '.3gpp' },
     { mimetype: 'video/avi', extension: '.avi' },
@@ -188,7 +189,9 @@ describe('mimeTypes', () => {
 
     it('should contain only video mime types', () => {
       const values = Object.values(mimeTypes.video).flat();
-      expect(values).toEqual(values.filter((mimeType) => mimeType.startsWith('video/')));
+      expect(values).toEqual(
+        values.filter((mimeType) => mimeType.startsWith('video/') || mimeType === 'application/mxf'),
+      );
     });
 
     for (const [extension, v] of Object.entries(mimeTypes.video)) {

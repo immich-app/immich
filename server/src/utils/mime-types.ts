@@ -98,6 +98,7 @@ const video: Record<string, string[]> = {
   '.mpeg': ['video/mpeg'],
   '.mpg': ['video/mpeg'],
   '.mts': ['video/mp2t'],
+  '.mxf': ['application/mxf'],
   '.vob': ['video/mpeg'],
   '.webm': ['video/webm'],
   '.wmv': ['video/x-ms-wmv'],
@@ -141,9 +142,12 @@ export const mimeTypes = {
     const contentType = lookup(filename);
     if (contentType.startsWith('image/')) {
       return AssetType.Image;
-    } else if (contentType.startsWith('video/')) {
+    }
+
+    if (contentType.startsWith('video/') || contentType === 'application/mxf') {
       return AssetType.Video;
     }
+
     return AssetType.Other;
   },
   getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
