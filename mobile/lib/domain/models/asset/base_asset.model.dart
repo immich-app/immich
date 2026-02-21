@@ -11,6 +11,8 @@ enum AssetType {
 
 enum AssetState { local, remote, merged }
 
+enum AssetPlaybackStyle { image, video, animated, livePhoto }
+
 sealed class BaseAsset {
   final String name;
   final String? checksum;
@@ -42,6 +44,8 @@ sealed class BaseAsset {
   bool get isVideo => type == AssetType.video;
 
   bool get isMotionPhoto => livePhotoVideoId != null;
+
+  bool get isAnimatedImage => isImage && durationInSeconds != null && durationInSeconds! > 0;
 
   Duration get duration {
     final durationInSeconds = this.durationInSeconds;

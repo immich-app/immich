@@ -51,6 +51,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     url: String,
     headers: Map<String, String>,
     requestId: Long,
+    encoded: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()

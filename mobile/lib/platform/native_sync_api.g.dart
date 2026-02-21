@@ -44,6 +44,7 @@ class PlatformAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    required this.playbackStyle,
   });
 
   String id;
@@ -72,6 +73,8 @@ class PlatformAsset {
 
   double? longitude;
 
+  int playbackStyle;
+
   List<Object?> _toList() {
     return <Object?>[
       id,
@@ -87,6 +90,7 @@ class PlatformAsset {
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     ];
   }
 
@@ -110,6 +114,7 @@ class PlatformAsset {
       adjustmentTime: result[10] as int?,
       latitude: result[11] as double?,
       longitude: result[12] as double?,
+      playbackStyle: result[13]! as int,
     );
   }
 

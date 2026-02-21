@@ -1,9 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -59,8 +62,14 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   final String assetId;
   final String thumbhash;
   final AssetType assetType;
+  final bool isAnimated;
 
-  RemoteFullImageProvider({required this.assetId, required this.thumbhash, required this.assetType});
+  RemoteFullImageProvider({
+    required this.assetId,
+    required this.thumbhash,
+    required this.assetType,
+    required this.isAnimated,
+  });
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -69,6 +78,18 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
+    if (isAnimated) {
+      return AnimatedImageStreamCompleter(
+        codec: _loadAnimatedCodec(key),
+        scale: 1.0,
+        informationCollector: () => <DiagnosticsNode>[
+          DiagnosticsProperty<ImageProvider>('Image provider', this),
+          DiagnosticsProperty<String>('Asset Id', key.assetId),
+        ],
+        onLastListenerRemoved: cancel,
+      );
+    }
+
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getInitialImage(RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash)),
@@ -78,6 +99,18 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       ],
       onLastListenerRemoved: cancel,
     );
+  }
+
+  Future<Codec> _loadAnimatedCodec(RemoteFullImageProvider key) async {
+    final request = this.request = RemoteImageRequest(
+      uri: getOriginalUrlForRemoteId(key.assetId),
+      headers: ApiService.getRequestHeaders(),
+    );
+    final codec = await loadCodecRequest(request);
+    if (codec == null) {
+      throw StateError('Failed to load animated image');
+    }
+    return codec;
   }
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
@@ -112,12 +145,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is RemoteFullImageProvider) {
-      return assetId == other.assetId && thumbhash == other.thumbhash;
+      return assetId == other.assetId && thumbhash == other.thumbhash && isAnimated == other.isAnimated;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => assetId.hashCode ^ thumbhash.hashCode;
+  int get hashCode => assetId.hashCode ^ thumbhash.hashCode ^ isAnimated.hashCode;
 }

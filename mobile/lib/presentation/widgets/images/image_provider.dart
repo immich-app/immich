@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -70,6 +72,28 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     }
   }
 
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+    if (isCancelled) {
+      this.request = null;
+      PaintingBinding.instance.imageCache.evict(this);
+      return null;
+    }
+
+    try {
+      final codec = await request.loadCodec();
+      if (codec == null || isCancelled) {
+        PaintingBinding.instance.imageCache.evict(this);
+        return null;
+      }
+      return codec;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      rethrow;
+    } finally {
+      this.request = null;
+    }
+  }
+
   Stream<ImageInfo> initialImageStream() async* {
     final cachedOperation = this.cachedOperation;
     if (cachedOperation == null) {
@@ -110,7 +134,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
   } else {
     final String assetId;
     final String thumbhash;
@@ -123,7 +147,12 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId, thumbhash: thumbhash, assetType: asset.type);
+    provider = RemoteFullImageProvider(
+      assetId: assetId,
+      thumbhash: thumbhash,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+    );
   }
 
   return provider;
