@@ -973,6 +973,9 @@ rknn = [
     { name = "onnxruntime" },
     { name = "rknn-toolkit-lite2" },
 ]
+rocm = [
+    { name = "onnxruntime-migraphx" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -1027,6 +1030,7 @@ requires-dist = [
     { name = "onnxruntime", marker = "extra == 'cpu'", specifier = ">=1.23.2,<2" },
     { name = "onnxruntime", marker = "extra == 'rknn'", specifier = ">=1.23.2,<2" },
     { name = "onnxruntime-gpu", marker = "extra == 'cuda'", specifier = ">=1.23.2,<2" },
+    { name = "onnxruntime-migraphx", marker = "extra == 'rocm'", specifier = ">=1.23.2,<2" },
     { name = "onnxruntime-openvino", marker = "extra == 'openvino'", specifier = ">=1.23.0,<2" },
     { name = "opencv-python-headless", specifier = ">=4.7.0.72,<5.0" },
     { name = "orjson", specifier = ">=3.9.5" },
@@ -1716,6 +1720,25 @@ wheels = [
 ]
 
 [[package]]
+name = "onnxruntime-migraphx"
+version = "1.23.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coloredlogs" },
+    { name = "flatbuffers" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "protobuf" },
+    { name = "sympy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/c2/9a7c7a107dd8ac85f2015388fa30e02f26080fb69c73db2dd435db126552/onnxruntime_migraphx-1.23.2-cp311-cp311-manylinux_2_34_x86_64.whl", hash = "sha256:6e0914c8b4904922223e06acf55861be4d4757069b647a46288c6948ff302d6c", size = 19717003, upload-time = "2026-01-31T11:57:41.474Z" },
+    { url = "https://files.pythonhosted.org/packages/97/f0/4a6d4a4a43ca26bd71b7775b3f083b4a348d3b00a0a77e9b74bfe375de42/onnxruntime_migraphx-1.23.2-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:0e4bd7ab20bc95b46d3a307a4493687b6eb306d8b6e2cff803cacbeb16d6c100", size = 19721753, upload-time = "2026-01-31T11:57:46.289Z" },
+    { url = "https://files.pythonhosted.org/packages/25/54/96cbb6b1bec0ce42ec757c6105b99a12f73e37ea4b423ccffb85512ffed2/onnxruntime_migraphx-1.23.2-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:bbb8adb940afb2ddeef2ee9df3116347551d835644a8122a98ffc8504c2fd1c6", size = 19721983, upload-time = "2026-01-31T11:57:50.831Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/c9/bf2931724e458956f565c3c94d021190a26c148aa97da395043fce95bb69/onnxruntime_migraphx-1.23.2-cp314-cp314-manylinux_2_34_x86_64.whl", hash = "sha256:c52991ec24a95f6aca035dbcac3fe08d8244a409718c2094a027f62d931961e5", size = 19722452, upload-time = "2026-01-31T11:57:55.863Z" },
+]
+
+[[package]]
 name = "onnxruntime-openvino"
 version = "1.23.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2236,6 +2259,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/68/14/eb014d26be205d38a
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5a/cc/06253936f4a7fa2e0f48dfe6d851d9c56df896a9ab09ac019d70b760619c/pytest_mock-3.15.1-py3-none-any.whl", hash = "sha256:0a25e2eb88fe5168d535041d09a4529a188176ae608a6d249ee65abc0949630d", size = 10095, upload-time = "2025-09-16T16:37:25.734Z" },
 ]
+
 
 [[package]]
 name = "python-dateutil"

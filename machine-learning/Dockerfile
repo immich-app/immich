@@ -22,48 +22,7 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
-
-# renovate: datasource=github-releases depName=Microsoft/onnxruntime
-ARG ONNXRUNTIME_VERSION="v1.22.1"
-WORKDIR /code
-
-RUN apt-get update && apt-get install -y --no-install-recommends wget git
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
-    chmod +x cmake-3.31.9-linux-x86_64.sh && \
-    mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
-    ./cmake-3.31.9-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.31.9-linux-x86_64 && \
-    rm cmake-3.31.9-linux-x86_64.sh
-
-RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
-WORKDIR /code/onnxruntime
-# Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
-# TODO: find a way to fix this without disabling algo caching
-COPY ./patches/* /tmp/
-RUN git apply /tmp/*.patch
-
-RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
-
-ENV PATH=/opt/rocm-venv/bin:/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
-ENV CCACHE_DIR="/ccache"
-# Note: the `parallel` setting uses a substantial amount of RAM
-RUN --mount=type=cache,target=/ccache \
-    ./build.sh \
-    --allow_running_as_root \
-    --config Release \
-    --build_wheel \
-    --update \
-    --build \
-    --parallel 48 \
-    --cmake_extra_defines \
-    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
-    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
-    --skip_tests \
-    --use_rocm \
-    --rocm_home=/opt/rocm \
-    --use_cache \
-    --compile_no_warning_as_error
-RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS builder-rocm
 
 FROM builder-${DEVICE} AS builder
 
@@ -79,9 +38,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
-RUN if [ "$DEVICE" = "rocm" ]; then \
-    uv pip install /opt/onnxruntime_rocm-*.whl; \
-    fi
 
 FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139ee2f0fe9ac948005034e5b AS prod-cpu
 
@@ -120,7 +76,25 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
+
+# Disable fusion kernels (big kernels) to improve performance
+# for me details, see: https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/reference/MIGraphX-dev-env-vars.html
+ENV MIGRAPHX_DISABLE_MIOPEN_FUSION=1
+ENV MIGRAPHX_DISABLE_SCHEDULE_PASS=1
+ENV MIGRAPHX_DISABLE_REDUCE_FUSION=1
+ENV MIGRAPHX_ENABLE_HIPRTC_WORKAROUNDS=1
+
+# Support older GPUs
+RUN apt update && apt install -y migraphx migraphx-dev wget zstd miopen-hip && \
+    apt clean
+ENV ROCBLAS_VERSION=7.2.0-1
+RUN cd /tmp && wget https://archive.archlinux.org/packages/r/rocblas/rocblas-${ROCBLAS_VERSION}-x86_64.pkg.tar.zst -O rocblas.tar.zst \
+    && pwd && ls -lah ./ \
+    && tar --zstd -xvf rocblas.tar.zst && rm rocblas.tar.zst \
+    && rm -rf /opt/rocm/lib/rocblas/library \
+    && mv ./opt/rocm/lib/rocblas/library/ /opt/rocm/lib/rocblas/library/ \
+    && rm -rf /tmp/opt /tmp/usr
 
 FROM prod-cpu AS prod-armnn
 
