@@ -76,6 +76,10 @@ export class MemoryCreateDto extends MemoryBaseDto {
 
   @ValidateDate({ description: 'Memory date' })
   memoryAt!: Date;
+  @ValidateDate({ optional: true, description: 'Date when memory should be shown' })
+  showAt?: Date;
+  @ValidateDate({ optional: true, description: 'Date when memory should be hidden' })
+  hideAt?: Date;
 
   @ValidateUUID({ optional: true, each: true, description: 'Asset IDs to associate with memory' })
   assetIds?: string[];

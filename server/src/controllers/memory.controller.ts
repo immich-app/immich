@@ -38,7 +38,7 @@ export class MemoryController {
     summary: 'Create a memory',
     description:
       'Create a new memory by providing a name, description, and a list of asset IDs to include in the memory.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder().added('v1').beta('v1').stable('v2').updated('v2.6.0', 'added showAt/hideAt'),
   })
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
