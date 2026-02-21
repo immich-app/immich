@@ -438,7 +438,7 @@ test.describe('Timeline', () => {
       const asset = getAsset(timelineRestData, album.assetIds[0])!;
       await pageUtils.goToAsset(page, asset.fileCreatedAt);
       await thumbnailUtils.expectInViewport(page, asset.id);
-      await thumbnailUtils.expectSelectedReadonly(page, asset.id);
+      await thumbnailUtils.expectSelectedDisabled(page, asset.id);
     });
     test('Add photos to album', async ({ page }) => {
       const album = timelineRestData.album;
@@ -447,7 +447,7 @@ test.describe('Timeline', () => {
       const asset = getAsset(timelineRestData, album.assetIds[0])!;
       await pageUtils.goToAsset(page, asset.fileCreatedAt);
       await thumbnailUtils.expectInViewport(page, asset.id);
-      await thumbnailUtils.expectSelectedReadonly(page, asset.id);
+      await thumbnailUtils.expectSelectedDisabled(page, asset.id);
       await pageUtils.selectDay(page, 'Tue, Feb 27, 2024');
       const put = pageRoutePromise(page, `**/api/albums/${album.id}/assets`, async (route, request) => {
         const requestJson = request.postDataJSON();
