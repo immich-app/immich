@@ -5,6 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart' as entity;
+import 'package:immich_mobile/infrastructure/utils/enum.converter.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -25,7 +26,7 @@ class Asset {
       fileModifiedAt = remote.fileModifiedAt,
       updatedAt = remote.updatedAt,
       durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
-      type = remote.type.toAssetType(),
+      type = AssetType.values[remote.type.toAssetType().index],
       fileName = remote.originalFileName,
       height = remote.exifInfo?.exifImageHeight?.toInt(),
       width = remote.exifInfo?.exifImageWidth?.toInt(),
@@ -42,7 +43,7 @@ class Asset {
       stackCount = remote.stack?.assetCount ?? 0,
       stackId = remote.stack?.id,
       thumbhash = remote.thumbhash,
-      visibility = getVisibility(remote.visibility);
+      visibility = getVisibility(remote.visibility.toAssetVisibility());
 
   Asset({
     this.id = Isar.autoIncrement,

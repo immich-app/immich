@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/utils/enum.converter.dart';
 import 'package:openapi/api.dart';
 
 // TODO: Move to repository once all classes are refactored
