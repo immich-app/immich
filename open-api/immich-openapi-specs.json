@@ -25283,15 +25283,17 @@
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "quotaUsageInBytes": {
             "description": "Storage usage in bytes",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "shouldChangePassword": {
             "description": "Require password change on next login",

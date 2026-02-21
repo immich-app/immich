@@ -6,9 +6,9 @@ export const ExifResponseSchema = z
   .object({
     make: z.string().describe('Camera make').nullish(),
     model: z.string().describe('Camera model').nullish(),
-    exifImageWidth: z.int().nonnegative().describe('Image width in pixels').nullish(),
-    exifImageHeight: z.int().nonnegative().describe('Image height in pixels').nullish(),
-    fileSizeInByte: z.int().nonnegative().describe('File size in bytes').nullish(),
+    exifImageWidth: z.int().min(0).describe('Image width in pixels').nullish(),
+    exifImageHeight: z.int().min(0).describe('Image height in pixels').nullish(),
+    fileSizeInByte: z.int().min(0).describe('File size in bytes').nullish(),
     orientation: z.string().describe('Image orientation').nullish(),
     dateTimeOriginal: z.iso.datetime().describe('Original date/time').nullish(),
     modifyDate: z.iso.datetime().describe('Modification date/time').nullish(),

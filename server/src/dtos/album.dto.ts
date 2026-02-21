@@ -140,7 +140,7 @@ export class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) 
 export const ContributorCountResponseSchema = z
   .object({
     userId: z.string().describe('User ID'),
-    assetCount: z.int().nonnegative().describe('Number of assets contributed'),
+    assetCount: z.int().min(0).describe('Number of assets contributed'),
   })
   .meta({ id: 'ContributorCountResponseDto' });
 
@@ -158,7 +158,7 @@ export const AlbumResponseSchema = z
     hasSharedLink: z.boolean().describe('Has shared link'),
     assets: z.array(AssetResponseSchema),
     owner: UserResponseSchema,
-    assetCount: z.int().nonnegative().describe('Number of assets'),
+    assetCount: z.int().min(0).describe('Number of assets'),
     lastModifiedAssetTimestamp: z.iso.datetime().optional().describe('Last modified asset timestamp'),
     startDate: z.iso.datetime().optional().describe('Start date (earliest asset)'),
     endDate: z.iso.datetime().optional().describe('End date (latest asset)'),

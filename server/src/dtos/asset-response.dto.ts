@@ -34,8 +34,8 @@ const SanitizedAssetResponseSchema = z
     duration: z.string().describe('Video duration (for videos)'),
     livePhotoVideoId: z.string().describe('Live photo video ID').nullish(),
     hasMetadata: z.boolean().describe('Whether asset has metadata'),
-    width: z.number().nonnegative().describe('Asset width').nullable(),
-    height: z.number().nonnegative().describe('Asset height').nullable(),
+    width: z.number().min(0).describe('Asset width').nullable(),
+    height: z.number().min(0).describe('Asset height').nullable(),
   })
   .meta({ id: 'SanitizedAssetResponseDto' });
 
@@ -45,7 +45,7 @@ const AssetStackResponseSchema = z
   .object({
     id: z.string().describe('Stack ID'),
     primaryAssetId: z.string().describe('Primary asset ID'),
-    assetCount: z.int().nonnegative().describe('Number of assets in stack'),
+    assetCount: z.int().min(0).describe('Number of assets in stack'),
   })
   .meta({ id: 'AssetStackResponseDto' });
 

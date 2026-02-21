@@ -112,8 +112,8 @@ export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
 export const AssetFaceWithoutPersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Face ID'),
-    imageHeight: z.int().nonnegative().describe('Image height in pixels'),
-    imageWidth: z.int().nonnegative().describe('Image width in pixels'),
+    imageHeight: z.int().min(0).describe('Image height in pixels'),
+    imageWidth: z.int().min(0).describe('Image width in pixels'),
     boundingBoxX1: z.int().describe('Bounding box X1 coordinate'),
     boundingBoxX2: z.int().describe('Bounding box X2 coordinate'),
     boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
@@ -203,8 +203,8 @@ export class PersonStatisticsResponseDto {
 
 const PeopleResponseSchema = z
   .object({
-    total: z.int().nonnegative().describe('Total number of people'),
-    hidden: z.int().nonnegative().describe('Number of hidden people'),
+    total: z.int().min(0).describe('Total number of people'),
+    hidden: z.int().min(0).describe('Number of hidden people'),
     people: z.array(PersonResponseSchema),
     hasNextPage: z.boolean().optional().describe('Whether there are more pages'),
   })

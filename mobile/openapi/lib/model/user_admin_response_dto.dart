@@ -66,12 +66,14 @@ class UserAdminResponseDto {
   /// Storage quota in bytes
   ///
   /// Minimum value: 0
-  num? quotaSizeInBytes;
+  /// Maximum value: 9007199254740991
+  int? quotaSizeInBytes;
 
   /// Storage usage in bytes
   ///
   /// Minimum value: 0
-  num? quotaUsageInBytes;
+  /// Maximum value: 9007199254740991
+  int? quotaUsageInBytes;
 
   /// Require password change on next login
   bool shouldChangePassword;
@@ -195,12 +197,8 @@ class UserAdminResponseDto {
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        quotaSizeInBytes: json[r'quotaSizeInBytes'] == null
-            ? null
-            : num.parse('${json[r'quotaSizeInBytes']}'),
-        quotaUsageInBytes: json[r'quotaUsageInBytes'] == null
-            ? null
-            : num.parse('${json[r'quotaUsageInBytes']}'),
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
+        quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         status: UserAdminResponseDtoStatusEnum.fromJson(json[r'status'])!,
         storageLabel: mapValueOfType<String>(json, r'storageLabel'),

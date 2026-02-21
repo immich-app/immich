@@ -329,7 +329,7 @@ export class SearchSuggestionRequestDto {
 
 export const SearchFacetCountResponseSchema = z
   .object({
-    count: z.int().nonnegative().describe('Number of assets with this facet value'),
+    count: z.int().min(0).describe('Number of assets with this facet value'),
     value: z.string().describe('Facet value'),
   })
   .meta({ id: 'SearchFacetCountResponseDto' });
@@ -347,8 +347,8 @@ export class SearchFacetResponseDto extends createZodDto(SearchFacetResponseSche
 
 export const SearchAlbumResponseSchema = z
   .object({
-    total: z.int().nonnegative().describe('Total number of matching albums'),
-    count: z.int().nonnegative().describe('Number of albums in this page'),
+    total: z.int().min(0).describe('Total number of matching albums'),
+    count: z.int().min(0).describe('Number of albums in this page'),
     items: z.array(AlbumResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
   })
@@ -358,8 +358,8 @@ export class SearchAlbumResponseDto extends createZodDto(SearchAlbumResponseSche
 
 export const SearchAssetResponseSchema = z
   .object({
-    total: z.int().nonnegative().describe('Total number of matching assets'),
-    count: z.int().nonnegative().describe('Number of assets in this page'),
+    total: z.int().min(0).describe('Total number of matching assets'),
+    count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
     nextPage: z.string().describe('Next page token').nullable(),
