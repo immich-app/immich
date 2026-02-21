@@ -272,4 +272,21 @@ export const probeStub = {
       },
     ],
   }),
+  videoStreamAnamorphic: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 1080,
+        width: 1440,
+        codecName: 'h264',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+        bitrate: 0,
+        pixelFormat: 'yuv420p',
+        displayAspectRatio: '16:9',
+      },
+    ],
+  }),
 };

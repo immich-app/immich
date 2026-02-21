@@ -1021,12 +1021,15 @@ export class MetadataService extends BaseService {
     const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
     if (videoStreams[0]) {
-      // Set video dimensions
-      if (videoStreams[0].width) {
-        tags.ImageWidth = videoStreams[0].width;
+      // Set video dimensions, considering Display Aspect Ratio (DAR) for anamorphic videos
+      const { width, height, displayAspectRatio } = videoStreams[0];
+      const displayDimensions = this.applyDisplayAspectRatio(width, height, displayAspectRatio);
+
+      if (displayDimensions.width) {
+        tags.ImageWidth = displayDimensions.width;
       }
-      if (videoStreams[0].height) {
-        tags.ImageHeight = videoStreams[0].height;
+      if (displayDimensions.height) {
+        tags.ImageHeight = displayDimensions.height;
       }
 
       switch (videoStreams[0].rotation) {
@@ -1054,5 +1057,45 @@ export class MetadataService extends BaseService {
     }
 
     return tags;
+  }
+
+  /**
+   * Calculates the display dimensions of a video based on its Display Aspect Ratio (DAR).
+   * DAR accounts for anamorphic videos where the stored pixel dimensions differ from the intended display dimensions.
+   * For example, a 1440x1080 video with DAR 16:9 should display as 1920x1080 (1440 * 16/9 / (1440/1080) = 1920).
+   */
+  private applyDisplayAspectRatio(
+    width: number | undefined,
+    height: number | undefined,
+    displayAspectRatio: string | undefined,
+  ): { width?: number; height?: number } {
+    if (!width || !height || !displayAspectRatio) {
+      return { width, height };
+    }
+
+    // Parse DAR string (e.g., "16:9" or "4:3")
+    const darMatch = displayAspectRatio.match(/^(\d+):(\d+)$/);
+    if (!darMatch) {
+      return { width, height };
+    }
+
+    const darWidth = Number.parseInt(darMatch[1], 10);
+    const darHeight = Number.parseInt(darMatch[2], 10);
+    if (!darWidth || !darHeight) {
+      return { width, height };
+    }
+
+    const dar = darWidth / darHeight;
+    const storedAspectRatio = width / height;
+
+    // If DAR is effectively the same as stored aspect ratio (within a small tolerance), no adjustment needed
+    if (Math.abs(dar - storedAspectRatio) < 0.01) {
+      return { width, height };
+    }
+
+    // Apply DAR by adjusting width while keeping height constant
+    // This matches how video players typically handle anamorphic content
+    const displayWidth = Math.round(height * dar);
+    return { width: displayWidth, height };
   }
 }
