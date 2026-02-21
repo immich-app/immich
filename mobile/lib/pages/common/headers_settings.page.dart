@@ -8,8 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 
 class SettingsHeader {
   String key = "";
@@ -76,7 +75,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
         ],
       ),
       body: PopScope(
-        onPopInvokedWithResult: (didPop, _) => saveHeaders(headers.value),
+        onPopInvokedWithResult: (didPop, _) => saveHeaders(ref, headers.value),
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
           itemCount: list.length,
@@ -88,7 +87,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     );
   }
 
-  saveHeaders(List<SettingsHeader> headers) async {
+  saveHeaders(WidgetRef ref, List<SettingsHeader> headers) async {
     final headersMap = {};
     for (var header in headers) {
       final key = header.key.trim();
@@ -100,7 +99,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     var encoded = jsonEncode(headersMap);
     await Store.put(StoreKey.customHeaders, encoded);
-    await networkApi.setRequestHeaders(ApiService.getRequestHeaders(), ApiService.getServerUrls());
+    await ref.read(apiServiceProvider).updateHeaders();
   }
 }
 

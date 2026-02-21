@@ -48,6 +48,11 @@ class ApiService implements Authentication {
   String? _accessToken;
   final _log = Logger("ApiService");
 
+  Future<void> updateHeaders() async {
+    await NetworkRepository.setHeaders(getRequestHeaders(), getServerUrls());
+    _apiClient.client = NetworkRepository.client;
+  }
+
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
     _apiClient.client = NetworkRepository.client;

@@ -90,12 +90,13 @@ class NetworkApiImpl: NetworkApi {
       URLSessionManager.cookieStorage.removeCookies(since: .distantPast)
     }
 
-    guard let groupDefaults = UserDefaults(suiteName: APP_GROUP) else { return }
-    if headers != groupDefaults.dictionary(forKey: HEADERS_KEY) as? [String: String] {
-      groupDefaults.set(headers, forKey: HEADERS_KEY)
+    if serverUrls.first != UserDefaults.group.string(forKey: SERVER_URL_KEY) {
+      UserDefaults.group.set(serverUrls.first, forKey: SERVER_URL_KEY)
     }
-    if serverUrls.first != groupDefaults.string(forKey: SERVER_URL_KEY) {
-      groupDefaults.set(serverUrls.first, forKey: SERVER_URL_KEY)
+
+    if headers != UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] {
+      UserDefaults.group.set(headers, forKey: HEADERS_KEY)
+      URLSessionManager.shared.recreateSession() // Recreate session to apply custom headers without app restart
     }
   }
 }
