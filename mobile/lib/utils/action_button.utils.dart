@@ -225,7 +225,7 @@ enum ActionButtonType {
         iconData: Icons.info_outline,
         iconColor: context.originalTheme?.iconTheme.color,
         menuItem: true,
-        onPressed: () => EventStream.shared.emit(const ViewerOpenBottomSheetEvent()),
+        onPressed: () => EventStream.shared.emit(const ViewerShowDetailsEvent()),
       ),
       ActionButtonType.viewInTimeline => BaseActionButton(
         label: 'view_in_timeline'.tr(),

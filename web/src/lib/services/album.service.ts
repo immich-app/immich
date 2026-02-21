@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
 import { AlbumPageViewMode } from '$lib/constants';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
@@ -11,17 +12,22 @@ import { user } from '$lib/stores/user.store';
 import { createAlbumAndRedirect } from '$lib/utils/album-utils';
 import { downloadArchive } from '$lib/utils/asset-utils';
 import { openFileUploadDialog } from '$lib/utils/file-uploader';
+
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
-  addAssetsToAlbum,
+  addAssetsToAlbum as addToAlbum,
+  addAssetsToAlbums as addToAlbums,
   addUsersToAlbum,
   AlbumUserRole,
+  BulkIdErrorReason,
   deleteAlbum,
   removeUserFromAlbum,
   updateAlbumInfo,
   updateAlbumUser,
   type AlbumResponseDto,
+  type AlbumsAddAssetsResponseDto,
+  type BulkIdResponseDto,
   type UpdateAlbumDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -86,7 +92,12 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
-    onAction: () => addAssets(album, assets),
+    onAction: () =>
+      addAssetsToAlbums(
+        [album.id],
+        assets.map(({ id }) => id),
+        { notify: true },
+      ).then(() => undefined),
   };
 
   const Upload: ActionItem = {
@@ -100,18 +111,73 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
   return { AddAssets, Upload };
 };
 
-const addAssets = async (album: AlbumResponseDto, assets: TimelineAsset[]) => {
+export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], { notify }: { notify: boolean }) => {
   const $t = await getFormatter();
-  const assetIds = assets.map(({ id }) => id);
 
   try {
-    const results = await addAssetsToAlbum({ id: album.id, bulkIdsDto: { ids: assetIds } });
+    if (albumIds.length === 1) {
+      const albumId = albumIds[0];
+      const results = await addToAlbum({ ...authManager.params, id: albumId, bulkIdsDto: { ids: assetIds } });
+      if (notify) {
+        notifyAddToAlbum($t, albumId, assetIds, results);
+      }
+    }
 
-    const count = results.filter(({ success }) => success).length;
-    toastManager.success($t('assets_added_count', { values: { count } }));
-    eventManager.emit('AlbumAddAssets');
+    if (albumIds.length > 1) {
+      const results = await addToAlbums({ ...authManager.params, albumsAddAssetsDto: { albumIds, assetIds } });
+      if (notify) {
+        notifyAddToAlbums($t, albumIds, assetIds, results);
+      }
+    }
+
+    eventManager.emit('AlbumAddAssets', { assetIds, albumIds });
+    return true;
   } catch (error) {
     handleError(error, $t('errors.error_adding_assets_to_album'));
+    return false;
+  }
+};
+
+const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: string[], results: BulkIdResponseDto[]) => {
+  const successCount = results.filter(({ success }) => success).length;
+  const duplicateCount = results.filter(({ error }) => error === 'duplicate').length;
+  let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+  if (successCount > 0) {
+    description = $t('assets_added_to_album_count', { values: { count: successCount } });
+  } else if (duplicateCount > 0) {
+    description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
+  }
+
+  toastManager.custom(
+    {
+      component: ToastAction,
+      props: {
+        title: $t('info'),
+        color: 'primary',
+        description,
+        button: { text: $t('view_album'), color: 'primary', onClick: () => goto(Route.viewAlbum({ id: albumId })) },
+      },
+    },
+    { timeout: 5000 },
+  );
+};
+
+const notifyAddToAlbums = (
+  $t: MessageFormatter,
+  albumIds: string[],
+  assetIds: string[],
+  results: AlbumsAddAssetsResponseDto,
+) => {
+  if (results.error === BulkIdErrorReason.Duplicate) {
+    toastManager.info($t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }));
+  } else if (results.error) {
+    toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
+  } else {
+    toastManager.success(
+      $t('assets_added_to_albums_count', {
+        values: { albumTotal: albumIds.length, assetTotal: assetIds.length },
+      }),
+    );
   }
 };
 

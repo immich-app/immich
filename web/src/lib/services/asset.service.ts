@@ -2,6 +2,7 @@ import { ProjectionType } from '$lib/constants';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
+import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { user as authUser, preferences } from '$lib/stores/user.store';
@@ -42,6 +43,7 @@ import {
   mdiMagnifyPlusOutline,
   mdiMotionPauseOutline,
   mdiMotionPlayOutline,
+  mdiPlus,
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
@@ -57,6 +59,13 @@ export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlConte
   const onAction = async (name: AssetJobName) => {
     await handleRunAssetJob({ name, assetIds });
     ctx.clearSelect();
+  };
+
+  const AddToAlbum: ActionItem = {
+    title: $t('add_to_album'),
+    icon: mdiPlus,
+    shortcuts: [{ key: 'l' }],
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds }),
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -84,7 +93,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, ctx: AssetControlConte
     $if: () => isAllVideos,
   };
 
-  return { RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+  return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
 };
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) => {
@@ -159,6 +168,14 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     $if: () => isOwner && asset.isFavorite,
     onAction: () => handleUnfavorite(asset),
     shortcuts: [{ key: 'f' }],
+  };
+
+  const AddToAlbum: ActionItem = {
+    title: $t('add_to_album'),
+    icon: mdiPlus,
+    shortcuts: [{ key: 'l' }],
+    $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
+    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
   };
 
   const Offline: ActionItem = {
@@ -260,6 +277,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     Unfavorite,
     PlayMotionPhoto,
     StopMotionPhoto,
+    AddToAlbum,
     ZoomIn,
     ZoomOut,
     Copy,
