@@ -903,7 +903,10 @@ export class AssetRepository {
   }
 
   async upsertFile(
-    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>,
+    file: Pick<
+      Insertable<AssetFileTable>,
+      'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+    >,
   ): Promise<void> {
     await this.db
       .insertInto('asset_file')
@@ -917,7 +920,10 @@ export class AssetRepository {
   }
 
   async upsertFiles(
-    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>[],
+    files: Pick<
+      Insertable<AssetFileTable>,
+      'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+    >[],
   ): Promise<void> {
     if (files.length === 0) {
       return;
@@ -930,6 +936,7 @@ export class AssetRepository {
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
           isProgressive: eb.ref('excluded.isProgressive'),
+          isTransparent: eb.ref('excluded.isTransparent'),
         })),
       )
       .execute();

@@ -468,6 +468,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -475,6 +476,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, thumbhash: thumbhashBuffer });
@@ -509,6 +511,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -516,6 +519,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
     });
@@ -549,6 +553,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -556,6 +561,7 @@ describe(MediaService.name, () => {
           path: expect.any(String),
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
     });
@@ -771,10 +777,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           type: AssetFileType.Preview,
           isProgressive: true,
+          isTransparent: false,
         }),
         expect.objectContaining({
           type: AssetFileType.Thumbnail,
           isProgressive: false,
+          isTransparent: false,
         }),
       ]);
     });
@@ -808,10 +816,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           type: AssetFileType.Preview,
           isProgressive: false,
+          isTransparent: false,
         }),
         expect.objectContaining({
           type: AssetFileType.Thumbnail,
           isProgressive: true,
+          isTransparent: false,
         }),
       ]);
     });
@@ -830,10 +840,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           type: AssetFileType.Preview,
           isProgressive: false,
+          isTransparent: false,
         }),
         expect.objectContaining({
           type: AssetFileType.Thumbnail,
           isProgressive: false,
+          isTransparent: false,
         }),
       ]);
     });
@@ -3583,6 +3595,7 @@ describe(MediaService.name, () => {
           path: '/new/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -3590,6 +3603,7 @@ describe(MediaService.name, () => {
           path: '/new/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
 
@@ -3600,6 +3614,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: 'asset-id',
@@ -3607,6 +3622,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Thumbnail,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
@@ -3624,6 +3640,7 @@ describe(MediaService.name, () => {
             path: '/old/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
           {
             id: 'file-2',
@@ -3632,6 +3649,7 @@ describe(MediaService.name, () => {
             path: '/old/thumbnail.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3643,6 +3661,7 @@ describe(MediaService.name, () => {
           path: '/new/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -3650,6 +3669,7 @@ describe(MediaService.name, () => {
           path: '/new/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
 
@@ -3660,6 +3680,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: 'asset-id',
@@ -3667,6 +3688,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Thumbnail,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
@@ -3687,6 +3709,7 @@ describe(MediaService.name, () => {
             path: '/old/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
           {
             id: 'file-2',
@@ -3695,6 +3718,7 @@ describe(MediaService.name, () => {
             path: '/old/thumbnail.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3710,6 +3734,7 @@ describe(MediaService.name, () => {
           path: '/old/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           id: 'file-2',
@@ -3718,6 +3743,7 @@ describe(MediaService.name, () => {
           path: '/old/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3737,6 +3763,7 @@ describe(MediaService.name, () => {
             path: '/same/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
           {
             id: 'file-2',
@@ -3745,6 +3772,7 @@ describe(MediaService.name, () => {
             path: '/same/thumbnail.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3756,6 +3784,7 @@ describe(MediaService.name, () => {
           path: '/same/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -3763,6 +3792,7 @@ describe(MediaService.name, () => {
           path: '/same/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
 
@@ -3782,6 +3812,7 @@ describe(MediaService.name, () => {
             path: '/old/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
           {
             id: 'file-2',
@@ -3790,6 +3821,7 @@ describe(MediaService.name, () => {
             path: '/old/thumbnail.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3801,6 +3833,7 @@ describe(MediaService.name, () => {
           path: '/new/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         }, // replace
         {
           assetId: asset.id,
@@ -3808,6 +3841,7 @@ describe(MediaService.name, () => {
           path: '/new/fullsize.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         }, // new
       ]);
 
@@ -3818,6 +3852,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
         {
           assetId: 'asset-id',
@@ -3825,6 +3860,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.FullSize,
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.asset.deleteFiles).toHaveBeenCalledWith([
@@ -3835,6 +3871,7 @@ describe(MediaService.name, () => {
           path: '/old/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3867,6 +3904,7 @@ describe(MediaService.name, () => {
             path: '/old/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3882,6 +3920,7 @@ describe(MediaService.name, () => {
           path: '/old/preview.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -3901,6 +3940,7 @@ describe(MediaService.name, () => {
             path: '/old/preview.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
           {
             id: 'file-2',
@@ -3909,6 +3949,7 @@ describe(MediaService.name, () => {
             path: '/old/thumbnail.jpg',
             isEdited: false,
             isProgressive: false,
+            isTransparent: false,
           },
         ],
       };
@@ -3920,6 +3961,7 @@ describe(MediaService.name, () => {
           path: '/old/preview.jpg',
           isEdited: false,
           isProgressive: true,
+          isTransparent: false,
         },
         {
           assetId: asset.id,
@@ -3927,6 +3969,7 @@ describe(MediaService.name, () => {
           path: '/old/thumbnail.jpg',
           isEdited: false,
           isProgressive: false,
+          isTransparent: false,
         },
       ]);
 
@@ -3937,6 +3980,7 @@ describe(MediaService.name, () => {
           type: AssetFileType.Preview,
           isEdited: false,
           isProgressive: true,
+          isTransparent: false,
         },
       ]);
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
