@@ -10,3 +10,4 @@ export interface Faces {
 }
 
 export const boundingBoxesArray = writable<Faces[]>([]);
+export const hoveredPersonId = writable<string | null>(null);
