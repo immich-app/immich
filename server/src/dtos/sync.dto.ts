@@ -423,6 +423,14 @@ export class SyncAssetFaceV1 {
 }
 
 @ExtraModel()
+export class SyncAssetFaceV2 extends SyncAssetFaceV1 {
+  @ApiProperty({ description: 'Face deleted at' })
+  deletedAt!: Date | null;
+  @ApiProperty({ description: 'Is the face visible in the asset' })
+  isVisible!: boolean;
+}
+
+@ExtraModel()
 export class SyncAssetFaceDeleteV1 {
   @ApiProperty({ description: 'Asset face ID' })
   assetFaceId!: string;
@@ -497,6 +505,7 @@ export type SyncItem = {
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
+  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;

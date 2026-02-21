@@ -42,6 +42,7 @@ class SyncRequestType {
   static const usersV1 = SyncRequestType._(r'UsersV1');
   static const peopleV1 = SyncRequestType._(r'PeopleV1');
   static const assetFacesV1 = SyncRequestType._(r'AssetFacesV1');
+  static const assetFacesV2 = SyncRequestType._(r'AssetFacesV2');
   static const userMetadataV1 = SyncRequestType._(r'UserMetadataV1');
 
   /// List of all possible values in this [enum][SyncRequestType].
@@ -65,6 +66,7 @@ class SyncRequestType {
     usersV1,
     peopleV1,
     assetFacesV1,
+    assetFacesV2,
     userMetadataV1,
   ];
 
@@ -123,6 +125,7 @@ class SyncRequestTypeTypeTransformer {
         case r'UsersV1': return SyncRequestType.usersV1;
         case r'PeopleV1': return SyncRequestType.peopleV1;
         case r'AssetFacesV1': return SyncRequestType.assetFacesV1;
+        case r'AssetFacesV2': return SyncRequestType.assetFacesV2;
         case r'UserMetadataV1': return SyncRequestType.userMetadataV1;
         default:
           if (!allowNull) {

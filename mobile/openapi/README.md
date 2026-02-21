@@ -580,6 +580,7 @@ Class | Method | HTTP request | Description
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
  - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
  - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
+ - [SyncAssetFaceV2](doc//SyncAssetFaceV2.md)
  - [SyncAssetMetadataDeleteV1](doc//SyncAssetMetadataDeleteV1.md)
  - [SyncAssetMetadataV1](doc//SyncAssetMetadataV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
