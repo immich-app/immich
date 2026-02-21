@@ -34,22 +34,145 @@ private object RemoteImagesPigeonUtils {
       )
     }
   }
+  fun deepEquals(a: Any?, b: Any?): Boolean {
+    if (a is ByteArray && b is ByteArray) {
+        return a.contentEquals(b)
+    }
+    if (a is IntArray && b is IntArray) {
+        return a.contentEquals(b)
+    }
+    if (a is LongArray && b is LongArray) {
+        return a.contentEquals(b)
+    }
+    if (a is DoubleArray && b is DoubleArray) {
+        return a.contentEquals(b)
+    }
+    if (a is Array<*> && b is Array<*>) {
+      return a.size == b.size &&
+          a.indices.all{ deepEquals(a[it], b[it]) }
+    }
+    if (a is List<*> && b is List<*>) {
+      return a.size == b.size &&
+          a.indices.all{ deepEquals(a[it], b[it]) }
+    }
+    if (a is Map<*, *> && b is Map<*, *>) {
+      return a.size == b.size && a.all {
+          (b as Map<Any?, Any?>).containsKey(it.key) &&
+          deepEquals(it.value, b[it.key])
+      }
+    }
+    return a == b
+  }
+      
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeCacheStats (
+  val size: Long,
+  val count: Long
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeCacheStats {
+      val size = pigeonVar_list[0] as Long
+      val count = pigeonVar_list[1] as Long
+      return NativeCacheStats(size, count)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      size,
+      count,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is NativeCacheStats) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return RemoteImagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class DualCacheStats (
+  val thumbnailSize: Long,
+  val thumbnailCount: Long,
+  val highResSize: Long,
+  val highResCount: Long
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): DualCacheStats {
+      val thumbnailSize = pigeonVar_list[0] as Long
+      val thumbnailCount = pigeonVar_list[1] as Long
+      val highResSize = pigeonVar_list[2] as Long
+      val highResCount = pigeonVar_list[3] as Long
+      return DualCacheStats(thumbnailSize, thumbnailCount, highResSize, highResCount)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      thumbnailSize,
+      thumbnailCount,
+      highResSize,
+      highResCount,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is DualCacheStats) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return RemoteImagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
 }
 private open class RemoteImagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
-    return     super.readValueOfType(type, buffer)
+    return when (type) {
+      129.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeCacheStats.fromList(it)
+        }
+      }
+      130.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          DualCacheStats.fromList(it)
+        }
+      }
+      else -> super.readValueOfType(type, buffer)
+    }
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
-    super.writeValue(stream, value)
+    when (value) {
+      is NativeCacheStats -> {
+        stream.write(129)
+        writeValue(stream, value.toList())
+      }
+      is DualCacheStats -> {
+        stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      else -> super.writeValue(stream, value)
+    }
   }
 }
 
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface RemoteImageApi {
-  fun requestImage(url: String, headers: Map<String, String>, requestId: Long, callback: (Result<Map<String, Long>?>) -> Unit)
+  fun requestImage(url: String, headers: Map<String, String>, requestId: Long, isThumbnail: Boolean, callback: (Result<Map<String, Long>?>) -> Unit)
   fun cancelRequest(requestId: Long)
-  fun clearCache(callback: (Result<Long>) -> Unit)
+  fun clearThumbnailCache(callback: (Result<Long>) -> Unit)
+  fun clearHighResCache(callback: (Result<Long>) -> Unit)
+  fun getDualCacheStats(callback: (Result<DualCacheStats>) -> Unit)
+  fun cleanupExpiredHighRes(maxAgeDays: Long, callback: (Result<Long>) -> Unit)
 
   companion object {
     /** The codec used by RemoteImageApi. */
@@ -68,7 +191,8 @@ interface RemoteImageApi {
             val urlArg = args[0] as String
             val headersArg = args[1] as Map<String, String>
             val requestIdArg = args[2] as Long
-            api.requestImage(urlArg, headersArg, requestIdArg) { result: Result<Map<String, Long>?> ->
+            val isThumbnailArg = args[3] as Boolean
+            api.requestImage(urlArg, headersArg, requestIdArg, isThumbnailArg) { result: Result<Map<String, Long>?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(RemoteImagesPigeonUtils.wrapError(error))
@@ -101,10 +225,66 @@ interface RemoteImageApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearCache$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearThumbnailCache$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            api.clearCache{ result: Result<Long> ->
+            api.clearThumbnailCache{ result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.clearHighResCache$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.clearHighResCache{ result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.getDualCacheStats$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getDualCacheStats{ result: Result<DualCacheStats> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(RemoteImagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(RemoteImagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.RemoteImageApi.cleanupExpiredHighRes$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val maxAgeDaysArg = args[0] as Long
+            api.cleanupExpiredHighRes(maxAgeDaysArg) { result: Result<Long> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(RemoteImagesPigeonUtils.wrapError(error))

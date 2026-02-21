@@ -3,8 +3,9 @@ part of 'image_request.dart';
 class RemoteImageRequest extends ImageRequest {
   final String uri;
   final Map<String, String> headers;
+  final bool isThumbnail;
 
-  RemoteImageRequest({required this.uri, required this.headers});
+  RemoteImageRequest({required this.uri, required this.headers, this.isThumbnail = false});
 
   @override
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
@@ -12,7 +13,7 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, isThumbnail: isThumbnail);
     final frame = switch (info) {
       {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
       {'pointer': int pointer, 'width': int width, 'height': int height, 'rowBytes': int rowBytes} =>
