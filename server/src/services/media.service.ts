@@ -280,13 +280,19 @@ export class MediaService extends BaseService {
       useEdits;
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
+    const thumbSource = extracted ? extracted.buffer : asset.originalPath;
     const { data, info, colorspace } = await this.decodeImage(
-      extracted ? extracted.buffer : asset.originalPath,
+      thumbSource,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
       convertFullsize ? undefined : image.preview.size,
     );
+
+    let isTransparent = false;
+    if (!extracted && mimeTypes.canBeTransparent(asset.originalPath)) {
+      ({ isTransparent } = await this.mediaRepository.getImageMetadata(asset.originalPath));
+    }
 
     return {
       extracted,
@@ -295,50 +301,61 @@ export class MediaService extends BaseService {
       colorspace,
       convertFullsize,
       generateFullsize,
+      isTransparent,
     };
   }
 
   private async generateImageThumbnails(asset: ThumbnailAsset, { image }: SystemConfig, useEdits: boolean = false) {
+    // Handle embedded preview extraction for RAW files
+    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
+    const { info, data, colorspace, generateFullsize, convertFullsize, extracted, isTransparent } = extractedImage;
+
+    const previewFormat = image.preview.format;
+    this.warnOnTransparencyLoss(isTransparent, previewFormat, asset.id);
+
+    const thumbnailFormat = image.thumbnail.format;
+    this.warnOnTransparencyLoss(isTransparent, thumbnailFormat, asset.id);
+
     const previewFile = this.getImageFile(asset, {
       fileType: AssetFileType.Preview,
-      format: image.preview.format,
+      format: previewFormat,
       isEdited: useEdits,
-      isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
+      isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
-      format: image.thumbnail.format,
+      format: thumbnailFormat,
       isEdited: useEdits,
-      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format !== ImageFormat.Webp,
+      isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
     });
     this.storageCore.ensureFolders(previewFile.path);
 
-    // Handle embedded preview extraction for RAW files
-    const extractedImage = await this.extractOriginalImage(asset, image, useEdits);
-    const { info, data, colorspace, generateFullsize, convertFullsize, extracted } = extractedImage;
-
     // generate final images
-    const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
+    const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
+    const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
-      this.mediaRepository.generateThumbhash(data, thumbnailOptions),
-      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailFile.path),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewFile.path),
+      this.mediaRepository.generateThumbhash(data, baseOptions),
+      this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
+      this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
     if (convertFullsize) {
+      const fullsizeFormat = image.fullsize.format;
+      this.warnOnTransparencyLoss(isTransparent, fullsizeFormat, asset.id);
       // convert a new fullsize image from the same source as the thumbnail
       fullsizeFile = this.getImageFile(asset, {
         fileType: AssetFileType.FullSize,
-        format: image.fullsize.format,
+        format: fullsizeFormat,
         isEdited: useEdits,
-        isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
       });
       const fullsizeOptions = {
-        format: image.fullsize.format,
+        ...baseOptions,
+        format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
-        ...thumbnailOptions,
       };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
@@ -758,7 +775,7 @@ export class MediaService extends BaseService {
   }
 
   private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {
-    const { width, height } = await this.mediaRepository.getImageDimensions(extractedPathOrBuffer);
+    const { width, height } = await this.mediaRepository.getImageMetadata(extractedPathOrBuffer);
     const extractedSize = Math.min(width, height);
     return extractedSize >= targetSize;
   }
@@ -855,6 +872,14 @@ export class MediaService extends BaseService {
     await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);
 
     return generated;
+  }
+
+  private warnOnTransparencyLoss(isTransparent: boolean, format: ImageFormat, assetId: string) {
+    if (isTransparent && format === ImageFormat.Jpeg) {
+      this.logger.warn(
+        `Asset ${assetId} has transparency but the configured format is ${format} which does not support it, consider using a format that does, such as ${ImageFormat.Webp}`,
+      );
+    }
   }
 
   private getImageFile(asset: ThumbnailPathEntity, options: ImagePathOptions & { isProgressive: boolean }) {

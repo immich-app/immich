@@ -348,6 +348,7 @@ describe(MediaService.name, () => {
             : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
         ),
       );
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100, isTransparent: false });
     });
 
     it('should skip thumbnail generation if asset not found', async () => {
@@ -857,7 +858,7 @@ describe(MediaService.name, () => {
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
@@ -871,12 +872,39 @@ describe(MediaService.name, () => {
       });
     });
 
+    it('should not check transparency metadata for raw files without extracted images', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: false } });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.getImageMetadata).not.toHaveBeenCalled();
+    });
+
+    it('should not check transparency metadata for raw files with extracted images', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'file.dng' })
+        .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
+        .build();
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
+      mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+
+      await sut.handleGenerateThumbnails({ id: asset.id });
+
+      expect(mocks.media.getImageMetadata).toHaveBeenCalledOnce();
+      expect(mocks.media.getImageMetadata).toHaveBeenCalledWith(extractedBuffer);
+    });
+
     it('should resize original image if embedded image is too small', async () => {
       const asset = AssetFactory.from({ originalFileName: 'file.dng' })
         .exif({ fileSizeInByte: 5000, profileDescription: 'Adobe RGB', bitsPerSample: 14, orientation: undefined })
         .build();
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 1000, height: 1000 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
       mocks.systemMetadata.get.mockResolvedValue({ image: { extractEmbedded: true } });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
@@ -970,7 +998,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: asset.id });
@@ -1008,7 +1036,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp }, extractEmbedded: true },
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jxl });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: asset.id });
@@ -1056,7 +1084,7 @@ describe(MediaService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: asset.id });
@@ -1100,7 +1128,7 @@ describe(MediaService.name, () => {
     it('should generate full-size preview from non-web-friendly images', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
@@ -1139,7 +1167,7 @@ describe(MediaService.name, () => {
       const asset = AssetFactory.from().exif().build();
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
 
       await sut.handleGenerateThumbnails({ id: asset.id });
@@ -1162,7 +1190,7 @@ describe(MediaService.name, () => {
     it('should always generate full-size preview from non-web-friendly panoramas', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       mocks.media.copyTagGroup.mockResolvedValue(true);
 
       const asset = AssetFactory.from({ originalFileName: 'panorama.tif' })
@@ -1208,7 +1236,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Webp, quality: 90 } },
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
@@ -1248,7 +1276,7 @@ describe(MediaService.name, () => {
         image: { fullsize: { enabled: true, format: ImageFormat.Jpeg, progressive: true } },
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
       const asset = AssetFactory.from({ originalFileName: 'image.hif' })
         .exif({
           fileSizeInByte: 5000,
@@ -1286,6 +1314,7 @@ describe(MediaService.name, () => {
             : { data: fullsizeBuffer, info: rawInfo as OutputInfo }, // buffer implies embedded image extracted
         ),
       );
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100, isTransparent: false });
     });
 
     it('should skip videos', async () => {
@@ -1719,7 +1748,7 @@ describe(MediaService.name, () => {
       const info = { width: 2160, height: 3840 } as OutputInfo;
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
       mocks.media.decodeImage.mockResolvedValue({ data, info });
-      mocks.media.getImageDimensions.mockResolvedValue(info);
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 2160, height: 3840, isTransparent: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,
@@ -1802,7 +1831,7 @@ describe(MediaService.name, () => {
       const info = { width: 1000, height: 1000 } as OutputInfo;
       mocks.media.decodeImage.mockResolvedValue({ data, info });
       mocks.media.extract.mockResolvedValue({ buffer: extracted, format: RawExtractedFormat.Jpeg });
-      mocks.media.getImageDimensions.mockResolvedValue(info);
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 1000, height: 1000, isTransparent: false });
 
       await expect(sut.handleGeneratePersonThumbnail({ id: personStub.primaryPerson.id })).resolves.toBe(
         JobStatus.Success,

@@ -153,6 +153,33 @@ describe('mimeTypes', () => {
     }
   });
 
+  describe('canBeTransparent', () => {
+    for (const img of [
+      'a.avif',
+      'a.bmp',
+      'a.gif',
+      'a.heic',
+      'a.heif',
+      'a.hif',
+      'a.jxl',
+      'a.png',
+      'a.svg',
+      'a.tif',
+      'a.tiff',
+      'a.webp',
+    ]) {
+      it(`should return true for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(true);
+      });
+    }
+
+    for (const img of ['a.jpg', 'a.jpeg', 'a.jpe', 'a.insp', 'a.jp2', 'a.cr3', 'a.dng', 'a.nef', 'a.arw']) {
+      it(`should return false for ${img}`, () => {
+        expect(mimeTypes.canBeTransparent(img)).toBe(false);
+      });
+    }
+  });
+
   describe('animated image', () => {
     for (const img of ['a.avif', 'a.gif', 'a.webp']) {
       it('should identify animated image mime types as such', () => {

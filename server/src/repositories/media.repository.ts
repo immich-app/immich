@@ -309,9 +309,9 @@ export class MediaRepository {
     });
   }
 
-  async getImageDimensions(input: string | Buffer): Promise<ImageDimensions> {
-    const { width = 0, height = 0 } = await sharp(input).metadata();
-    return { width, height };
+  async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    return { width, height, isTransparent: hasAlpha };
   }
 
   private configureFfmpegCall(input: string, output: string | Writable, options: TranscodeCommand) {
