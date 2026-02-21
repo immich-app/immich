@@ -47,7 +47,7 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
       };
 
       await expect(sut.create(auth, dto)).resolves.toEqual({
@@ -72,7 +72,7 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
         assetIds: [asset1.id, asset2.id],
       };
 
@@ -94,7 +94,7 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
         assetIds: [asset1.id, asset2.id],
       };
 
