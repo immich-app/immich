@@ -11,7 +11,7 @@
   import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray, hoveredPersonId } from '$lib/stores/people.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
@@ -20,11 +20,12 @@
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetFaceWithoutPersonResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
+  import { SvelteMap } from 'svelte/reactivity';
   import { fade } from 'svelte/transition';
   import type { AssetCursor } from './asset-viewer.svelte';
 
@@ -180,6 +181,74 @@
     }
     lastUrl = imageLoaderUrl;
   });
+
+  let hoveredFaces = $state<typeof $boundingBoxesArray>([]);
+
+  let faceToPersonMap = $derived.by(() => {
+    const map = new SvelteMap<AssetFaceWithoutPersonResponseDto, string>();
+    if (asset.people) {
+      for (const person of asset.people) {
+        if (person.faces) {
+          for (const face of person.faces) {
+            map.set(face, person.id);
+          }
+        }
+      }
+    }
+    return map;
+  });
+
+  let allFaces = $derived(asset.people?.flatMap((person) => person.faces || []) || []);
+
+  const handleImageMouseMove = (event: MouseEvent) => {
+    if (!assetViewerManager.imgRef || !element || isFaceEditMode.value || ocrManager.showOverlay) {
+      hoveredFaces = [];
+      $hoveredPersonId = null;
+      return;
+    }
+
+    const containerRect = element.getBoundingClientRect();
+    const mouseX = event.clientX - containerRect.left;
+    const mouseY = event.clientY - containerRect.top;
+
+    const faceBoxes = getBoundingBox(allFaces, assetViewerManager.zoomState, assetViewerManager.imgRef);
+
+    const hoveredFaceIndices: number[] = [];
+    for (const [index, box] of faceBoxes.entries()) {
+      if (
+        mouseX >= box.left &&
+        mouseX <= box.left + box.width &&
+        mouseY >= box.top &&
+        mouseY <= box.top + box.height
+      ) {
+        hoveredFaceIndices.push(index);
+      }
+    }
+
+    if (hoveredFaceIndices.length > 0) {
+      hoveredFaces = hoveredFaceIndices.map((i) => allFaces[i]);
+      const firstHoveredFace = allFaces[hoveredFaceIndices[0]];
+      $hoveredPersonId = faceToPersonMap.get(firstHoveredFace) || null;
+    } else {
+      hoveredFaces = [];
+      $hoveredPersonId = null;
+    }
+  };
+
+  const handleImageMouseLeave = () => {
+    hoveredFaces = [];
+    $hoveredPersonId = null;
+  };
+
+  let displayedBoundingBoxes = $derived($boundingBoxesArray.length > 0 ? $boundingBoxesArray : hoveredFaces);
+
+  let hoveredPersonName = $derived.by(() => {
+    if (!$hoveredPersonId || !asset.people) {
+      return null;
+    }
+    const person = asset.people.find((p) => p.id === $hoveredPersonId);
+    return person?.name || null;
+  });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} />
@@ -203,6 +272,9 @@
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  role="presentation"
+  onmousemove={handleImageMouseMove}
+  onmouseleave={handleImageMouseLeave}
 >
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
@@ -233,11 +305,19 @@
         draggable="false"
       />
       <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, assetViewerManager.zoomState, assetViewerManager.imgRef) as boundingbox}
+      {#each getBoundingBox(displayedBoundingBoxes, assetViewerManager.zoomState, assetViewerManager.imgRef) as boundingbox, index}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
+        {#if hoveredPersonName && index === 0}
+          <div
+            class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
+            style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left + boundingbox.width}px; transform: translateX(-100%);"
+          >
+            {hoveredPersonName}
+          </div>
+        {/if}
       {/each}
 
       {#each ocrBoxes as ocrBox (ocrBox.id)}
