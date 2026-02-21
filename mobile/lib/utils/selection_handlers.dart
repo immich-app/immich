@@ -14,7 +14,7 @@ import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:immich_mobile/widgets/common/share_dialog.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 void handleShareAssets(WidgetRef ref, BuildContext context, Iterable<Asset> selection) {
   showDialog(
@@ -105,12 +105,12 @@ Future<void> handleEditDateTime(WidgetRef ref, BuildContext context, List<Asset>
 }
 
 Future<void> handleEditLocation(WidgetRef ref, BuildContext context, List<Asset> selection) async {
-  LatLng? initialLatLng;
+  Geographic? initialLatLng;
   if (selection.length == 1) {
     final asset = selection.first;
     final assetWithExif = await ref.watch(assetServiceProvider).loadExif(asset);
     if (assetWithExif.exifInfo?.latitude != null && assetWithExif.exifInfo?.longitude != null) {
-      initialLatLng = LatLng(assetWithExif.exifInfo!.latitude!, assetWithExif.exifInfo!.longitude!);
+      initialLatLng = Geographic(lat: assetWithExif.exifInfo!.latitude!, lon: assetWithExif.exifInfo!.longitude!);
     }
   }
 

@@ -10,13 +10,13 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 @RoutePage()
 class DriftPlacePage extends StatelessWidget {
   const DriftPlacePage({super.key, this.currentLocation});
 
-  final LatLng? currentLocation;
+  final Geographic? currentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +82,7 @@ class _Map extends StatelessWidget {
   const _Map({required this.search, this.currentLocation});
 
   final ValueNotifier<String?> search;
-  final LatLng? currentLocation;
+  final Geographic? currentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +96,7 @@ class _Map extends StatelessWidget {
                 child: MapThumbnail(
                   onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
                   zoom: 8,
-                  centre: currentLocation ?? const LatLng(21.44950, -157.91959),
+                  centre: currentLocation ?? const Geographic(lat: 21.44950, lon: -157.91959),
                   showAttribution: false,
                   themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),

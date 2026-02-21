@@ -6,10 +6,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
-Future<LatLng?> showLocationPicker({required BuildContext context, LatLng? initialLatLng}) {
-  return showDialog<LatLng?>(
+Future<Geographic?> showLocationPicker({required BuildContext context, Geographic? initialLatLng}) {
+  return showDialog<Geographic?>(
     context: context,
     useRootNavigator: false,
     builder: (ctx) => _LocationPicker(initialLatLng: initialLatLng),
@@ -17,7 +17,7 @@ Future<LatLng?> showLocationPicker({required BuildContext context, LatLng? initi
 }
 
 class _LocationPicker extends HookWidget {
-  final LatLng? initialLatLng;
+  final Geographic? initialLatLng;
 
   const _LocationPicker({this.initialLatLng});
 
@@ -33,9 +33,9 @@ class _LocationPicker extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final latitude = useState(initialLatLng?.latitude ?? 0.0);
-    final longitude = useState(initialLatLng?.longitude ?? 0.0);
-    final latlng = LatLng(latitude.value, longitude.value);
+    final latitude = useState(initialLatLng?.lat ?? 0.0);
+    final longitude = useState(initialLatLng?.lon ?? 0.0);
+    final latlng = Geographic(lat: latitude.value, lon: longitude.value);
     final latitiudeFocusNode = useFocusNode();
     final longitudeFocusNode = useFocusNode();
     final latitudeController = useTextEditingController(text: latitude.value.toStringAsFixed(4));
@@ -48,10 +48,10 @@ class _LocationPicker extends HookWidget {
     }, [latitude.value, longitude.value]);
 
     Future<void> onMapTap() async {
-      final newLatLng = await context.pushRoute<LatLng?>(MapLocationPickerRoute(initialLatLng: latlng));
+      final newLatLng = await context.pushRoute<Geographic?>(MapLocationPickerRoute(initialLatLng: latlng));
       if (newLatLng != null) {
-        latitude.value = newLatLng.latitude;
-        longitude.value = newLatLng.longitude;
+        latitude.value = newLatLng.lat;
+        longitude.value = newLatLng.lon;
       }
     }
 

@@ -1,7 +1,7 @@
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 class Marker {
-  final LatLng location;
+  final Geographic location;
   final String assetId;
 
   const Marker({required this.location, required this.assetId});

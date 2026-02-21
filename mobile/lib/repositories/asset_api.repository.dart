@@ -5,7 +5,7 @@ import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:openapi/api.dart';
 
 final assetApiRepositoryProvider = Provider(
@@ -62,8 +62,8 @@ class AssetApiRepository extends ApiRepository {
     return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite));
   }
 
-  Future<void> updateLocation(List<String> ids, LatLng location) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.latitude, longitude: location.longitude));
+  Future<void> updateLocation(List<String> ids, Geographic location) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.lat, longitude: location.lon));
   }
 
   Future<void> updateDateTime(List<String> ids, DateTime dateTime) async {

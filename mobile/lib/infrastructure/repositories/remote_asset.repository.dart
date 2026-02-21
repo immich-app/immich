@@ -8,7 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -170,12 +170,12 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> updateLocation(List<String> ids, LatLng location) {
+  Future<void> updateLocation(List<String> ids, Geographic location) {
     return _db.batch((batch) async {
       for (final id in ids) {
         batch.update(
           _db.remoteExifEntity,
-          RemoteExifEntityCompanion(latitude: Value(location.latitude), longitude: Value(location.longitude)),
+          RemoteExifEntityCompanion(latitude: Value(location.lat), longitude: Value(location.lon)),
           where: (e) => e.assetId.equals(id),
         );
       }

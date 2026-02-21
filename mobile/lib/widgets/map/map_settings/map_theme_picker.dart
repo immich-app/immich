@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 class MapThemePicker extends StatelessWidget {
   final ThemeMode themeMode;
@@ -78,7 +78,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
           ),
           child: MapThumbnail(
             zoom: 2,
-            centre: const LatLng(47, 5),
+            centre: const Geographic(lat: 47, lon: 5),
             onTap: (_, __) => onThemeChange(mode),
             themeMode: mode,
             showAttribution: false,

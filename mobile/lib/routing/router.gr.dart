@@ -1226,7 +1226,7 @@ class DriftLockedFolderRoute extends PageRouteInfo<void> {
 class DriftMapRoute extends PageRouteInfo<DriftMapRouteArgs> {
   DriftMapRoute({
     Key? key,
-    LatLng? initialLocation,
+    Geographic? initialLocation,
     List<PageRouteInfo>? children,
   }) : super(
          DriftMapRoute.name,
@@ -1252,7 +1252,7 @@ class DriftMapRouteArgs {
 
   final Key? key;
 
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
   @override
   String toString() {
@@ -1461,7 +1461,7 @@ class DriftPlaceDetailRouteArgs {
 class DriftPlaceRoute extends PageRouteInfo<DriftPlaceRouteArgs> {
   DriftPlaceRoute({
     Key? key,
-    LatLng? currentLocation,
+    Geographic? currentLocation,
     List<PageRouteInfo>? children,
   }) : super(
          DriftPlaceRoute.name,
@@ -1490,7 +1490,7 @@ class DriftPlaceRouteArgs {
 
   final Key? key;
 
-  final LatLng? currentLocation;
+  final Geographic? currentLocation;
 
   @override
   String toString() {
@@ -2011,7 +2011,7 @@ class MainTimelineRoute extends PageRouteInfo<void> {
 class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
   MapLocationPickerRoute({
     Key? key,
-    LatLng initialLatLng = const LatLng(0, 0),
+    Geographic initialLatLng = const Geographic(lat: 0, lon: 0),
     List<PageRouteInfo>? children,
   }) : super(
          MapLocationPickerRoute.name,
@@ -2041,12 +2041,12 @@ class MapLocationPickerRoute extends PageRouteInfo<MapLocationPickerRouteArgs> {
 class MapLocationPickerRouteArgs {
   const MapLocationPickerRouteArgs({
     this.key,
-    this.initialLatLng = const LatLng(0, 0),
+    this.initialLatLng = const Geographic(lat: 0, lon: 0),
   });
 
   final Key? key;
 
-  final LatLng initialLatLng;
+  final Geographic initialLatLng;
 
   @override
   String toString() {
@@ -2057,12 +2057,15 @@ class MapLocationPickerRouteArgs {
 /// generated route for
 /// [MapPage]
 class MapRoute extends PageRouteInfo<MapRouteArgs> {
-  MapRoute({Key? key, LatLng? initialLocation, List<PageRouteInfo>? children})
-    : super(
-        MapRoute.name,
-        args: MapRouteArgs(key: key, initialLocation: initialLocation),
-        initialChildren: children,
-      );
+  MapRoute({
+    Key? key,
+    Geographic? initialLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
+         MapRoute.name,
+         args: MapRouteArgs(key: key, initialLocation: initialLocation),
+         initialChildren: children,
+       );
 
   static const String name = 'MapRoute';
 
@@ -2082,7 +2085,7 @@ class MapRouteArgs {
 
   final Key? key;
 
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
   @override
   String toString() {
@@ -2403,7 +2406,7 @@ class PinAuthRouteArgs {
 class PlacesCollectionRoute extends PageRouteInfo<PlacesCollectionRouteArgs> {
   PlacesCollectionRoute({
     Key? key,
-    LatLng? currentLocation,
+    Geographic? currentLocation,
     List<PageRouteInfo>? children,
   }) : super(
          PlacesCollectionRoute.name,
@@ -2435,7 +2438,7 @@ class PlacesCollectionRouteArgs {
 
   final Key? key;
 
-  final LatLng? currentLocation;
+  final Geographic? currentLocation;
 
   @override
   String toString() {

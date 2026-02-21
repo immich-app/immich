@@ -1,16 +1,16 @@
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:openapi/api.dart';
 
 class MapMarker {
-  final LatLng latLng;
+  final Geographic latLng;
   final String assetRemoteId;
   const MapMarker({required this.latLng, required this.assetRemoteId});
 
-  MapMarker copyWith({LatLng? latLng, String? assetRemoteId}) {
+  MapMarker copyWith({Geographic? latLng, String? assetRemoteId}) {
     return MapMarker(latLng: latLng ?? this.latLng, assetRemoteId: assetRemoteId ?? this.assetRemoteId);
   }
 
-  MapMarker.fromDto(MapMarkerResponseDto dto) : latLng = LatLng(dto.lat, dto.lon), assetRemoteId = dto.id;
+  MapMarker.fromDto(MapMarkerResponseDto dto) : latLng = Geographic(lat: dto.lat, lon: dto.lon), assetRemoteId = dto.id;
 
   @override
   String toString() => 'MapMarker(latLng: $latLng, assetRemoteId: $assetRemoteId)';

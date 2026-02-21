@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map_settings_sheet.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 @RoutePage()
 class DriftMapPage extends StatelessWidget {
-  final LatLng? initialLocation;
+  final Geographic? initialLocation;
 
   const DriftMapPage({super.key, this.initialLocation});
 

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ExifMap extends StatelessWidget {
@@ -15,7 +15,7 @@ class ExifMap extends StatelessWidget {
   // reusing this component
   final String? markerId;
   final String? markerAssetThumbhash;
-  final MapCreatedCallback? onMapCreated;
+  final void Function(MapController)? onMapCreated;
 
   const ExifMap({
     super.key,
@@ -66,7 +66,7 @@ class ExifMap extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return MapThumbnail(
-          centre: LatLng(exifInfo.latitude ?? 0, exifInfo.longitude ?? 0),
+          centre: Geographic(lat: exifInfo.latitude ?? 0, lon: exifInfo.longitude ?? 0),
           height: 150,
           width: constraints.maxWidth,
           zoom: 12.0,

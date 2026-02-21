@@ -23,7 +23,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:logging/logging.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
@@ -236,12 +236,12 @@ class AssetService {
     }
   }
 
-  Future<List<Asset>?> changeLocation(List<Asset> assets, LatLng location) async {
+  Future<List<Asset>?> changeLocation(List<Asset> assets, Geographic location) async {
     try {
-      await updateAssets(assets, UpdateAssetDto(latitude: location.latitude, longitude: location.longitude));
+      await updateAssets(assets, UpdateAssetDto(latitude: location.lat, longitude: location.lon));
 
       for (var element in assets) {
-        element.exifInfo = element.exifInfo?.copyWith(latitude: location.latitude, longitude: location.longitude);
+        element.exifInfo = element.exifInfo?.copyWith(latitude: location.lat, longitude: location.lon);
       }
 
       await _syncService.upsertAssetsWithExif(assets);

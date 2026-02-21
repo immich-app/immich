@@ -10,7 +10,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widge
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:maplibre/maplibre.dart';
 
 class LocationDetails extends ConsumerStatefulWidget {
   const LocationDetails({super.key});
@@ -20,7 +20,7 @@ class LocationDetails extends ConsumerStatefulWidget {
 }
 
 class _LocationDetailsState extends ConsumerState<LocationDetails> {
-  MapLibreMapController? _mapController;
+  MapController? _mapController;
 
   String? _getLocationName(ExifInfo? exifInfo) {
     if (exifInfo == null) {
@@ -36,14 +36,16 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
     return null;
   }
 
-  void _onMapCreated(MapLibreMapController controller) {
+  void _onMapCreated(MapController controller) {
     _mapController = controller;
   }
 
   void _onExifChanged(AsyncValue<ExifInfo?>? previous, AsyncValue<ExifInfo?> current) {
     final currentExif = current.valueOrNull;
     if (currentExif != null && currentExif.hasCoordinates) {
-      _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(currentExif.latitude!, currentExif.longitude!)));
+      _mapController?.moveCamera(
+        center: Geographic(lat: currentExif.latitude!, lon: currentExif.longitude!),
+      );
     }
   }
 
