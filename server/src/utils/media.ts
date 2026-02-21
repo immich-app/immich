@@ -800,10 +800,13 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.getToneMapping(videoStream);
-    options.push('hwupload=extra_hw_frames=64');
+    const tonemapOptions = this.getToneMapping(videoStream);
+    const options = [...tonemapOptions, 'hwupload=extra_hw_frames=64'];
+    const format = videoStream.isHDR && tonemapOptions.length === 0 ? 'p010' : 'nv12';
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:format=${format}`);
+    } else {
+      options.push(`scale_vaapi=format=${format}`);
     }
 
     return options;
@@ -866,10 +869,8 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
-    if (tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
-    } else if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`);
+    if (this.shouldScale(videoStream)) {
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq`);
     }
     options.push(...tonemapOptions);
     return options;
