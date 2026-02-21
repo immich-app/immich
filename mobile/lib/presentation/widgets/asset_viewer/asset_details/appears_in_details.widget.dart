@@ -60,8 +60,7 @@ class AppearsInDetails extends ConsumerWidget {
                       album: album,
                       isOwner: isOwner,
                       onAlbumSelected: (album) async {
-                        ref.invalidate(assetViewerProvider);
-                        unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
+                        unawaited(context.router.push(RemoteAlbumRoute(album: album)));
                       },
                     );
                   }).toList(),
