@@ -22,10 +22,10 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
+FROM rocm/dev-ubuntu-24.04:7.1.1-complete@sha256:c6648f6a60470959f5f9c653ce8397d72fc0adda455942b265a5f973c9ee5891 AS builder-rocm
 
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
-ARG ONNXRUNTIME_VERSION="v1.22.1"
+ARG ONNXRUNTIME_VERSION="v1.23.2"
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git
@@ -57,9 +57,8 @@ RUN --mount=type=cache,target=/ccache \
     --parallel 48 \
     --cmake_extra_defines \
     ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
-    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201" \
+    CMAKE_HIP_ARCHITECTURES="gfx900;gfx906;gfx908;gfx90a;gfx940;gfx941;gfx942;gfx1030;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201;gfx1151" \
     --skip_tests \
-    --use_rocm \
     --rocm_home=/opt/rocm \
     --use_cache \
     --compile_no_warning_as_error
@@ -80,7 +79,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 RUN if [ "$DEVICE" = "rocm" ]; then \
-    uv pip install /opt/onnxruntime_rocm-*.whl; \
+    uv pip install /opt/onnxruntime-*.whl; \
     fi
 
 FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139ee2f0fe9ac948005034e5b AS prod-cpu
@@ -120,7 +119,7 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:7.1.1-complete@sha256:c6648f6a60470959f5f9c653ce8397d72fc0adda455942b265a5f973c9ee5891 AS prod-rocm
 
 FROM prod-cpu AS prod-armnn
 
