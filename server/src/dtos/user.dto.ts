@@ -141,7 +141,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
     createdAt: new Date(entity.createdAt).toISOString(),
-    deletedAt: entity.deletedAt != null ? new Date(entity.deletedAt).toISOString() : null,
+    deletedAt: entity.deletedAt == null ? null : new Date(entity.deletedAt).toISOString(),
     updatedAt: new Date(entity.updatedAt).toISOString(),
     oauthId: entity.oauthId,
     quotaSizeInBytes: entity.quotaSizeInBytes,

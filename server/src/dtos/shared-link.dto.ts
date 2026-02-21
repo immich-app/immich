@@ -146,7 +146,7 @@ export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetad
     key: sharedLink.key.toString('base64url'),
     type: sharedLink.type,
     createdAt: new Date(sharedLink.createdAt).toISOString(),
-    expiresAt: sharedLink.expiresAt != null ? new Date(sharedLink.expiresAt).toISOString() : null,
+    expiresAt: sharedLink.expiresAt == null ? null : new Date(sharedLink.expiresAt).toISOString(),
     assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
