@@ -24,7 +24,7 @@ class UserLicense {
   /// Activation key
   String activationKey;
 
-  /// License key
+  /// License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)
   String licenseKey;
 
   @override
@@ -45,7 +45,9 @@ class UserLicense {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'activatedAt'] = this.activatedAt.toUtc().toIso8601String();
+      json[r'activatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.activatedAt.millisecondsSinceEpoch
+        : this.activatedAt.toUtc().toIso8601String();
       json[r'activationKey'] = this.activationKey;
       json[r'licenseKey'] = this.licenseKey;
     return json;
@@ -60,7 +62,7 @@ class UserLicense {
       final json = value.cast<String, dynamic>();
 
       return UserLicense(
-        activatedAt: mapDateTime(json, r'activatedAt', r'')!,
+        activatedAt: mapDateTime(json, r'activatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         activationKey: mapValueOfType<String>(json, r'activationKey')!,
         licenseKey: mapValueOfType<String>(json, r'licenseKey')!,
       );

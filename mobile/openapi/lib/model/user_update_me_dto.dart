@@ -19,8 +19,7 @@ class UserUpdateMeDto {
     this.password,
   });
 
-  /// Avatar color
-  UserAvatarColor? avatarColor;
+  UserUpdateMeDtoAvatarColorEnum? avatarColor;
 
   /// User email
   ///
@@ -101,7 +100,7 @@ class UserUpdateMeDto {
       final json = value.cast<String, dynamic>();
 
       return UserUpdateMeDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: UserUpdateMeDtoAvatarColorEnum.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
@@ -154,4 +153,102 @@ class UserUpdateMeDto {
   static const requiredKeys = <String>{
   };
 }
+
+
+class UserUpdateMeDtoAvatarColorEnum {
+  /// Instantiate a new enum with the provided [value].
+  const UserUpdateMeDtoAvatarColorEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const primary = UserUpdateMeDtoAvatarColorEnum._(r'primary');
+  static const pink = UserUpdateMeDtoAvatarColorEnum._(r'pink');
+  static const red = UserUpdateMeDtoAvatarColorEnum._(r'red');
+  static const yellow = UserUpdateMeDtoAvatarColorEnum._(r'yellow');
+  static const blue = UserUpdateMeDtoAvatarColorEnum._(r'blue');
+  static const green = UserUpdateMeDtoAvatarColorEnum._(r'green');
+  static const purple = UserUpdateMeDtoAvatarColorEnum._(r'purple');
+  static const orange = UserUpdateMeDtoAvatarColorEnum._(r'orange');
+  static const gray = UserUpdateMeDtoAvatarColorEnum._(r'gray');
+  static const amber = UserUpdateMeDtoAvatarColorEnum._(r'amber');
+
+  /// List of all possible values in this [enum][UserUpdateMeDtoAvatarColorEnum].
+  static const values = <UserUpdateMeDtoAvatarColorEnum>[
+    primary,
+    pink,
+    red,
+    yellow,
+    blue,
+    green,
+    purple,
+    orange,
+    gray,
+    amber,
+  ];
+
+  static UserUpdateMeDtoAvatarColorEnum? fromJson(dynamic value) => UserUpdateMeDtoAvatarColorEnumTypeTransformer().decode(value);
+
+  static List<UserUpdateMeDtoAvatarColorEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <UserUpdateMeDtoAvatarColorEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = UserUpdateMeDtoAvatarColorEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [UserUpdateMeDtoAvatarColorEnum] to String,
+/// and [decode] dynamic data back to [UserUpdateMeDtoAvatarColorEnum].
+class UserUpdateMeDtoAvatarColorEnumTypeTransformer {
+  factory UserUpdateMeDtoAvatarColorEnumTypeTransformer() => _instance ??= const UserUpdateMeDtoAvatarColorEnumTypeTransformer._();
+
+  const UserUpdateMeDtoAvatarColorEnumTypeTransformer._();
+
+  String encode(UserUpdateMeDtoAvatarColorEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a UserUpdateMeDtoAvatarColorEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  UserUpdateMeDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'primary': return UserUpdateMeDtoAvatarColorEnum.primary;
+        case r'pink': return UserUpdateMeDtoAvatarColorEnum.pink;
+        case r'red': return UserUpdateMeDtoAvatarColorEnum.red;
+        case r'yellow': return UserUpdateMeDtoAvatarColorEnum.yellow;
+        case r'blue': return UserUpdateMeDtoAvatarColorEnum.blue;
+        case r'green': return UserUpdateMeDtoAvatarColorEnum.green;
+        case r'purple': return UserUpdateMeDtoAvatarColorEnum.purple;
+        case r'orange': return UserUpdateMeDtoAvatarColorEnum.orange;
+        case r'gray': return UserUpdateMeDtoAvatarColorEnum.gray;
+        case r'amber': return UserUpdateMeDtoAvatarColorEnum.amber;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [UserUpdateMeDtoAvatarColorEnumTypeTransformer] instance.
+  static UserUpdateMeDtoAvatarColorEnumTypeTransformer? _instance;
+}
+
 

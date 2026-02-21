@@ -7,8 +7,8 @@ describe('mapAlbum', () => {
     const endDate = new Date('2025-01-01T01:02:03.456Z');
     const album = AlbumFactory.from().asset({ localDateTime: endDate }).asset({ localDateTime: startDate }).build();
     const dto = mapAlbum(album, false);
-    expect(dto.startDate).toEqual(startDate);
-    expect(dto.endDate).toEqual(endDate);
+    expect(dto.startDate).toEqual(startDate.toISOString());
+    expect(dto.endDate).toEqual(endDate.toISOString());
   });
 
   it('should not set start and end dates for empty assets', () => {

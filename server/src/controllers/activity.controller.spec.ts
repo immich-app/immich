@@ -27,13 +27,15 @@ describe(ActivityController.name, () => {
     it('should require an albumId', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/activities');
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
+      expect(body).toEqual(
+        factory.responses.badRequest(expect.arrayContaining(['Invalid input: expected string, received undefined'])),
+      );
     });
 
     it('should reject an invalid albumId', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/activities').query({ albumId: '123' });
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['Invalid UUID'])));
     });
 
     it('should reject an invalid assetId', async () => {
@@ -41,7 +43,7 @@ describe(ActivityController.name, () => {
         .get('/activities')
         .query({ albumId: factory.uuid(), assetId: '123' });
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['assetId must be a UUID'])));
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['Invalid UUID'])));
     });
   });
 
@@ -54,7 +56,11 @@ describe(ActivityController.name, () => {
     it('should require an albumId', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/activities').send({ albumId: '123' });
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['albumId must be a UUID'])));
+      expect(body).toEqual(
+        factory.responses.badRequest(
+          expect.arrayContaining(['Invalid UUID', expect.stringContaining('Invalid option: expected one of')]),
+        ),
+      );
     });
 
     it('should require a comment when type is comment', async () => {
@@ -62,7 +68,9 @@ describe(ActivityController.name, () => {
         .post('/activities')
         .send({ albumId: factory.uuid(), type: 'comment', comment: null });
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(['comment must be a string', 'comment should not be empty']));
+      expect(body).toEqual(
+        factory.responses.badRequest(expect.arrayContaining(['Invalid input: expected string, received null'])),
+      );
     });
   });
 
@@ -75,7 +83,7 @@ describe(ActivityController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/activities/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['Invalid UUID'])));
     });
   });
 });

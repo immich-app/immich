@@ -1,8 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
-import { UserResponseDto } from 'src/dtos/user.dto';
+import { createZodDto } from 'nestjs-zod';
+import { UserResponseSchema } from 'src/dtos/user.dto';
 import { PartnerDirection } from 'src/repositories/partner.repository';
 import { ValidateEnum, ValidateUUID } from 'src/validation';
+import z from 'zod';
 
 export class PartnerCreateDto {
   @ValidateUUID({ description: 'User ID to share with' })
@@ -20,7 +22,10 @@ export class PartnerSearchDto {
   direction!: PartnerDirection;
 }
 
-export class PartnerResponseDto extends UserResponseDto {
-  @ApiPropertyOptional({ description: 'Show in timeline' })
-  inTimeline?: boolean;
-}
+export const PartnerResponseSchema = UserResponseSchema.extend({
+  inTimeline: z.boolean().optional().describe('Show in timeline'),
+})
+  .describe('Partner response')
+  .meta({ id: 'PartnerResponseDto' });
+
+export class PartnerResponseDto extends createZodDto(PartnerResponseSchema) {}

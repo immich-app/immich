@@ -36,7 +36,6 @@ class PersonWithFacesResponseDto {
   ///
   String? color;
 
-  /// Face detections
   List<AssetFaceWithoutPersonResponseDto> faces;
 
   /// Person ID
@@ -100,7 +99,9 @@ class PersonWithFacesResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+      json[r'birthDate'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$/')
+        ? this.birthDate!.millisecondsSinceEpoch
+        : _dateFormatter.format(this.birthDate!.toUtc());
     } else {
     //  json[r'birthDate'] = null;
     }
@@ -120,7 +121,9 @@ class PersonWithFacesResponseDto {
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
     if (this.updatedAt != null) {
-      json[r'updatedAt'] = this.updatedAt!.toUtc().toIso8601String();
+      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAt!.millisecondsSinceEpoch
+        : this.updatedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedAt'] = null;
     }
@@ -136,7 +139,7 @@ class PersonWithFacesResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PersonWithFacesResponseDto(
-        birthDate: mapDateTime(json, r'birthDate', r''),
+        birthDate: mapDateTime(json, r'birthDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$/'),
         color: mapValueOfType<String>(json, r'color'),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,
@@ -144,7 +147,7 @@ class PersonWithFacesResponseDto {
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
-        updatedAt: mapDateTime(json, r'updatedAt', r''),
+        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
       );
     }
     return null;

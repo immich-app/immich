@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Tag } from 'src/database';
 import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
+import { z } from 'zod';
 
 export class TagCreateDto {
   @ApiProperty({ description: 'Tag name' })
@@ -45,22 +47,19 @@ export class TagBulkAssetsResponseDto {
   count!: number;
 }
 
-export class TagResponseDto {
-  @ApiProperty({ description: 'Tag ID' })
-  id!: string;
-  @ApiPropertyOptional({ description: 'Parent tag ID' })
-  parentId?: string;
-  @ApiProperty({ description: 'Tag name' })
-  name!: string;
-  @ApiProperty({ description: 'Tag value (full path)' })
-  value!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ApiPropertyOptional({ description: 'Tag color (hex)' })
-  color?: string;
-}
+export const TagResponseSchema = z
+  .object({
+    id: z.string().describe('Tag ID'),
+    parentId: z.string().optional().describe('Parent tag ID'),
+    name: z.string().describe('Tag name'),
+    value: z.string().describe('Tag value (full path)'),
+    createdAt: z.iso.datetime().describe('Creation date'),
+    updatedAt: z.iso.datetime().describe('Last update date'),
+    color: z.string().optional().describe('Tag color (hex)'),
+  })
+  .meta({ id: 'TagResponseDto' });
+
+export class TagResponseDto extends createZodDto(TagResponseSchema) {}
 
 export function mapTag(entity: Tag): TagResponseDto {
   return {
@@ -68,8 +67,8 @@ export function mapTag(entity: Tag): TagResponseDto {
     parentId: entity.parentId ?? undefined,
     name: entity.value.split('/').at(-1) as string,
     value: entity.value,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
+    createdAt: entity.createdAt.toISOString(),
+    updatedAt: entity.updatedAt.toISOString(),
     color: entity.color ?? undefined,
   };
 }

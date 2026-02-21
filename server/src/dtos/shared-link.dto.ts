@@ -1,11 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { SharedLink } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
-import { AlbumResponseDto, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkType } from 'src/enum';
+import { HistoryBuilder } from 'src/decorators';
+import { AlbumResponseSchema, mapAlbumWithoutAssets } from 'src/dtos/album.dto';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
+import { SharedLinkType, SharedLinkTypeSchema } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
+import { z } from 'zod';
 
 export class SharedLinkSearchDto {
   @ValidateUUID({ optional: true, description: 'Filter by album ID' })
@@ -110,46 +112,28 @@ export class SharedLinkPasswordDto {
   @Optional()
   token?: string;
 }
-export class SharedLinkResponseDto {
-  @ApiProperty({ description: 'Shared link ID' })
-  id!: string;
-  @ApiProperty({ description: 'Link description' })
-  description!: string | null;
-  @ApiProperty({ description: 'Has password' })
-  password!: string | null;
-  @Property({
-    description: 'Access token',
-    history: new HistoryBuilder().added('v1').stable('v2').deprecated('v2.6.0'),
+export const SharedLinkResponseSchema = z
+  .object({
+    id: z.string().describe('Shared link ID'),
+    description: z.string().nullable().describe('Link description'),
+    password: z.string().nullable().describe('Has password'),
+    token: z.string().nullish().describe('Access token'),
+    userId: z.string().describe('Owner user ID'),
+    key: z.string().describe('Encryption key (base64url)'),
+    type: SharedLinkTypeSchema,
+    createdAt: z.iso.datetime().describe('Creation date'),
+    expiresAt: z.iso.datetime().nullable().describe('Expiration date'),
+    assets: z.array(AssetResponseSchema),
+    album: AlbumResponseSchema.optional(),
+    allowUpload: z.boolean().describe('Allow uploads'),
+    allowDownload: z.boolean().describe('Allow downloads'),
+    showMetadata: z.boolean().describe('Show metadata'),
+    slug: z.string().nullable().describe('Custom URL slug'),
   })
-  token?: string | null;
-  @ApiProperty({ description: 'Owner user ID' })
-  userId!: string;
-  @ApiProperty({ description: 'Encryption key (base64url)' })
-  key!: string;
+  .describe('Shared link response')
+  .meta({ id: 'SharedLinkResponseDto' });
 
-  @ValidateEnum({ enum: SharedLinkType, name: 'SharedLinkType', description: 'Shared link type' })
-  type!: SharedLinkType;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Expiration date' })
-  expiresAt!: Date | null;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  assets!: AssetResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  album?: AlbumResponseDto;
-  @ApiProperty({ description: 'Allow uploads' })
-  allowUpload!: boolean;
-
-  @ApiProperty({ description: 'Allow downloads' })
-  allowDownload!: boolean;
-  @ApiProperty({ description: 'Show metadata' })
-  showMetadata!: boolean;
-
-  @ApiProperty({ description: 'Custom URL slug' })
-  slug!: string | null;
-}
+export class SharedLinkResponseDto extends createZodDto(SharedLinkResponseSchema) {}
 
 export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetadata: boolean }): SharedLinkResponseDto {
   const assets = sharedLink.assets || [];
@@ -161,8 +145,8 @@ export function mapSharedLink(sharedLink: SharedLink, options: { stripAssetMetad
     userId: sharedLink.userId,
     key: sharedLink.key.toString('base64url'),
     type: sharedLink.type,
-    createdAt: sharedLink.createdAt,
-    expiresAt: sharedLink.expiresAt,
+    createdAt: sharedLink.createdAt.toISOString(),
+    expiresAt: sharedLink.expiresAt?.toISOString() ?? null,
     assets: assets.map((asset) => mapAsset(asset, { stripMetadata: options.stripAssetMetadata })),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,

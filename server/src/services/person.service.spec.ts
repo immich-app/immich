@@ -23,7 +23,7 @@ const responseDto: PersonResponseDto = {
   birthDate: null,
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
-  updatedAt: expect.any(Date),
+  updatedAt: new Date('2021-01-01').toISOString(),
   isFavorite: false,
   color: expect.any(String),
 };
@@ -62,7 +62,7 @@ describe(PersonService.name, () => {
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
             isFavorite: false,
-            updatedAt: expect.any(Date),
+            updatedAt: new Date('2021-01-01').toISOString(),
             color: expect.any(String),
           },
         ],
@@ -91,7 +91,7 @@ describe(PersonService.name, () => {
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: false,
             isFavorite: true,
-            updatedAt: expect.any(Date),
+            updatedAt: new Date('2021-01-01').toISOString(),
             color: personStub.isFavorite.color,
           },
           responseDto,
@@ -203,7 +203,7 @@ describe(PersonService.name, () => {
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
         isFavorite: false,
-        updatedAt: expect.any(Date),
+        updatedAt: new Date('2021-01-01').toISOString(),
         color: expect.any(String),
       });
       expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
@@ -374,7 +374,7 @@ describe(PersonService.name, () => {
           id: personStub.noName.id,
           name: personStub.noName.name,
           thumbnailPath: personStub.noName.thumbnailPath,
-          updatedAt: expect.any(Date),
+          updatedAt: new Date('2021-01-01').toISOString(),
           color: personStub.noName.color,
         },
       );

@@ -43,6 +43,9 @@ class AlbumResponseDto {
   List<AlbumUserResponseDto> albumUsers;
 
   /// Number of assets
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int assetCount;
 
   List<AssetResponseDto> assets;
@@ -83,13 +86,7 @@ class AlbumResponseDto {
   DateTime? lastModifiedAssetTimestamp;
 
   /// Asset sort order
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetOrder? order;
+  AlbumResponseDtoOrderEnum? order;
 
   UserResponseDto owner;
 
@@ -171,10 +168,14 @@ class AlbumResponseDto {
       json[r'assetCount'] = this.assetCount;
       json[r'assets'] = this.assets;
       json[r'contributorCounts'] = this.contributorCounts;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAt.millisecondsSinceEpoch
+        : this.createdAt.toUtc().toIso8601String();
       json[r'description'] = this.description;
     if (this.endDate != null) {
-      json[r'endDate'] = this.endDate!.toUtc().toIso8601String();
+      json[r'endDate'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.endDate!.millisecondsSinceEpoch
+        : this.endDate!.toUtc().toIso8601String();
     } else {
     //  json[r'endDate'] = null;
     }
@@ -182,7 +183,9 @@ class AlbumResponseDto {
       json[r'id'] = this.id;
       json[r'isActivityEnabled'] = this.isActivityEnabled;
     if (this.lastModifiedAssetTimestamp != null) {
-      json[r'lastModifiedAssetTimestamp'] = this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
+      json[r'lastModifiedAssetTimestamp'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.lastModifiedAssetTimestamp!.millisecondsSinceEpoch
+        : this.lastModifiedAssetTimestamp!.toUtc().toIso8601String();
     } else {
     //  json[r'lastModifiedAssetTimestamp'] = null;
     }
@@ -195,11 +198,15 @@ class AlbumResponseDto {
       json[r'ownerId'] = this.ownerId;
       json[r'shared'] = this.shared;
     if (this.startDate != null) {
-      json[r'startDate'] = this.startDate!.toUtc().toIso8601String();
+      json[r'startDate'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.startDate!.millisecondsSinceEpoch
+        : this.startDate!.toUtc().toIso8601String();
     } else {
     //  json[r'startDate'] = null;
     }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAt.millisecondsSinceEpoch
+        : this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -218,19 +225,19 @@ class AlbumResponseDto {
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         contributorCounts: ContributorCountResponseDto.listFromJson(json[r'contributorCounts']),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         description: mapValueOfType<String>(json, r'description')!,
-        endDate: mapDateTime(json, r'endDate', r''),
+        endDate: mapDateTime(json, r'endDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
-        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r''),
-        order: AssetOrder.fromJson(json[r'order']),
+        lastModifiedAssetTimestamp: mapDateTime(json, r'lastModifiedAssetTimestamp', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        order: AlbumResponseDtoOrderEnum.fromJson(json[r'order']),
         owner: UserResponseDto.fromJson(json[r'owner'])!,
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         shared: mapValueOfType<bool>(json, r'shared')!,
-        startDate: mapDateTime(json, r'startDate', r''),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        startDate: mapDateTime(json, r'startDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
       );
     }
     return null;
@@ -294,4 +301,78 @@ class AlbumResponseDto {
     'updatedAt',
   };
 }
+
+/// Asset sort order
+class AlbumResponseDtoOrderEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AlbumResponseDtoOrderEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const asc = AlbumResponseDtoOrderEnum._(r'asc');
+  static const desc = AlbumResponseDtoOrderEnum._(r'desc');
+
+  /// List of all possible values in this [enum][AlbumResponseDtoOrderEnum].
+  static const values = <AlbumResponseDtoOrderEnum>[
+    asc,
+    desc,
+  ];
+
+  static AlbumResponseDtoOrderEnum? fromJson(dynamic value) => AlbumResponseDtoOrderEnumTypeTransformer().decode(value);
+
+  static List<AlbumResponseDtoOrderEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AlbumResponseDtoOrderEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AlbumResponseDtoOrderEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AlbumResponseDtoOrderEnum] to String,
+/// and [decode] dynamic data back to [AlbumResponseDtoOrderEnum].
+class AlbumResponseDtoOrderEnumTypeTransformer {
+  factory AlbumResponseDtoOrderEnumTypeTransformer() => _instance ??= const AlbumResponseDtoOrderEnumTypeTransformer._();
+
+  const AlbumResponseDtoOrderEnumTypeTransformer._();
+
+  String encode(AlbumResponseDtoOrderEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AlbumResponseDtoOrderEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AlbumResponseDtoOrderEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'asc': return AlbumResponseDtoOrderEnum.asc;
+        case r'desc': return AlbumResponseDtoOrderEnum.desc;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AlbumResponseDtoOrderEnumTypeTransformer] instance.
+  static AlbumResponseDtoOrderEnumTypeTransformer? _instance;
+}
+
 

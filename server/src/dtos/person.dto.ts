@@ -3,11 +3,11 @@ import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Selectable } from 'kysely';
 import { DateTime } from 'luxon';
+import { createZodDto } from 'nestjs-zod';
 import { AssetFace, Person } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { SourceType } from 'src/enum';
+import { SourceTypeSchema } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { ImageDimensions } from 'src/types';
 import { asDateString } from 'src/utils/date';
@@ -17,10 +17,10 @@ import {
   MaxDateString,
   Optional,
   ValidateBoolean,
-  ValidateEnum,
   ValidateHexColor,
   ValidateUUID,
 } from 'src/validation';
+import { z } from 'zod';
 
 export class PersonCreateDto {
   @ApiPropertyOptional({ description: 'Person name' })
@@ -94,53 +94,48 @@ export class PersonSearchDto {
   size: number = 500;
 }
 
-export class PersonResponseDto {
-  @ApiProperty({ description: 'Person ID' })
-  id!: string;
-  @ApiProperty({ description: 'Person name' })
-  name!: string;
-  @ApiProperty({ format: 'date', description: 'Person date of birth' })
-  birthDate!: string | null;
-  @ApiProperty({ description: 'Thumbnail path' })
-  thumbnailPath!: string;
-  @ApiProperty({ description: 'Is hidden' })
-  isHidden!: boolean;
-  @Property({ description: 'Last update date', history: new HistoryBuilder().added('v1.107.0').stable('v2') })
-  updatedAt?: Date;
-  @Property({ description: 'Is favorite', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  isFavorite?: boolean;
-  @Property({ description: 'Person color (hex)', history: new HistoryBuilder().added('v1.126.0').stable('v2') })
-  color?: string;
-}
+export const PersonResponseSchema = z
+  .object({
+    id: z.string().describe('Person ID'),
+    name: z.string().describe('Person name'),
+    birthDate: z.iso.date().describe('Person date of birth').nullable(),
+    thumbnailPath: z.string().describe('Thumbnail path'),
+    isHidden: z.boolean().describe('Is hidden'),
+    updatedAt: z.iso.datetime().optional().describe('Last update date'),
+    isFavorite: z.boolean().optional().describe('Is favorite'),
+    color: z.string().optional().describe('Person color (hex)'),
+  })
+  .meta({ id: 'PersonResponseDto' });
 
-export class PersonWithFacesResponseDto extends PersonResponseDto {
-  @ApiProperty({ description: 'Face detections' })
-  faces!: AssetFaceWithoutPersonResponseDto[];
-}
+export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
 
-export class AssetFaceWithoutPersonResponseDto {
-  @ValidateUUID({ description: 'Face ID' })
-  id!: string;
-  @ApiProperty({ type: 'integer', description: 'Image height in pixels' })
-  imageHeight!: number;
-  @ApiProperty({ type: 'integer', description: 'Image width in pixels' })
-  imageWidth!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box X1 coordinate' })
-  boundingBoxX1!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box X2 coordinate' })
-  boundingBoxX2!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box Y1 coordinate' })
-  boundingBoxY1!: number;
-  @ApiProperty({ type: 'integer', description: 'Bounding box Y2 coordinate' })
-  boundingBoxY2!: number;
-  @ValidateEnum({ enum: SourceType, name: 'SourceType', optional: true, description: 'Face detection source type' })
-  sourceType?: SourceType;
-}
+export const AssetFaceWithoutPersonResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Face ID'),
+    imageHeight: z.number().describe('Image height in pixels'),
+    imageWidth: z.number().describe('Image width in pixels'),
+    boundingBoxX1: z.int().describe('Bounding box X1 coordinate'),
+    boundingBoxX2: z.int().describe('Bounding box X2 coordinate'),
+    boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
+    boundingBoxY2: z.int().describe('Bounding box Y2 coordinate'),
+    sourceType: SourceTypeSchema.optional().describe('Face detection source type'),
+  })
+  .describe('Asset face without person')
+  .meta({ id: 'AssetFaceWithoutPersonResponseDto' });
 
-export class AssetFaceResponseDto extends AssetFaceWithoutPersonResponseDto {
-  @ApiProperty({ description: 'Person associated with face' })
-  person!: PersonResponseDto | null;
-}
+export class AssetFaceWithoutPersonResponseDto extends createZodDto(AssetFaceWithoutPersonResponseSchema) {}
+
+export const PersonWithFacesResponseSchema = PersonResponseSchema.extend({
+  faces: z.array(AssetFaceWithoutPersonResponseSchema),
+}).meta({ id: 'PersonWithFacesResponseDto' });
+
+export class PersonWithFacesResponseDto extends createZodDto(PersonWithFacesResponseSchema) {}
+
+export const AssetFaceResponseSchema = AssetFaceWithoutPersonResponseSchema.extend({
+  person: PersonResponseSchema.nullable(),
+}).meta({ id: 'AssetFaceResponseDto' });
+
+export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
 
 export class AssetFaceUpdateDto {
   @ApiProperty({ description: 'Face update items' })
@@ -206,21 +201,15 @@ export class PersonStatisticsResponseDto {
   assets!: number;
 }
 
-export class PeopleResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Total number of people' })
-  total!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of hidden people' })
-  hidden!: number;
-  @ApiProperty({ description: 'List of people' })
-  people!: PersonResponseDto[];
-
-  // TODO: make required after a few versions
-  @Property({
-    description: 'Whether there are more pages',
-    history: new HistoryBuilder().added('v1.110.0').stable('v2'),
+const PeopleResponseSchema = z
+  .object({
+    total: z.number().describe('Total number of people'),
+    hidden: z.number().describe('Number of hidden people'),
+    people: z.array(PersonResponseSchema),
+    hasNextPage: z.boolean().optional().describe('Whether there are more pages'),
   })
-  hasNextPage?: boolean;
-}
+  .describe('People response');
+export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 
 export function mapPerson(person: Person): PersonResponseDto {
   return {
@@ -231,7 +220,7 @@ export function mapPerson(person: Person): PersonResponseDto {
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: person.updatedAt,
+    updatedAt: person.updatedAt?.toISOString(),
   };
 }
 

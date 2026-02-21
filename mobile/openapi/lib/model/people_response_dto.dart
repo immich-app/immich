@@ -29,13 +29,12 @@ class PeopleResponseDto {
   bool? hasNextPage;
 
   /// Number of hidden people
-  int hidden;
+  num hidden;
 
-  /// List of people
   List<PersonResponseDto> people;
 
   /// Total number of people
-  int total;
+  num total;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleResponseDto &&
@@ -78,9 +77,9 @@ class PeopleResponseDto {
 
       return PeopleResponseDto(
         hasNextPage: mapValueOfType<bool>(json, r'hasNextPage'),
-        hidden: mapValueOfType<int>(json, r'hidden')!,
+        hidden: num.parse('${json[r'hidden']}'),
         people: PersonResponseDto.listFromJson(json[r'people']),
-        total: mapValueOfType<int>(json, r'total')!,
+        total: num.parse('${json[r'total']}'),
       );
     }
     return null;

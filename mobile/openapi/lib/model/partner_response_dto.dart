@@ -22,8 +22,7 @@ class PartnerResponseDto {
     required this.profileImagePath,
   });
 
-  /// Avatar color
-  UserAvatarColor avatarColor;
+  PartnerResponseDtoAvatarColorEnum avatarColor;
 
   /// User email
   String email;
@@ -84,7 +83,9 @@ class PartnerResponseDto {
     //  json[r'inTimeline'] = null;
     }
       json[r'name'] = this.name;
-      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+      json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.profileChangedAt.millisecondsSinceEpoch
+        : this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
     return json;
   }
@@ -98,12 +99,12 @@ class PartnerResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PartnerResponseDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
+        avatarColor: PartnerResponseDtoAvatarColorEnum.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
         inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
         name: mapValueOfType<String>(json, r'name')!,
-        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
       );
     }
@@ -160,4 +161,102 @@ class PartnerResponseDto {
     'profileImagePath',
   };
 }
+
+
+class PartnerResponseDtoAvatarColorEnum {
+  /// Instantiate a new enum with the provided [value].
+  const PartnerResponseDtoAvatarColorEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const primary = PartnerResponseDtoAvatarColorEnum._(r'primary');
+  static const pink = PartnerResponseDtoAvatarColorEnum._(r'pink');
+  static const red = PartnerResponseDtoAvatarColorEnum._(r'red');
+  static const yellow = PartnerResponseDtoAvatarColorEnum._(r'yellow');
+  static const blue = PartnerResponseDtoAvatarColorEnum._(r'blue');
+  static const green = PartnerResponseDtoAvatarColorEnum._(r'green');
+  static const purple = PartnerResponseDtoAvatarColorEnum._(r'purple');
+  static const orange = PartnerResponseDtoAvatarColorEnum._(r'orange');
+  static const gray = PartnerResponseDtoAvatarColorEnum._(r'gray');
+  static const amber = PartnerResponseDtoAvatarColorEnum._(r'amber');
+
+  /// List of all possible values in this [enum][PartnerResponseDtoAvatarColorEnum].
+  static const values = <PartnerResponseDtoAvatarColorEnum>[
+    primary,
+    pink,
+    red,
+    yellow,
+    blue,
+    green,
+    purple,
+    orange,
+    gray,
+    amber,
+  ];
+
+  static PartnerResponseDtoAvatarColorEnum? fromJson(dynamic value) => PartnerResponseDtoAvatarColorEnumTypeTransformer().decode(value);
+
+  static List<PartnerResponseDtoAvatarColorEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <PartnerResponseDtoAvatarColorEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = PartnerResponseDtoAvatarColorEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [PartnerResponseDtoAvatarColorEnum] to String,
+/// and [decode] dynamic data back to [PartnerResponseDtoAvatarColorEnum].
+class PartnerResponseDtoAvatarColorEnumTypeTransformer {
+  factory PartnerResponseDtoAvatarColorEnumTypeTransformer() => _instance ??= const PartnerResponseDtoAvatarColorEnumTypeTransformer._();
+
+  const PartnerResponseDtoAvatarColorEnumTypeTransformer._();
+
+  String encode(PartnerResponseDtoAvatarColorEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a PartnerResponseDtoAvatarColorEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  PartnerResponseDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'primary': return PartnerResponseDtoAvatarColorEnum.primary;
+        case r'pink': return PartnerResponseDtoAvatarColorEnum.pink;
+        case r'red': return PartnerResponseDtoAvatarColorEnum.red;
+        case r'yellow': return PartnerResponseDtoAvatarColorEnum.yellow;
+        case r'blue': return PartnerResponseDtoAvatarColorEnum.blue;
+        case r'green': return PartnerResponseDtoAvatarColorEnum.green;
+        case r'purple': return PartnerResponseDtoAvatarColorEnum.purple;
+        case r'orange': return PartnerResponseDtoAvatarColorEnum.orange;
+        case r'gray': return PartnerResponseDtoAvatarColorEnum.gray;
+        case r'amber': return PartnerResponseDtoAvatarColorEnum.amber;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [PartnerResponseDtoAvatarColorEnumTypeTransformer] instance.
+  static PartnerResponseDtoAvatarColorEnumTypeTransformer? _instance;
+}
+
 

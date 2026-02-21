@@ -81,6 +81,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID
   Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/{id}'
@@ -114,6 +115,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
+  ///   Activity ID
   Future<void> deleteActivity(String id,) async {
     final response = await deleteActivityWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {

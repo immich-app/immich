@@ -1,140 +1,99 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Selectable } from 'kysely';
+import { createZodDto } from 'nestjs-zod';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
-import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
+import { ExifResponseSchema, mapExif } from 'src/dtos/exif.dto';
 import {
-  AssetFaceWithoutPersonResponseDto,
+  AssetFaceWithoutPersonResponseSchema,
   PersonWithFacesResponseDto,
+  PersonWithFacesResponseSchema,
   mapFacesWithoutPerson,
   mapPerson,
 } from 'src/dtos/person.dto';
-import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { TagResponseSchema, mapTag } from 'src/dtos/tag.dto';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
+import { AssetStatus, AssetType, AssetTypeSchema, AssetVisibility, AssetVisibilitySchema } from 'src/enum';
 import { ImageDimensions } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
-import { ValidateEnum, ValidateUUID } from 'src/validation';
+import { z } from 'zod';
 
-export class SanitizedAssetResponseDto {
-  @ApiProperty({ description: 'Asset ID' })
-  id!: string;
-  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', description: 'Asset type' })
-  type!: AssetType;
-  @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
-  thumbhash!: string | null;
-  @ApiPropertyOptional({ description: 'Original MIME type' })
-  originalMimeType?: string;
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    description:
-      'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
-    example: '2024-01-15T14:30:00.000Z',
+const SanitizedAssetResponseSchema = z
+  .object({
+    id: z.string().describe('Asset ID'),
+    type: AssetTypeSchema,
+    thumbhash: z.string().describe('Thumbhash for thumbnail generation').nullable(),
+    originalMimeType: z.string().optional().describe('Original MIME type'),
+    localDateTime: z.iso
+      .datetime()
+      .describe(
+        'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
+      ),
+    duration: z.string().describe('Video duration (for videos)'),
+    livePhotoVideoId: z.string().nullish().describe('Live photo video ID'),
+    hasMetadata: z.boolean().describe('Whether asset has metadata'),
+    width: z.int().nonnegative().describe('Asset width').nullable(),
+    height: z.int().nonnegative().describe('Asset height').nullable(),
   })
-  localDateTime!: Date;
-  @ApiProperty({ description: 'Video duration (for videos)' })
-  duration!: string;
-  @ApiPropertyOptional({ description: 'Live photo video ID' })
-  livePhotoVideoId?: string | null;
-  @ApiProperty({ description: 'Whether asset has metadata' })
-  hasMetadata!: boolean;
-  @ApiProperty({ description: 'Asset width' })
-  width!: number | null;
-  @ApiProperty({ description: 'Asset height' })
-  height!: number | null;
-}
+  .meta({ id: 'SanitizedAssetResponseDto' });
 
-export class AssetResponseDto extends SanitizedAssetResponseDto {
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    description: 'The UTC timestamp when the asset was originally uploaded to Immich.',
-    example: '2024-01-15T20:30:00.000Z',
-  })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Device asset ID' })
-  deviceAssetId!: string;
-  @ApiProperty({ description: 'Device ID' })
-  deviceId!: string;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  owner?: UserResponseDto;
-  @ValidateUUID({
-    nullable: true,
-    description: 'Library ID',
-    history: new HistoryBuilder().added('v1').deprecated('v1'),
-  })
-  libraryId?: string | null;
-  @ApiProperty({ description: 'Original file path' })
-  originalPath!: string;
-  @ApiProperty({ description: 'Original file name' })
-  originalFileName!: string;
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    description:
-      'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
-    example: '2024-01-15T19:30:00.000Z',
-  })
-  fileCreatedAt!: Date;
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    description:
-      'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
-    example: '2024-01-16T10:15:00.000Z',
-  })
-  fileModifiedAt!: Date;
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    description:
-      'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
-    example: '2024-01-16T12:45:30.000Z',
-  })
-  updatedAt!: Date;
-  @ApiProperty({ description: 'Is favorite' })
-  isFavorite!: boolean;
-  @ApiProperty({ description: 'Is archived' })
-  isArchived!: boolean;
-  @ApiProperty({ description: 'Is trashed' })
-  isTrashed!: boolean;
-  @ApiProperty({ description: 'Is offline' })
-  isOffline!: boolean;
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', description: 'Asset visibility' })
-  visibility!: AssetVisibility;
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  exifInfo?: ExifResponseDto;
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  tags?: TagResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  people?: PersonWithFacesResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
-  @ApiProperty({ description: 'Base64 encoded SHA1 hash' })
-  checksum!: string;
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  stack?: AssetStackResponseDto | null;
-  @ApiPropertyOptional({ description: 'Duplicate group ID' })
-  duplicateId?: string | null;
+export class SanitizedAssetResponseDto extends createZodDto(SanitizedAssetResponseSchema) {}
 
-  @Property({ description: 'Is resized', history: new HistoryBuilder().added('v1').deprecated('v1.113.0') })
-  resized?: boolean;
-  @Property({ description: 'Is edited', history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0') })
-  isEdited!: boolean;
-}
+const AssetStackResponseSchema = z
+  .object({
+    id: z.string().describe('Stack ID'),
+    primaryAssetId: z.string().describe('Primary asset ID'),
+    assetCount: z.int().nonnegative().describe('Number of assets in stack'),
+  })
+  .meta({ id: 'AssetStackResponseDto' });
+
+export class AssetStackResponseDto extends createZodDto(AssetStackResponseSchema) {}
+
+export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
+  z.object({
+    createdAt: z.iso.datetime().describe('The UTC timestamp when the asset was originally uploaded to Immich.'),
+    deviceAssetId: z.string().describe('Device asset ID'),
+    deviceId: z.string().describe('Device ID'),
+    ownerId: z.string().describe('Owner user ID'),
+    owner: UserResponseSchema.optional(),
+    libraryId: z.uuidv4().nullish().describe('Library ID'),
+    originalPath: z.string().describe('Original file path'),
+    originalFileName: z.string().describe('Original file name'),
+    fileCreatedAt: z.iso
+      .datetime()
+      .describe(
+        'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
+      ),
+    fileModifiedAt: z.iso
+      .datetime()
+      .describe(
+        'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
+      ),
+    updatedAt: z.iso
+      .datetime()
+      .describe(
+        'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
+      ),
+    isFavorite: z.boolean().describe('Is favorite'),
+    isArchived: z.boolean().describe('Is archived'),
+    isTrashed: z.boolean().describe('Is trashed'),
+    isOffline: z.boolean().describe('Is offline'),
+    visibility: AssetVisibilitySchema,
+    exifInfo: ExifResponseSchema.optional(),
+    tags: z.array(TagResponseSchema).optional(),
+    people: z.array(PersonWithFacesResponseSchema).optional(),
+    unassignedFaces: z.array(AssetFaceWithoutPersonResponseSchema).optional(),
+    checksum: z.string().describe('Base64 encoded SHA1 hash'),
+    stack: AssetStackResponseSchema.nullish(),
+    duplicateId: z.string().nullish().describe('Duplicate group ID'),
+    resized: z.boolean().optional().describe('Is resized'),
+    isEdited: z.boolean().describe('Is edited'),
+  }).shape,
+).meta({ id: 'AssetResponseDto' });
+
+export class AssetResponseDto extends createZodDto(AssetResponseSchema) {}
 
 export type MapAsset = {
   createdAt: Date;
@@ -175,17 +134,6 @@ export type MapAsset = {
   height: number | null;
   isEdited: boolean;
 };
-
-export class AssetStackResponseDto {
-  @ApiProperty({ description: 'Stack ID' })
-  id!: string;
-
-  @ApiProperty({ description: 'Primary asset ID' })
-  primaryAssetId!: string;
-
-  @ApiProperty({ type: 'integer', description: 'Number of assets in stack' })
-  assetCount!: number;
-}
 
 export type AssetMapOptions = {
   stripMetadata?: boolean;
@@ -240,7 +188,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
       type: entity.type,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-      localDateTime: entity.localDateTime,
+      localDateTime: entity.localDateTime.toISOString(),
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -254,7 +202,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
 
   return {
     id: entity.id,
-    createdAt: entity.createdAt,
+    createdAt: entity.createdAt.toISOString(),
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
@@ -265,10 +213,10 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-    fileCreatedAt: entity.fileCreatedAt,
-    fileModifiedAt: entity.fileModifiedAt,
-    localDateTime: entity.localDateTime,
-    updatedAt: entity.updatedAt,
+    fileCreatedAt: entity.fileCreatedAt.toISOString(),
+    fileModifiedAt: entity.fileModifiedAt.toISOString(),
+    localDateTime: entity.localDateTime.toISOString(),
+    updatedAt: entity.updatedAt.toISOString(),
     isFavorite: options.auth?.user.id === entity.ownerId && entity.isFavorite,
     isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,

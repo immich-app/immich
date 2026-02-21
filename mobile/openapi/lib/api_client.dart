@@ -646,8 +646,6 @@ class ApiClient {
           return SignUpDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
-        case 'SourceType':
-          return SourceTypeTypeTransformer().decode(value);
         case 'StackCreateDto':
           return StackCreateDto.fromJson(value);
         case 'StackResponseDto':
@@ -852,8 +850,6 @@ class ApiClient {
           return UserPreferencesUpdateDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
-        case 'UserStatus':
-          return UserStatusTypeTransformer().decode(value);
         case 'UserUpdateMeDto':
           return UserUpdateMeDto.fromJson(value);
         case 'ValidateAccessTokenResponseDto':

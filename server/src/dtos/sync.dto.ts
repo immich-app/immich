@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { createZodDto } from 'nestjs-zod';
+import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
   AssetOrder,
@@ -15,6 +16,7 @@ import {
 } from 'src/enum';
 import { UserMetadata } from 'src/types';
 import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { z } from 'zod';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true, description: 'Last asset ID (pagination)' })
@@ -40,14 +42,16 @@ export class AssetDeltaSyncDto {
   userIds!: string[];
 }
 
-export class AssetDeltaSyncResponseDto {
-  @ApiProperty({ description: 'Whether full sync is needed' })
-  needsFullSync!: boolean;
-  @ApiProperty({ description: 'Upserted assets' })
-  upserted!: AssetResponseDto[];
-  @ApiProperty({ description: 'Deleted asset IDs' })
-  deleted!: string[];
-}
+export const AssetDeltaSyncResponseSchema = z
+  .object({
+    needsFullSync: z.boolean().describe('Whether full sync is needed'),
+    upserted: z.array(AssetResponseSchema),
+    deleted: z.array(z.string()).describe('Deleted asset IDs'),
+  })
+  .describe('Asset delta sync response')
+  .meta({ id: 'AssetDeltaSyncResponseDto' });
+
+export class AssetDeltaSyncResponseDto extends createZodDto(AssetDeltaSyncResponseSchema) {}
 
 export const extraSyncModels: Function[] = [];
 

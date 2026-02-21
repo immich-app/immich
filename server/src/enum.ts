@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export enum AuthType {
   Password = 'password',
   OAuth = 'oauth',
@@ -37,6 +39,8 @@ export enum AssetType {
   Other = 'OTHER',
 }
 
+export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ title: 'AssetTypeEnum' });
+
 export enum AssetFileType {
   /**
    * An full/large-size image extracted/converted from RAW photos
@@ -47,15 +51,21 @@ export enum AssetFileType {
   Sidecar = 'sidecar',
 }
 
+export const AssetFileTypeSchema = z.enum(AssetFileType).describe('Asset file type').meta({ title: 'AssetFileType' });
+
 export enum AlbumUserRole {
   Editor = 'editor',
   Viewer = 'viewer',
 }
 
+export const AlbumUserRoleSchema = z.enum(AlbumUserRole).describe('Album user role').meta({ title: 'AlbumUserRole' });
+
 export enum AssetOrder {
   Asc = 'asc',
   Desc = 'desc',
 }
+
+export const AssetOrderSchema = z.enum(AssetOrder).describe('Asset sort order').meta({ title: 'AssetOrder' });
 
 export enum DatabaseAction {
   Create = 'CREATE',
@@ -72,6 +82,8 @@ export enum MemoryType {
   /** pictures taken on this day X years ago */
   OnThisDay = 'on_this_day',
 }
+
+export const MemoryTypeSchema = z.enum(MemoryType).describe('Memory type').meta({ title: 'MemoryType' });
 
 export enum AssetOrderWithRandom {
   // Include existing values
@@ -297,6 +309,11 @@ export enum SharedLinkType {
   Individual = 'INDIVIDUAL',
 }
 
+export const SharedLinkTypeSchema = z
+  .enum(SharedLinkType)
+  .describe('Shared link type')
+  .meta({ title: 'SharedLinkType' });
+
 export enum StorageFolder {
   EncodedVideo = 'encoded-video',
   Library = 'library',
@@ -342,11 +359,15 @@ export enum UserAvatarColor {
   Amber = 'amber',
 }
 
+export const UserAvatarColorSchema = z.enum(UserAvatarColor).meta({ title: 'UserAvatarColor' });
+
 export enum UserStatus {
   Active = 'active',
   Removing = 'removing',
   Deleted = 'deleted',
 }
+
+export const UserStatusSchema = z.enum(UserStatus).describe('User status').meta({ title: 'UserStatus' });
 
 export enum AssetStatus {
   Active = 'active',
@@ -354,11 +375,15 @@ export enum AssetStatus {
   Deleted = 'deleted',
 }
 
+export const AssetStatusSchema = z.enum(AssetStatus).describe('Asset status').meta({ title: 'AssetStatus' });
+
 export enum SourceType {
   MachineLearning = 'machine-learning',
   Exif = 'exif',
   Manual = 'manual',
 }
+
+export const SourceTypeSchema = z.enum(SourceType).describe('Source type').meta({ title: 'SourceType' });
 
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
@@ -839,6 +864,11 @@ export enum AssetVisibility {
   Hidden = 'hidden',
   Locked = 'locked',
 }
+
+export const AssetVisibilitySchema = z
+  .enum(AssetVisibility)
+  .describe('Asset visibility')
+  .meta({ title: 'AssetVisibility' });
 
 export enum CronJob {
   LibraryScan = 'LibraryScan',

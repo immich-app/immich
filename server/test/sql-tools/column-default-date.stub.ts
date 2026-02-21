@@ -1,6 +1,6 @@
 import { Column, DatabaseSchema, Table } from 'src/sql-tools';
 
-const date = new Date(2023, 0, 1);
+const date = new Date(Date.UTC(2023, 0, 1));
 
 @Table()
 export class Table1 {
@@ -29,7 +29,7 @@ export const schema: DatabaseSchema = {
           isArray: false,
           primary: false,
           synchronize: true,
-          default: "'2023-01-01T00:00:00.000Z'",
+          default: `'${date.toISOString()}'`,
         },
       ],
       indexes: [],

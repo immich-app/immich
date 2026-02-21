@@ -17,7 +17,6 @@ class DuplicateResponseDto {
     required this.duplicateId,
   });
 
-  /// Duplicate assets
   List<AssetResponseDto> assets;
 
   /// Duplicate group ID

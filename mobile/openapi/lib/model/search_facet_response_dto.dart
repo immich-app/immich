@@ -17,7 +17,6 @@ class SearchFacetResponseDto {
     required this.fieldName,
   });
 
-  /// Facet counts
   List<SearchFacetCountResponseDto> counts;
 
   /// Facet field name

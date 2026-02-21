@@ -25,8 +25,7 @@ class UserAdminCreateDto {
     this.storageLabel,
   });
 
-  /// Avatar color
-  UserAvatarColor? avatarColor;
+  UserAdminCreateDtoAvatarColorEnum? avatarColor;
 
   /// User email
   String email;
@@ -55,12 +54,10 @@ class UserAdminCreateDto {
   /// User password
   String password;
 
-  /// PIN code
   String? pinCode;
 
-  /// Storage quota in bytes
-  ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
 
   /// Require password change on next login
@@ -72,7 +69,6 @@ class UserAdminCreateDto {
   ///
   bool? shouldChangePassword;
 
-  /// Storage label
   String? storageLabel;
 
   @override
@@ -157,7 +153,7 @@ class UserAdminCreateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminCreateDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: UserAdminCreateDtoAvatarColorEnum.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         name: mapValueOfType<String>(json, r'name')!,
@@ -219,4 +215,102 @@ class UserAdminCreateDto {
     'password',
   };
 }
+
+
+class UserAdminCreateDtoAvatarColorEnum {
+  /// Instantiate a new enum with the provided [value].
+  const UserAdminCreateDtoAvatarColorEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const primary = UserAdminCreateDtoAvatarColorEnum._(r'primary');
+  static const pink = UserAdminCreateDtoAvatarColorEnum._(r'pink');
+  static const red = UserAdminCreateDtoAvatarColorEnum._(r'red');
+  static const yellow = UserAdminCreateDtoAvatarColorEnum._(r'yellow');
+  static const blue = UserAdminCreateDtoAvatarColorEnum._(r'blue');
+  static const green = UserAdminCreateDtoAvatarColorEnum._(r'green');
+  static const purple = UserAdminCreateDtoAvatarColorEnum._(r'purple');
+  static const orange = UserAdminCreateDtoAvatarColorEnum._(r'orange');
+  static const gray = UserAdminCreateDtoAvatarColorEnum._(r'gray');
+  static const amber = UserAdminCreateDtoAvatarColorEnum._(r'amber');
+
+  /// List of all possible values in this [enum][UserAdminCreateDtoAvatarColorEnum].
+  static const values = <UserAdminCreateDtoAvatarColorEnum>[
+    primary,
+    pink,
+    red,
+    yellow,
+    blue,
+    green,
+    purple,
+    orange,
+    gray,
+    amber,
+  ];
+
+  static UserAdminCreateDtoAvatarColorEnum? fromJson(dynamic value) => UserAdminCreateDtoAvatarColorEnumTypeTransformer().decode(value);
+
+  static List<UserAdminCreateDtoAvatarColorEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <UserAdminCreateDtoAvatarColorEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = UserAdminCreateDtoAvatarColorEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [UserAdminCreateDtoAvatarColorEnum] to String,
+/// and [decode] dynamic data back to [UserAdminCreateDtoAvatarColorEnum].
+class UserAdminCreateDtoAvatarColorEnumTypeTransformer {
+  factory UserAdminCreateDtoAvatarColorEnumTypeTransformer() => _instance ??= const UserAdminCreateDtoAvatarColorEnumTypeTransformer._();
+
+  const UserAdminCreateDtoAvatarColorEnumTypeTransformer._();
+
+  String encode(UserAdminCreateDtoAvatarColorEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a UserAdminCreateDtoAvatarColorEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  UserAdminCreateDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'primary': return UserAdminCreateDtoAvatarColorEnum.primary;
+        case r'pink': return UserAdminCreateDtoAvatarColorEnum.pink;
+        case r'red': return UserAdminCreateDtoAvatarColorEnum.red;
+        case r'yellow': return UserAdminCreateDtoAvatarColorEnum.yellow;
+        case r'blue': return UserAdminCreateDtoAvatarColorEnum.blue;
+        case r'green': return UserAdminCreateDtoAvatarColorEnum.green;
+        case r'purple': return UserAdminCreateDtoAvatarColorEnum.purple;
+        case r'orange': return UserAdminCreateDtoAvatarColorEnum.orange;
+        case r'gray': return UserAdminCreateDtoAvatarColorEnum.gray;
+        case r'amber': return UserAdminCreateDtoAvatarColorEnum.amber;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [UserAdminCreateDtoAvatarColorEnumTypeTransformer] instance.
+  static UserAdminCreateDtoAvatarColorEnumTypeTransformer? _instance;
+}
+
 

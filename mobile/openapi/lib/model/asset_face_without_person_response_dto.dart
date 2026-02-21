@@ -24,34 +24,40 @@ class AssetFaceWithoutPersonResponseDto {
   });
 
   /// Bounding box X1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX1;
 
   /// Bounding box X2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxX2;
 
   /// Bounding box Y1 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY1;
 
   /// Bounding box Y2 coordinate
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int boundingBoxY2;
 
   /// Face ID
   String id;
 
   /// Image height in pixels
-  int imageHeight;
+  num imageHeight;
 
   /// Image width in pixels
-  int imageWidth;
+  num imageWidth;
 
   /// Face detection source type
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  SourceType? sourceType;
+  AssetFaceWithoutPersonResponseDtoSourceTypeEnum? sourceType;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetFaceWithoutPersonResponseDto &&
@@ -110,9 +116,9 @@ class AssetFaceWithoutPersonResponseDto {
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
         boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
         id: mapValueOfType<String>(json, r'id')!,
-        imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
-        imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
-        sourceType: SourceType.fromJson(json[r'sourceType']),
+        imageHeight: num.parse('${json[r'imageHeight']}'),
+        imageWidth: num.parse('${json[r'imageWidth']}'),
+        sourceType: AssetFaceWithoutPersonResponseDtoSourceTypeEnum.fromJson(json[r'sourceType']),
       );
     }
     return null;
@@ -169,4 +175,81 @@ class AssetFaceWithoutPersonResponseDto {
     'imageWidth',
   };
 }
+
+/// Face detection source type
+class AssetFaceWithoutPersonResponseDtoSourceTypeEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AssetFaceWithoutPersonResponseDtoSourceTypeEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const machineLearning = AssetFaceWithoutPersonResponseDtoSourceTypeEnum._(r'machine-learning');
+  static const exif = AssetFaceWithoutPersonResponseDtoSourceTypeEnum._(r'exif');
+  static const manual = AssetFaceWithoutPersonResponseDtoSourceTypeEnum._(r'manual');
+
+  /// List of all possible values in this [enum][AssetFaceWithoutPersonResponseDtoSourceTypeEnum].
+  static const values = <AssetFaceWithoutPersonResponseDtoSourceTypeEnum>[
+    machineLearning,
+    exif,
+    manual,
+  ];
+
+  static AssetFaceWithoutPersonResponseDtoSourceTypeEnum? fromJson(dynamic value) => AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer().decode(value);
+
+  static List<AssetFaceWithoutPersonResponseDtoSourceTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetFaceWithoutPersonResponseDtoSourceTypeEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AssetFaceWithoutPersonResponseDtoSourceTypeEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AssetFaceWithoutPersonResponseDtoSourceTypeEnum] to String,
+/// and [decode] dynamic data back to [AssetFaceWithoutPersonResponseDtoSourceTypeEnum].
+class AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer {
+  factory AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer() => _instance ??= const AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer._();
+
+  const AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer._();
+
+  String encode(AssetFaceWithoutPersonResponseDtoSourceTypeEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AssetFaceWithoutPersonResponseDtoSourceTypeEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AssetFaceWithoutPersonResponseDtoSourceTypeEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'machine-learning': return AssetFaceWithoutPersonResponseDtoSourceTypeEnum.machineLearning;
+        case r'exif': return AssetFaceWithoutPersonResponseDtoSourceTypeEnum.exif;
+        case r'manual': return AssetFaceWithoutPersonResponseDtoSourceTypeEnum.manual;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer] instance.
+  static AssetFaceWithoutPersonResponseDtoSourceTypeEnumTypeTransformer? _instance;
+}
+
 

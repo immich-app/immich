@@ -50,10 +50,16 @@ class ExifResponseDto {
   String? description;
 
   /// Image height in pixels
-  num? exifImageHeight;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int? exifImageHeight;
 
   /// Image width in pixels
-  num? exifImageWidth;
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
+  int? exifImageWidth;
 
   /// Exposure time
   String? exposureTime;
@@ -62,6 +68,9 @@ class ExifResponseDto {
   num? fNumber;
 
   /// File size in bytes
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? fileSizeInByte;
 
   /// Focal length in mm
@@ -170,7 +179,9 @@ class ExifResponseDto {
     //  json[r'country'] = null;
     }
     if (this.dateTimeOriginal != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal!.toUtc().toIso8601String();
+      json[r'dateTimeOriginal'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.dateTimeOriginal!.millisecondsSinceEpoch
+        : this.dateTimeOriginal!.toUtc().toIso8601String();
     } else {
     //  json[r'dateTimeOriginal'] = null;
     }
@@ -240,7 +251,9 @@ class ExifResponseDto {
     //  json[r'model'] = null;
     }
     if (this.modifyDate != null) {
-      json[r'modifyDate'] = this.modifyDate!.toUtc().toIso8601String();
+      json[r'modifyDate'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.modifyDate!.millisecondsSinceEpoch
+        : this.modifyDate!.toUtc().toIso8601String();
     } else {
     //  json[r'modifyDate'] = null;
     }
@@ -283,14 +296,10 @@ class ExifResponseDto {
       return ExifResponseDto(
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
-        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
+        dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: json[r'exifImageHeight'] == null
-            ? null
-            : num.parse('${json[r'exifImageHeight']}'),
-        exifImageWidth: json[r'exifImageWidth'] == null
-            ? null
-            : num.parse('${json[r'exifImageWidth']}'),
+        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
+        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
         fNumber: json[r'fNumber'] == null
             ? null
@@ -311,7 +320,7 @@ class ExifResponseDto {
             : num.parse('${json[r'longitude']}'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        modifyDate: mapDateTime(json, r'modifyDate', r''),
+        modifyDate: mapDateTime(json, r'modifyDate', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
         rating: json[r'rating'] == null

@@ -64,11 +64,11 @@ export class AlbumService extends BaseService {
     return albums.map((album) => ({
       ...mapAlbumWithoutAssets(album),
       sharedLinks: undefined,
-      startDate: albumMetadata[album.id]?.startDate ?? undefined,
-      endDate: albumMetadata[album.id]?.endDate ?? undefined,
+      startDate: albumMetadata[album.id]?.startDate?.toISOString(),
+      endDate: albumMetadata[album.id]?.endDate?.toISOString(),
       assetCount: albumMetadata[album.id]?.assetCount ?? 0,
       // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp?.toISOString(),
     }));
   }
 
@@ -85,10 +85,10 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds?.startDate ?? undefined,
-      endDate: albumMetadataForIds?.endDate ?? undefined,
+      startDate: albumMetadataForIds?.startDate?.toISOString() ?? undefined,
+      endDate: albumMetadataForIds?.endDate?.toISOString() ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp?.toISOString() ?? undefined,
       contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
