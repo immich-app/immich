@@ -1406,12 +1406,16 @@ export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
     data: OnThisDayDto;
+    /** Date when memory should be hidden */
+    hideAt?: string;
     /** Is memory saved */
     isSaved?: boolean;
     /** Memory date */
     memoryAt: string;
     /** Date when memory was seen */
     seenAt?: string;
+    /** Date when memory should be shown */
+    showAt?: string;
     /** Memory type */
     "type": MemoryType;
 };

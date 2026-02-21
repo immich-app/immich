@@ -15,9 +15,11 @@ class MemoryCreateDto {
   MemoryCreateDto({
     this.assetIds = const [],
     required this.data,
+    this.hideAt,
     this.isSaved,
     required this.memoryAt,
     this.seenAt,
+    this.showAt,
     required this.type,
   });
 
@@ -25,6 +27,15 @@ class MemoryCreateDto {
   List<String> assetIds;
 
   OnThisDayDto data;
+
+  /// Date when memory should be hidden
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? hideAt;
 
   /// Is memory saved
   ///
@@ -47,6 +58,15 @@ class MemoryCreateDto {
   ///
   DateTime? seenAt;
 
+  /// Date when memory should be shown
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  DateTime? showAt;
+
   /// Memory type
   MemoryType type;
 
@@ -54,9 +74,11 @@ class MemoryCreateDto {
   bool operator ==(Object other) => identical(this, other) || other is MemoryCreateDto &&
     _deepEquality.equals(other.assetIds, assetIds) &&
     other.data == data &&
+    other.hideAt == hideAt &&
     other.isSaved == isSaved &&
     other.memoryAt == memoryAt &&
     other.seenAt == seenAt &&
+    other.showAt == showAt &&
     other.type == type;
 
   @override
@@ -64,18 +86,25 @@ class MemoryCreateDto {
     // ignore: unnecessary_parenthesis
     (assetIds.hashCode) +
     (data.hashCode) +
+    (hideAt == null ? 0 : hideAt!.hashCode) +
     (isSaved == null ? 0 : isSaved!.hashCode) +
     (memoryAt.hashCode) +
     (seenAt == null ? 0 : seenAt!.hashCode) +
+    (showAt == null ? 0 : showAt!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'MemoryCreateDto[assetIds=$assetIds, data=$data, isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt, type=$type]';
+  String toString() => 'MemoryCreateDto[assetIds=$assetIds, data=$data, hideAt=$hideAt, isSaved=$isSaved, memoryAt=$memoryAt, seenAt=$seenAt, showAt=$showAt, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetIds'] = this.assetIds;
       json[r'data'] = this.data;
+    if (this.hideAt != null) {
+      json[r'hideAt'] = this.hideAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'hideAt'] = null;
+    }
     if (this.isSaved != null) {
       json[r'isSaved'] = this.isSaved;
     } else {
@@ -86,6 +115,11 @@ class MemoryCreateDto {
       json[r'seenAt'] = this.seenAt!.toUtc().toIso8601String();
     } else {
     //  json[r'seenAt'] = null;
+    }
+    if (this.showAt != null) {
+      json[r'showAt'] = this.showAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'showAt'] = null;
     }
       json[r'type'] = this.type;
     return json;
@@ -104,9 +138,11 @@ class MemoryCreateDto {
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         data: OnThisDayDto.fromJson(json[r'data'])!,
+        hideAt: mapDateTime(json, r'hideAt', r''),
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
         memoryAt: mapDateTime(json, r'memoryAt', r'')!,
         seenAt: mapDateTime(json, r'seenAt', r''),
+        showAt: mapDateTime(json, r'showAt', r''),
         type: MemoryType.fromJson(json[r'type'])!,
       );
     }

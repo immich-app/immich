@@ -6596,6 +6596,11 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Updated",
+            "description": "added showAt/hideAt"
           }
         ],
         "x-immich-permission": "memory.create",
@@ -18681,6 +18686,11 @@
           "data": {
             "$ref": "#/components/schemas/OnThisDayDto"
           },
+          "hideAt": {
+            "description": "Date when memory should be hidden",
+            "format": "date-time",
+            "type": "string"
+          },
           "isSaved": {
             "description": "Is memory saved",
             "type": "boolean"
@@ -18692,6 +18702,11 @@
           },
           "seenAt": {
             "description": "Date when memory was seen",
+            "format": "date-time",
+            "type": "string"
+          },
+          "showAt": {
+            "description": "Date when memory should be shown",
             "format": "date-time",
             "type": "string"
           },
