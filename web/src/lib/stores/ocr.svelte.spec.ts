@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the SDK
 vi.mock('@immich/sdk', () => ({
+  getAssetInfo: vi.fn(),
   getAssetOcr: vi.fn(),
 }));
 

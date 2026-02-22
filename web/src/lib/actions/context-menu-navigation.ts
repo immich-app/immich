@@ -98,7 +98,7 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
   const { destroy } = shortcuts(node, [
     { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event) },
     { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event) },
-    { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event) },
+    { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event), preventDefault: false },
     { shortcut: { key: ' ' }, onShortcut: (event) => handleClick(event) },
     { shortcut: { key: 'Enter' }, onShortcut: (event) => handleClick(event) },
   ]);

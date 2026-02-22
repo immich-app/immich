@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -20,9 +21,11 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_mobile/widgets/common/tag_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -39,8 +42,15 @@ class DriftSearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textSearchType = useState<TextSearchType>(TextSearchType.context);
-    final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
+    final serverFeatures = ref.watch(serverInfoProvider.select((v) => v.serverFeatures));
+    final textSearchType = useState<TextSearchType>(
+      serverFeatures.smartSearch ? TextSearchType.context : TextSearchType.filename,
+    );
+    final searchHintText = useState<String>(
+      serverFeatures.smartSearch
+          ? 'sunrise_on_the_beach'.t(context: context)
+          : 'file_name_or_extension'.t(context: context),
+    );
     final textSearchController = useTextEditingController();
     final preFilter = ref.watch(searchPreFilterProvider);
     final filter = useState<SearchFilter>(
@@ -54,6 +64,7 @@ class DriftSearchPage extends HookConsumerWidget {
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
         assetId: preFilter?.assetId,
+        tagIds: preFilter?.tagIds ?? [],
       ),
     );
 
@@ -64,15 +75,14 @@ class DriftSearchPage extends HookConsumerWidget {
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
+    final tagCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
     final isSearching = useState(false);
 
-    final isRatingEnabled = ref
-        .watch(userMetadataPreferencesProvider)
-        .maybeWhen(data: (prefs) => prefs?.ratingsEnabled ?? false, orElse: () => false);
+    final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
     SnackBar searchInfoSnackBar(String message) {
       return SnackBar(
@@ -140,10 +150,12 @@ class DriftSearchPage extends HookConsumerWidget {
       handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(people: value);
 
-        peopleCurrentFilterWidget.value = Text(
-          value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', '),
-          style: context.textTheme.labelLarge,
-        );
+        final label = value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        if (label.isNotEmpty) {
+          peopleCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
+        } else {
+          peopleCurrentFilterWidget.value = null;
+        }
       }
 
       handleClear() {
@@ -164,6 +176,42 @@ class DriftSearchPage extends HookConsumerWidget {
             onSearch: search,
             onClear: handleClear,
             child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+          ),
+        ),
+      );
+    }
+
+    showTagPicker() {
+      handleOnSelect(Iterable<Tag> tags) {
+        filter.value = filter.value.copyWith(tagIds: tags.map((t) => t.id).toList());
+        final label = tags.map((t) => t.value).join(', ');
+        if (label.isEmpty) {
+          tagCurrentFilterWidget.value = null;
+        } else {
+          tagCurrentFilterWidget.value = Text(
+            label.isEmpty ? 'tags'.t(context: context) : label,
+            style: context.textTheme.labelLarge,
+          );
+        }
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(tagIds: []);
+        tagCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        child: FractionallySizedBox(
+          heightFactor: 0.8,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_tags_title'.t(context: context),
+            expanded: true,
+            onSearch: search,
+            onClear: handleClear,
+            child: TagPicker(onSelect: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
           ),
         ),
       );
@@ -518,23 +566,26 @@ class DriftSearchPage extends HookConsumerWidget {
                 );
               },
               menuChildren: [
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.image_search_rounded),
-                    title: Text(
-                      'search_by_context'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                FeatureCheck(
+                  feature: (features) => features.smartSearch,
+                  child: MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.image_search_rounded),
+                      title: Text(
+                        'search_by_context'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.context,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.context,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.context;
+                      searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.context;
-                    searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
-                  },
                 ),
                 MenuItemButton(
                   child: ListTile(
@@ -647,6 +698,13 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
+                    if (userPreferences.valueOrNull?.tagsEnabled ?? false)
+                      SearchFilterChip(
+                        icon: Icons.sell_outlined,
+                        onTap: showTagPicker,
+                        label: 'tags'.t(context: context),
+                        currentFilter: tagCurrentFilterWidget.value,
+                      ),
                     SearchFilterChip(
                       icon: Icons.camera_alt_outlined,
                       onTap: showCameraPicker,
@@ -666,14 +724,13 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
-                    if (isRatingEnabled) ...[
+                    if (userPreferences.valueOrNull?.ratingsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
                         label: 'search_filter_star_rating'.t(context: context),
                         currentFilter: ratingCurrentFilterWidget.value,
                       ),
-                    ],
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,

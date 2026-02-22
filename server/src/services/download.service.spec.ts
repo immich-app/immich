@@ -3,7 +3,6 @@ import { Readable } from 'node:stream';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { DownloadService } from 'src/services/download.service';
 import { AssetFactory } from 'test/factories/asset.factory';
-import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
@@ -37,21 +36,18 @@ describe(DownloadService.name, () => {
         finalize: vitest.fn(),
         stream: new Readable(),
       };
+      const asset = AssetFactory.create();
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1' }]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id, 'unknown-asset']));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id, 'unknown-asset'] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
       expect(archiveMock.addFile).toHaveBeenCalledTimes(1);
-      expect(archiveMock.addFile).toHaveBeenNthCalledWith(
-        1,
-        expect.stringContaining('/data/library/IMG_123.jpg'),
-        'IMG_123.jpg',
-      );
+      expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, asset.originalPath, asset.originalFileName);
     });
 
     it('should log a warning if the original path could not be resolved', async () => {
@@ -66,7 +62,7 @@ describe(DownloadService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
       mocks.storage.realpath.mockRejectedValue(new Error('Could not read file'));
-      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
+      mocks.asset.getForOriginals.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
@@ -90,7 +86,7 @@ describe(DownloadService.name, () => {
       const asset2 = AssetFactory.create();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
-      mocks.asset.getByIds.mockResolvedValue([asset1, asset2]);
+      mocks.asset.getForOriginals.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
@@ -108,15 +104,14 @@ describe(DownloadService.name, () => {
         finalize: vitest.fn(),
         stream: new Readable(),
       };
+      const asset1 = AssetFactory.create({ originalFileName: 'IMG_123.jpg' });
+      const asset2 = AssetFactory.create({ originalFileName: 'IMG_123.jpg' });
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      mocks.asset.getByIds.mockResolvedValue([
-        { ...assetStub.noResizePath, id: 'asset-1' },
-        { ...assetStub.noResizePath, id: 'asset-2' },
-      ]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
@@ -131,15 +126,14 @@ describe(DownloadService.name, () => {
         finalize: vitest.fn(),
         stream: new Readable(),
       };
+      const asset1 = AssetFactory.create({ originalFileName: 'IMG_123.jpg' });
+      const asset2 = AssetFactory.create({ originalFileName: 'IMG_123.jpg' });
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      mocks.asset.getByIds.mockResolvedValue([
-        { ...assetStub.noResizePath, id: 'asset-2' },
-        { ...assetStub.noResizePath, id: 'asset-1' },
-      ]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset1.id, asset2.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset1, asset2]);
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset1.id, asset2.id] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
@@ -155,18 +149,17 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.asset.getByIds.mockResolvedValue([
-        { ...assetStub.noResizePath, id: 'asset-1', originalPath: '/path/to/symlink.jpg' },
-      ]);
+      const asset = AssetFactory.create({ originalPath: '/path/to/symlink.jpg' });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([asset]);
       mocks.storage.realpath.mockResolvedValue('/path/to/realpath.jpg');
       mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
-      await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1'] })).resolves.toEqual({
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [asset.id] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
-      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', 'IMG_123.jpg');
+      expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', asset.originalFileName);
     });
   });
 

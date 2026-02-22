@@ -7,6 +7,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  html: ^0.15.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true
