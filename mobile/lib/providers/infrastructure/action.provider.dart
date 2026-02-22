@@ -345,10 +345,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> setAlbumCover(ActionSource source, String albumId) async {
     final assets = _getAssets(source);
-    if (assets.length != 1) {
-      return ActionResult(count: assets.length, success: false, error: 'Expected single asset for album cover');
-    }
-
     final asset = assets.first;
     if (asset is! RemoteAsset) {
       return const ActionResult(count: 1, success: false, error: 'Asset must be remote');

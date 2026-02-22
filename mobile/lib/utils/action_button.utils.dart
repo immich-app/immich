@@ -68,6 +68,7 @@ enum ActionButtonType {
   share,
   shareLink,
   cast,
+  setAlbumCover,
   similarPhotos,
   viewInTimeline,
   download,
@@ -78,7 +79,6 @@ enum ActionButtonType {
   moveToLockFolder,
   removeFromLockFolder,
   removeFromAlbum,
-  setAlbumCover,
   trash,
   deleteLocal,
   deletePermanent,
@@ -266,11 +266,10 @@ enum ActionButtonType {
   int get kebabMenuGroup => switch (this) {
     // 0: info
     ActionButtonType.openInfo => 0,
-    // 10: move,remove, and delete
+    // 10: move, remove, and delete
     ActionButtonType.trash => 10,
     ActionButtonType.deletePermanent => 10,
     ActionButtonType.removeFromLockFolder => 10,
-    ActionButtonType.setAlbumCover => 10,
     ActionButtonType.removeFromAlbum => 10,
     ActionButtonType.unstack => 10,
     ActionButtonType.archive => 10,
