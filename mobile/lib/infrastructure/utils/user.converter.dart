@@ -48,18 +48,3 @@ abstract final class UserConverter {
     hasProfileImage: dto.profileImagePath.isNotEmpty,
   );
 }
-
-extension on UserAvatarColor {
-  AvatarColor toAvatarColor() => switch (this) {
-    UserAvatarColor.red => AvatarColor.red,
-    UserAvatarColor.green => AvatarColor.green,
-    UserAvatarColor.blue => AvatarColor.blue,
-    UserAvatarColor.purple => AvatarColor.purple,
-    UserAvatarColor.orange => AvatarColor.orange,
-    UserAvatarColor.pink => AvatarColor.pink,
-    UserAvatarColor.amber => AvatarColor.amber,
-    UserAvatarColor.yellow => AvatarColor.yellow,
-    UserAvatarColor.gray => AvatarColor.gray,
-    UserAvatarColor.primary || _ => AvatarColor.primary,
-  };
-}

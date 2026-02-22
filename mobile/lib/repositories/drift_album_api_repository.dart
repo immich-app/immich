@@ -109,7 +109,7 @@ extension on AlbumResponseDto {
       updatedAt: updatedAt,
       thumbnailAssetId: albumThumbnailAssetId,
       isActivityEnabled: isActivityEnabled,
-      order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      order: order?.value == 'asc' ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
       ownerName: owner.name,
       isShared: albumUsers.length > 2,
