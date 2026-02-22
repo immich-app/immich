@@ -92,6 +92,8 @@ export type AssetEditActionItem =
       parameters: MirrorParameters;
     };
 
+export type AssetEditActionItemResponse = AssetEditActionItem & { id: string };
+
 export type AssetEditActionParameter = {
   [AssetEditAction.Crop]: CropParameters;
   [AssetEditAction.Rotate]: RotateParameters;
@@ -135,4 +137,13 @@ export class AssetEditActionListDto {
 export class AssetEditsDto extends AssetEditActionListDto {
   @ValidateUUID({ description: 'Asset ID to apply edits to' })
   assetId!: string;
+}
+
+export class AssetEditsResponseDto {
+  @ValidateUUID({ description: 'Asset ID these edits belong to' })
+  assetId!: string;
+
+  @ValidateNested({ each: true })
+  @Type(() => AssetEditActionListDto)
+  edits!: AssetEditActionItemResponse[];
 }

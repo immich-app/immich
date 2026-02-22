@@ -21,7 +21,12 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  AssetEditActionCrop,
+  AssetEditActionListDto,
+  AssetEditsResponseDto,
+} from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
@@ -543,7 +548,7 @@ export class AssetService extends BaseService {
     }
   }
 
-  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const edits = await this.assetEditRepository.getAll(id);
     return {
@@ -552,7 +557,7 @@ export class AssetService extends BaseService {
     };
   }
 
-  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
+  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
 
     const asset = await this.assetRepository.getForEdit(id);

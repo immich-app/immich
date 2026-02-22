@@ -14,31 +14,37 @@ class AssetEditActionMirror {
   /// Returns a new [AssetEditActionMirror] instance.
   AssetEditActionMirror({
     required this.action,
+    required this.id,
     required this.parameters,
   });
 
   /// Type of edit action to perform
   AssetEditAction action;
 
+  String id;
+
   MirrorParameters parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionMirror &&
     other.action == action &&
+    other.id == id &&
     other.parameters == parameters;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
+    (id.hashCode) +
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditActionMirror[action=$action, parameters=$parameters]';
+  String toString() => 'AssetEditActionMirror[action=$action, id=$id, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
+      json[r'id'] = this.id;
       json[r'parameters'] = this.parameters;
     return json;
   }
@@ -53,6 +59,7 @@ class AssetEditActionMirror {
 
       return AssetEditActionMirror(
         action: AssetEditAction.fromJson(json[r'action'])!,
+        id: mapValueOfType<String>(json, r'id')!,
         parameters: MirrorParameters.fromJson(json[r'parameters'])!,
       );
     }
@@ -102,6 +109,7 @@ class AssetEditActionMirror {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'action',
+    'id',
     'parameters',
   };
 }
