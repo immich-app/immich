@@ -7,6 +7,7 @@
   export type SearchFilter = {
     query: string;
     contentFilter?: string;
+    contentFilterThreshold?: number;
     ocr?: string;
     queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
@@ -79,6 +80,7 @@
   let filter: SearchFilter = $state({
     query,
     contentFilter: 'contentFilter' in searchQuery ? searchQuery.contentFilter : undefined,
+    contentFilterThreshold: 'contentFilterThreshold' in searchQuery ? searchQuery.contentFilterThreshold : undefined,
     ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
@@ -120,6 +122,7 @@
     filter = {
       query: '',
       contentFilter: undefined,
+      contentFilterThreshold: undefined,
       ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
@@ -150,6 +153,7 @@
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
       contentFilter: filter.queryType === 'smart' ? (filter.contentFilter || undefined) : undefined,
+      contentFilterThreshold: filter.queryType === 'smart' && filter.contentFilter ? filter.contentFilterThreshold : undefined,
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
@@ -202,7 +206,7 @@
 
         <!-- CONTENT FILTER — only for smart search -->
         {#if filter.queryType === 'smart'}
-          <SearchContentSection bind:contentFilter={filter.contentFilter} />
+          <SearchContentSection bind:contentFilter={filter.contentFilter} bind:contentFilterThreshold={filter.contentFilterThreshold} />
         {/if}
 
         <!-- TAGS -->

@@ -26,10 +26,10 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 
 // Model-specific distance thresholds calibrated from LAION/DataComp benchmarks
 const DEFAULT_FILTER_THRESHOLDS: Record<string, number> = {
-  'ViT-B-32__openai': 0.7,
-  'ViT-B-16__openai': 0.7,
-  'ViT-L-14__openai': 0.72,
-  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': 0.74,
+  'ViT-B-32__openai': 0.75,
+  'ViT-B-16__openai': 0.78,
+  'ViT-L-14__openai': 0.8, // larger models have wider distance distributions
+  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': 0.82,
 };
 
 @Injectable()
@@ -159,7 +159,7 @@ export class SearchService extends BaseService {
         console.log('[DEBUG] filterEmbedding generated, length:', filterEmbedding?.length);
         this.embeddingCache.set(filterKey, filterEmbedding);
       }
-      filterDistanceThreshold = DEFAULT_FILTER_THRESHOLDS[machineLearning.clip.modelName] ?? 0.7;
+      filterDistanceThreshold = dto.contentFilterThreshold ?? DEFAULT_FILTER_THRESHOLDS[machineLearning.clip.modelName] ?? 0.75;
     }
 
     const page = dto.page ?? 1;

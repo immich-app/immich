@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
@@ -231,6 +231,14 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
     description: 'Content type filter — results must match this concept (e.g. "animal", "food", "vehicle")',
   })
   contentFilter?: string;
+
+  @ApiPropertyOptional({ type: 'number', description: 'Content filter distance threshold (0 = exact match, 1 = loose match)', minimum: 0.5, maximum: 1.0 })
+  @IsNumber()
+  @Min(0.5)
+  @Max(1.0)
+  @Type(() => Number)
+  @Optional()
+  contentFilterThreshold?: number;
 
   @ApiPropertyOptional({ description: 'Search language code' })
   @IsString()

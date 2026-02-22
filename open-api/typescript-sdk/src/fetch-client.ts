@@ -1865,6 +1865,8 @@ export type SmartSearchDto = {
     city?: string | null;
     /** Content type filter — results must match this concept (e.g. "animal", "food", "vehicle") */
     contentFilter?: string;
+    /** Content filter distance threshold (0 = exact match, 1 = loose match) */
+    contentFilterThreshold?: number;
     /** Filter by country name */
     country?: string | null;
     /** Filter by creation date (after) */

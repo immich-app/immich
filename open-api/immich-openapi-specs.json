@@ -22000,6 +22000,12 @@
             "description": "Content type filter — results must match this concept (e.g. \"animal\", \"food\", \"vehicle\")",
             "type": "string"
           },
+          "contentFilterThreshold": {
+            "description": "Content filter distance threshold (0 = exact match, 1 = loose match)",
+            "maximum": 1,
+            "minimum": 0.5,
+            "type": "number"
+          },
           "country": {
             "description": "Filter by country name",
             "nullable": true,
