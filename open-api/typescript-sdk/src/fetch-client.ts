@@ -1350,6 +1350,22 @@ export type ValidateLibraryResponseDto = {
     /** Validation results for import paths */
     importPaths?: ValidateLibraryImportPathResponseDto[];
 };
+export type FavoriteLocationResponseDto = {
+    id: string;
+    latitude: number | null;
+    longitude: number | null;
+    name: string;
+};
+export type CreateFavoriteLocationDto = {
+    latitude: number;
+    longitude: number;
+    name: string;
+};
+export type UpdateFavoriteLocationDto = {
+    latitude?: number;
+    longitude?: number;
+    name?: string;
+};
 export type MapMarkerResponseDto = {
     /** City name */
     city: string | null;
@@ -4709,6 +4725,59 @@ export function validate({ id, validateLibraryDto }: {
         ...opts,
         method: "POST",
         body: validateLibraryDto
+    })));
+}
+/**
+ * Get favorite locations
+ */
+export function getFavoriteLocations(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FavoriteLocationResponseDto[];
+    }>("/map/favorite-locations", {
+        ...opts
+    }));
+}
+/**
+ * Create favorite location
+ */
+export function createFavoriteLocation({ createFavoriteLocationDto }: {
+    createFavoriteLocationDto: CreateFavoriteLocationDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: FavoriteLocationResponseDto;
+    }>("/map/favorite-locations", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createFavoriteLocationDto
+    })));
+}
+/**
+ * Delete favorite location
+ */
+export function deleteFavoriteLocation({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/map/favorite-locations/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Update favorite location
+ */
+export function updateFavoriteLocation({ id, updateFavoriteLocationDto }: {
+    id: string;
+    updateFavoriteLocationDto: UpdateFavoriteLocationDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: FavoriteLocationResponseDto;
+    }>(`/map/favorite-locations/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateFavoriteLocationDto
     })));
 }
 /**

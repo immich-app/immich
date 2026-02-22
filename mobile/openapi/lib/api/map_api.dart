@@ -16,6 +16,162 @@ class MapApi {
 
   final ApiClient apiClient;
 
+  /// Create favorite location
+  ///
+  /// Create a new favorite location for the user.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [CreateFavoriteLocationDto] createFavoriteLocationDto (required):
+  Future<Response> createFavoriteLocationWithHttpInfo(CreateFavoriteLocationDto createFavoriteLocationDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/map/favorite-locations';
+
+    // ignore: prefer_final_locals
+    Object? postBody = createFavoriteLocationDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Create favorite location
+  ///
+  /// Create a new favorite location for the user.
+  ///
+  /// Parameters:
+  ///
+  /// * [CreateFavoriteLocationDto] createFavoriteLocationDto (required):
+  Future<FavoriteLocationResponseDto?> createFavoriteLocation(CreateFavoriteLocationDto createFavoriteLocationDto,) async {
+    final response = await createFavoriteLocationWithHttpInfo(createFavoriteLocationDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FavoriteLocationResponseDto',) as FavoriteLocationResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Delete favorite location
+  ///
+  /// Delete a favorite location by its ID.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deleteFavoriteLocationWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/map/favorite-locations/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Delete favorite location
+  ///
+  /// Delete a favorite location by its ID.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deleteFavoriteLocation(String id,) async {
+    final response = await deleteFavoriteLocationWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Get favorite locations
+  ///
+  /// Retrieve a list of user's favorite locations.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getFavoriteLocationsWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/map/favorite-locations';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Get favorite locations
+  ///
+  /// Retrieve a list of user's favorite locations.
+  Future<List<FavoriteLocationResponseDto>?> getFavoriteLocations() async {
+    final response = await getFavoriteLocationsWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<FavoriteLocationResponseDto>') as List)
+        .cast<FavoriteLocationResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Retrieve map markers
   ///
   /// Retrieve a list of latitude and longitude coordinates for every asset with location data.
@@ -192,6 +348,67 @@ class MapApi {
         .cast<MapReverseGeocodeResponseDto>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Update favorite location
+  ///
+  /// Update an existing favorite location.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UpdateFavoriteLocationDto] updateFavoriteLocationDto (required):
+  Future<Response> updateFavoriteLocationWithHttpInfo(String id, UpdateFavoriteLocationDto updateFavoriteLocationDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/map/favorite-locations/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateFavoriteLocationDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Update favorite location
+  ///
+  /// Update an existing favorite location.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [UpdateFavoriteLocationDto] updateFavoriteLocationDto (required):
+  Future<FavoriteLocationResponseDto?> updateFavoriteLocation(String id, UpdateFavoriteLocationDto updateFavoriteLocationDto,) async {
+    final response = await updateFavoriteLocationWithHttpInfo(id, updateFavoriteLocationDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'FavoriteLocationResponseDto',) as FavoriteLocationResponseDto;
+    
     }
     return null;
   }

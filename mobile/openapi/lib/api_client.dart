@@ -342,6 +342,8 @@ class ApiClient {
           return ContributorCountResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
+        case 'CreateFavoriteLocationDto':
+          return CreateFavoriteLocationDto.fromJson(value);
         case 'CreateLibraryDto':
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
@@ -382,6 +384,8 @@ class ApiClient {
           return FaceDto.fromJson(value);
         case 'FacialRecognitionConfig':
           return FacialRecognitionConfig.fromJson(value);
+        case 'FavoriteLocationResponseDto':
+          return FavoriteLocationResponseDto.fromJson(value);
         case 'FoldersResponse':
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
@@ -828,6 +832,8 @@ class ApiClient {
           return UpdateAlbumUserDto.fromJson(value);
         case 'UpdateAssetDto':
           return UpdateAssetDto.fromJson(value);
+        case 'UpdateFavoriteLocationDto':
+          return UpdateFavoriteLocationDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
         case 'UsageByUserDto':

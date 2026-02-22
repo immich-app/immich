@@ -29,3 +29,13 @@ where
   )
 order by
   "fileCreatedAt" desc
+
+-- MapRepository.getFavoriteLocations
+select
+  *
+from
+  "favorite_location"
+where
+  "userId" = $1
+order by
+  "name" asc
