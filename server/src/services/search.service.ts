@@ -24,13 +24,7 @@ import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
-// Model-specific distance thresholds calibrated from LAION/DataComp benchmarks
-const DEFAULT_FILTER_THRESHOLDS: Record<string, number> = {
-  'ViT-B-32__openai': 0.75,
-  'ViT-B-16__openai': 0.78,
-  'ViT-L-14__openai': 0.8, // larger models have wider distance distributions
-  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': 0.82,
-};
+const DEFAULT_FILTER_WEIGHT = 0.4;
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -145,10 +139,9 @@ export class SearchService extends BaseService {
     }
     // Encode content filter if provided
     let filterEmbedding: string | undefined;
-    let filterDistanceThreshold: number | undefined;
+    let filterWeight: number | undefined;
     if (dto.contentFilter) {
-      console.log('[DEBUG] contentFilter received:', dto.contentFilter);
-      const filterPrompt = `a photo of a ${dto.contentFilter}`;
+      const filterPrompt = `a picture of ${dto.contentFilter}`;
       const filterKey = machineLearning.clip.modelName + 'filter:' + filterPrompt + dto.language;
       filterEmbedding = this.embeddingCache.get(filterKey);
       if (!filterEmbedding) {
@@ -156,17 +149,16 @@ export class SearchService extends BaseService {
           modelName: machineLearning.clip.modelName,
           language: dto.language,
         });
-        console.log('[DEBUG] filterEmbedding generated, length:', filterEmbedding?.length);
         this.embeddingCache.set(filterKey, filterEmbedding);
       }
-      filterDistanceThreshold = dto.contentFilterThreshold ?? DEFAULT_FILTER_THRESHOLDS[machineLearning.clip.modelName] ?? 0.75;
+      filterWeight = dto.contentFilterWeight ?? DEFAULT_FILTER_WEIGHT;
     }
 
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding, filterEmbedding, filterDistanceThreshold },
+      { ...dto, userIds: await userIds, embedding, filterEmbedding, filterWeight },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });

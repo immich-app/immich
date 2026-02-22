@@ -4,17 +4,17 @@
 
   interface Props {
     contentFilter: string | undefined;
-    contentFilterThreshold: number | undefined;
+    contentFilterWeight: number | undefined;
   }
 
-  let { contentFilter = $bindable(), contentFilterThreshold = $bindable() }: Props = $props();
+  let { contentFilter = $bindable(), contentFilterWeight = $bindable() }: Props = $props();
 
-  const DEFAULT_THRESHOLD = 0.78;
+  const DEFAULT_WEIGHT = 0.4;
 
-  // When content filter text is entered, ensure threshold has a default
+  // When content filter text is entered, ensure weight has a default
   $effect(() => {
-    if (contentFilter && contentFilterThreshold === undefined) {
-      contentFilterThreshold = DEFAULT_THRESHOLD;
+    if (contentFilter && contentFilterWeight === undefined) {
+      contentFilterWeight = DEFAULT_WEIGHT;
     }
   });
 
@@ -22,13 +22,13 @@
   // identical (Alhamoud et al., CVPR 2025: "VLMs Do Not Understand Negation")
   const hasNegation = $derived(contentFilter?.match(/\b(not|no|without|except|excluding)\b/i));
 
-  const thresholdLabel = $derived(
-    contentFilterThreshold !== undefined
-      ? contentFilterThreshold <= 0.6
-        ? $t('content_filter_strict')
-        : contentFilterThreshold >= 0.9
-          ? $t('content_filter_loose')
-          : $t('content_filter_moderate')
+  const weightLabel = $derived(
+    contentFilterWeight !== undefined
+      ? contentFilterWeight <= 0.2
+        ? $t('content_filter_weight_low')
+        : contentFilterWeight >= 0.8
+          ? $t('content_filter_weight_high')
+          : $t('content_filter_weight_balanced')
       : '',
   );
 </script>
@@ -53,25 +53,25 @@
   {#if contentFilter}
     <div class="mt-3">
       <div class="flex items-center justify-between mb-1">
-        <Text class="text-xs text-gray-600 dark:text-gray-300">{$t('content_filter_threshold')}</Text>
+        <Text class="text-xs text-gray-600 dark:text-gray-300">{$t('content_filter_weight')}</Text>
         <Text class="text-xs text-gray-500 dark:text-gray-400">
-          {(contentFilterThreshold ?? DEFAULT_THRESHOLD).toFixed(2)} — {thresholdLabel}
+          {(contentFilterWeight ?? DEFAULT_WEIGHT).toFixed(2)} — {weightLabel}
         </Text>
       </div>
       <input
         type="range"
-        min="0.5"
+        min="0"
         max="1.0"
-        step="0.01"
-        value={contentFilterThreshold ?? DEFAULT_THRESHOLD}
+        step="0.05"
+        value={contentFilterWeight ?? DEFAULT_WEIGHT}
         oninput={(e) => {
-          contentFilterThreshold = Number(e.currentTarget.value);
+          contentFilterWeight = Number(e.currentTarget.value);
         }}
         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-immich-primary dark:accent-immich-dark-primary"
       />
       <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-        <span>{$t('content_filter_strict')}</span>
-        <span>{$t('content_filter_loose')}</span>
+        <span>{$t('content_filter_weight_query_only')}</span>
+        <span>{$t('content_filter_weight_filter_only')}</span>
       </div>
     </div>
   {/if}

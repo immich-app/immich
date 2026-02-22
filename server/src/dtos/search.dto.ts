@@ -232,13 +232,13 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   })
   contentFilter?: string;
 
-  @ApiPropertyOptional({ type: 'number', description: 'Content filter distance threshold (0 = exact match, 1 = loose match)', minimum: 0.5, maximum: 1.0 })
+  @ApiPropertyOptional({ type: 'number', description: 'Weight of content filter in ranking (0 = ignore filter, 1 = filter only)', minimum: 0, maximum: 1.0 })
   @IsNumber()
-  @Min(0.5)
+  @Min(0)
   @Max(1.0)
   @Type(() => Number)
   @Optional()
-  contentFilterThreshold?: number;
+  contentFilterWeight?: number;
 
   @ApiPropertyOptional({ description: 'Search language code' })
   @IsString()
