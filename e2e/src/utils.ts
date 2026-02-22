@@ -499,6 +499,9 @@ export const utils = {
   createStack: (accessToken: string, assetIds: string[]) =>
     createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
 
+  setAssetDuplicateId: (accessToken: string, assetId: string, duplicateId: string | null) =>
+    updateAssets({ assetBulkUpdateDto: { ids: [assetId], duplicateId } }, { headers: asBearerAuth(accessToken) }),
+
   upsertTags: (accessToken: string, tags: string[]) =>
     upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
 

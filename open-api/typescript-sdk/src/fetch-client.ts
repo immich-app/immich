@@ -725,6 +725,7 @@ export type BulkIdsDto = {
 export type BulkIdResponseDto = {
     /** Error reason if failed */
     error?: Error;
+    errorMessage?: string;
     /** ID */
     id: string;
     /** Whether operation succeeded */
@@ -1165,6 +1166,37 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     /** Duplicate group ID */
     duplicateId: string;
+    /** Suggested asset IDs to keep based on file size and EXIF data */
+    suggestedKeepAssetIds: string[];
+};
+export type DuplicateResolveGroupDto = {
+    duplicateId: string;
+    /** Asset IDs to keep */
+    keepAssetIds: string[];
+    /** Asset IDs to trash or delete */
+    trashAssetIds: string[];
+};
+export type DuplicateSyncSettingsDto = {
+    /** Synchronize album membership across duplicate group */
+    syncAlbums?: boolean;
+    /** Synchronize description across duplicate group */
+    syncDescription?: boolean;
+    /** Synchronize favorite status across duplicate group */
+    syncFavorites?: boolean;
+    /** Synchronize GPS location across duplicate group */
+    syncLocation?: boolean;
+    /** Synchronize EXIF rating across duplicate group */
+    syncRating?: boolean;
+    /** Synchronize tags across duplicate group */
+    syncTags?: boolean;
+    /** Synchronize visibility (archive/timeline) across duplicate group */
+    syncVisibility?: boolean;
+};
+export type DuplicateResolveDto = {
+    /** List of duplicate groups to resolve */
+    groups: DuplicateResolveGroupDto[];
+    /** Settings for synchronization behavior */
+    settings?: DuplicateSyncSettingsDto;
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -4500,6 +4532,21 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Resolve duplicate groups
+ */
+export function resolveDuplicates({ duplicateResolveDto }: {
+    duplicateResolveDto: DuplicateResolveDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>("/duplicates/resolve", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: duplicateResolveDto
+    })));
+}
+/**
  * Delete a duplicate
  */
 export function deleteDuplicate({ id }: {
@@ -6862,13 +6909,15 @@ export enum BulkIdErrorReason {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
     NotFound = "not_found",
-    Unknown = "unknown"
+    Unknown = "unknown",
+    Validation = "validation"
 }
 export enum Permission {
     All = "all",

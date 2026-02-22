@@ -15,6 +15,7 @@ class DuplicateResponseDto {
   DuplicateResponseDto({
     this.assets = const [],
     required this.duplicateId,
+    this.suggestedKeepAssetIds = const [],
   });
 
   /// Duplicate assets
@@ -23,24 +24,30 @@ class DuplicateResponseDto {
   /// Duplicate group ID
   String duplicateId;
 
+  /// Suggested asset IDs to keep based on file size and EXIF data
+  List<String> suggestedKeepAssetIds;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is DuplicateResponseDto &&
     _deepEquality.equals(other.assets, assets) &&
-    other.duplicateId == duplicateId;
+    other.duplicateId == duplicateId &&
+    _deepEquality.equals(other.suggestedKeepAssetIds, suggestedKeepAssetIds);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assets.hashCode) +
-    (duplicateId.hashCode);
+    (duplicateId.hashCode) +
+    (suggestedKeepAssetIds.hashCode);
 
   @override
-  String toString() => 'DuplicateResponseDto[assets=$assets, duplicateId=$duplicateId]';
+  String toString() => 'DuplicateResponseDto[assets=$assets, duplicateId=$duplicateId, suggestedKeepAssetIds=$suggestedKeepAssetIds]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assets'] = this.assets;
       json[r'duplicateId'] = this.duplicateId;
+      json[r'suggestedKeepAssetIds'] = this.suggestedKeepAssetIds;
     return json;
   }
 
@@ -55,6 +62,9 @@ class DuplicateResponseDto {
       return DuplicateResponseDto(
         assets: AssetResponseDto.listFromJson(json[r'assets']),
         duplicateId: mapValueOfType<String>(json, r'duplicateId')!,
+        suggestedKeepAssetIds: json[r'suggestedKeepAssetIds'] is Iterable
+            ? (json[r'suggestedKeepAssetIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;
@@ -104,6 +114,7 @@ class DuplicateResponseDto {
   static const requiredKeys = <String>{
     'assets',
     'duplicateId',
+    'suggestedKeepAssetIds',
   };
 }
 

@@ -15,7 +15,26 @@ with
       inner join lateral (
         select
           "asset".*,
-          "asset_exif" as "exifInfo"
+          to_json("asset_exif") as "exifInfo",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "tag"."id",
+                  "tag"."value",
+                  "tag"."createdAt",
+                  "tag"."updatedAt",
+                  "tag"."color",
+                  "tag"."parentId"
+                from
+                  "tag"
+                  inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+                where
+                  "tag_asset"."assetId" = "asset"."id"
+              ) as agg
+          ) as "tags"
         from
           "asset_exif"
         where
@@ -29,36 +48,84 @@ with
       and "asset"."stackId" is null
     group by
       "asset"."duplicateId"
-  ),
-  "unique" as (
-    select
-      "duplicateId"
-    from
-      "duplicates"
-    where
-      json_array_length("assets") = $2
-  ),
-  "removed_unique" as (
-    update "asset"
-    set
-      "duplicateId" = $3
-    from
-      "unique"
-    where
-      "asset"."duplicateId" = "unique"."duplicateId"
   )
 select
   *
 from
   "duplicates"
 where
-  not exists (
+  json_array_length("assets") > $2
+
+-- DuplicateRepository.cleanupSingletonGroups
+with
+  "singletons" as (
     select
+      "duplicateId"
     from
-      "unique"
+      "asset"
     where
-      "unique"."duplicateId" = "duplicates"."duplicateId"
+      "ownerId" = $1::uuid
+      and "duplicateId" is not null
+      and "deletedAt" is null
+      and "stackId" is null
+    group by
+      "duplicateId"
+    having
+      count("id") = $2
   )
+update "asset"
+set
+  "duplicateId" = $3
+from
+  "singletons"
+where
+  "asset"."duplicateId" = "singletons"."duplicateId"
+
+-- DuplicateRepository.get
+select
+  "asset"."duplicateId",
+  json_agg(
+    "asset2"
+    order by
+      "asset"."localDateTime" asc
+  ) as "assets"
+from
+  "asset"
+  inner join lateral (
+    select
+      "asset".*,
+      to_json("asset_exif") as "exifInfo",
+      (
+        select
+          coalesce(json_agg(agg), '[]')
+        from
+          (
+            select
+              "tag"."id",
+              "tag"."value",
+              "tag"."createdAt",
+              "tag"."updatedAt",
+              "tag"."color",
+              "tag"."parentId"
+            from
+              "tag"
+              inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+            where
+              "tag_asset"."assetId" = "asset"."id"
+          ) as agg
+      ) as "tags"
+    from
+      "asset_exif"
+    where
+      "asset_exif"."assetId" = "asset"."id"
+  ) as "asset2" on true
+where
+  "asset"."visibility" in ('archive', 'timeline')
+  and "asset"."duplicateId" = $1::uuid
+  and "asset"."deletedAt" is null
+  and "asset"."stackId" is null
+group by
+  "asset"."duplicateId"
 
 -- DuplicateRepository.delete
 update "asset"

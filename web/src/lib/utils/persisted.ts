@@ -46,11 +46,25 @@ type PersistedLocalStorageOptions<T> = {
     parse(text: string): T;
   };
   valid?: (value: T | unknown) => value is T;
+  upgrade?: 'merge' | ((value: T) => T);
 };
+
+const merge = <T>(defaultValue: T) => {
+  return (value: T): T => {
+    if (typeof value === 'object') {
+      value = { ...defaultValue, ...value } as T;
+    }
+
+    return value;
+  };
+};
+
+const identity = <T>(value: T): T => value;
 
 export class PersistedLocalStorage<T> extends PersistedBase<T> {
   constructor(key: string, defaultValue: T, options: PersistedLocalStorageOptions<T> = {}) {
     const valid = options.valid || (() => true);
+    const upgrade = options.upgrade === 'merge' ? merge(defaultValue) : identity;
     const serializer = options.serializer || JSON;
 
     super(key, defaultValue, {
@@ -69,7 +83,7 @@ export class PersistedLocalStorage<T> extends PersistedBase<T> {
           return;
         }
 
-        return parsed;
+        return upgrade(parsed);
       },
       write: (key: string, value: T) => {
         if (browser) {

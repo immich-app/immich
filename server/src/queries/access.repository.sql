@@ -160,6 +160,16 @@ where
   "session"."userId" = $1
   and "session"."id" in ($2)
 
+-- AccessRepository.duplicate.checkOwnerAccess
+select
+  "asset"."duplicateId"
+from
+  "asset"
+where
+  "asset"."duplicateId" in ($1)
+  and "asset"."ownerId" = $2
+  and "asset"."deletedAt" is null
+
 -- AccessRepository.memory.checkOwnerAccess
 select
   "memory"."id"

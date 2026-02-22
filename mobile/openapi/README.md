@@ -156,6 +156,7 @@ Class | Method | HTTP request | Description
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Delete a duplicate
 *DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | Delete duplicates
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | Retrieve duplicates
+*DuplicatesApi* | [**resolveDuplicates**](doc//DuplicatesApi.md#resolveduplicates) | **POST** /duplicates/resolve | Resolve duplicate groups
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | Create a face
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | Delete a face
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
@@ -423,7 +424,10 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
+ - [DuplicateResolveDto](doc//DuplicateResolveDto.md)
+ - [DuplicateResolveGroupDto](doc//DuplicateResolveGroupDto.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
+ - [DuplicateSyncSettingsDto](doc//DuplicateSyncSettingsDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
