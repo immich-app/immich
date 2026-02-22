@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
-import { DatabaseSslMode, ImmichEnvironment, LogFormat, LogLevel } from 'src/enum';
+import { DatabaseSslMode, ImmichEnvironment, LogFormat, LogLevel, SocketIoAdapter } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
 
 export class EnvDto {
@@ -139,6 +139,11 @@ export class EnvDto {
   @IsString()
   @Optional()
   IMMICH_WORKERS_EXCLUDE?: string;
+
+  @IsEnum(SocketIoAdapter)
+  @Optional()
+  @Transform(({ value }) => (value ? String(value).toLowerCase().trim() : value))
+  IMMICH_SOCKETIO_ADAPTER?: SocketIoAdapter;
 
   @IsString()
   @Optional()

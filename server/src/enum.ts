@@ -518,6 +518,11 @@ export enum ImmichTelemetry {
   Job = 'job',
 }
 
+export enum SocketIoAdapter {
+  BroadcastChannel = 'broadcastchannel',
+  Postgres = 'postgres',
+}
+
 export enum ExifOrientation {
   Horizontal = 1,
   MirrorHorizontal = 2,

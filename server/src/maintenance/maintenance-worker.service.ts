@@ -19,6 +19,7 @@ import { MaintenanceWebsocketRepository } from 'src/maintenance/maintenance-webs
 import { AppRepository } from 'src/repositories/app.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { AppRestartEvent } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -290,6 +291,9 @@ export class MaintenanceWorkerService {
 
     const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
     if (!lock) {
+      // Another maintenance worker has the lock - poll until maintenance mode ends
+      this.logger.log('Another worker has the maintenance lock, polling for maintenance mode changes...');
+      await this.pollForMaintenanceEnd();
       return;
     }
 
@@ -350,5 +354,26 @@ export class MaintenanceWorkerService {
     this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
     this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
     this.appRepository.exitApp();
+  }
+
+  handleInternalRestart(state: AppRestartEvent): void {
+    this.maintenanceWebsocketRepository.clientBroadcast('AppRestartV1', state);
+    this.maintenanceWebsocketRepository.serverSend('AppRestart', state);
+    this.appRepository.exitApp();
+  }
+
+  private async pollForMaintenanceEnd(): Promise<void> {
+    const pollIntervalMs = 5000;
+
+    while (true) {
+      await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+
+      const state = await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
+      if (!state?.isMaintenanceMode) {
+        this.logger.log('Maintenance mode ended, restarting...');
+        this.appRepository.exitApp();
+        return;
+      }
+    }
   }
 }

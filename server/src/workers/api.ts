@@ -1,13 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import inspector from 'node:inspector';
+import { isMainThread, workerData } from 'node:worker_threads';
 import { configureExpress, configureTelemetry } from 'src/app.common';
 import { ApiModule } from 'src/app.module';
 import { AppRepository } from 'src/repositories/app.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError } from 'src/utils/misc';
 
-async function bootstrap() {
+export async function bootstrap() {
   process.title = 'immich-api';
+
+  const { inspectorPort } = workerData ?? {};
+  if (inspectorPort) {
+    inspector.open(inspectorPort, '0.0.0.0', false);
+  }
 
   configureTelemetry();
 
@@ -19,10 +26,12 @@ async function bootstrap() {
   });
 }
 
-bootstrap().catch((error) => {
-  if (!isStartUpError(error)) {
-    console.error(error);
-  }
-  // eslint-disable-next-line unicorn/no-process-exit
-  process.exit(1);
-});
+if (!isMainThread || process.send) {
+  bootstrap().catch((error) => {
+    if (!isStartUpError(error)) {
+      console.error(error);
+    }
+
+    process.exit(1);
+  });
+}

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Next,
+  NotFoundException,
   Param,
   Post,
   Req,
@@ -25,11 +26,14 @@ import { ImmichCookie } from 'src/enum';
 import { MaintenanceRoute } from 'src/maintenance/maintenance-auth.guard';
 import { MaintenanceWorkerService } from 'src/maintenance/maintenance-worker.service';
 import { GetLoginDetails } from 'src/middleware/auth.guard';
+import { AppRestartEvent } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { LoginDetails } from 'src/services/auth.service';
 import { sendFile } from 'src/utils/file';
 import { respondWithCookie } from 'src/utils/response';
 import { FilenameParamDto } from 'src/validation';
+
+const LOCALHOST_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
 import type { DatabaseBackupController as _DatabaseBackupController } from 'src/controllers/database-backup.controller';
 import type { ServerController as _ServerController } from 'src/controllers/server.controller';
@@ -130,5 +134,15 @@ export class MaintenanceWorkerController {
   @MaintenanceRoute()
   setMaintenanceMode(@Body() dto: SetMaintenanceModeDto): void {
     void this.service.setAction(dto);
+  }
+
+  @Post('internal/restart')
+  internalRestart(@Req() req: Request, @Body() dto: AppRestartEvent): void {
+    const remoteAddress = req.socket.remoteAddress;
+    if (!remoteAddress || !LOCALHOST_ADDRESSES.has(remoteAddress)) {
+      throw new NotFoundException();
+    }
+
+    this.service.handleInternalRestart(dto);
   }
 }
