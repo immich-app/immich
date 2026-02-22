@@ -12,6 +12,7 @@ import {
   TimelineData,
 } from 'src/ui/generators/timeline';
 import { sleep } from 'src/ui/specs/timeline/utils';
+import { MINIMAL_MP4_BUFFER } from './face-editor-network';
 
 export class TimelineTestContext {
   slowBucket = false;
@@ -133,6 +134,14 @@ export const setupTimelineMockApiRoutes = async (
       });
     }
     return route.continue();
+  });
+
+  await context.route('**/api/assets/*/video/playback*', async (route) => {
+    return route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'video/mp4' },
+      body: MINIMAL_MP4_BUFFER,
+    });
   });
 
   await context.route('**/api/albums/**', async (route, request) => {
