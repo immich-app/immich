@@ -962,6 +962,7 @@ export type CropParameters = {
 export type AssetEditActionCrop = {
     /** Type of edit action to perform */
     action: AssetEditAction;
+    id: string;
     parameters: CropParameters;
 };
 export type RotateParameters = {
@@ -971,6 +972,7 @@ export type RotateParameters = {
 export type AssetEditActionRotate = {
     /** Type of edit action to perform */
     action: AssetEditAction;
+    id: string;
     parameters: RotateParameters;
 };
 export type MirrorParameters = {
@@ -980,6 +982,7 @@ export type MirrorParameters = {
 export type AssetEditActionMirror = {
     /** Type of edit action to perform */
     action: AssetEditAction;
+    id: string;
     parameters: MirrorParameters;
 };
 export type AssetEditsDto = {
