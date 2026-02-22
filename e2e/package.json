@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "2.5.6",
+  "version": "2.6.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -27,7 +27,7 @@
     "@eslint/js": "^9.8.0",
     "@faker-js/faker": "^10.1.0",
     "@immich/cli": "workspace:*",
-    "@immich/e2e-auth-server":  "workspace:*",
+    "@immich/e2e-auth-server": "workspace:*",
     "@immich/sdk": "workspace:*",
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
