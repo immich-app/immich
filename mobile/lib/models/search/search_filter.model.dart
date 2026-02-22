@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:openapi/api.dart' show AssetOrder;
 
 class SearchLocationFilter {
   String? country;
@@ -221,6 +222,7 @@ class SearchFilter {
   SearchDateFilter date;
   SearchRatingFilter rating;
   SearchDisplayFilters display;
+  AssetOrder? order;
 
   // Enum
   AssetType mediaType;
@@ -233,6 +235,7 @@ class SearchFilter {
     this.language,
     this.assetId,
     this.tagIds,
+    this.order,
     required this.people,
     required this.location,
     required this.camera,
@@ -279,6 +282,7 @@ class SearchFilter {
     SearchDisplayFilters? display,
     SearchRatingFilter? rating,
     AssetType? mediaType,
+    AssetOrder? Function()? order,
   }) {
     return SearchFilter(
       context: context ?? this.context,
@@ -295,12 +299,13 @@ class SearchFilter {
       rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
       tagIds: tagIds ?? this.tagIds,
+      order: order != null ? order() : this.order,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId, order: $order)';
   }
 
   @override
@@ -320,7 +325,8 @@ class SearchFilter {
         other.date == date &&
         other.display == display &&
         other.rating == rating &&
-        other.mediaType == mediaType;
+        other.mediaType == mediaType &&
+        other.order == order;
   }
 
   @override
@@ -338,6 +344,7 @@ class SearchFilter {
         date.hashCode ^
         display.hashCode ^
         rating.hashCode ^
-        mediaType.hashCode;
+        mediaType.hashCode ^
+        order.hashCode;
   }
 }

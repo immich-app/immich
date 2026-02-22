@@ -237,6 +237,14 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @Type(() => Number)
   @Optional()
   page?: number;
+
+  @ValidateEnum({
+    enum: AssetOrder,
+    name: 'AssetOrder',
+    optional: true,
+    description: 'Sort order by date. If not provided, results are sorted by relevance.',
+  })
+  order?: AssetOrder;
 }
 
 export class SearchPlacesDto {

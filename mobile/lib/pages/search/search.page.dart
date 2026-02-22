@@ -11,6 +11,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
@@ -23,6 +24,8 @@ import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dar
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
+import 'package:immich_mobile/widgets/search/search_filter/sort_order_picker.dart';
+import 'package:openapi/api.dart' show AssetOrder;
 
 @RoutePage()
 class SearchPage extends HookConsumerWidget {
@@ -56,6 +59,7 @@ class SearchPage extends HookConsumerWidget {
     final locationCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
+    final sortOrderCurrentFilterWidget = useState<Widget?>(null);
 
     final isSearching = useState(false);
 
@@ -78,6 +82,8 @@ class SearchPage extends HookConsumerWidget {
       }
 
       isSearching.value = true;
+      ref.read(searchGroupByProvider.notifier).state =
+          filter.value.order != null ? GroupAssetsBy.day : GroupAssetsBy.none;
       ref.watch(paginatedSearchProvider.notifier).clear();
       final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
 
@@ -387,6 +393,37 @@ class SearchPage extends HookConsumerWidget {
       );
     }
 
+    // SORT ORDER
+    showSortOrderPicker() {
+      handleOnSelect(AssetOrder? value) {
+        filter.value = filter.value.copyWith(order: () => value);
+
+        if (value == null) {
+          sortOrderCurrentFilterWidget.value = null;
+        } else if (value == AssetOrder.desc) {
+          sortOrderCurrentFilterWidget.value = Text('newest_first'.tr(), style: context.textTheme.labelLarge);
+        } else {
+          sortOrderCurrentFilterWidget.value = Text('oldest_first'.tr(), style: context.textTheme.labelLarge);
+        }
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(order: () => null);
+        sortOrderCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: 'search_filter_sort_order_title'.tr(),
+          onSearch: search,
+          onClear: handleClear,
+          child: SortOrderPicker(onSelect: handleOnSelect, order: filter.value.order),
+        ),
+      );
+    }
+
     handleTextSubmitted(String value) {
       switch (textSearchType.value) {
         case TextSearchType.context:
@@ -594,6 +631,12 @@ class SearchPage extends HookConsumerWidget {
                     label: 'search_filter_display_options'.tr(),
                     currentFilter: displayOptionCurrentFilterWidget.value,
                   ),
+                  SearchFilterChip(
+                    icon: Icons.sort_outlined,
+                    onTap: showSortOrderPicker,
+                    label: 'search_filter_sort_order'.tr(),
+                    currentFilter: sortOrderCurrentFilterWidget.value,
+                  ),
                 ],
               ),
             ),
@@ -601,7 +644,11 @@ class SearchPage extends HookConsumerWidget {
           if (isSearching.value)
             const Expanded(child: Center(child: CircularProgressIndicator()))
           else
-            SearchResultGrid(onScrollEnd: loadMoreSearchResult, isSearching: isSearching.value),
+            SearchResultGrid(
+              onScrollEnd: loadMoreSearchResult,
+              isSearching: isSearching.value,
+              dragScrollLabelEnabled: filter.value.order != null,
+            ),
         ],
       ),
     );
@@ -611,8 +658,14 @@ class SearchPage extends HookConsumerWidget {
 class SearchResultGrid extends StatelessWidget {
   final VoidCallback onScrollEnd;
   final bool isSearching;
+  final bool dragScrollLabelEnabled;
 
-  const SearchResultGrid({super.key, required this.onScrollEnd, this.isSearching = false});
+  const SearchResultGrid({
+    super.key,
+    required this.onScrollEnd,
+    this.isSearching = false,
+    this.dragScrollLabelEnabled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -640,7 +693,7 @@ class SearchResultGrid extends StatelessWidget {
             editEnabled: true,
             favoriteEnabled: true,
             stackEnabled: false,
-            dragScrollLabelEnabled: false,
+            dragScrollLabelEnabled: dragScrollLabelEnabled,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: !isSearching ? const SearchEmptyContent() : const SizedBox.shrink(),

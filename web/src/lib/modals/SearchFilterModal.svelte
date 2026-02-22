@@ -16,6 +16,7 @@
     display: SearchDisplayFilters;
     mediaType: MediaType;
     rating?: number;
+    sortOrder: 'best-match' | 'newest' | 'oldest';
   };
 </script>
 
@@ -28,13 +29,14 @@
   import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
   import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
+  import SearchSortSection from '$lib/components/shared-components/search-bar/search-sort-section.svelte';
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
-  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+  import { AssetOrder, AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import type { DateTime } from 'luxon';
@@ -111,6 +113,12 @@
           ? MediaType.Video
           : MediaType.All,
     rating: searchQuery.rating,
+    sortOrder:
+      'order' in searchQuery && searchQuery.order
+        ? searchQuery.order === AssetOrder.Asc
+          ? 'oldest'
+          : 'newest'
+        : 'best-match',
   });
 
   const resetForm = () => {
@@ -130,6 +138,7 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      sortOrder: 'best-match',
     };
   };
 
@@ -142,6 +151,9 @@
     }
 
     const query = filter.query || undefined;
+
+    const order =
+      filter.sortOrder === 'newest' ? AssetOrder.Desc : filter.sortOrder === 'oldest' ? AssetOrder.Asc : undefined;
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
@@ -163,6 +175,7 @@
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
+      order,
     };
 
     onClose(payload);
@@ -218,6 +231,9 @@
 
           <!-- DISPLAY OPTIONS -->
           <SearchDisplaySection bind:filters={filter.display} />
+
+          <!-- SORT ORDER -->
+          <SearchSortSection bind:sortOrder={filter.sortOrder} />
         </div>
       </div>
     </form>
