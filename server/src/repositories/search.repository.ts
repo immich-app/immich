@@ -302,26 +302,44 @@ export class SearchRepository {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
 
       if (options.filterEmbedding) {
-        // Weighted distance ranking: retrieve oversized candidate set by query,
-        // then re-rank by combined score: (1 - α) * queryDist + α * filterDist
+        // Reciprocal Rank Fusion: two independent ANN scans (query + filter),
+        // then fuse by rank position: score = (1-α)/(k+queryRank) + α/(k+filterRank)
         const alpha = options.filterWeight ?? 0.5;
+        const k = 60; // standard RRF constant
         const candidateLimit = Math.min(pagination.size * 20, 5_000);
+        const fallbackRank = candidateLimit + 1;
 
-        const candidates = searchAssetBuilder(trx, options)
-          .selectAll('asset')
+        const queryRanked = searchAssetBuilder(trx, options)
           .select([
-            sql<number>`smart_search.embedding <=> ${options.embedding}`.as('query_dist'),
-            sql<number>`smart_search.embedding <=> ${options.filterEmbedding!}`.as('filter_dist'),
+            'asset.id as assetId',
+            sql<number>`ROW_NUMBER() OVER ()`.as('rank'),
           ])
           .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
           .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
           .limit(candidateLimit);
 
+        const filterRanked = searchAssetBuilder(trx, options)
+          .select([
+            'asset.id as assetId',
+            sql<number>`ROW_NUMBER() OVER ()`.as('rank'),
+          ])
+          .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+          .orderBy(sql`smart_search.embedding <=> ${options.filterEmbedding!}`)
+          .limit(candidateLimit);
+
         const items = await trx
-          .selectFrom(candidates.as('candidates'))
-          .selectAll()
+          .with('query_ranked', () => queryRanked)
+          .with('filter_ranked', () => filterRanked)
+          .selectFrom('query_ranked as q')
+          .fullJoin('filter_ranked as f', 'q.assetId', 'f.assetId')
+          .innerJoin('asset', (join) =>
+            join.on(sql`asset.id`, '=', sql`COALESCE(q."assetId", f."assetId")`),
+          )
+          .selectAll('asset')
           .orderBy(
-            sql`${sql.lit(1 - alpha)} * candidates.query_dist + ${sql.lit(alpha)} * candidates.filter_dist`,
+            sql`${sql.lit(1 - alpha)} * (1.0 / (${sql.lit(k)} + COALESCE(q.rank, ${sql.lit(fallbackRank)})))
+              + ${sql.lit(alpha)} * (1.0 / (${sql.lit(k)} + COALESCE(f.rank, ${sql.lit(fallbackRank)})))`,
+            'desc',
           )
           .limit(pagination.size + 1)
           .offset((pagination.page - 1) * pagination.size)
