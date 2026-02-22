@@ -71,7 +71,7 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
     didReceive challenge: URLAuthenticationChallenge,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
-    handleChallenge(challenge, completionHandler: completionHandler)
+    handleChallenge(session, challenge, completionHandler)
   }
   
   func urlSession(
@@ -80,22 +80,24 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
     didReceive challenge: URLAuthenticationChallenge,
     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
-    handleChallenge(challenge, task: task, completionHandler: completionHandler)
+    handleChallenge(session, challenge, completionHandler, task: task)
   }
   
   func handleChallenge(
+    _ session: URLSession,
     _ challenge: URLAuthenticationChallenge,
-    task: URLSessionTask? = nil,
-    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    _ completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void,
+    task: URLSessionTask? = nil
   ) {
     switch challenge.protectionSpace.authenticationMethod {
-    case NSURLAuthenticationMethodClientCertificate: handleClientCertificate(completion: completionHandler)
-    case NSURLAuthenticationMethodHTTPBasic: handleBasicAuth(task: task, completion: completionHandler)
+    case NSURLAuthenticationMethodClientCertificate: handleClientCertificate(session, completion: completionHandler)
+    case NSURLAuthenticationMethodHTTPBasic: handleBasicAuth(session, task: task, completion: completionHandler)
     default: completionHandler(.performDefaultHandling, nil)
     }
   }
   
   private func handleClientCertificate(
+    _ session: URLSession,
     completion: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
     let query: [String: Any] = [
@@ -110,13 +112,16 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       let credential = URLCredential(identity: identity as! SecIdentity,
                                      certificates: nil,
                                      persistence: .forSession)
-      VideoResourceLoader.shared.clientCredential = credential
+      if #available(iOS 15, *) {
+        VideoProxyServer.shared.session = session
+      }
       return completion(.useCredential, credential)
     }
     completion(.performDefaultHandling, nil)
   }
   
   private func handleBasicAuth(
+    _ session: URLSession,
     task: URLSessionTask?,
     completion: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
   ) {
@@ -125,6 +130,9 @@ class URLSessionManagerDelegate: NSObject, URLSessionTaskDelegate, URLSessionWeb
       let password = url.password
     else {
       return completion(.performDefaultHandling, nil)
+    }
+    if #available(iOS 15, *) {
+      VideoProxyServer.shared.session = session
     }
     let credential = URLCredential(user: user, password: password, persistence: .forSession)
     completion(.useCredential, credential)
