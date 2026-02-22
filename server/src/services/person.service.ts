@@ -44,6 +44,7 @@ import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
 export class PersonService extends BaseService {
@@ -127,10 +128,10 @@ export class PersonService extends BaseService {
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
     const faces = await this.personRepository.getFaces(dto.id);
-    const asset = await this.assetRepository.getById(dto.id, { edits: true, exifInfo: true });
-    const assetDimensions = getDimensions(asset!.exifInfo!);
+    const asset = await this.assetRepository.getForFaces(dto.id);
+    const assetDimensions = getDimensions(asset);
 
-    return faces.map((face) => mapFaces(face, auth, asset!.edits!, assetDimensions));
+    return faces.map((face) => mapFaces(face, auth, asset.edits, assetDimensions));
   }
 
   async createNewFeaturePhoto(changeFeaturePhoto: string[]) {
@@ -196,13 +197,9 @@ export class PersonService extends BaseService {
     let faceId: string | undefined = undefined;
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
-      const [face] = await this.personRepository.getFacesByIds([{ personId: id, assetId }]);
+      const face = await this.personRepository.getForFeatureFaceUpdate({ personId: id, assetId });
       if (!face) {
-        throw new BadRequestException('Invalid assetId for feature face');
-      }
-
-      if (face.asset.isOffline) {
-        throw new BadRequestException('An offline asset cannot be used for feature face');
+        throw new BadRequestException('Invalid assetId for feature face or asset is offline');
       }
 
       faceId = face.id;
@@ -634,15 +631,62 @@ export class PersonService extends BaseService {
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
+    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
+
+    const edits = asset.edits || [];
+
+    let topLeft: Point = { x: dto.x, y: dto.y };
+    let bottomRight: Point = { x: dto.x + dto.width, y: dto.y + dto.height };
+
+    // the coordinates received from the client are based on the edited preview image
+    // we need to convert them to the coordinate space of the original unedited image
+    if (edits.length > 0) {
+      if (!asset.width || !asset.height || !asset.exifInfo?.exifImageWidth || !asset.exifInfo?.exifImageHeight) {
+        throw new BadRequestException('Asset does not have valid dimensions');
+      }
+
+      // convert from preview to full dimensions
+      const scaleFactor = asset.width / dto.imageWidth;
+      topLeft = { x: topLeft.x * scaleFactor, y: topLeft.y * scaleFactor };
+      bottomRight = { x: bottomRight.x * scaleFactor, y: bottomRight.y * scaleFactor };
+
+      const {
+        points: [invertedTopLeft, invertedBottomRight],
+      } = transformPoints(
+        [topLeft, bottomRight],
+        edits,
+        { width: asset.width, height: asset.height },
+        { inverse: true },
+      );
+
+      // make sure topLeft is top-left and bottomRight is bottom-right
+      topLeft = {
+        x: Math.min(invertedTopLeft.x, invertedBottomRight.x),
+        y: Math.min(invertedTopLeft.y, invertedBottomRight.y),
+      };
+      bottomRight = {
+        x: Math.max(invertedTopLeft.x, invertedBottomRight.x),
+        y: Math.max(invertedTopLeft.y, invertedBottomRight.y),
+      };
+
+      // now coordinates are in original image space
+      const originalDimensions = getDimensions(asset.exifInfo);
+      dto.imageWidth = originalDimensions.width;
+      dto.imageHeight = originalDimensions.height;
+    }
+
     await this.personRepository.createAssetFace({
       personId: dto.personId,
       assetId: dto.assetId,
       imageHeight: dto.imageHeight,
       imageWidth: dto.imageWidth,
-      boundingBoxX1: dto.x,
-      boundingBoxX2: dto.x + dto.width,
-      boundingBoxY1: dto.y,
-      boundingBoxY2: dto.y + dto.height,
+      boundingBoxX1: Math.round(topLeft.x),
+      boundingBoxX2: Math.round(bottomRight.x),
+      boundingBoxY1: Math.round(topLeft.y),
+      boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
   }

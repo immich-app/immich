@@ -34,6 +34,7 @@
 
   type Props = {
     assets: AssetResponseDto[];
+    viewerAssets?: AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -48,6 +49,7 @@
 
   let {
     assets = $bindable(),
+    viewerAssets,
     assetInteraction,
     disableAssetSelect = false,
     showArchiveIcon = false,
@@ -61,6 +63,7 @@
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
+  const navigationAssets = $derived(viewerAssets ?? assets);
 
   const geometry = $derived(
     getJustifiedLayoutFromAssets(assets, {
@@ -282,12 +285,12 @@
   );
 
   const handleRandom = async (): Promise<{ id: string } | undefined> => {
-    if (assets.length === 0) {
+    if (navigationAssets.length === 0) {
       return;
     }
     try {
-      const randomIndex = Math.floor(Math.random() * assets.length);
-      const asset = assets[randomIndex];
+      const randomIndex = Math.floor(Math.random() * navigationAssets.length);
+      const asset = navigationAssets[randomIndex];
 
       await navigateToAsset(asset);
       return asset;
@@ -302,6 +305,7 @@
       case AssetAction.ARCHIVE:
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
+        const nextAsset = assetCursor.nextAsset ?? assetCursor.previousAsset;
         assets.splice(
           assets.findIndex((currentAsset) => currentAsset.id === action.asset.id),
           1,
@@ -309,10 +313,8 @@
         if (assets.length === 0) {
           return await goto(Route.photos());
         }
-        if (assetCursor.nextAsset) {
-          await navigateToAsset(assetCursor.nextAsset);
-        } else if (assetCursor.previousAsset) {
-          await navigateToAsset(assetCursor.previousAsset);
+        if (nextAsset) {
+          await navigateToAsset(nextAsset);
         }
         break;
       }
@@ -345,8 +347,8 @@
 
   const assetCursor = $derived({
     current: $viewingAsset,
-    nextAsset: getNextAsset(assets, $viewingAsset),
-    previousAsset: getPreviousAsset(assets, $viewingAsset),
+    nextAsset: getNextAsset(navigationAssets, $viewingAsset),
+    previousAsset: getPreviousAsset(navigationAssets, $viewingAsset),
   });
 </script>
 

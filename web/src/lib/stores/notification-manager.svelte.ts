@@ -8,8 +8,10 @@ class NotificationStore {
   notifications = $state<NotificationDto[]>([]);
 
   constructor() {
-    eventManager.on('AuthLogin', () => this.refresh());
-    eventManager.on('AuthLogout', () => this.clear());
+    eventManager.on({
+      AuthLogin: () => this.refresh(),
+      AuthLogout: () => this.clear(),
+    });
   }
 
   async refresh() {

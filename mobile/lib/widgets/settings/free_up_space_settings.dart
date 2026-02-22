@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class FreeUpSpaceSettings extends ConsumerStatefulWidget {
   const FreeUpSpaceSettings({super.key});
@@ -29,6 +30,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   @override
   void initState() {
     super.initState();
+    WakelockPlus.enable();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeAlbumDefaults();
     });
@@ -169,6 +171,12 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   @override
+  dispose() {
+    super.dispose();
+    WakelockPlus.disable();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(cleanupProvider);
     final hasDate = state.selectedDate != null;
@@ -226,7 +234,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       }
 
       if (state.keepFavorites) {
-        parts.add('favorites'.t(context: context).toLowerCase());
+        parts.add('favorites'.t(context: context));
       }
 
       if (state.keepAlbumIds.isNotEmpty) {

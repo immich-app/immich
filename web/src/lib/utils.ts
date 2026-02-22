@@ -4,7 +4,6 @@ import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import {
-  AssetJobName,
   AssetMediaSize,
   AssetTypeEnum,
   MemoryType,
@@ -27,8 +26,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
-import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { init, register, t, type MessageFormatter } from 'svelte-i18n';
+import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
 interface DownloadRequestOptions<T = unknown> {
@@ -244,28 +242,6 @@ export const getProfileImageUrl = (user: UserResponseDto) =>
 
 export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: string) =>
   createUrl(getPeopleThumbnailPath(person.id), { updatedAt: updatedAt ?? person.updatedAt });
-
-export const getAssetJobName = ($t: MessageFormatter, job: AssetJobName) => {
-  const messages: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
-    [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
-    [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
-    [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
-  };
-
-  return messages[job];
-};
-
-export const getAssetJobIcon = (job: AssetJobName) => {
-  const names: Record<AssetJobName, string> = {
-    [AssetJobName.RefreshFaces]: mdiHeadSyncOutline,
-    [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
-    [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
-    [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
-  };
-
-  return names[job];
-};
 
 export const copyToClipboard = async (secret: string) => {
   const $t = get(t);

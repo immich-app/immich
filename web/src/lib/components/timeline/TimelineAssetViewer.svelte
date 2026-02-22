@@ -97,7 +97,6 @@
   };
 
   const handleClose = async (asset: { id: string }) => {
-    assetViewingStore.showAssetViewer(false);
     invisible = true;
     $gridScrollTarget = { at: asset.id };
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
@@ -128,8 +127,7 @@
   const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.ARCHIVE:
-      case AssetAction.UNARCHIVE:
-      case AssetAction.ADD: {
+      case AssetAction.UNARCHIVE: {
         timelineManager.upsertAssets([action.asset]);
         break;
       }

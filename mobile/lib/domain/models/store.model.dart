@@ -73,6 +73,9 @@ enum StoreKey<T> {
   autoPlayVideo<bool>._(139),
   albumGridView<bool>._(140),
 
+  // Image viewer navigation settings
+  tapToNavigate<bool>._(141),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
@@ -89,7 +92,9 @@ enum StoreKey<T> {
   cleanupKeepMediaType<int>._(1009),
   cleanupKeepAlbumIds<String>._(1010),
   cleanupCutoffDaysAgo<int>._(1011),
-  cleanupDefaultsInitialized<bool>._(1012);
+  cleanupDefaultsInitialized<bool>._(1012),
+
+  syncMigrationStatus<String>._(1013);
 
   const StoreKey._(this.id);
   final int id;

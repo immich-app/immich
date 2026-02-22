@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
@@ -251,8 +252,6 @@ export class AssetRepository {
               duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
-              previewAt: eb.ref('excluded.previewAt'),
-              thumbnailAt: eb.ref('excluded.thumbnailAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
@@ -361,7 +360,6 @@ export class AssetRepository {
                 .selectFrom('asset')
                 .selectAll('asset')
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
-                .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
@@ -904,11 +902,12 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
+  async upsertFile(
+    file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>,
+  ): Promise<void> {
     await this.db
       .insertInto('asset_file')
-      .values(value)
+      .values(file)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
@@ -918,19 +917,19 @@ export class AssetRepository {
   }
 
   async upsertFiles(
-    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited'>[],
+    files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive'>[],
   ): Promise<void> {
     if (files.length === 0) {
       return;
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
     await this.db
       .insertInto('asset_file')
-      .values(values)
+      .values(files)
       .onConflict((oc) =>
         oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
+          isProgressive: eb.ref('excluded.isProgressive'),
         })),
       )
       .execute();
@@ -1010,12 +1009,12 @@ export class AssetRepository {
     return count;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, true] })
-  async getForOriginal(id: string, isEdited: boolean) {
+  private buildGetForOriginal(ids: string[], isEdited: boolean) {
     return this.db
       .selectFrom('asset')
+      .select('asset.id')
       .select('originalFileName')
-      .where('asset.id', '=', id)
+      .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
         qb
           .leftJoin('asset_file', (join) =>
@@ -1026,8 +1025,17 @@ export class AssetRepository {
           )
           .select('asset_file.path as editedPath'),
       )
-      .select('originalPath')
-      .executeTakeFirstOrThrow();
+      .select('originalPath');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  getForOriginal(id: string, isEdited: boolean) {
+    return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], true] })
+  getForOriginals(ids: string[], isEdited: boolean) {
+    return this.buildGetForOriginal(ids, isEdited).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
@@ -1051,5 +1059,69 @@ export class AssetRepository {
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForOcr(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .select(withEdits)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageWidth', 'asset_exif.exifImageHeight', 'asset_exif.orientation'])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForEdit(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .where('asset.id', '=', id)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select([
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.orientation',
+        'asset_exif.projectionType',
+      ])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForMetadataExtractionTags(id: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.tags')
+      .where('asset_exif.assetId', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForFaces(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(withEdits)
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForUpdateTags(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('tag')
+            .select('tag.value')
+            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+            .whereRef('asset.id', '=', 'tag_asset.assetId'),
+        ).as('tags'),
+      )
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
   }
 }

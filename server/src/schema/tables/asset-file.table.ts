@@ -40,4 +40,7 @@ export class AssetFileTable {
 
   @Column({ type: 'boolean', default: false })
   isEdited!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  isProgressive!: Generated<boolean>;
 }

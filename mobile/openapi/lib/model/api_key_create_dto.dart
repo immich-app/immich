@@ -17,6 +17,7 @@ class APIKeyCreateDto {
     this.permissions = const [],
   });
 
+  /// API key name
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -25,6 +26,7 @@ class APIKeyCreateDto {
   ///
   String? name;
 
+  /// List of permissions
   List<Permission> permissions;
 
   @override

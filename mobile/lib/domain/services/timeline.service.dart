@@ -183,8 +183,8 @@ class TimelineService {
     return _buffer.slice(start, start + count);
   }
 
-  // Pre-cache assets around the given index for asset viewer
-  Future<void> preCacheAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+  // Preload assets around the given index for asset viewer
+  Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
@@ -225,6 +225,13 @@ class TimelineService {
       return null;
     }
     return _buffer.elementAt(index - _bufferOffset);
+  }
+
+  /// Finds the index of an asset by its heroTag within the current buffer.
+  /// Returns null if the asset is not found in the buffer.
+  int? getIndex(String heroTag) {
+    final index = _buffer.indexWhere((a) => a.heroTag == heroTag);
+    return index >= 0 ? _bufferOffset + index : null;
   }
 
   Future<void> dispose() async {

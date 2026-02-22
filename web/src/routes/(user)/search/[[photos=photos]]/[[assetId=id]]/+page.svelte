@@ -1,14 +1,13 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -23,8 +22,8 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -43,12 +42,11 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
+  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let searchResultsElement: HTMLElement | undefined = $state();
 
@@ -81,18 +79,6 @@
     terms;
     untrack(() => handlePromiseError(onSearchQueryUpdate()));
   });
-
-  const onEscape = () => {
-    if ($showAssetViewer) {
-      return;
-    }
-
-    if (assetInteraction.selectionActive) {
-      assetInteraction.selectedAssets = [];
-      return;
-    }
-    handlePromiseError(goto(previousRoute));
-  };
 
   $effect(() => {
     if (scrollY) {
@@ -206,7 +192,7 @@
       lensModel: $t('lens_model'),
       personIds: $t('people'),
       tagIds: $t('tags'),
-      originalFileName: $t('file_name'),
+      originalFileName: $t('file_name_text'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
@@ -245,7 +231,7 @@
     return tagNames.join(', ');
   }
 
-  const onAddToAlbum = (assetIds: string[]) => {
+  const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
     cancelMultiselect(assetInteraction);
 
     if (terms.isNotInAlbum.toString() == 'true') {
@@ -260,7 +246,8 @@
 </script>
 
 <svelte:window bind:scrollY />
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
+
+<OnEvents {onAlbumAddAssets} />
 
 {#if terms}
   <section
@@ -342,6 +329,9 @@
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
+          {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+          <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
           <CreateSharedLink />
           <IconButton
             shape="round"
@@ -351,10 +341,7 @@
             icon={mdiSelectAll}
             onclick={handleSelectAll}
           />
-          <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-            <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
-          </ButtonContextMenu>
+          <ActionButton action={Actions.AddToAlbum} />
           {#if isAllUserOwned}
             <FavoriteAction
               removeFavorite={assetInteraction.isAllFavorite}
@@ -369,6 +356,7 @@
             />
 
             <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+              <ActionMenuItem action={Actions.AddToAlbum} />
               <DownloadAction menuItem />
               <ChangeDate menuItem />
               <ChangeDescription menuItem />
@@ -382,7 +370,9 @@
               {/if}
               <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
               <hr />
-              <AssetJobActions />
+              <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+              <ActionMenuItem action={Actions.RefreshMetadataJob} />
+              <ActionMenuItem action={Actions.TranscodeVideoJob} />
             </ButtonContextMenu>
           {:else}
             <DownloadAction />

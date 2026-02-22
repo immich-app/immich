@@ -30,6 +30,10 @@ export type SchemaDiffToSqlOptions = BaseContextOptions & {
 
 export type SchemaDiffOptions = BaseContextOptions & {
   tables?: IgnoreOptions;
+  columns?: IgnoreOptions;
+  indexes?: IgnoreOptions;
+  triggers?: IgnoreOptions;
+  constraints?: IgnoreOptions;
   functions?: IgnoreOptions;
   enums?: IgnoreOptions;
   extensions?: IgnoreOptions;

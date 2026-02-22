@@ -17,8 +17,10 @@ class LogoutResponseDto {
     required this.successful,
   });
 
+  /// Redirect URI
   String redirectUri;
 
+  /// Logout successful
   bool successful;
 
   @override

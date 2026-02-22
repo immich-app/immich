@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
@@ -14,6 +15,7 @@
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -36,6 +38,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { CommandPaletteDefaultProvider } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -145,6 +148,7 @@
   };
 
   onMount(async () => {
+    syncAssetViewerOpenClass(true);
     unsubscribes.push(
       slideshowState.subscribe((value) => {
         if (value === SlideshowState.PlaySlideshow) {
@@ -163,9 +167,7 @@
       }),
     );
 
-    if (!sharedLink) {
-      await handleGetAllAlbums();
-    }
+    await onAlbumAddAssets();
   });
 
   onDestroy(() => {
@@ -174,9 +176,11 @@
     }
 
     activityManager.reset();
+    assetViewerManager.closeEditor();
+    syncAssetViewerOpenClass(false);
   });
 
-  const handleGetAllAlbums = async () => {
+  const onAlbumAddAssets = async () => {
     if (authManager.isSharedLink) {
       return;
     }
@@ -194,9 +198,7 @@
 
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
-      console.log(asset);
       const refreshedAsset = await getAssetInfo({ id: asset.id });
-      console.log(refreshedAsset);
       onAssetChange?.(refreshedAsset);
       assetViewingStore.setAsset(refreshedAsset);
     }
@@ -299,10 +301,6 @@
   };
   const handleAction = async (action: Action) => {
     switch (action.type) {
-      case AssetAction.ADD_TO_ALBUM: {
-        await handleGetAllAlbums();
-        break;
-      }
       case AssetAction.DELETE:
       case AssetAction.TRASH: {
         eventManager.emit('AssetsDelete', [asset.id]);
@@ -335,7 +333,6 @@
         };
         break;
       }
-      case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
         break;
@@ -358,9 +355,15 @@
     }
   });
 
+  const syncAssetViewerOpenClass = (isOpen: boolean) => {
+    if (browser) {
+      document.body.classList.toggle('asset-viewer-open', isOpen);
+    }
+  };
+
   const refresh = async () => {
     await refreshStack();
-    await handleGetAllAlbums();
+    await onAlbumAddAssets();
     ocrManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
@@ -388,7 +391,7 @@
 
   const onAssetUpdate = (update: AssetResponseDto) => {
     if (asset.id === update.id) {
-      cursor.current = update;
+      cursor = { ...cursor, current: update };
     }
   };
 
@@ -424,13 +427,21 @@
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
-      !(asset.exifInfo?.projectionType === 'EQUIRECTANGULAR') &&
       !assetViewerManager.isShowEditor &&
       ocrManager.hasOcrData,
   );
+
+  const { Tag } = $derived(getAssetActions($t, asset));
+  const showDetailPanel = $derived(
+    asset.hasMetadata &&
+      $slideshowState === SlideshowState.None &&
+      assetViewerManager.isShowDetailPanel &&
+      !assetViewerManager.isShowEditor,
+  );
 </script>
 
-<OnEvents {onAssetReplace} {onAssetUpdate} />
+<CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
+<OnEvents {onAssetReplace} {onAssetUpdate} {onAlbumAddAssets} />
 
 <svelte:document bind:fullscreenElement />
 
@@ -566,29 +577,26 @@
     </div>
   {/if}
 
-  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !assetViewerManager.isShowEditor}
+  {#if showDetailPanel || assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 w-90 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
+      class="row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
+      {#if showDetailPanel}
+        <div class="w-90 h-full">
+          <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
+        </div>
+      {:else if assetViewerManager.isShowEditor}
+        <div class="w-100 h-full">
+          <EditorPanel {asset} onClose={closeEditor} />
+        </div>
+      {/if}
     </div>
   {/if}
 
-  {#if assetViewerManager.isShowEditor}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="editor-panel"
-      class="row-start-1 row-span-4 w-100 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
-      translate="yes"
-    >
-      <EditorPanel {asset} onClose={closeEditor} />
-    </div>
-  {/if}
-
-  {#if stack && withStacked}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
       <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">

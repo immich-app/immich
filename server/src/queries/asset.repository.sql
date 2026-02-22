@@ -134,8 +134,7 @@ with
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
         where
-          "asset_job_status"."previewAt" is not null
-          and (asset."localDateTime" at time zone 'UTC')::date = today.date
+          (asset."localDateTime" at time zone 'UTC')::date = today.date
           and "asset"."ownerId" = any ($4::uuid[])
           and "asset"."visibility" = $5
           and exists (
@@ -588,6 +587,7 @@ where
 
 -- AssetRepository.getForOriginal
 select
+  "asset"."id",
   "originalFileName",
   "asset_file"."path" as "editedPath",
   "originalPath"
@@ -597,7 +597,21 @@ from
   and "asset_file"."isEdited" = $1
   and "asset_file"."type" = $2
 where
-  "asset"."id" = $3
+  "asset"."id" in ($3)
+
+-- AssetRepository.getForOriginals
+select
+  "asset"."id",
+  "originalFileName",
+  "asset_file"."path" as "editedPath",
+  "originalPath"
+from
+  "asset"
+  left join "asset_file" on "asset"."id" = "asset_file"."assetId"
+  and "asset_file"."isEdited" = $1
+  and "asset_file"."type" = $2
+where
+  "asset"."id" in ($3)
 
 -- AssetRepository.getForThumbnail
 select
@@ -622,3 +636,98 @@ from
 where
   "asset"."id" = $1
   and "asset"."type" = $2
+
+-- AssetRepository.getForOcr
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForEdit
+select
+  "asset"."type",
+  "asset"."livePhotoVideoId",
+  "asset"."originalPath",
+  "asset"."originalFileName",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."orientation",
+  "asset_exif"."projectionType"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForMetadataExtractionTags
+select
+  "asset_exif"."tags"
+from
+  "asset_exif"
+where
+  "asset_exif"."assetId" = $1
+
+-- AssetRepository.getForFaces
+select
+  "asset_exif"."exifImageHeight",
+  "asset_exif"."exifImageWidth",
+  "asset_exif"."orientation",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_edit"."action",
+          "asset_edit"."parameters"
+        from
+          "asset_edit"
+        where
+          "asset_edit"."assetId" = "asset"."id"
+      ) as agg
+  ) as "edits"
+from
+  "asset"
+  inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+
+-- AssetRepository.getForUpdateTags
+select
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "tag"."value"
+        from
+          "tag"
+          inner join "tag_asset" on "tag"."id" = "tag_asset"."tagId"
+        where
+          "asset"."id" = "tag_asset"."assetId"
+      ) as agg
+  ) as "tags"
+from
+  "asset"
+where
+  "asset"."id" = $1

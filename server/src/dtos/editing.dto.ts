@@ -50,28 +50,31 @@ export class MirrorParameters {
 
 class AssetEditActionBase {
   @IsEnum(AssetEditAction)
-  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction' })
+  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction', description: 'Type of edit action to perform' })
   action!: AssetEditAction;
 }
 
 export class AssetEditActionCrop extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => CropParameters)
-  @ApiProperty({ type: CropParameters })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: CropParameters;
 }
 
 export class AssetEditActionRotate extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => RotateParameters)
-  @ApiProperty({ type: RotateParameters })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: RotateParameters;
 }
 
 export class AssetEditActionMirror extends AssetEditActionBase {
   @ValidateNested()
   @Type(() => MirrorParameters)
-  @ApiProperty({ type: MirrorParameters })
+  // Description lives on schema to avoid duplication
+  @ApiProperty({ description: undefined })
   parameters!: MirrorParameters;
 }
 
@@ -114,12 +117,22 @@ export class AssetEditActionListDto {
   @Transform(({ value: edits }) =>
     Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,
   )
-  @ApiProperty({ anyOf: Object.values(actionToClass).map((target) => ({ $ref: getSchemaPath(target) })) })
+  @ApiProperty({
+    items: {
+      anyOf: Object.values(actionToClass).map((type) => ({ $ref: getSchemaPath(type) })),
+      discriminator: {
+        propertyName: 'action',
+        mapping: Object.fromEntries(
+          Object.entries(actionToClass).map(([action, type]) => [action, getSchemaPath(type)]),
+        ),
+      },
+    },
+    description: 'List of edit actions to apply (crop, rotate, or mirror)',
+  })
   edits!: AssetEditActionItem[];
 }
 
 export class AssetEditsDto extends AssetEditActionListDto {
-  @ValidateUUID()
-  @ApiProperty()
+  @ValidateUUID({ description: 'Asset ID to apply edits to' })
   assetId!: string;
 }
