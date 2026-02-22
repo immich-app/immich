@@ -66,9 +66,21 @@ export class MemoryRepository implements IBulkAsset {
             .selectAll('asset')
             .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetId')
             .whereRef('memory_asset.memoriesId', '=', 'memory.id')
-            .orderBy('asset.fileCreatedAt', 'asc')
             .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
+            .where('asset.deletedAt', 'is', null)
+            .where((eb) =>
+              eb.not(
+                eb.exists(
+                  eb
+                    .selectFrom('asset_face')
+                    .innerJoin('person', 'person.id', 'asset_face.personId')
+                    .select((eb) => eb.val(1).as('one'))
+                    .whereRef('asset_face.assetId', '=', 'asset.id')
+                    .where('person.isHidden', '=', true),
+                ),
+              ),
+            )
+            .orderBy('asset.fileCreatedAt', 'asc'),
         ).as('assets'),
       )
       .selectAll('memory')
