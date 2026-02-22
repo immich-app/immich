@@ -616,7 +616,7 @@ export type AssetResponseDto = {
     resized?: boolean;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
-    /** Thumbhash for thumbnail generation */
+    /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache/versioning. */
     thumbhash: string | null;
     /** Asset type */
     "type": AssetTypeEnum;
