@@ -58,6 +58,7 @@ import UIKit
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
     ConnectivityApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ConnectivityApiImpl())
     NetworkApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: NetworkApiImpl(viewController: controller))
+    ViewIntentHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ViewIntentApiImpl())
   }
   
   public static func cancelPlugins(with engine: FlutterEngine) {

@@ -13,6 +13,7 @@ pigeon:
 	dart run pigeon --input pigeon/background_worker_lock_api.dart
 	dart run pigeon --input pigeon/connectivity_api.dart
 	dart run pigeon --input pigeon/network_api.dart
+	dart run pigeon --input pigeon/view_intent_api.dart
 	dart format lib/platform/native_sync_api.g.dart
 	dart format lib/platform/local_image_api.g.dart
 	dart format lib/platform/remote_image_api.g.dart
@@ -20,6 +21,7 @@ pigeon:
 	dart format lib/platform/background_worker_lock_api.g.dart
 	dart format lib/platform/connectivity_api.g.dart
 	dart format lib/platform/network_api.g.dart
+	dart format lib/platform/view_intent_api.g.dart
 
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
