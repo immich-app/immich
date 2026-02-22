@@ -353,6 +353,7 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
+        'asset.visibility',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
@@ -368,12 +369,20 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getForStorageTemplateJob(id: string) {
+    return this.storageTemplateAssetQuery()
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForStorageTemplateSingleAsset(id: string) {
     return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().stream();
+    return this.storageTemplateAssetQuery().where('asset.visibility', '!=', AssetVisibility.Hidden).stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

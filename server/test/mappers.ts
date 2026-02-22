@@ -12,6 +12,7 @@ export const getForStorageTemplate = (asset: ReturnType<AssetFactory['build']>) 
     isExternal: asset.isExternal,
     checksum: asset.checksum,
     timeZone: asset.exifInfo.timeZone,
+    visibility: asset.visibility,
     fileCreatedAt: asset.fileCreatedAt,
     originalPath: asset.originalPath,
     originalFileName: asset.originalFileName,

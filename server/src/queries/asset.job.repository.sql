@@ -561,6 +561,49 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
+  "asset"."originalFileName",
+  "asset"."livePhotoVideoId",
+  "asset"."fileCreatedAt",
+  "asset_exif"."timeZone",
+  "asset_exif"."fileSizeInByte",
+  "asset_exif"."make",
+  "asset_exif"."model",
+  "asset_exif"."lensModel",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type",
+          "asset_file"."isEdited"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."deletedAt" is null
+  and "asset"."visibility" != $2
+  and "asset"."id" = $3
+
+-- AssetJobRepository.getForStorageTemplateSingleAsset
+select
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."type",
+  "asset"."checksum",
+  "asset"."originalPath",
+  "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -601,6 +644,7 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -631,6 +675,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."deletedAt" is null
+  and "asset"."visibility" != $2
 
 -- AssetJobRepository.streamForDeletedJob
 select
