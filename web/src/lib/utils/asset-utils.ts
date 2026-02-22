@@ -331,7 +331,7 @@ export const deleteStack = async (stackIds: string[]) => {
 
     const assets = stacks.flatMap((stack) => stack.assets);
     for (const asset of assets) {
-      asset.stack = null;
+      asset.stack = undefined;
     }
 
     return assets;
@@ -350,7 +350,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
 
     toastManager.success($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
 
-    keepAsset.stack = null;
+    keepAsset.stack = undefined;
     return keepAsset;
   } catch (error) {
     handleError(error, $t('errors.failed_to_keep_this_delete_others'));

@@ -86,6 +86,8 @@ class AssetResponseDto {
   bool hasMetadata;
 
   /// Asset height
+  ///
+  /// Minimum value: 0
   num? height;
 
   /// Asset ID
@@ -152,6 +154,12 @@ class AssetResponseDto {
   ///
   bool? resized;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
   AssetStackResponseDto? stack;
 
   List<TagResponseDto> tags;
@@ -160,7 +168,7 @@ class AssetResponseDto {
   String? thumbhash;
 
   /// Asset type
-  AssetTypeEnum type;
+  AssetResponseDtoTypeEnum type;
 
   List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
@@ -168,9 +176,11 @@ class AssetResponseDto {
   DateTime updatedAt;
 
   /// Asset visibility
-  AssetVisibility visibility;
+  AssetResponseDtoVisibilityEnum visibility;
 
   /// Asset width
+  ///
+  /// Minimum value: 0
   num? width;
 
   @override
@@ -256,7 +266,9 @@ class AssetResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAt.millisecondsSinceEpoch
+        : this.createdAt.toUtc().toIso8601String();
       json[r'deviceAssetId'] = this.deviceAssetId;
       json[r'deviceId'] = this.deviceId;
     if (this.duplicateId != null) {
@@ -270,8 +282,12 @@ class AssetResponseDto {
     } else {
     //  json[r'exifInfo'] = null;
     }
-      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
-      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
+      json[r'fileCreatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.fileCreatedAt.millisecondsSinceEpoch
+        : this.fileCreatedAt.toUtc().toIso8601String();
+      json[r'fileModifiedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.fileModifiedAt.millisecondsSinceEpoch
+        : this.fileModifiedAt.toUtc().toIso8601String();
       json[r'hasMetadata'] = this.hasMetadata;
     if (this.height != null) {
       json[r'height'] = this.height;
@@ -294,7 +310,9 @@ class AssetResponseDto {
     } else {
     //  json[r'livePhotoVideoId'] = null;
     }
-      json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
+      json[r'localDateTime'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.localDateTime.millisecondsSinceEpoch
+        : this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
     if (this.originalMimeType != null) {
       json[r'originalMimeType'] = this.originalMimeType;
@@ -327,7 +345,9 @@ class AssetResponseDto {
     }
       json[r'type'] = this.type;
       json[r'unassignedFaces'] = this.unassignedFaces;
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAt.millisecondsSinceEpoch
+        : this.updatedAt.toUtc().toIso8601String();
       json[r'visibility'] = this.visibility;
     if (this.width != null) {
       json[r'width'] = this.width;
@@ -347,14 +367,14 @@ class AssetResponseDto {
 
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
         height: json[r'height'] == null
             ? null
@@ -367,7 +387,7 @@ class AssetResponseDto {
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        localDateTime: mapDateTime(json, r'localDateTime', r'')!,
+        localDateTime: mapDateTime(json, r'localDateTime', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
         originalMimeType: mapValueOfType<String>(json, r'originalMimeType'),
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
@@ -378,10 +398,10 @@ class AssetResponseDto {
         stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        type: AssetResponseDtoTypeEnum.fromJson(json[r'type'])!,
         unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
-        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
-        visibility: AssetVisibility.fromJson(json[r'visibility'])!,
+        updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        visibility: AssetResponseDtoVisibilityEnum.fromJson(json[r'visibility'])!,
         width: json[r'width'] == null
             ? null
             : num.parse('${json[r'width']}'),
@@ -458,4 +478,164 @@ class AssetResponseDto {
     'width',
   };
 }
+
+/// Asset type
+class AssetResponseDtoTypeEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AssetResponseDtoTypeEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const IMAGE = AssetResponseDtoTypeEnum._(r'IMAGE');
+  static const VIDEO = AssetResponseDtoTypeEnum._(r'VIDEO');
+  static const AUDIO = AssetResponseDtoTypeEnum._(r'AUDIO');
+  static const OTHER = AssetResponseDtoTypeEnum._(r'OTHER');
+
+  /// List of all possible values in this [enum][AssetResponseDtoTypeEnum].
+  static const values = <AssetResponseDtoTypeEnum>[
+    IMAGE,
+    VIDEO,
+    AUDIO,
+    OTHER,
+  ];
+
+  static AssetResponseDtoTypeEnum? fromJson(dynamic value) => AssetResponseDtoTypeEnumTypeTransformer().decode(value);
+
+  static List<AssetResponseDtoTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetResponseDtoTypeEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AssetResponseDtoTypeEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AssetResponseDtoTypeEnum] to String,
+/// and [decode] dynamic data back to [AssetResponseDtoTypeEnum].
+class AssetResponseDtoTypeEnumTypeTransformer {
+  factory AssetResponseDtoTypeEnumTypeTransformer() => _instance ??= const AssetResponseDtoTypeEnumTypeTransformer._();
+
+  const AssetResponseDtoTypeEnumTypeTransformer._();
+
+  String encode(AssetResponseDtoTypeEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AssetResponseDtoTypeEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AssetResponseDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'IMAGE': return AssetResponseDtoTypeEnum.IMAGE;
+        case r'VIDEO': return AssetResponseDtoTypeEnum.VIDEO;
+        case r'AUDIO': return AssetResponseDtoTypeEnum.AUDIO;
+        case r'OTHER': return AssetResponseDtoTypeEnum.OTHER;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AssetResponseDtoTypeEnumTypeTransformer] instance.
+  static AssetResponseDtoTypeEnumTypeTransformer? _instance;
+}
+
+
+/// Asset visibility
+class AssetResponseDtoVisibilityEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AssetResponseDtoVisibilityEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const archive = AssetResponseDtoVisibilityEnum._(r'archive');
+  static const timeline = AssetResponseDtoVisibilityEnum._(r'timeline');
+  static const hidden = AssetResponseDtoVisibilityEnum._(r'hidden');
+  static const locked = AssetResponseDtoVisibilityEnum._(r'locked');
+
+  /// List of all possible values in this [enum][AssetResponseDtoVisibilityEnum].
+  static const values = <AssetResponseDtoVisibilityEnum>[
+    archive,
+    timeline,
+    hidden,
+    locked,
+  ];
+
+  static AssetResponseDtoVisibilityEnum? fromJson(dynamic value) => AssetResponseDtoVisibilityEnumTypeTransformer().decode(value);
+
+  static List<AssetResponseDtoVisibilityEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetResponseDtoVisibilityEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AssetResponseDtoVisibilityEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AssetResponseDtoVisibilityEnum] to String,
+/// and [decode] dynamic data back to [AssetResponseDtoVisibilityEnum].
+class AssetResponseDtoVisibilityEnumTypeTransformer {
+  factory AssetResponseDtoVisibilityEnumTypeTransformer() => _instance ??= const AssetResponseDtoVisibilityEnumTypeTransformer._();
+
+  const AssetResponseDtoVisibilityEnumTypeTransformer._();
+
+  String encode(AssetResponseDtoVisibilityEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AssetResponseDtoVisibilityEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AssetResponseDtoVisibilityEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'archive': return AssetResponseDtoVisibilityEnum.archive;
+        case r'timeline': return AssetResponseDtoVisibilityEnum.timeline;
+        case r'hidden': return AssetResponseDtoVisibilityEnum.hidden;
+        case r'locked': return AssetResponseDtoVisibilityEnum.locked;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AssetResponseDtoVisibilityEnumTypeTransformer] instance.
+  static AssetResponseDtoVisibilityEnumTypeTransformer? _instance;
+}
+
 

@@ -5,6 +5,7 @@ import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   ActivityCreateDto,
   ActivityDto,
+  ActivityIdParamDto,
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
@@ -13,7 +14,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { ActivityService } from 'src/services/activity.service';
-import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Activities)
 @Controller('activities')
@@ -70,7 +70,7 @@ export class ActivityController {
     description: 'Removes a like or comment from a given album or asset in an album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
+  deleteActivity(@Auth() auth: AuthDto, @Param() { id }: ActivityIdParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
 }

@@ -2,6 +2,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/search_result.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/search_api.repository.dart';
+import 'package:immich_mobile/infrastructure/utils/enum.converter.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api show AssetVisibility;
@@ -62,7 +63,7 @@ extension on AssetResponseDto {
       createdAt: fileCreatedAt,
       updatedAt: updatedAt,
       ownerId: ownerId,
-      visibility: switch (visibility) {
+      visibility: switch (visibility.toAssetVisibility()) {
         api.AssetVisibility.timeline => AssetVisibility.timeline,
         api.AssetVisibility.hidden => AssetVisibility.hidden,
         api.AssetVisibility.archive => AssetVisibility.archive,
@@ -80,14 +81,4 @@ extension on AssetResponseDto {
       isEdited: isEdited,
     );
   }
-}
-
-extension on AssetTypeEnum {
-  AssetType toAssetType() => switch (this) {
-    AssetTypeEnum.IMAGE => AssetType.image,
-    AssetTypeEnum.VIDEO => AssetType.video,
-    AssetTypeEnum.AUDIO => AssetType.audio,
-    AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
-  };
 }

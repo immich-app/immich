@@ -1,84 +1,116 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Activity } from 'src/database';
-import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
-import { ValidateEnum, ValidateUUID } from 'src/validation';
-
-export enum ReactionType {
-  COMMENT = 'comment',
-  LIKE = 'like',
-}
+import { UserResponseSchema } from 'src/dtos/user.dto';
+import { UserAvatarColor } from 'src/enum';
+import { z } from 'zod';
 
 export enum ReactionLevel {
   ALBUM = 'album',
   ASSET = 'asset',
 }
+const ReactionLevelSchema = z.enum(ReactionLevel).describe('Reaction level').meta({ id: 'ReactionLevel' });
+
+export enum ReactionType {
+  COMMENT = 'comment',
+  LIKE = 'like',
+}
+const ReactionTypeSchema = z.enum(ReactionType).describe('Reaction type').meta({ id: 'ReactionType' });
 
 export type MaybeDuplicate<T> = { duplicate: boolean; value: T };
 
-export class ActivityResponseDto {
-  @ApiProperty({ description: 'Activity ID' })
-  id!: string;
-  @ApiProperty({ description: 'Creation date', format: 'date-time' })
-  createdAt!: Date;
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Activity type' })
-  type!: ReactionType;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  user!: UserResponseDto;
-  @ApiProperty({ description: 'Asset ID (if activity is for an asset)' })
-  assetId!: string | null;
-  @ApiPropertyOptional({ description: 'Comment text (for comment activities)' })
-  comment?: string | null;
-}
+export const ActivityResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Activity ID'),
+    createdAt: z.iso.datetime().describe('Creation date'),
+    user: UserResponseSchema,
+    assetId: z.uuidv4().describe('Asset ID (if activity is for an asset)').nullable(),
+    type: ReactionTypeSchema,
+    comment: z.string().describe('Comment text (for comment activities)').nullish(),
+  })
+  .meta({ id: 'ActivityResponseDto' });
 
-export class ActivityStatisticsResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of comments' })
-  comments!: number;
+export const ActivityStatisticsResponseSchema = z
+  .object({
+    comments: z.int().min(0).describe('Number of comments'),
+    likes: z.int().min(0).describe('Number of likes'),
+  })
+  .meta({ id: 'ActivityStatisticsResponseDto' });
 
-  @ApiProperty({ type: 'integer', description: 'Number of likes' })
-  likes!: number;
-}
+const ActivityIdParamSchema = z
+  .object({
+    id: z.uuidv4().describe('Activity ID'),
+  })
+  .meta({ id: 'ActivityIdParamDto' });
 
-export class ActivityDto {
-  @ValidateUUID({ description: 'Album ID' })
-  albumId!: string;
+const ActivitySchema = z
+  .object({
+    albumId: z.uuidv4().describe('Album ID'),
+    assetId: z.uuidv4().describe('Asset ID (if activity is for an asset)').optional(),
+  })
+  .describe('Activity');
 
-  @ValidateUUID({ optional: true, description: 'Asset ID (if activity is for an asset)' })
-  assetId?: string;
-}
+const ActivitySearchSchema = ActivitySchema.extend({
+  type: ReactionTypeSchema.optional().describe('Filter by activity type'),
+  level: ReactionLevelSchema.optional().describe('Filter by activity level'),
+  userId: z.uuidv4().describe('Filter by user ID').optional(),
+}).describe('Activity search');
 
-export class ActivitySearchDto extends ActivityDto {
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Filter by activity type', optional: true })
-  type?: ReactionType;
-
-  @ValidateEnum({ enum: ReactionLevel, name: 'ReactionLevel', description: 'Filter by activity level', optional: true })
-  level?: ReactionLevel;
-
-  @ValidateUUID({ optional: true, description: 'Filter by user ID' })
-  userId?: string;
-}
-
-const isComment = (dto: ActivityCreateDto) => dto.type === ReactionType.COMMENT;
-
-export class ActivityCreateDto extends ActivityDto {
-  @ValidateEnum({ enum: ReactionType, name: 'ReactionType', description: 'Activity type (like or comment)' })
-  type!: ReactionType;
-
-  @ApiPropertyOptional({ description: 'Comment text (required if type is comment)' })
-  @ValidateIf(isComment)
-  @IsNotEmpty()
-  @IsString()
-  comment?: string;
-}
+const ActivityCreateSchema = ActivitySchema.extend({
+  type: ReactionTypeSchema,
+  assetId: z.uuidv4().describe('Asset ID (if activity is for an asset)').optional(),
+  comment: z.string().describe('Comment text (required if type is comment)').optional(),
+})
+  .refine((data) => data.type !== ReactionType.COMMENT || (data.comment && data.comment.trim() !== ''), {
+    message: 'Comment is required when type is COMMENT',
+    path: ['comment'],
+  })
+  .refine((data) => data.type === ReactionType.COMMENT || !data.comment, {
+    message: 'Comment must not be provided when type is not COMMENT',
+    path: ['comment'],
+  })
+  .describe('Activity create');
 
 export const mapActivity = (activity: Activity): ActivityResponseDto => {
+  const type = activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT;
+
+  if (type === ReactionType.COMMENT) {
+    return {
+      id: activity.id,
+      assetId: activity.assetId,
+      createdAt: new Date(activity.createdAt).toISOString(),
+      type: ReactionType.COMMENT,
+      user: {
+        id: activity.user.id,
+        name: activity.user.name,
+        email: activity.user.email,
+        profileImagePath: activity.user.profileImagePath,
+        avatarColor: activity.user.avatarColor ?? UserAvatarColor.Primary,
+        profileChangedAt: new Date(activity.user.profileChangedAt).toISOString(),
+      },
+      comment: activity.comment,
+    };
+  }
+
   return {
     id: activity.id,
     assetId: activity.assetId,
-    createdAt: activity.createdAt,
-    comment: activity.comment,
-    type: activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,
-    user: mapUser(activity.user),
+    createdAt: activity.createdAt.toISOString(),
+    type: ReactionType.LIKE,
+    user: {
+      id: activity.user.id,
+      name: activity.user.name,
+      email: activity.user.email,
+      profileImagePath: activity.user.profileImagePath,
+      avatarColor: activity.user.avatarColor ?? UserAvatarColor.Primary,
+      profileChangedAt: new Date(activity.user.profileChangedAt).toISOString(),
+    },
+    comment: null,
   };
 };
+
+export class ActivityResponseDto extends createZodDto(ActivityResponseSchema) {}
+export class ActivityCreateDto extends createZodDto(ActivityCreateSchema) {}
+export class ActivityIdParamDto extends createZodDto(ActivityIdParamSchema) {}
+export class ActivityDto extends createZodDto(ActivitySchema) {}
+export class ActivitySearchDto extends createZodDto(ActivitySearchSchema) {}
+export class ActivityStatisticsResponseDto extends createZodDto(ActivityStatisticsResponseSchema) {}

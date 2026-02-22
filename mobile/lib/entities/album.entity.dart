@@ -159,7 +159,7 @@ class Album {
     a.remoteAssetCount = dto.assetCount;
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.order != null) {
-      a.sortOrder = dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
+      a.sortOrder = dto.order!.value == 'asc' ? SortOrder.asc : SortOrder.desc;
     }
 
     if (dto.albumThumbnailAssetId != null) {

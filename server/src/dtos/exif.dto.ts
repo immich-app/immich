@@ -1,53 +1,36 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import { Exif } from 'src/database';
+import { z } from 'zod';
 
-export class ExifResponseDto {
-  @ApiPropertyOptional({ description: 'Camera make' })
-  make?: string | null = null;
-  @ApiPropertyOptional({ description: 'Camera model' })
-  model?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Image width in pixels' })
-  exifImageWidth?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Image height in pixels' })
-  exifImageHeight?: number | null = null;
+export const ExifResponseSchema = z
+  .object({
+    make: z.string().describe('Camera make').nullish(),
+    model: z.string().describe('Camera model').nullish(),
+    exifImageWidth: z.int().min(0).describe('Image width in pixels').nullish(),
+    exifImageHeight: z.int().min(0).describe('Image height in pixels').nullish(),
+    fileSizeInByte: z.int().min(0).describe('File size in bytes').nullish(),
+    orientation: z.string().describe('Image orientation').nullish(),
+    dateTimeOriginal: z.iso.datetime().describe('Original date/time').nullish(),
+    modifyDate: z.iso.datetime().describe('Modification date/time').nullish(),
+    timeZone: z.string().describe('Time zone').nullish(),
+    lensModel: z.string().describe('Lens model').nullish(),
+    fNumber: z.number().describe('F-number (aperture)').nullish(),
+    focalLength: z.number().describe('Focal length in mm').nullish(),
+    iso: z.number().describe('ISO sensitivity').nullish(),
+    exposureTime: z.string().describe('Exposure time').nullish(),
+    latitude: z.number().describe('GPS latitude').nullish(),
+    longitude: z.number().describe('GPS longitude').nullish(),
+    city: z.string().describe('City name').nullish(),
+    state: z.string().describe('State/province name').nullish(),
+    country: z.string().describe('Country name').nullish(),
+    description: z.string().describe('Image description').nullish(),
+    projectionType: z.string().describe('Projection type').nullish(),
+    rating: z.number().describe('Rating').nullish(),
+  })
+  .describe('EXIF response')
+  .meta({ id: 'ExifResponseDto' });
 
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'File size in bytes' })
-  fileSizeInByte?: number | null = null;
-  @ApiPropertyOptional({ description: 'Image orientation' })
-  orientation?: string | null = null;
-  @ApiPropertyOptional({ description: 'Original date/time', format: 'date-time' })
-  dateTimeOriginal?: Date | null = null;
-  @ApiPropertyOptional({ description: 'Modification date/time', format: 'date-time' })
-  modifyDate?: Date | null = null;
-  @ApiPropertyOptional({ description: 'Time zone' })
-  timeZone?: string | null = null;
-  @ApiPropertyOptional({ description: 'Lens model' })
-  lensModel?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'F-number (aperture)' })
-  fNumber?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Focal length in mm' })
-  focalLength?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'ISO sensitivity' })
-  iso?: number | null = null;
-  @ApiPropertyOptional({ description: 'Exposure time' })
-  exposureTime?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'GPS latitude' })
-  latitude?: number | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'GPS longitude' })
-  longitude?: number | null = null;
-  @ApiPropertyOptional({ description: 'City name' })
-  city?: string | null = null;
-  @ApiPropertyOptional({ description: 'State/province name' })
-  state?: string | null = null;
-  @ApiPropertyOptional({ description: 'Country name' })
-  country?: string | null = null;
-  @ApiPropertyOptional({ description: 'Image description' })
-  description?: string | null = null;
-  @ApiPropertyOptional({ description: 'Projection type' })
-  projectionType?: string | null = null;
-  @ApiPropertyOptional({ type: 'number', description: 'Rating' })
-  rating?: number | null = null;
-}
+export class ExifResponseDto extends createZodDto(ExifResponseSchema) {}
 
 export function mapExif(entity: Exif): ExifResponseDto {
   return {
@@ -57,8 +40,8 @@ export function mapExif(entity: Exif): ExifResponseDto {
     exifImageHeight: entity.exifImageHeight,
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
-    modifyDate: entity.modifyDate,
+    dateTimeOriginal: entity.dateTimeOriginal == null ? null : new Date(entity.dateTimeOriginal).toISOString(),
+    modifyDate: entity.modifyDate == null ? null : new Date(entity.modifyDate).toISOString(),
     timeZone: entity.timeZone,
     lensModel: entity.lensModel,
     fNumber: entity.fNumber,
@@ -80,7 +63,7 @@ export function mapSanitizedExif(entity: Exif): ExifResponseDto {
   return {
     fileSizeInByte: entity.fileSizeInByte ? Number.parseInt(entity.fileSizeInByte.toString()) : null,
     orientation: entity.orientation,
-    dateTimeOriginal: entity.dateTimeOriginal,
+    dateTimeOriginal: entity.dateTimeOriginal == null ? null : new Date(entity.dateTimeOriginal).toISOString(),
     timeZone: entity.timeZone,
     projectionType: entity.projectionType,
     exifImageWidth: entity.exifImageWidth,

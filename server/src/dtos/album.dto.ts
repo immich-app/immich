@@ -2,13 +2,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
+import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink, User } from 'src/database';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseSchema, MapAsset, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
-import { AlbumUserRole, AssetOrder } from 'src/enum';
+import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
+import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
+import z from 'zod';
 
 export class AlbumInfoDto {
   @ValidateBoolean({ optional: true, description: 'Exclude assets from response' })
@@ -126,68 +128,47 @@ export class UpdateAlbumUserDto {
   role!: AlbumUserRole;
 }
 
-export class AlbumUserResponseDto {
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  user!: UserResponseDto;
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', description: 'Album user role' })
-  role!: AlbumUserRole;
-}
+export const AlbumUserResponseSchema = z
+  .object({
+    user: UserResponseSchema,
+    role: AlbumUserRoleSchema,
+  })
+  .meta({ id: 'AlbumUserResponseDto' });
 
-export class ContributorCountResponseDto {
-  @ApiProperty({ description: 'User ID' })
-  userId!: string;
+export class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
-  @ApiProperty({ type: 'integer', description: 'Number of assets contributed' })
-  assetCount!: number;
-}
+export const ContributorCountResponseSchema = z
+  .object({
+    userId: z.string().describe('User ID'),
+    assetCount: z.int().min(0).describe('Number of assets contributed'),
+  })
+  .meta({ id: 'ContributorCountResponseDto' });
 
-export class AlbumResponseDto {
-  @ApiProperty({ description: 'Album ID' })
-  id!: string;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  @ApiProperty({ description: 'Album name' })
-  albumName!: string;
-  @ApiProperty({ description: 'Album description' })
-  description!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ApiProperty({ description: 'Thumbnail asset ID' })
-  albumThumbnailAssetId!: string | null;
-  @ApiProperty({ description: 'Is shared album' })
-  shared!: boolean;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  albumUsers!: AlbumUserResponseDto[];
-  @ApiProperty({ description: 'Has shared link' })
-  hasSharedLink!: boolean;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  assets!: AssetResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  owner!: UserResponseDto;
-  @ApiProperty({ type: 'integer', description: 'Number of assets' })
-  assetCount!: number;
-  @ApiPropertyOptional({ description: 'Last modified asset timestamp' })
-  lastModifiedAssetTimestamp?: Date;
-  @ApiPropertyOptional({ description: 'Start date (earliest asset)' })
-  startDate?: Date;
-  @ApiPropertyOptional({ description: 'End date (latest asset)' })
-  endDate?: Date;
-  @ApiProperty({ description: 'Activity feed enabled' })
-  isActivityEnabled!: boolean;
-  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', description: 'Asset sort order', optional: true })
-  order?: AssetOrder;
+export const AlbumResponseSchema = z
+  .object({
+    id: z.string().describe('Album ID'),
+    ownerId: z.string().describe('Owner user ID'),
+    albumName: z.string().describe('Album name'),
+    description: z.string().describe('Album description'),
+    createdAt: z.iso.datetime().describe('Creation date'),
+    updatedAt: z.iso.datetime().describe('Last update date'),
+    albumThumbnailAssetId: z.string().describe('Thumbnail asset ID').nullable(),
+    shared: z.boolean().describe('Is shared album'),
+    albumUsers: z.array(AlbumUserResponseSchema),
+    hasSharedLink: z.boolean().describe('Has shared link'),
+    assets: z.array(AssetResponseSchema),
+    owner: UserResponseSchema,
+    assetCount: z.int().min(0).describe('Number of assets'),
+    lastModifiedAssetTimestamp: z.iso.datetime().optional().describe('Last modified asset timestamp'),
+    startDate: z.iso.datetime().optional().describe('Start date (earliest asset)'),
+    endDate: z.iso.datetime().optional().describe('End date (latest asset)'),
+    isActivityEnabled: z.boolean().describe('Activity feed enabled'),
+    order: AssetOrderSchema.optional(),
+    contributorCounts: z.array(ContributorCountResponseSchema).optional(),
+  })
+  .meta({ id: 'AlbumResponseDto' });
 
-  // Description lives on schema to avoid duplication
-  @ApiPropertyOptional({ description: undefined })
-  @Type(() => ContributorCountResponseDto)
-  contributorCounts?: ContributorCountResponseDto[];
-}
+export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
 
 export type MapAlbumDto = {
   albumUsers?: AlbumUser[];
@@ -210,9 +191,8 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
 
   if (entity.albumUsers) {
     for (const albumUser of entity.albumUsers) {
-      const user = mapUser(albumUser.user);
       albumUsers.push({
-        user,
+        user: mapUser(albumUser.user),
         role: albumUser.role,
       });
     }
@@ -236,16 +216,16 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
     albumName: entity.albumName,
     description: entity.description,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
+    createdAt: new Date(entity.createdAt).toISOString(),
+    updatedAt: new Date(entity.updatedAt).toISOString(),
     id: entity.id,
     ownerId: entity.ownerId,
     owner: mapUser(entity.owner),
     albumUsers: albumUsersSorted,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
-    startDate,
-    endDate,
+    startDate: startDate == null ? undefined : new Date(startDate).toISOString(),
+    endDate: endDate == null ? undefined : new Date(endDate).toISOString(),
     assets: (withAssets ? assets : []).map((asset) => mapAsset(asset, { auth })),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,

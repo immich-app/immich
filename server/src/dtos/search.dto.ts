@@ -1,12 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
-import { AlbumResponseDto } from 'src/dtos/album.dto';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AlbumResponseSchema } from 'src/dtos/album.dto';
+import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
+import { z } from 'zod';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true, description: 'Library ID to filter by' })
@@ -325,77 +327,78 @@ export class SearchSuggestionRequestDto {
   includeNull?: boolean;
 }
 
-class SearchFacetCountResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Number of assets with this facet value' })
-  count!: number;
-  @ApiProperty({ description: 'Facet value' })
-  value!: string;
-}
+export const SearchFacetCountResponseSchema = z
+  .object({
+    count: z.int().min(0).describe('Number of assets with this facet value'),
+    value: z.string().describe('Facet value'),
+  })
+  .meta({ id: 'SearchFacetCountResponseDto' });
 
-class SearchFacetResponseDto {
-  @ApiProperty({ description: 'Facet field name' })
-  fieldName!: string;
-  @ApiProperty({ description: 'Facet counts' })
-  counts!: SearchFacetCountResponseDto[];
-}
+export class SearchFacetCountResponseDto extends createZodDto(SearchFacetCountResponseSchema) {}
 
-class SearchAlbumResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Total number of matching albums' })
-  total!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of albums in this page' })
-  count!: number;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  items!: AlbumResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  facets!: SearchFacetResponseDto[];
-}
+export const SearchFacetResponseSchema = z
+  .object({
+    fieldName: z.string().describe('Facet field name'),
+    counts: z.array(SearchFacetCountResponseSchema),
+  })
+  .meta({ id: 'SearchFacetResponseDto' });
 
-class SearchAssetResponseDto {
-  @ApiProperty({ type: 'integer', description: 'Total number of matching assets' })
-  total!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of assets in this page' })
-  count!: number;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  items!: AssetResponseDto[];
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  facets!: SearchFacetResponseDto[];
-  @ApiProperty({ description: 'Next page token' })
-  nextPage!: string | null;
-}
+export class SearchFacetResponseDto extends createZodDto(SearchFacetResponseSchema) {}
 
-export class SearchResponseDto {
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  albums!: SearchAlbumResponseDto;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  assets!: SearchAssetResponseDto;
-}
+export const SearchAlbumResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of matching albums'),
+    count: z.int().min(0).describe('Number of albums in this page'),
+    items: z.array(AlbumResponseSchema),
+    facets: z.array(SearchFacetResponseSchema),
+  })
+  .meta({ id: 'SearchAlbumResponseDto' });
+
+export class SearchAlbumResponseDto extends createZodDto(SearchAlbumResponseSchema) {}
+
+export const SearchAssetResponseSchema = z
+  .object({
+    total: z.int().min(0).describe('Total number of matching assets'),
+    count: z.int().min(0).describe('Number of assets in this page'),
+    items: z.array(AssetResponseSchema),
+    facets: z.array(SearchFacetResponseSchema),
+    nextPage: z.string().describe('Next page token').nullable(),
+  })
+  .meta({ id: 'SearchAssetResponseDto' });
+
+export class SearchAssetResponseDto extends createZodDto(SearchAssetResponseSchema) {}
+
+export const SearchResponseSchema = z
+  .object({
+    albums: SearchAlbumResponseSchema,
+    assets: SearchAssetResponseSchema,
+  })
+  .meta({ id: 'SearchResponseDto' });
+
+export class SearchResponseDto extends createZodDto(SearchResponseSchema) {}
 
 export class SearchStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of matching assets' })
   total!: number;
 }
 
-class SearchExploreItem {
-  @ApiProperty({ description: 'Explore value' })
-  value!: string;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  data!: AssetResponseDto;
-}
+export const SearchExploreItemSchema = z
+  .object({
+    value: z.string().describe('Explore value'),
+    data: AssetResponseSchema,
+  })
+  .meta({ id: 'SearchExploreItem' });
 
-export class SearchExploreResponseDto {
-  @ApiProperty({ description: 'Explore field name' })
-  fieldName!: string;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  items!: SearchExploreItem[];
-}
+export class SearchExploreItem extends createZodDto(SearchExploreItemSchema) {}
+
+export const SearchExploreResponseSchema = z
+  .object({
+    fieldName: z.string().describe('Explore field name'),
+    items: z.array(SearchExploreItemSchema),
+  })
+  .meta({ id: 'SearchExploreResponseDto' });
+
+export class SearchExploreResponseDto extends createZodDto(SearchExploreResponseSchema) {}
 
 export class MemoryLaneDto {
   @ApiProperty({ type: 'integer', description: 'Day of month' })

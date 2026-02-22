@@ -1,69 +1,63 @@
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
-import { UserAdminCreateDto, UserUpdateMeDto } from 'src/dtos/user.dto';
+import { UserAdminCreateSchema, UserUpdateMeSchema } from 'src/dtos/user.dto';
 
 describe('update user DTO', () => {
-  it('should allow emails without a tld', async () => {
+  it('should allow emails without a tld', () => {
     const someEmail = 'test@test';
-
-    const dto = plainToInstance(UserUpdateMeDto, {
+    const result = UserUpdateMeSchema.safeParse({
       email: someEmail,
       id: '3fe388e4-2078-44d7-b36c-39d9dee3a657',
     });
-    const errors = await validate(dto);
-    expect(errors).toHaveLength(0);
-    expect(dto.email).toEqual(someEmail);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toEqual(someEmail);
+    }
   });
 });
 
 describe('create user DTO', () => {
-  it('validates the email', async () => {
-    const params: Partial<UserAdminCreateDto> = {
-      email: undefined,
+  it('validates the email', () => {
+    expect(UserAdminCreateSchema.safeParse({ password: 'password', name: 'name' }).success).toBe(false);
+
+    expect(
+      UserAdminCreateSchema.safeParse({ email: 'invalid email', password: 'password', name: 'name' }).success,
+    ).toBe(false);
+
+    const result = UserAdminCreateSchema.safeParse({
+      email: 'valid@email.com',
       password: 'password',
       name: 'name',
-    };
-    let dto: UserAdminCreateDto = plainToInstance(UserAdminCreateDto, params);
-    let errors = await validate(dto);
-    expect(errors).toHaveLength(1);
-
-    params.email = 'invalid email';
-    dto = plainToInstance(UserAdminCreateDto, params);
-    errors = await validate(dto);
-    expect(errors).toHaveLength(1);
-
-    params.email = 'valid@email.com';
-    dto = plainToInstance(UserAdminCreateDto, params);
-    errors = await validate(dto);
-    expect(errors).toHaveLength(0);
+    });
+    expect(result.success).toBe(true);
   });
 
-  it('validates invalid email type', async () => {
-    let dto = plainToInstance(UserAdminCreateDto, {
-      email: [],
-      password: 'some password',
-      name: 'some name',
-    });
-    expect(await validate(dto)).toHaveLength(1);
+  it('validates invalid email type', () => {
+    expect(
+      UserAdminCreateSchema.safeParse({
+        email: [],
+        password: 'some password',
+        name: 'some name',
+      }).success,
+    ).toBe(false);
 
-    dto = plainToInstance(UserAdminCreateDto, {
-      email: {},
-      password: 'some password',
-      name: 'some name',
-    });
-    expect(await validate(dto)).toHaveLength(1);
+    expect(
+      UserAdminCreateSchema.safeParse({
+        email: {},
+        password: 'some password',
+        name: 'some name',
+      }).success,
+    ).toBe(false);
   });
 
-  it('should allow emails without a tld', async () => {
+  it('should allow emails without a tld', () => {
     const someEmail = 'test@test';
-
-    const dto = plainToInstance(UserAdminCreateDto, {
+    const result = UserAdminCreateSchema.safeParse({
       email: someEmail,
       password: 'some password',
       name: 'some name',
     });
-    const errors = await validate(dto);
-    expect(errors).toHaveLength(0);
-    expect(dto.email).toEqual(someEmail);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toEqual(someEmail);
+    }
   });
 });

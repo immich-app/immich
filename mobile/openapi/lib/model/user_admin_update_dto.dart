@@ -24,8 +24,7 @@ class UserAdminUpdateDto {
     this.storageLabel,
   });
 
-  /// Avatar color
-  UserAvatarColor? avatarColor;
+  UserAdminUpdateDtoAvatarColorEnum? avatarColor;
 
   /// User email
   ///
@@ -69,6 +68,7 @@ class UserAdminUpdateDto {
   /// Storage quota in bytes
   ///
   /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int? quotaSizeInBytes;
 
   /// Require password change on next login
@@ -170,7 +170,7 @@ class UserAdminUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminUpdateDto(
-        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
+        avatarColor: UserAdminUpdateDtoAvatarColorEnum.fromJson(json[r'avatarColor']),
         email: mapValueOfType<String>(json, r'email'),
         isAdmin: mapValueOfType<bool>(json, r'isAdmin'),
         name: mapValueOfType<String>(json, r'name'),
@@ -228,4 +228,102 @@ class UserAdminUpdateDto {
   static const requiredKeys = <String>{
   };
 }
+
+
+class UserAdminUpdateDtoAvatarColorEnum {
+  /// Instantiate a new enum with the provided [value].
+  const UserAdminUpdateDtoAvatarColorEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const primary = UserAdminUpdateDtoAvatarColorEnum._(r'primary');
+  static const pink = UserAdminUpdateDtoAvatarColorEnum._(r'pink');
+  static const red = UserAdminUpdateDtoAvatarColorEnum._(r'red');
+  static const yellow = UserAdminUpdateDtoAvatarColorEnum._(r'yellow');
+  static const blue = UserAdminUpdateDtoAvatarColorEnum._(r'blue');
+  static const green = UserAdminUpdateDtoAvatarColorEnum._(r'green');
+  static const purple = UserAdminUpdateDtoAvatarColorEnum._(r'purple');
+  static const orange = UserAdminUpdateDtoAvatarColorEnum._(r'orange');
+  static const gray = UserAdminUpdateDtoAvatarColorEnum._(r'gray');
+  static const amber = UserAdminUpdateDtoAvatarColorEnum._(r'amber');
+
+  /// List of all possible values in this [enum][UserAdminUpdateDtoAvatarColorEnum].
+  static const values = <UserAdminUpdateDtoAvatarColorEnum>[
+    primary,
+    pink,
+    red,
+    yellow,
+    blue,
+    green,
+    purple,
+    orange,
+    gray,
+    amber,
+  ];
+
+  static UserAdminUpdateDtoAvatarColorEnum? fromJson(dynamic value) => UserAdminUpdateDtoAvatarColorEnumTypeTransformer().decode(value);
+
+  static List<UserAdminUpdateDtoAvatarColorEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <UserAdminUpdateDtoAvatarColorEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = UserAdminUpdateDtoAvatarColorEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [UserAdminUpdateDtoAvatarColorEnum] to String,
+/// and [decode] dynamic data back to [UserAdminUpdateDtoAvatarColorEnum].
+class UserAdminUpdateDtoAvatarColorEnumTypeTransformer {
+  factory UserAdminUpdateDtoAvatarColorEnumTypeTransformer() => _instance ??= const UserAdminUpdateDtoAvatarColorEnumTypeTransformer._();
+
+  const UserAdminUpdateDtoAvatarColorEnumTypeTransformer._();
+
+  String encode(UserAdminUpdateDtoAvatarColorEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a UserAdminUpdateDtoAvatarColorEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  UserAdminUpdateDtoAvatarColorEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'primary': return UserAdminUpdateDtoAvatarColorEnum.primary;
+        case r'pink': return UserAdminUpdateDtoAvatarColorEnum.pink;
+        case r'red': return UserAdminUpdateDtoAvatarColorEnum.red;
+        case r'yellow': return UserAdminUpdateDtoAvatarColorEnum.yellow;
+        case r'blue': return UserAdminUpdateDtoAvatarColorEnum.blue;
+        case r'green': return UserAdminUpdateDtoAvatarColorEnum.green;
+        case r'purple': return UserAdminUpdateDtoAvatarColorEnum.purple;
+        case r'orange': return UserAdminUpdateDtoAvatarColorEnum.orange;
+        case r'gray': return UserAdminUpdateDtoAvatarColorEnum.gray;
+        case r'amber': return UserAdminUpdateDtoAvatarColorEnum.amber;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [UserAdminUpdateDtoAvatarColorEnumTypeTransformer] instance.
+  static UserAdminUpdateDtoAvatarColorEnumTypeTransformer? _instance;
+}
+
 

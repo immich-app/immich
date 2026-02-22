@@ -157,9 +157,6 @@ String parameterToString(dynamic value) {
   if (value is SharedLinkType) {
     return SharedLinkTypeTypeTransformer().encode(value).toString();
   }
-  if (value is SourceType) {
-    return SourceTypeTypeTransformer().encode(value).toString();
-  }
   if (value is StorageFolder) {
     return StorageFolderTypeTransformer().encode(value).toString();
   }
@@ -183,9 +180,6 @@ String parameterToString(dynamic value) {
   }
   if (value is UserMetadataKey) {
     return UserMetadataKeyTypeTransformer().encode(value).toString();
-  }
-  if (value is UserStatus) {
-    return UserStatusTypeTransformer().encode(value).toString();
   }
   if (value is VideoCodec) {
     return VideoCodecTypeTransformer().encode(value).toString();

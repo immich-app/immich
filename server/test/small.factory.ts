@@ -561,6 +561,7 @@ export const factory = {
       error: 'Bad Request',
       statusCode: 400,
       message: message ?? expect.anything(),
+      correlationId: expect.any(String),
     }),
   },
 };

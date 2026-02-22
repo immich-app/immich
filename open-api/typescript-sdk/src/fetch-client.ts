@@ -15,7 +15,6 @@ export const servers = {
     server1: "/api"
 };
 export type UserResponseDto = {
-    /** Avatar color */
     avatarColor: UserAvatarColor;
     /** User email */
     email: string;
@@ -37,7 +36,6 @@ export type ActivityResponseDto = {
     createdAt: string;
     /** Activity ID */
     id: string;
-    /** Activity type */
     "type": ReactionType;
     user: UserResponseDto;
 };
@@ -48,7 +46,6 @@ export type ActivityCreateDto = {
     assetId?: string;
     /** Comment text (required if type is comment) */
     comment?: string;
-    /** Activity type (like or comment) */
     "type": ReactionType;
 };
 export type ActivityStatisticsResponseDto = {
@@ -181,11 +178,10 @@ export type UserLicense = {
     activatedAt: string;
     /** Activation key */
     activationKey: string;
-    /** License key */
+    /** License key (format: /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/) */
     licenseKey: string;
 };
 export type UserAdminResponseDto = {
-    /** Avatar color */
     avatarColor: UserAvatarColor;
     /** Creation date */
     createdAt: string;
@@ -197,8 +193,7 @@ export type UserAdminResponseDto = {
     id: string;
     /** Is admin user */
     isAdmin: boolean;
-    /** User license */
-    license: (UserLicense) | null;
+    license: UserLicense;
     /** User name */
     name: string;
     /** OAuth ID */
@@ -221,8 +216,7 @@ export type UserAdminResponseDto = {
     updatedAt: string;
 };
 export type UserAdminCreateDto = {
-    /** Avatar color */
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email: string;
     /** Grant admin privileges */
@@ -247,8 +241,7 @@ export type UserAdminDeleteDto = {
     force?: boolean;
 };
 export type UserAdminUpdateDto = {
-    /** Avatar color */
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** Grant admin privileges */
@@ -523,7 +516,6 @@ export type PersonWithFacesResponseDto = {
     birthDate: string | null;
     /** Person color (hex) */
     color?: string;
-    /** Face detections */
     faces: AssetFaceWithoutPersonResponseDto[];
     /** Person ID */
     id: string;
@@ -614,7 +606,7 @@ export type AssetResponseDto = {
     people?: PersonWithFacesResponseDto[];
     /** Is resized */
     resized?: boolean;
-    stack?: (AssetStackResponseDto) | null;
+    stack?: AssetStackResponseDto;
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation */
     thumbhash: string | null;
@@ -1161,7 +1153,6 @@ export type DownloadResponseDto = {
     totalSize: number;
 };
 export type DuplicateResponseDto = {
-    /** Duplicate assets */
     assets: AssetResponseDto[];
     /** Duplicate group ID */
     duplicateId: string;
@@ -1199,8 +1190,7 @@ export type AssetFaceResponseDto = {
     imageHeight: number;
     /** Image width in pixels */
     imageWidth: number;
-    /** Person associated with face */
-    person: (PersonResponseDto) | null;
+    person: PersonResponseDto;
     /** Face detection source type */
     sourceType?: SourceType;
 };
@@ -1405,6 +1395,7 @@ export type MemoryResponseDto = {
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
+    /** Memory type-specific data */
     data: OnThisDayDto;
     /** Is memory saved */
     isSaved?: boolean;
@@ -1462,7 +1453,6 @@ export type OAuthCallbackDto = {
     url: string;
 };
 export type PartnerResponseDto = {
-    /** Avatar color */
     avatarColor: UserAvatarColor;
     /** User email */
     email: string;
@@ -1490,7 +1480,6 @@ export type PeopleResponseDto = {
     hasNextPage?: boolean;
     /** Number of hidden people */
     hidden: number;
-    /** List of people */
     people: PersonResponseDto[];
     /** Total number of people */
     total: number;
@@ -1751,7 +1740,6 @@ export type SearchFacetCountResponseDto = {
     value: string;
 };
 export type SearchFacetResponseDto = {
-    /** Facet counts */
     counts: SearchFacetCountResponseDto[];
     /** Facet field name */
     fieldName: string;
@@ -2324,7 +2312,6 @@ export type AssetIdsResponseDto = {
     success: boolean;
 };
 export type StackResponseDto = {
-    /** Stack assets */
     assets: AssetResponseDto[];
     /** Stack ID */
     id: string;
@@ -2364,7 +2351,6 @@ export type AssetDeltaSyncResponseDto = {
     deleted: string[];
     /** Whether full sync is needed */
     needsFullSync: boolean;
-    /** Upserted assets */
     upserted: AssetResponseDto[];
 };
 export type AssetFullSyncDto = {
@@ -2798,8 +2784,7 @@ export type TrashResponseDto = {
     count: number;
 };
 export type UserUpdateMeDto = {
-    /** Avatar color */
-    avatarColor?: (UserAvatarColor) | null;
+    avatarColor?: UserAvatarColor | null;
     /** User email */
     email?: string;
     /** User name */

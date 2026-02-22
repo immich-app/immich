@@ -89,7 +89,7 @@ describe(MemoryService.name, () => {
         sut.create(factory.auth({ user: { id: userId } }), {
           type: memory.type,
           data: memory.data as OnThisDayData,
-          memoryAt: memory.memoryAt,
+          memoryAt: (memory.memoryAt as Date).toISOString(),
           isSaved: memory.isSaved,
           assetIds: [assetId],
         }),
@@ -100,7 +100,7 @@ describe(MemoryService.name, () => {
           type: memory.type,
           data: memory.data,
           ownerId: memory.ownerId,
-          memoryAt: memory.memoryAt,
+          memoryAt: (memory.memoryAt as Date).toISOString(),
           isSaved: memory.isSaved,
         },
         new Set(),
@@ -120,7 +120,7 @@ describe(MemoryService.name, () => {
           type: memory.type,
           data: memory.data as OnThisDayData,
           assetIds: memory.assets.map((asset) => asset.id),
-          memoryAt: memory.memoryAt,
+          memoryAt: (memory.memoryAt as Date).toISOString(),
         }),
       ).resolves.toBeDefined();
 
@@ -139,7 +139,7 @@ describe(MemoryService.name, () => {
         sut.create(factory.auth(), {
           type: memory.type,
           data: memory.data as OnThisDayData,
-          memoryAt: memory.memoryAt,
+          memoryAt: (memory.memoryAt as Date).toISOString(),
         }),
       ).resolves.toBeDefined();
     });

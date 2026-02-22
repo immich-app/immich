@@ -48,7 +48,7 @@ class MemoryCreateDto {
   DateTime? seenAt;
 
   /// Memory type
-  MemoryType type;
+  MemoryCreateDtoTypeEnum type;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryCreateDto &&
@@ -81,9 +81,13 @@ class MemoryCreateDto {
     } else {
     //  json[r'isSaved'] = null;
     }
-      json[r'memoryAt'] = this.memoryAt.toUtc().toIso8601String();
+      json[r'memoryAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.memoryAt.millisecondsSinceEpoch
+        : this.memoryAt.toUtc().toIso8601String();
     if (this.seenAt != null) {
-      json[r'seenAt'] = this.seenAt!.toUtc().toIso8601String();
+      json[r'seenAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.seenAt!.millisecondsSinceEpoch
+        : this.seenAt!.toUtc().toIso8601String();
     } else {
     //  json[r'seenAt'] = null;
     }
@@ -105,9 +109,9 @@ class MemoryCreateDto {
             : const [],
         data: OnThisDayDto.fromJson(json[r'data'])!,
         isSaved: mapValueOfType<bool>(json, r'isSaved'),
-        memoryAt: mapDateTime(json, r'memoryAt', r'')!,
-        seenAt: mapDateTime(json, r'seenAt', r''),
-        type: MemoryType.fromJson(json[r'type'])!,
+        memoryAt: mapDateTime(json, r'memoryAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
+        seenAt: mapDateTime(json, r'seenAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        type: MemoryCreateDtoTypeEnum.fromJson(json[r'type'])!,
       );
     }
     return null;
@@ -160,4 +164,75 @@ class MemoryCreateDto {
     'type',
   };
 }
+
+/// Memory type
+class MemoryCreateDtoTypeEnum {
+  /// Instantiate a new enum with the provided [value].
+  const MemoryCreateDtoTypeEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final String value;
+
+  @override
+  String toString() => value;
+
+  String toJson() => value;
+
+  static const onThisDay = MemoryCreateDtoTypeEnum._(r'on_this_day');
+
+  /// List of all possible values in this [enum][MemoryCreateDtoTypeEnum].
+  static const values = <MemoryCreateDtoTypeEnum>[
+    onThisDay,
+  ];
+
+  static MemoryCreateDtoTypeEnum? fromJson(dynamic value) => MemoryCreateDtoTypeEnumTypeTransformer().decode(value);
+
+  static List<MemoryCreateDtoTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <MemoryCreateDtoTypeEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = MemoryCreateDtoTypeEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [MemoryCreateDtoTypeEnum] to String,
+/// and [decode] dynamic data back to [MemoryCreateDtoTypeEnum].
+class MemoryCreateDtoTypeEnumTypeTransformer {
+  factory MemoryCreateDtoTypeEnumTypeTransformer() => _instance ??= const MemoryCreateDtoTypeEnumTypeTransformer._();
+
+  const MemoryCreateDtoTypeEnumTypeTransformer._();
+
+  String encode(MemoryCreateDtoTypeEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a MemoryCreateDtoTypeEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  MemoryCreateDtoTypeEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case r'on_this_day': return MemoryCreateDtoTypeEnum.onThisDay;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [MemoryCreateDtoTypeEnumTypeTransformer] instance.
+  static MemoryCreateDtoTypeEnumTypeTransformer? _instance;
+}
+
 

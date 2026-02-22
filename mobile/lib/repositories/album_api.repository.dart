@@ -139,7 +139,7 @@ class AlbumApiRepository extends ApiRepository {
       description: dto.description,
       endDate: dto.endDate,
       activityEnabled: dto.isActivityEnabled,
-      sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
+      sortOrder: dto.order?.value == 'asc' ? SortOrder.asc : SortOrder.desc,
     );
     album.remoteAssetCount = dto.assetCount;
     album.owner.value = entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
@@ -162,7 +162,7 @@ class AlbumApiRepository extends ApiRepository {
       updatedAt: dto.updatedAt,
       thumbnailAssetId: dto.albumThumbnailAssetId,
       isActivityEnabled: dto.isActivityEnabled,
-      order: dto.order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      order: dto.order?.value == 'asc' ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: dto.assetCount,
       ownerName: dto.owner.name,
       isShared: dto.albumUsers.length > 2,

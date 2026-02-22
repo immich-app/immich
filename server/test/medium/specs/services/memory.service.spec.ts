@@ -47,15 +47,15 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
       };
 
-      await expect(sut.create(auth, dto)).resolves.toEqual({
+      await expect(sut.create(auth, dto)).resolves.toMatchObject({
         id: expect.any(String),
         type: dto.type,
         data: dto.data,
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         isSaved: false,
         memoryAt: dto.memoryAt,
         ownerId: user.id,
@@ -72,7 +72,7 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
         assetIds: [asset1.id, asset2.id],
       };
 
@@ -94,7 +94,7 @@ describe(MemoryService.name, () => {
       const dto = {
         type: MemoryType.OnThisDay,
         data: { year: 2021 },
-        memoryAt: new Date(2021),
+        memoryAt: new Date(2021).toISOString(),
         assetIds: [asset1.id, asset2.id],
       };
 

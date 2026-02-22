@@ -1,64 +1,46 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { User, UserAdmin } from 'src/database';
-import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
+import { UserAvatarColor, UserAvatarColorSchema, UserMetadataKey, UserStatusSchema } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
-import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
+import { z } from 'zod';
 
-export class UserUpdateMeDto {
-  @ApiPropertyOptional({ description: 'User email' })
-  @Optional()
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email?: string;
-
-  // TODO: migrate to the other change password endpoint
-  @ApiPropertyOptional({ description: 'User password (deprecated, use change password endpoint)' })
-  @Optional()
-  @IsNotEmpty()
-  @IsString()
-  password?: string;
-
-  @ApiPropertyOptional({ description: 'User name' })
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @ValidateEnum({
-    enum: UserAvatarColor,
-    name: 'UserAvatarColor',
-    optional: true,
-    nullable: true,
-    description: 'Avatar color',
+export const UserUpdateMeSchema = z
+  .object({
+    email: z.email({ pattern: z.regexes.html5Email }).optional().describe('User email'),
+    password: z
+      .string()
+      .optional()
+      .describe('User password (deprecated, use change password endpoint)')
+      .meta({ deprecated: true }),
+    name: z.string().optional().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
   })
-  avatarColor?: UserAvatarColor | null;
-}
+  .meta({ id: 'UserUpdateMeDto' });
 
-export class UserResponseDto {
-  @ApiProperty({ description: 'User ID' })
-  id!: string;
-  @ApiProperty({ description: 'User name' })
-  name!: string;
-  @ApiProperty({ description: 'User email' })
-  email!: string;
-  @ApiProperty({ description: 'Profile image path' })
-  profileImagePath!: string;
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', description: 'Avatar color' })
-  avatarColor!: UserAvatarColor;
-  @ApiProperty({ description: 'Profile change date' })
-  profileChangedAt!: Date;
-}
+export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 
-export class UserLicense {
-  @ApiProperty({ description: 'License key' })
-  licenseKey!: string;
-  @ApiProperty({ description: 'Activation key' })
-  activationKey!: string;
-  @ApiProperty({ description: 'Activation date' })
-  activatedAt!: Date;
-}
+export const UserResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('User ID'),
+    name: z.string().describe('User name'),
+    email: z.string().describe('User email'),
+    profileImagePath: z.string().describe('Profile image path'),
+    avatarColor: UserAvatarColorSchema,
+    profileChangedAt: z.iso.datetime().describe('Profile change date'),
+  })
+  .meta({ id: 'UserResponseDto' });
+
+export class UserResponseDto extends createZodDto(UserResponseSchema) {}
+
+const licenseKeyRegex = /^IM(SV|CL)(-[\dA-Za-z]{4}){8}$/;
+
+export const UserLicenseSchema = z
+  .object({
+    licenseKey: z.string().regex(licenseKeyRegex).describe(`License key (format: ${licenseKeyRegex.toString()})`),
+    activationKey: z.string().describe('Activation key'),
+    activatedAt: z.iso.datetime().describe('Activation date'),
+  })
+  .meta({ id: 'UserLicense' });
 
 const emailToAvatarColor = (email: string): UserAvatarColor => {
   const values = Object.values(UserAvatarColor);
@@ -75,148 +57,77 @@ export const mapUser = (entity: User | UserAdmin): UserResponseDto => {
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
-    profileChangedAt: entity.profileChangedAt,
+    profileChangedAt: new Date(entity.profileChangedAt).toISOString(),
   };
 };
 
-export class UserAdminSearchDto {
-  @ValidateBoolean({ optional: true, description: 'Include deleted users' })
-  withDeleted?: boolean;
-
-  @ValidateUUID({ optional: true, description: 'User ID filter' })
-  id?: string;
-}
-
-export class UserAdminCreateDto {
-  @ApiProperty({ description: 'User email' })
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email!: string;
-
-  @ApiProperty({ description: 'User password' })
-  @IsString()
-  password!: string;
-
-  @ApiProperty({ description: 'User name' })
-  @IsNotEmpty()
-  @IsString()
-  name!: string;
-
-  @ValidateEnum({
-    enum: UserAvatarColor,
-    name: 'UserAvatarColor',
-    optional: true,
-    nullable: true,
-    description: 'Avatar color',
+export const UserAdminSearchSchema = z
+  .object({
+    withDeleted: z.coerce.boolean().optional().describe('Include deleted users'),
+    id: z.uuidv4().optional().describe('User ID filter'),
   })
-  avatarColor?: UserAvatarColor | null;
+  .meta({ id: 'UserAdminSearchDto' });
 
-  @ApiPropertyOptional({ description: 'PIN code' })
-  @PinCode({ optional: true, nullable: true, emptyToNull: true })
-  pinCode?: string | null;
+export class UserAdminSearchDto extends createZodDto(UserAdminSearchSchema) {}
 
-  @ApiPropertyOptional({ description: 'Storage label' })
-  @Optional({ nullable: true })
-  @IsString()
-  @Transform(toSanitized)
-  storageLabel?: string | null;
+const pinCodeRegex = /^\d{6}$/;
 
-  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
-  @Optional({ nullable: true })
-  @IsInt()
-  @Min(0)
-  quotaSizeInBytes?: number | null;
-
-  @ValidateBoolean({ optional: true, description: 'Require password change on next login' })
-  shouldChangePassword?: boolean;
-
-  @ValidateBoolean({ optional: true, description: 'Send notification email' })
-  notify?: boolean;
-
-  @ValidateBoolean({ optional: true, description: 'Grant admin privileges' })
-  isAdmin?: boolean;
-}
-
-export class UserAdminUpdateDto {
-  @ApiPropertyOptional({ description: 'User email' })
-  @Optional()
-  @IsEmail({ require_tld: false })
-  @Transform(toEmail)
-  email?: string;
-
-  @ApiPropertyOptional({ description: 'User password' })
-  @Optional()
-  @IsNotEmpty()
-  @IsString()
-  password?: string;
-
-  @ApiPropertyOptional({ description: 'PIN code' })
-  @PinCode({ optional: true, nullable: true, emptyToNull: true })
-  pinCode?: string | null;
-
-  @ApiPropertyOptional({ description: 'User name' })
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @ValidateEnum({
-    enum: UserAvatarColor,
-    name: 'UserAvatarColor',
-    optional: true,
-    nullable: true,
-    description: 'Avatar color',
+export const UserAdminCreateSchema = z
+  .object({
+    email: z.email({ pattern: z.regexes.html5Email }).describe('User email'),
+    password: z.string().describe('User password'),
+    name: z.string().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
+    pinCode: z.string().regex(pinCodeRegex).describe('PIN code').nullish(),
+    storageLabel: z.string().describe('Storage label').nullish(),
+    quotaSizeInBytes: z.int().min(0).describe('Storage quota in bytes').nullish(),
+    shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
+    notify: z.boolean().optional().describe('Send notification email'),
+    isAdmin: z.boolean().optional().describe('Grant admin privileges'),
   })
-  avatarColor?: UserAvatarColor | null;
+  .meta({ id: 'UserAdminCreateDto' });
 
-  @ApiPropertyOptional({ description: 'Storage label' })
-  @Optional({ nullable: true })
-  @IsString()
-  @Transform(toSanitized)
-  storageLabel?: string | null;
+export class UserAdminCreateDto extends createZodDto(UserAdminCreateSchema) {}
 
-  @ValidateBoolean({ optional: true, description: 'Require password change on next login' })
-  shouldChangePassword?: boolean;
+export const UserAdminUpdateSchema = z
+  .object({
+    email: z.email({ pattern: z.regexes.html5Email }).optional().describe('User email'),
+    password: z.string().optional().describe('User password'),
+    pinCode: z.string().regex(pinCodeRegex).describe('PIN code').nullish(),
+    name: z.string().optional().describe('User name'),
+    avatarColor: UserAvatarColorSchema.nullish(),
+    storageLabel: z.string().describe('Storage label').nullish(),
+    shouldChangePassword: z.boolean().optional().describe('Require password change on next login'),
+    quotaSizeInBytes: z.int().min(0).describe('Storage quota in bytes').nullish(),
+    isAdmin: z.boolean().optional().describe('Grant admin privileges'),
+  })
+  .meta({ id: 'UserAdminUpdateDto' });
 
-  @ApiPropertyOptional({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
-  @Optional({ nullable: true })
-  @IsInt()
-  @Min(0)
-  quotaSizeInBytes?: number | null;
+export class UserAdminUpdateDto extends createZodDto(UserAdminUpdateSchema) {}
 
-  @ValidateBoolean({ optional: true, description: 'Grant admin privileges' })
-  isAdmin?: boolean;
-}
+export const UserAdminDeleteSchema = z
+  .object({
+    force: z.boolean().optional().describe('Force delete even if user has assets'),
+  })
+  .meta({ id: 'UserAdminDeleteDto' });
 
-export class UserAdminDeleteDto {
-  @ValidateBoolean({ optional: true, description: 'Force delete even if user has assets' })
-  force?: boolean;
-}
+export class UserAdminDeleteDto extends createZodDto(UserAdminDeleteSchema) {}
 
-export class UserAdminResponseDto extends UserResponseDto {
-  @ApiProperty({ description: 'Storage label' })
-  storageLabel!: string | null;
-  @ApiProperty({ description: 'Require password change on next login' })
-  shouldChangePassword!: boolean;
-  @ApiProperty({ description: 'Is admin user' })
-  isAdmin!: boolean;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Deletion date' })
-  deletedAt!: Date | null;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ApiProperty({ description: 'OAuth ID' })
-  oauthId!: string;
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage quota in bytes' })
-  quotaSizeInBytes!: number | null;
-  @ApiProperty({ type: 'integer', format: 'int64', description: 'Storage usage in bytes' })
-  quotaUsageInBytes!: number | null;
-  @ValidateEnum({ enum: UserStatus, name: 'UserStatus', description: 'User status' })
-  status!: string;
-  @ApiProperty({ description: 'User license' })
-  license!: UserLicense | null;
-}
+export const UserAdminResponseSchema = UserResponseSchema.extend({
+  storageLabel: z.string().describe('Storage label').nullable(),
+  shouldChangePassword: z.boolean().describe('Require password change on next login'),
+  isAdmin: z.boolean().describe('Is admin user'),
+  createdAt: z.iso.datetime().describe('Creation date'),
+  deletedAt: z.iso.datetime().describe('Deletion date').nullable(),
+  updatedAt: z.iso.datetime().describe('Last update date'),
+  oauthId: z.string().describe('OAuth ID'),
+  quotaSizeInBytes: z.int().min(0).describe('Storage quota in bytes').nullable(),
+  quotaUsageInBytes: z.int().min(0).describe('Storage usage in bytes').nullable(),
+  status: UserStatusSchema,
+  license: UserLicenseSchema.nullable(),
+}).meta({ id: 'UserAdminResponseDto' });
+
+export class UserAdminResponseDto extends createZodDto(UserAdminResponseSchema) {}
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
   const metadata = entity.metadata || [];
@@ -229,13 +140,13 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     storageLabel: entity.storageLabel,
     shouldChangePassword: entity.shouldChangePassword,
     isAdmin: entity.isAdmin,
-    createdAt: entity.createdAt,
-    deletedAt: entity.deletedAt,
-    updatedAt: entity.updatedAt,
+    createdAt: new Date(entity.createdAt).toISOString(),
+    deletedAt: entity.deletedAt == null ? null : new Date(entity.deletedAt).toISOString(),
+    updatedAt: new Date(entity.updatedAt).toISOString(),
     oauthId: entity.oauthId,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
-    license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
-  };
+    license: license ? { ...license, activatedAt: new Date(license?.activatedAt).toISOString() } : null,
+  } as UserAdminResponseDto;
 }

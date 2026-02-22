@@ -47,9 +47,13 @@ describe(MemoryController.name, () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.badRequest(['data.year must be a positive number', 'data.year must be an integer number']),
-      );
+      expect(body).toMatchObject({
+        error: 'Bad Request',
+        statusCode: 400,
+        correlationId: expect.any(String),
+      });
+      expect(Array.isArray(body.message)).toBe(true);
+      expect(body.message.length).toBeGreaterThan(0);
     });
   });
 

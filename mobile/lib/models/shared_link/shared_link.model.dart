@@ -66,11 +66,9 @@ class SharedLink {
       expiresAt = dto.expiresAt,
       key = dto.key,
       showMetadata = dto.showMetadata,
-      type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
-      title = dto.type == SharedLinkType.ALBUM
-          ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
-          : "INDIVIDUAL SHARE",
-      thumbAssetId = dto.type == SharedLinkType.ALBUM
+      type = dto.type.value == 'ALBUM' ? SharedLinkSource.album : SharedLinkSource.individual,
+      title = dto.type.value == 'ALBUM' ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE" : "INDIVIDUAL SHARE",
+      thumbAssetId = dto.type.value == 'ALBUM'
           ? dto.album?.albumThumbnailAssetId
           : dto.assets.isNotEmpty
           ? dto.assets[0].id

@@ -100,8 +100,8 @@ export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
     description: plugin.description,
     author: plugin.author,
     version: plugin.version,
-    createdAt: plugin.createdAt.toISOString(),
-    updatedAt: plugin.updatedAt.toISOString(),
+    createdAt: new Date(plugin.createdAt).toISOString(),
+    updatedAt: new Date(plugin.updatedAt).toISOString(),
     filters: plugin.filters,
     actions: plugin.actions,
   };

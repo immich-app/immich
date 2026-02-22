@@ -1,11 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsObject, IsPositive, ValidateNested } from 'class-validator';
+import { IsInt, IsPositive } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Memory } from 'src/database';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetOrderWithRandom, MemoryType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { AssetOrderWithRandom, MemoryType, MemoryTypeSchema } from 'src/enum';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum } from 'src/validation';
+import { z } from 'zod';
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true, description: 'Is memory saved' })
@@ -39,12 +41,20 @@ export class MemorySearchDto {
   order?: AssetOrderWithRandom;
 }
 
-class OnThisDayDto {
-  @ApiProperty({ type: 'number', description: 'Year for on this day memory', minimum: 1 })
-  @IsInt()
-  @IsPositive()
-  year!: number;
-}
+export const OnThisDaySchema = z
+  .object({
+    year: z
+      .int()
+      .min(1)
+      .max(9999)
+      .refine((val) => /^\d{4}$/.test(String(val)), {
+        message: 'Year must be exactly 4 digits',
+      })
+      .describe('Year for on this day memory'),
+  })
+  .meta({ id: 'OnThisDayDto' });
+
+class OnThisDayDto extends createZodDto(OnThisDaySchema) {}
 
 type MemoryData = OnThisDayDto;
 
@@ -53,80 +63,54 @@ export class MemoryUpdateDto extends MemoryBaseDto {
   memoryAt?: Date;
 }
 
-export class MemoryCreateDto extends MemoryBaseDto {
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
-  type!: MemoryType;
-
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  @IsObject()
-  @ValidateNested()
-  @Type((options) => {
-    switch (options?.object.type) {
-      case MemoryType.OnThisDay: {
-        return OnThisDayDto;
-      }
-
-      default: {
-        return Object;
-      }
-    }
+export const MemoryCreateSchema = z
+  .object({
+    type: MemoryTypeSchema.describe('Memory type'),
+    data: OnThisDaySchema.describe('Memory type-specific data'),
+    memoryAt: z.iso.datetime().describe('Memory date'),
+    assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
+    isSaved: z.boolean().optional().describe('Is memory saved'),
+    seenAt: z.iso.datetime().optional().describe('Date when memory was seen'),
   })
-  data!: MemoryData;
+  .meta({ id: 'MemoryCreateDto' });
 
-  @ValidateDate({ description: 'Memory date' })
-  memoryAt!: Date;
-
-  @ValidateUUID({ optional: true, each: true, description: 'Asset IDs to associate with memory' })
-  assetIds?: string[];
-}
+export class MemoryCreateDto extends createZodDto(MemoryCreateSchema) {}
 
 export class MemoryStatisticsResponseDto {
   @ApiProperty({ type: 'integer', description: 'Total number of memories' })
   total!: number;
 }
 
-export class MemoryResponseDto {
-  @ApiProperty({ description: 'Memory ID' })
-  id!: string;
-  @ValidateDate({ description: 'Creation date' })
-  createdAt!: Date;
-  @ValidateDate({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ValidateDate({ optional: true, description: 'Deletion date' })
-  deletedAt?: Date;
-  @ValidateDate({ description: 'Memory date' })
-  memoryAt!: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory was seen' })
-  seenAt?: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory should be shown' })
-  showAt?: Date;
-  @ValidateDate({ optional: true, description: 'Date when memory should be hidden' })
-  hideAt?: Date;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  @ValidateEnum({ enum: MemoryType, name: 'MemoryType', description: 'Memory type' })
-  type!: MemoryType;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  data!: MemoryData;
-  @ApiProperty({ description: 'Is memory saved' })
-  isSaved!: boolean;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  assets!: AssetResponseDto[];
-}
+export const MemoryResponseSchema = z
+  .object({
+    id: z.string().describe('Memory ID'),
+    createdAt: z.iso.datetime().describe('Creation date'),
+    updatedAt: z.iso.datetime().describe('Last update date'),
+    deletedAt: z.iso.datetime().optional().describe('Deletion date'),
+    memoryAt: z.iso.datetime().describe('Memory date'),
+    seenAt: z.iso.datetime().optional().describe('Date when memory was seen'),
+    showAt: z.iso.datetime().optional().describe('Date when memory should be shown'),
+    hideAt: z.iso.datetime().optional().describe('Date when memory should be hidden'),
+    ownerId: z.string().describe('Owner user ID'),
+    type: MemoryTypeSchema,
+    data: OnThisDaySchema,
+    isSaved: z.boolean().describe('Is memory saved'),
+    assets: z.array(AssetResponseSchema),
+  })
+  .meta({ id: 'MemoryResponseDto' });
+
+export class MemoryResponseDto extends createZodDto(MemoryResponseSchema) {}
 
 export const mapMemory = (entity: Memory, auth: AuthDto): MemoryResponseDto => {
   return {
     id: entity.id,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
-    deletedAt: entity.deletedAt ?? undefined,
-    memoryAt: entity.memoryAt,
-    seenAt: entity.seenAt ?? undefined,
-    showAt: entity.showAt ?? undefined,
-    hideAt: entity.hideAt ?? undefined,
+    createdAt: new Date(entity.createdAt).toISOString(),
+    updatedAt: new Date(entity.updatedAt).toISOString(),
+    deletedAt: entity.deletedAt == null ? undefined : new Date(entity.deletedAt).toISOString(),
+    memoryAt: new Date(entity.memoryAt).toISOString(),
+    seenAt: entity.seenAt == null ? undefined : new Date(entity.seenAt).toISOString(),
+    showAt: entity.showAt == null ? undefined : new Date(entity.showAt).toISOString(),
+    hideAt: entity.hideAt == null ? undefined : new Date(entity.hideAt).toISOString(),
     ownerId: entity.ownerId,
     type: entity.type as MemoryType,
     data: entity.data as unknown as MemoryData,

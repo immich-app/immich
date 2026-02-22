@@ -13,6 +13,7 @@
             "description": "Album ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -23,6 +24,7 @@
             "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -51,6 +53,7 @@
             "description": "Filter by user ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           }
@@ -173,6 +176,7 @@
             "description": "Album ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -183,6 +187,7 @@
             "description": "Asset ID (if activity is for an asset)",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           }
@@ -241,8 +246,10 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Activity ID",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           }
@@ -936,6 +943,7 @@
             "description": "User ID filter",
             "schema": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             }
           },
@@ -15417,11 +15425,13 @@
           "albumId": {
             "description": "Album ID",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "assetId": {
             "description": "Asset ID (if activity is for an asset)",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "comment": {
@@ -15429,12 +15439,7 @@
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReactionType"
-              }
-            ],
-            "description": "Activity type (like or comment)"
+            "$ref": "#/components/schemas/ReactionType"
           }
         },
         "required": [
@@ -15447,7 +15452,9 @@
         "properties": {
           "assetId": {
             "description": "Asset ID (if activity is for an asset)",
+            "format": "uuid",
             "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "comment": {
@@ -15458,19 +15465,17 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "id": {
             "description": "Activity ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ReactionType"
-              }
-            ],
-            "description": "Activity type"
+            "$ref": "#/components/schemas/ReactionType"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -15489,10 +15494,14 @@
         "properties": {
           "comments": {
             "description": "Number of comments",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "likes": {
             "description": "Number of likes",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },
@@ -15549,6 +15558,8 @@
           },
           "assetCount": {
             "description": "Number of assets",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "assets": {
@@ -15566,6 +15577,7 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "description": {
@@ -15575,6 +15587,7 @@
           "endDate": {
             "description": "End date (latest asset)",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "hasSharedLink": {
@@ -15592,15 +15605,17 @@
           "lastModifiedAssetTimestamp": {
             "description": "Last modified asset timestamp",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "order": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetOrder"
-              }
+            "description": "Asset sort order",
+            "enum": [
+              "asc",
+              "desc"
             ],
-            "description": "Asset sort order"
+            "title": "AssetOrder",
+            "type": "string"
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -15616,11 +15631,13 @@
           "startDate": {
             "description": "Start date (earliest asset)",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           }
         },
@@ -15711,12 +15728,13 @@
       "AlbumUserResponseDto": {
         "properties": {
           "role": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AlbumUserRole"
-              }
+            "description": "Album user role",
+            "enum": [
+              "editor",
+              "viewer"
             ],
-            "description": "Album user role"
+            "title": "AlbumUserRole",
+            "type": "string"
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -16059,7 +16077,6 @@
             "type": "boolean"
           },
           "upserted": {
-            "description": "Upserted assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -16281,49 +16298,59 @@
         "properties": {
           "boundingBoxX1": {
             "description": "Bounding box X1 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxX2": {
             "description": "Bounding box X2 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxY1": {
             "description": "Bounding box Y1 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxY2": {
             "description": "Bounding box Y2 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "id": {
             "description": "Face ID",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "imageHeight": {
             "description": "Image height in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "person": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PersonResponseDto"
-              }
-            ],
-            "description": "Person associated with face",
+            "$ref": "#/components/schemas/PersonResponseDto",
             "nullable": true
           },
           "sourceType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SourceType"
-              }
+            "description": "Face detection source type",
+            "enum": [
+              "machine-learning",
+              "exif",
+              "manual"
             ],
-            "description": "Face detection source type"
+            "title": "SourceType",
+            "type": "string"
           }
         },
         "required": [
@@ -16373,43 +16400,59 @@
         "type": "object"
       },
       "AssetFaceWithoutPersonResponseDto": {
+        "description": "Asset face without person",
         "properties": {
           "boundingBoxX1": {
             "description": "Bounding box X1 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxX2": {
             "description": "Bounding box X2 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxY1": {
             "description": "Bounding box Y1 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "boundingBoxY2": {
             "description": "Bounding box Y2 coordinate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "id": {
             "description": "Face ID",
             "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "imageHeight": {
             "description": "Image height in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "imageWidth": {
             "description": "Image width in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "sourceType": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SourceType"
-              }
+            "description": "Face detection source type",
+            "enum": [
+              "machine-learning",
+              "exif",
+              "manual"
             ],
-            "description": "Face detection source type"
+            "title": "SourceType",
+            "type": "string"
           }
         },
         "required": [
@@ -16935,8 +16978,8 @@
           },
           "createdAt": {
             "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
-            "example": "2024-01-15T20:30:00.000Z",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "deviceAssetId": {
@@ -16961,14 +17004,14 @@
           },
           "fileCreatedAt": {
             "description": "The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.",
-            "example": "2024-01-15T19:30:00.000Z",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "fileModifiedAt": {
             "description": "The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.",
-            "example": "2024-01-16T10:15:00.000Z",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "hasMetadata": {
@@ -16977,6 +17020,7 @@
           },
           "height": {
             "description": "Asset height",
+            "minimum": 0,
             "nullable": true,
             "type": "number"
           },
@@ -16990,18 +17034,7 @@
           },
           "isEdited": {
             "description": "Is edited",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v2.5.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2.5.0",
-                "state": "Beta"
-              }
-            ],
-            "x-immich-state": "Beta"
+            "type": "boolean"
           },
           "isFavorite": {
             "description": "Is favorite",
@@ -17016,22 +17049,11 @@
             "type": "boolean"
           },
           "libraryId": {
-            "deprecated": true,
             "description": "Library ID",
             "format": "uuid",
             "nullable": true,
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1",
-                "state": "Added"
-              },
-              {
-                "version": "v1",
-                "state": "Deprecated"
-              }
-            ],
-            "x-immich-state": "Deprecated"
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
           },
           "livePhotoVideoId": {
             "description": "Live photo video ID",
@@ -17040,8 +17062,8 @@
           },
           "localDateTime": {
             "description": "The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.",
-            "example": "2024-01-15T14:30:00.000Z",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "originalFileName": {
@@ -17070,27 +17092,11 @@
             "type": "array"
           },
           "resized": {
-            "deprecated": true,
             "description": "Is resized",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1",
-                "state": "Added"
-              },
-              {
-                "version": "v1.113.0",
-                "state": "Deprecated"
-              }
-            ],
-            "x-immich-state": "Deprecated"
+            "type": "boolean"
           },
           "stack": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetStackResponseDto"
-              }
-            ],
+            "$ref": "#/components/schemas/AssetStackResponseDto",
             "nullable": true
           },
           "tags": {
@@ -17105,12 +17111,15 @@
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetTypeEnum"
-              }
+            "description": "Asset type",
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
             ],
-            "description": "Asset type"
+            "title": "AssetTypeEnum",
+            "type": "string"
           },
           "unassignedFaces": {
             "items": {
@@ -17120,20 +17129,24 @@
           },
           "updatedAt": {
             "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
-            "example": "2024-01-16T12:45:30.000Z",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "visibility": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetVisibility"
-              }
+            "description": "Asset visibility",
+            "enum": [
+              "archive",
+              "timeline",
+              "hidden",
+              "locked"
             ],
-            "description": "Asset visibility"
+            "title": "AssetVisibility",
+            "type": "string"
           },
           "width": {
             "description": "Asset width",
+            "minimum": 0,
             "nullable": true,
             "type": "number"
           }
@@ -17170,6 +17183,8 @@
         "properties": {
           "assetCount": {
             "description": "Number of assets in stack",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "id": {
@@ -17211,7 +17226,7 @@
         "type": "object"
       },
       "AssetTypeEnum": {
-        "description": "Asset type",
+        "description": "Asset type filter",
         "enum": [
           "IMAGE",
           "VIDEO",
@@ -17221,7 +17236,6 @@
         "type": "string"
       },
       "AssetVisibility": {
-        "description": "Asset visibility",
         "enum": [
           "archive",
           "timeline",
@@ -17457,6 +17471,8 @@
         "properties": {
           "assetCount": {
             "description": "Number of assets contributed",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "userId": {
@@ -17821,7 +17837,6 @@
       "DuplicateResponseDto": {
         "properties": {
           "assets": {
-            "description": "Duplicate assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -17878,138 +17893,124 @@
         "type": "object"
       },
       "ExifResponseDto": {
+        "description": "EXIF response",
         "properties": {
           "city": {
-            "default": null,
             "description": "City name",
             "nullable": true,
             "type": "string"
           },
           "country": {
-            "default": null,
             "description": "Country name",
             "nullable": true,
             "type": "string"
           },
           "dateTimeOriginal": {
-            "default": null,
             "description": "Original date/time",
             "format": "date-time",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "description": {
-            "default": null,
             "description": "Image description",
             "nullable": true,
             "type": "string"
           },
           "exifImageHeight": {
-            "default": null,
             "description": "Image height in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
-            "default": null,
             "description": "Image width in pixels",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exposureTime": {
-            "default": null,
             "description": "Exposure time",
             "nullable": true,
             "type": "string"
           },
           "fNumber": {
-            "default": null,
             "description": "F-number (aperture)",
             "nullable": true,
             "type": "number"
           },
           "fileSizeInByte": {
-            "default": null,
             "description": "File size in bytes",
-            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "nullable": true,
             "type": "integer"
           },
           "focalLength": {
-            "default": null,
             "description": "Focal length in mm",
             "nullable": true,
             "type": "number"
           },
           "iso": {
-            "default": null,
             "description": "ISO sensitivity",
             "nullable": true,
             "type": "number"
           },
           "latitude": {
-            "default": null,
             "description": "GPS latitude",
             "nullable": true,
             "type": "number"
           },
           "lensModel": {
-            "default": null,
             "description": "Lens model",
             "nullable": true,
             "type": "string"
           },
           "longitude": {
-            "default": null,
             "description": "GPS longitude",
             "nullable": true,
             "type": "number"
           },
           "make": {
-            "default": null,
             "description": "Camera make",
             "nullable": true,
             "type": "string"
           },
           "model": {
-            "default": null,
             "description": "Camera model",
             "nullable": true,
             "type": "string"
           },
           "modifyDate": {
-            "default": null,
             "description": "Modification date/time",
             "format": "date-time",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "orientation": {
-            "default": null,
             "description": "Image orientation",
             "nullable": true,
             "type": "string"
           },
           "projectionType": {
-            "default": null,
             "description": "Projection type",
             "nullable": true,
             "type": "string"
           },
           "rating": {
-            "default": null,
             "description": "Rating",
             "nullable": true,
             "type": "number"
           },
           "state": {
-            "default": null,
             "description": "State/province name",
             "nullable": true,
             "type": "string"
           },
           "timeZone": {
-            "default": null,
             "description": "Time zone",
             "nullable": true,
             "type": "string"
@@ -18674,12 +18675,14 @@
             "description": "Asset IDs to associate with memory",
             "items": {
               "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
             "type": "array"
           },
           "data": {
-            "$ref": "#/components/schemas/OnThisDayDto"
+            "$ref": "#/components/schemas/OnThisDayDto",
+            "description": "Memory type-specific data"
           },
           "isSaved": {
             "description": "Is memory saved",
@@ -18688,20 +18691,22 @@
           "memoryAt": {
             "description": "Memory date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "seenAt": {
             "description": "Date when memory was seen",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MemoryType"
-              }
+            "description": "Memory type",
+            "enum": [
+              "on_this_day"
             ],
-            "description": "Memory type"
+            "title": "MemoryType",
+            "type": "string"
           }
         },
         "required": [
@@ -18722,6 +18727,7 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "data": {
@@ -18730,11 +18736,13 @@
           "deletedAt": {
             "description": "Deletion date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "hideAt": {
             "description": "Date when memory should be hidden",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "id": {
@@ -18748,6 +18756,7 @@
           "memoryAt": {
             "description": "Memory date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "ownerId": {
@@ -18757,24 +18766,27 @@
           "seenAt": {
             "description": "Date when memory was seen",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "showAt": {
             "description": "Date when memory should be shown",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/MemoryType"
-              }
+            "description": "Memory type",
+            "enum": [
+              "on_this_day"
             ],
-            "description": "Memory type"
+            "title": "MemoryType",
+            "type": "string"
           },
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           }
         },
@@ -19381,8 +19393,9 @@
         "properties": {
           "year": {
             "description": "Year for on this day memory",
+            "maximum": 9999,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -19437,12 +19450,20 @@
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color"
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "email": {
             "description": "User email",
@@ -19450,6 +19471,8 @@
           },
           "id": {
             "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "inTimeline": {
@@ -19463,6 +19486,7 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "profileImagePath": {
@@ -19515,25 +19539,15 @@
         "properties": {
           "hasNextPage": {
             "description": "Whether there are more pages",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.110.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "type": "boolean"
           },
           "hidden": {
             "description": "Number of hidden people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "people": {
-            "description": "List of people",
             "items": {
               "$ref": "#/components/schemas/PersonResponseDto"
             },
@@ -19541,6 +19555,8 @@
           },
           "total": {
             "description": "Total number of people",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },
@@ -19815,22 +19831,12 @@
             "description": "Person date of birth",
             "format": "date",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
             "type": "string"
           },
           "color": {
             "description": "Person color (hex)",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "type": "string"
           },
           "id": {
             "description": "Person ID",
@@ -19838,18 +19844,7 @@
           },
           "isFavorite": {
             "description": "Is favorite",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Is hidden",
@@ -19866,18 +19861,8 @@
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.107.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
           }
         },
         "required": [
@@ -19940,25 +19925,14 @@
             "description": "Person date of birth",
             "format": "date",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
             "type": "string"
           },
           "color": {
             "description": "Person color (hex)",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "type": "string"
           },
           "faces": {
-            "description": "Face detections",
             "items": {
               "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
             },
@@ -19970,18 +19944,7 @@
           },
           "isFavorite": {
             "description": "Is favorite",
-            "type": "boolean",
-            "x-immich-history": [
-              {
-                "version": "v1.126.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Is hidden",
@@ -19998,18 +19961,8 @@
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1.107.0",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
           }
         },
         "required": [
@@ -20825,6 +20778,7 @@
         "type": "object"
       },
       "ReactionLevel": {
+        "description": "Reaction level",
         "enum": [
           "album",
           "asset"
@@ -20832,6 +20786,7 @@
         "type": "string"
       },
       "ReactionType": {
+        "description": "Reaction type",
         "enum": [
           "comment",
           "like"
@@ -20873,6 +20828,8 @@
         "properties": {
           "count": {
             "description": "Number of albums in this page",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "facets": {
@@ -20889,6 +20846,8 @@
           },
           "total": {
             "description": "Total number of matching albums",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },
@@ -20904,6 +20863,8 @@
         "properties": {
           "count": {
             "description": "Number of assets in this page",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "facets": {
@@ -20925,6 +20886,8 @@
           },
           "total": {
             "description": "Total number of matching assets",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           }
         },
@@ -20976,6 +20939,8 @@
         "properties": {
           "count": {
             "description": "Number of assets with this facet value",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "type": "integer"
           },
           "value": {
@@ -20992,7 +20957,6 @@
       "SearchFacetResponseDto": {
         "properties": {
           "counts": {
-            "description": "Facet counts",
             "items": {
               "$ref": "#/components/schemas/SearchFacetCountResponseDto"
             },
@@ -21829,6 +21793,7 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "description": {
@@ -21840,6 +21805,7 @@
             "description": "Expiration date",
             "format": "date-time",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "id": {
@@ -21865,33 +21831,18 @@
             "type": "string"
           },
           "token": {
-            "deprecated": true,
             "description": "Access token",
             "nullable": true,
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v1",
-                "state": "Added"
-              },
-              {
-                "version": "v2",
-                "state": "Stable"
-              },
-              {
-                "version": "v2.6.0",
-                "state": "Deprecated"
-              }
-            ],
-            "x-immich-state": "Deprecated"
+            "type": "string"
           },
           "type": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/SharedLinkType"
-              }
+            "description": "Shared link type",
+            "enum": [
+              "ALBUM",
+              "INDIVIDUAL"
             ],
-            "description": "Shared link type"
+            "title": "SharedLinkType",
+            "type": "string"
           },
           "userId": {
             "description": "Owner user ID",
@@ -22168,15 +22119,6 @@
         },
         "type": "object"
       },
-      "SourceType": {
-        "description": "Face detection source type",
-        "enum": [
-          "machine-learning",
-          "exif",
-          "manual"
-        ],
-        "type": "string"
-      },
       "StackCreateDto": {
         "properties": {
           "assetIds": {
@@ -22197,7 +22139,6 @@
       "StackResponseDto": {
         "properties": {
           "assets": {
-            "description": "Stack assets",
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
             },
@@ -24665,6 +24606,7 @@
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "id": {
@@ -24682,6 +24624,7 @@
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "value": {
@@ -25194,17 +25137,26 @@
       "UserAdminCreateDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color",
-            "nullable": true
+            "nullable": true,
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "email": {
             "description": "User email",
             "format": "email",
+            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
             "type": "string"
           },
           "isAdmin": {
@@ -25225,13 +25177,13 @@
           },
           "pinCode": {
             "description": "PIN code",
-            "example": "123456",
             "nullable": true,
+            "pattern": "^\\d{6}$",
             "type": "string"
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
-            "format": "int64",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
             "type": "integer"
@@ -25265,22 +25217,32 @@
       "UserAdminResponseDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color"
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "createdAt": {
             "description": "Creation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "deletedAt": {
             "description": "Deletion date",
             "format": "date-time",
             "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "email": {
@@ -25289,6 +25251,8 @@
           },
           "id": {
             "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "isAdmin": {
@@ -25296,12 +25260,7 @@
             "type": "boolean"
           },
           "license": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserLicense"
-              }
-            ],
-            "description": "User license",
+            "$ref": "#/components/schemas/UserLicense",
             "nullable": true
           },
           "name": {
@@ -25315,6 +25274,7 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "profileImagePath": {
@@ -25323,13 +25283,15 @@
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
-            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "nullable": true,
             "type": "integer"
           },
           "quotaUsageInBytes": {
             "description": "Storage usage in bytes",
-            "format": "int64",
+            "maximum": 9007199254740991,
+            "minimum": 0,
             "nullable": true,
             "type": "integer"
           },
@@ -25338,12 +25300,14 @@
             "type": "boolean"
           },
           "status": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserStatus"
-              }
+            "description": "User status",
+            "enum": [
+              "active",
+              "removing",
+              "deleted"
             ],
-            "description": "User status"
+            "title": "UserStatus",
+            "type": "string"
           },
           "storageLabel": {
             "description": "Storage label",
@@ -25353,6 +25317,7 @@
           "updatedAt": {
             "description": "Last update date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           }
         },
@@ -25380,17 +25345,26 @@
       "UserAdminUpdateDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color",
-            "nullable": true
+            "nullable": true,
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "email": {
             "description": "User email",
             "format": "email",
+            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
             "type": "string"
           },
           "isAdmin": {
@@ -25407,13 +25381,13 @@
           },
           "pinCode": {
             "description": "PIN code",
-            "example": "123456",
             "nullable": true,
+            "pattern": "^\\d{6}$",
             "type": "string"
           },
           "quotaSizeInBytes": {
             "description": "Storage quota in bytes",
-            "format": "int64",
+            "maximum": 9007199254740991,
             "minimum": 0,
             "nullable": true,
             "type": "integer"
@@ -25451,6 +25425,7 @@
           "activatedAt": {
             "description": "Activation date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "activationKey": {
@@ -25458,7 +25433,8 @@
             "type": "string"
           },
           "licenseKey": {
-            "description": "License key",
+            "description": "License key (format: /^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$/)",
+            "pattern": "^IM(SV|CL)(-[\\dA-Za-z]{4}){8}$",
             "type": "string"
           }
         },
@@ -25573,12 +25549,20 @@
       "UserResponseDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color"
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "email": {
             "description": "User email",
@@ -25586,6 +25570,8 @@
           },
           "id": {
             "description": "User ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
           "name": {
@@ -25595,6 +25581,7 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
           },
           "profileImagePath": {
@@ -25612,29 +25599,29 @@
         ],
         "type": "object"
       },
-      "UserStatus": {
-        "description": "User status",
-        "enum": [
-          "active",
-          "removing",
-          "deleted"
-        ],
-        "type": "string"
-      },
       "UserUpdateMeDto": {
         "properties": {
           "avatarColor": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UserAvatarColor"
-              }
+            "enum": [
+              "primary",
+              "pink",
+              "red",
+              "yellow",
+              "blue",
+              "green",
+              "purple",
+              "orange",
+              "gray",
+              "amber"
             ],
-            "description": "Avatar color",
-            "nullable": true
+            "nullable": true,
+            "title": "UserAvatarColor",
+            "type": "string"
           },
           "email": {
             "description": "User email",
             "format": "email",
+            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
             "type": "string"
           },
           "name": {
@@ -25642,6 +25629,7 @@
             "type": "string"
           },
           "password": {
+            "deprecated": true,
             "description": "User password (deprecated, use change password endpoint)",
             "type": "string"
           }
