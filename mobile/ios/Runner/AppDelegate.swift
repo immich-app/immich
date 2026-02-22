@@ -58,6 +58,12 @@ import UIKit
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
     ConnectivityApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ConnectivityApiImpl())
     NetworkApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: NetworkApiImpl(viewController: controller))
+
+    if #available(iOS 17.0, *) {
+      let hdrFactory = HDRImageViewFactory(messenger: engine.binaryMessenger)
+      engine.registrar(forPlugin: "HDRImageViewPlugin")!
+        .register(hdrFactory, withId: HDRImageViewFactory.viewTypeId)
+    }
   }
   
   public static func cancelPlugins(with engine: FlutterEngine) {

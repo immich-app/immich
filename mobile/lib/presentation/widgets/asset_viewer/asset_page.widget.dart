@@ -9,10 +9,12 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/hdr_image_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
@@ -302,6 +304,57 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _listenForScaleBoundaries(controller);
   }
 
+  Widget _buildHdrPhotoView(
+    BaseAsset displayAsset, {
+    required PhotoViewHeroAttributes? heroAttributes,
+    required bool showingDetails,
+    required BoxDecoration backgroundDecoration,
+  }) {
+    final screenW = context.width;
+    final screenH = context.height;
+    Size? childSize;
+    if (displayAsset.width != null &&
+        displayAsset.height != null &&
+        displayAsset.width! > 0 &&
+        displayAsset.height! > 0) {
+      final imgW = displayAsset.width!.toDouble();
+      final imgH = displayAsset.height!.toDouble();
+      final s = (screenW / imgW) < (screenH / imgH) ? screenW / imgW : screenH / imgH;
+      childSize = Size(imgW * s, imgH * s);
+    }
+
+    return PhotoView.customChild(
+      heroAttributes: heroAttributes,
+      backgroundDecoration: backgroundDecoration,
+      filterQuality: FilterQuality.none,
+      childSize: childSize,
+      initialScale: PhotoViewComputedScale.contained,
+      minScale: PhotoViewComputedScale.contained,
+      maxScale: PhotoViewComputedScale.covered * 5,
+      basePosition: Alignment.center,
+      tightMode: true,
+      enablePanAlways: true,
+      disableScaleGestures: showingDetails,
+      scaleStateChangedCallback: _onScaleStateChanged,
+      onPageBuild: _onPageBuild,
+      onDragStart: _onDragStart,
+      onDragUpdate: _onDragUpdate,
+      onDragEnd: _onDragEnd,
+      onDragCancel: _onDragCancel,
+      onTapUp: _onTapUp,
+      onLongPressStart: displayAsset.isMotionPhoto ? _onLongPress : null,
+      child: HDRImageViewer(
+        asset: displayAsset,
+        image: Image(
+          key: ValueKey(displayAsset),
+          image: getFullImageProvider(displayAsset, size: context.sizeData),
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPhotoView(
     BaseAsset displayAsset,
     BaseAsset asset, {
@@ -313,6 +366,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final heroAttributes = isCurrentPage ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}') : null;
 
     if (displayAsset.isImage && !isPlayingMotionVideo) {
+      if (CurrentPlatform.isIOS17OrAbove) {
+        return _buildHdrPhotoView(
+          displayAsset,
+          heroAttributes: heroAttributes,
+          showingDetails: showingDetails,
+          backgroundDecoration: backgroundDecoration,
+        );
+      }
+
       final size = context.sizeData;
       return PhotoView(
         key: ValueKey(displayAsset.heroTag),
