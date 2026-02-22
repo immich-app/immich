@@ -335,13 +335,21 @@ class NativeVideoViewer extends HookConsumerWidget {
     }
 
     ref.listen(currentAssetNotifier, (_, value) {
+      final isCurrent = _isCurrentAsset(asset, value);
+      // This is the same asset with different metadata (e.g. isFavorite changed), update the ref
+      if (value != null && value != asset && isCurrent) {
+        currentAsset.value = value;
+        isVisible.value = isCurrent;
+        return;
+      }
+
       final playerController = controller.value;
       if (playerController != null && value != asset) {
         removeListeners(playerController);
       }
 
       if (value != null) {
-        isVisible.value = _isCurrentAsset(value, asset);
+        isVisible.value = isCurrent;
       }
       final curAsset = currentAsset.value;
       if (curAsset == asset) {
@@ -423,17 +431,20 @@ class NativeVideoViewer extends HookConsumerWidget {
           if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
           if (aspectRatio.value != null && !isCasting && isCurrent)
             Visibility.maintain(
-              key: ValueKey(asset),
+              key: ValueKey('${asset.heroTag}_video'),
               visible: isVisible.value,
               child: PhotoView.customChild(
-                key: ValueKey(asset),
+                key: ValueKey('${asset.heroTag}_video_photoview'),
                 enableRotation: false,
                 disableScaleGestures: disableScaleGestures,
                 // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
                 backgroundDecoration: const BoxDecoration(color: Colors.transparent),
                 scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
                 childSize: videoContextSize(aspectRatio.value, context),
-                child: NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController),
+                child: NativeVideoPlayerView(
+                  key: ValueKey('${asset.heroTag}_video_player'),
+                  onViewReady: initController,
+                ),
               ),
             ),
           if (showControls) const Center(child: VideoViewerControls()),
