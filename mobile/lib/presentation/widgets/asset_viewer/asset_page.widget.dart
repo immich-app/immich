@@ -16,8 +16,10 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -29,8 +31,9 @@ enum _DragIntent { none, scroll, dismiss }
 class AssetPage extends ConsumerStatefulWidget {
   final int index;
   final int heroOffset;
+  final void Function(int direction)? onTapNavigate;
 
-  const AssetPage({super.key, required this.index, required this.heroOffset});
+  const AssetPage({super.key, required this.index, required this.heroOffset, this.onTapNavigate});
 
   @override
   ConsumerState createState() => _AssetPageState();
@@ -224,7 +227,28 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
-    if (!_showingDetails && _dragStart == null) _viewer.toggleControls();
+    if (_showingDetails || _dragStart != null) return;
+
+    final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+    if (!tapToNavigate) {
+      _viewer.toggleControls();
+      return;
+    }
+
+    final tapX = details.globalPosition.dx;
+    final screenWidth = context.width;
+
+    // Navigate if the user taps in the leftmost or rightmost quarter of the screen
+    final tappedLeftSide = tapX < screenWidth / 4;
+    final tappedRightSide = tapX > screenWidth * (3 / 4);
+
+    if (tappedLeftSide) {
+      widget.onTapNavigate?.call(-1);
+    } else if (tappedRightSide) {
+      widget.onTapNavigate?.call(1);
+    } else {
+      _viewer.toggleControls();
+    }
   }
 
   void _onLongPress(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue) =>
