@@ -1,6 +1,5 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
@@ -14,7 +13,6 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
-  import { Route } from '$lib/route';
   import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -380,15 +378,6 @@
     imageManager.preload(cursor.previousAsset);
   });
 
-  const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
-    if (oldAssetId !== asset.id) {
-      return;
-    }
-
-    await new Promise((promise) => setTimeout(promise, 500));
-    await goto(Route.viewAsset({ id: newAssetId }));
-  };
-
   const onAssetUpdate = (update: AssetResponseDto) => {
     if (asset.id === update.id) {
       cursor = { ...cursor, current: update };
@@ -441,7 +430,7 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
-<OnEvents {onAssetReplace} {onAssetUpdate} {onAlbumAddAssets} />
+<OnEvents {onAssetUpdate} {onAlbumAddAssets} />
 
 <svelte:document bind:fullscreenElement />
 
