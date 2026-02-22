@@ -1863,6 +1863,8 @@ export type SmartSearchDto = {
     albumIds?: string[];
     /** Filter by city name */
     city?: string | null;
+    /** Content type filter — results must match this concept (e.g. "animal", "food", "vehicle") */
+    contentFilter?: string;
     /** Filter by country name */
     country?: string | null;
     /** Filter by creation date (after) */

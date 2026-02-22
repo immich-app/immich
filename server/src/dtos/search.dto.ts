@@ -225,6 +225,13 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @ValidateUUID({ optional: true, description: 'Asset ID to use as search reference' })
   queryAssetId?: string;
 
+  @ValidateString({
+    optional: true,
+    trim: true,
+    description: 'Content type filter — results must match this concept (e.g. "animal", "food", "vehicle")',
+  })
+  contentFilter?: string;
+
   @ApiPropertyOptional({ description: 'Search language code' })
   @IsString()
   @IsNotEmpty()

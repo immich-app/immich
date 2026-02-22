@@ -24,6 +24,14 @@ import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
 
+// Model-specific distance thresholds calibrated from LAION/DataComp benchmarks
+const DEFAULT_FILTER_THRESHOLDS: Record<string, number> = {
+  'ViT-B-32__openai': 0.7,
+  'ViT-B-16__openai': 0.7,
+  'ViT-L-14__openai': 0.72,
+  'XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k': 0.74,
+};
+
 @Injectable()
 export class SearchService extends BaseService {
   private embeddingCache = new LRUMap<string, string>(100);
@@ -135,11 +143,30 @@ export class SearchService extends BaseService {
     } else {
       throw new BadRequestException('Either `query` or `queryAssetId` must be set');
     }
+    // Encode content filter if provided
+    let filterEmbedding: string | undefined;
+    let filterDistanceThreshold: number | undefined;
+    if (dto.contentFilter) {
+      console.log('[DEBUG] contentFilter received:', dto.contentFilter);
+      const filterPrompt = `a photo of a ${dto.contentFilter}`;
+      const filterKey = machineLearning.clip.modelName + 'filter:' + filterPrompt + dto.language;
+      filterEmbedding = this.embeddingCache.get(filterKey);
+      if (!filterEmbedding) {
+        filterEmbedding = await this.machineLearningRepository.encodeText(filterPrompt, {
+          modelName: machineLearning.clip.modelName,
+          language: dto.language,
+        });
+        console.log('[DEBUG] filterEmbedding generated, length:', filterEmbedding?.length);
+        this.embeddingCache.set(filterKey, filterEmbedding);
+      }
+      filterDistanceThreshold = DEFAULT_FILTER_THRESHOLDS[machineLearning.clip.modelName] ?? 0.7;
+    }
+
     const page = dto.page ?? 1;
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding },
+      { ...dto, userIds: await userIds, embedding, filterEmbedding, filterDistanceThreshold },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });

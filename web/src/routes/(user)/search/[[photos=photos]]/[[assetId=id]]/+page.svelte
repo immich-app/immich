@@ -64,7 +64,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId' | 'contentFilter'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
@@ -195,6 +195,7 @@
       originalFileName: $t('file_name_text'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      contentFilter: $t('content_type'),
       ocr: $t('ocr'),
     };
     return keyMap[key] || key;

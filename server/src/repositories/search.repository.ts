@@ -133,7 +133,10 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions & {
+    filterEmbedding?: string;
+    filterDistanceThreshold?: number;
+  };
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
@@ -294,17 +297,51 @@ export class SearchRepository {
     if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
+    console.log('[DEBUG] filterEmbedding present:', !!options.filterEmbedding);
+    console.log('[DEBUG] filterDistanceThreshold:', options.filterDistanceThreshold);
 
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
+
+      // Oversample when content filter is active to compensate for filtered-out candidates
+      const effectiveLimit = options.filterEmbedding
+        ? Math.min(pagination.size * 10, 5000)
+        : pagination.size + 1;
+
+      const compiled = await searchAssetBuilder(trx, options)
+        .selectAll('asset')
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        .$if(!!options.filterEmbedding, (qb) =>
+          qb.where(
+            sql`smart_search.embedding <=> ${options.filterEmbedding!}`,
+            '<=',
+            sql.lit(options.filterDistanceThreshold ?? 0.78),
+          ),
+        )
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .limit(effectiveLimit)
+        .offset((pagination.page - 1) * pagination.size)
+        .compile();
+      console.log('[DEBUG] SQL:', compiled.sql);
+      console.log('[DEBUG] params:', compiled.parameters);
+
       const items = await searchAssetBuilder(trx, options)
         .selectAll('asset')
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        .$if(!!options.filterEmbedding, (qb) =>
+          qb.where(
+            sql`smart_search.embedding <=> ${options.filterEmbedding!}`,
+            '<=',
+            sql.lit(options.filterDistanceThreshold ?? 0.78),
+          ),
+        )
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
-        .limit(pagination.size + 1)
+        .limit(effectiveLimit)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
-      return paginationHelper(items, pagination.size);
+
+      // Trim oversampled results back to requested page size
+      return paginationHelper(items.slice(0, pagination.size + 1), pagination.size);
     });
   }
 

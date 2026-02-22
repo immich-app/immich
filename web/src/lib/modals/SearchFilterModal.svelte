@@ -6,6 +6,7 @@
 
   export type SearchFilter = {
     query: string;
+    contentFilter?: string;
     ocr?: string;
     queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
@@ -23,6 +24,7 @@
   import SearchCameraSection, {
     type SearchCameraFilter,
   } from '$lib/components/shared-components/search-bar/search-camera-section.svelte';
+  import SearchContentSection from '$lib/components/shared-components/search-bar/search-content-section.svelte';
   import SearchDateSection from '$lib/components/shared-components/search-bar/search-date-section.svelte';
   import SearchDisplaySection from '$lib/components/shared-components/search-bar/search-display-section.svelte';
   import SearchLocationSection from '$lib/components/shared-components/search-bar/search-location-section.svelte';
@@ -76,6 +78,7 @@
 
   let filter: SearchFilter = $state({
     query,
+    contentFilter: 'contentFilter' in searchQuery ? searchQuery.contentFilter : undefined,
     ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
@@ -116,6 +119,7 @@
   const resetForm = () => {
     filter = {
       query: '',
+      contentFilter: undefined,
       ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
@@ -145,6 +149,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
+      contentFilter: filter.queryType === 'smart' ? (filter.contentFilter || undefined) : undefined,
       ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
@@ -194,6 +199,11 @@
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+
+        <!-- CONTENT FILTER — only for smart search -->
+        {#if filter.queryType === 'smart'}
+          <SearchContentSection bind:contentFilter={filter.contentFilter} />
+        {/if}
 
         <!-- TAGS -->
         <SearchTagsSection bind:selectedTags={filter.tagIds} />
