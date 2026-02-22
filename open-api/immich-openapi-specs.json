@@ -22063,6 +22063,14 @@
             "description": "Filter by OCR text content",
             "type": "string"
           },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ],
+            "description": "Sort order by date. If not provided, results are sorted by relevance."
+          },
           "page": {
             "description": "Page number",
             "minimum": 1,

@@ -5,6 +5,7 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import DateGroupedGalleryViewer from '$lib/components/shared-components/gallery-viewer/date-grouped-gallery-viewer.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -68,6 +69,7 @@
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived(featureFlagsManager.value.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
+  let isSortedByDate = $derived(!!terms.order);
 
   const isAllUserOwned = $derived(
     $user && assetInteraction.selectedAssets.every((asset) => asset.ownerId === $user.id),
@@ -196,6 +198,7 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      order: $t('sort_order'),
     };
     return keyMap[key] || key;
   }
@@ -296,15 +299,27 @@
 >
   <section id="search-content">
     {#if searchResultAssets.length > 0}
-      <GalleryViewer
-        assets={searchResultAssets}
-        {assetInteraction}
-        onIntersected={loadNextPage}
-        showArchiveIcon={true}
-        {viewport}
-        onReload={onSearchQueryUpdate}
-        slidingWindowOffset={searchResultsElement.offsetTop}
-      />
+      {#if isSortedByDate}
+        <DateGroupedGalleryViewer
+          assets={searchResultAssets}
+          {assetInteraction}
+          onIntersected={loadNextPage}
+          showArchiveIcon={true}
+          {viewport}
+          onReload={onSearchQueryUpdate}
+          slidingWindowOffset={searchResultsElement.offsetTop}
+        />
+      {:else}
+        <GalleryViewer
+          assets={searchResultAssets}
+          {assetInteraction}
+          onIntersected={loadNextPage}
+          showArchiveIcon={true}
+          {viewport}
+          onReload={onSearchQueryUpdate}
+          slidingWindowOffset={searchResultsElement.offsetTop}
+        />
+      {/if}
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
         <div class="flex flex-col content-center items-center text-center">

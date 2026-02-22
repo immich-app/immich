@@ -8,6 +8,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'paginated_search.provider.g.dart';
 
+final searchGroupByProvider = StateProvider<GroupAssetsBy>((ref) => GroupAssetsBy.none);
+
 final paginatedSearchProvider = StateNotifierProvider<PaginatedSearchNotifier, SearchResult>(
   (ref) => PaginatedSearchNotifier(ref.watch(searchServiceProvider)),
 );
@@ -41,6 +43,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
 @riverpod
 Future<RenderList> paginatedSearchRenderList(Ref ref) {
   final result = ref.watch(paginatedSearchProvider);
+  final groupBy = ref.watch(searchGroupByProvider);
   final timelineService = ref.watch(timelineServiceProvider);
-  return timelineService.getTimelineFromAssets(result.assets, GroupAssetsBy.none);
+  return timelineService.getTimelineFromAssets(result.assets, groupBy);
 }

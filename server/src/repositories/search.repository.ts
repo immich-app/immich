@@ -129,6 +129,7 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
+  SearchOrderOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
@@ -300,7 +301,12 @@ export class SearchRepository {
       const items = await searchAssetBuilder(trx, options)
         .selectAll('asset')
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
-        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .$if(!options.orderDirection, (qb) => qb.orderBy(sql`smart_search.embedding <=> ${options.embedding}`))
+        .$if(!!options.orderDirection, (qb) =>
+          qb
+            .where(sql`(smart_search.embedding <=> ${options.embedding}) <= 0.9`)
+            .orderBy('asset.fileCreatedAt', options.orderDirection as OrderByDirection),
+        )
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
