@@ -13,6 +13,7 @@ import {
   ChangePasswordDto,
   LoginCredentialDto,
   LogoutResponseDto,
+  OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
   PinCodeChangeDto,
@@ -90,6 +91,41 @@ export class AuthService extends BaseService {
       successful: true,
       redirectUri: await this.getLogoutEndpoint(authType),
     };
+  }
+
+  async backchannelLogout(dto: OAuthBackchannelLogoutDto): Promise<void> {
+    const { oauth } = await this.getConfig({ withCache: false });
+    if (!oauth.enabled) {
+      throw new Error('Received backchannel logout request but OAuth is disabled');
+    }
+
+    let claims;
+    try {
+      claims = await this.oauthRepository.validateLogoutToken(oauth, dto.logout_token);
+    } catch (error: Error | any) {
+      this.logger.error(`Error backchannel logout: ${error.message}`);
+      this.logger.error(error);
+
+      throw new BadRequestException('Error backchannel logout: token validation failed');
+    }
+
+    if (!claims) {
+      throw new BadRequestException('Invalid logout token: no claims found');
+    }
+
+    if (claims.sub && !claims.sid) {
+      const user = await this.userRepository.getByOAuthId(claims.sub);
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      await this.sessionRepository.invalidateAll({ userId: user.id });
+    } else if (!claims.sub && claims.sid) {
+      await this.sessionRepository.invalidateOAuth({ oauthSid: claims.sid });
+    } else if (claims.sub && claims.sid) {
+      await this.sessionRepository.invalidateOAuth({ oauthSid: claims.sid, oauthId: claims.sub });
+    } else {
+      throw new BadRequestException('Invalid logout token: it must contain either a sub or a sid claim');
+    }
   }
 
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
@@ -273,7 +309,12 @@ export class AuthService extends BaseService {
 
     const { oauth } = await this.getConfig({ withCache: false });
     const url = this.resolveRedirectUri(oauth, dto.url);
-    const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const { profile, sid: oauthSid } = await this.oauthRepository.getProfileAndOAuthSid(
+      oauth,
+      url,
+      expectedState,
+      codeVerifier,
+    );
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
@@ -335,7 +376,7 @@ export class AuthService extends BaseService {
       await this.syncProfilePicture(user, profile.picture);
     }
 
-    return this.createLoginResponse(user, loginDetails);
+    return this.createLoginResponse(user, loginDetails, oauthSid);
   }
 
   private async syncProfilePicture(user: UserAdmin, url: string) {
@@ -373,11 +414,18 @@ export class AuthService extends BaseService {
     }
 
     const { oauth } = await this.getConfig({ withCache: false });
-    const { sub: oauthId } = await this.oauthRepository.getProfile(oauth, dto.url, expectedState, codeVerifier);
+    const {
+      profile: { sub: oauthId },
+      sid,
+    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
       this.logger.warn(`OAuth link account failed: sub is already linked to another user (${duplicate.email}).`);
       throw new BadRequestException('This OAuth account has already been linked to another user.');
+    }
+
+    if (auth.session) {
+      await this.sessionRepository.update(auth.session.id, { oauthSid: sid });
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId });
@@ -385,6 +433,10 @@ export class AuthService extends BaseService {
   }
 
   async unlink(auth: AuthDto): Promise<UserAdminResponseDto> {
+    if (auth.session) {
+      await this.sessionRepository.update(auth.session.id, { oauthSid: null });
+    }
+
     const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
     return mapUserAdmin(user);
   }
@@ -541,7 +593,7 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
   }
 
-  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
+  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails, oauthSid?: string) {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const tokenHashed = this.cryptoRepository.hashSha256(token);
 
@@ -551,6 +603,7 @@ export class AuthService extends BaseService {
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,
       userId: user.id,
+      oauthSid: oauthSid ?? null,
     });
 
     return mapLoginResponse(user, token);

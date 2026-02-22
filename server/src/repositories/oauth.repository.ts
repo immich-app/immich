@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from 'jose';
 import type { UserInfoResponse } from 'openid-client' with { 'resolution-mode': 'import' };
 import { OAuthTokenEndpointAuthMethod } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -58,12 +59,12 @@ export class OAuthRepository {
     return client.serverMetadata().end_session_endpoint;
   }
 
-  async getProfile(
+  async getProfileAndOAuthSid(
     config: OAuthConfig,
     url: string,
     expectedState: string,
     codeVerifier: string,
-  ): Promise<OAuthProfile> {
+  ): Promise<{ profile: OAuthProfile; sid?: string }> {
     const { authorizationCodeGrant, fetchUserInfo, ...oidc } = await import('openid-client');
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
@@ -75,7 +76,15 @@ export class OAuthRepository {
         throw new Error('Unexpected profile response, no `sub`');
       }
 
-      return profile;
+      let sid: string | undefined;
+      if (tokens.id_token) {
+        const claims = tokens.claims();
+        if (typeof claims?.sid === 'string') {
+          sid = claims.sid;
+        }
+      }
+
+      return { profile, sid };
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(
@@ -103,6 +112,56 @@ export class OAuthRepository {
       data: await response.arrayBuffer(),
       contentType: response.headers.get('content-type'),
     };
+  }
+
+  private jwksClients: Map<string, JWTVerifyGetKey> = new Map(); // useful for caching and performnce
+  async validateLogoutToken(config: OAuthConfig, logoutToken: string): Promise<{ sub?: string; sid?: string } | null> {
+    const client = await this.getClient(config);
+    const algorithm = client.clientMetadata().id_token_signed_response_alg ?? 'RS256';
+    let keyOrGetter: Uint8Array | JWTVerifyGetKey;
+
+    try {
+      if (algorithm.startsWith('HS')) {
+        keyOrGetter = new TextEncoder().encode(config.clientSecret);
+      } else {
+        const jwksUri = client.serverMetadata().jwks_uri;
+        if (!jwksUri) {
+          throw new Error('Unable to get JWKS URI');
+        }
+        keyOrGetter = this.jwksClients.get(jwksUri) ?? createRemoteJWKSet(new URL(jwksUri));
+        if (!this.jwksClients.has(jwksUri)) {
+          this.jwksClients.set(jwksUri, keyOrGetter as JWTVerifyGetKey);
+        }
+      }
+
+      const { payload } = await jwtVerify(logoutToken, keyOrGetter as any, {
+        issuer: config.issuerUrl,
+        audience: config.clientId,
+        algorithms: [algorithm],
+      });
+
+      // Validate specific Logout Token claims (RFC 8963):
+      // "events" claim must exist and contain the backchannel-logout event
+      const events = payload.events as Record<string, any> | undefined;
+      if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
+        throw new Error('Missing backchannel-logout event claim');
+      }
+
+      // "nonce" must not be present
+      if (payload.nonce) {
+        throw new Error('Logout token must not contain a nonce');
+      }
+
+      return {
+        sub: payload.sub,
+        sid: payload.sid as string | undefined,
+      };
+    } catch (error: Error | any) {
+      this.logger.error(`Error validating JWT logout token: ${error.message}`);
+      this.logger.error(error);
+
+      throw new Error('Error validating JWT logout token', { cause: error });
+    }
   }
 
   private async getClient({

@@ -45,11 +45,14 @@ describe('SessionService', () => {
       const currentSession = factory.session();
       const auth = factory.auth({ session: currentSession });
 
-      mocks.session.invalidate.mockResolvedValue();
+      mocks.session.invalidateAll.mockResolvedValue();
 
       await sut.deleteAll(auth);
 
-      expect(mocks.session.invalidate).toHaveBeenCalledWith({ userId: auth.user.id, excludeId: currentSession.id });
+      expect(mocks.session.invalidateAll).toHaveBeenCalledWith({
+        userId: auth.user.id,
+        excludeId: currentSession.id,
+      });
     });
   });
 

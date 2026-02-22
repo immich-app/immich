@@ -172,6 +172,13 @@ export class OAuthAuthorizeResponseDto {
   url!: string;
 }
 
+export class OAuthBackchannelLogoutDto {
+  @ApiProperty({ description: 'OAuth logout token' })
+  @IsNotEmpty()
+  @IsString()
+  logout_token!: string;
+}
+
 export class AuthStatusResponseDto {
   @ApiProperty({ description: 'Has PIN code set' })
   pinCode!: boolean;

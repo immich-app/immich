@@ -102,12 +102,36 @@ export class SessionRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })
-  async invalidate({ userId, excludeId }: { userId: string; excludeId?: string }) {
+  async invalidateAll({ userId, excludeId }: { userId: string; excludeId?: string }) {
     await this.db
       .deleteFrom('session')
       .where('userId', '=', userId)
       .$if(!!excludeId, (qb) => qb.where('id', '!=', excludeId!))
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING, DummyValue.STRING] })
+  async invalidateOAuth({ oauthSid: oauthSid, oauthId: oauthId }: { oauthSid?: string; oauthId?: string }) {
+    if (oauthSid && oauthId) {
+      await this.db
+        .deleteFrom('session')
+        .using('user')
+        .whereRef('user.id', '=', 'session.userId')
+        .where('session.oauthSid', '=', oauthSid)
+        .where('user.oauthId', '=', oauthId)
+        .execute();
+    } else if (!oauthSid && oauthId) {
+      await this.db
+        .deleteFrom('session')
+        .using('user')
+        .whereRef('user.id', '=', 'session.userId')
+        .where('user.oauthId', '=', oauthId)
+        .execute();
+    } else if (oauthSid && !oauthId) {
+      await this.db.deleteFrom('session').where('oauthSid', '=', oauthSid).execute();
+    } else {
+      throw new Error('Invalid arguments: at least one of oauthSid or oauthId must be present');
+    }
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

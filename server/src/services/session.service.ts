@@ -73,7 +73,7 @@ export class SessionService extends BaseService {
   async deleteAll(auth: AuthDto): Promise<void> {
     const userId = auth.user.id;
     const currentSessionId = auth.session?.id;
-    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
+    await this.sessionRepository.invalidateAll({ userId, excludeId: currentSessionId });
   }
 
   async lock(auth: AuthDto, id: string): Promise<void> {
@@ -83,6 +83,6 @@ export class SessionService extends BaseService {
 
   @OnEvent({ name: 'AuthChangePassword' })
   async onAuthChangePassword({ userId, currentSessionId }: ArgOf<'AuthChangePassword'>): Promise<void> {
-    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
+    await this.sessionRepository.invalidateAll({ userId, excludeId: currentSessionId });
   }
 }
