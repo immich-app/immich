@@ -1,17 +1,20 @@
 <script lang="ts">
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Icon, Text } from '@immich/ui';
+  import { Icon, LoadingSpinner, Text } from '@immich/ui';
 
   interface Props {
     icon: string;
     title: string;
-    value: number;
+    value?: number;
     unit?: ByteUnit | undefined;
   }
 
-  let { icon, title, value, unit = undefined }: Props = $props();
+  let { icon, title, value = undefined, unit = undefined }: Props = $props();
 
   const zeros = $derived(() => {
+    if (value === undefined) {
+      return '';
+    }
     const maxLength = 13;
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
@@ -27,9 +30,13 @@
   </div>
 
   <div class="mx-auto font-mono text-2xl font-medium">
-    <span class="text-gray-300 dark:text-gray-600">{zeros()}</span><span>{value}</span>
-    {#if unit}
-      <code class="font-mono text-base font-normal">{unit}</code>
+    {#if value === undefined}
+      <LoadingSpinner />
+    {:else}
+      <span class="text-gray-300 dark:text-gray-600">{zeros()}</span><span>{value}</span>
+      {#if unit}
+        <code class="font-mono text-base font-normal">{unit}</code>
+      {/if}
     {/if}
   </div>
 </div>

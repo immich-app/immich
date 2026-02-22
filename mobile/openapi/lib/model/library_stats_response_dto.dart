@@ -13,11 +13,15 @@ part of openapi.api;
 class LibraryStatsResponseDto {
   /// Returns a new [LibraryStatsResponseDto] instance.
   LibraryStatsResponseDto({
+    this.offline = 0,
     this.photos = 0,
     this.total = 0,
     this.usage = 0,
     this.videos = 0,
   });
+
+  /// Number of offline assets
+  int offline;
 
   /// Number of photos
   int photos;
@@ -33,6 +37,7 @@ class LibraryStatsResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LibraryStatsResponseDto &&
+    other.offline == offline &&
     other.photos == photos &&
     other.total == total &&
     other.usage == usage &&
@@ -41,16 +46,18 @@ class LibraryStatsResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (offline.hashCode) +
     (photos.hashCode) +
     (total.hashCode) +
     (usage.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'LibraryStatsResponseDto[photos=$photos, total=$total, usage=$usage, videos=$videos]';
+  String toString() => 'LibraryStatsResponseDto[offline=$offline, photos=$photos, total=$total, usage=$usage, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'offline'] = this.offline;
       json[r'photos'] = this.photos;
       json[r'total'] = this.total;
       json[r'usage'] = this.usage;
@@ -67,6 +74,7 @@ class LibraryStatsResponseDto {
       final json = value.cast<String, dynamic>();
 
       return LibraryStatsResponseDto(
+        offline: mapValueOfType<int>(json, r'offline')!,
         photos: mapValueOfType<int>(json, r'photos')!,
         total: mapValueOfType<int>(json, r'total')!,
         usage: mapValueOfType<int>(json, r'usage')!,
@@ -118,6 +126,7 @@ class LibraryStatsResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'offline',
     'photos',
     'total',
     'usage',
