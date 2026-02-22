@@ -107,7 +107,7 @@ export class MediaRepository {
         ExposureTime: tags.exposureTime,
         ProfileDescription: tags.profileDescription,
         ColorSpace: tags.colorspace,
-        Rating: tags.rating,
+        Rating: tags.rating === null ? 0 : tags.rating,
         // specially convert Orientation to numeric Orientation# for exiftool
         'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
       };

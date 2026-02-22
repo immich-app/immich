@@ -9407,10 +9407,11 @@
             "name": "rating",
             "required": false,
             "in": "query",
-            "description": "Filter by rating",
+            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
             "schema": {
               "minimum": -1,
               "maximum": 5,
+              "nullable": true,
               "type": "number"
             }
           },
@@ -15875,6 +15876,7 @@
             "description": "Rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "timeZone": {
@@ -18986,9 +18988,10 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "size": {
@@ -20712,9 +20715,10 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "size": {
@@ -22086,9 +22090,10 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "size": {
@@ -22320,9 +22325,10 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "state": {
@@ -25099,6 +25105,7 @@
             "description": "Rating",
             "maximum": 5,
             "minimum": -1,
+            "nullable": true,
             "type": "number"
           },
           "visibility": {

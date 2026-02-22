@@ -15,7 +15,7 @@
     date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
-    rating?: number;
+    rating?: number | null;
   };
 </script>
 

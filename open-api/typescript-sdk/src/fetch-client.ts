@@ -835,7 +835,7 @@ export type AssetBulkUpdateDto = {
     /** Longitude coordinate */
     longitude?: number;
     /** Rating */
-    rating?: number;
+    rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
     /** Asset visibility */
@@ -945,7 +945,7 @@ export type UpdateAssetDto = {
     /** Longitude coordinate */
     longitude?: number;
     /** Rating */
-    rating?: number;
+    rating?: number | null;
     /** Asset visibility */
     visibility?: AssetVisibility;
 };
@@ -1709,8 +1709,8 @@ export type MetadataSearchDto = {
     personIds?: string[];
     /** Filter by preview file path */
     previewPath?: string;
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1825,8 +1825,8 @@ export type RandomSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1901,8 +1901,8 @@ export type SmartSearchDto = {
     query?: string;
     /** Asset ID to use as search reference */
     queryAssetId?: string;
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1967,8 +1967,8 @@ export type StatisticsSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    rating?: number | null;
     /** Filter by state/province name */
     state?: string | null;
     /** Filter by tag IDs */
@@ -5422,7 +5422,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     model?: string | null;
     ocr?: string;
     personIds?: string[];
-    rating?: number;
+    rating?: number | null;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;

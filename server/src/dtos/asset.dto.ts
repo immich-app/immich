@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
@@ -57,11 +57,12 @@ export class UpdateAssetBase {
   longitude?: number;
 
   @ApiProperty({ description: 'Rating' })
-  @Optional()
+  @Optional({ nullable: true })
   @IsInt()
   @Max(5)
   @Min(-1)
-  rating?: number;
+  @Transform(({ value }) => (value === 0 ? null : value))
+  rating?: number | null;
 
   @ApiProperty({ description: 'Asset description' })
   @Optional()
