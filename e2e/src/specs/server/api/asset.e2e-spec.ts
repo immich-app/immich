@@ -473,7 +473,7 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-20T01:11:00+00:00',
+          dateTimeOriginal: new Date('2023-11-19T18:11:00.000-07:00').toISOString(),
           timeZone: 'UTC-7',
         }),
       });
@@ -544,7 +544,7 @@ describe('/asset', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
       const assetInfo = await utils.getAssetInfo(user1.accessToken, id);
-      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe('2024-07-11T10:32:52+00:00');
+      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe(new Date('2024-07-11T10:32:52Z').toISOString());
 
       const { status, body } = await request(app)
         .put(`/assets/${id}`)
@@ -554,7 +554,7 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id,
         exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-20T01:11:00+00:00',
+          dateTimeOriginal: new Date('2023-11-19T18:11:00.000-07:00').toISOString(),
         }),
       });
       expect(status).toEqual(200);
@@ -839,7 +839,7 @@ describe('/asset', () => {
       expect(result.body).toMatchObject({
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-19T01:10:00+00:00',
+          dateTimeOriginal: new Date('2023-11-19T01:10:00.000Z').toISOString(),
         }),
       });
     });
@@ -868,7 +868,7 @@ describe('/asset', () => {
           type: AssetTypeEnum.Image,
           originalFileName: 'el_torcal_rocks.jpg',
           exifInfo: {
-            dateTimeOriginal: '2012-08-05T11:39:59+00:00',
+            dateTimeOriginal: new Date('2012-08-05T11:39:59.000Z').toISOString(),
             exifImageWidth: 512,
             exifImageHeight: 341,
             focalLength: 75,
@@ -902,7 +902,7 @@ describe('/asset', () => {
           originalFileName: 'IMG_2682.heic',
           fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: {
-            dateTimeOriginal: '2019-03-21T16:04:22.348+00:00',
+            dateTimeOriginal: new Date('2019-03-21T16:04:22.348Z').toISOString(),
             exifImageWidth: 4032,
             exifImageHeight: 3024,
             latitude: 41.2203,
@@ -945,7 +945,7 @@ describe('/asset', () => {
             focalLength: 18,
             iso: 100,
             fileSizeInByte: 9_057_784,
-            dateTimeOriginal: '2010-07-20T17:27:12+00:00',
+            dateTimeOriginal: new Date('2010-07-20T17:27:12.000Z').toISOString(),
             orientation: '1',
           },
         },
@@ -964,7 +964,7 @@ describe('/asset', () => {
             focalLength: 85,
             iso: 200,
             fileSizeInByte: 15_856_335,
-            dateTimeOriginal: '2016-09-22T21:10:29.06+00:00',
+            dateTimeOriginal: new Date('2016-09-22T21:10:29.060Z').toISOString(),
             orientation: '1',
             timeZone: 'UTC-4',
           },
@@ -986,7 +986,7 @@ describe('/asset', () => {
             focalLength: 35,
             iso: 400,
             fileSizeInByte: 19_587_072,
-            dateTimeOriginal: '2018-05-10T08:42:37.842+00:00',
+            dateTimeOriginal: new Date('2018-05-10T08:42:37.842Z').toISOString(),
             orientation: '1',
           },
         },
@@ -1008,7 +1008,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'Sony E PZ 18-105mm F4 G OSS',
             fileSizeInByte: 25_001_984,
-            dateTimeOriginal: '2016-09-27T10:51:44+00:00',
+            dateTimeOriginal: new Date('2016-09-27T10:51:44.000Z').toISOString(),
             orientation: '1',
           },
         },
@@ -1030,7 +1030,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'Zeiss Batis 25mm F2',
             fileSizeInByte: 49_512_448,
-            dateTimeOriginal: '2016-01-08T14:08:01+00:00',
+            dateTimeOriginal: new Date('2016-01-08T14:08:01.000Z').toISOString(),
             orientation: '1',
           },
         },
@@ -1052,7 +1052,7 @@ describe('/asset', () => {
             iso: 80,
             lensModel: null,
             fileSizeInByte: 11_113_617,
-            dateTimeOriginal: '2015-12-27T09:55:40+00:00',
+            dateTimeOriginal: new Date('2015-12-27T09:55:40.000Z').toISOString(),
             latitude: null,
             longitude: null,
             orientation: '1',
@@ -1076,7 +1076,7 @@ describe('/asset', () => {
             iso: 160,
             lensModel: null,
             fileSizeInByte: 13_551_312,
-            dateTimeOriginal: '2024-10-12T21:01:01+00:00',
+            dateTimeOriginal: new Date('2024-10-12T21:01:01.000Z').toISOString(),
             latitude: null,
             longitude: null,
             orientation: '6',
@@ -1090,7 +1090,7 @@ describe('/asset', () => {
           originalFileName: 'Ricoh_GR3-450.DNG',
           fileCreatedAt: '2024-06-08T13:48:39.000Z',
           exifInfo: {
-            dateTimeOriginal: '2024-06-08T13:48:39+00:00',
+            dateTimeOriginal: new Date('2024-06-08T13:48:39.000Z').toISOString(),
             exifImageHeight: 4064,
             exifImageWidth: 6112,
             exposureTime: '1/400',
