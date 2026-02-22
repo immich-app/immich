@@ -201,22 +201,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.9.5"
-  cancellation_token:
-    dependency: transitive
-    description:
-      name: cancellation_token
-      sha256: ad95acf9d4b2f3563e25dc937f63587e46a70ce534e910b65d10e115490f1027
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
-  cancellation_token_http:
-    dependency: "direct main"
-    description:
-      name: cancellation_token_http
-      sha256: "0fff478fe5153700396b3472ddf93303c219f1cb8d8e779e65b014cb9c7f0213"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   cast:
     dependency: "direct main"
     description:
@@ -313,14 +297,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
-  cronet_http:
-    dependency: "direct main"
-    description:
-      name: cronet_http
-      sha256: "1fff7f26ac0c4cda97fe2a9aa082494baee4775f167c27ba45f6c8e88571e3ab"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.7.0"
   crop_image:
     dependency: "direct main"
     description:
@@ -356,11 +332,12 @@ packages:
   cupertino_http:
     dependency: "direct main"
     description:
-      name: cupertino_http
-      sha256: "82cbec60c90bf785a047a9525688b6dacac444e177e1d5a5876963d3c50369e8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.0"
+      path: "pkgs/cupertino_http"
+      ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
+      resolved-ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
+      url: "https://github.com/mertalev/http"
+    source: git
+    version: "3.0.0-wip"
   custom_lint:
     dependency: "direct dev"
     description:
@@ -1241,8 +1218,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: e132bc3
-      resolved-ref: e132bc3ecc6a6d8fc2089d96f849c8a13129500e
+      ref: "0a80cd0bd3ff61790d1e05ef15baa7cbe26264d2"
+      resolved-ref: "0a80cd0bd3ff61790d1e05ef15baa7cbe26264d2"
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
@@ -1286,6 +1263,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  ok_http:
+    dependency: "direct main"
+    description:
+      path: "pkgs/ok_http"
+      ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
+      resolved-ref: "549c24b0a4d3881a9a44b70f4873450d43c1c4af"
+      url: "https://github.com/mertalev/http"
+    source: git
+    version: "0.1.1-wip"
   openapi:
     dependency: "direct main"
     description:
@@ -1741,19 +1727,20 @@ packages:
   socket_io_client:
     dependency: "direct main"
     description:
-      name: socket_io_client
-      sha256: ede469f3e4c55e8528b4e023bdedbc20832e8811ab9b61679d1ba3ed5f01f23b
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.3+1"
+      path: "."
+      ref: e1d813a240b5d5b7e2f141b2b605c5429b7cd006
+      resolved-ref: e1d813a240b5d5b7e2f141b2b605c5429b7cd006
+      url: "https://github.com/mertalev/socket.io-client-dart"
+    source: git
+    version: "3.1.4"
   socket_io_common:
     dependency: transitive
     description:
       name: socket_io_common
-      sha256: "2ab92f8ff3ebbd4b353bf4a98bee45cc157e3255464b2f90f66e09c4472047eb"
+      sha256: "162fbaecbf4bf9a9372a62a341b3550b51dcef2f02f3e5830a297fd48203d45b"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.3"
+    version: "3.1.1"
   source_gen:
     dependency: transitive
     description:
@@ -2115,21 +2102,21 @@ packages:
     source: hosted
     version: "1.1.1"
   web_socket:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web_socket
-      sha256: "3c12d96c0c9a4eec095246debcea7b86c0324f22df69893d538fcc6f1b8cce83"
+      sha256: "34d64019aa8e36bf9842ac014bb5d2f5586ca73df5e4d9bf5c936975cae6982c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.6"
+    version: "1.0.1"
   web_socket_channel:
     dependency: transitive
     description:
       name: web_socket_channel
-      sha256: "0b8e2457400d8a859b7b2030786835a28a8e80836ef64402abef392ff4f1d0e5"
+      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.2"
+    version: "3.0.3"
   webdriver:
     dependency: transitive
     description:

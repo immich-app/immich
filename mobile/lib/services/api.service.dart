@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
-import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -49,9 +48,14 @@ class ApiService implements Authentication {
   String? _accessToken;
   final _log = Logger("ApiService");
 
+  Future<void> updateHeaders() async {
+    await NetworkRepository.setHeaders(getRequestHeaders(), getServerUrls());
+    _apiClient.client = NetworkRepository.client;
+  }
+
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
-    _setUserAgentHeader();
+    _apiClient.client = NetworkRepository.client;
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
     }
@@ -76,11 +80,6 @@ class ApiService implements Authentication {
     memoriesApi = MemoriesApi(_apiClient);
     sessionsApi = SessionsApi(_apiClient);
     tagsApi = TagsApi(_apiClient);
-  }
-
-  Future<void> _setUserAgentHeader() async {
-    final userAgent = await getUserAgentString();
-    _apiClient.addDefaultHeader('User-Agent', userAgent);
   }
 
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
@@ -136,14 +135,9 @@ class ApiService implements Authentication {
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
-    final Client client = Client();
-
     try {
-      var headers = {"Accept": "application/json"};
-      headers.addAll(getRequestHeaders());
-
-      final res = await client
-          .get(Uri.parse("$baseUrl/.well-known/immich"), headers: headers)
+      final res = await NetworkRepository.client
+          .get(Uri.parse("$baseUrl/.well-known/immich"))
           .timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
@@ -185,6 +179,31 @@ class ApiService implements Authentication {
     }
   }
 
+  static List<String> getServerUrls() {
+    final urls = <String>[];
+    final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+    if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
+      urls.add(serverEndpoint);
+    }
+    final serverUrl = Store.tryGet(StoreKey.serverUrl);
+    if (serverUrl != null && serverUrl.isNotEmpty) {
+      urls.add(serverUrl);
+    }
+    final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+    if (localEndpoint != null && localEndpoint.isNotEmpty) {
+      urls.add(localEndpoint);
+    }
+    final externalJson = Store.tryGet(StoreKey.externalEndpointList);
+    if (externalJson != null) {
+      final List<dynamic> list = jsonDecode(externalJson);
+      for (final entry in list) {
+        final url = entry['url'] as String?;
+        if (url != null && url.isNotEmpty) urls.add(url);
+      }
+    }
+    return urls;
+  }
+
   static Map<String, String> getRequestHeaders() {
     var accessToken = Store.get(StoreKey.accessToken, "");
     var customHeadersStr = Store.get(StoreKey.customHeaders, "");
@@ -207,10 +226,7 @@ class ApiService implements Authentication {
 
   @override
   Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
-    return Future<void>(() {
-      var headers = ApiService.getRequestHeaders();
-      headerParams.addAll(headers);
-    });
+    return Future.value();
   }
 
   ApiClient get apiClient => _apiClient;

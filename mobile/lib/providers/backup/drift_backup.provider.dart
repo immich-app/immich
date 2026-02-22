@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -109,7 +108,6 @@ class DriftBackupState {
   final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
-  final CancellationToken? cancelToken;
 
   final Map<String, double> iCloudDownloadProgress;
 
@@ -121,7 +119,6 @@ class DriftBackupState {
     required this.isSyncing,
     this.error = BackupError.none,
     required this.uploadItems,
-    this.cancelToken,
     this.iCloudDownloadProgress = const {},
   });
 
@@ -133,7 +130,6 @@ class DriftBackupState {
     bool? isSyncing,
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
-    CancellationToken? cancelToken,
     Map<String, double>? iCloudDownloadProgress,
   }) {
     return DriftBackupState(
@@ -144,7 +140,6 @@ class DriftBackupState {
       isSyncing: isSyncing ?? this.isSyncing,
       error: error ?? this.error,
       uploadItems: uploadItems ?? this.uploadItems,
-      cancelToken: cancelToken ?? this.cancelToken,
       iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
     );
   }
@@ -153,7 +148,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, cancelToken: $cancelToken, iCloudDownloadProgress: $iCloudDownloadProgress)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, iCloudDownloadProgress: $iCloudDownloadProgress)';
   }
 
   @override
@@ -168,8 +163,7 @@ class DriftBackupState {
         other.isSyncing == isSyncing &&
         other.error == error &&
         mapEquals(other.iCloudDownloadProgress, iCloudDownloadProgress) &&
-        mapEquals(other.uploadItems, uploadItems) &&
-        other.cancelToken == cancelToken;
+        mapEquals(other.uploadItems, uploadItems);
   }
 
   @override
@@ -181,7 +175,6 @@ class DriftBackupState {
         isSyncing.hashCode ^
         error.hashCode ^
         uploadItems.hashCode ^
-        cancelToken.hashCode ^
         iCloudDownloadProgress.hashCode;
   }
 }
@@ -211,6 +204,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   final ForegroundUploadService _foregroundUploadService;
   final BackgroundUploadService _backgroundUploadService;
   final UploadSpeedManager _uploadSpeedManager;
+  Completer<void>? _cancelToken;
 
   final _logger = Logger("DriftBackupNotifier");
 
@@ -246,7 +240,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  void updateError(BackupError error) async {
+  void updateError(BackupError error) {
     if (!mounted) {
       _logger.warning("Skip updateError: notifier disposed");
       return;
@@ -254,24 +248,23 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(error: error);
   }
 
-  void updateSyncing(bool isSyncing) async {
+  void updateSyncing(bool isSyncing) {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) async {
+  Future<void> startForegroundBackup(String userId) {
     // Cancel any existing backup before starting a new one
-    if (state.cancelToken != null) {
-      await stopForegroundBackup();
+    if (_cancelToken != null) {
+      stopForegroundBackup();
     }
 
     state = state.copyWith(error: BackupError.none);
 
-    final cancelToken = CancellationToken();
-    state = state.copyWith(cancelToken: cancelToken);
+    _cancelToken = Completer<void>();
 
     return _foregroundUploadService.uploadCandidates(
       userId,
-      cancelToken,
+      _cancelToken!,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
@@ -281,10 +274,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> stopForegroundBackup() async {
-    state.cancelToken?.cancel();
+  void stopForegroundBackup() {
+    _cancelToken?.complete();
+    _cancelToken = null;
     _uploadSpeedManager.clear();
-    state = state.copyWith(cancelToken: null, uploadItems: {}, iCloudDownloadProgress: {});
+    state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {});
   }
 
   void _handleICloudProgress(String localAssetId, double progress) {
@@ -300,7 +294,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupProgress(String localAssetId, String filename, int bytes, int totalBytes) {
-    if (state.cancelToken == null) {
+    if (_cancelToken == null) {
       return;
     }
 
@@ -399,7 +393,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 }
 
-final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((ref) async {
+final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) {
     return [];

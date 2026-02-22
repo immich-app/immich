@@ -221,8 +221,11 @@ class NetworkPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NetworkApi {
   func addCertificate(clientData: ClientCertData, completion: @escaping (Result<Void, Error>) -> Void)
-  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<ClientCertData, Error>) -> Void)
+  func selectCertificate(promptText: ClientCertPrompt, completion: @escaping (Result<Void, Error>) -> Void)
   func removeCertificate(completion: @escaping (Result<Void, Error>) -> Void)
+  func hasCertificate() throws -> Bool
+  func getClientPointer() throws -> Int64
+  func setRequestHeaders(headers: [String: String], serverUrls: [String]) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -255,8 +258,8 @@ class NetworkApiSetup {
         let promptTextArg = args[0] as! ClientCertPrompt
         api.selectCertificate(promptText: promptTextArg) { result in
           switch result {
-          case .success(let res):
-            reply(wrapResult(res))
+          case .success:
+            reply(wrapResult(nil))
           case .failure(let error):
             reply(wrapError(error))
           }
@@ -279,6 +282,48 @@ class NetworkApiSetup {
       }
     } else {
       removeCertificateChannel.setMessageHandler(nil)
+    }
+    let hasCertificateChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.hasCertificate\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      hasCertificateChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.hasCertificate()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      hasCertificateChannel.setMessageHandler(nil)
+    }
+    let getClientPointerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.getClientPointer\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getClientPointerChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getClientPointer()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getClientPointerChannel.setMessageHandler(nil)
+    }
+    let setRequestHeadersChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.setRequestHeaders\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setRequestHeadersChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let headersArg = args[0] as! [String: String]
+        let serverUrlsArg = args[1] as! [String]
+        do {
+          try api.setRequestHeaders(headers: headersArg, serverUrls: serverUrlsArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      setRequestHeadersChannel.setMessageHandler(nil)
     }
   }
 }

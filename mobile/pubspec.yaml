@@ -12,7 +12,6 @@ dependencies:
   async: ^2.13.0
   auto_route: ^9.2.0
   background_downloader: ^9.3.0
-  cancellation_token_http: ^2.1.0
   cast: ^2.1.0
   collection: ^1.19.1
   connectivity_plus: ^6.1.3
@@ -57,7 +56,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: 'e132bc3'
+      ref: '0a80cd0bd3ff61790d1e05ef15baa7cbe26264d2'
   network_info_plus: ^6.1.3
   octo_image: ^2.1.0
   openapi:
@@ -76,7 +75,6 @@ dependencies:
   share_handler: ^0.0.25
   share_plus: ^10.1.4
   sliver_tools: ^0.2.12
-  socket_io_client: ^2.0.3+1
   stream_transform: ^2.1.1
   thumbhash: 0.1.0+1
   timezone: ^0.9.4
@@ -84,8 +82,21 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.3.0
   worker_manager: ^7.2.7
-  cronet_http: ^1.7.0
-  cupertino_http: ^2.4.0
+  web_socket: ^1.0.1
+  socket_io_client:
+    git:
+      url: https://github.com/mertalev/socket.io-client-dart
+      ref: 'e1d813a240b5d5b7e2f141b2b605c5429b7cd006' # https://github.com/rikulo/socket.io-client-dart/pull/435
+  cupertino_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
+      path: pkgs/cupertino_http/
+  ok_http:
+    git:
+      url: https://github.com/mertalev/http
+      ref: '549c24b0a4d3881a9a44b70f4873450d43c1c4af' # https://github.com/dart-lang/http/pull/1877
+      path: pkgs/ok_http/
 
 dev_dependencies:
   auto_route_generator: ^9.0.0

@@ -39,7 +39,6 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
@@ -57,7 +56,6 @@ void main() async {
   // Warm-up isolate pool for worker manager
   await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
   await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
@@ -241,7 +239,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void reassemble() {
     if (kDebugMode) {
-      NetworkRepository.reset();
+      NetworkRepository.init();
     }
     super.reassemble();
   }

@@ -90,6 +90,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
+      await _apiService.updateHeaders();
       await _ref.read(backgroundUploadServiceProvider).cancel();
       _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {
@@ -124,6 +125,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<bool> saveAuthInfo({required String accessToken}) async {
     await _apiService.setAccessToken(accessToken);
+    await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final customHeaders = Store.tryGet(StoreKey.customHeaders);

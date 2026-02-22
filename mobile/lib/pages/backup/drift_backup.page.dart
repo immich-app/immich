@@ -96,10 +96,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       await backupNotifier.startForegroundBackup(currentUser.id);
     }
 
-    Future<void> stopBackup() async {
-      await backupNotifier.stopForegroundBackup();
-    }
-
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -136,9 +132,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const Divider(),
                   BackupToggleButton(
                     onStart: () async => await startBackup(),
-                    onStop: () async {
+                    onStop: () {
                       syncSuccess = null;
-                      await stopBackup();
+                      backupNotifier.stopForegroundBackup();
                     },
                   ),
                   switch (error) {
