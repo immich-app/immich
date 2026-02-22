@@ -14,31 +14,37 @@ class AssetEditActionRotate {
   /// Returns a new [AssetEditActionRotate] instance.
   AssetEditActionRotate({
     required this.action,
+    required this.id,
     required this.parameters,
   });
 
   /// Type of edit action to perform
   AssetEditAction action;
 
+  String id;
+
   RotateParameters parameters;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionRotate &&
     other.action == action &&
+    other.id == id &&
     other.parameters == parameters;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
+    (id.hashCode) +
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditActionRotate[action=$action, parameters=$parameters]';
+  String toString() => 'AssetEditActionRotate[action=$action, id=$id, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
+      json[r'id'] = this.id;
       json[r'parameters'] = this.parameters;
     return json;
   }
@@ -53,6 +59,7 @@ class AssetEditActionRotate {
 
       return AssetEditActionRotate(
         action: AssetEditAction.fromJson(json[r'action'])!,
+        id: mapValueOfType<String>(json, r'id')!,
         parameters: RotateParameters.fromJson(json[r'parameters'])!,
       );
     }
@@ -102,6 +109,7 @@ class AssetEditActionRotate {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'action',
+    'id',
     'parameters',
   };
 }

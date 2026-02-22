@@ -9,6 +9,7 @@ rollback
 
 -- AssetEditRepository.getAll
 select
+  "id",
   "action",
   "parameters"
 from
