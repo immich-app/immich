@@ -24,6 +24,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cove
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
@@ -70,6 +71,7 @@ enum ActionButtonType {
   cast,
   setAlbumCover,
   similarPhotos,
+  setProfilePicture,
   viewInTimeline,
   download,
   upload,
@@ -155,6 +157,10 @@ enum ActionButtonType {
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
+      ActionButtonType.setProfilePicture =>
+        !context.isInLockedView && //
+            context.asset is RemoteAsset && //
+            context.isOwner,
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
@@ -232,6 +238,11 @@ enum ActionButtonType {
       ActionButtonType.unstack => UnStackActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.similarPhotos => SimilarPhotosActionButton(
         assetId: (context.asset as RemoteAsset).id,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+      ),
+      ActionButtonType.setProfilePicture => SetProfilePictureActionButton(
+        asset: context.asset,
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),

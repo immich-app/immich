@@ -637,6 +637,76 @@ void main() {
       });
     });
 
+    group('setProfilePicture button', () {
+      test('should show when owner, not locked, and asset is RemoteAsset', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.setProfilePicture.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not owner', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: false,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.setProfilePicture.shouldShow(context), isFalse);
+      });
+
+      test('should not show when in locked view', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.setProfilePicture.shouldShow(context), isFalse);
+      });
+
+      test('should not show when asset is not RemoteAsset', () {
+        final localAsset = createLocalAsset();
+        final context = ActionButtonContext(
+          asset: localAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.setProfilePicture.shouldShow(context), isFalse);
+      });
+    });
+
     group('setAlbumCover button', () {
       test('should show when owner, not locked, has album, and selectedCount is 1', () {
         final album = createRemoteAlbum();
