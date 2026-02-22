@@ -591,8 +591,9 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."deletedAt" is null
-  and "asset"."id" = $2
+  "asset"."visibility" != $2
+  and "asset"."deletedAt" is null
+  and "asset"."id" = $3
 
 -- AssetJobRepository.streamForStorageTemplateJob
 select
@@ -632,8 +633,8 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."deletedAt" is null
-  and "asset"."visibility" != $2
+  "asset"."visibility" != $2
+  and "asset"."deletedAt" is null
 
 -- AssetJobRepository.streamForDeletedJob
 select

@@ -374,7 +374,7 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForStorageTemplateJob() {
-    return this.storageTemplateAssetQuery().where('asset.visibility', '!=', AssetVisibility.Hidden).stream();
+    return this.storageTemplateAssetQuery().stream();
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })
