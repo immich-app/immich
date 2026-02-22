@@ -77,7 +77,7 @@ export function generateAsset(
     latitude: hasGPS ? faker.location.latitude() : null,
     longitude: hasGPS ? faker.location.longitude() : null,
     visibility: AssetVisibility.Timeline,
-    stack: null,
+    stack: undefined,
     fileSizeInByte: faker.number.int({ min: 510, max: 5_000_000 }),
     checksum: faker.string.alphanumeric({ length: 5 }),
   };
