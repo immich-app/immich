@@ -1,4 +1,4 @@
-import { on } from "svelte/events";
+import { on } from 'svelte/events';
 
 interface Options {
   onFocusOut?: (event: FocusEvent) => void;
