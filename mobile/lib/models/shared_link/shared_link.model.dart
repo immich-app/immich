@@ -67,9 +67,7 @@ class SharedLink {
       key = dto.key,
       showMetadata = dto.showMetadata,
       type = dto.type.value == 'ALBUM' ? SharedLinkSource.album : SharedLinkSource.individual,
-      title = dto.type.value == 'ALBUM'
-          ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
-          : "INDIVIDUAL SHARE",
+      title = dto.type.value == 'ALBUM' ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE" : "INDIVIDUAL SHARE",
       thumbAssetId = dto.type.value == 'ALBUM'
           ? dto.album?.albumThumbnailAssetId
           : dto.assets.isNotEmpty

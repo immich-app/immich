@@ -17,7 +17,6 @@ AssetType _toAssetTypeFromApiValue(String v) => switch (v) {
 AvatarColor _toAvatarColorFromApiValue(String v) =>
     AvatarColor.values.firstWhere((c) => c.value == v, orElse: () => AvatarColor.primary);
 
-
 // Optional: if you still want to canonicalize via the shared model
 UserAvatarColor _toUserAvatarColorFromApiValue(String v) => UserAvatarColor.fromJson(v) ?? UserAvatarColor.primary;
 
@@ -45,8 +44,7 @@ extension AssetResponseDtoTypeEnumX on AssetResponseDtoTypeEnum {
   AssetType toAssetType() => _toAssetTypeFromApiValue(value);
 }
 
-AssetVisibility _toApiAssetVisibilityFromValue(String v) =>
-    AssetVisibility.fromJson(v) ?? AssetVisibility.timeline;
+AssetVisibility _toApiAssetVisibilityFromValue(String v) => AssetVisibility.fromJson(v) ?? AssetVisibility.timeline;
 
 extension AssetResponseDtoVisibilityEnumX on AssetResponseDtoVisibilityEnum {
   AssetVisibility toAssetVisibility() => _toApiAssetVisibilityFromValue(value);
