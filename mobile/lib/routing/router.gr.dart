@@ -753,10 +753,17 @@ class DriftActivitiesRoute extends PageRouteInfo<DriftActivitiesRouteArgs> {
   DriftActivitiesRoute({
     Key? key,
     required RemoteAlbum album,
+    String? assetId,
+    String? assetName,
     List<PageRouteInfo>? children,
   }) : super(
          DriftActivitiesRoute.name,
-         args: DriftActivitiesRouteArgs(key: key, album: album),
+         args: DriftActivitiesRouteArgs(
+           key: key,
+           album: album,
+           assetId: assetId,
+           assetName: assetName,
+         ),
          initialChildren: children,
        );
 
@@ -766,21 +773,35 @@ class DriftActivitiesRoute extends PageRouteInfo<DriftActivitiesRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<DriftActivitiesRouteArgs>();
-      return DriftActivitiesPage(key: args.key, album: args.album);
+      return DriftActivitiesPage(
+        key: args.key,
+        album: args.album,
+        assetId: args.assetId,
+        assetName: args.assetName,
+      );
     },
   );
 }
 
 class DriftActivitiesRouteArgs {
-  const DriftActivitiesRouteArgs({this.key, required this.album});
+  const DriftActivitiesRouteArgs({
+    this.key,
+    required this.album,
+    this.assetId,
+    this.assetName,
+  });
 
   final Key? key;
 
   final RemoteAlbum album;
 
+  final String? assetId;
+
+  final String? assetName;
+
   @override
   String toString() {
-    return 'DriftActivitiesRouteArgs{key: $key, album: $album}';
+    return 'DriftActivitiesRouteArgs{key: $key, album: $album, assetId: $assetId, assetName: $assetName}';
   }
 }
 
@@ -1848,22 +1869,6 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const HeaderSettingsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [ImmichUIShowcasePage]
-class ImmichUIShowcaseRoute extends PageRouteInfo<void> {
-  const ImmichUIShowcaseRoute({List<PageRouteInfo>? children})
-    : super(ImmichUIShowcaseRoute.name, initialChildren: children);
-
-  static const String name = 'ImmichUIShowcaseRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ImmichUIShowcasePage();
     },
   );
 }
