@@ -150,10 +150,12 @@ class DriftSearchPage extends HookConsumerWidget {
       handleOnSelect(Set<PersonDto> value) {
         filter.value = filter.value.copyWith(people: value);
 
-        peopleCurrentFilterWidget.value = Text(
-          value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', '),
-          style: context.textTheme.labelLarge,
-        );
+        final label = value.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        if (label.isNotEmpty) {
+          peopleCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
+        } else {
+          peopleCurrentFilterWidget.value = null;
+        }
       }
 
       handleClear() {
@@ -696,7 +698,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.value?.tagsEnabled ?? false)
+                    if (userPreferences.valueOrNull?.tagsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.sell_outlined,
                         onTap: showTagPicker,
@@ -722,14 +724,13 @@ class DriftSearchPage extends HookConsumerWidget {
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
-                    if (userPreferences.value?.ratingsEnabled ?? false) ...[
+                    if (userPreferences.valueOrNull?.ratingsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
                         label: 'search_filter_star_rating'.t(context: context),
                         currentFilter: ratingCurrentFilterWidget.value,
                       ),
-                    ],
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,

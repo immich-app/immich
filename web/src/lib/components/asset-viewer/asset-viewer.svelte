@@ -432,6 +432,12 @@
   );
 
   const { Tag } = $derived(getAssetActions($t, asset));
+  const showDetailPanel = $derived(
+    asset.hasMetadata &&
+      $slideshowState === SlideshowState.None &&
+      assetViewerManager.isShowDetailPanel &&
+      !assetViewerManager.isShowEditor,
+  );
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
@@ -571,25 +577,22 @@
     </div>
   {/if}
 
-  {#if asset.hasMetadata && $slideshowState === SlideshowState.None && assetViewerManager.isShowDetailPanel && !assetViewerManager.isShowEditor}
+  {#if showDetailPanel || assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
-      class="row-start-1 row-span-4 w-90 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
+      class="row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
-    </div>
-  {/if}
-
-  {#if assetViewerManager.isShowEditor}
-    <div
-      transition:fly={{ duration: 150 }}
-      id="editor-panel"
-      class="row-start-1 row-span-4 w-100 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
-      translate="yes"
-    >
-      <EditorPanel {asset} onClose={closeEditor} />
+      {#if showDetailPanel}
+        <div class="w-90 h-full">
+          <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
+        </div>
+      {:else if assetViewerManager.isShowEditor}
+        <div class="w-100 h-full">
+          <EditorPanel {asset} onClose={closeEditor} />
+        </div>
+      {/if}
     </div>
   {/if}
 

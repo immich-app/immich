@@ -17,7 +17,7 @@ import { Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import micromatch from 'micromatch';
-import { Stats, createReadStream } from 'node:fs';
+import { Stats, createReadStream, existsSync } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
@@ -403,23 +403,6 @@ export const uploadFiles = async (
 const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
-  const assetPath = path.parse(input);
-  const noExtension = path.join(assetPath.dir, assetPath.name);
-
-  const sidecarsFiles = await Promise.all(
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    [`${noExtension}.xmp`, `${input}.xmp`].map(async (sidecarPath) => {
-      try {
-        const stats = await stat(sidecarPath);
-        return new UploadFile(sidecarPath, stats.size);
-      } catch {
-        return false;
-      }
-    }),
-  );
-
-  const sidecarData = sidecarsFiles.find((file): file is UploadFile => file !== false);
-
   const formData = new FormData();
   formData.append('deviceAssetId', `${basename(input)}-${stats.size}`.replaceAll(/\s+/g, ''));
   formData.append('deviceId', 'CLI');
@@ -429,8 +412,15 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   formData.append('isFavorite', 'false');
   formData.append('assetData', new UploadFile(input, stats.size));
 
-  if (sidecarData) {
-    formData.append('sidecarData', sidecarData);
+  const sidecarPath = findSidecar(input);
+  if (sidecarPath) {
+    try {
+      const stats = await stat(sidecarPath);
+      const sidecarData = new UploadFile(sidecarPath, stats.size);
+      formData.append('sidecarData', sidecarData);
+    } catch {
+      // noop
+    }
   }
 
   const response = await fetch(`${baseUrl}/assets`, {
@@ -446,7 +436,19 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
+export const findSidecar = (filepath: string): string | undefined => {
+  const assetPath = path.parse(filepath);
+  const noExtension = path.join(assetPath.dir, assetPath.name);
+
+  // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+  for (const sidecarPath of [`${noExtension}.xmp`, `${filepath}.xmp`]) {
+    if (existsSync(sidecarPath)) {
+      return sidecarPath;
+    }
+  }
+};
+
+export const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
   let fileCount = 0;
   if (options.delete) {
     fileCount += uploaded.length;
@@ -474,7 +476,15 @@ const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: Uplo
 
   const chunkDelete = async (files: Asset[]) => {
     for (const assetBatch of chunk(files, options.concurrency)) {
-      await Promise.all(assetBatch.map((input: Asset) => unlink(input.filepath)));
+      await Promise.all(
+        assetBatch.map(async (input: Asset) => {
+          await unlink(input.filepath);
+          const sidecarPath = findSidecar(input.filepath);
+          if (sidecarPath) {
+            await unlink(sidecarPath);
+          }
+        }),
+      );
       deletionProgress.update(assetBatch.length);
     }
   };

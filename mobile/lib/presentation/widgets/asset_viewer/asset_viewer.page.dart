@@ -96,6 +96,16 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   bool _assetReloadRequested = false;
 
+  void _onTapNavigate(int direction) {
+    final page = _pageController.page?.toInt();
+    if (page == null) return;
+    final target = page + direction;
+    final maxPage = ref.read(timelineServiceProvider).totalAssets - 1;
+    if (target >= 0 && target <= maxPage) {
+      _pageController.jumpToPage(target);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -270,7 +280,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
                     : const FastClampingScrollPhysics(),
                 itemCount: ref.read(timelineServiceProvider).totalAssets,
                 onPageChanged: (index) => _onAssetChanged(index),
-                itemBuilder: (context, index) => AssetPage(index: index, heroOffset: _heroOffset),
+                itemBuilder: (context, index) =>
+                    AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
               ),
             ),
             if (!CurrentPlatform.isIOS)

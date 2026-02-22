@@ -74,6 +74,7 @@ class Timeline extends StatefulWidget {
     this.snapToMonth = true,
     this.initialScrollOffset,
     this.readOnly = false,
+    this.persistentBottomBar = false,
   });
 
   final Widget? topSliverWidget;
@@ -87,6 +88,7 @@ class Timeline extends StatefulWidget {
   final bool snapToMonth;
   final double? initialScrollOffset;
   final bool readOnly;
+  final bool persistentBottomBar;
 
   @override
   State<Timeline> createState() => _TimelineState();
@@ -143,6 +145,7 @@ class _TimelineState extends State<Timeline> {
                 appBar: widget.appBar,
                 bottomSheet: widget.bottomSheet,
                 withScrubber: widget.withScrubber,
+                persistentBottomBar: widget.persistentBottomBar,
                 snapToMonth: widget.snapToMonth,
                 initialScrollOffset: widget.initialScrollOffset,
               ),
@@ -173,6 +176,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
+    this.persistentBottomBar = false,
     this.snapToMonth = true,
     this.initialScrollOffset,
   });
@@ -182,6 +186,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
+  final bool persistentBottomBar;
   final bool snapToMonth;
   final double? initialScrollOffset;
 
@@ -404,6 +409,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
+    final isBottomWidgetVisible =
+        widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -519,7 +527,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   child: Stack(
                     children: [
                       timeline,
-                      if (!isSelectionMode && isMultiSelectEnabled) ...[
+                      if (isMultiSelectStatusVisible)
                         Positioned(
                           top: MediaQuery.paddingOf(context).top,
                           left: 25,
@@ -528,8 +536,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                             child: Center(child: _MultiSelectStatusButton()),
                           ),
                         ),
-                        if (widget.bottomSheet != null) widget.bottomSheet!,
-                      ],
+                      if (isBottomWidgetVisible) widget.bottomSheet!,
                     ],
                   ),
                 ),

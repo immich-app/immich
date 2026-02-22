@@ -94,7 +94,7 @@
   const sharedLink = getSharedLink();
 </script>
 
-<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Cast, ...Object.values(Actions)])} />
+<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"

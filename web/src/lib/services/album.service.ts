@@ -1,6 +1,5 @@
 import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
-import { AlbumPageViewMode } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -32,7 +31,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiArrowLeft, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import { mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
@@ -46,7 +45,7 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
   return { Create };
 };
 
-export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto, viewMode: AlbumPageViewMode) => {
+export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
   const isOwned = get(user).id === album.ownerId;
 
   const Share: ActionItem = {
@@ -73,16 +72,7 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto, v
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
   };
 
-  const Close: ActionItem = {
-    title: $t('go_back'),
-    type: $t('command'),
-    icon: mdiArrowLeft,
-    onAction: () => goto(Route.albums()),
-    $if: () => viewMode === AlbumPageViewMode.VIEW,
-    shortcuts: { key: 'Escape' },
-  };
-
-  return { Share, AddUsers, CreateSharedLink, Close };
+  return { Share, AddUsers, CreateSharedLink };
 };
 
 export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponseDto, assets: TimelineAsset[]) => {

@@ -511,7 +511,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
       - name: Install Playwright Browsers
-        run: npx playwright install chromium --only-shell
+        run: pnpm exec playwright install chromium --only-shell
         if: ${{ !cancelled() }}
       - name: Docker build
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300

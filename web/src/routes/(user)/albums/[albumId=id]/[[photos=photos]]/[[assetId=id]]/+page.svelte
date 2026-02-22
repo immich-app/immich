@@ -127,10 +127,6 @@
       await handleCloseSelectAssets();
       return;
     }
-    if (viewMode === AlbumPageViewMode.OPTIONS) {
-      viewMode = AlbumPageViewMode.VIEW;
-      return;
-    }
     if ($showAssetViewer) {
       return;
     }
@@ -138,7 +134,7 @@
       cancelMultiselect(assetInteraction);
       return;
     }
-    return;
+    await goto(Route.albums());
   };
 
   const refreshAlbum = async () => {
@@ -305,14 +301,24 @@
       return;
     }
 
-    album.albumUsers = album.albumUsers.map((albumUser) =>
+    const albumUsers = album.albumUsers.map((albumUser) =>
       albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
     );
+    album = { ...album, albumUsers };
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share, Close } = $derived(getAlbumActions($t, album, viewMode));
+  const { Share } = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineInteraction.selectedAssets));
+
+  const Close = $derived({
+    title: $t('go_back'),
+    type: $t('command'),
+    icon: mdiArrowLeft,
+    onAction: handleEscape,
+    $if: () => !$showAssetViewer,
+    shortcuts: { key: 'Escape' },
+  });
 </script>
 
 <OnEvents
@@ -352,7 +358,7 @@
                 id={album.id}
                 albumName={album.albumName}
                 {isOwned}
-                onUpdate={(albumName) => (album.albumName = albumName)}
+                onUpdate={(albumName) => (album = { ...album, albumName })}
               />
 
               {#if album.assetCount > 0}
@@ -401,8 +407,11 @@
                   <ActionButton action={Share} />
                 </div>
               {/if}
-              <!-- ALBUM DESCRIPTION -->
-              <AlbumDescription id={album.id} bind:description={album.description} {isOwned} />
+              <AlbumDescription
+                id={album.id}
+                {isOwned}
+                bind:description={() => album.description, (description) => (album = { ...album, description })}
+              />
             </section>
           {/if}
 
