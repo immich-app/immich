@@ -343,6 +343,9 @@ importers:
       '@extism/extism':
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
+      '@immich/walkrs':
+        specifier: ^0.0.13
+        version: 0.0.13
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.13(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.13)(bullmq@5.68.0)
@@ -454,9 +457,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.2.1
-      fast-glob:
-        specifier: ^3.3.2
-        version: 3.3.3
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.3
@@ -3022,6 +3022,10 @@ packages:
     resolution: {integrity: sha512-jbPN1x9KAAcW18h4RO7skbFYjkR4Lg+mEVjSDzsPC2NBNzSi4IA0PIHhFEwnD5dk4OS7+UjRG8m5/QTyotrm4A==}
     peerDependencies:
       svelte: ^5.0.0
+
+  '@immich/walkrs@0.0.13':
+    resolution: {integrity: sha512-qKDoXFgy3d2Z7SIJBn25BcNyQnPLAp2zZEBcewpWxG5+qAXDPi3M3sweJ9qJ11Eha+YlmpUO3c8yd5CCBeq96A==}
+    engines: {pnpm: '>=10.0.0'}
 
   '@inquirer/ansi@1.0.2':
     resolution: {integrity: sha512-S8qNSZiYzFd0wAcyG5AXCvUHC5Sr7xpZ9wZ2py9XR88jUz8wooStVx5M6dRzczbBWjic9NP7+rY0Xi7qqK/aMQ==}
@@ -14834,6 +14838,8 @@ snapshots:
       tailwindcss: 4.1.18
     transitivePeerDependencies:
       - '@sveltejs/kit'
+
+  '@immich/walkrs@0.0.13': {}
 
   '@inquirer/ansi@1.0.2': {}
 

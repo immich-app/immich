@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
+    "@immich/walkrs": "^0.0.13",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
@@ -72,7 +73,6 @@
     "cron": "4.4.0",
     "exiftool-vendored": "^34.3.0",
     "express": "^5.1.0",
-    "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
     "handlebars": "^4.7.8",

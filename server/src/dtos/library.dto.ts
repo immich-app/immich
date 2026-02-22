@@ -54,14 +54,10 @@ export class UpdateLibraryDto {
   exclusionPatterns?: string[];
 }
 
-export interface CrawlOptionsDto {
-  pathsToCrawl: string[];
+export interface WalkOptionsDto {
+  pathsToWalk: string[];
   includeHidden?: boolean;
   exclusionPatterns?: string[];
-}
-
-export interface WalkOptionsDto extends CrawlOptionsDto {
-  take: number;
 }
 
 export class ValidateLibraryDto {
