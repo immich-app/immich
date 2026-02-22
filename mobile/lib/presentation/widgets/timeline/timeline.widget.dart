@@ -307,7 +307,6 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   void _scrollToDate(DateTime date) {
     final asyncSegments = ref.read(timelineSegmentProvider);
-    bool scrolled = false;
 
     asyncSegments.whenData((segments) {
       // Find the segment that contains assets from the target date
@@ -351,7 +350,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       }
     });
 
-    _pendingScrollDate = scrolled ? null : date;
+    _pendingScrollDate = date;
   }
 
   // Drag selection methods
