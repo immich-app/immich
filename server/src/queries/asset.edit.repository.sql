@@ -17,3 +17,17 @@ where
   "assetId" = $1
 order by
   "sequence" asc
+
+-- AssetEditRepository.getWithSyncInfo
+select
+  "id",
+  "assetId",
+  "sequence",
+  "action",
+  "parameters"
+from
+  "asset_edit"
+where
+  "assetId" = $1
+order by
+  "sequence" asc
