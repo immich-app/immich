@@ -74,9 +74,13 @@
   let duration = $derived(timeToSeconds(asset.duration));
   let showSeekButtons = $derived(duration > 10);
   let showVideo = $state(false);
+  let useIOSLayoutWorkaround = $state(false);
 
   onMount(() => {
-    // Show video after mount to ensure fading in.
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1);
+    const isCoarsePointer = globalThis.matchMedia?.('(pointer: coarse)')?.matches;
+    useIOSLayoutWorkaround = Boolean(isIOS && isCoarsePointer);
     showVideo = true;
   });
 
@@ -161,7 +165,13 @@
       </div>
     {:else}
       <!-- dir=ltr based on https://github.com/videojs/video.js/issues/949 -->
-      <media-controller dir="ltr" nohotkeys class="h-full dark" defaultduration={duration}>
+      <media-controller
+        dir="ltr"
+        nohotkeys
+        class="h-full dark"
+        class:ios-workaround={useIOSLayoutWorkaround}
+        defaultduration={duration}
+      >
         <video
           bind:this={videoPlayer}
           slot="media"
@@ -267,6 +277,14 @@
     --media-tooltip-background-color: var(--immich-ui-light-200);
     --media-tooltip-distance: 8px;
     --media-tooltip-padding: calc(var(--spacing) * 4) calc(var(--spacing) * 3.5);
+  }
+
+  /*
+   * iOS/WebKit workaround: avoid `display: contents` media slot sizing bugs that can
+   * result in a 0×0 layout box for the slotted <video> while still playing audio.
+   */
+  media-controller.ios-workaround {
+    display: block !important;
   }
 
   /* Needs special handling for some reason */
