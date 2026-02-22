@@ -40,6 +40,7 @@ class ActionButtonContext {
   final bool isStacked;
   final RemoteAlbum? currentAlbum;
   final bool advancedTroubleshooting;
+  final bool isWaitingForTrashApproval;
   final ActionSource source;
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
@@ -55,6 +56,7 @@ class ActionButtonContext {
     required this.isInLockedView,
     required this.currentAlbum,
     required this.advancedTroubleshooting,
+    required this.isWaitingForTrashApproval,
     required this.source,
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
@@ -98,7 +100,8 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            !context.isArchived,
+            !context.isArchived &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.unarchive =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -112,27 +115,31 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.isTrashEnabled,
+            context.isTrashEnabled &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
                 context.asset.hasRemote && //
                 !context.isTrashEnabled ||
-            context.isInLockedView,
+            context.isInLockedView && !context.isWaitingForTrashApproval,
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.moveToLockFolder =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.removeFromLockFolder =>
         context.isOwner && //
             context.isInLockedView && //
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-            context.asset.hasLocal,
+            context.asset.hasLocal &&
+            !context.isWaitingForTrashApproval,
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
@@ -169,6 +176,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
+            context.timelineOrigin != TimelineOrigin.syncTrash &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
     };

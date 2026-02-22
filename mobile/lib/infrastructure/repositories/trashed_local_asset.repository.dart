@@ -3,7 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/remote_deleted_local_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
@@ -124,7 +124,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAsset(Map<String, List<LocalAsset>> assetsByAlbums) async {
+  Future<void> trashLocalAsset(Map<String, List<RemoteDeletedLocalAsset>> assetsByAlbums) async {
     if (assetsByAlbums.isEmpty) {
       return Future.value();
     }
@@ -133,7 +133,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     final idToDelete = <String>{};
 
     for (final entry in assetsByAlbums.entries) {
-      for (final asset in entry.value) {
+      for (final record in entry.value) {
+        final asset = record.asset;
         idToDelete.add(asset.id);
         companions.add(
           TrashedLocalAssetEntityCompanion(
@@ -258,32 +259,6 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
-  }
-
-  Future<Map<String, List<LocalAsset>>> getToTrash() async {
-    final result = <String, List<LocalAsset>>{};
-
-    final rows =
-        await (_db.select(_db.localAlbumAssetEntity).join([
-              innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
-              innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-              leftOuterJoin(
-                _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-              ),
-            ])..where(
-              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                  _db.remoteAssetEntity.deletedAt.isNotNull(),
-            ))
-            .get();
-
-    for (final row in rows) {
-      final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final asset = row.readTable(_db.localAssetEntity).toDto();
-      (result[albumId] ??= <LocalAsset>[]).add(asset);
-    }
-
-    return result;
   }
 
   //attempt to reuse existing checksums

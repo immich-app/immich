@@ -1547,6 +1547,22 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftTrashSyncReviewPage]
+class DriftTrashSyncReviewRoute extends PageRouteInfo<void> {
+  const DriftTrashSyncReviewRoute({List<PageRouteInfo>? children})
+    : super(DriftTrashSyncReviewRoute.name, initialChildren: children);
+
+  static const String name = 'DriftTrashSyncReviewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftTrashSyncReviewPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftUploadDetailPage]
 class DriftUploadDetailRoute extends PageRouteInfo<void> {
   const DriftUploadDetailRoute({List<PageRouteInfo>? children})

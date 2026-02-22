@@ -6,3 +6,8 @@ part 'app_settings.provider.g.dart';
 
 @Riverpod(keepAlive: true)
 AppSettingsService appSettingsService(Ref _) => const AppSettingsService();
+
+final appSettingStreamProvider = StreamProvider.family.autoDispose<bool, AppSettingsEnum<bool>>((ref, setting) {
+  final service = ref.watch(appSettingsServiceProvider);
+  return service.watchSetting(setting);
+});

@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -32,20 +37,39 @@ class ViewerBottomBar extends ConsumerWidget {
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
 
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final isSyncTrashTimeline = timelineOrigin == TimelineOrigin.syncTrash;
+    final isWaitingForSyncApproval = ref.watch(isWaitingForTrashApprovalProvider(asset.checksum!)).value == true;
+
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      const ShareActionButton(source: ActionSource.viewer),
+      if (isSyncTrashTimeline || isWaitingForSyncApproval) ...[
+        KeepOnDeviceActionButton(
+          source: ActionSource.viewer,
+          onResult: (result) {
+            //todo Step #2 logic
+          },
+        ),
+        MoveToTrashActionButton(
+          source: ActionSource.viewer,
+          onResult: (result) {
+            //todo Step #2 logic
+          },
+        ),
+      ] else ...[
+        const ShareActionButton(source: ActionSource.viewer),
 
-      if (!isInLockedView) ...[
-        if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-        if (asset.type == AssetType.image) const EditImageActionButton(),
-        if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+        if (!isInLockedView) ...[
+          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+          if (asset.type == AssetType.image) const EditImageActionButton(),
+          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
 
-        if (isOwner) ...[
-          asset.isLocalOnly
-              ? const DeleteLocalActionButton(source: ActionSource.viewer)
-              : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+          if (isOwner) ...[
+            asset.isLocalOnly
+                ? const DeleteLocalActionButton(source: ActionSource.viewer)
+                : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+          ],
         ],
       ],
     ];

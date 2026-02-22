@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -20,8 +21,10 @@ import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
+import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
+import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
 import 'package:logging/logging.dart';
@@ -34,9 +37,7 @@ class AdvancedSettings extends HookConsumerWidget {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
-    final manageMediaAndroidPermission = useState(false);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
@@ -60,11 +61,6 @@ class AdvancedSettings extends HookConsumerWidget {
     useEffect(() {
       () async {
         isManageMediaSupported.value = await checkAndroidVersion();
-        if (isManageMediaSupported.value) {
-          manageMediaAndroidPermission.value = await ref
-              .read(localFilesManagerRepositoryProvider)
-              .hasManageMediaPermission();
-        }
       }();
       return null;
     }, []);
@@ -76,36 +72,7 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      if (isManageMediaSupported.value)
-        Column(
-          children: [
-            SettingsSwitchListTile(
-              enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                  manageMediaAndroidPermission.value = result;
-                }
-              },
-            ),
-            SettingsActionTile(
-              title: "manage_media_access_title".tr(),
-              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
-              subtitle: "manage_media_access_rationale".tr(),
-              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
-                  ? const Color.fromARGB(255, 243, 188, 106)
-                  : null,
-              onActionTap: () async {
-                final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
-                manageMediaAndroidPermission.value = result;
-              },
-            ),
-          ],
-        ),
+      if (isManageMediaSupported.value) const _TrashSyncModeSelector(),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
@@ -196,5 +163,122 @@ class AdvancedSettings extends HookConsumerWidget {
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
+  }
+}
+
+enum _TrashSyncMode { none, auto, review }
+
+final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
+  return ref.watch(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+});
+
+class _TrashSyncModeSelector extends HookConsumerWidget {
+  const _TrashSyncModeSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final autoSyncChanges = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final reviewOutOfSyncChanges = useAppSettingsState(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+
+    final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
+    final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
+
+    final selectedTrashSyncMode = autoSyncChanges.value
+        ? _TrashSyncMode.auto
+        : reviewOutOfSyncChanges.value
+        ? _TrashSyncMode.review
+        : _TrashSyncMode.none;
+
+    Future<void> attemptToEnableSetting(AppSettingsEnum key) async {
+      final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+      ref.invalidate(_manageMediaPermissionProvider);
+      if (key == AppSettingsEnum.manageLocalMediaAndroid) {
+        autoSyncChanges.value = result;
+        if (result) {
+          reviewOutOfSyncChanges.value = false;
+        }
+      }
+      if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
+        reviewOutOfSyncChanges.value = result;
+        if (result) {
+          autoSyncChanges.value = false;
+        }
+      }
+      ref.invalidate(appSettingsServiceProvider);
+    }
+
+    Future<void> handleTrashSyncModeChange(_TrashSyncMode? mode) async {
+      if (mode == null) {
+        return;
+      }
+
+      switch (mode) {
+        case _TrashSyncMode.none:
+          if (!autoSyncChanges.value && !reviewOutOfSyncChanges.value) {
+            break;
+          }
+          autoSyncChanges.value = false;
+          reviewOutOfSyncChanges.value = false;
+          ref.invalidate(appSettingsServiceProvider);
+          break;
+        case _TrashSyncMode.auto:
+          if (autoSyncChanges.value) {
+            break;
+          }
+          await attemptToEnableSetting(AppSettingsEnum.manageLocalMediaAndroid);
+          break;
+        case _TrashSyncMode.review:
+          if (reviewOutOfSyncChanges.value) {
+            break;
+          }
+          await attemptToEnableSetting(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+          break;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SettingsSubTitle(title: "advanced_settings_sync_remote_deletions_selector_title".tr()),
+        SettingsRadioListTile(
+          groups: [
+            SettingsRadioGroup(
+              title: 'off'.tr(),
+              subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
+              value: _TrashSyncMode.none,
+            ),
+            SettingsRadioGroup(
+              title: 'advanced_settings_sync_remote_deletions_title'.tr(),
+              subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
+              value: _TrashSyncMode.auto,
+            ),
+            SettingsRadioGroup(
+              title: 'advanced_settings_review_remote_deletions_title'.tr(),
+              subtitle: 'advanced_settings_review_remote_deletions_subtitle'.tr(),
+              value: _TrashSyncMode.review,
+            ),
+          ],
+          groupBy: selectedTrashSyncMode,
+          onRadioChanged: (mode) => handleTrashSyncModeChange(mode),
+        ),
+        SettingsActionTile(
+          title: "manage_media_access_title".tr(),
+          statusText: manageMediaAndroidPermissionValue == null
+              ? null
+              : manageMediaAndroidPermissionValue == true
+              ? "allowed".tr()
+              : "not_allowed".tr(),
+          subtitle: "manage_media_access_rationale".tr(),
+          statusColor:
+              manageMediaAndroidPermissionValue == false && (autoSyncChanges.value || reviewOutOfSyncChanges.value)
+              ? const Color.fromARGB(255, 243, 188, 106)
+              : null,
+          onActionTap: () async {
+            await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+            ref.invalidate(_manageMediaPermissionProvider);
+          },
+        ),
+      ],
+    );
   }
 }

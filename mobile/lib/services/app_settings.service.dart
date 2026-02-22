@@ -30,6 +30,7 @@ enum AppSettingsEnum<T> {
   selectedAlbumSortOrder<int>(StoreKey.selectedAlbumSortOrder, "selectedAlbumSortOrder", 2),
   advancedTroubleshooting<bool>(StoreKey.advancedTroubleshooting, null, false),
   manageLocalMediaAndroid<bool>(StoreKey.manageLocalMediaAndroid, null, false),
+  reviewOutOfSyncChangesAndroid<bool>(StoreKey.reviewOutOfSyncChangesAndroid, null, false),
   logLevel<int>(StoreKey.logLevel, null, 5), // Level.INFO = 5
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
@@ -77,5 +78,12 @@ class AppSettingsService {
 
   Future<void> setSetting<T>(AppSettingsEnum<T> setting, T value) {
     return Store.put(setting.storeKey, value);
+  }
+
+  Stream<T> watchSetting<T>(AppSettingsEnum<T> setting) async* {
+    yield getSetting<T>(setting);
+    await for (final dynamic value in Store.watch(setting.storeKey)) {
+      yield (value as T?) ?? setting.defaultValue;
+    }
   }
 }

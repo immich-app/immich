@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -112,6 +113,7 @@ class _ProfileIndicator extends ConsumerWidget {
     // TODO: remove this when update Flutter version newer than 3.35.7
     final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
 
+    final outOfSyncCount = ref.watch(outOfSyncAssetsCountProvider).value ?? 0;
     void toggleReadonlyMode() {
       final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
@@ -148,7 +150,7 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible: versionWarningPresent,
+        isLabelVisible: versionWarningPresent || outOfSyncCount > 0,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
