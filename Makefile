@@ -52,7 +52,7 @@ attach-server:
 	docker exec -it docker_immich-server_1 sh
 
 renovate:
-  LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
+  LOG_LEVEL=debug pnpm exec renovate --platform=local --repository-cache=reset
 
 # Directories that need to be created for volumes or build output
 VOLUME_DIRS = \

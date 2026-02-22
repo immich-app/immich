@@ -1,6 +1,6 @@
 import { Comparer, DatabaseFunction, Reason } from 'src/sql-tools/types';
 
-export const compareFunctions: Comparer<DatabaseFunction> = {
+export const compareFunctions = (): Comparer<DatabaseFunction> => ({
   onMissing: (source) => [
     {
       type: 'FunctionCreate',
@@ -29,4 +29,4 @@ export const compareFunctions: Comparer<DatabaseFunction> = {
 
     return [];
   },
-};
+});

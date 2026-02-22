@@ -2,9 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
-import 'package:immich_mobile/providers/image/immich_local_thumbnail_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as base_asset;
 
 @RoutePage()
 class FailedBackupStatusPage extends HookConsumerWidget {
@@ -58,7 +59,7 @@ class FailedBackupStatusPage extends HookConsumerWidget {
                       clipBehavior: Clip.hardEdge,
                       child: Image(
                         fit: BoxFit.cover,
-                        image: ImmichLocalThumbnailProvider(asset: errorAsset.asset, height: 512, width: 512),
+                        image: LocalThumbProvider(id: errorAsset.asset.localId!, assetType: base_asset.AssetType.video),
                       ),
                     ),
                   ),

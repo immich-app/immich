@@ -4959,7 +4959,22 @@
         "summary": "Retrieve auth status",
         "tags": [
           "Authentication"
-        ]
+        ],
+        "x-immich-history": [
+          {
+            "version": "v1",
+            "state": "Added"
+          },
+          {
+            "version": "v1",
+            "state": "Beta"
+          },
+          {
+            "version": "v2",
+            "state": "Stable"
+          }
+        ],
+        "x-immich-state": "Stable"
       }
     },
     "/auth/validateToken": {
@@ -5037,7 +5052,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/DownloadArchiveDto"
               }
             }
           },
@@ -11224,6 +11239,78 @@
         "x-immich-state": "Stable"
       }
     },
+    "/shared-links/login": {
+      "post": {
+        "description": "Login to a password protected shared link",
+        "operationId": "sharedLinkLogin",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharedLinkLoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedLinkResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Shared link login",
+        "tags": [
+          "Shared links"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v2.6.0",
+            "state": "Added"
+          },
+          {
+            "version": "v2.6.0",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-state": "Beta"
+      }
+    },
     "/shared-links/me": {
       "get": {
         "description": "Retrieve the current shared link associated with authentication method.",
@@ -15057,7 +15144,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.5.3",
+    "version": "2.5.6",
     "contact": {}
   },
   "tags": [
@@ -16030,7 +16117,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
@@ -16101,7 +16196,15 @@
                 {
                   "$ref": "#/components/schemas/AssetEditActionMirror"
                 }
-              ]
+              ],
+              "discriminator": {
+                "mapping": {
+                  "crop": "#/components/schemas/AssetEditActionCrop",
+                  "mirror": "#/components/schemas/AssetEditActionMirror",
+                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                },
+                "propertyName": "action"
+              }
             },
             "minItems": 1,
             "type": "array"
@@ -17573,6 +17676,26 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "DownloadArchiveDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "edited": {
+            "description": "Download edited asset if available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -21671,6 +21794,19 @@
         },
         "type": "object"
       },
+      "SharedLinkLoginDto": {
+        "properties": {
+          "password": {
+            "description": "Shared link password",
+            "example": "password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "type": "object"
+      },
       "SharedLinkResponseDto": {
         "properties": {
           "album": {
@@ -21729,9 +21865,25 @@
             "type": "string"
           },
           "token": {
+            "deprecated": true,
             "description": "Access token",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "type": {
             "allOf": [

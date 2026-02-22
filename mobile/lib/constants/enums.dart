@@ -1,4 +1,11 @@
-enum SortOrder { asc, desc }
+enum SortOrder {
+  asc,
+  desc;
+
+  SortOrder reverse() {
+    return this == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+  }
+}
 
 enum TextSearchType { context, filename, description, ocr }
 

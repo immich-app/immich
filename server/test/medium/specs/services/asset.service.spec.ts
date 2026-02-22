@@ -1,12 +1,15 @@
 import { Kysely } from 'kysely';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
@@ -25,6 +28,7 @@ const setup = (db?: Kysely<DB>) => {
     database: db || defaultDatabase,
     real: [
       AssetRepository,
+      AssetEditRepository,
       AssetJobRepository,
       AlbumRepository,
       AccessRepository,
@@ -32,7 +36,7 @@ const setup = (db?: Kysely<DB>) => {
       StackRepository,
       UserRepository,
     ],
-    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository],
+    mock: [EventRepository, LoggingRepository, JobRepository, StorageRepository, OcrRepository],
   });
 };
 
@@ -398,6 +402,23 @@ describe(AssetService.name, () => {
         }),
       );
     });
+
+    it('should update dateTimeOriginal with time zone UTC+0', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.update(auth, asset.id, { dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
   });
 
   describe('updateAll', () => {
@@ -456,6 +477,67 @@ describe(AssetService.name, () => {
       );
     });
 
+    it('should relatively update assets with timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC+5' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -1441 });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-18T18:10:00+00:00',
+            timeZone: 'UTC+5',
+            lockedProperties: ['timeZone', 'dateTimeOriginal'],
+          }),
+        }),
+      );
+    });
+
+    it('should relatively update assets and set a timezone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeRelative: -11, timeZone: 'UTC+5' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:00:00+00:00',
+            timeZone: 'UTC+5',
+          }),
+        }),
+      );
+    });
+
+    it('should set asset time zones to UTC', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: '2023-11-19T18:11:00', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], timeZone: 'UTC' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({
+            dateTimeOriginal: '2023-11-19T18:11:00+00:00',
+            timeZone: 'UTC',
+          }),
+        }),
+      );
+    });
+
     it('should update dateTimeOriginal', async () => {
       const { sut, ctx } = setup();
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -488,6 +570,125 @@ describe(AssetService.name, () => {
           exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-20T01:11:00+00:00', timeZone: 'UTC-7' }),
         }),
       );
+    });
+
+    it('should update dateTimeOriginal with UTC time zone', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: 'test', timeZone: 'UTC-7' });
+
+      await sut.updateAll(auth, { ids: [asset.id], dateTimeOriginal: '2023-11-19T18:11:00.000Z' });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id, { exifInfo: true })).resolves.toEqual(
+        expect.objectContaining({
+          exifInfo: expect.objectContaining({ dateTimeOriginal: '2023-11-19T18:11:00+00:00', timeZone: 'UTC' }),
+        }),
+      );
+    });
+  });
+
+  describe('getOcr', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({ x1: 0.1, x2: 0.3, x3: 0.3, x4: 0.1, y1: 0.2, y2: 0.2, y3: 0.4, y4: 0.4 }),
+      ]);
+    });
+
+    it('should apply rotation', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      await ctx.database
+        .insertInto('asset_edit')
+        .values({ assetId: asset.id, action: AssetEditAction.Rotate, parameters: { angle: 90 }, sequence: 1 })
+        .execute();
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({
+          x1: 0.6,
+          x2: 0.8,
+          x3: 0.8,
+          x4: 0.6,
+          y1: expect.any(Number),
+          y2: expect.any(Number),
+          y3: 0.3,
+          y4: 0.3,
+        }),
+      ]);
+    });
+  });
+
+  describe('getOcr', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(sut.getOcr(auth, asset.id)).rejects.toThrow('Not found or no asset.read access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({ x1: 0.1, x2: 0.3, x3: 0.3, x4: 0.1, y1: 0.2, y2: 0.2, y3: 0.4, y4: 0.4 }),
+      ]);
+    });
+
+    it('should apply rotation', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+      await ctx.database
+        .insertInto('asset_edit')
+        .values({ assetId: asset.id, action: AssetEditAction.Rotate, parameters: { angle: 90 }, sequence: 1 })
+        .execute();
+      ctx.getMock(OcrRepository).getByAssetId.mockResolvedValue([factory.assetOcr()]);
+
+      await expect(sut.getOcr(auth, asset.id)).resolves.toEqual([
+        expect.objectContaining({
+          x1: 0.6,
+          x2: 0.8,
+          x3: 0.8,
+          x4: 0.6,
+          y1: expect.any(Number),
+          y2: expect.any(Number),
+          y3: 0.3,
+          y4: 0.3,
+        }),
+      ]);
     });
   });
 
@@ -661,6 +862,40 @@ describe(AssetService.name, () => {
 
       const metadata = await ctx.get(AssetRepository).getMetadata(asset.id);
       expect(metadata).toEqual([expect.objectContaining({ key: 'some-other-key', value: { foo: 'bar' } })]);
+    });
+  });
+
+  describe('editAsset', () => {
+    it('should require access', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user2.id });
+
+      await expect(
+        sut.editAsset(auth, asset.id, { edits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }] }),
+      ).rejects.toThrow('Not found or no asset.edit.create access');
+    });
+
+    it('should work', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(JobRepository).queue.mockResolvedValue();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, exifImageHeight: 42, exifImageWidth: 69, orientation: '1' });
+
+      const editAction = { action: AssetEditAction.Rotate, parameters: { angle: 90 } } as const;
+      await expect(sut.editAsset(auth, asset.id, { edits: [editAction] })).resolves.toEqual({
+        assetId: asset.id,
+        edits: [editAction],
+      });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ isEdited: true }),
+      );
+      await expect(ctx.get(AssetEditRepository).getAll(asset.id)).resolves.toEqual([editAction]);
     });
   });
 });
