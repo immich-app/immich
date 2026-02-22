@@ -10,7 +10,6 @@ import {
   AssetFileType,
   AssetPathType,
   AssetType,
-  AssetVisibility,
   DatabaseLock,
   JobName,
   JobStatus,
@@ -151,10 +150,6 @@ export class StorageTemplateService extends BaseService {
     if (!asset) {
       return JobStatus.Failed;
     }
-    // Skip hidden assets
-    if (asset.visibility === AssetVisibility.Hidden) {
-      return JobStatus.Skipped;
-    }
 
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
@@ -163,7 +158,7 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateSingleAsset(asset.livePhotoVideoId);
       if (!livePhotoVideo) {
         return JobStatus.Failed;
       }
@@ -196,7 +191,7 @@ export class StorageTemplateService extends BaseService {
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateSingleAsset(asset.livePhotoVideoId);
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
           await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);

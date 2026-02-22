@@ -369,6 +369,14 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getForStorageTemplateJob(id: string) {
+    return this.storageTemplateAssetQuery()
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForStorageTemplateSingleAsset(id: string) {
     return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
   }
 
