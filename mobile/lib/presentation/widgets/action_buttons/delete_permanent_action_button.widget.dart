@@ -4,10 +4,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
@@ -18,14 +20,51 @@ class DeletePermanentActionButton extends ConsumerWidget {
   final bool iconOnly;
   final bool menuItem;
 
-  const DeletePermanentActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
+  const DeletePermanentActionButton({
+    super.key,
+    required this.source,
+    this.iconOnly = false,
+    this.menuItem = false,
+  });
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteRemoteAndLocal(source);
+    final count = source == ActionSource.viewer
+        ? 1
+        : ref.read(multiSelectProvider).selectedAssets.length;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('delete_permanently'.t(context: context)),
+        content: ImmichHtmlText(
+          'permanently_delete_assets_prompt'.t(
+            context: context,
+            args: {'count': count.toString()},
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('cancel'.t(context: context)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'confirm'.t(context: context),
+              style: TextStyle(color: context.colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    final result = await ref
+        .read(actionProvider.notifier)
+        .deleteRemoteAndLocal(source);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
@@ -40,7 +79,9 @@ class DeletePermanentActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success
+            ? successMessage
+            : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
