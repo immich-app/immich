@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -12,6 +10,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/image_converter.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:path/path.dart' as p;
 
@@ -30,27 +29,10 @@ class EditImagePage extends ConsumerWidget {
   final bool isEdited;
 
   const EditImagePage({super.key, required this.asset, required this.image, required this.isEdited});
-  Future<Uint8List> _imageToUint8List(Image image) async {
-    final Completer<Uint8List> completer = Completer();
-    image.image
-        .resolve(const ImageConfiguration())
-        .addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
-              if (byteData != null) {
-                completer.complete(byteData.buffer.asUint8List());
-              } else {
-                completer.completeError('Failed to convert image to bytes');
-              }
-            });
-          }, onError: (exception, stackTrace) => completer.completeError(exception)),
-        );
-    return completer.future;
-  }
 
   Future<void> _saveEditedImage(BuildContext context, Asset asset, Image image, WidgetRef ref) async {
     try {
-      final Uint8List imageData = await _imageToUint8List(image);
+      final Uint8List imageData = await imageToUint8List(image);
       await ref
           .read(fileMediaRepositoryProvider)
           .saveImage(imageData, title: "${p.withoutExtension(asset.fileName)}_edited.jpg");
