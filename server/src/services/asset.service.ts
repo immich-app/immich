@@ -546,6 +546,7 @@ export class AssetService extends BaseService {
   async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const edits = await this.assetEditRepository.getAll(id);
+
     return {
       assetId: id,
       edits,

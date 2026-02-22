@@ -8,8 +8,9 @@ import {
   Table,
   Unique,
 } from '@immich/sql-tools';
+import { UpdateIdColumn } from 'src/decorators';
 import { AssetEditAction, AssetEditParameters } from 'src/dtos/editing.dto';
-import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
+import { asset_edit_audit, asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_edit')
@@ -18,6 +19,12 @@ import { AssetTable } from 'src/schema/tables/asset.table';
   scope: 'statement',
   function: asset_edit_delete,
   referencingOldTableAs: 'deleted_edit',
+  when: 'pg_trigger_depth() = 0',
+})
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: asset_edit_audit,
+  referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
 @Unique({ columns: ['assetId', 'sequence'] })
@@ -36,4 +43,7 @@ export class AssetEditTable {
 
   @Column({ type: 'integer' })
   sequence!: number;
+
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }

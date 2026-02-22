@@ -3,9 +3,10 @@ import { DateTime } from 'luxon';
 import { AssetMetadataKey, UserMetadataKey } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { SyncRepository } from 'src/repositories/sync.repository';
+import { BaseSync, SyncRepository } from 'src/repositories/sync.repository';
 import { DB } from 'src/schema';
 import { SyncService } from 'src/services/sync.service';
+import { getRegisteredItems } from 'src/sql-tools/register';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 import { v4 } from 'uuid';
@@ -221,6 +222,23 @@ describe(SyncService.name, () => {
       const after = await ctx.database.selectFrom('asset_audit').select(['id']).execute();
       expect(after).toHaveLength(1);
       expect(after[0].id).toBe(keep.id);
+    });
+
+    it('should cleanup every table', async () => {
+      const { sut } = setup();
+
+      const tables = getRegisteredItems().filter((t) => t.type === 'table');
+      const auditTables = tables
+        .filter((t) => t.item.options.name?.endsWith('_audit'))
+        .map((t) => t.item.options.name!) as (keyof DB)[];
+
+      const auditCleanupSpy = vi.spyOn(BaseSync.prototype as any, 'auditCleanup');
+      await expect(sut.onAuditTableCleanup()).resolves.toBeUndefined();
+
+      expect(auditCleanupSpy).toHaveBeenCalledTimes(auditTables.length);
+      for (const table of auditTables) {
+        expect(auditCleanupSpy, `Audit table ${table} was not cleaned up`).toHaveBeenCalledWith(table, 31);
+      }
     });
   });
 });
