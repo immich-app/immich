@@ -134,6 +134,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetInit(Duration timeStamp) {
     _preloader.preload(widget.initialIndex, context.sizeData);
     _handleCasting();
+    _ensureTimelineAnchored();
   }
 
   void _onAssetChanged(int index) async {
@@ -146,6 +147,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
     _stackChildrenKeepAlive?.close();
     _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    _ensureTimelineAnchored();
+  }
+
+  /// Emits scroll event for timeline to show the current asset's date when navigating back from a deep link.
+  /// Only applies when viewer was opened via a deep link.
+  void _ensureTimelineAnchored() {
+    final timelineService = ref.read(timelineServiceProvider);
+    if (timelineService.origin != TimelineOrigin.deepLink) return;
+
+    final asset = ref.read(currentAssetNotifier);
+    if (asset == null) return;
+
+    EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
   }
 
   void _handleCasting() {

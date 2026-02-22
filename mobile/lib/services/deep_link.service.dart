@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
@@ -185,6 +186,7 @@ class DeepLinkService {
       return AssetViewerRoute(
         initialIndex: 0,
         timelineService: _betaTimelineFactory.fromAssets([asset], TimelineOrigin.deepLink),
+        heroOffset: kPhotoTabIndex,
       );
     } else {
       // TODO: Remove this when beta is default
