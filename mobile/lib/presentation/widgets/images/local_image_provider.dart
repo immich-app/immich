@@ -94,7 +94,6 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
-
     yield* loadRequest(request, decode);
 
     if (!Store.get(StoreKey.loadOriginal, false)) {

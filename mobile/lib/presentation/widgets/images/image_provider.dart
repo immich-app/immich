@@ -48,7 +48,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     return null;
   }
 
-  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode, {bool evictOnError = true}) async* {
     if (isCancelled) {
       this.request = null;
       PaintingBinding.instance.imageCache.evict(this);
@@ -57,14 +57,19 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final image = await request.load(decode);
-      if (image == null || isCancelled) {
+      if ((image == null && evictOnError) || isCancelled) {
         PaintingBinding.instance.imageCache.evict(this);
+        return;
+      } else if (image == null) {
         return;
       }
       yield image;
-    } catch (e) {
-      PaintingBinding.instance.imageCache.evict(this);
-      rethrow;
+    } catch (e, stack) {
+      if (evictOnError) {
+        PaintingBinding.instance.imageCache.evict(this);
+        rethrow;
+      }
+      _log.warning('Non-fatal image load error', e, stack);
     } finally {
       this.request = null;
     }
