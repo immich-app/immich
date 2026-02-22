@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
@@ -1008,12 +1009,12 @@ export class AssetRepository {
     return count;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, true] })
-  async getForOriginal(id: string, isEdited: boolean) {
+  private buildGetForOriginal(ids: string[], isEdited: boolean) {
     return this.db
       .selectFrom('asset')
+      .select('asset.id')
       .select('originalFileName')
-      .where('asset.id', '=', id)
+      .where('asset.id', 'in', ids)
       .$if(isEdited, (qb) =>
         qb
           .leftJoin('asset_file', (join) =>
@@ -1024,8 +1025,17 @@ export class AssetRepository {
           )
           .select('asset_file.path as editedPath'),
       )
-      .select('originalPath')
-      .executeTakeFirstOrThrow();
+      .select('originalPath');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  getForOriginal(id: string, isEdited: boolean) {
+    return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], true] })
+  getForOriginals(ids: string[], isEdited: boolean) {
+    return this.buildGetForOriginal(ids, isEdited).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
@@ -1049,5 +1059,69 @@ export class AssetRepository {
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForOcr(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .select(withEdits)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageWidth', 'asset_exif.exifImageHeight', 'asset_exif.orientation'])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForEdit(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .where('asset.id', '=', id)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select([
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.orientation',
+        'asset_exif.projectionType',
+      ])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForMetadataExtractionTags(id: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.tags')
+      .where('asset_exif.assetId', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForFaces(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(withEdits)
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForUpdateTags(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('tag')
+            .select('tag.value')
+            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+            .whereRef('asset.id', '=', 'tag_asset.assetId'),
+        ).as('tags'),
+      )
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
   }
 }

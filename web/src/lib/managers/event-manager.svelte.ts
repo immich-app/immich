@@ -39,7 +39,7 @@ export type Events = {
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
 
-  AlbumAddAssets: [];
+  AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
@@ -48,6 +48,7 @@ export type Events = {
 
   PersonUpdate: [PersonResponseDto];
   PersonThumbnailReady: [{ id: string }];
+  PersonAssetDelete: [{ id: string; assetId: string }];
 
   BackupDeleteStatus: [{ filename: string; isDeleting: boolean }];
   BackupDeleted: [{ filename: string }];

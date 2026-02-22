@@ -151,10 +151,9 @@ export class TagService extends BaseService {
   }
 
   private async updateTags(assetId: string) {
-    const asset = await this.assetRepository.getById(assetId, { tags: true });
-    await this.assetRepository.upsertExif(
-      updateLockedColumns({ assetId, tags: asset?.tags?.map(({ value }) => value) ?? [] }),
-      { lockedPropertiesBehavior: 'append' },
-    );
+    const { tags } = await this.assetRepository.getForUpdateTags(assetId);
+    await this.assetRepository.upsertExif(updateLockedColumns({ assetId, tags: tags.map(({ value }) => value) }), {
+      lockedPropertiesBehavior: 'append',
+    });
   }
 }

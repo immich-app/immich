@@ -74,7 +74,7 @@ enum StoreKey<T> {
   albumGridView<bool>._(140),
 
   // Image viewer navigation settings
-  tapToNavigate<bool>._(138),
+  tapToNavigate<bool>._(141),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),

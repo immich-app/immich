@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 
 class AssetStackRow extends ConsumerWidget {
   const AssetStackRow({super.key});
@@ -21,17 +21,11 @@ class AssetStackRow extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final opacity = showControls ? ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity)) : 0;
-
-    return IgnorePointer(
-      ignoring: opacity < 255,
-      child: AnimatedOpacity(
-        opacity: opacity / 255,
-        duration: Durations.short2,
-        child: _StackList(stack: stackChildren),
-      ),
-    );
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
+    if (showingDetails) {
+      return const SizedBox.shrink();
+    }
+    return _StackList(stack: stackChildren);
   }
 }
 

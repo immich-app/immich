@@ -356,6 +356,8 @@ class ApiClient {
           return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
+        case 'DownloadArchiveDto':
+          return DownloadArchiveDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -630,6 +632,8 @@ class ApiClient {
           return SharedLinkCreateDto.fromJson(value);
         case 'SharedLinkEditDto':
           return SharedLinkEditDto.fromJson(value);
+        case 'SharedLinkLoginDto':
+          return SharedLinkLoginDto.fromJson(value);
         case 'SharedLinkResponseDto':
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':

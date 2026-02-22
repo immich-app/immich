@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.5.5
+ * 2.5.6
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1132,9 +1132,11 @@ export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
 };
-export type AssetIdsDto = {
+export type DownloadArchiveDto = {
     /** Asset IDs */
     assetIds: string[];
+    /** Download edited asset if available */
+    edited?: boolean;
 };
 export type DownloadInfoDto = {
     /** Album ID to download */
@@ -2287,6 +2289,10 @@ export type SharedLinkCreateDto = {
     /** Shared link type */
     "type": SharedLinkType;
 };
+export type SharedLinkLoginDto = {
+    /** Shared link password */
+    password: string;
+};
 export type SharedLinkEditDto = {
     /** Allow downloads */
     allowDownload?: boolean;
@@ -2304,6 +2310,10 @@ export type SharedLinkEditDto = {
     showMetadata?: boolean;
     /** Custom URL slug */
     slug?: string | null;
+};
+export type AssetIdsDto = {
+    /** Asset IDs */
+    assetIds: string[];
 };
 export type AssetIdsResponseDto = {
     /** Asset ID */
@@ -4429,10 +4439,10 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
 /**
  * Download asset archive
  */
-export function downloadArchive({ key, slug, assetIdsDto }: {
+export function downloadArchive({ key, slug, downloadArchiveDto }: {
     key?: string;
     slug?: string;
-    assetIdsDto: AssetIdsDto;
+    downloadArchiveDto: DownloadArchiveDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4443,7 +4453,7 @@ export function downloadArchive({ key, slug, assetIdsDto }: {
     }))}`, oazapfts.json({
         ...opts,
         method: "POST",
-        body: assetIdsDto
+        body: downloadArchiveDto
     })));
 }
 /**
@@ -5859,6 +5869,26 @@ export function createSharedLink({ sharedLinkCreateDto }: {
         ...opts,
         method: "POST",
         body: sharedLinkCreateDto
+    })));
+}
+/**
+ * Shared link login
+ */
+export function sharedLinkLogin({ key, slug, sharedLinkLoginDto }: {
+    key?: string;
+    slug?: string;
+    sharedLinkLoginDto: SharedLinkLoginDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: SharedLinkResponseDto;
+    }>(`/shared-links/login${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: sharedLinkLoginDto
     })));
 }
 /**

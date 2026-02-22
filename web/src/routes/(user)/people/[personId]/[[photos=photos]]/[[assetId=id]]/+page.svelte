@@ -12,7 +12,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -31,6 +30,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getPersonActions } from '$lib/services/person.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -40,14 +40,16 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, LoadingSpinner, modalManager, toastManager, type ActionItem } from '@immich/ui';
   import {
-    mdiAccountBoxOutline,
-    mdiAccountMultipleCheckOutline,
-    mdiArrowLeft,
-    mdiDotsVertical,
-    mdiPlus,
-  } from '@mdi/js';
+    ActionButton,
+    CommandPaletteDefaultProvider,
+    ContextMenuButton,
+    LoadingSpinner,
+    modalManager,
+    toastManager,
+    type ActionItem,
+  } from '@immich/ui';
+  import { mdiAccountBoxOutline, mdiAccountMultipleCheckOutline, mdiArrowLeft, mdiDotsVertical } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -297,6 +299,14 @@
     person = response;
   };
 
+  const handlePersonAssetDelete = async ({ id, assetId }: { id: string; assetId: string }) => {
+    if (id !== person.id) {
+      return;
+    }
+    timelineManager.removeAssets([assetId]);
+    await updateAssetCount();
+  };
+
   const { SetDateOfBirth, Favorite, Unfavorite, HidePerson, ShowPerson } = $derived(getPersonActions($t, person));
   const SelectFeaturePhoto: ActionItem = {
     title: $t('select_featured_photo'),
@@ -315,7 +325,12 @@
   };
 </script>
 
-<OnEvents {onPersonUpdate} onAssetsDelete={updateAssetCount} onAssetsArchive={updateAssetCount} />
+<OnEvents
+  {onPersonUpdate}
+  onPersonAssetDelete={handlePersonAssetDelete}
+  onAssetsDelete={updateAssetCount}
+  onAssetsArchive={updateAssetCount}
+/>
 
 <main
   class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
@@ -448,12 +463,11 @@
       assets={assetInteraction.selectedAssets}
       clearSelect={() => assetInteraction.clearMultiselect()}
     >
+      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} {assetInteraction} />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
+      <ActionButton action={Actions.AddToAlbum} />
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}

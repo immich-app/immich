@@ -23,3 +23,9 @@ run = "prettier --check ."
 [tasks."format-fix"]
 env._.path = "./node_modules/.bin"
 run = "prettier --write ."
+
+[tasks.deploy]
+run = "wrangler pages deploy build --project-name=${PROJECT_NAME} --branch=${BRANCH_NAME}"
+
+[tools]
+wrangler = "4.66.0"
