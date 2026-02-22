@@ -1,5 +1,6 @@
+import { UpdateIdColumn } from 'src/decorators';
 import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
-import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
+import { asset_edit_audit, asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   AfterDeleteTrigger,
@@ -20,6 +21,12 @@ import {
   referencingOldTableAs: 'deleted_edit',
   when: 'pg_trigger_depth() = 0',
 })
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: asset_edit_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() = 0',
+})
 @Unique({ columns: ['assetId', 'sequence'] })
 export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
   @PrimaryGeneratedColumn()
@@ -36,4 +43,7 @@ export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
 
   @Column({ type: 'integer' })
   sequence!: number;
+
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }
