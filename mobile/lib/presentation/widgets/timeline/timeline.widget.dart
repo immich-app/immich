@@ -151,6 +151,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     );
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
+    // Listen for segment updates to handle pending scroll requests
+    ref.listenManual(timelineSegmentProvider, (_, __) {
+      if (_pendingScrollDate != null && mounted) {
+        _scrollToDate(_pendingScrollDate!);
+      }
+    });
+
     final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
     _perRow = currentTilesPerRow;
     _scaleFactor = 7.0 - _perRow;
@@ -247,9 +254,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               curve: Curves.easeInOut,
             )
             .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
-        scrolled = true;
+
+        // Successfully scrolled, clear pending date
+        _pendingScrollDate = null;
       } else {
         ref.read(timelineStateProvider.notifier).setScrubbing(false);
+        // Segment not found; wait for next segment update via listener
       }
     });
 

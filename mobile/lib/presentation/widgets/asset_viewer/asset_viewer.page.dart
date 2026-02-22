@@ -228,6 +228,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _ensureTimelineAnchored();
   }
 
+  /// Emits scroll event for timeline to show the current asset's date when navigating back from a deep link.
+  /// Only applies when viewer was opened via a deep link.
   void _ensureTimelineAnchored() {
     final timelineService = ref.read(timelineServiceProvider);
     if (timelineService.origin != TimelineOrigin.deepLink) return;
