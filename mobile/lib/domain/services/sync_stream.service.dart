@@ -68,12 +68,12 @@ class SyncStreamService {
       return false;
     }
 
-    final semVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
+    final serverSemVer = SemVer(major: serverVersion.major, minor: serverVersion.minor, patch: serverVersion.patch_);
 
     final value = Store.get(StoreKey.syncMigrationStatus, "[]");
     final migrations = (jsonDecode(value) as List).cast<String>();
     int previousLength = migrations.length;
-    await _runPreSyncTasks(migrations, semVer);
+    await _runPreSyncTasks(migrations, serverSemVer);
 
     if (migrations.length != previousLength) {
       _logger.info("Updated pre-sync migration status: $migrations");
@@ -82,10 +82,14 @@ class SyncStreamService {
 
     // Start the sync stream and handle events
     bool shouldReset = false;
-    await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
+    await _syncApiRepository.streamChanges(
+      _handleEvents,
+      serverVersion: serverSemVer,
+      onReset: () => shouldReset = true,
+    );
     if (shouldReset) {
       _logger.info("Resetting sync state as requested by server");
-      await _syncApiRepository.streamChanges(_handleEvents);
+      await _syncApiRepository.streamChanges(_handleEvents, serverVersion: serverSemVer);
     }
 
     previousLength = migrations.length;
@@ -282,6 +286,8 @@ class SyncStreamService {
         return _syncStreamRepository.deletePeopleV1(data.cast());
       case SyncEntityType.assetFaceV1:
         return _syncStreamRepository.updateAssetFacesV1(data.cast());
+      case SyncEntityType.assetFaceV2:
+        return _syncStreamRepository.updateAssetFacesV2(data.cast());
       case SyncEntityType.assetFaceDeleteV1:
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       default:

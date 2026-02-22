@@ -552,6 +552,45 @@ where
 order by
   "asset_face"."updateId" asc
 
+-- SyncRepository.assetFaceV2.getDeletes
+select
+  "asset_face_audit"."id",
+  "assetFaceId"
+from
+  "asset_face_audit" as "asset_face_audit"
+  left join "asset" on "asset"."id" = "asset_face_audit"."assetId"
+where
+  "asset_face_audit"."id" < $1
+  and "asset_face_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_face_audit"."id" asc
+
+-- SyncRepository.assetFaceV2.getUpserts
+select
+  "asset_face"."id",
+  "assetId",
+  "personId",
+  "imageWidth",
+  "imageHeight",
+  "boundingBoxX1",
+  "boundingBoxY1",
+  "boundingBoxX2",
+  "boundingBoxY2",
+  "sourceType",
+  "isVisible",
+  "asset_face"."deletedAt",
+  "asset_face"."updateId"
+from
+  "asset_face" as "asset_face"
+  left join "asset" on "asset"."id" = "asset_face"."assetId"
+where
+  "asset_face"."updateId" < $1
+  and "asset_face"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_face"."updateId" asc
+
 -- SyncRepository.assetMetadata.getDeletes
 select
   "asset_metadata_audit"."id",

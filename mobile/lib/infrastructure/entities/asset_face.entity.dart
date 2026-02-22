@@ -28,6 +28,10 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get sourceType => text()();
 
+  BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
+
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }

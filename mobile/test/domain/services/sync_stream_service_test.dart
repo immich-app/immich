@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.da
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
@@ -66,6 +67,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     registerFallbackValue(LocalAssetStub.image1);
+    registerFallbackValue(const SemVer(major: 2, minor: 5, patch: 0));
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
@@ -94,11 +96,19 @@ void main() {
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
-    when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
+    when(() => mockSyncApiRepo.streamChanges(any(), serverVersion: any(named: 'serverVersion'))).thenAnswer((
+      invocation,
+    ) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
-    when(() => mockSyncApiRepo.streamChanges(any(), onReset: any(named: 'onReset'))).thenAnswer((invocation) async {
+    when(
+      () => mockSyncApiRepo.streamChanges(
+        any(),
+        onReset: any(named: 'onReset'),
+        serverVersion: any(named: 'serverVersion'),
+      ),
+    ).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -106,9 +116,9 @@ void main() {
     when(() => mockSyncApiRepo.deleteSyncAck(any())).thenAnswer((_) async => {});
 
     when(() => mockApi.serverInfoApi).thenReturn(mockServerApi);
-    when(() => mockServerApi.getServerVersion()).thenAnswer(
-      (_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0),
-    );
+    when(
+      () => mockServerApi.getServerVersion(),
+    ).thenAnswer((_) async => ServerVersionResponseDto(major: 1, minor: 132, patch_: 0));
 
     when(() => mockSyncStreamRepo.updateUsersV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteUsersV1(any())).thenAnswer(successHandler);

@@ -652,6 +652,37 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAssetFacesV2(Iterable<SyncAssetFaceV2> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final assetFace in data) {
+          final companion = AssetFaceEntityCompanion(
+            assetId: Value(assetFace.assetId),
+            personId: Value(assetFace.personId),
+            imageWidth: Value(assetFace.imageWidth),
+            imageHeight: Value(assetFace.imageHeight),
+            boundingBoxX1: Value(assetFace.boundingBoxX1),
+            boundingBoxY1: Value(assetFace.boundingBoxY1),
+            boundingBoxX2: Value(assetFace.boundingBoxX2),
+            boundingBoxY2: Value(assetFace.boundingBoxY2),
+            sourceType: Value(assetFace.sourceType),
+            deletedAt: Value(assetFace.deletedAt),
+            isVisible: Value(assetFace.isVisible),
+          );
+
+          batch.insert(
+            _db.assetFaceEntity,
+            companion.copyWith(id: Value(assetFace.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetFacesV2', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteAssetFacesV1(Iterable<SyncAssetFaceDeleteV1> data) async {
     try {
       await _db.batch((batch) {
