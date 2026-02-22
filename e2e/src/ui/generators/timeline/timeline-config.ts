@@ -52,7 +52,7 @@ export type MockTimelineAsset = {
   latitude: number | null;
   longitude: number | null;
   visibility: AssetVisibility;
-  stack: null;
+  stack: undefined;
   checksum: string;
   fileSizeInByte: number;
 };
