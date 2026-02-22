@@ -5,6 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/asset_grid/trash_delete_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
@@ -19,6 +20,18 @@ class DeleteTrashActionButton extends ConsumerWidget {
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
+      return;
+    }
+
+    final selectCount = ref.watch(multiSelectProvider.select((s) => s.selectedAssets.length));
+
+    final confirmDelete =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => TrashDeleteDialog(count: selectCount),
+        ) ??
+        false;
+    if (!confirmDelete) {
       return;
     }
 
