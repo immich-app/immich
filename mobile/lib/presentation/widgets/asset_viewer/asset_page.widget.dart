@@ -53,6 +53,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = ScrollController();
   late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
+  final ValueNotifier<PhotoViewScaleState> _videoScaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   double _snapOffset = 0.0;
   double _lastScrollOffset = 0.0;
@@ -81,6 +82,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _proxyScrollController.dispose();
     _scaleBoundarySub?.cancel();
     _eventSubscription?.cancel();
+    _videoScaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -255,10 +257,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    _isZoomed = switch (scaleState) {
-      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.covering => true,
-      _ => false,
-    };
+    _isZoomed =
+        scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleState == PhotoViewScaleState.covering ||
+        _videoScaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        _videoScaleStateNotifier.value == PhotoViewScaleState.covering;
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
@@ -340,34 +343,33 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     return PhotoView.customChild(
+      key: ValueKey(displayAsset),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDragCancel: _onDragCancel,
-      onTapUp: _onTapUp,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,
-      maxScale: 1.0,
       basePosition: Alignment.center,
       disableScaleGestures: true,
-      scaleStateChangedCallback: _onScaleStateChanged,
+      minScale: PhotoViewComputedScale.contained,
+      initialScale: PhotoViewComputedScale.contained,
+      tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
       backgroundDecoration: backgroundDecoration,
-      child: SizedBox(
-        width: context.width,
-        height: context.height,
-        child: NativeVideoViewer(
+      child: NativeVideoViewer(
+        key: ValueKey(displayAsset),
+        asset: displayAsset,
+        scaleStateNotifier: _videoScaleStateNotifier,
+        disableScaleGestures: showingDetails,
+        image: Image(
           key: ValueKey(displayAsset.heroTag),
-          asset: displayAsset,
-          image: Image(
-            key: ValueKey(displayAsset),
-            image: getFullImageProvider(displayAsset, size: context.sizeData),
-            fit: BoxFit.contain,
-            height: context.height,
-            width: context.width,
-            alignment: Alignment.center,
-          ),
+          image: getFullImageProvider(displayAsset, size: context.sizeData),
+          height: context.height,
+          width: context.width,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
       ),
     );
