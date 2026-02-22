@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
@@ -124,19 +124,24 @@ export class SharedLinkRepository {
       .selectFrom('shared_link')
       .selectAll('shared_link')
       .where('shared_link.userId', '=', userId)
-      .leftJoin('shared_link_asset', 'shared_link_asset.sharedLinkId', 'shared_link.id')
       .leftJoinLateral(
         (eb) =>
           eb
-            .selectFrom('asset')
-            .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-            .whereRef('asset.id', '=', 'shared_link_asset.assetId')
+            .selectFrom('shared_link_asset')
+            .whereRef('shared_link.id', '=', 'shared_link_asset.sharedLinkId')
+            .innerJoin('asset', 'asset.id', 'shared_link_asset.assetId')
             .where('asset.deletedAt', 'is', null)
-            .as('assets'),
+            .selectAll('asset')
+            .orderBy('asset.fileCreatedAt', 'asc')
+            .limit(1)
+            .as('a'),
         (join) => join.onTrue(),
       )
-      .select('assets.assets')
-      .$narrowType<{ assets: NotNull }>()
+      .select(
+        sql`case when "a"."id" is not null then json_build_array(to_json("a")) else '[]'::json end`
+          .$castTo<MapAsset[]>()
+          .as('assets'),
+      )
       .leftJoinLateral(
         (eb) =>
           eb
@@ -169,7 +174,7 @@ export class SharedLinkRepository {
                   .as('owner'),
               (join) => join.onTrue(),
             )
-            .select((eb) => eb.fn.toJson('owner').as('owner'))
+            .select(sql`to_jsonb("owner")`.as('owner'))
             .where('album.deletedAt', 'is', null)
             .as('album'),
         (join) => join.onTrue(),
@@ -179,7 +184,6 @@ export class SharedLinkRepository {
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
       .$if(!!id, (eb) => eb.where('shared_link.id', '=', id!))
       .orderBy('shared_link.createdAt', 'desc')
-      .distinctOn(['shared_link.createdAt'])
       .execute();
   }
 
