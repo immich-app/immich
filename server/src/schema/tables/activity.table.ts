@@ -1,8 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
-import { AlbumTable } from 'src/schema/tables/album.table';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Check,
   Column,
@@ -15,7 +10,12 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('activity')
 @UpdatedAtTrigger('activity_updatedAt')

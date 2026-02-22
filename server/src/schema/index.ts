@@ -1,3 +1,4 @@
+import { Database, Extensions, Generated, Int8 } from '@immich/sql-tools';
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
   album_delete_audit,
@@ -72,7 +73,6 @@ import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
-import { Database, Extensions, Generated, Int8 } from 'src/sql-tools';
 
 @Extensions(['uuid-ossp', 'unaccent', 'cube', 'earthdistance', 'pg_trgm', 'plpgsql'])
 @Database({ name: 'immich' })

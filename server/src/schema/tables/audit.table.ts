@@ -1,5 +1,5 @@
+import { Column, CreateDateColumn, Generated, Index, PrimaryColumn, Table, Timestamp } from '@immich/sql-tools';
 import { DatabaseAction, EntityType } from 'src/enum';
-import { Column, CreateDateColumn, Generated, Index, PrimaryColumn, Table, Timestamp } from 'src/sql-tools';
 
 @Table('audit')
 @Index({ columns: ['ownerId', 'createdAt'] })

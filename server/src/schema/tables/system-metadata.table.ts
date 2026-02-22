@@ -1,5 +1,5 @@
+import { Column, PrimaryColumn, Table } from '@immich/sql-tools';
 import { SystemMetadataKey } from 'src/enum';
-import { Column, PrimaryColumn, Table } from 'src/sql-tools';
 import { SystemMetadata } from 'src/types';
 
 @Table('system_metadata')

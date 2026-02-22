@@ -1,6 +1,3 @@
-import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
-import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
@@ -10,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Unique,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
+import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_edit')
 @AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert, referencingNewTableAs: 'inserted_edit' })

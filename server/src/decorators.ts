@@ -1,10 +1,10 @@
+import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
 import { immich_uuid_v7, updated_at } from 'src/schema/functions';
-import { BeforeUpdateTrigger, Column, ColumnOptions } from 'src/sql-tools';
 import { setUnion } from 'src/utils/set';
 
 const GeneratedUuidV7Column = (options: Omit<ColumnOptions, 'type' | 'default' | 'nullable'> = {}) =>

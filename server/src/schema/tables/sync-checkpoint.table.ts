@@ -1,6 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { SyncEntityType } from 'src/enum';
-import { SessionTable } from 'src/schema/tables/session.table';
 import {
   Column,
   CreateDateColumn,
@@ -10,7 +7,10 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { SyncEntityType } from 'src/enum';
+import { SessionTable } from 'src/schema/tables/session.table';
 
 @Table('session_sync_checkpoint')
 @UpdatedAtTrigger('session_sync_checkpoint_updatedAt')

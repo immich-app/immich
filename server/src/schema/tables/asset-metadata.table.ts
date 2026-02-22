@@ -1,7 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetMetadataKey } from 'src/enum';
-import { asset_metadata_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -11,7 +7,11 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetMetadataKey } from 'src/enum';
+import { asset_metadata_audit } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
 
 @UpdatedAtTrigger('asset_metadata_updated_at')
 @Table('asset_metadata')

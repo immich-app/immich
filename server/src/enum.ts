@@ -821,14 +821,6 @@ export enum OAuthTokenEndpointAuthMethod {
   ClientSecretBasic = 'client_secret_basic',
 }
 
-export enum DatabaseSslMode {
-  Disable = 'disable',
-  Allow = 'allow',
-  Prefer = 'prefer',
-  Require = 'require',
-  VerifyFull = 'verify-full',
-}
-
 export enum AssetVisibility {
   Archive = 'archive',
   Timeline = 'timeline',
