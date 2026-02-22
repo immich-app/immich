@@ -1204,7 +1204,6 @@
   "features_setting_description": "管理 App 功能",
   "file_name_or_extension": "文件名或扩展名",
   "file_name_text": "文件名",
-  "file_name_with_value": "文件名：{file_name}",
   "file_size": "大小",
   "filename": "文件名",
   "filetype": "文件类型",

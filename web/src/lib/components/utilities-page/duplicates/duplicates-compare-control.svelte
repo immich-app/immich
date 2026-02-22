@@ -4,9 +4,14 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import {
+    computeDifferingMetadataFields,
+    suggestDuplicate,
+    type DifferingMetadataFields,
+  } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -19,14 +24,20 @@
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
+    selectedMetadataFields: MetadataPreference;
+    showAllMetadata?: boolean;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
+  let { assets, onResolve, onStack, selectedMetadataFields, showAllMetadata = false }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
 
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+
+  let differingMetadataFields: DifferingMetadataFields = $derived(
+    computeDifferingMetadataFields(assets, selectedMetadataFields, showAllMetadata),
+  );
 
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
@@ -160,7 +171,15 @@
   <div class="overflow-x-auto p-2">
     <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
-        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
+        <DuplicateAsset
+          {asset}
+          {onSelectAsset}
+          isSelected={selectedAssetIds.has(asset.id)}
+          {onViewAsset}
+          {selectedMetadataFields}
+          {differingMetadataFields}
+          {showAllMetadata}
+        />
       {/each}
     </div>
   </div>

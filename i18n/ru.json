@@ -1210,7 +1210,6 @@
   "features_setting_description": "Управление дополнительными возможностями приложения",
   "file_name_or_extension": "Имя файла или расширение",
   "file_name_text": "Имя файла",
-  "file_name_with_value": "Имя файла: {file_name}",
   "file_size": "Размер файла",
   "filename": "Имя файла",
   "filetype": "Тип файла",

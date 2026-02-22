@@ -1210,7 +1210,6 @@
   "features_setting_description": "Administrar les funcions de l'aplicació",
   "file_name_or_extension": "Nom de l'arxiu o extensió",
   "file_name_text": "Nom del fitxer",
-  "file_name_with_value": "Nom del fitxer: {file_name}",
   "file_size": "Mida del fitxer",
   "filename": "Nom del fitxer",
   "filetype": "Tipus d'arxiu",

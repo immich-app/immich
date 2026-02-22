@@ -1210,7 +1210,6 @@
   "features_setting_description": "Halda rakenduse funktsioone",
   "file_name_or_extension": "Failinimi või -laiend",
   "file_name_text": "Faili nimi",
-  "file_name_with_value": "Faili nimi: {file_name}",
   "file_size": "Failisuurus",
   "filename": "Failinimi",
   "filetype": "Failitüüp",
