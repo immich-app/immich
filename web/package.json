@@ -50,6 +50,7 @@
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
     "maplibre-gl": "^5.6.2",
+    "media-chrome": "^4.17.2",
     "pmtiles": "^4.3.0",
     "qrcode": "^1.5.4",
     "simple-icons": "^15.15.0",

@@ -543,6 +543,7 @@
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+        extendedControls
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onClose={closeViewer}

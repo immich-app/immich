@@ -11,6 +11,7 @@
     cacheKey: string | null;
     loopVideo: boolean;
     playOriginalVideo: boolean;
+    extendedControls?: boolean;
     onClose?: () => void;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
@@ -25,6 +26,7 @@
     cacheKey,
     loopVideo,
     playOriginalVideo,
+    extendedControls = false,
     onPreviousAsset,
     onClose,
     onNextAsset,
@@ -41,8 +43,10 @@
   <VideoNativeViewer
     {loopVideo}
     {cacheKey}
+    {asset}
     assetId={effectiveAssetId}
     {playOriginalVideo}
+    {extendedControls}
     {onPreviousAsset}
     {onNextAsset}
     {onVideoEnded}

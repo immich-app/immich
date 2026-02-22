@@ -56,9 +56,6 @@ const persistedObject = <T>(key: string, defaults: T) =>
 
 export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
 
-export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
-export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});
-
 export interface AlbumViewSettings {
   view: string;
   filter: string;
