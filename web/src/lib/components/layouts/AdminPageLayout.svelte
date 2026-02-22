@@ -27,7 +27,7 @@
     bind:open={sidebarStore.isOpen}
     class="border-none shadow-none h-full flex flex-col justify-between gap-2"
   >
-    <div class="flex flex-col pt-8 pe-4 gap-1">
+    <div class="flex flex-col pt-8 ps-1 pe-4 gap-1">
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
