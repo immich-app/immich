@@ -852,6 +852,8 @@ class ApiClient {
           return UserPreferencesUpdateDto.fromJson(value);
         case 'UserResponseDto':
           return UserResponseDto.fromJson(value);
+        case 'UserResponseDtoOutput':
+          return UserResponseDtoOutput.fromJson(value);
         case 'UserStatus':
           return UserStatusTypeTransformer().decode(value);
         case 'UserUpdateMeDto':

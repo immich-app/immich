@@ -18,9 +18,15 @@ class ActivityStatisticsResponseDto {
   });
 
   /// Number of comments
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int comments;
 
   /// Number of likes
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int likes;
 
   @override

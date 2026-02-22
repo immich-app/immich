@@ -47,7 +47,9 @@ describe(ActivityService.name, () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
       mocks.activity.search.mockResolvedValue([]);
 
-      await expect(sut.getAll(factory.auth(), { assetId, albumId, type: ReactionType.COMMENT })).resolves.toEqual([]);
+      await expect(sut.getAll(factory.auth(), { assetId, albumId, type: ReactionType.COMMENT })).resolves.toEqual(
+        [],
+      );
 
       expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: false });
     });
