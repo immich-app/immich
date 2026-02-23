@@ -156,7 +156,6 @@ void main() {
     );
 
     when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((_) async => {});
-    when(() => mockLocalAssetRepo.getAssetsFromBackupAlbumsByRemoteIds(any())).thenAnswer((_) async => {});
     when(() => mockTrashedLocalAssetRepo.trashLocalAsset(any())).thenAnswer((_) async {});
     when(() => mockTrashedLocalAssetRepo.getToRestore()).thenAnswer((_) async => []);
     when(() => mockTrashedLocalAssetRepo.applyRestoredAssets(any())).thenAnswer((_) async {});
@@ -410,8 +409,8 @@ void main() {
         'album-b': [mergedAsset],
       };
       when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
-        final Iterable<String> requestedChecksums = invocation.positionalArguments.first as Iterable<String>;
-        expect(requestedChecksums.toSet(), equals({'checksum-local', 'checksum-merged', 'checksum-remote-only'}));
+        final Iterable<String> requestedRemoteIds = invocation.positionalArguments.first as Iterable<String>;
+        expect(requestedRemoteIds.toSet(), equals({'remote-1', 'remote-2', 'remote-3'}));
         return assetsByAlbum;
       });
 
@@ -474,7 +473,7 @@ void main() {
     });
 
     test("requests local deletions lookup by remote ids for permanent remote delete events", () async {
-      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbumsByRemoteIds(any())).thenAnswer((invocation) async {
+      when(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).thenAnswer((invocation) async {
         final Iterable<String> requestedRemoteIds = invocation.positionalArguments.first as Iterable<String>;
         expect(requestedRemoteIds.toSet(), equals({'remote-asset'}));
         return {};
@@ -484,8 +483,7 @@ void main() {
 
       await simulateEvents(events);
 
-      verifyNever(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any()));
-      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbumsByRemoteIds(any())).called(1);
+      verify(() => mockLocalAssetRepo.getAssetsFromBackupAlbums(any())).called(1);
       verifyNever(() => mockLocalFilesManagerRepo.moveToTrash(any()));
       verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
     });

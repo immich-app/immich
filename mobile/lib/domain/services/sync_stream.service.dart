@@ -191,7 +191,7 @@ class SyncStreamService {
         await _runWithManageMediaPermission(
           logContext: "Trashed Assets",
           action: () async {
-            await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
+            await _handleRemoteDeleted(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id));
             await _applyRemoteRestoreToLocal();
           },
         );
@@ -372,24 +372,11 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _handleRemoteTrashed(Iterable<String> checksums) async {
-    if (checksums.isEmpty) {
-      return Future.value();
-    } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
-      if (localAssetsToTrash.isNotEmpty) {
-        await _trashLocalAssets(localAssetsToTrash);
-      } else {
-        _logger.info("No assets found in backup-enabled albums for assets: $checksums");
-      }
-    }
-  }
-
   Future<void> _handleRemoteDeleted(Iterable<String> remoteIds) async {
     if (remoteIds.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbumsByRemoteIds(remoteIds);
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(remoteIds);
       if (localAssetsToTrash.isNotEmpty) {
         await _trashLocalAssets(localAssetsToTrash);
       } else {
