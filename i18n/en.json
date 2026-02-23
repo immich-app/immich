@@ -1233,6 +1233,7 @@
   "free_up_space_description": "Move backed-up photos and videos to your device's trash to free up space. Your copies on the server remain safe.",
   "free_up_space_settings_subtitle": "Free up device storage",
   "full_path": "Full path: {path}",
+  "file_path": "File path",
   "gcast_enabled": "Google Cast",
   "gcast_enabled_description": "This feature loads external resources from Google in order to work.",
   "general": "General",

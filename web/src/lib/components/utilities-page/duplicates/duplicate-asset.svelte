@@ -52,7 +52,12 @@
     fileName: isDifferent((a) => a.originalFileName),
     fileSize: isDifferent((a) => getFileSize(a)),
     resolution: isDifferent((a) => getAssetResolution(a)),
-    originalPath: isDifferent((a) => a.originalPath ?? $t('unknown')),
+    originalPath: isDifferent((a) => {
+      const basePath = a.originalPath && a.originalFileName 
+        ? getBasePath(a.originalPath, a.originalFileName)
+        : a.originalPath ?? $t('unknown');
+      return basePath || $t('unknown');
+    }),
     date: isDifferent((a) => {
       const tz = a.exifInfo?.timeZone;
       const dt =
@@ -171,7 +176,7 @@
     <InfoRow
       icon={mdiImageOutline}
       highlight={hasDifferentValues.fileName}
-      title={$t('file_name_with_value', { values: { file_name: asset.originalFileName ?? '' } })}
+      title={$t('full_path', { values: { path: asset.originalPath } })}
     >
       {asset.originalFileName}
     </InfoRow>
@@ -179,7 +184,7 @@
     <InfoRow
       icon={mdiFolderOutline}
       highlight={hasDifferentValues.originalPath}
-      title={$t('full_path', { values: { path: asset.originalPath } })}
+      title={$t('file_path')}
     >
       {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
     </InfoRow>
