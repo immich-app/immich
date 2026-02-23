@@ -344,6 +344,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       if (slugController.text != (existingLink!.slug ?? "")) {
         slug = slugController.text.isEmpty ? null : slugController.text;
+      } else {
+        slug = existingLink!.slug;
       }
 
       if (editExpiry.value) {
