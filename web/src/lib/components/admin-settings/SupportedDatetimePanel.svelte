@@ -15,7 +15,7 @@
 
 </script>
 
-{#snippet example(title: string, options: Array)}
+{#snippet example(title: string, options: Array<string>)}
   <div>
     <Text fontWeight="medium" size="tiny" color="primary" class="mb-1">{title}</Text>
     <ul>
