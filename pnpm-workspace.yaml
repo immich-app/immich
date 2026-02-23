@@ -9,6 +9,9 @@ packages:
   - plugins
   - web
   - .github
+
+dedupePeerDependents: false
+
 ignoredBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
@@ -25,42 +28,48 @@ ignoredBuiltDependencies:
   - protobufjs
   - ssh2
   - utimes
+
+injectWorkspacePackages: true
+
 onlyBuiltDependencies:
   - sharp
   - '@tailwindcss/oxide'
   - bcrypt
+
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.5
+
 packageExtensions:
-  nestjs-kysely:
+  '@immich/ui':
     dependencies:
-      tslib: '*'
-  nestjs-otel:
-    dependencies:
-      tslib: '*'
+      tailwindcss: '>=4.1'
   '@photo-sphere-viewer/equirectangular-video-adapter':
     dependencies:
       three: '*'
   '@photo-sphere-viewer/video-plugin':
     dependencies:
       three: '*'
-  sharp:
-    dependencies:
-      node-addon-api: '*'
-      node-gyp: '*'
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
-  tailwind-variants:
-    dependencies:
-      tailwindcss: '>=4.1'
   bcrypt:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
-dedupePeerDependents: false
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
+  sharp:
+    dependencies:
+      node-addon-api: '*'
+      node-gyp: '*'
+  tailwind-variants:
+    dependencies:
+      tailwindcss: '>=4.1'
+
 preferWorkspacePackages: true
-injectWorkspacePackages: true
+
 shamefullyHoist: false
+
 verifyDepsBeforeRun: install

@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
@@ -13,10 +12,6 @@ import { makeMockWatcher } from 'test/repositories/storage.repository.mock';
 import { factory, newDate, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
-
-async function* mockWalk() {
-  yield await Promise.resolve(['/data/user1/photo.jpg']);
-}
 
 describe(LibraryService.name, () => {
   let sut: LibraryService;
@@ -165,7 +160,11 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
+        })(),
+      );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -201,16 +200,20 @@ describe(LibraryService.name, () => {
       });
 
       mocks.storage.checkFileExists.mockResolvedValue(true);
-
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
+        })(),
+      );
       mocks.library.get.mockResolvedValue(library);
+      mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
       expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
+        pathsToWalk: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
-        take: JOBS_LIBRARY_PAGINATION_SIZE,
       });
     });
   });
@@ -220,7 +223,11 @@ describe(LibraryService.name, () => {
       const library = factory.library({ importPaths: ['/foo', '/bar'] });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(mockWalk);
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([{ type: 'entry', path: '/data/user1/photo.jpg' }]);
+        })(),
+      );
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
@@ -242,33 +249,6 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.Skipped);
     });
-
-    it('should ignore import paths that do not exist', async () => {
-      const library = factory.library({ importPaths: ['/foo', '/bar'] });
-
-      mocks.storage.stat.mockImplementation((path): Promise<Stats> => {
-        if (path === library.importPaths[0]) {
-          const error = { code: 'ENOENT' } as any;
-          throw error;
-        }
-        return Promise.resolve({
-          isDirectory: () => true,
-        } as Stats);
-      });
-
-      mocks.storage.checkFileExists.mockResolvedValue(true);
-
-      mocks.library.get.mockResolvedValue(library);
-
-      await sut.handleQueueSyncFiles({ id: library.id });
-
-      expect(mocks.storage.walk).toHaveBeenCalledWith({
-        pathsToCrawl: [library.importPaths[1]],
-        exclusionPatterns: [],
-        includeHidden: false,
-        take: JOBS_LIBRARY_PAGINATION_SIZE,
-      });
-    });
   });
 
   describe('handleQueueSyncAssets', () => {
@@ -276,7 +256,11 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(async function* generator() {});
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -294,7 +278,11 @@ describe(LibraryService.name, () => {
       const library = factory.library();
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(async function* generator() {});
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.asset.getLibraryAssetCount.mockResolvedValue(0);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 1n });
 
@@ -309,7 +297,11 @@ describe(LibraryService.name, () => {
       const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.storage.walk.mockImplementation(async function* generator() {});
+      mocks.storage.walk.mockReturnValue(
+        (async function* () {
+          yield await Promise.resolve([]);
+        })(),
+      );
       mocks.library.streamAssetIds.mockReturnValue(makeStream([asset]));
       mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
       mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });

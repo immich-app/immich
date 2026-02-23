@@ -4,6 +4,7 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
+
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -247,9 +248,11 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
+    const newPaths = await this.assetRepository.filterNewExternalAssetPaths(library.id, job.paths);
+
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
-      job.paths.map((path) =>
+      newPaths.map((path) =>
         this.processEntity(path, library.ownerId, job.libraryId)
           .then((asset) => assetImports.push(asset))
           .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
@@ -394,6 +397,7 @@ export class LibraryService extends BaseService {
 
   private async processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
+
     const stat = await this.storageRepository.stat(assetPath);
 
     return {
@@ -636,42 +640,56 @@ export class LibraryService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const pathsOnDisk = this.storageRepository.walk({
-      pathsToCrawl: validImportPaths,
-      includeHidden: false,
-      exclusionPatterns: library.exclusionPatterns,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
-    });
-
-    let importCount = 0;
-    let crawlCount = 0;
-
     this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    for await (const pathBatch of pathsOnDisk) {
-      crawlCount += pathBatch.length;
-      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+    const fileWalker = this.storageRepository.walk({
+      pathsToWalk: validImportPaths,
+      includeHidden: false, // TODO: make this configurable?
+      exclusionPatterns: library.exclusionPatterns,
+    });
 
-      if (paths.length > 0) {
-        importCount += paths.length;
+    const walkStart = Date.now();
+    let progressCounter = 0;
+    let lastLoggedMilestone = 0;
 
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncFiles,
-          data: {
-            libraryId: library.id,
-            paths,
-            progressCounter: crawlCount,
-          },
-        });
+    for await (const walkItems of fileWalker) {
+      const paths: string[] = [];
+      for (const item of walkItems) {
+        if (item.type === 'error') {
+          this.logger.warn(`Error walking ${item.path ?? 'unknown path'}: ${item.message} for library ${library.id}`);
+        } else {
+          paths.push(item.path);
+        }
       }
 
-      this.logger.log(
-        `Crawled ${crawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
-      );
+      if (paths.length === 0) {
+        continue;
+      }
+
+      progressCounter += paths.length;
+
+      await this.jobRepository.queue({
+        name: JobName.LibrarySyncFiles,
+        data: {
+          libraryId: library.id,
+          paths,
+          progressCounter,
+        },
+      });
+
+      const currentMilestone = Math.floor(progressCounter / 100_000);
+      // Log every 100k files found to give some feedback on progress for large libraries
+      if (currentMilestone > lastLoggedMilestone) {
+        const roundedCount = currentMilestone * 100_000;
+        this.logger.log(
+          `Disk walk found ${roundedCount} file(s) so far (${((Date.now() - walkStart) / 1000).toFixed(2)}s elapsed) for library ${library.id}...`,
+        );
+        lastLoggedMilestone = currentMilestone;
+      }
     }
 
     this.logger.log(
-      `Finished disk crawl, ${crawlCount} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
+      `Finished disk walk, ${progressCounter} file(s) found on disk in ${((Date.now() - walkStart) / 1000).toFixed(2)}s for library ${library.id}`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
