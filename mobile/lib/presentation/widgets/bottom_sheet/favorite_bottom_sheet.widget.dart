@@ -75,7 +75,9 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const ShareLinkActionButton(source: ActionSource.timeline),
           const UnFavoriteActionButton(source: ActionSource.timeline),
           const ArchiveActionButton(source: ActionSource.timeline),
-          const DownloadActionButton(source: ActionSource.timeline),
+          if (multiselect.selectedAssets.any((asset) => asset.storage == AssetState.remote)) ...[
+            const DownloadActionButton(source: ActionSource.timeline),
+          ],
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(source: ActionSource.timeline),
