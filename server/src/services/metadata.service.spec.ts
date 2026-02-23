@@ -14,7 +14,7 @@ import {
   SourceType,
 } from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
-import { firstDateTime, MetadataService } from 'src/services/metadata.service';
+import { extractDateFromFilename, firstDateTime, MetadataService } from 'src/services/metadata.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub } from 'test/fixtures/person.stub';
@@ -252,6 +252,57 @@ describe(MetadataService.name, () => {
         width: null,
         height: null,
       });
+    });
+
+    it('should extract date from filename when no exif date is present', async () => {
+      const expectedDate = new Date('2023-04-15T14:30:22.000Z');
+      const asset = AssetFactory.from({ originalFileName: 'IMG_20230415_143022.jpg' }).build();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
+      mockReadTags();
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ dateTimeOriginal: expectedDate }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          localDateTime: expectedDate,
+          fileCreatedAt: expectedDate,
+        }),
+      );
+    });
+
+    it('should prefer exif date over filename date when both are present', async () => {
+      const exifDate = new Date('2022-06-10T08:00:00.000Z');
+      const asset = AssetFactory.from({ originalFileName: 'IMG_20230415_143022.jpg' }).build();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
+      mockReadTags({ DateTimeOriginal: '2022:06:10 08:00:00' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ dateTimeOriginal: exifDate }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+    });
+
+    it('should fall back to file timestamps when filename has no recognisable date pattern', async () => {
+      const fileCreatedAt = new Date('2021-01-01T00:00:00.000Z');
+      const asset = AssetFactory.from({ originalFileName: 'random_photo.jpg' }).build();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
+      mocks.storage.stat.mockResolvedValue({
+        size: 123_456,
+        mtime: new Date('2022-01-01T00:00:00.000Z'),
+        mtimeMs: new Date('2022-01-01T00:00:00.000Z').valueOf(),
+        birthtimeMs: fileCreatedAt.valueOf(),
+      } as Stats);
+      mockReadTags();
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ dateTimeOriginal: fileCreatedAt }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
     });
 
     it('should determine dateTimeOriginal regardless of the server time zone', async () => {
@@ -1865,6 +1916,44 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       expect(result?.tag).toBe('CreationDate');
       expect(result?.dateTime?.toDate()?.toISOString()).toBe('2025-05-24T16:26:20.000Z');
+    });
+  });
+
+  describe('extractDateFromFilename', () => {
+    it.each([
+      // YYYYMMDD_HHMMSS (bare compact form)
+      ['20230415_143022', '2023-04-15T14:30:22.000Z'],
+      // IMG_YYYYMMDD_HHMMSS (Samsung / Android)
+      ['IMG_20230415_143022', '2023-04-15T14:30:22.000Z'],
+      // VID_YYYYMMDD_HHMMSS (Android video)
+      ['VID_20230415_143022', '2023-04-15T14:30:22.000Z'],
+      // YYYY-MM-DD_HH-MM-SS (dashes with underscore separator)
+      ['2023-04-15_14-30-22', '2023-04-15T14:30:22.000Z'],
+      // YYYY-MM-DD-HH-MM-SS (all dashes)
+      ['2023-04-15-14-30-22', '2023-04-15T14:30:22.000Z'],
+      // Screenshot_YYYY-MM-DD-HH-MM-SS (Android screenshots)
+      ['Screenshot_2023-04-15-14-30-22', '2023-04-15T14:30:22.000Z'],
+      // Screenshot_YYYY-MM-DD_HH-MM-SS (underscore between date and time)
+      ['Screenshot_2023-04-15_14-30-22', '2023-04-15T14:30:22.000Z'],
+      // WhatsApp IMG-YYYYMMDD-WAxxxx
+      ['IMG-20230415-WA0001', '2023-04-15T00:00:00.000Z'],
+      // WhatsApp VID-YYYYMMDD-WAxxxx
+      ['VID-20230415-WA0042', '2023-04-15T00:00:00.000Z'],
+    ])('should parse %s to %s', (filename, expected) => {
+      const result = extractDateFromFilename(filename);
+      expect(result).not.toBeNull();
+      expect(result!.toJSDate().toISOString()).toBe(expected);
+    });
+
+    it.each([
+      'image.jpg',
+      'photo',
+      'IMG_abc_defghi',
+      'IMG-20231399-WA0001', // invalid month 13
+      '20231301_256000', // invalid month 13 and hour 25
+      'random_file_name',
+    ])('should return null for non-matching filename: %s', (filename) => {
+      expect(extractDateFromFilename(filename)).toBeNull();
     });
   });
 });

@@ -82,6 +82,97 @@ export function firstDateTime(tags: ImmichTags) {
   }
 }
 
+/**
+ * Reject obviously out-of-range date/time components before handing them to
+ * Luxon.  Without this guard Luxon silently overflows (e.g. month 13 → January
+ * of the following year), so `DateTime.isValid` would be `true` even for values
+ * that could never appear in a real camera filename.
+ */
+const isValidDateComponents = (
+  year: number,
+  month: number,
+  day: number,
+  hour = 0,
+  minute = 0,
+  second = 0,
+): boolean =>
+  year >= 1000 &&
+  year <= 9999 &&
+  month >= 1 &&
+  month <= 12 &&
+  day >= 1 &&
+  day <= 31 &&
+  hour >= 0 &&
+  hour <= 23 &&
+  minute >= 0 &&
+  minute <= 59 &&
+  second >= 0 &&
+  second <= 59;
+
+/** Ordered list of regex patterns to extract date/time from filenames */
+const FILENAME_DATE_PATTERNS: ReadonlyArray<{
+  /** Pattern must contain capture groups for: year, month, day, [hour, minute, second] */
+  regex: RegExp;
+  extract: (match: RegExpMatchArray) => DateTime | null;
+}> = [
+  // YYYY-MM-DD_HH-MM-SS or YYYY-MM-DD-HH-MM-SS
+  // Matches: Screenshot_2023-04-15_14-30-22, 2023-04-15_14-30-22, Screenshot_2023-04-15-14-30-22
+  {
+    regex: /(\d{4})-(\d{2})-(\d{2})[-_](\d{2})-(\d{2})-(\d{2})/,
+    extract: (m) => {
+      const [year, month, day, hour, minute, second] = [+m[1], +m[2], +m[3], +m[4], +m[5], +m[6]];
+      return isValidDateComponents(year, month, day, hour, minute, second)
+        ? DateTime.fromObject({ year, month, day, hour, minute, second }, { zone: 'UTC' })
+        : null;
+    },
+  },
+  // YYYYMMDD_HHMMSS
+  // Matches: IMG_20230415_143022, VID_20230415_143022, 20230415_143022
+  {
+    regex: /(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/,
+    extract: (m) => {
+      const [year, month, day, hour, minute, second] = [+m[1], +m[2], +m[3], +m[4], +m[5], +m[6]];
+      return isValidDateComponents(year, month, day, hour, minute, second)
+        ? DateTime.fromObject({ year, month, day, hour, minute, second }, { zone: 'UTC' })
+        : null;
+    },
+  },
+  // WhatsApp: IMG-YYYYMMDD-WAxxxx or VID-YYYYMMDD-WAxxxx (date only, no time)
+  // Matches: IMG-20230415-WA0001, VID-20230415-WA0042
+  {
+    regex: /[A-Za-z]{2,4}-(\d{4})(\d{2})(\d{2})-WA\d+/,
+    extract: (m) => {
+      const [year, month, day] = [+m[1], +m[2], +m[3]];
+      return isValidDateComponents(year, month, day)
+        ? DateTime.fromObject({ year, month, day }, { zone: 'UTC' })
+        : null;
+    },
+  },
+];
+
+/**
+ * Attempt to extract a date/time from a filename stem (without extension) by
+ * trying each of the common camera/device naming patterns in order.
+ *
+ * Returns the first valid {@link DateTime} found, or `null` if no pattern matches
+ * or the matched values do not form a valid calendar date.
+ */
+export function extractDateFromFilename(filename: string): DateTime | null {
+  for (const { regex, extract } of FILENAME_DATE_PATTERNS) {
+    const match = filename.match(regex);
+    if (!match) {
+      continue;
+    }
+
+    const dateTime = extract(match);
+    if (dateTime?.isValid) {
+      return dateTime;
+    }
+  }
+
+  return null;
+}
+
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
   if (Array.isArray(value)) {
@@ -947,18 +1038,27 @@ export class MetadataService extends BaseService {
     let localDateTime = dateTimeOriginal?.setZone('UTC', { keepLocalTime: true });
 
     if (!localDateTime || !dateTimeOriginal) {
-      // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
-      // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = DateTime.fromMillis(
-        Math.min(
-          asset.fileCreatedAt.getTime(),
-          stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
-        ),
-      );
-      this.logger.debug(
-        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
-      );
-      dateTimeOriginal = localDateTime = earliestDate;
+      const filenameStem = parse(asset.originalPath).name;
+      const fromFilename = extractDateFromFilename(filenameStem);
+      if (fromFilename) {
+        this.logger.debug(
+          `No exif date time found, extracted ${fromFilename.toISO()} from filename for asset ${asset.id}: ${asset.originalPath}`,
+        );
+        dateTimeOriginal = localDateTime = fromFilename;
+      } else {
+        // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
+        // birthtime is not available in Docker on macOS, so it appears as 0
+        const earliestDate = DateTime.fromMillis(
+          Math.min(
+            asset.fileCreatedAt.getTime(),
+            stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
+          ),
+        );
+        this.logger.debug(
+          `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
+        );
+        dateTimeOriginal = localDateTime = earliestDate;
+      }
     }
 
     this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);
