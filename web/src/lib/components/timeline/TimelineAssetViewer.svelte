@@ -127,8 +127,7 @@
   const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.ARCHIVE:
-      case AssetAction.UNARCHIVE:
-      case AssetAction.ADD: {
+      case AssetAction.UNARCHIVE: {
         timelineManager.upsertAssets([action.asset]);
         break;
       }

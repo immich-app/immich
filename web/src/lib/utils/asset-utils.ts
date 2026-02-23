@@ -1,10 +1,8 @@
-import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
@@ -13,10 +11,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
-  addAssetsToAlbum as addAssets,
-  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
-  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -40,77 +35,6 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
-
-export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
-  const result = await addAssets({
-    ...authManager.params,
-    id: albumId,
-    bulkIdsDto: {
-      ids: assetIds,
-    },
-  });
-  const count = result.filter(({ success }) => success).length;
-  const duplicateErrorCount = result.filter(({ error }) => error === 'duplicate').length;
-  const $t = get(t);
-
-  if (showNotification) {
-    let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
-    if (count > 0) {
-      description = $t('assets_added_to_album_count', { values: { count } });
-    } else if (duplicateErrorCount > 0) {
-      description = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
-    }
-    toastManager.custom(
-      {
-        component: ToastAction,
-        props: {
-          title: $t('info'),
-          color: 'primary',
-          description,
-          button: {
-            text: $t('view_album'),
-            color: 'primary',
-            onClick() {
-              return goto(Route.viewAlbum({ id: albumId }));
-            },
-          },
-        },
-      },
-      { timeout: 5000 },
-    );
-  }
-};
-
-export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
-  const result = await addToAlbums({
-    ...authManager.params,
-    albumsAddAssetsDto: {
-      albumIds,
-      assetIds,
-    },
-  });
-
-  if (!showNotification) {
-    return result;
-  }
-
-  if (showNotification) {
-    const $t = get(t);
-
-    if (result.error === BulkIdErrorReason.Duplicate) {
-      toastManager.info($t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }));
-      return result;
-    }
-    if (result.error) {
-      toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
-      return result;
-    }
-    toastManager.success(
-      $t('assets_added_to_albums_count', { values: { albumTotal: albumIds.length, assetTotal: assetIds.length } }),
-    );
-    return result;
-  }
-};
 
 export const tagAssets = async ({
   assetIds,

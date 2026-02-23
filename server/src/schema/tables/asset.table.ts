@@ -55,6 +55,11 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   using: 'gin',
   expression: 'f_unaccent("originalFileName") gin_trgm_ops',
 })
+@Index({
+  name: 'asset_id_timeline_notDeleted_idx',
+  columns: ['id'],
+  where: `visibility = 'timeline' AND "deletedAt" IS NULL`,
+})
 // For all assets, each originalpath must be unique per user and library
 export class AssetTable {
   @PrimaryGeneratedColumn()

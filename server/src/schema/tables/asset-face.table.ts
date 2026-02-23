@@ -27,6 +27,11 @@ import {
 })
 // schemaFromDatabase does not preserve column order
 @Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
+@Index({
+  name: 'asset_face_personId_assetId_notDeleted_isVisible_idx',
+  columns: ['personId', 'assetId'],
+  where: '"deletedAt" IS NULL AND "isVisible" IS TRUE',
+})
 @Index({ columns: ['personId', 'assetId'] })
 export class AssetFaceTable {
   @PrimaryGeneratedColumn()
