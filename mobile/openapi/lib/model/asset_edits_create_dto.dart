@@ -16,8 +16,8 @@ class AssetEditsCreateDto {
     this.edits = const [],
   });
 
-  /// List of edit actions to apply (crop, rotate, or mirror)
-  List<AssetEditsCreateDtoEditsInner> edits;
+  /// list of edits
+  List<AssetEditActionItemDto> edits;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditsCreateDto &&
@@ -46,7 +46,7 @@ class AssetEditsCreateDto {
       final json = value.cast<String, dynamic>();
 
       return AssetEditsCreateDto(
-        edits: AssetEditsCreateDtoEditsInner.listFromJson(json[r'edits']),
+        edits: AssetEditActionItemDto.listFromJson(json[r'edits']),
       );
     }
     return null;

@@ -21,7 +21,7 @@ class AssetEditsResponseDto {
   String assetId;
 
   /// List of edit actions applied to the asset
-  List<AssetEditsResponseDtoEditsInner> edits;
+  List<AssetEditActionItemResponseDto> edits;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetEditsResponseDto &&
@@ -54,7 +54,7 @@ class AssetEditsResponseDto {
 
       return AssetEditsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        edits: AssetEditsResponseDtoEditsInner.listFromJson(json[r'edits']),
+        edits: AssetEditActionItemResponseDto.listFromJson(json[r'edits']),
       );
     }
     return null;

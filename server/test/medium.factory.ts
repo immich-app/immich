@@ -6,7 +6,7 @@ import { Stats } from 'node:fs';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AssetEditsCreateDto } from 'src/dtos/editing.dto';
+import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetType,
@@ -283,7 +283,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newEdits(assetId: string, dto: AssetEditsCreateDto) {
-    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits);
+    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits as AssetEditActionItem[]);
     return { edits };
   }
 }

@@ -10,24 +10,22 @@
 
 part of openapi.api;
 
-class AssetEditActionMirrorResponse {
-  /// Returns a new [AssetEditActionMirrorResponse] instance.
-  AssetEditActionMirrorResponse({
+class AssetEditActionItemResponseDto {
+  /// Returns a new [AssetEditActionItemResponseDto] instance.
+  AssetEditActionItemResponseDto({
     required this.action,
     required this.id,
     required this.parameters,
   });
 
-  /// Type of edit action to perform
   AssetEditAction action;
 
-  /// Unique ID of this edit action
   String id;
 
-  MirrorParameters parameters;
+  AssetEditActionItemDtoParameters parameters;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionMirrorResponse &&
+  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemResponseDto &&
     other.action == action &&
     other.id == id &&
     other.parameters == parameters;
@@ -40,7 +38,7 @@ class AssetEditActionMirrorResponse {
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditActionMirrorResponse[action=$action, id=$id, parameters=$parameters]';
+  String toString() => 'AssetEditActionItemResponseDto[action=$action, id=$id, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -50,28 +48,28 @@ class AssetEditActionMirrorResponse {
     return json;
   }
 
-  /// Returns a new [AssetEditActionMirrorResponse] instance and imports its values from
+  /// Returns a new [AssetEditActionItemResponseDto] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static AssetEditActionMirrorResponse? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionMirrorResponse");
+  static AssetEditActionItemResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetEditActionItemResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return AssetEditActionMirrorResponse(
+      return AssetEditActionItemResponseDto(
         action: AssetEditAction.fromJson(json[r'action'])!,
         id: mapValueOfType<String>(json, r'id')!,
-        parameters: MirrorParameters.fromJson(json[r'parameters'])!,
+        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
       );
     }
     return null;
   }
 
-  static List<AssetEditActionMirrorResponse> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditActionMirrorResponse>[];
+  static List<AssetEditActionItemResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetEditActionItemResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = AssetEditActionMirrorResponse.fromJson(row);
+        final value = AssetEditActionItemResponseDto.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -80,12 +78,12 @@ class AssetEditActionMirrorResponse {
     return result.toList(growable: growable);
   }
 
-  static Map<String, AssetEditActionMirrorResponse> mapFromJson(dynamic json) {
-    final map = <String, AssetEditActionMirrorResponse>{};
+  static Map<String, AssetEditActionItemResponseDto> mapFromJson(dynamic json) {
+    final map = <String, AssetEditActionItemResponseDto>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetEditActionMirrorResponse.fromJson(entry.value);
+        final value = AssetEditActionItemResponseDto.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -94,14 +92,14 @@ class AssetEditActionMirrorResponse {
     return map;
   }
 
-  // maps a json object with a list of AssetEditActionMirrorResponse-objects as value to a dart map
-  static Map<String, List<AssetEditActionMirrorResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditActionMirrorResponse>>{};
+  // maps a json object with a list of AssetEditActionItemResponseDto-objects as value to a dart map
+  static Map<String, List<AssetEditActionItemResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<AssetEditActionItemResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetEditActionMirrorResponse.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetEditActionItemResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

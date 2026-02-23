@@ -959,59 +959,34 @@ export type CropParameters = {
     /** Top-Left Y coordinate of crop */
     y: number;
 };
-export type AssetEditActionCropResponse = {
-    /** Type of edit action to perform */
-    action: AssetEditAction;
-    /** Unique ID of this edit action */
-    id: string;
-    parameters: CropParameters;
-};
 export type RotateParameters = {
     /** Rotation angle in degrees */
     angle: number;
-};
-export type AssetEditActionRotateResponse = {
-    /** Type of edit action to perform */
-    action: AssetEditAction;
-    /** Unique ID of this edit action */
-    id: string;
-    parameters: RotateParameters;
 };
 export type MirrorParameters = {
     /** Axis to mirror along */
     axis: MirrorAxis;
 };
-export type AssetEditActionMirrorResponse = {
-    /** Type of edit action to perform */
+export type AssetEditActionItemResponseDto = {
     action: AssetEditAction;
-    /** Unique ID of this edit action */
     id: string;
-    parameters: MirrorParameters;
+    /** List of edit actions to apply (crop, rotate, or mirror) */
+    parameters: CropParameters | RotateParameters | MirrorParameters;
 };
 export type AssetEditsResponseDto = {
     /** Asset ID these edits belong to */
     assetId: string;
     /** List of edit actions applied to the asset */
-    edits: (AssetEditActionCropResponse | AssetEditActionRotateResponse | AssetEditActionMirrorResponse)[];
+    edits: AssetEditActionItemResponseDto[];
 };
-export type AssetEditActionCrop = {
-    /** Type of edit action to perform */
+export type AssetEditActionItemDto = {
     action: AssetEditAction;
-    parameters: CropParameters;
-};
-export type AssetEditActionRotate = {
-    /** Type of edit action to perform */
-    action: AssetEditAction;
-    parameters: RotateParameters;
-};
-export type AssetEditActionMirror = {
-    /** Type of edit action to perform */
-    action: AssetEditAction;
-    parameters: MirrorParameters;
+    /** List of edit actions to apply (crop, rotate, or mirror) */
+    parameters: CropParameters | RotateParameters | MirrorParameters;
 };
 export type AssetEditsCreateDto = {
-    /** List of edit actions to apply (crop, rotate, or mirror) */
-    edits: (AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror)[];
+    /** list of edits */
+    edits: AssetEditActionItemDto[];
 };
 export type AssetMetadataResponseDto = {
     /** Metadata key */
