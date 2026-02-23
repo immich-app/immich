@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -25,7 +24,7 @@ class TrashDeleteDialog extends StatelessWidget {
               backgroundColor: context.colorScheme.surfaceDim,
               foregroundColor: context.primaryColor,
             ),
-            child: Text(context.t.cancel, style: const TextStyle(fontWeight: FontWeight.bold)).t(context: context),
+            child: Text(context.t.cancel, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
         const SizedBox(height: 8),
@@ -39,7 +38,7 @@ class TrashDeleteDialog extends StatelessWidget {
               backgroundColor: context.colorScheme.errorContainer,
               foregroundColor: context.colorScheme.onErrorContainer,
             ),
-            child: Text(context.t.delete, style: const TextStyle(fontWeight: FontWeight.bold)).t(context: context),
+            child: Text(context.t.delete, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
       ],
