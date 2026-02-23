@@ -27,7 +27,7 @@ export class SanitizedAssetResponseDto {
   type!: AssetType;
   @ApiProperty({
     description:
-      'Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache/versioning.',
+      'Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.',
   })
   thumbhash!: string | null;
   @ApiPropertyOptional({ description: 'Original MIME type' })
