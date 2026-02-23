@@ -1,10 +1,16 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -13,7 +19,174 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/theme/color_scheme.dart';
+import 'package:immich_mobile/theme/theme_data.dart';
+import 'package:immich_mobile/widgets/common/immich_logo.dart';
+import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class BootstrapErrorWidget extends StatelessWidget {
+  final String error;
+  final String stack;
+
+  const BootstrapErrorWidget({super.key, required this.error, required this.stack});
+
+  @override
+  Widget build(BuildContext _) {
+    final immichTheme = defaultColorPreset.themeOfPreset;
+
+    return EasyLocalization(
+      supportedLocales: locales.values.toList(),
+      path: translationsPath,
+      useFallbackTranslations: true,
+      fallbackLocale: locales.values.first,
+      assetLoader: const CodegenLoader(),
+      child: Builder(
+        builder: (lCtx) => MaterialApp(
+          title: 'Immich',
+          debugShowCheckedModeBanner: true,
+          localizationsDelegates: lCtx.localizationDelegates,
+          supportedLocales: lCtx.supportedLocales,
+          locale: lCtx.locale,
+          themeMode: ThemeMode.system,
+          darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: lCtx.locale),
+          theme: getThemeData(colorScheme: immichTheme.light, locale: lCtx.locale),
+          home: Builder(
+            builder: (ctx) => Scaffold(
+              body: Column(
+                children: [
+                  const SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [ImmichLogo(size: 48), SizedBox(width: 12), ImmichTitleText(fontSize: 24)],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: _ErrorCard(error: error, stack: stack),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _SupportLink(
+                          icon: Icons.chat_bubble_outline,
+                          label: ctx.t.get_help,
+                          url: 'https://discord.immich.app/',
+                        ),
+                        _SupportLink(
+                          icon: Icons.info_outline,
+                          label: ctx.t.profile_drawer_github,
+                          url: 'https://github.com/immich-app/immich/issues',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SupportLink extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String url;
+
+  const _SupportLink({required this.icon, required this.label, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 24),
+            const SizedBox(height: 4),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  final String error;
+  final String stack;
+
+  const _ErrorCard({required this.error, required this.stack});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ColoredBox(
+            color: scheme.error,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      context.t.scaffold_body_error_occurred,
+                      style: textTheme.titleSmall?.copyWith(color: scheme.onError),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: context.t.copy_error,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(Icons.copy_outlined, size: 16, color: scheme.onError),
+                    onPressed: () => Clipboard.setData(ClipboardData(text: '$error\n\n$stack')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(error, style: textTheme.bodyMedium),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(context.t.stacktrace, style: textTheme.labelMedium),
+                const SizedBox(height: 4),
+                SelectableText(stack, style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace')),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 @RoutePage()
 class SplashScreenPage extends StatefulHookConsumerWidget {
