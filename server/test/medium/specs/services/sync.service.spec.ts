@@ -1,3 +1,4 @@
+import { schemaFromCode } from '@immich/sql-tools';
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { AssetMetadataKey, UserMetadataKey } from 'src/enum';
@@ -6,7 +7,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BaseSync, SyncRepository } from 'src/repositories/sync.repository';
 import { DB } from 'src/schema';
 import { SyncService } from 'src/services/sync.service';
-import { getRegisteredItems } from 'src/sql-tools/register';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 import { v4 } from 'uuid';
@@ -227,10 +227,9 @@ describe(SyncService.name, () => {
     it('should cleanup every table', async () => {
       const { sut } = setup();
 
-      const tables = getRegisteredItems().filter((t) => t.type === 'table');
-      const auditTables = tables
-        .filter((t) => t.item.options.name?.endsWith('_audit'))
-        .map((t) => t.item.options.name!) as (keyof DB)[];
+      const auditTables = schemaFromCode()
+        .tables.filter((table) => table.name.endsWith('_audit'))
+        .map(({ name }) => name);
 
       const auditCleanupSpy = vi.spyOn(BaseSync.prototype as any, 'auditCleanup');
       await expect(sut.onAuditTableCleanup()).resolves.toBeUndefined();

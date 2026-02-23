@@ -302,7 +302,6 @@ class AlbumToAssetSync extends BaseSync {
   }
 
   cleanupAuditTable(daysAgo: number) {
-    console.log('FUCK');
     return this.auditCleanup('album_asset_audit', daysAgo);
   }
 
