@@ -116,6 +116,7 @@ export const Route = {
 
   // settings
   userSettings: (params?: { isOpen?: OpenQueryParam }) => '/user-settings' + asQueryString(params),
+  newApiKey: (params?: { permissions?: string }) => '/user-settings/new-api-key' + asQueryString(params),
 
   // system
   systemSettings: (params?: { isOpen?: OpenQueryParam }) => '/admin/system-settings' + asQueryString(params),

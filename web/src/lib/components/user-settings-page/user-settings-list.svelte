@@ -10,7 +10,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { user } from '$lib/stores/user.store';
   import { oauth } from '$lib/utils';
-  import { type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
+  import { getApiKeys, type ApiKeyResponseDto, type SessionResponseDto } from '@immich/sdk';
   import {
     mdiAccountGroupOutline,
     mdiAccountOutline,
@@ -36,13 +36,19 @@
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
   import UserProfileSettings from './user-profile-settings.svelte';
+  import { onMount } from 'svelte';
 
   interface Props {
-    keys?: ApiKeyResponseDto[];
     sessions?: SessionResponseDto[];
   }
 
-  let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
+  let { sessions = $bindable([]) }: Props = $props();
+
+  let keys: ApiKeyResponseDto[] = $state([]);
+
+  onMount(async () => {
+    keys = await getApiKeys();
+  })
 
   let oauthOpen =
     oauth.isCallback(globalThis.location) ||

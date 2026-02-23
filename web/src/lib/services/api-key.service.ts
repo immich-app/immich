@@ -1,6 +1,7 @@
+import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
-import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
 import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
+import { Route } from '$lib/route';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import {
@@ -19,7 +20,7 @@ export const getApiKeysActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
     title: $t('new_api_key'),
     icon: mdiPlus,
-    onAction: () => modalManager.show(ApiKeyCreateModal, {}),
+    onAction: () => goto(Route.newApiKey()),
   };
 
   return { Create };

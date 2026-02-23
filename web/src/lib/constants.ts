@@ -62,6 +62,7 @@ export enum SessionStorageKey {
 
 // TODO split into user settings vs system settings
 export enum OpenQueryParam {
+  API_KEYS = 'api-keys',
   OAUTH = 'oauth',
   JOB = 'job',
   STORAGE_TEMPLATE = 'storage-template',
