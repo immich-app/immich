@@ -126,7 +126,6 @@
       websocketStore.connected.subscribe((connected) => {
         if (connected) {
           void getServerConfig().then(({ maintenanceMode }) => {
-            console.info(maintenanceMode, isRestarting.isMaintenanceMode);
             if (maintenanceMode === isRestarting.isMaintenanceMode) {
               location.reload();
             }
