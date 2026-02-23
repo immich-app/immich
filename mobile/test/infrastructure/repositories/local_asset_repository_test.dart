@@ -74,6 +74,39 @@ void main() {
       expect(result.assets.first.isFavorite, true);
     });
 
+    test('excludes asset when both local and remote are favorites', () async {
+      final remoteAsset = await ctx.insertRemoteAsset(ownerId: user.id, isFavorite: true);
+      await ctx.insertLocalAsset(checksum: remoteAsset.checksum, createdAt: beforeCutoff, isFavorite: true);
+
+      final result = await sut.getRemovalCandidates(user.id, cutoffDate, keepFavorites: true);
+      expect(result.assets, isEmpty);
+    });
+
+    test('excludes asset when only local is favorite', () async {
+      final remoteAsset = await ctx.insertRemoteAsset(ownerId: user.id);
+      await ctx.insertLocalAsset(checksum: remoteAsset.checksum, createdAt: beforeCutoff, isFavorite: true);
+
+      final result = await sut.getRemovalCandidates(user.id, cutoffDate, keepFavorites: true);
+      expect(result.assets, isEmpty);
+    });
+
+    test('excludes asset when only remote is favorite', () async {
+      final remoteAsset = await ctx.insertRemoteAsset(ownerId: user.id, isFavorite: true);
+      await ctx.insertLocalAsset(checksum: remoteAsset.checksum, createdAt: beforeCutoff);
+
+      final result = await sut.getRemovalCandidates(user.id, cutoffDate, keepFavorites: true);
+      expect(result.assets, isEmpty);
+    });
+
+    test('includes asset when neither local nor remote is favorite', () async {
+      final remoteAsset = await ctx.insertRemoteAsset(ownerId: user.id);
+      final localAsset = await ctx.insertLocalAsset(checksum: remoteAsset.checksum, createdAt: beforeCutoff);
+
+      final result = await sut.getRemovalCandidates(user.id, cutoffDate, keepFavorites: true);
+      expect(result.assets.length, 1);
+      expect(result.assets.first.id, localAsset.id);
+    });
+
     test('keepMediaType photosOnly returns only videos for deletion', () async {
       final photoAsset = await ctx.insertRemoteAsset(ownerId: user.id);
       // Photo - should be kept
