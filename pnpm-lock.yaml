@@ -343,6 +343,9 @@ importers:
       '@extism/extism':
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
+      '@immich/sql-tools':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.13(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.13)(bullmq@5.68.0)
@@ -3012,6 +3015,9 @@ packages:
 
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
+
+  '@immich/sql-tools@0.2.0':
+    resolution: {integrity: sha512-AH0GRIUYrckNKuid5uO33vgRbGaznhRtArdQ91K310A1oUFjaoNzOaZyZhXwEmft3WYeC1bx4fdgUeois2QH5A==}
 
   '@immich/svelte-markdown-preprocess@0.2.1':
     resolution: {integrity: sha512-mbr/g75lO8Zh+ELCuYrZP0XB4gf2UbK8rJcGYMYxFJJzMMunV+sm9FqtV1dbwW2dpXzCZGz1XPCEZ6oo526TbA==}
@@ -8290,6 +8296,10 @@ packages:
     peerDependenciesMeta:
       postgres:
         optional: true
+
+  kysely@0.28.11:
+    resolution: {integrity: sha512-zpGIFg0HuoC893rIjYX1BETkVWdDnzTzF5e0kWXJFg5lE0k1/LfNWBejrcnOFu8Q2Rfq/hTDTU7XLUM8QOrpzg==}
+    engines: {node: '>=20.0.0'}
 
   kysely@0.28.2:
     resolution: {integrity: sha512-4YAVLoF0Sf0UTqlhgQMFU9iQECdah7n+13ANkiuVfRvlK+uI0Etbgd7bVP36dKlG+NXWbhGua8vnGt+sdhvT7A==}
@@ -14812,6 +14822,13 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
+  '@immich/sql-tools@0.2.0':
+    dependencies:
+      kysely: 0.28.11
+      kysely-postgres-js: 3.0.0(kysely@0.28.11)(postgres@3.4.8)
+      pg-connection-string: 2.11.0
+      postgres: 3.4.8
+
   '@immich/svelte-markdown-preprocess@0.2.1(svelte@5.51.5)':
     dependencies:
       front-matter: 4.0.2
@@ -20822,11 +20839,19 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
+  kysely-postgres-js@3.0.0(kysely@0.28.11)(postgres@3.4.8):
+    dependencies:
+      kysely: 0.28.11
+    optionalDependencies:
+      postgres: 3.4.8
+
   kysely-postgres-js@3.0.0(kysely@0.28.2)(postgres@3.4.8):
     dependencies:
       kysely: 0.28.2
     optionalDependencies:
       postgres: 3.4.8
+
+  kysely@0.28.11: {}
 
   kysely@0.28.2: {}
 

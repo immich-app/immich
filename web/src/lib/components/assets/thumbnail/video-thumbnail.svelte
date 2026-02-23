@@ -2,6 +2,7 @@
   import { Icon, LoadingSpinner } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';
+  import type { ClassValue } from 'svelte/elements';
 
   interface Props {
     url: string;
@@ -12,6 +13,7 @@
     curve?: boolean;
     playIcon?: string;
     pauseIcon?: string;
+    class?: ClassValue;
   }
 
   let {
@@ -23,6 +25,7 @@
     curve = false,
     playIcon = mdiPlayCircleOutline,
     pauseIcon = mdiPauseCircleOutline,
+    class: className = undefined,
   }: Props = $props();
 
   let remainingSeconds = $state(durationInSeconds);
@@ -57,7 +60,7 @@
 {#if enablePlayback}
   <video
     bind:this={player}
-    class="h-full w-full object-cover"
+    class={['h-full w-full object-cover', className]}
     class:rounded-xl={curve}
     muted
     autoplay

@@ -2444,6 +2444,44 @@ class PlacesCollectionRouteArgs {
 }
 
 /// generated route for
+/// [ProfilePictureCropPage]
+class ProfilePictureCropRoute
+    extends PageRouteInfo<ProfilePictureCropRouteArgs> {
+  ProfilePictureCropRoute({
+    Key? key,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ProfilePictureCropRoute.name,
+         args: ProfilePictureCropRouteArgs(key: key, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'ProfilePictureCropRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ProfilePictureCropRouteArgs>();
+      return ProfilePictureCropPage(key: args.key, asset: args.asset);
+    },
+  );
+}
+
+class ProfilePictureCropRouteArgs {
+  const ProfilePictureCropRouteArgs({this.key, required this.asset});
+
+  final Key? key;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'ProfilePictureCropRouteArgs{key: $key, asset: $asset}';
+  }
+}
+
+/// generated route for
 /// [RecentlyTakenPage]
 class RecentlyTakenRoute extends PageRouteInfo<void> {
   const RecentlyTakenRoute({List<PageRouteInfo>? children})

@@ -22839,6 +22839,70 @@
         ],
         "type": "object"
       },
+      "SyncAssetFaceV2": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "deletedAt": {
+            "description": "Face deleted at",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset face ID",
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "isVisible": {
+            "description": "Is the face visible in the asset",
+            "type": "boolean"
+          },
+          "personId": {
+            "description": "Person ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "description": "Source type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "deletedAt",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "isVisible",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
       "SyncAssetMetadataDeleteV1": {
         "properties": {
           "assetId": {
@@ -23132,6 +23196,7 @@
           "PersonV1",
           "PersonDeleteV1",
           "AssetFaceV1",
+          "AssetFaceV2",
           "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
@@ -23405,6 +23470,7 @@
           "UsersV1",
           "PeopleV1",
           "AssetFacesV1",
+          "AssetFacesV2",
           "UserMetadataV1"
         ],
         "type": "string"
