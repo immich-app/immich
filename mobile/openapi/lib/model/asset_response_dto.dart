@@ -156,7 +156,7 @@ class AssetResponseDto {
 
   List<TagResponseDto> tags;
 
-  /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache/versioning.
+  /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.
   String? thumbhash;
 
   /// Asset type

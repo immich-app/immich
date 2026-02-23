@@ -17100,7 +17100,7 @@
             "type": "array"
           },
           "thumbhash": {
-            "description": "Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache/versioning.",
+            "description": "Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.",
             "nullable": true,
             "type": "string"
           },
