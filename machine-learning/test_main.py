@@ -294,7 +294,7 @@ class TestOrtSession:
 
         session = OrtSession("ViT-B-32__openai", providers=["MIGraphXExecutionProvider"])
 
-        assert session.provider_options == [{"device_id": "1"}]
+        assert session.provider_options == [{"device_id": "1", "migraphx_model_cache_dir": "migraphx"}]
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(

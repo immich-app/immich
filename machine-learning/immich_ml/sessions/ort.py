@@ -93,13 +93,13 @@ class OrtSession:
                 case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "MIGraphXExecutionProvider":
-                   migraphx_dir = self.model_path.parent / "migraphx"
-                    migraphx_dir = migraphx_dir.as_posix()
+                    migraphx_dir = self.model_path.parent / "migraphx"
+                    migraphx_dir_path = migraphx_dir.as_posix()
                     # MIGraphX does not create the underlying folder and will crash if it does not exist
-                    Path(migraphx_dir).mkdir(parents=True, exist_ok=True)
+                    Path(migraphx_dir_path).mkdir(parents=True, exist_ok=True)
                     options = {
                       "device_id": settings.device_id,
-                      "migraphx_model_cache_dir": migraphx_dir,
+                      "migraphx_model_cache_dir": migraphx_dir_path,
                     }
                 case "OpenVINOExecutionProvider":
                     openvino_dir = self.model_path.parent / "openvino"
