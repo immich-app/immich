@@ -178,7 +178,7 @@ class _ErrorCard extends StatelessWidget {
               children: [
                 Text(context.t.stacktrace, style: textTheme.labelMedium),
                 const SizedBox(height: 4),
-                SelectableText(stack, style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace')),
+                SelectableText(stack, style: textTheme.bodySmall?.copyWith(fontFamily: 'GoogleSansCode')),
               ],
             ),
           ),
