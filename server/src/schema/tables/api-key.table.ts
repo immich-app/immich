@@ -21,8 +21,8 @@ export class ApiKeyTable {
   @Column()
   name!: string;
 
-  @Column()
-  key!: string;
+  @Column({ type: 'bytea', index: true })
+  key!: Buffer;
 
   @ForeignKeyColumn(() => UserTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
   userId!: string;

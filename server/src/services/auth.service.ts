@@ -456,8 +456,8 @@ export class AuthService extends BaseService {
   }
 
   private async validateApiKey(key: string): Promise<AuthDto> {
-    const hashedKey = this.cryptoRepository.hashSha256(key);
-    const apiKey = await this.apiKeyRepository.getKey(hashedKey);
+    const hashed = this.cryptoRepository.hashSha256(key);
+    const apiKey = await this.apiKeyRepository.getKey(hashed);
     if (apiKey?.user) {
       return {
         user: apiKey.user,
@@ -476,9 +476,9 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(tokenValue: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
-    const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
-    const session = await this.sessionRepository.getByToken(hashedToken);
+  private async validateSession(token: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
+    const hashed = this.cryptoRepository.hashSha256(token);
+    const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
       const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
@@ -543,10 +543,10 @@ export class AuthService extends BaseService {
 
   private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
     const token = this.cryptoRepository.randomBytesAsText(32);
-    const tokenHashed = this.cryptoRepository.hashSha256(token);
+    const hashed = this.cryptoRepository.hashSha256(token);
 
     await this.sessionRepository.create({
-      token: tokenHashed,
+      token: hashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       appVersion: loginDetails.appVersion,

@@ -634,7 +634,7 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
   };
 };
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
+const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
 const sessionInsert = ({
   id = newUuid(),
