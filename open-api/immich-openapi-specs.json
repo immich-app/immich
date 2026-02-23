@@ -22616,12 +22616,12 @@
       },
       "SyncAssetEditDeleteV1": {
         "properties": {
-          "assetId": {
+          "editId": {
             "type": "string"
           }
         },
         "required": [
-          "assetId"
+          "editId"
         ],
         "type": "object"
       },

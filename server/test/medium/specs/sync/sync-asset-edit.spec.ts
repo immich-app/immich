@@ -133,24 +133,19 @@ describe(SyncRequestType.AssetEditsV1, () => {
     await ctx.syncAckAll(auth, response1);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetEditsV1]);
 
-    // Update the edit
-    await assetEditRepo.replaceAll(asset.id, [
-      {
-        action: AssetEditAction.Crop,
+    // update the existing edit
+    await ctx.database
+      .updateTable('asset_edit')
+      .set({
         parameters: { x: 50, y: 60, width: 150, height: 250 },
-      },
-    ]);
+      })
+      .where('assetId', '=', asset.id)
+      .where('action', '=', AssetEditAction.Crop)
+      .execute();
 
     const response2 = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
     expect(response2).toEqual(
       expect.arrayContaining([
-        {
-          ack: expect.any(String),
-          data: {
-            assetId: asset.id,
-          },
-          type: SyncEntityType.AssetEditDeleteV1,
-        },
         {
           ack: expect.any(String),
           data: {
@@ -196,7 +191,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
         {
           ack: expect.any(String),
           data: {
-            assetId: asset.id,
+            editId: asset.id,
           },
           type: SyncEntityType.AssetEditDeleteV1,
         },
