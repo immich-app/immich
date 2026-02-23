@@ -431,10 +431,10 @@ class NativeVideoViewer extends HookConsumerWidget {
           if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
           if (aspectRatio.value != null && !isCasting && isCurrent)
             Visibility.maintain(
-              key: ValueKey('${asset.heroTag}_video'),
+              key: ValueKey((asset.heroTag, '_video_layer')),
               visible: isVisible.value,
               child: PhotoView.customChild(
-                key: ValueKey('${asset.heroTag}_video_photoview'),
+                key: ValueKey((asset.heroTag, '_video_gesture_layer')),
                 enableRotation: false,
                 disableScaleGestures: disableScaleGestures,
                 // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
@@ -442,7 +442,7 @@ class NativeVideoViewer extends HookConsumerWidget {
                 scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
                 childSize: videoContextSize(aspectRatio.value, context),
                 child: NativeVideoPlayerView(
-                  key: ValueKey('${asset.heroTag}_video_player'),
+                  key: ValueKey((asset.heroTag, '_video_platform_view')),
                   onViewReady: initController,
                 ),
               ),
