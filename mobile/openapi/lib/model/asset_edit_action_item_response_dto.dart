@@ -18,6 +18,7 @@ class AssetEditActionItemResponseDto {
     required this.parameters,
   });
 
+  /// Type of edit action to perform
   AssetEditAction action;
 
   String id;

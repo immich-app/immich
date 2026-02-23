@@ -968,6 +968,7 @@ export type MirrorParameters = {
     axis: MirrorAxis;
 };
 export type AssetEditActionItemResponseDto = {
+    /** Type of edit action to perform */
     action: AssetEditAction;
     id: string;
     /** List of edit actions to apply (crop, rotate, or mirror) */
@@ -980,12 +981,13 @@ export type AssetEditsResponseDto = {
     edits: AssetEditActionItemResponseDto[];
 };
 export type AssetEditActionItemDto = {
+    /** Type of edit action to perform */
     action: AssetEditAction;
     /** List of edit actions to apply (crop, rotate, or mirror) */
     parameters: CropParameters | RotateParameters | MirrorParameters;
 };
 export type AssetEditsCreateDto = {
-    /** list of edits */
+    /** List of edit actions to apply (crop, rotate, or mirror) */
     edits: AssetEditActionItemDto[];
 };
 export type AssetMetadataResponseDto = {

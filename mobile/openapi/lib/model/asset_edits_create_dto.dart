@@ -16,7 +16,7 @@ class AssetEditsCreateDto {
     this.edits = const [],
   });
 
-  /// list of edits
+  /// List of edit actions to apply (crop, rotate, or mirror)
   List<AssetEditActionItemDto> edits;
 
   @override

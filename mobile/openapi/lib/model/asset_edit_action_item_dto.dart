@@ -17,6 +17,7 @@ class AssetEditActionItemDto {
     required this.parameters,
   });
 
+  /// Type of edit action to perform
   AssetEditAction action;
 
   AssetEditActionItemDtoParameters parameters;
