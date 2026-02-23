@@ -23,7 +23,7 @@
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
     <Text color="primary"
-      >{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T20:03:05.250' } })}</Text
+      >{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-15T20:03:05.250+00:00' } })}</Text
     >
   </CardHeader>
   <CardBody>

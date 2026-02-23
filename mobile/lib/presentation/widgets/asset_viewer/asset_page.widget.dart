@@ -63,7 +63,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
   Drag? _drag;
-  bool _shouldPopOnDrag = false;
 
   @override
   void initState() {
@@ -122,7 +121,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _beginDrag(DragStartDetails details) {
     _dragStart = details;
-    _shouldPopOnDrag = false;
     _lastScrollOffset = _proxyScrollController.hasClients ? _proxyScrollController.offset : 0.0;
 
     if (_viewController != null) {
@@ -165,6 +163,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   void _endDrag(DragEndDetails details) {
     if (_dragStart == null) return;
 
+    final start = _dragStart;
     _dragStart = null;
 
     final intent = _dragIntent;
@@ -180,7 +179,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         _drag?.end(details);
         _drag = null;
       case _DragIntent.dismiss:
-        if (_shouldPopOnDrag) {
+        const popThreshold = 75.0;
+        if (details.localPosition.dy - start!.localPosition.dy > popThreshold) {
           context.maybePop();
           return;
         }
@@ -199,7 +199,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    _viewController = controller;
     if (!_showingDetails && _isZoomed) return;
     _beginDrag(details);
   }
@@ -213,12 +212,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _handleDragDown(BuildContext context, Offset delta) {
     const dragRatio = 0.2;
-    const popThreshold = 75.0;
-
-    _shouldPopOnDrag = delta.dy > popThreshold;
 
     final distance = delta.dy.abs();
-
     final maxScaleDistance = context.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
     final initialScale = _viewController?.initialScale ?? _initialPhotoViewState.scale;
