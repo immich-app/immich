@@ -10,21 +10,21 @@
 
 part of openapi.api;
 
-class AssetEditsDto {
-  /// Returns a new [AssetEditsDto] instance.
-  AssetEditsDto({
+class AssetEditsResponseDto {
+  /// Returns a new [AssetEditsResponseDto] instance.
+  AssetEditsResponseDto({
     required this.assetId,
     this.edits = const [],
   });
 
-  /// Asset ID to apply edits to
+  /// Asset ID these edits belong to
   String assetId;
 
-  /// List of edit actions to apply (crop, rotate, or mirror)
-  List<AssetEditActionListDtoEditsInner> edits;
+  /// List of edit actions applied to the asset
+  List<AssetEditsResponseDtoEditsInner> edits;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditsDto &&
+  bool operator ==(Object other) => identical(this, other) || other is AssetEditsResponseDto &&
     other.assetId == assetId &&
     _deepEquality.equals(other.edits, edits);
 
@@ -35,7 +35,7 @@ class AssetEditsDto {
     (edits.hashCode);
 
   @override
-  String toString() => 'AssetEditsDto[assetId=$assetId, edits=$edits]';
+  String toString() => 'AssetEditsResponseDto[assetId=$assetId, edits=$edits]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -44,27 +44,27 @@ class AssetEditsDto {
     return json;
   }
 
-  /// Returns a new [AssetEditsDto] instance and imports its values from
+  /// Returns a new [AssetEditsResponseDto] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static AssetEditsDto? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditsDto");
+  static AssetEditsResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetEditsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return AssetEditsDto(
+      return AssetEditsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        edits: AssetEditActionListDtoEditsInner.listFromJson(json[r'edits']),
+        edits: AssetEditsResponseDtoEditsInner.listFromJson(json[r'edits']),
       );
     }
     return null;
   }
 
-  static List<AssetEditsDto> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditsDto>[];
+  static List<AssetEditsResponseDto> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetEditsResponseDto>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = AssetEditsDto.fromJson(row);
+        final value = AssetEditsResponseDto.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -73,12 +73,12 @@ class AssetEditsDto {
     return result.toList(growable: growable);
   }
 
-  static Map<String, AssetEditsDto> mapFromJson(dynamic json) {
-    final map = <String, AssetEditsDto>{};
+  static Map<String, AssetEditsResponseDto> mapFromJson(dynamic json) {
+    final map = <String, AssetEditsResponseDto>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetEditsDto.fromJson(entry.value);
+        final value = AssetEditsResponseDto.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -87,14 +87,14 @@ class AssetEditsDto {
     return map;
   }
 
-  // maps a json object with a list of AssetEditsDto-objects as value to a dart map
-  static Map<String, List<AssetEditsDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditsDto>>{};
+  // maps a json object with a list of AssetEditsResponseDto-objects as value to a dart map
+  static Map<String, List<AssetEditsResponseDto>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<AssetEditsResponseDto>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetEditsDto.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetEditsResponseDto.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

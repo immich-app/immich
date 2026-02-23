@@ -10,9 +10,9 @@
 
 part of openapi.api;
 
-class AssetEditActionRotate {
-  /// Returns a new [AssetEditActionRotate] instance.
-  AssetEditActionRotate({
+class AssetEditsCreateDtoEditsInner {
+  /// Returns a new [AssetEditsCreateDtoEditsInner] instance.
+  AssetEditsCreateDtoEditsInner({
     required this.action,
     required this.parameters,
   });
@@ -20,10 +20,10 @@ class AssetEditActionRotate {
   /// Type of edit action to perform
   AssetEditAction action;
 
-  RotateParameters parameters;
+  MirrorParameters parameters;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionRotate &&
+  bool operator ==(Object other) => identical(this, other) || other is AssetEditsCreateDtoEditsInner &&
     other.action == action &&
     other.parameters == parameters;
 
@@ -34,7 +34,7 @@ class AssetEditActionRotate {
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditActionRotate[action=$action, parameters=$parameters]';
+  String toString() => 'AssetEditsCreateDtoEditsInner[action=$action, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -43,27 +43,27 @@ class AssetEditActionRotate {
     return json;
   }
 
-  /// Returns a new [AssetEditActionRotate] instance and imports its values from
+  /// Returns a new [AssetEditsCreateDtoEditsInner] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static AssetEditActionRotate? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionRotate");
+  static AssetEditsCreateDtoEditsInner? fromJson(dynamic value) {
+    upgradeDto(value, "AssetEditsCreateDtoEditsInner");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return AssetEditActionRotate(
+      return AssetEditsCreateDtoEditsInner(
         action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: RotateParameters.fromJson(json[r'parameters'])!,
+        parameters: MirrorParameters.fromJson(json[r'parameters'])!,
       );
     }
     return null;
   }
 
-  static List<AssetEditActionRotate> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditActionRotate>[];
+  static List<AssetEditsCreateDtoEditsInner> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetEditsCreateDtoEditsInner>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = AssetEditActionRotate.fromJson(row);
+        final value = AssetEditsCreateDtoEditsInner.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -72,12 +72,12 @@ class AssetEditActionRotate {
     return result.toList(growable: growable);
   }
 
-  static Map<String, AssetEditActionRotate> mapFromJson(dynamic json) {
-    final map = <String, AssetEditActionRotate>{};
+  static Map<String, AssetEditsCreateDtoEditsInner> mapFromJson(dynamic json) {
+    final map = <String, AssetEditsCreateDtoEditsInner>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetEditActionRotate.fromJson(entry.value);
+        final value = AssetEditsCreateDtoEditsInner.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -86,14 +86,14 @@ class AssetEditActionRotate {
     return map;
   }
 
-  // maps a json object with a list of AssetEditActionRotate-objects as value to a dart map
-  static Map<String, List<AssetEditActionRotate>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditActionRotate>>{};
+  // maps a json object with a list of AssetEditsCreateDtoEditsInner-objects as value to a dart map
+  static Map<String, List<AssetEditsCreateDtoEditsInner>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<AssetEditsCreateDtoEditsInner>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetEditActionRotate.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetEditsCreateDtoEditsInner.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;

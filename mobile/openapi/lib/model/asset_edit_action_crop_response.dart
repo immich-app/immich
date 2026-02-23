@@ -10,60 +10,68 @@
 
 part of openapi.api;
 
-class AssetEditActionRotate {
-  /// Returns a new [AssetEditActionRotate] instance.
-  AssetEditActionRotate({
+class AssetEditActionCropResponse {
+  /// Returns a new [AssetEditActionCropResponse] instance.
+  AssetEditActionCropResponse({
     required this.action,
+    required this.id,
     required this.parameters,
   });
 
   /// Type of edit action to perform
   AssetEditAction action;
 
-  RotateParameters parameters;
+  /// Unique ID of this edit action
+  String id;
+
+  CropParameters parameters;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionRotate &&
+  bool operator ==(Object other) => identical(this, other) || other is AssetEditActionCropResponse &&
     other.action == action &&
+    other.id == id &&
     other.parameters == parameters;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
+    (id.hashCode) +
     (parameters.hashCode);
 
   @override
-  String toString() => 'AssetEditActionRotate[action=$action, parameters=$parameters]';
+  String toString() => 'AssetEditActionCropResponse[action=$action, id=$id, parameters=$parameters]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
+      json[r'id'] = this.id;
       json[r'parameters'] = this.parameters;
     return json;
   }
 
-  /// Returns a new [AssetEditActionRotate] instance and imports its values from
+  /// Returns a new [AssetEditActionCropResponse] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static AssetEditActionRotate? fromJson(dynamic value) {
-    upgradeDto(value, "AssetEditActionRotate");
+  static AssetEditActionCropResponse? fromJson(dynamic value) {
+    upgradeDto(value, "AssetEditActionCropResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
-      return AssetEditActionRotate(
+      return AssetEditActionCropResponse(
         action: AssetEditAction.fromJson(json[r'action'])!,
-        parameters: RotateParameters.fromJson(json[r'parameters'])!,
+        id: mapValueOfType<String>(json, r'id')!,
+        parameters: CropParameters.fromJson(json[r'parameters'])!,
       );
     }
     return null;
   }
 
-  static List<AssetEditActionRotate> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetEditActionRotate>[];
+  static List<AssetEditActionCropResponse> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetEditActionCropResponse>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = AssetEditActionRotate.fromJson(row);
+        final value = AssetEditActionCropResponse.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -72,12 +80,12 @@ class AssetEditActionRotate {
     return result.toList(growable: growable);
   }
 
-  static Map<String, AssetEditActionRotate> mapFromJson(dynamic json) {
-    final map = <String, AssetEditActionRotate>{};
+  static Map<String, AssetEditActionCropResponse> mapFromJson(dynamic json) {
+    final map = <String, AssetEditActionCropResponse>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = AssetEditActionRotate.fromJson(entry.value);
+        final value = AssetEditActionCropResponse.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -86,14 +94,14 @@ class AssetEditActionRotate {
     return map;
   }
 
-  // maps a json object with a list of AssetEditActionRotate-objects as value to a dart map
-  static Map<String, List<AssetEditActionRotate>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<AssetEditActionRotate>>{};
+  // maps a json object with a list of AssetEditActionCropResponse-objects as value to a dart map
+  static Map<String, List<AssetEditActionCropResponse>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<AssetEditActionCropResponse>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = AssetEditActionRotate.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = AssetEditActionCropResponse.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
@@ -102,6 +110,7 @@ class AssetEditActionRotate {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'action',
+    'id',
     'parameters',
   };
 }

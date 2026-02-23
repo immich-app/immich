@@ -3703,7 +3703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -3756,7 +3756,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetEditActionListDto"
+                "$ref": "#/components/schemas/AssetEditsCreateDto"
               }
             }
           },
@@ -3767,7 +3767,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -16102,7 +16102,125 @@
         ],
         "type": "object"
       },
-      "AssetEditActionListDto": {
+      "AssetEditActionCropResponse": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "id": {
+            "description": "Unique ID of this edit action",
+            "format": "uuid",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/CropParameters"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionMirror": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/MirrorParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionMirrorResponse": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "id": {
+            "description": "Unique ID of this edit action",
+            "format": "uuid",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/MirrorParameters"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionRotate": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/RotateParameters"
+          }
+        },
+        "required": [
+          "action",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditActionRotateResponse": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "id": {
+            "description": "Unique ID of this edit action",
+            "format": "uuid",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/RotateParameters"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditsCreateDto": {
         "properties": {
           "edits": {
             "description": "List of edit actions to apply (crop, rotate, or mirror)",
@@ -16136,77 +16254,36 @@
         ],
         "type": "object"
       },
-      "AssetEditActionMirror": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/MirrorParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionRotate": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/RotateParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditsDto": {
+      "AssetEditsResponseDto": {
         "properties": {
           "assetId": {
-            "description": "Asset ID to apply edits to",
+            "description": "Asset ID these edits belong to",
             "format": "uuid",
             "type": "string"
           },
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions applied to the asset",
             "items": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
+                  "$ref": "#/components/schemas/AssetEditActionCropResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
+                  "$ref": "#/components/schemas/AssetEditActionRotateResponse"
                 },
                 {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
+                  "$ref": "#/components/schemas/AssetEditActionMirrorResponse"
                 }
               ],
               "discriminator": {
                 "mapping": {
-                  "crop": "#/components/schemas/AssetEditActionCrop",
-                  "mirror": "#/components/schemas/AssetEditActionMirror",
-                  "rotate": "#/components/schemas/AssetEditActionRotate"
+                  "crop": "#/components/schemas/AssetEditActionCropResponse",
+                  "mirror": "#/components/schemas/AssetEditActionMirrorResponse",
+                  "rotate": "#/components/schemas/AssetEditActionRotateResponse"
                 },
                 "propertyName": "action"
               }
             },
-            "minItems": 1,
             "type": "array"
           }
         },

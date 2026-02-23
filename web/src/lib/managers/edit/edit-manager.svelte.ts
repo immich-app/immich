@@ -3,12 +3,12 @@ import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
 import { getFormatter } from '$lib/utils/i18n';
-import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
+import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
-export type EditAction = AssetEditsDto['edits'][number];
+export type EditAction = AssetEditsCreateDto['edits'][number];
 export type EditActions = EditAction[];
 
 export interface EditToolManager {
@@ -84,7 +84,7 @@ export class EditManager {
     this.selectedTool = this.tools[0];
   }
 
-  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsDto) {
+  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsCreateDto) {
     this.hasAppliedEdits = false;
     if (this.selectedTool?.type === toolType) {
       return;
@@ -133,7 +133,7 @@ export class EditManager {
         ? removeAssetEdits({ id: assetId })
         : editAsset({
             id: assetId,
-            assetEditActionListDto: {
+            assetEditsCreateDto: {
               edits,
             },
           }));

@@ -1,6 +1,6 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
-import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
+import { ArrayMinSize, IsEnum, IsInt, IsUUID, Min, ValidateNested } from 'class-validator';
 import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateUUID } from 'src/validation';
 
 export enum AssetEditAction {
@@ -78,6 +78,24 @@ export class AssetEditActionMirror extends AssetEditActionBase {
   parameters!: MirrorParameters;
 }
 
+export class AssetEditActionCropResponse extends AssetEditActionCrop {
+  @IsUUID()
+  @ApiProperty({ description: 'Unique ID of this edit action' })
+  id!: string;
+}
+
+export class AssetEditActionRotateResponse extends AssetEditActionRotate {
+  @IsUUID()
+  @ApiProperty({ description: 'Unique ID of this edit action' })
+  id!: string;
+}
+
+export class AssetEditActionMirrorResponse extends AssetEditActionMirror {
+  @IsUUID()
+  @ApiProperty({ description: 'Unique ID of this edit action' })
+  id!: string;
+}
+
 export type AssetEditActionItem =
   | {
       action: AssetEditAction.Crop;
@@ -107,11 +125,21 @@ const actionToClass: Record<AssetEditAction, ClassConstructor<AssetEditActions>>
   [AssetEditAction.Mirror]: AssetEditActionMirror,
 } as const;
 
+type AssetEditActionResponse =
+  | AssetEditActionCropResponse
+  | AssetEditActionRotateResponse
+  | AssetEditActionMirrorResponse;
+const actionToClassResponse: Record<AssetEditAction, ClassConstructor<AssetEditActionResponse>> = {
+  [AssetEditAction.Crop]: AssetEditActionCropResponse,
+  [AssetEditAction.Rotate]: AssetEditActionRotateResponse,
+  [AssetEditAction.Mirror]: AssetEditActionMirrorResponse,
+} as const;
+
 const getActionClass = (item: { action: AssetEditAction }): ClassConstructor<AssetEditActions> =>
   actionToClass[item.action];
 
 @ApiExtraModels(AssetEditActionRotate, AssetEditActionMirror, AssetEditActionCrop)
-export class AssetEditActionListDto {
+export class AssetEditsCreateDto {
   /** list of edits */
   @ArrayMinSize(1)
   @IsUniqueEditActions()
@@ -134,16 +162,22 @@ export class AssetEditActionListDto {
   edits!: AssetEditActionItem[];
 }
 
-export class AssetEditsDto extends AssetEditActionListDto {
-  @ValidateUUID({ description: 'Asset ID to apply edits to' })
-  assetId!: string;
-}
-
+@ApiExtraModels(AssetEditActionRotateResponse, AssetEditActionMirrorResponse, AssetEditActionCropResponse)
 export class AssetEditsResponseDto {
   @ValidateUUID({ description: 'Asset ID these edits belong to' })
   assetId!: string;
 
-  @ValidateNested({ each: true })
-  @Type(() => AssetEditActionListDto)
+  @ApiProperty({
+    items: {
+      anyOf: Object.values(actionToClassResponse).map((type) => ({ $ref: getSchemaPath(type) })),
+      discriminator: {
+        propertyName: 'action',
+        mapping: Object.fromEntries(
+          Object.entries(actionToClassResponse).map(([action, type]) => [action, getSchemaPath(type)]),
+        ),
+      },
+    },
+    description: 'List of edit actions applied to the asset',
+  })
   edits!: AssetEditActionItemResponse[];
 }
