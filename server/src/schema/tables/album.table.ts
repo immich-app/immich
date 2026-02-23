@@ -1,8 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetOrder } from 'src/enum';
-import { album_delete_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -14,7 +9,12 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetOrder } from 'src/enum';
+import { album_delete_audit } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'album' })
 @UpdatedAtTrigger('album_updatedAt')

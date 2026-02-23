@@ -1,4 +1,4 @@
-import { registerFunction } from 'src/sql-tools';
+import { registerFunction } from '@immich/sql-tools';
 
 export const immich_uuid_v7 = registerFunction({
   name: 'immich_uuid_v7',

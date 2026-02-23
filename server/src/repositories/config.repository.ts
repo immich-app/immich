@@ -1,3 +1,4 @@
+import { DatabaseConnectionParams } from '@immich/sql-tools';
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
 import { QueueOptions } from 'bullmq';
@@ -21,7 +22,7 @@ import {
   LogLevel,
   QueueName,
 } from 'src/enum';
-import { DatabaseConnectionParams, VectorExtension } from 'src/types';
+import { VectorExtension } from 'src/types';
 import { setDifference } from 'src/utils/set';
 
 export interface EnvData {
