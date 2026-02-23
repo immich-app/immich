@@ -123,9 +123,8 @@ enum ActionButtonType {
             context.timelineOrigin == TimelineOrigin.trash,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
-                context.asset.hasRemote && //
-                !context.isTrashEnabled ||
-            context.isInLockedView,
+            context.asset.hasRemote && //
+            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView),
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -324,6 +323,7 @@ class ActionButtonBuilder {
     ActionButtonType.archive,
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
+    ActionButtonType.deletePermanent,
   };
 
   static List<Widget> build(ActionButtonContext context) {
