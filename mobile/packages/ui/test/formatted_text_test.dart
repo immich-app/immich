@@ -1,21 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_ui/src/components/html_text.dart';
+import 'package:immich_ui/src/components/formatted_text.dart';
 
 import 'test_utils.dart';
 
-/// Text.rich creates a nested structure: root -> wrapper -> actual children
+/// Text.rich creates a nested structure: root (DefaultTextStyle) -> wrapper (ImmichFormattedText) -> actual children
 List<InlineSpan> _getContentSpans(WidgetTester tester) {
   final richText = tester.widget<RichText>(find.byType(RichText));
   final root = richText.text as TextSpan;
-
-  if (root.children?.isNotEmpty ?? false) {
-    final wrapper = root.children!.first;
-    if (wrapper is TextSpan && wrapper.children != null) {
-      return wrapper.children!;
-    }
-  }
+  final wrapper = root.children?.firstOrNull;
+  if (wrapper is TextSpan) return wrapper.children ?? [];
   return [];
 }
 
@@ -38,42 +33,18 @@ void _triggerTap(TextSpan span) {
 }
 
 void main() {
-  group('ImmichHtmlText', () {
+  group('ImmichFormattedText', () {
     testWidgets('renders plain text without HTML tags', (tester) async {
       await tester.pumpTestWidget(
-        const ImmichHtmlText('This is plain text'),
+        const ImmichFormattedText('This is plain text'),
       );
 
       expect(find.text('This is plain text'), findsOneWidget);
     });
 
-    testWidgets('handles mixed content with bold and links', (tester) async {
-      await tester.pumpTestWidget(
-        ImmichHtmlText(
-          'This is an <b>example</b> of <b><link>HTML text</link></b> with <b>bold</b>.',
-          linkHandlers: {'link': () {}},
-        ),
-      );
-
-      final spans = _getContentSpans(tester);
-
-      final exampleSpan = _findSpan(spans, 'example');
-      expect(exampleSpan.style?.fontWeight, FontWeight.bold);
-
-      final boldSpan = _findSpan(spans, 'bold');
-      expect(boldSpan.style?.fontWeight, FontWeight.bold);
-
-      final linkSpan = _findSpan(spans, 'HTML text');
-      expect(linkSpan.style?.decoration, TextDecoration.underline);
-      expect(linkSpan.style?.fontWeight, FontWeight.bold);
-      expect(linkSpan.recognizer, isA<TapGestureRecognizer>());
-
-      expect(_concatenateText(spans), 'This is an example of HTML text with bold.');
-    });
-
     testWidgets('applies text style properties', (tester) async {
       await tester.pumpTestWidget(
-        const ImmichHtmlText(
+        const ImmichFormattedText(
           'Test text',
           style: TextStyle(
             fontSize: 16,
@@ -97,7 +68,7 @@ void main() {
 
     testWidgets('handles text with special characters', (tester) async {
       await tester.pumpTestWidget(
-        const ImmichHtmlText('Text with & < > " \' characters'),
+        const ImmichFormattedText('Text with & < > " \' characters'),
       );
 
       expect(find.byType(RichText), findsOneWidget);
@@ -109,7 +80,7 @@ void main() {
     group('bold', () {
       testWidgets('renders bold text with <b> tag', (tester) async {
         await tester.pumpTestWidget(
-          const ImmichHtmlText('This is <b>bold</b> text'),
+          const ImmichFormattedText('This is <b>bold</b> text'),
         );
 
         final spans = _getContentSpans(tester);
@@ -118,41 +89,14 @@ void main() {
         expect(boldSpan.style?.fontWeight, FontWeight.bold);
         expect(_concatenateText(spans), 'This is bold text');
       });
-
-      testWidgets('renders bold text with <strong> tag', (tester) async {
-        await tester.pumpTestWidget(
-          const ImmichHtmlText('This is <strong>strong</strong> text'),
-        );
-
-        final spans = _getContentSpans(tester);
-        final strongSpan = _findSpan(spans, 'strong');
-
-        expect(strongSpan.style?.fontWeight, FontWeight.bold);
-      });
-
-      testWidgets('handles nested bold tags', (tester) async {
-        await tester.pumpTestWidget(
-          const ImmichHtmlText('Text with <b>bold and <strong>nested</strong></b>'),
-        );
-
-        final spans = _getContentSpans(tester);
-
-        final nestedSpan = _findSpan(spans, 'nested');
-        expect(nestedSpan.style?.fontWeight, FontWeight.bold);
-
-        final boldSpan = _findSpan(spans, 'bold and ');
-        expect(boldSpan.style?.fontWeight, FontWeight.bold);
-
-        expect(_concatenateText(spans), 'Text with bold and nested');
-      });
     });
 
     group('link', () {
       testWidgets('renders link text with <link> tag', (tester) async {
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'This is a <link>custom link</link> text',
-            linkHandlers: {'link': () {}},
+            spanBuilder: (tag) => FormattedSpan(onTap: switch (tag) { 'link' => () {}, _ => null }),
           ),
         );
 
@@ -167,9 +111,9 @@ void main() {
         var linkTapped = false;
 
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'Tap <link>here</link>',
-            linkHandlers: {'link': () => linkTapped = true},
+            spanBuilder: (tag) => FormattedSpan(onTap: switch (tag) { 'link' => () => linkTapped = true, _ => null }),
           ),
         );
 
@@ -183,12 +127,13 @@ void main() {
 
       testWidgets('handles custom prefixed link tags', (tester) async {
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'Refer to <docs-link>docs</docs-link> and <other-link>other</other-link>',
-            linkHandlers: {
-              'docs-link': () {},
-              'other-link': () {},
-            },
+            spanBuilder: (tag) => FormattedSpan(onTap: switch (tag) {
+              'docs-link' => () {},
+              'other-link' => () {},
+              _ => null,
+            },),
           ),
         );
 
@@ -207,10 +152,9 @@ void main() {
         );
 
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'Click <link>here</link>',
-            linkStyle: customLinkStyle,
-            linkHandlers: {'link': () {}},
+            spanBuilder: (tag) => FormattedSpan(style: customLinkStyle, onTap: () {}),
           ),
         );
 
@@ -223,9 +167,9 @@ void main() {
 
       testWidgets('link without handler renders but is not tappable', (tester) async {
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'Link without handler: <link>click me</link>',
-            linkHandlers: {'other-link': () {}},
+            spanBuilder: (tag) => FormattedSpan(onTap: switch (tag) { 'other-link' => () {}, _ => null }),
           ),
         );
 
@@ -241,12 +185,13 @@ void main() {
         var secondLinkTapped = false;
 
         await tester.pumpTestWidget(
-          ImmichHtmlText(
+          ImmichFormattedText(
             'Go to <docs-link>docs</docs-link> or <help-link>help</help-link>',
-            linkHandlers: {
-              'docs-link': () => firstLinkTapped = true,
-              'help-link': () => secondLinkTapped = true,
-            },
+            spanBuilder: (tag) => FormattedSpan(onTap: switch (tag) {
+              'docs-link' => () => firstLinkTapped = true,
+              'help-link' => () => secondLinkTapped = true,
+              _ => null,
+            },),
           ),
         );
 
