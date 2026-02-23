@@ -233,7 +233,7 @@ export const ValidateHexColor = () => {
 };
 
 type DateOptions = OptionalOptions & { optional?: boolean; format?: 'date' | 'date-time' };
-export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
+export const ValidateDate = (options?: DateOptions & PropertyOptions) => {
   const {
     optional,
     nullable = false,
@@ -243,7 +243,7 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
   } = options || {};
 
   return applyDecorators(
-    ApiProperty({ format, ...apiPropertyOptions }),
+    Property({ format, ...apiPropertyOptions }),
     IsDate(),
     optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
     Transform(({ key, value }) => {
