@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
-import 'package:mocktail/mocktail.dart';
 
 import '../../infrastructure/repository.mock.dart';
 
@@ -46,14 +44,6 @@ void main() {
     mockRemoteAlbumRepo = MockRemoteAlbumRepository();
     mockAlbumApiRepo = MockDriftAlbumApiRepository();
     sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
-
-    when(
-      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.end),
-    ).thenAnswer((_) async => ['1', '2']);
-
-    when(
-      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.start),
-    ).thenAnswer((_) async => ['1', '2']);
   });
 
   group('sortAlbums', () {
@@ -87,12 +77,14 @@ void main() {
 
     test('should sort correctly based on newestAssetTimestamp', () async {
       final albums = [albumB, albumA];
+
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostRecent);
       expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on oldestAssetTimestamp', () async {
       final albums = [albumB, albumA];
+
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
       expect(result, [albumA, albumB]);
     });
