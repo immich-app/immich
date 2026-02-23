@@ -223,6 +223,7 @@
   bind:this={element}
   data-asset={asset.id}
   data-thumbnail-focus-container
+  data-selected={selected ? true : undefined}
   tabindex={0}
   role="link"
 >

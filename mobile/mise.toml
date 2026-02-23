@@ -16,7 +16,15 @@ sources = [
   "infrastructure/**/*.drift",
 ]
 outputs = { auto = true }
-run = "dart run build_runner build --delete-conflicting-outputs"
+run = [
+  "dart run build_runner build --delete-conflicting-outputs",
+  "dart format lib/routing/router.gr.dart",
+]
+
+[tasks."codegen:watch"]
+alias = "watch"
+description = "Watch and auto-generate dart code"
+run = "dart run build_runner watch --delete-conflicting-outputs"
 
 [tasks."codegen:pigeon"]
 alias = "pigeon"
@@ -32,7 +40,7 @@ depends = [
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [{ task = "//i18n:format-fix" }, { tasks = ["i18n:loader", "i18n:keys"] }]
+run = [{ task = "//:i18n:format-fix" }, { tasks = ["i18n:loader", "i18n:keys"] }]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"

@@ -16,9 +16,15 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   }
 
   Future<List<DriftPerson>> getAssetPeople(String assetId) async {
-    final query = _db.select(_db.assetFaceEntity).join([
-      innerJoin(_db.personEntity, _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId)),
-    ])..where(_db.assetFaceEntity.assetId.equals(assetId) & _db.personEntity.isHidden.equals(false));
+    final query =
+        _db.select(_db.assetFaceEntity).join([
+          innerJoin(_db.personEntity, _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId)),
+        ])..where(
+          _db.assetFaceEntity.assetId.equals(assetId) &
+              _db.assetFaceEntity.isVisible.equals(true) &
+              _db.assetFaceEntity.deletedAt.isNull() &
+              _db.personEntity.isHidden.equals(false),
+        );
 
     return query.map((row) {
       final person = row.readTable(_db.personEntity);
@@ -39,7 +45,9 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
           ..where(
             people.isHidden.equals(false) &
                 assets.deletedAt.isNull() &
-                assets.visibility.equalsValue(AssetVisibility.timeline),
+                assets.visibility.equalsValue(AssetVisibility.timeline) &
+                faces.isVisible.equals(true) &
+                faces.deletedAt.isNull(),
           )
           ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(3) | people.name.equals('').not())
           ..orderBy([

@@ -183,8 +183,8 @@ class TimelineService {
     return _buffer.slice(start, start + count);
   }
 
-  // Pre-cache assets around the given index for asset viewer
-  Future<void> preCacheAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+  // Preload assets around the given index for asset viewer
+  Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
   BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 

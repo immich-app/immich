@@ -10,7 +10,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -29,14 +29,8 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
-    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-
-    if (!showControls) {
-      opacity = 0;
-    }
 
     final originalTheme = context.themeData;
 
@@ -56,37 +50,30 @@ class ViewerBottomBar extends ConsumerWidget {
       ],
     ];
 
-    return IgnorePointer(
-      ignoring: opacity < 255,
-      child: AnimatedOpacity(
-        opacity: opacity / 255,
-        duration: Durations.short2,
-        child: AnimatedSwitcher(
-          duration: Durations.short4,
-          child: isSheetOpen
-              ? const SizedBox.shrink()
-              : Theme(
-                  data: context.themeData.copyWith(
-                    iconTheme: const IconThemeData(size: 22, color: Colors.white),
-                    textTheme: context.themeData.textTheme.copyWith(
-                      labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
-                    ),
-                  ),
-                  child: Container(
-                    color: Colors.black.withAlpha(125),
-                    padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (asset.isVideo) const VideoControls(),
-                        if (!isReadonlyModeEnabled)
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
-                      ],
-                    ),
-                  ),
+    return AnimatedSwitcher(
+      duration: Durations.short4,
+      child: showingDetails
+          ? const SizedBox.shrink()
+          : Theme(
+              data: context.themeData.copyWith(
+                iconTheme: const IconThemeData(size: 22, color: Colors.white),
+                textTheme: context.themeData.textTheme.copyWith(
+                  labelLarge: context.themeData.textTheme.labelLarge?.copyWith(color: Colors.white),
                 ),
-        ),
-      ),
+              ),
+              child: Container(
+                color: Colors.black.withAlpha(125),
+                padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (asset.isVideo) const VideoControls(),
+                    if (!isReadonlyModeEnabled)
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }

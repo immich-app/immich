@@ -1,7 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserMetadataKey } from 'src/enum';
-import { user_metadata_audit } from 'src/schema/functions';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -11,7 +7,11 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { UserMetadataKey } from 'src/enum';
+import { user_metadata_audit } from 'src/schema/functions';
+import { UserTable } from 'src/schema/tables/user.table';
 import { UserMetadata, UserMetadataItem } from 'src/types';
 
 @UpdatedAtTrigger('user_metadata_updated_at')

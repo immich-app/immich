@@ -1,5 +1,5 @@
+import { Column, Generated, PrimaryGeneratedColumn, Table, Unique } from '@immich/sql-tools';
 import { PathType } from 'src/enum';
-import { Column, Generated, PrimaryGeneratedColumn, Table, Unique } from 'src/sql-tools';
 
 @Table('move_history')
 // path lock (per entity)

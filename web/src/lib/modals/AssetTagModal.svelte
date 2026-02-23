@@ -62,6 +62,7 @@
   {onClose}
   {onSubmit}
   submitText={$t('tag_assets')}
+  onOpenAutoFocus={(event) => event.preventDefault()}
   {disabled}
 >
   <div class="my-4 flex flex-col gap-2">

@@ -48,7 +48,7 @@ const config: PlaywrightTestConfig = {
     {
       name: 'maintenance',
       use: { ...devices['Desktop Chrome'] },
-      testDir: './src/specs/maintenance',
+      testDir: './src/specs/maintenance/web',
       workers: 1,
     },
   ],

@@ -36,6 +36,7 @@ class PhotoViewCore extends StatefulWidget {
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
+    required this.onDragCancel,
     required this.onScaleEnd,
     required this.onLongPressStart,
     required this.gestureDetectorBehavior,
@@ -62,6 +63,7 @@ class PhotoViewCore extends StatefulWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     this.gestureDetectorBehavior,
@@ -100,6 +102,7 @@ class PhotoViewCore extends StatefulWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+  final VoidCallback? onDragCancel;
 
   final PhotoViewImageLongPressStartCallback? onLongPressStart;
 
@@ -386,6 +389,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             onDragUpdate: widget.onDragUpdate != null
                 ? (details) => widget.onDragUpdate!(context, details, widget.controller.value)
                 : null,
+            onDragCancel: widget.onDragCancel,
             hitDetector: this,
             onTapUp: widget.onTapUp != null ? (details) => widget.onTapUp!(context, details, value) : null,
             onTapDown: widget.onTapDown != null ? (details) => widget.onTapDown!(context, details, value) : null,

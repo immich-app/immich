@@ -139,7 +139,8 @@ export class DatabaseBackupService {
         // remove known bad parameters
         parsedUrl.searchParams.delete('uselibpqcompat');
 
-        databaseUsername = parsedUrl.username;
+        databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
+
         url = parsedUrl.toString();
       }
 

@@ -38,7 +38,7 @@ class UserCircleAvatar extends ConsumerWidget {
           decoration: BoxDecoration(
             color: userAvatarColor,
             shape: BoxShape.circle,
-            border: hasBorder ? Border.all(color: Colors.grey[500]!.withValues(alpha: opacity), width: 1) : null,
+            border: hasBorder ? Border.all(color: userAvatarColor.withValues(alpha: opacity), width: 1.5) : null,
           ),
           child: user.hasProfileImage
               ? ClipRRect(

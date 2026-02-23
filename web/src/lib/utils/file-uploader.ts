@@ -1,10 +1,10 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { uploadManager } from '$lib/managers/upload-manager.svelte';
+import { addAssetsToAlbums } from '$lib/services/album.service';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { user } from '$lib/stores/user.store';
 import { UploadState } from '$lib/types';
 import { uploadRequest } from '$lib/utils';
-import { addAssetsToAlbum } from '$lib/utils/asset-utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
@@ -213,7 +213,7 @@ async function fileUploader({
 
     if (albumId) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_adding_to_album') });
-      await addAssetsToAlbum(albumId, [responseData.id], false);
+      await addAssetsToAlbums([albumId], [responseData.id], { notify: false });
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_added_to_album') });
     }
 

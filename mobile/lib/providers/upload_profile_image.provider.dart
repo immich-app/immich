@@ -61,10 +61,10 @@ class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> 
 
   final UserService _userService;
 
-  Future<bool> upload(XFile file) async {
+  Future<bool> upload(XFile file, {String? fileName}) async {
     state = state.copyWith(status: UploadProfileStatus.loading);
 
-    var profileImagePath = await _userService.createProfileImage(file.name, await file.readAsBytes());
+    var profileImagePath = await _userService.createProfileImage(fileName ?? file.name, await file.readAsBytes());
 
     if (profileImagePath != null) {
       dPrint(() => "Successfully upload profile image");

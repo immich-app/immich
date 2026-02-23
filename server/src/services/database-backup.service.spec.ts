@@ -554,7 +554,7 @@ describe(DatabaseBackupService.name, () => {
             "bin": "/usr/lib/postgresql/14/bin/psql",
             "databaseMajorVersion": 14,
             "databasePassword": "",
-            "databaseUsername": "",
+            "databaseUsername": "postgres",
             "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
           }
         `);

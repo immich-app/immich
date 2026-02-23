@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:cancellation_token_http/http.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/utils/image_converter.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -33,23 +33,6 @@ class DriftEditImagePage extends ConsumerWidget {
   final bool isEdited;
 
   const DriftEditImagePage({super.key, required this.asset, required this.image, required this.isEdited});
-  Future<Uint8List> _imageToUint8List(Image image) async {
-    final Completer<Uint8List> completer = Completer();
-    image.image
-        .resolve(const ImageConfiguration())
-        .addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
-              if (byteData != null) {
-                completer.complete(byteData.buffer.asUint8List());
-              } else {
-                completer.completeError('Failed to convert image to bytes');
-              }
-            });
-          }, onError: (exception, stackTrace) => completer.completeError(exception)),
-        );
-    return completer.future;
-  }
 
   void _exitEditing(BuildContext context) {
     // this assumes that the only way to get to this page is from the AssetViewerRoute
@@ -58,7 +41,7 @@ class DriftEditImagePage extends ConsumerWidget {
 
   Future<void> _saveEditedImage(BuildContext context, BaseAsset asset, Image image, WidgetRef ref) async {
     try {
-      final Uint8List imageData = await _imageToUint8List(image);
+      final Uint8List imageData = await imageToUint8List(image);
       LocalAsset? localAsset;
 
       try {

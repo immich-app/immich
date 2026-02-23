@@ -2,11 +2,11 @@
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -28,7 +28,6 @@
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
@@ -43,8 +42,8 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
+  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -232,7 +231,7 @@
     return tagNames.join(', ');
   }
 
-  const onAddToAlbum = (assetIds: string[]) => {
+  const onAlbumAddAssets = ({ assetIds }: { assetIds: string[] }) => {
     cancelMultiselect(assetInteraction);
 
     if (terms.isNotInAlbum.toString() == 'true') {
@@ -247,6 +246,8 @@
 </script>
 
 <svelte:window bind:scrollY />
+
+<OnEvents {onAlbumAddAssets} />
 
 {#if terms}
   <section
@@ -328,7 +329,8 @@
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
         >
-          {@const Actions = getAssetBulkActions($t, getAssetControlContext())}
+          {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+          <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
           <CreateSharedLink />
           <IconButton
@@ -339,10 +341,7 @@
             icon={mdiSelectAll}
             onclick={handleSelectAll}
           />
-          <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-            <AddToAlbum {onAddToAlbum} />
-            <AddToAlbum shared {onAddToAlbum} />
-          </ButtonContextMenu>
+          <ActionButton action={Actions.AddToAlbum} />
           {#if isAllUserOwned}
             <FavoriteAction
               removeFavorite={assetInteraction.isAllFavorite}
@@ -357,6 +356,7 @@
             />
 
             <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+              <ActionMenuItem action={Actions.AddToAlbum} />
               <DownloadAction menuItem />
               <ChangeDate menuItem />
               <ChangeDescription menuItem />

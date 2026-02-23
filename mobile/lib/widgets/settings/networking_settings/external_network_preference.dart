@@ -54,7 +54,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       saveEndpointList();
     }
 
-    Widget proxyDecorator(Widget child, int index, Animation<double> animation) {
+    Widget proxyDecorator(Widget child, int _, Animation<double> animation) {
       return AnimatedBuilder(
         animation: animation,
         builder: (BuildContext context, Widget? child) {

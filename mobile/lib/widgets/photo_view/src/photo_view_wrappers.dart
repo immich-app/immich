@@ -28,6 +28,7 @@ class ImageWrapper extends StatefulWidget {
     required this.onDragStart,
     required this.onDragEnd,
     required this.onDragUpdate,
+    required this.onDragCancel,
     required this.onScaleEnd,
     required this.onLongPressStart,
     required this.outerSize,
@@ -62,6 +63,7 @@ class ImageWrapper extends StatefulWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+  final VoidCallback? onDragCancel;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final PhotoViewImageLongPressStartCallback? onLongPressStart;
   final Size outerSize;
@@ -203,6 +205,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         onDragStart: widget.onDragStart,
         onDragEnd: widget.onDragEnd,
         onDragUpdate: widget.onDragUpdate,
+        onDragCancel: widget.onDragCancel,
         onScaleEnd: widget.onScaleEnd,
         onLongPressStart: widget.onLongPressStart,
         outerSize: widget.outerSize,
@@ -233,6 +236,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       onDragStart: widget.onDragStart,
       onDragEnd: widget.onDragEnd,
       onDragUpdate: widget.onDragUpdate,
+      onDragCancel: widget.onDragCancel,
       onScaleEnd: widget.onScaleEnd,
       onLongPressStart: widget.onLongPressStart,
       gestureDetectorBehavior: widget.gestureDetectorBehavior,
@@ -281,6 +285,7 @@ class CustomChildWrapper extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     required this.outerSize,
@@ -313,6 +318,7 @@ class CustomChildWrapper extends StatelessWidget {
   final PhotoViewImageDragStartCallback? onDragStart;
   final PhotoViewImageDragEndCallback? onDragEnd;
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+  final VoidCallback? onDragCancel;
   final PhotoViewImageScaleEndCallback? onScaleEnd;
   final PhotoViewImageLongPressStartCallback? onLongPressStart;
   final Size outerSize;
@@ -348,6 +354,7 @@ class CustomChildWrapper extends StatelessWidget {
       onDragStart: onDragStart,
       onDragEnd: onDragEnd,
       onDragUpdate: onDragUpdate,
+      onDragCancel: onDragCancel,
       onScaleEnd: onScaleEnd,
       onLongPressStart: onLongPressStart,
       gestureDetectorBehavior: gestureDetectorBehavior,
