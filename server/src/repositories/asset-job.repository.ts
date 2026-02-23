@@ -368,16 +368,14 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateJob(id: string) {
-    return this.storageTemplateAssetQuery()
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .where('asset.id', '=', id)
-      .executeTakeFirst();
-  }
+  getForStorageTemplateJob(id: string, options?: { includeHidden?: boolean }) {
+    const queryBuilder = this.storageTemplateAssetQuery().where('asset.id', '=', id);
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getForStorageTemplateSingleAsset(id: string) {
-    return this.storageTemplateAssetQuery().where('asset.id', '=', id).executeTakeFirst();
+    if (options?.includeHidden) {
+      return queryBuilder.executeTakeFirst();
+    }
+
+    return queryBuilder.where('asset.visibility', '!=', AssetVisibility.Hidden).executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })

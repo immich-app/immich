@@ -131,7 +131,7 @@ describe(StorageTemplateService.name, () => {
       const newStillPicturePath = `/data/library/${stillAsset.ownerId}/2022/2022-06-19/${stillAsset.originalFileName}`;
 
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(stillAsset));
-      mocks.assetJob.getForStorageTemplateSingleAsset.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
 
       mocks.move.create.mockResolvedValueOnce({
         id: '123',
@@ -181,7 +181,7 @@ describe(StorageTemplateService.name, () => {
       const newStillPicturePath = `/data/library/${stillAsset.ownerId}/2022/${album.albumName}/${stillAsset.originalFileName}`;
 
       mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(stillAsset));
-      mocks.assetJob.getForStorageTemplateSingleAsset.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
       mocks.album.getByAssetId.mockResolvedValue([album]);
 
       mocks.move.create.mockResolvedValueOnce({
@@ -774,7 +774,7 @@ describe(StorageTemplateService.name, () => {
 
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([getForStorageTemplate(stillAsset)]));
       mocks.user.getList.mockResolvedValue([userStub.user1]);
-      mocks.assetJob.getForStorageTemplateSingleAsset.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
       mocks.album.getByAssetId.mockResolvedValue([album]);
 
       mocks.move.create.mockResolvedValueOnce({
@@ -811,7 +811,7 @@ describe(StorageTemplateService.name, () => {
 
       mocks.assetJob.streamForStorageTemplateJob.mockReturnValue(makeStream([getForStorageTemplate(stillAsset)]));
       mocks.user.getList.mockResolvedValue([user]);
-      mocks.assetJob.getForStorageTemplateSingleAsset.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(motionAsset));
       mocks.album.getByAssetId.mockResolvedValue([album]);
 
       mocks.move.create.mockResolvedValueOnce({

@@ -158,7 +158,9 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateSingleAsset(asset.livePhotoVideoId);
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+        includeHidden: true,
+      });
       if (!livePhotoVideo) {
         return JobStatus.Failed;
       }
@@ -191,7 +193,9 @@ export class StorageTemplateService extends BaseService {
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateSingleAsset(asset.livePhotoVideoId);
+        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+          includeHidden: true,
+        });
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
           await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
