@@ -20,6 +20,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
+  import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,
     TooltipProvider,
@@ -122,14 +123,14 @@
     if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
       modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
 
-      // we will be disconnected momentarily
-      // wait for reconnect then reload
-      let waiting = false;
       websocketStore.connected.subscribe((connected) => {
-        if (!connected) {
-          waiting = true;
-        } else if (connected && waiting) {
-          location.reload();
+        if (connected) {
+          void getServerConfig().then(({ maintenanceMode }) => {
+            console.info(maintenanceMode, isRestarting.isMaintenanceMode);
+            if (maintenanceMode === isRestarting.isMaintenanceMode) {
+              location.reload();
+            }
+          });
         }
       });
     }
