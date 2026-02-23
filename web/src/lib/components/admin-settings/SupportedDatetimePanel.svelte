@@ -12,7 +12,6 @@
   let { options }: Props = $props();
 
   const getExampleDate = () => DateTime.fromISO('2022-02-15T20:03:05.250Z', { locale: $locale });
-
 </script>
 
 {#snippet example(title: string, options: Array<string>)}
@@ -32,7 +31,7 @@
   <CardHeader>
     <Text class="mb-1">{$t('admin.storage_template_date_time_description')}</Text>
     <Text color="primary"
-      >{$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() }})}</Text
+      >{$t('admin.storage_template_date_time_sample', { values: { date: getExampleDate().toISO() } })}</Text
     >
   </CardHeader>
   <CardBody>
