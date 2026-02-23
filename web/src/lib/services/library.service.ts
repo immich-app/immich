@@ -23,7 +23,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResponseDto[]) => {
+export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
     type: $t('command'),
