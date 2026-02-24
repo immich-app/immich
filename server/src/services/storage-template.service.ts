@@ -125,7 +125,7 @@ export class StorageTemplateService extends BaseService {
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
-      throw new Error(`Invalid storage template: ${error}`);
+      throw new Error('Invalid storage template', { cause: error });
     }
   }
 

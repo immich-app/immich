@@ -185,7 +185,7 @@ const getEnv = (): EnvData => {
     try {
       redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
     } catch (error) {
-      throw new Error(`Failed to decode redis options: ${error}`);
+      throw new Error('Failed to decode redis options', { cause: error });
     }
   }
 

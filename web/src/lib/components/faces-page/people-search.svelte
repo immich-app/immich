@@ -47,6 +47,7 @@
 
   let {
     searchName = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
     searchedPeopleLocal = $bindable(),
     type,
     numberPeopleToSearch = maximumLengthSearchPeople,

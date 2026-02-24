@@ -65,7 +65,7 @@
     "uplot": "^1.6.32"
   },
   "devDependencies": {
-    "@eslint/js": "^9.36.0",
+    "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.0.0",
     "@koddsson/eslint-plugin-tscompat": "^0.2.0",
     "@socket.io/component-emitter": "^3.1.0",
@@ -85,7 +85,7 @@
     "@types/qrcode": "^1.5.5",
     "@vitest/coverage-v8": "^3.0.0",
     "dotenv": "^17.0.0",
-    "eslint": "^9.36.0",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-svelte": "^3.12.4",
