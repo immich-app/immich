@@ -17,7 +17,6 @@ export class SessionTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  // TODO convert to byte[]
   @Column({ type: 'bytea', index: true })
   token!: Buffer;
 
