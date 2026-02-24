@@ -369,13 +369,10 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getForStorageTemplateJob(id: string, options?: { includeHidden?: boolean }) {
-    const queryBuilder = this.storageTemplateAssetQuery().where('asset.id', '=', id);
-
-    if (options?.includeHidden) {
-      return queryBuilder.executeTakeFirst();
-    }
-
-    return queryBuilder.where('asset.visibility', '!=', AssetVisibility.Hidden).executeTakeFirst();
+    return this.storageTemplateAssetQuery()
+      .where('asset.id', '=', id)
+      .$if(!options?.includeHidden, (qb) => qb.where('asset.visibility', '!=', AssetVisibility.Hidden))
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [], stream: true })
