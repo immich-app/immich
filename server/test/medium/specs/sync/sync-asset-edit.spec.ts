@@ -122,7 +122,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
     const assetEditRepo = ctx.get(AssetEditRepository);
 
     // Create initial edit
-    await assetEditRepo.replaceAll(asset.id, [
+    const edits = await assetEditRepo.replaceAll(asset.id, [
       {
         action: AssetEditAction.Crop,
         parameters: { x: 10, y: 20, width: 100, height: 200 },
@@ -139,8 +139,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
       .set({
         parameters: { x: 50, y: 60, width: 150, height: 250 },
       })
-      .where('assetId', '=', asset.id)
-      .where('action', '=', AssetEditAction.Crop)
+      .where('id', '=', edits[0].id)
       .execute();
 
     const response2 = await ctx.syncStream(auth, [SyncRequestType.AssetEditsV1]);
@@ -171,7 +170,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
     const assetEditRepo = ctx.get(AssetEditRepository);
 
     // Create initial edit
-    await assetEditRepo.replaceAll(asset.id, [
+    const edits = await assetEditRepo.replaceAll(asset.id, [
       {
         action: AssetEditAction.Crop,
         parameters: { x: 10, y: 20, width: 100, height: 200 },
@@ -191,7 +190,7 @@ describe(SyncRequestType.AssetEditsV1, () => {
         {
           ack: expect.any(String),
           data: {
-            editId: asset.id,
+            editId: edits[0].id,
           },
           type: SyncEntityType.AssetEditDeleteV1,
         },
