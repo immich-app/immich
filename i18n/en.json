@@ -2307,6 +2307,7 @@
   "unstack_action_prompt": "{count} unstacked",
   "unstacked_assets_count": "Un-stacked {count, plural, one {# asset} other {# assets}}",
   "unsupported_field_type": "Unsupported field type",
+  "unsupported_file_type": "File {file} can't be uploaded because its file type {type} is not supported.",
   "untagged": "Untagged",
   "untitled_workflow": "Untitled workflow",
   "up_next": "Up next",
