@@ -1809,7 +1809,7 @@
   "rate_asset": "Rate Asset",
   "rating": "Star rating",
   "rating_clear": "Clear rating",
-  "rating_count": "{count, plural, =-1 {Rejected} =0 {Unrated} one {# star} other {# stars}}",
+  "rating_count": "{count, plural, =0 {Unrated} one {# star} other {# stars}}",
   "rating_description": "Display the EXIF rating in the info panel",
   "reaction_options": "Reaction options",
   "read_changelog": "Read Changelog",

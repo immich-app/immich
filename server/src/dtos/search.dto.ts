@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
-import { HistoryBuilder } from 'src/decorators';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
@@ -103,11 +103,15 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true, description: 'Filter by album IDs' })
   albumIds?: string[];
 
-  @ApiPropertyOptional({
+  @Property({
     type: 'number',
-    description: 'Filter by rating. -1 means rejected, null unrated, 1-5 the star rating',
+    description: 'Filter by rating [1-5], or null for unrated',
     minimum: -1,
     maximum: 5,
+    history: new HistoryBuilder()
+      .added('v1')
+      .stable('v2')
+      .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.'),
   })
   @Optional({ nullable: true })
   @IsInt()

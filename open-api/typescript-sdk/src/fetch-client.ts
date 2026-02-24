@@ -834,7 +834,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating */
+    /** Rating in range [1-5], or null for unrated */
     rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
@@ -944,7 +944,7 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating */
+    /** Rating in range [1-5], or null for unrated */
     rating?: number | null;
     /** Asset visibility */
     visibility?: AssetVisibility;
@@ -1709,7 +1709,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     /** Filter by preview file path */
     previewPath?: string;
-    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    /** Filter by rating [1-5], or null for unrated */
     rating?: number | null;
     /** Number of results to return */
     size?: number;
@@ -1825,7 +1825,7 @@ export type RandomSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    /** Filter by rating [1-5], or null for unrated */
     rating?: number | null;
     /** Number of results to return */
     size?: number;
@@ -1901,7 +1901,7 @@ export type SmartSearchDto = {
     query?: string;
     /** Asset ID to use as search reference */
     queryAssetId?: string;
-    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    /** Filter by rating [1-5], or null for unrated */
     rating?: number | null;
     /** Number of results to return */
     size?: number;
@@ -1967,7 +1967,7 @@ export type StatisticsSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating. -1 means rejected, null unrated, 1-5 the star rating */
+    /** Filter by rating [1-5], or null for unrated */
     rating?: number | null;
     /** Filter by state/province name */
     state?: string | null;

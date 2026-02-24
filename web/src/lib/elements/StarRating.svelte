@@ -6,7 +6,7 @@
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  /// Values -1 ('rejected'), [1, 5] and null ('unrated') are considered valid
+  /// Values [1, 5] and null ('unrated') are considered valid
   type Rating = number | null;
 
   interface Props {

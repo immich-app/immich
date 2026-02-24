@@ -86,7 +86,7 @@ class AssetBulkUpdateDto {
   ///
   num? longitude;
 
-  /// Rating
+  /// Rating in range [1-5], or null for unrated
   ///
   /// Minimum value: -1
   /// Maximum value: 5

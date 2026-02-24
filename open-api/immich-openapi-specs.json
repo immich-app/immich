@@ -9407,7 +9407,23 @@
             "name": "rating",
             "required": false,
             "in": "query",
-            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
+            "description": "Filter by rating [1-5], or null for unrated",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable",
             "schema": {
               "minimum": -1,
               "maximum": 5,
@@ -15873,11 +15889,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "timeZone": {
             "description": "Time zone (IANA timezone)",
@@ -18988,11 +19020,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -20715,11 +20763,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -22090,11 +22154,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -22325,11 +22405,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating. -1 means rejected, null unrated, 1-5 the star rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -25102,11 +25198,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
             "nullable": true,
-            "type": "number"
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "visibility": {
             "allOf": [

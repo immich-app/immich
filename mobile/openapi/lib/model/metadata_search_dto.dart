@@ -256,7 +256,7 @@ class MetadataSearchDto {
   ///
   String? previewPath;
 
-  /// Filter by rating. -1 means rejected, null unrated, 1-5 the star rating
+  /// Filter by rating [1-5], or null for unrated
   ///
   /// Minimum value: -1
   /// Maximum value: 5

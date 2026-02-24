@@ -16,6 +16,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
@@ -56,7 +57,13 @@ export class UpdateAssetBase {
   @IsNotEmpty()
   longitude?: number;
 
-  @ApiProperty({ description: 'Rating' })
+  @Property({
+    description: 'Rating in range [1-5], or null for unrated',
+    history: new HistoryBuilder()
+      .added('v1')
+      .stable('v2')
+      .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.'),
+  })
   @Optional({ nullable: true })
   @IsInt()
   @Max(5)
