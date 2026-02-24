@@ -117,6 +117,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription = EventStream.shared.listen(_onEvent);
 
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
+
+    if (ref.read(assetViewerProvider).showingControls) {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    } else {
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
+    }
   }
 
   @override
