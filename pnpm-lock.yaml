@@ -90,8 +90,8 @@ importers:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.2(jiti@2.6.1))
       globals:
-        specifier: ^16.0.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.3.0
       mock-fs:
         specifier: ^5.2.0
         version: 5.5.0
@@ -250,8 +250,8 @@ importers:
         specifier: ^34.3.0
         version: 34.3.0
       globals:
-        specifier: ^16.0.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.3.0
       luxon:
         specifier: ^3.4.4
         version: 3.7.2
@@ -687,8 +687,8 @@ importers:
         specifier: ^62.0.0
         version: 62.0.0(eslint@9.39.2(jiti@2.6.1))
       globals:
-        specifier: ^16.0.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.3.0
       mock-fs:
         specifier: ^5.2.0
         version: 5.5.0
@@ -931,8 +931,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.2
       globals:
-        specifier: ^16.0.0
-        version: 16.5.0
+        specifier: ^17.0.0
+        version: 17.3.0
       prettier:
         specifier: ^3.7.4
         version: 3.8.1
@@ -7510,6 +7510,10 @@ packages:
 
   globals@16.5.0:
     resolution: {integrity: sha512-c/c15i26VrJ4IRt5Z89DnIzCGDn9EcebibhAOjw5ibqEHsE1wLUgkPn9RDmNcUKyU87GeaL633nyJ+pplFR2ZQ==}
+    engines: {node: '>=18'}
+
+  globals@17.3.0:
+    resolution: {integrity: sha512-yMqGUQVVCkD4tqjOJf3TnrvaaHDMYp4VlUSObbkIiuCPe/ofdMBFIAcBbCSRFWOnos6qRiTVStDwqPLUclaxIw==}
     engines: {node: '>=18'}
 
   globalyzer@0.1.0:
@@ -19898,6 +19902,8 @@ snapshots:
   globals@15.15.0: {}
 
   globals@16.5.0: {}
+
+  globals@17.3.0: {}
 
   globalyzer@0.1.0: {}
 
