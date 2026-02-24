@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -24,7 +25,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
 
 class BootstrapErrorWidget extends StatelessWidget {
   final String error;
@@ -72,23 +73,10 @@ class BootstrapErrorWidget extends StatelessWidget {
                       child: _ErrorCard(error: error, stack: stack),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _SupportLink(
-                          icon: Icons.chat_bubble_outline,
-                          label: ctx.t.get_help,
-                          url: 'https://discord.immich.app/',
-                        ),
-                        _SupportLink(
-                          icon: Icons.info_outline,
-                          label: ctx.t.profile_drawer_github,
-                          url: 'https://github.com/immich-app/immich/issues',
-                        ),
-                      ],
-                    ),
+                  const Divider(height: 1),
+                  const SafeArea(
+                    top: false,
+                    child: Padding(padding: EdgeInsets.fromLTRB(24, 16, 24, 16), child: _BottomPanel()),
                   ),
                 ],
               ),
@@ -100,17 +88,110 @@ class BootstrapErrorWidget extends StatelessWidget {
   }
 }
 
-class _SupportLink extends StatelessWidget {
+class _BottomPanel extends StatefulWidget {
+  const _BottomPanel();
+
+  @override
+  State<_BottomPanel> createState() => _BottomPanelState();
+}
+
+class _BottomPanelState extends State<_BottomPanel> {
+  bool _cleared = false;
+
+  Future<void> _clearDatabase() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(context.t.reset_sqlite_clear_app_data),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.t.reset_sqlite_confirmation),
+            const SizedBox(height: 12),
+            Text(
+              context.t.reset_sqlite_confirmation_note,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(false), child: Text(context.t.cancel)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: Text(context.t.confirm, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    final db = Drift();
+    try {
+      await db.reset();
+    } finally {
+      await db.close();
+    }
+
+    if (mounted) {
+      setState(() => _cleared = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 8,
+      children: [
+        Text(
+          _cleared ? context.t.reset_sqlite_done : context.t.scaffold_body_error_unrecoverable,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _ActionLink(
+              icon: Icons.chat_bubble_outline,
+              label: context.t.discord,
+              onTap: () => launchUrl(Uri.parse('https://discord.immich.app/'), mode: LaunchMode.externalApplication),
+            ),
+            _ActionLink(
+              icon: Icons.bug_report_outlined,
+              label: context.t.profile_drawer_github,
+              onTap: () => launchUrl(
+                Uri.parse('https://github.com/immich-app/immich/issues'),
+                mode: LaunchMode.externalApplication,
+              ),
+            ),
+            if (!_cleared)
+              _ActionLink(
+                icon: Icons.delete_outline,
+                label: context.t.reset_sqlite_clear_app_data,
+                onTap: _clearDatabase,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionLink extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String url;
+  final VoidCallback onTap;
 
-  const _SupportLink({required this.icon, required this.label, required this.url});
+  const _ActionLink({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      onTap: onTap,
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
