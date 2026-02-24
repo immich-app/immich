@@ -4,7 +4,6 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
-  import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
@@ -189,8 +188,8 @@
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
-  <meta name="theme-color" content="currentColor" />
-  <AppleHeader />
+  <meta name="theme-color" content="white" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
 
   {#if page.data.meta}
     <meta name="description" content={page.data.meta.description} />
