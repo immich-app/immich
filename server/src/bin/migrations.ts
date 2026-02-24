@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 process.env.DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@localhost:5432/immich';
 
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Kysely, sql } from 'kysely';
 import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
-import postgres from 'postgres';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema';
-import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
-import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
+import { getKyselyConfig } from 'src/utils/database';
 
 const main = async () => {
   const command = process.argv[2];
@@ -130,10 +129,9 @@ const create = (path: string, up: string[], down: string[]) => {
 const compare = async () => {
   const configRepository = new ConfigRepository();
   const { database } = configRepository.getEnv();
-  const db = postgres(asPostgresConnectionConfig(database.config));
 
   const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
-  const target = await schemaFromDatabase(db, {});
+  const target = await schemaFromDatabase({ connection: database.config });
 
   console.log(source.warnings.join('\n'));
 

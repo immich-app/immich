@@ -69,6 +69,14 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
+      - name: Install dependencies for UI package
+        run: dart pub get
+        working-directory: ./mobile/packages/ui
+
+      - name: Install dependencies for UI Showcase
+        run: dart pub get
+        working-directory: ./mobile/packages/ui/showcase
+
       - name: Install DCM
         uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:

@@ -540,6 +540,8 @@ select
   "boundingBoxX2",
   "boundingBoxY2",
   "sourceType",
+  "isVisible",
+  "asset_face"."deletedAt",
   "asset_face"."updateId"
 from
   "asset_face" as "asset_face"

@@ -253,7 +253,8 @@ describe('/asset', () => {
 
         expect(status).toBe(200);
         expect(body.id).toEqual(facesAsset.id);
-        expect(body.people).toMatchObject(expectedFaces);
+        const sortedPeople = body.people.toSorted((a: any, b: any) => a.name.localeCompare(b.name));
+        expect(sortedPeople).toMatchObject(expectedFaces);
       });
     });
 

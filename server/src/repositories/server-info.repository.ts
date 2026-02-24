@@ -69,7 +69,7 @@ export class ServerInfoRepository {
 
       return response.json();
     } catch (error) {
-      throw new Error(`Failed to fetch GitHub release: ${error}`);
+      throw new Error('Failed to fetch GitHub release', { cause: error });
     }
   }
 

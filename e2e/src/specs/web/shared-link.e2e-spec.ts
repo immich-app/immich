@@ -45,8 +45,7 @@ test.describe('Shared Links', () => {
     await page.goto(`/share/${sharedLink.key}`);
     await page.getByRole('heading', { name: 'Test Album' }).waitFor();
     await page.locator(`[data-asset-id="${asset.id}"]`).hover();
-    await page.waitForSelector('[data-group] svg');
-    await page.getByRole('checkbox').click();
+    await page.waitForSelector(`[data-asset-id="${asset.id}"] [role="checkbox"]`);
     await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download' }).click()]);
   });
 

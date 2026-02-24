@@ -221,8 +221,37 @@ class GalleryViewerPage extends HookConsumerWidget {
         onDragUpdate: (_, details, __) {
           handleSwipeUpDown(details);
         },
-        onTapDown: (_, __, ___) {
-          ref.read(showControlsProvider.notifier).toggle();
+        onTapDown: (ctx, tapDownDetails, _) {
+          final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+          if (!tapToNavigate) {
+            ref.read(showControlsProvider.notifier).toggle();
+            return;
+          }
+
+          double tapX = tapDownDetails.globalPosition.dx;
+          double screenWidth = ctx.width;
+
+          // We want to change images if the user taps in the leftmost or
+          // rightmost quarter of the screen
+          bool tappedLeftSide = tapX < screenWidth / 4;
+          bool tappedRightSide = tapX > screenWidth * (3 / 4);
+
+          int? currentPage = controller.page?.toInt();
+          int maxPage = renderList.totalAssets - 1;
+
+          if (tappedLeftSide && currentPage != null) {
+            // Nested if because we don't want to fallback to show/hide controls
+            if (currentPage != 0) {
+              controller.jumpToPage(currentPage - 1);
+            }
+          } else if (tappedRightSide && currentPage != null) {
+            // Nested if because we don't want to fallback to show/hide controls
+            if (currentPage != maxPage) {
+              controller.jumpToPage(currentPage + 1);
+            }
+          } else {
+            ref.read(showControlsProvider.notifier).toggle();
+          }
         },
         onLongPressStart: asset.isMotionPhoto
             ? (_, __, ___) {

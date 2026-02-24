@@ -1,5 +1,5 @@
+import { Column, ForeignKeyColumn, Index, Table } from '@immich/sql-tools';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
 
 @Table({ name: 'face_search' })
 @Index({

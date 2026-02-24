@@ -1,5 +1,5 @@
+import { Column, CreateDateColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
-import { Column, CreateDateColumn, Generated, Table, Timestamp } from 'src/sql-tools';
 
 @Table('album_audit')
 export class AlbumAuditTable {

@@ -1,5 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   CreateDateColumn,
@@ -9,7 +7,9 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'session' })
 @UpdatedAtTrigger('session_updatedAt')
@@ -17,9 +17,8 @@ export class SessionTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
-  // TODO convert to byte[]
-  @Column()
-  token!: string;
+  @Column({ type: 'bytea', index: true })
+  token!: Buffer;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

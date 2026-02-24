@@ -16,8 +16,10 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -29,8 +31,9 @@ enum _DragIntent { none, scroll, dismiss }
 class AssetPage extends ConsumerStatefulWidget {
   final int index;
   final int heroOffset;
+  final void Function(int direction)? onTapNavigate;
 
-  const AssetPage({super.key, required this.index, required this.heroOffset});
+  const AssetPage({super.key, required this.index, required this.heroOffset, this.onTapNavigate});
 
   @override
   ConsumerState createState() => _AssetPageState();
@@ -45,21 +48,18 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   late PhotoViewControllerValue _initialPhotoViewState;
 
-  bool _blockGestures = false;
   bool _showingDetails = false;
   bool _isZoomed = false;
 
   final _scrollController = ScrollController();
   late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
+  final ValueNotifier<PhotoViewScaleState> _videoScaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   double _snapOffset = 0.0;
-  double _lastScrollOffset = 0.0;
 
   DragStartDetails? _dragStart;
   _DragIntent _dragIntent = _DragIntent.none;
   Drag? _drag;
-  bool _dragInProgress = false;
-  bool _shouldPopOnDrag = false;
 
   @override
   void initState() {
@@ -80,6 +80,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _proxyScrollController.dispose();
     _scaleBoundarySub?.cancel();
     _eventSubscription?.cancel();
+    _videoScaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -93,7 +94,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _showDetails() {
     if (!_proxyScrollController.hasClients || _snapOffset <= 0) return;
-    _lastScrollOffset = _proxyScrollController.offset;
     _proxyScrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
 
@@ -107,18 +107,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _onScroll() {
     final offset = _proxyScrollController.offset;
-    if (offset > SnapScrollPhysics.minSnapDistance && offset > _lastScrollOffset) {
+    if (offset > SnapScrollPhysics.minSnapDistance) {
       _viewer.setShowingDetails(true);
     } else if (offset < SnapScrollPhysics.minSnapDistance - kTouchSlop) {
       _viewer.setShowingDetails(false);
     }
-    _lastScrollOffset = offset;
   }
 
   void _beginDrag(DragStartDetails details) {
     _dragStart = details;
-    _shouldPopOnDrag = false;
-    _lastScrollOffset = _proxyScrollController.hasClients ? _proxyScrollController.offset : 0.0;
 
     if (_viewController != null) {
       _initialPhotoViewState = _viewController!.value;
@@ -137,14 +134,12 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _updateDrag(DragUpdateDetails details) {
-    if (_blockGestures) return;
-
-    _dragInProgress = true;
+    if (_dragStart == null) return;
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
-        < -kTouchSlop => _DragIntent.scroll,
-        > kTouchSlop => _DragIntent.dismiss,
+        < 0 => _DragIntent.scroll,
+        > 0 => _DragIntent.dismiss,
         _ => _DragIntent.none,
       };
     }
@@ -160,16 +155,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _endDrag(DragEndDetails details) {
-    _dragInProgress = false;
+    if (_dragStart == null) return;
 
-    if (_blockGestures) {
-      _blockGestures = false;
-      return;
-    }
+    final start = _dragStart;
+    _dragStart = null;
 
     final intent = _dragIntent;
     _dragIntent = _DragIntent.none;
-    _dragStart = null;
 
     switch (intent) {
       case _DragIntent.none:
@@ -181,7 +173,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         _drag?.end(details);
         _drag = null;
       case _DragIntent.dismiss:
-        if (_shouldPopOnDrag) {
+        const popThreshold = 75.0;
+        if (details.localPosition.dy - start!.localPosition.dy > popThreshold) {
           context.maybePop();
           return;
         }
@@ -200,11 +193,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    _viewController = controller;
-    if (!_showingDetails && _isZoomed) {
-      _blockGestures = true;
-      return;
-    }
+    if (!_showingDetails && _isZoomed) return;
     _beginDrag(details);
   }
 
@@ -217,12 +206,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _handleDragDown(BuildContext context, Offset delta) {
     const dragRatio = 0.2;
-    const popThreshold = 75.0;
-
-    _shouldPopOnDrag = delta.dy > popThreshold;
 
     final distance = delta.dy.abs();
-
     final maxScaleDistance = context.height * 0.5;
     final scaleReduction = (distance / maxScaleDistance).clamp(0.0, dragRatio);
     final initialScale = _viewController?.initialScale ?? _initialPhotoViewState.scale;
@@ -235,21 +220,43 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
-    if (!_showingDetails && !_dragInProgress) _viewer.toggleControls();
+    if (_showingDetails || _dragStart != null) return;
+
+    final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+    if (!tapToNavigate) {
+      _viewer.toggleControls();
+      return;
+    }
+
+    final tapX = details.globalPosition.dx;
+    final screenWidth = context.width;
+
+    // Navigate if the user taps in the leftmost or rightmost quarter of the screen
+    final tappedLeftSide = tapX < screenWidth / 4;
+    final tappedRightSide = tapX > screenWidth * (3 / 4);
+
+    if (tappedLeftSide) {
+      widget.onTapNavigate?.call(-1);
+    } else if (tappedRightSide) {
+      widget.onTapNavigate?.call(1);
+    } else {
+      _viewer.toggleControls();
+    }
   }
 
   void _onLongPress(BuildContext context, LongPressStartDetails details, PhotoViewControllerValue controllerValue) =>
       ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    _isZoomed = switch (scaleState) {
-      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.covering => true,
-      _ => false,
-    };
+    _isZoomed =
+        scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleState == PhotoViewScaleState.covering ||
+        _videoScaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        _videoScaleStateNotifier.value == PhotoViewScaleState.covering;
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
-      if (!_dragInProgress) _viewer.setControls(false);
+      if (_dragStart == null) _viewer.setControls(false);
 
       ref.read(videoPlayerControlsProvider.notifier).pause();
       return;
@@ -327,34 +334,33 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     return PhotoView.customChild(
+      key: ValueKey(displayAsset),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDragCancel: _onDragCancel,
-      onTapUp: _onTapUp,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,
-      maxScale: 1.0,
       basePosition: Alignment.center,
       disableScaleGestures: true,
-      scaleStateChangedCallback: _onScaleStateChanged,
+      minScale: PhotoViewComputedScale.contained,
+      initialScale: PhotoViewComputedScale.contained,
+      tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
       backgroundDecoration: backgroundDecoration,
-      child: SizedBox(
-        width: context.width,
-        height: context.height,
-        child: NativeVideoViewer(
+      child: NativeVideoViewer(
+        key: ValueKey(displayAsset),
+        asset: displayAsset,
+        scaleStateNotifier: _videoScaleStateNotifier,
+        disableScaleGestures: showingDetails,
+        image: Image(
           key: ValueKey(displayAsset.heroTag),
-          asset: displayAsset,
-          image: Image(
-            key: ValueKey(displayAsset),
-            image: getFullImageProvider(displayAsset, size: context.sizeData),
-            fit: BoxFit.contain,
-            height: context.height,
-            width: context.width,
-            alignment: Alignment.center,
-          ),
+          image: getFullImageProvider(displayAsset, size: context.sizeData),
+          height: context.height,
+          width: context.width,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
       ),
     );
@@ -382,9 +388,10 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final viewportHeight = MediaQuery.heightOf(context);
     final imageHeight = _getImageHeight(viewportWidth, viewportHeight, displayAsset);
 
-    final margin = (viewportHeight - imageHeight) / 2;
-    final overflowBoxHeight = margin + imageHeight - (kMinInteractiveDimension / 2);
-    _snapOffset = (margin + imageHeight) - (viewportHeight / 4);
+    final detailsOffset = (viewportHeight + imageHeight - kMinInteractiveDimension) / 2;
+    final snapTarget = viewportHeight / 3;
+
+    _snapOffset = detailsOffset - snapTarget;
 
     if (_proxyScrollController.hasClients) {
       _proxyScrollController.snapPosition.snapOffset = _snapOffset;
@@ -429,7 +436,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                   ignoring: !_showingDetails,
                   child: Column(
                     children: [
-                      SizedBox(height: overflowBoxHeight),
+                      SizedBox(height: detailsOffset),
                       GestureDetector(
                         onVerticalDragStart: _beginDrag,
                         onVerticalDragUpdate: _updateDrag,
@@ -438,7 +445,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         child: AnimatedOpacity(
                           opacity: _showingDetails ? 1.0 : 0.0,
                           duration: Durations.short2,
-                          child: AssetDetails(minHeight: _snapOffset + viewportHeight - overflowBoxHeight),
+                          child: AssetDetails(minHeight: viewportHeight - snapTarget),
                         ),
                       ),
                     ],

@@ -6,7 +6,7 @@ import { Stats } from 'node:fs';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AssetEditActionListDto } from 'src/dtos/editing.dto';
+import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetType,
@@ -282,8 +282,8 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { tagsAssets, result };
   }
 
-  async newEdits(assetId: string, dto: AssetEditActionListDto) {
-    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits);
+  async newEdits(assetId: string, dto: AssetEditsCreateDto) {
+    const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits as AssetEditActionItem[]);
     return { edits };
   }
 }
@@ -634,7 +634,7 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
   };
 };
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
+const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
 const sessionInsert = ({
   id = newUuid(),

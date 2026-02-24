@@ -1,5 +1,5 @@
 import { Selectable } from 'kysely';
-import { AssetEditAction } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { build } from 'test/factories/builder.factory';
@@ -33,6 +33,6 @@ export class AssetEditFactory {
   }
 
   build() {
-    return { ...this.value } as Selectable<AssetEditTable<AssetEditAction.Crop>>;
+    return { ...this.value } as Omit<Selectable<AssetEditTable>, 'action' | 'parameters'> & AssetEditActionItem;
   }
 }

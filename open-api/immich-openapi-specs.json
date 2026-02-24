@@ -3703,7 +3703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -3756,7 +3756,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetEditActionListDto"
+                "$ref": "#/components/schemas/AssetEditsCreateDto"
               }
             }
           },
@@ -3767,7 +3767,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AssetEditsDto"
+                  "$ref": "#/components/schemas/AssetEditsResponseDto"
                 }
               }
             },
@@ -5052,7 +5052,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AssetIdsDto"
+                "$ref": "#/components/schemas/DownloadArchiveDto"
               }
             }
           },
@@ -16082,7 +16082,7 @@
         ],
         "type": "string"
       },
-      "AssetEditActionCrop": {
+      "AssetEditActionItemDto": {
         "properties": {
           "action": {
             "allOf": [
@@ -16093,7 +16093,18 @@
             "description": "Type of edit action to perform"
           },
           "parameters": {
-            "$ref": "#/components/schemas/CropParameters"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CropParameters"
+              },
+              {
+                "$ref": "#/components/schemas/RotateParameters"
+              },
+              {
+                "$ref": "#/components/schemas/MirrorParameters"
+              }
+            ],
+            "description": "List of edit actions to apply (crop, rotate, or mirror)"
           }
         },
         "required": [
@@ -16102,22 +16113,48 @@
         ],
         "type": "object"
       },
-      "AssetEditActionListDto": {
+      "AssetEditActionItemResponseDto": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ],
+            "description": "Type of edit action to perform"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "parameters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CropParameters"
+              },
+              {
+                "$ref": "#/components/schemas/RotateParameters"
+              },
+              {
+                "$ref": "#/components/schemas/MirrorParameters"
+              }
+            ],
+            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+          }
+        },
+        "required": [
+          "action",
+          "id",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "AssetEditsCreateDto": {
         "properties": {
           "edits": {
             "description": "List of edit actions to apply (crop, rotate, or mirror)",
             "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ]
+              "$ref": "#/components/schemas/AssetEditActionItemDto"
             },
             "minItems": 1,
             "type": "array"
@@ -16128,69 +16165,18 @@
         ],
         "type": "object"
       },
-      "AssetEditActionMirror": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/MirrorParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditActionRotate": {
-        "properties": {
-          "action": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AssetEditAction"
-              }
-            ],
-            "description": "Type of edit action to perform"
-          },
-          "parameters": {
-            "$ref": "#/components/schemas/RotateParameters"
-          }
-        },
-        "required": [
-          "action",
-          "parameters"
-        ],
-        "type": "object"
-      },
-      "AssetEditsDto": {
+      "AssetEditsResponseDto": {
         "properties": {
           "assetId": {
-            "description": "Asset ID to apply edits to",
+            "description": "Asset ID these edits belong to",
             "format": "uuid",
             "type": "string"
           },
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions applied to the asset",
             "items": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/AssetEditActionCrop"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionRotate"
-                },
-                {
-                  "$ref": "#/components/schemas/AssetEditActionMirror"
-                }
-              ]
+              "$ref": "#/components/schemas/AssetEditActionItemResponseDto"
             },
-            "minItems": 1,
             "type": "array"
           }
         },
@@ -17084,7 +17070,7 @@
             "type": "array"
           },
           "thumbhash": {
-            "description": "Thumbhash for thumbnail generation",
+            "description": "Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.",
             "nullable": true,
             "type": "string"
           },
@@ -17660,6 +17646,26 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "DownloadArchiveDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "edited": {
+            "description": "Download edited asset if available",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
         "type": "object"
       },
       "DownloadArchiveInfo": {
@@ -18645,6 +18651,22 @@
           "data": {
             "$ref": "#/components/schemas/OnThisDayDto"
           },
+          "hideAt": {
+            "description": "Date when memory should be hidden",
+            "format": "date-time",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v2.6.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
+          },
           "isSaved": {
             "description": "Is memory saved",
             "type": "boolean"
@@ -18658,6 +18680,22 @@
             "description": "Date when memory was seen",
             "format": "date-time",
             "type": "string"
+          },
+          "showAt": {
+            "description": "Date when memory should be shown",
+            "format": "date-time",
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v2.6.0",
+                "state": "Added"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Stable"
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "type": {
             "allOf": [
@@ -22803,6 +22841,70 @@
         ],
         "type": "object"
       },
+      "SyncAssetFaceV2": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "deletedAt": {
+            "description": "Face deleted at",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset face ID",
+            "type": "string"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "isVisible": {
+            "description": "Is the face visible in the asset",
+            "type": "boolean"
+          },
+          "personId": {
+            "description": "Person ID",
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceType": {
+            "description": "Source type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "deletedAt",
+          "id",
+          "imageHeight",
+          "imageWidth",
+          "isVisible",
+          "personId",
+          "sourceType"
+        ],
+        "type": "object"
+      },
       "SyncAssetMetadataDeleteV1": {
         "properties": {
           "assetId": {
@@ -23096,6 +23198,7 @@
           "PersonV1",
           "PersonDeleteV1",
           "AssetFaceV1",
+          "AssetFaceV2",
           "AssetFaceDeleteV1",
           "UserMetadataV1",
           "UserMetadataDeleteV1",
@@ -23369,6 +23472,7 @@
           "UsersV1",
           "PeopleV1",
           "AssetFacesV1",
+          "AssetFacesV2",
           "UserMetadataV1"
         ],
         "type": "string"

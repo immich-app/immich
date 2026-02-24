@@ -332,7 +332,7 @@
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: ViewportTopMonth;
-        let monthGroupHeight = 0;
+        let monthGroupHeight: number;
         if (i === -1) {
           // lead-in
           monthGroup = 'lead-in';
@@ -418,11 +418,6 @@
       return;
     }
     onSelect(asset);
-
-    if (singleSelect) {
-      timelineManager.scrollTo(0);
-      return;
-    }
 
     const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);

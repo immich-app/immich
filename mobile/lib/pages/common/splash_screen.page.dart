@@ -109,9 +109,43 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (context.router.current.name == SplashScreenRoute.name) {
       final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
       if (needBetaMigration) {
+        bool migrate =
+            (await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text("New Timeline Experience"),
+                content: const Text(
+                  "The old timeline has been deprecated and will be removed in an upcoming release. Would you like to switch to the new timeline now?",
+                ),
+                actions: [
+                  TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text("No")),
+                  ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text("Yes")),
+                ],
+              ),
+            )) ??
+            false;
+        if (migrate != true) {
+          migrate =
+              (await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  title: const Text("Are you sure?"),
+                  content: const Text(
+                    "If you choose to remain on the old timeline, you will be automatically migrated to the new timeline in an upcoming release. Would you like to switch now?",
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text("No")),
+                    ElevatedButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text("Yes")),
+                  ],
+                ),
+              )) ??
+              false;
+        }
         await Store.put(StoreKey.needBetaMigration, false);
-        unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
-        return;
+        if (migrate) {
+          unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
+          return;
+        }
       }
 
       unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));

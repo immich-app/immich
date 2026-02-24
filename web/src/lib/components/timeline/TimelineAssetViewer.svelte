@@ -32,6 +32,7 @@
 
   let {
     timelineManager,
+    // eslint-disable-next-line no-useless-assignment
     invisible = $bindable(false),
     removeAction,
     withStacked = false,
@@ -127,8 +128,7 @@
   const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.ARCHIVE:
-      case AssetAction.UNARCHIVE:
-      case AssetAction.ADD: {
+      case AssetAction.UNARCHIVE: {
         timelineManager.upsertAssets([action.asset]);
         break;
       }

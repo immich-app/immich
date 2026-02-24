@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
-import { AssetIdsDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
+import { DownloadArchiveDto, DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
@@ -80,11 +79,11 @@ export class DownloadService extends BaseService {
     return { totalSize, archives };
   }
 
-  async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
+  async downloadArchive(auth: AuthDto, dto: DownloadArchiveDto): Promise<ImmichReadStream> {
     await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
-    const assets = await this.assetRepository.getByIds(dto.assetIds);
+    const assets = await this.assetRepository.getForOriginals(dto.assetIds, dto.edited ?? false);
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
@@ -94,7 +93,7 @@ export class DownloadService extends BaseService {
         continue;
       }
 
-      const { originalPath, originalFileName } = asset;
+      const { originalPath, editedPath, originalFileName } = asset;
 
       let filename = originalFileName;
       const count = paths[filename] || 0;
@@ -104,9 +103,10 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = originalPath;
+      let realpath = dto.edited && editedPath ? editedPath : originalPath;
+
       try {
-        realpath = await this.storageRepository.realpath(originalPath);
+        realpath = await this.storageRepository.realpath(realpath);
       } catch {
         this.logger.warn('Unable to resolve realpath', { originalPath });
       }
