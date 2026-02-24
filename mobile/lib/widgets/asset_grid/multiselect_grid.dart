@@ -26,6 +26,7 @@ import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/utils/selection_handlers.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -405,10 +406,10 @@ class MultiselectGrid extends HookConsumerWidget {
       bottom: false,
       child: Stack(
         children: [
-          ref
-              .watch(renderListProvider)
-              .when(
-                data: (data) => data.isEmpty && (buildLoadingIndicator != null || topWidget == null)
+          ref.watch(renderListProvider).widgetWhen(
+                onLoading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
+                onError: (error, _) => Center(child: Text(error.toString())),
+                onData: (data) => data.isEmpty && (buildLoadingIndicator != null || topWidget == null)
                     ? (buildLoadingIndicator ?? buildEmptyIndicator)()
                     : ImmichAssetGrid(
                         renderList: data,
@@ -419,8 +420,6 @@ class MultiselectGrid extends HookConsumerWidget {
                         showStack: stackEnabled,
                         showDragScrollLabel: dragScrollLabelEnabled,
                       ),
-                error: (error, _) => Center(child: Text(error.toString())),
-                loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
               ),
           if (selectionEnabledHook.value)
             ControlBottomAppBar(

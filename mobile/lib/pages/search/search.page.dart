@@ -90,14 +90,11 @@ class SearchPage extends HookConsumerWidget {
     }
 
     loadMoreSearchResult() async {
-      isSearching.value = true;
       final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_more_result'.tr()));
       }
-
-      isSearching.value = false;
     }
 
     searchPrefilter() {

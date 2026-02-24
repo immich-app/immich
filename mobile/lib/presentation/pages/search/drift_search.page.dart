@@ -9,7 +9,6 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -116,15 +115,17 @@ class DriftSearchPage extends HookConsumerWidget {
 
     search() => searchFilter(filter.value);
 
+    final isLoadingMore = useState(false);
+
     loadMoreSearchResult() async {
-      isSearching.value = true;
+      if (isLoadingMore.value) return;
+      isLoadingMore.value = true;
       final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      isLoadingMore.value = false;
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_more_result'.t(context: context)));
       }
-
-      isSearching.value = false;
     }
 
     searchPreFilter() {
@@ -745,7 +746,7 @@ class DriftSearchPage extends HookConsumerWidget {
           if (isSearching.value)
             const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
           else
-            _SearchResultGrid(onScrollEnd: loadMoreSearchResult),
+            _SearchResultGrid(onScrollEnd: loadMoreSearchResult, isLoadingMore: isLoadingMore.value),
         ],
       ),
     );
@@ -754,28 +755,30 @@ class DriftSearchPage extends HookConsumerWidget {
 
 class _SearchResultGrid extends ConsumerWidget {
   final VoidCallback onScrollEnd;
+  final bool isLoadingMore;
 
-  const _SearchResultGrid({required this.onScrollEnd});
+  const _SearchResultGrid({required this.onScrollEnd, this.isLoadingMore = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final assets = ref.watch(paginatedSearchProvider.select((s) => s.assets));
+    final hasAssets = ref.watch(paginatedSearchProvider.select((s) => s.assets.isNotEmpty));
 
-    if (assets.isEmpty) {
+    if (!hasAssets) {
       return const _SearchEmptyContent();
     }
 
-    return NotificationListener<ScrollEndNotification>(
+    return NotificationListener<ScrollUpdateNotification>(
       onNotification: (notification) {
         final isBottomSheetNotification =
             notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
 
         final metrics = notification.metrics;
         final isVerticalScroll = metrics.axis == Axis.vertical;
+        final remaining = metrics.maxScrollExtent - metrics.pixels;
 
-        if (metrics.pixels >= metrics.maxScrollExtent && isVerticalScroll && !isBottomSheetNotification) {
+        if (remaining < metrics.viewportDimension && isVerticalScroll && !isBottomSheetNotification) {
           onScrollEnd();
-          ref.read(paginatedSearchProvider.notifier).setScrollOffset(metrics.maxScrollExtent);
+          ref.read(paginatedSearchProvider.notifier).setScrollOffset(metrics.pixels);
         }
 
         return true;
@@ -784,18 +787,29 @@ class _SearchResultGrid extends ConsumerWidget {
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineOrigin.search);
-              ref.onDispose(timelineService.dispose);
-              return timelineService;
+              return ref.watch(paginatedSearchTimelineProvider);
             }),
           ],
           child: Timeline(
-            key: ValueKey(assets.length),
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
             initialScrollOffset: ref.read(paginatedSearchProvider.select((s) => s.scrollOffset)),
+            bottomSliverWidget: isLoadingMore
+                ? const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 3),
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
           ),
         ),
       ),

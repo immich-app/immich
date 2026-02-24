@@ -34,6 +34,7 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.bottomSliverWidget,
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
@@ -48,6 +49,7 @@ class Timeline extends StatelessWidget {
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? bottomSliverWidget;
   final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
@@ -82,6 +84,7 @@ class Timeline extends StatelessWidget {
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            bottomSliverWidget: bottomSliverWidget,
             appBar: appBar,
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
@@ -111,6 +114,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.bottomSliverWidget,
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
@@ -122,6 +126,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? bottomSliverWidget;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
@@ -408,6 +413,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   addRepaintBoundaries: false,
                 ),
               ),
+              if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
               SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
             ],
           );
