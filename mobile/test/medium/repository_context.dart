@@ -20,21 +20,9 @@ import 'package:uuid/uuid.dart';
 
 class MediumRepositoryContext {
   final Drift db;
-  late UserEntityData user;
   final Random _random = Random();
 
-  MediumRepositoryContext._()
-    : db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-
-  static Future<MediumRepositoryContext> create() async {
-    final ctx = MediumRepositoryContext._();
-    await ctx.setup();
-    return ctx;
-  }
-
-  Future<void> setup() async {
-    user = await insertUser();
-  }
+  MediumRepositoryContext() : db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
 
   Future<void> dispose() async {
     await db.close();
@@ -56,7 +44,7 @@ class MediumRepositoryContext {
     return Value(fallback);
   }
 
-  Future<UserEntityData> insertUser({
+  Future<UserEntityData> newUser({
     String? id,
     String? email,
     AvatarColor? avatarColor,
@@ -78,7 +66,7 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<RemoteAssetEntityData> insertRemoteAsset({
+  Future<RemoteAssetEntityData> newRemoteAsset({
     String? id,
     String? checksum,
     String? ownerId,
@@ -126,7 +114,7 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<RemoteAssetCloudIdEntityData> insertRemoteAssetCloudId({
+  Future<RemoteAssetCloudIdEntityData> newRemoteAssetCloudId({
     String? id,
     String? cloudId,
     DateTime? createdAt,
@@ -149,7 +137,7 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<RemoteAlbumEntityData> insertRemoteAlbum({
+  Future<RemoteAlbumEntityData> newRemoteAlbum({
     String? id,
     String? name,
     String? ownerId,
@@ -184,7 +172,7 @@ class MediumRepositoryContext {
         .insert(RemoteAlbumAssetEntityCompanion.insert(albumId: albumId, assetId: assetId));
   }
 
-  Future<LocalAssetEntityData> insertLocalAsset({
+  Future<LocalAssetEntityData> newLocalAsset({
     String? id,
     String? name,
     String? checksum,
@@ -227,7 +215,7 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<LocalAlbumEntityData> insertLocalAlbum({
+  Future<LocalAlbumEntityData> newLocalAlbum({
     String? id,
     String? name,
     DateTime? updatedAt,
@@ -250,7 +238,7 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<void> insertLocalAlbumAsset({required String albumId, required String assetId}) {
+  Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) {
     return db
         .into(db.localAlbumAssetEntity)
         .insert(LocalAlbumAssetEntityCompanion.insert(albumId: albumId, assetId: assetId));
