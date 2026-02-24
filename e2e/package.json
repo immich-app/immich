@@ -41,7 +41,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-unicorn": "^63.0.0",
-    "exiftool-vendored": "^34.3.0",
+    "exiftool-vendored": "^35.0.0",
     "globals": "^17.0.0",
     "luxon": "^3.4.4",
     "pg": "^8.11.3",
