@@ -53,9 +53,10 @@
     fileSize: isDifferent((a) => getFileSize(a)),
     resolution: isDifferent((a) => getAssetResolution(a)),
     originalPath: isDifferent((a) => {
-      const basePath = a.originalPath && a.originalFileName 
-        ? getBasePath(a.originalPath, a.originalFileName)
-        : a.originalPath ?? $t('unknown');
+      const basePath =
+        a.originalPath && a.originalFileName 
+          ? getBasePath(a.originalPath, a.originalFileName)
+          : (a.originalPath ?? $t('unknown'));
       return basePath || $t('unknown');
     }),
     date: isDifferent((a) => {
@@ -181,11 +182,7 @@
       {asset.originalFileName}
     </InfoRow>
 
-    <InfoRow
-      icon={mdiFolderOutline}
-      highlight={hasDifferentValues.originalPath}
-      title={$t('file_path')}
-    >
+    <InfoRow icon={mdiFolderOutline} highlight={hasDifferentValues.originalPath} title={$t('file_path')}>
       {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
     </InfoRow>
 
