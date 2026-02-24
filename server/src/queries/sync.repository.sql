@@ -517,10 +517,10 @@ order by
 -- SyncRepository.assetEdit.getDeletes
 select
   "asset_edit_audit"."id",
-  "assetId"
+  "editId"
 from
   "asset_edit_audit" as "asset_edit_audit"
-  left join "asset" on "asset"."id" = "asset_edit_audit"."assetId"
+  inner join "asset" on "asset"."id" = "asset_edit_audit"."assetId"
 where
   "asset_edit_audit"."id" < $1
   and "asset_edit_audit"."id" > $2
@@ -531,10 +531,10 @@ order by
 -- SyncRepository.assetEdit.getUpserts
 select
   "asset_edit"."id",
-  "assetId",
-  "action",
-  "parameters",
-  "sequence",
+  "asset_edit"."assetId",
+  "asset_edit"."sequence",
+  "asset_edit"."action",
+  "asset_edit"."parameters",
   "asset_edit"."updateId"
 from
   "asset_edit" as "asset_edit"

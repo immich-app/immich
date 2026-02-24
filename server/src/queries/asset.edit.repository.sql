@@ -21,11 +21,11 @@ order by
 
 -- AssetEditRepository.getWithSyncInfo
 select
-  "id",
-  "assetId",
-  "sequence",
-  "action",
-  "parameters"
+  "asset_edit"."id",
+  "asset_edit"."assetId",
+  "asset_edit"."sequence",
+  "asset_edit"."action",
+  "asset_edit"."parameters"
 from
   "asset_edit"
 where

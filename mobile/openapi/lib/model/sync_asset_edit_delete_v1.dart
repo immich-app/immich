@@ -13,26 +13,26 @@ part of openapi.api;
 class SyncAssetEditDeleteV1 {
   /// Returns a new [SyncAssetEditDeleteV1] instance.
   SyncAssetEditDeleteV1({
-    required this.assetId,
+    required this.editId,
   });
 
-  String assetId;
+  String editId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncAssetEditDeleteV1 &&
-    other.assetId == assetId;
+    other.editId == editId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (assetId.hashCode);
+    (editId.hashCode);
 
   @override
-  String toString() => 'SyncAssetEditDeleteV1[assetId=$assetId]';
+  String toString() => 'SyncAssetEditDeleteV1[editId=$editId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'assetId'] = this.assetId;
+      json[r'editId'] = this.editId;
     return json;
   }
 
@@ -45,7 +45,7 @@ class SyncAssetEditDeleteV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncAssetEditDeleteV1(
-        assetId: mapValueOfType<String>(json, r'assetId')!,
+        editId: mapValueOfType<String>(json, r'editId')!,
       );
     }
     return null;
@@ -93,7 +93,7 @@ class SyncAssetEditDeleteV1 {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'assetId',
+    'editId',
   };
 }
 

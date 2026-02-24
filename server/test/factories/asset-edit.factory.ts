@@ -4,7 +4,7 @@ import { AssetEditTable } from 'src/schema/tables/asset-edit.table';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { build } from 'test/factories/builder.factory';
 import { AssetEditLike, AssetLike, FactoryBuilder } from 'test/factories/types';
-import { newUuid } from 'test/small.factory';
+import { newDate, newUuid } from 'test/small.factory';
 
 export class AssetEditFactory {
   private constructor(private readonly value: Selectable<AssetEditTable>) {}
@@ -24,6 +24,7 @@ export class AssetEditFactory {
       parameters: { x: 5, y: 6, width: 200, height: 100 },
       sequence: 1,
       updateId,
+      updatedAt: newDate(),
       ...dto,
     });
   }

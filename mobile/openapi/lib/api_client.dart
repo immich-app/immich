@@ -676,6 +676,10 @@ class ApiClient {
           return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
+        case 'SyncAssetEditDeleteV1':
+          return SyncAssetEditDeleteV1.fromJson(value);
+        case 'SyncAssetEditV1':
+          return SyncAssetEditV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
         case 'SyncAssetFaceDeleteV1':

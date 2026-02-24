@@ -2968,7 +2968,7 @@ export type SyncAssetDeleteV1 = {
     assetId: string;
 };
 export type SyncAssetEditDeleteV1 = {
-    assetId: string;
+    editId: string;
 };
 export type SyncAssetEditV1 = {
     action: AssetEditAction;
