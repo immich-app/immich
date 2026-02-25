@@ -78,6 +78,10 @@ COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpytho
 
 FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
 
+RUN apt-get update && apt-get install --no-install-recommends -yqq migraphx miopen-hip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
