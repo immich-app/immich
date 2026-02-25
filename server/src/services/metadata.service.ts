@@ -481,7 +481,21 @@ export class MetadataService extends BaseService {
       await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.Sidecar, path: sidecarPath });
     }
 
-    await this.assetRepository.unlockProperties(asset.id, lockedProperties);
+    // Only unlock properties that were successfully written to the sidecar.
+    // ExifTool treats empty strings as "delete tag", so empty values won't actually
+    // be persisted in the sidecar file. Keep those properties locked to prevent
+    // metadata re-extraction from overwriting them with the original embedded values.
+    const emptyStringProperties = new Set(
+      lockedProperties.filter((property) => {
+        const value = { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone }[property];
+        return value === '' || value === null;
+      }),
+    );
+    const propertiesToUnlock = lockedProperties.filter((property) => !emptyStringProperties.has(property));
+
+    if (propertiesToUnlock.length > 0) {
+      await this.assetRepository.unlockProperties(asset.id, propertiesToUnlock);
+    }
 
     return JobStatus.Success;
   }

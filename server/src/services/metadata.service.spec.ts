@@ -1779,6 +1779,24 @@ describe(MetadataService.name, () => {
         'timeZone',
       ]);
     });
+
+    it('should not unlock properties with empty values that exiftool cannot persist', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      // Override description to empty string (user cleared it)
+      asset.exifInfo.description = '';
+
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['description']);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+        Description: '',
+        ImageDescription: '',
+      });
+      // description should NOT be unlocked since exiftool treats empty strings as "delete tag"
+      expect(mocks.asset.unlockProperties).not.toHaveBeenCalled();
+    });
   });
 
   describe('firstDateTime', () => {
