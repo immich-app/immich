@@ -289,12 +289,38 @@ class TestOrtSession:
 
         assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
 
-    def test_sets_provider_options_for_rocm(self) -> None:
+    def test_sets_provider_options_for_rocm(self, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
 
-        session = OrtSession("ViT-B-32__openai", providers=["MIGraphXExecutionProvider"])
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
 
-        assert session.provider_options == [{"device_id": "1", "migraphx_model_cache_dir": "migraphx"}]
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "0",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
+
+    def test_sets_rocm_to_fp16_if_enabled(self, path: mock.Mock, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mocker.patch.object(settings, "rocm_precision", ModelPrecision.FP16)
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "1",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
