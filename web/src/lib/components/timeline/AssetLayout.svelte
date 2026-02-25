@@ -47,7 +47,7 @@
       data-asset-id={asset.id}
       class="absolute"
       style:top={position.top + 'px'}
-      style:left={position.left + 'px'}
+      style:inset-inline-start={position.left + 'px'}
       style:width={position.width + 'px'}
       style:height={position.height + 'px'}
       out:scale|global={{ start: 0.1, duration: scaleDuration }}

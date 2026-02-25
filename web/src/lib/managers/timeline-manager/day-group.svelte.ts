@@ -21,7 +21,7 @@ export class DayGroup {
   intersecting = $derived.by(() => this.viewerAssets.some((viewAsset) => viewAsset.intersecting));
 
   #top: number = $state(0);
-  #left: number = $state(0);
+  #start: number = $state(0);
   #row = $state(0);
   #col = $state(0);
   #deferredLayout = false;
@@ -41,12 +41,12 @@ export class DayGroup {
     this.#top = value;
   }
 
-  get left() {
-    return this.#left;
+  get start() {
+    return this.#start;
   }
 
-  set left(value: number) {
-    this.#left = value;
+  set start(value: number) {
+    this.#start = value;
   }
 
   get row() {
