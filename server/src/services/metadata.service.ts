@@ -989,6 +989,7 @@ export class MetadataService extends BaseService {
     const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
     if (videoStreams[0]) {
+      // Set video dimensions
       if (videoStreams[0].width) {
         tags.ImageWidth = videoStreams[0].width;
       }
