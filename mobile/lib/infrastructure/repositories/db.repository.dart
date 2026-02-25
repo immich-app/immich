@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
@@ -66,6 +67,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
+    AssetEditEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -97,7 +99,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -233,6 +235,10 @@ class Drift extends $Drift implements IDatabaseRepository {
           from20To21: (m, v21) async {
             await m.addColumn(v21.localAssetEntity, v21.localAssetEntity.playbackStyle);
             await m.addColumn(v21.trashedLocalAssetEntity, v21.trashedLocalAssetEntity.playbackStyle);
+          },
+          from21To22: (m, v22) async {
+            await m.createTable(v22.assetEditEntity);
+            await m.createIndex(v22.idxAssetEditAssetId);
           },
         ),
       );
