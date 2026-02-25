@@ -118,11 +118,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
 
-    if (ref.read(assetViewerProvider).showingControls) {
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-    } else {
-      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
-    }
+    final assetViewer = ref.watch(assetViewerProvider);
+    _setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails);
   }
 
   @override
@@ -232,6 +229,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _onAssetChanged(index);
   }
 
+  void _setSystemUIMode(bool controls, bool details) {
+    final mode = !controls || (CurrentPlatform.isIOS && details)
+        ? SystemUiMode.immersiveSticky
+        : SystemUiMode.edgeToEdge;
+    unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+  }
+
   @override
   Widget build(BuildContext context) {
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
@@ -251,10 +255,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     ref.listen(assetViewerProvider.select((value) => (value.showingControls, value.showingDetails)), (_, state) {
       final (controls, details) = state;
-      final mode = !controls || (CurrentPlatform.isIOS && details)
-          ? SystemUiMode.immersiveSticky
-          : SystemUiMode.edgeToEdge;
-      unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+      _setSystemUIMode(controls, details);
     });
 
     return PopScope(
