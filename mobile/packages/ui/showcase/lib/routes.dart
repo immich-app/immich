@@ -60,10 +60,10 @@ enum AppRoute {
     category: AppRouteCategory.forms,
     icon: Icons.description_outlined,
   ),
-  htmlText(
-    name: 'Html Text',
+  formattedText(
+    name: 'Formatted Text',
     description: 'Render text with HTML formatting',
-    path: '/html-text',
+    path: '/formatted-text',
     category: AppRouteCategory.forms,
     icon: Icons.code_rounded,
   ),

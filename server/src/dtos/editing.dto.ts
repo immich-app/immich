@@ -1,7 +1,8 @@
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { ClassConstructor, plainToInstance, Transform, Type } from 'class-transformer';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { ArrayMinSize, IsEnum, IsInt, Min, ValidateNested } from 'class-validator';
-import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateUUID } from 'src/validation';
+import { ExtraModel } from 'src/dtos/sync.dto';
+import { IsAxisAlignedRotation, IsUniqueEditActions, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum AssetEditAction {
   Crop = 'crop',
@@ -14,6 +15,7 @@ export enum MirrorAxis {
   Vertical = 'vertical',
 }
 
+@ExtraModel()
 export class CropParameters {
   @IsInt()
   @Min(0)
@@ -36,48 +38,21 @@ export class CropParameters {
   height!: number;
 }
 
+@ExtraModel()
 export class RotateParameters {
   @IsAxisAlignedRotation()
   @ApiProperty({ description: 'Rotation angle in degrees' })
   angle!: number;
 }
 
+@ExtraModel()
 export class MirrorParameters {
   @IsEnum(MirrorAxis)
   @ApiProperty({ enum: MirrorAxis, enumName: 'MirrorAxis', description: 'Axis to mirror along' })
   axis!: MirrorAxis;
 }
 
-class AssetEditActionBase {
-  @IsEnum(AssetEditAction)
-  @ApiProperty({ enum: AssetEditAction, enumName: 'AssetEditAction', description: 'Type of edit action to perform' })
-  action!: AssetEditAction;
-}
-
-export class AssetEditActionCrop extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => CropParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: CropParameters;
-}
-
-export class AssetEditActionRotate extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => RotateParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: RotateParameters;
-}
-
-export class AssetEditActionMirror extends AssetEditActionBase {
-  @ValidateNested()
-  @Type(() => MirrorParameters)
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  parameters!: MirrorParameters;
-}
-
+export type AssetEditParameters = CropParameters | RotateParameters | MirrorParameters;
 export type AssetEditActionItem =
   | {
       action: AssetEditAction.Crop;
@@ -92,47 +67,48 @@ export type AssetEditActionItem =
       parameters: MirrorParameters;
     };
 
-export type AssetEditActionParameter = {
-  [AssetEditAction.Crop]: CropParameters;
-  [AssetEditAction.Rotate]: RotateParameters;
-  [AssetEditAction.Mirror]: MirrorParameters;
+export class AssetEditActionItemDto {
+  @ValidateEnum({ name: 'AssetEditAction', enum: AssetEditAction, description: 'Type of edit action to perform' })
+  action!: AssetEditAction;
+
+  @ApiProperty({
+    description: 'List of edit actions to apply (crop, rotate, or mirror)',
+    anyOf: [CropParameters, RotateParameters, MirrorParameters].map((type) => ({
+      $ref: getSchemaPath(type),
+    })),
+  })
+  @ValidateNested()
+  @Type((options) => actionParameterMap[options?.object.action as keyof AssetEditActionParameter])
+  parameters!: AssetEditActionItem['parameters'];
+}
+
+export class AssetEditActionItemResponseDto extends AssetEditActionItemDto {
+  @ValidateUUID()
+  id!: string;
+}
+
+export type AssetEditActionParameter = typeof actionParameterMap;
+const actionParameterMap = {
+  [AssetEditAction.Crop]: CropParameters,
+  [AssetEditAction.Rotate]: RotateParameters,
+  [AssetEditAction.Mirror]: MirrorParameters,
 };
 
-type AssetEditActions = AssetEditActionCrop | AssetEditActionRotate | AssetEditActionMirror;
-const actionToClass: Record<AssetEditAction, ClassConstructor<AssetEditActions>> = {
-  [AssetEditAction.Crop]: AssetEditActionCrop,
-  [AssetEditAction.Rotate]: AssetEditActionRotate,
-  [AssetEditAction.Mirror]: AssetEditActionMirror,
-} as const;
-
-const getActionClass = (item: { action: AssetEditAction }): ClassConstructor<AssetEditActions> =>
-  actionToClass[item.action];
-
-@ApiExtraModels(AssetEditActionRotate, AssetEditActionMirror, AssetEditActionCrop)
-export class AssetEditActionListDto {
-  /** list of edits */
+export class AssetEditsCreateDto {
   @ArrayMinSize(1)
   @IsUniqueEditActions()
   @ValidateNested({ each: true })
-  @Transform(({ value: edits }) =>
-    Array.isArray(edits) ? edits.map((item) => plainToInstance(getActionClass(item), item)) : edits,
-  )
-  @ApiProperty({
-    items: {
-      anyOf: Object.values(actionToClass).map((type) => ({ $ref: getSchemaPath(type) })),
-      discriminator: {
-        propertyName: 'action',
-        mapping: Object.fromEntries(
-          Object.entries(actionToClass).map(([action, type]) => [action, getSchemaPath(type)]),
-        ),
-      },
-    },
-    description: 'List of edit actions to apply (crop, rotate, or mirror)',
-  })
-  edits!: AssetEditActionItem[];
+  @Type(() => AssetEditActionItemDto)
+  @ApiProperty({ description: 'List of edit actions to apply (crop, rotate, or mirror)' })
+  edits!: AssetEditActionItemDto[];
 }
 
-export class AssetEditsDto extends AssetEditActionListDto {
-  @ValidateUUID({ description: 'Asset ID to apply edits to' })
+export class AssetEditsResponseDto {
+  @ValidateUUID({ description: 'Asset ID these edits belong to' })
   assetId!: string;
+
+  @ApiProperty({
+    description: 'List of edit actions applied to the asset',
+  })
+  edits!: AssetEditActionItemResponseDto[];
 }

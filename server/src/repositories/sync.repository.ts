@@ -479,6 +479,8 @@ class AssetFaceSync extends BaseSync {
         'boundingBoxX2',
         'boundingBoxY2',
         'sourceType',
+        'isVisible',
+        'asset_face.deletedAt',
         'asset_face.updateId',
       ])
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')

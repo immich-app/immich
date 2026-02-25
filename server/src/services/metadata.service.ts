@@ -169,7 +169,7 @@ export class MetadataService extends BaseService {
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
-      throw new Error(`Metadata service init failed`);
+      throw new Error('Metadata service init failed', { cause: error });
     }
   }
 
@@ -286,7 +286,7 @@ export class MetadataService extends BaseService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
-      colorspace: exifTags.ColorSpace ?? null,
+      colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
       make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,

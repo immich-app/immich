@@ -24,7 +24,7 @@ describe(ApiKeyService.name, () => {
       await sut.create(auth, { name: apiKey.name, permissions: apiKey.permissions });
 
       expect(mocks.apiKey.create).toHaveBeenCalledWith({
-        key: 'super-secret (hashed)',
+        key: Buffer.from('super-secret (hashed)'),
         name: apiKey.name,
         permissions: apiKey.permissions,
         userId: apiKey.userId,
@@ -44,7 +44,7 @@ describe(ApiKeyService.name, () => {
       await sut.create(auth, { permissions: [Permission.All] });
 
       expect(mocks.apiKey.create).toHaveBeenCalledWith({
-        key: 'super-secret (hashed)',
+        key: Buffer.from('super-secret (hashed)'),
         name: 'API Key',
         permissions: [Permission.All],
         userId: auth.user.id,

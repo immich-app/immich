@@ -31,7 +31,7 @@ export class ApiKeyRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getKey(hashedToken: string) {
+  getKey(hashedToken: Buffer) {
     return this.db
       .selectFrom('api_key')
       .select((eb) => [

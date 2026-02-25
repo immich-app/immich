@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:showcase/pages/components/close_button_page.dart';
 import 'package:showcase/pages/components/form_page.dart';
-import 'package:showcase/pages/components/html_text_page.dart';
+import 'package:showcase/pages/components/formatted_text_page.dart';
 import 'package:showcase/pages/components/icon_button_page.dart';
 import 'package:showcase/pages/components/password_input_page.dart';
 import 'package:showcase/pages/components/text_button_page.dart';
@@ -34,7 +34,7 @@ class AppRouter {
                       AppRoute.textInput => const TextInputPage(),
                       AppRoute.passwordInput => const PasswordInputPage(),
                       AppRoute.form => const FormPage(),
-                      AppRoute.htmlText => const HtmlTextPage(),
+                      AppRoute.formattedText => const FormattedTextPage(),
                       AppRoute.constants => const ConstantsPage(),
                     },
                   ),

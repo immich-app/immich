@@ -21,7 +21,7 @@ import {
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionCrop, AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
@@ -543,7 +543,7 @@ export class AssetService extends BaseService {
     }
   }
 
-  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsDto> {
+  async getAssetEdits(auth: AuthDto, id: string): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
     const edits = await this.assetEditRepository.getAll(id);
     return {
@@ -552,7 +552,7 @@ export class AssetService extends BaseService {
     };
   }
 
-  async editAsset(auth: AuthDto, id: string, dto: AssetEditActionListDto): Promise<AssetEditsDto> {
+  async editAsset(auth: AuthDto, id: string, dto: AssetEditsCreateDto): Promise<AssetEditsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.AssetEditCreate, ids: [id] });
 
     const asset = await this.assetRepository.getForEdit(id);
@@ -587,12 +587,13 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset dimensions are not available for editing');
     }
 
-    const cropIndex = dto.edits.findIndex((e) => e.action === AssetEditAction.Crop);
-    if (cropIndex > 0) {
-      throw new BadRequestException('Crop action must be the first edit action');
-    }
-    const crop = cropIndex === -1 ? null : (dto.edits[cropIndex] as AssetEditActionCrop);
+    const edits = dto.edits as AssetEditActionItem[];
+    const crop = edits.find((e) => e.action === AssetEditAction.Crop);
     if (crop) {
+      if (edits[0].action !== AssetEditAction.Crop) {
+        throw new BadRequestException('Crop action must be the first edit action');
+      }
+
       // check that crop parameters will not go out of bounds
       const { width: assetWidth, height: assetHeight } = getDimensions(asset);
 
@@ -606,7 +607,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    const newEdits = await this.assetEditRepository.replaceAll(id, dto.edits);
+    const newEdits = await this.assetEditRepository.replaceAll(id, edits);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
 
     // Return the asset and its applied edits

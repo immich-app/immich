@@ -1,4 +1,4 @@
-import { Column, Index, PrimaryColumn, Table, Timestamp } from 'src/sql-tools';
+import { Column, Index, PrimaryColumn, Table, Timestamp } from '@immich/sql-tools';
 
 @Table({ name: 'geodata_places', primaryConstraintName: 'geodata_places_pkey' })
 @Index({
