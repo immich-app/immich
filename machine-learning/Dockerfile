@@ -78,24 +78,6 @@ COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpytho
 
 FROM rocm/dev-ubuntu-24.04:7.2-complete@sha256:86e11093b4a7ec2a79b1b6701d10e840a6994f21c7e05929b51eb9be361c683a AS prod-rocm
 
-# Disable fusion kernels (big kernels) to improve performance
-# for me details, see: https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/reference/MIGraphX-dev-env-vars.html
-ENV MIGRAPHX_DISABLE_MIOPEN_FUSION=1
-ENV MIGRAPHX_DISABLE_SCHEDULE_PASS=1
-ENV MIGRAPHX_DISABLE_REDUCE_FUSION=1
-ENV MIGRAPHX_ENABLE_HIPRTC_WORKAROUNDS=1
-
-# Support older GPUs
-RUN apt update && apt install -y migraphx migraphx-dev wget zstd miopen-hip && \
-    apt clean
-ENV ROCBLAS_VERSION=7.2.0-1
-RUN cd /tmp && wget https://archive.archlinux.org/packages/r/rocblas/rocblas-${ROCBLAS_VERSION}-x86_64.pkg.tar.zst -O rocblas.tar.zst \
-    && pwd && ls -lah ./ \
-    && tar --zstd -xvf rocblas.tar.zst && rm rocblas.tar.zst \
-    && rm -rf /opt/rocm/lib/rocblas/library \
-    && mv ./opt/rocm/lib/rocblas/library/ /opt/rocm/lib/rocblas/library/ \
-    && rm -rf /tmp/opt /tmp/usr
-
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
