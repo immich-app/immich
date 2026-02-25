@@ -1074,6 +1074,7 @@
     "failed_to_update_notification_status": "Failed to update notification status",
     "incorrect_email_or_password": "Incorrect email or password",
     "library_folder_already_exists": "This import path already exists.",
+    "page_not_found": "Page not found :/",
     "paths_validation_failed": "{paths, plural, one {# path} other {# paths}} failed validation",
     "profile_picture_transparent_pixels": "Profile pictures cannot have transparent pixels. Please zoom in and/or move the image.",
     "quota_higher_than_disk_size": "You set a quota higher than the disk size",
