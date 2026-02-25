@@ -1,7 +1,5 @@
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetStatus } from 'src/enum';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
-import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -50,8 +48,7 @@ describe('audit', () => {
   });
 
   describe('asset_edit_audit', () => {
-    it('should not cascade asset deletes to assets_audit', async () => {
-      const assetRepo = ctx.get(AssetRepository);
+    it('should not cascade asset deletes to asset_edit_audit', async () => {
       const assetEditRepo = ctx.get(AssetEditRepository);
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
@@ -63,7 +60,8 @@ describe('audit', () => {
         },
       ]);
 
-      await assetRepo.update({ id: asset.id, deletedAt: new Date(), status: AssetStatus.Deleted });
+      await ctx.database.deleteFrom('asset').where('id', '=', asset.id).execute();
+
       await expect(
         ctx.database.selectFrom('asset_edit_audit').select(['id']).where('assetId', '=', asset.id).execute(),
       ).resolves.toHaveLength(0);
