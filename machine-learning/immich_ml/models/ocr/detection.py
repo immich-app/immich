@@ -22,7 +22,7 @@ class TextDetector(InferenceModel):
     depends = []
     identity = (ModelType.DETECTION, ModelTask.OCR)
 
-    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
+    def __init__(self, model_name: str, min_score: float = 0.5, **model_kwargs: Any) -> None:
         super().__init__(model_name.split("__")[-1], **model_kwargs, model_format=ModelFormat.ONNX)
         self.max_resolution = 736
         self.mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
@@ -33,7 +33,7 @@ class TextDetector(InferenceModel):
         }
         self.postprocess = DBPostProcess(
             thresh=0.3,
-            box_thresh=model_kwargs.get("minScore", 0.5),
+            box_thresh=model_kwargs.get("minScore", min_score),
             max_candidates=1000,
             unclip_ratio=1.6,
             use_dilation=True,
