@@ -319,7 +319,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleSyncAssetEditReady(dynamic data) {
-    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditBatch([data]));
+    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEdit(data));
   }
 
   void _processBatchedAssetUploadReady() {

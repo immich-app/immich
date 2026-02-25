@@ -346,6 +346,29 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> replaceAssetEditsV1(String assetId, Iterable<SyncAssetEditV1> data, {String debugLabel = 'user'}) async {
+    try {
+      await _db.batch((batch) {
+        batch.deleteWhere(_db.assetEditEntity, (row) => row.assetId.equals(assetId));
+
+        for (final edit in data) {
+          final companion = AssetEditEntityCompanion(
+            id: Value(edit.id),
+            assetId: Value(edit.assetId),
+            action: Value(edit.action.toAssetEditAction()),
+            parameters: Value(edit.parameters as Map<String, Object?>),
+            sequence: Value(edit.sequence),
+          );
+
+          batch.insert(_db.assetEditEntity, companion);
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: replaceAssetEditsV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteAssetEditsV1(Iterable<SyncAssetEditDeleteV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
