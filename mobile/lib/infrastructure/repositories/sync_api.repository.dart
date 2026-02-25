@@ -51,7 +51,7 @@ class SyncApiRepository {
           SyncRequestType.usersV1,
           SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
-          SyncRequestType.assetEditsV1,
+          if (serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)) SyncRequestType.assetEditsV1,
           SyncRequestType.assetMetadataV1,
           SyncRequestType.partnersV1,
           SyncRequestType.partnerAssetsV1,
