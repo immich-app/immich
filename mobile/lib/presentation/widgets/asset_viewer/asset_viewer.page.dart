@@ -118,7 +118,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
 
-    final assetViewer = ref.watch(assetViewerProvider);
+    final assetViewer = ref.read(assetViewerProvider);
     _setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails);
   }
 
