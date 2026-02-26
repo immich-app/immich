@@ -9,11 +9,9 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
@@ -26,7 +24,6 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
-import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -51,21 +48,10 @@ bool _isCurrentAsset(BaseAsset asset, BaseAsset? currentAsset) {
 class NativeVideoViewer extends HookConsumerWidget {
   static final log = Logger('NativeVideoViewer');
   final BaseAsset asset;
-  final bool showControls;
   final int playbackDelayFactor;
   final Widget image;
-  final ValueNotifier<PhotoViewScaleState>? scaleStateNotifier;
-  final bool disableScaleGestures;
 
-  const NativeVideoViewer({
-    super.key,
-    required this.asset,
-    required this.image,
-    this.showControls = true,
-    this.playbackDelayFactor = 1,
-    this.scaleStateNotifier,
-    this.disableScaleGestures = false,
-  });
+  const NativeVideoViewer({super.key, required this.asset, required this.image, this.playbackDelayFactor = 1});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -144,7 +130,6 @@ class NativeVideoViewer extends HookConsumerWidget {
 
     final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
     final aspectRatio = useState<double?>(null);
-
     useMemoized(() async {
       if (!context.mounted || aspectRatio.value != null) {
         return null;
@@ -320,20 +305,6 @@ class NativeVideoViewer extends HookConsumerWidget {
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
-    Size? videoContextSize(double? videoAspectRatio, BuildContext? context) {
-      Size? videoContextSize;
-      if (videoAspectRatio == null || context == null) {
-        return null;
-      }
-      final contextAspectRatio = context.width / context.height;
-      if (videoAspectRatio > contextAspectRatio) {
-        videoContextSize = Size(context.width, context.width / aspectRatio.value!);
-      } else {
-        videoContextSize = Size(context.height * aspectRatio.value!, context.height);
-      }
-      return videoContextSize;
-    }
-
     ref.listen(currentAssetNotifier, (_, value) {
       final playerController = controller.value;
       if (playerController != null && value != asset) {
@@ -414,29 +385,22 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
-    return SizedBox(
-      width: context.width,
-      height: context.height,
-      child: Stack(
-        children: [
-          // Hide thumbnail once video is visible to avoid it showing in background when zooming out on video.
-          if (!isVisible.value || controller.value == null) Center(child: image),
-          if (aspectRatio.value != null && !isCasting && isCurrent)
-            Visibility.maintain(
-              visible: isVisible.value,
-              child: PhotoView.customChild(
-                enableRotation: false,
-                disableScaleGestures: disableScaleGestures,
-                // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
-                backgroundDecoration: const BoxDecoration(color: Colors.transparent),
-                scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
-                childSize: videoContextSize(aspectRatio.value, context),
-                child: NativeVideoPlayerView(onViewReady: initController),
+    return Stack(
+      children: [
+        // This remains under the video to avoid flickering
+        // For motion videos, this is the image portion of the asset
+        Center(child: image),
+        if (aspectRatio.value != null && !isCasting)
+          Visibility.maintain(
+            visible: isVisible.value,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: aspectRatio.value!,
+                child: isCurrent ? NativeVideoPlayerView(onViewReady: initController) : null,
               ),
             ),
-          if (showControls) const Center(child: VideoViewerControls()),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

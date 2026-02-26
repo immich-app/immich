@@ -14,15 +14,15 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.wi
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -53,7 +53,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = ScrollController();
   late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
-  final ValueNotifier<PhotoViewScaleState> _videoScaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   double _snapOffset = 0.0;
 
@@ -79,7 +78,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _proxyScrollController.dispose();
     _scaleBoundarySub?.cancel();
     _eventSubscription?.cancel();
-    _videoScaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -249,17 +247,14 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    _isZoomed =
-        scaleState == PhotoViewScaleState.zoomedIn ||
-        scaleState == PhotoViewScaleState.covering ||
-        _videoScaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
-        _videoScaleStateNotifier.value == PhotoViewScaleState.covering;
+    _isZoomed = switch (scaleState) {
+      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.covering => true,
+      _ => false,
+    };
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) _viewer.setControls(false);
-
-      ref.read(videoPlayerControlsProvider.notifier).pause();
       return;
     }
 
@@ -334,35 +329,40 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       );
     }
 
-    return PhotoView.customChild(
-      key: Key(displayAsset.heroTag),
-      onDragStart: _onDragStart,
-      onDragUpdate: _onDragUpdate,
-      onDragEnd: _onDragEnd,
-      onDragCancel: _onDragCancel,
-      heroAttributes: heroAttributes,
-      filterQuality: FilterQuality.high,
-      basePosition: Alignment.center,
-      disableScaleGestures: true,
-      minScale: PhotoViewComputedScale.contained,
-      initialScale: PhotoViewComputedScale.contained,
-      tightMode: true,
-      onPageBuild: _onPageBuild,
-      enablePanAlways: true,
-      backgroundDecoration: backgroundDecoration,
-      child: NativeVideoViewer(
-        key: _NativeVideoViewerKey(displayAsset.heroTag),
-        asset: displayAsset,
-        scaleStateNotifier: _videoScaleStateNotifier,
-        disableScaleGestures: showingDetails,
-        image: Image(
-          image: getFullImageProvider(displayAsset, size: context.sizeData),
-          height: context.height,
-          width: context.width,
-          fit: BoxFit.contain,
-          alignment: Alignment.center,
+    return Stack(
+      children: [
+        PhotoView.customChild(
+          key: Key(displayAsset.heroTag),
+          onDragStart: _onDragStart,
+          onDragUpdate: _onDragUpdate,
+          onDragEnd: _onDragEnd,
+          onDragCancel: _onDragCancel,
+          onTapUp: _onTapUp,
+          heroAttributes: heroAttributes,
+          basePosition: Alignment.center,
+          disableScaleGestures: showingDetails,
+          scaleStateChangedCallback: _onScaleStateChanged,
+          onPageBuild: _onPageBuild,
+          enablePanAlways: true,
+          backgroundDecoration: backgroundDecoration,
+          child: SizedBox(
+            width: context.width,
+            height: context.height,
+            child: NativeVideoViewer(
+              key: _NativeVideoViewerKey(displayAsset.heroTag),
+              asset: displayAsset,
+              image: Image(
+                image: getFullImageProvider(displayAsset, size: context.sizeData),
+                fit: BoxFit.contain,
+                height: context.height,
+                width: context.width,
+                alignment: Alignment.center,
+              ),
+            ),
+          ),
         ),
-      ),
+        const Center(child: VideoViewerControls()),
+      ],
     );
   }
 

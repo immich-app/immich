@@ -58,7 +58,6 @@ class DriftMemoryCard extends StatelessWidget {
                   child: NativeVideoViewer(
                     key: ValueKey(asset.id),
                     asset: asset,
-                    showControls: false,
                     playbackDelayFactor: 2,
                     image: FullImage(asset, size: Size(context.width, context.height), fit: BoxFit.contain),
                   ),
