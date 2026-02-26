@@ -21,6 +21,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
+    this.suppressStackIcon = false,
     super.key,
   });
 
@@ -30,6 +31,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
+  final bool suppressStackIcon;
 
   @override
   ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
@@ -139,7 +141,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     duration: Durations.short4,
                     child: Align(
                       alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset),
+                      child: _AssetTypeIcons(asset: asset, suppressStackIcon: widget.suppressStackIcon),
                     ),
                   ),
                 if (storageIndicator && asset != null)
@@ -281,13 +283,15 @@ class _TileOverlayIcon extends StatelessWidget {
 
 class _AssetTypeIcons extends StatelessWidget {
   final BaseAsset asset;
+  final bool suppressStackIcon;
 
-  const _AssetTypeIcons({required this.asset});
+  const _AssetTypeIcons({required this.asset, required this.suppressStackIcon});
 
   @override
   Widget build(BuildContext context) {
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
-    final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
+    final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
+    final shouldShowStackIcon = !suppressStackIcon && remoteAsset?.stackId != null;
+    final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -295,7 +299,7 @@ class _AssetTypeIcons extends StatelessWidget {
       children: [
         if (asset.isVideo)
           Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
-        if (hasStack)
+        if (shouldShowStackIcon)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
             child: _TileOverlayIcon(Icons.burst_mode_rounded),
