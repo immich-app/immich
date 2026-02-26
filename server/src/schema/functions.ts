@@ -280,7 +280,7 @@ export const asset_edit_delete = registerFunction({
       UPDATE asset
       SET "isEdited" = false
       FROM deleted_edit
-      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited" 
+      WHERE asset.id = deleted_edit."assetId" AND asset."isEdited"
         AND NOT EXISTS (SELECT FROM asset_edit edit WHERE edit."assetId" = asset.id);
       RETURN NULL;
     END
