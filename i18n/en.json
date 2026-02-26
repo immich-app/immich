@@ -1915,7 +1915,6 @@
   "say_something": "Say something",
   "scaffold_body_error_occurred": "Error occurred",
   "scaffold_body_error_unrecoverable": "An unrecoverable error has occurred. Please share the error and stack trace on Discord or GitHub so we can help. If advised, you can clear the app data below.",
-
   "scan": "Scan",
   "scan_all_libraries": "Scan All Libraries",
   "scan_library": "Scan",
