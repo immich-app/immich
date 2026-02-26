@@ -196,6 +196,11 @@ export class MonthGroup {
         timelineAsset.latitude = bucketAssets.latitude?.[i];
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }
+
+      if (this.timelineManager.isExcluded(timelineAsset)) {
+        continue;
+      }
+
       this.addTimelineAsset(timelineAsset, addContext);
     }
     if (preSorted) {

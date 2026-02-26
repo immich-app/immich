@@ -49,6 +49,7 @@
     Popup,
     ScaleControl,
   } from 'svelte-maplibre';
+  import type { SelectionBBox } from './types';
 
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
@@ -61,6 +62,7 @@
     useLocationPin?: boolean;
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
+    onClusterSelect?: (assetIds: string[], bbox: SelectionBBox) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
@@ -79,6 +81,7 @@
     useLocationPin = false,
     onOpenInMapView = undefined,
     onSelect = () => {},
+    onClusterSelect,
     onClickPoint = () => {},
     popup,
     rounded = false,
@@ -131,9 +134,30 @@
       return;
     }
 
-    const mapSource = map?.getSource('geojson') as GeoJSONSource;
+    const mapSource = map.getSource('geojson') as GeoJSONSource;
     const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
-    const ids = leaves.map((leaf) => leaf.properties?.id);
+    const ids = leaves.map((leaf) => leaf.properties?.id as string);
+
+    if (onClusterSelect && ids.length > 1) {
+      const [firstLongitude, firstLatitude] = (leaves[0].geometry as Point).coordinates;
+      let west = firstLongitude;
+      let south = firstLatitude;
+      let east = firstLongitude;
+      let north = firstLatitude;
+
+      for (const leaf of leaves.slice(1)) {
+        const [longitude, latitude] = (leaf.geometry as Point).coordinates;
+        west = Math.min(west, longitude);
+        south = Math.min(south, latitude);
+        east = Math.max(east, longitude);
+        north = Math.max(north, latitude);
+      }
+
+      const bbox = { west, south, east, north };
+      onClusterSelect(ids, bbox);
+      return;
+    }
+
     onSelect(ids);
   }
 

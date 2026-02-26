@@ -6421,8 +6421,9 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
+    bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -6442,6 +6443,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
+        bbox,
         isFavorite,
         isTrashed,
         key,
@@ -6462,8 +6464,9 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
+    bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -6482,6 +6485,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         data: TimeBucketsResponseDto[];
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
+        bbox,
         isFavorite,
         isTrashed,
         key,

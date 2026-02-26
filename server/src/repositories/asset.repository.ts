@@ -36,6 +36,13 @@ import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
+export interface BoundingBox {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 interface AssetStatsOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -64,6 +71,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  bbox?: BoundingBox;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -651,6 +659,21 @@ export class AssetRepository {
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(!!options.bbox, (qb) => {
+            const { west, south, east, north } = options.bbox!;
+            const withLatitude = qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .where('asset_exif.latitude', '>=', south)
+              .where('asset_exif.latitude', '<=', north);
+
+            if (west <= east) {
+              return withLatitude.where('asset_exif.longitude', '>=', west).where('asset_exif.longitude', '<=', east);
+            }
+
+            return withLatitude.where((eb) =>
+              eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
+            );
+          })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
@@ -725,6 +748,18 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.bbox, (qb) => {
+            const { west, south, east, north } = options.bbox!;
+            const withLatitude = qb.where('asset_exif.latitude', '>=', south).where('asset_exif.latitude', '<=', north);
+
+            if (west <= east) {
+              return withLatitude.where('asset_exif.longitude', '>=', west).where('asset_exif.longitude', '<=', east);
+            }
+
+            return withLatitude.where((eb) =>
+              eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
+            );
+          })
           .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
