@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StarRating from '$lib/elements/StarRating.svelte';
+  import StarRating, { type Rating } from '$lib/elements/StarRating.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -14,7 +14,7 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let rating = $derived(asset.exifInfo?.rating || null);
+  let rating = $derived(asset.exifInfo?.rating || null) as Rating;
 
   const handleChangeRating = async (rating: number | null) => {
     try {

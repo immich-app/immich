@@ -6,7 +6,7 @@
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  type Rating = 1 | 2 | 3| 4| 5 | null;
+  export type Rating = 1 | 2 | 3 | 4 | 5 | null;
 
   interface Props {
     count?: number;
@@ -48,7 +48,7 @@
     focusRating = null;
   };
 
-  const handleSelectDebounced = (value: number) => {
+  const handleSelectDebounced = (value: Rating) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       handleSelect(value);
@@ -78,7 +78,7 @@
         for={starId}
         class:cursor-pointer={!readOnly}
         class:ring-2={focusRating === value}
-        onmouseover={() => setHoverRating(value)}
+        onmouseover={() => setHoverRating(value as Rating)}
         tabindex={-1}
         data-testid="star"
       >
@@ -93,9 +93,9 @@
         bind:group={ratingSelection}
         disabled={readOnly}
         onfocus={() => {
-          focusRating = value;
+          focusRating = value as Rating;
         }}
-        onchange={() => handleSelectDebounced(value)}
+        onchange={() => handleSelectDebounced(value as Rating)}
         class="sr-only"
       />
     {/each}
