@@ -1895,6 +1895,8 @@ export type SmartSearchDto = {
     model?: string | null;
     /** Filter by OCR text content */
     ocr?: string;
+    /** Sort order by date. If not provided, results are sorted by relevance. */
+    order?: AssetOrder;
     /** Page number */
     page?: number;
     /** Filter by person IDs */

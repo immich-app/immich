@@ -139,7 +139,7 @@ export class SearchService extends BaseService {
     const size = dto.size || 100;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
-      { ...dto, userIds: await userIds, embedding },
+      { ...dto, userIds: await userIds, embedding, orderDirection: dto.order },
     );
 
     return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
