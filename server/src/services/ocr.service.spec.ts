@@ -1,6 +1,6 @@
-import { AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetFileType, AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { OcrService } from 'src/services/ocr.service';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -14,7 +14,7 @@ describe(OcrService.name, () => {
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
     mocks.assetJob.getForOcr.mockResolvedValue({
       visibility: AssetVisibility.Timeline,
-      previewFile: assetStub.image.files[1].path,
+      previewFile: '/uploads/user-id/thumbs/path.jpg',
     });
   });
 
@@ -41,20 +41,22 @@ describe(OcrService.name, () => {
     });
 
     it('should queue the assets without ocr', async () => {
-      mocks.assetJob.streamForOcrJob.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForOcrJob.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueOcr({ force: false });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: assetStub.image.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForOcrJob).toHaveBeenCalledWith(false);
     });
 
     it('should queue all the assets', async () => {
-      mocks.assetJob.streamForOcrJob.mockReturnValue(makeStream([assetStub.image]));
+      const asset = AssetFactory.create();
+      mocks.assetJob.streamForOcrJob.mockReturnValue(makeStream([asset]));
 
       await sut.handleQueueOcr({ force: true });
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: assetStub.image.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForOcrJob).toHaveBeenCalledWith(true);
     });
   });
@@ -70,15 +72,17 @@ describe(OcrService.name, () => {
     });
 
     it('should skip assets without a resize path', async () => {
+      const asset = AssetFactory.create();
       mocks.assetJob.getForOcr.mockResolvedValue({ visibility: AssetVisibility.Timeline, previewFile: null });
 
-      expect(await sut.handleOcr({ id: assetStub.noResizePath.id })).toEqual(JobStatus.Failed);
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Failed);
 
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
     });
 
     it('should save the returned objects', async () => {
+      const asset = AssetFactory.create();
       mocks.machineLearning.ocr.mockResolvedValue({
         box: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160],
         boxScore: [0.9, 0.8],
@@ -86,7 +90,7 @@ describe(OcrService.name, () => {
         textScore: [0.95, 0.85],
       });
 
-      expect(await sut.handleOcr({ id: assetStub.image.id })).toEqual(JobStatus.Success);
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
         '/uploads/user-id/thumbs/path.jpg',
@@ -98,10 +102,10 @@ describe(OcrService.name, () => {
         }),
       );
       expect(mocks.ocr.upsert).toHaveBeenCalledWith(
-        assetStub.image.id,
+        asset.id,
         [
           {
-            assetId: assetStub.image.id,
+            assetId: asset.id,
             boxScore: 0.9,
             text: 'One Two Three',
             textScore: 0.95,
@@ -115,7 +119,7 @@ describe(OcrService.name, () => {
             y4: 80,
           },
           {
-            assetId: assetStub.image.id,
+            assetId: asset.id,
             boxScore: 0.8,
             text: 'Four Five',
             textScore: 0.85,
@@ -134,6 +138,7 @@ describe(OcrService.name, () => {
     });
 
     it('should apply config settings', async () => {
+      const asset = AssetFactory.create();
       mocks.systemMetadata.get.mockResolvedValue({
         machineLearning: {
           enabled: true,
@@ -148,7 +153,7 @@ describe(OcrService.name, () => {
       });
       mockOcrResult();
 
-      expect(await sut.handleOcr({ id: assetStub.image.id })).toEqual(JobStatus.Success);
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.ocr).toHaveBeenCalledWith(
         '/uploads/user-id/thumbs/path.jpg',
@@ -159,16 +164,17 @@ describe(OcrService.name, () => {
           maxResolution: 1500,
         }),
       );
-      expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, [], '');
+      expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, [], '');
     });
 
     it('should skip invisible assets', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
       mocks.assetJob.getForOcr.mockResolvedValue({
         visibility: AssetVisibility.Hidden,
-        previewFile: assetStub.image.files[1].path,
+        previewFile: asset.files[0].path,
       });
 
-      expect(await sut.handleOcr({ id: assetStub.livePhotoMotionAsset.id })).toEqual(JobStatus.Skipped);
+      expect(await sut.handleOcr({ id: asset.id })).toEqual(JobStatus.Skipped);
 
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
@@ -177,7 +183,7 @@ describe(OcrService.name, () => {
     it('should fail if asset could not be found', async () => {
       mocks.assetJob.getForOcr.mockResolvedValue(void 0);
 
-      expect(await sut.handleOcr({ id: assetStub.image.id })).toEqual(JobStatus.Failed);
+      expect(await sut.handleOcr({ id: 'non-existent' })).toEqual(JobStatus.Failed);
 
       expect(mocks.machineLearning.ocr).not.toHaveBeenCalled();
       expect(mocks.ocr.upsert).not.toHaveBeenCalled();
@@ -185,79 +191,84 @@ describe(OcrService.name, () => {
 
     describe('search tokenization', () => {
       it('should generate bigrams for Chinese text', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('機器學習');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 器學 學習');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), '機器 器學 學習');
       });
 
       it('should generate bigrams for Japanese text', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('テスト');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'テス スト');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), 'テス スト');
       });
 
       it('should generate bigrams for Korean text', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('한국어');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '한국 국어');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), '한국 국어');
       });
 
       it('should pass through Latin text unchanged', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('Hello World');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'Hello World');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), 'Hello World');
       });
 
       it('should handle mixed CJK and Latin text', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('機器學習Model');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 器學 學習 Model');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), '機器 器學 學習 Model');
       });
 
       it('should handle year followed by CJK', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('2024年レポート');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(
-          assetStub.image.id,
-          expect.any(Array),
-          '2024 年レ レポ ポー ート',
-        );
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), '2024 年レ レポ ポー ート');
       });
 
       it('should join multiple OCR boxes', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('機器', 'Learning');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), '機器 Learning');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), '機器 Learning');
       });
 
       it('should normalize whitespace', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('  Hello   World  ');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'Hello World');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), 'Hello World');
       });
 
       it('should keep single CJK characters', async () => {
+        const asset = AssetFactory.create();
         mockOcrResult('A', '中', 'B');
 
-        await sut.handleOcr({ id: assetStub.image.id });
+        await sut.handleOcr({ id: asset.id });
 
-        expect(mocks.ocr.upsert).toHaveBeenCalledWith(assetStub.image.id, expect.any(Array), 'A 中 B');
+        expect(mocks.ocr.upsert).toHaveBeenCalledWith(asset.id, expect.any(Array), 'A 中 B');
       });
     });
   });

@@ -22,6 +22,7 @@ class DriftLogger extends $DriftLogger implements IDatabaseRepository {
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
       await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
 }

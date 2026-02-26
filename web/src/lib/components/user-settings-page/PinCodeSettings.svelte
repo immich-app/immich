@@ -20,7 +20,7 @@
 
 <OnEvents {onUserPinCodeReset} />
 
-<section>
+<section class="my-4 sm:ms-8">
   {#if hasPinCode}
     <div in:fade={{ duration: 200 }}>
       <PinCodeChangeForm />

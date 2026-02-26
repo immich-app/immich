@@ -26,6 +26,16 @@ docker image prune
 [breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
 [releases]: https://github.com/immich-app/immich/releases
 
+## Versioning Policy
+
+Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`. We intend for breaking changes to be limited to major version releases.
+You can configure your Docker image to point to the current major version by using a metatag, such as `:v2`.
+
+Currently, we have no plans to backport patches to earlier versions. We encourage all users to run the most recent release of Immich.
+Switching back to an earlier version, even within the same minor release tag, is not supported.
+
+[semver]: https://semver.org/
+
 ## Migrating to VectorChord
 
 :::info

@@ -63,5 +63,8 @@ export default defineConfig({
     sequence: {
       hooks: 'list',
     },
+    env: {
+      TZ: 'UTC',
+    },
   },
 } as UserConfig);

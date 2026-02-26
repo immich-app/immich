@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { ArrayMinSize, IsString } from 'class-validator';
 import { NotificationLevel, NotificationType } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 export class TestEmailResponseDto {
   @ApiProperty({ description: 'Email message ID' })
@@ -75,20 +75,17 @@ export class NotificationCreateDto {
   @ValidateEnum({ enum: NotificationType, name: 'NotificationType', optional: true, description: 'Notification type' })
   type?: NotificationType;
 
-  @ApiProperty({ description: 'Notification title' })
-  @IsString()
+  @ValidateString({ description: 'Notification title' })
   title!: string;
 
-  @ApiPropertyOptional({ description: 'Notification description' })
-  @IsString()
-  @Optional({ nullable: true })
+  @ValidateString({ optional: true, nullable: true, description: 'Notification description' })
   description?: string | null;
 
   @ApiPropertyOptional({ description: 'Additional notification data' })
   @Optional({ nullable: true })
   data?: any;
 
-  @ValidateDate({ optional: true, description: 'Date when notification was read' })
+  @ValidateDate({ optional: true, nullable: true, description: 'Date when notification was read' })
   readAt?: Date | null;
 
   @ValidateUUID({ description: 'User ID to send notification to' })
@@ -96,20 +93,22 @@ export class NotificationCreateDto {
 }
 
 export class NotificationUpdateDto {
-  @ValidateDate({ optional: true, description: 'Date when notification was read' })
+  @ValidateDate({ optional: true, nullable: true, description: 'Date when notification was read' })
   readAt?: Date | null;
 }
 
 export class NotificationUpdateAllDto {
-  @ValidateUUID({ each: true, optional: true, description: 'Notification IDs to update' })
+  @ValidateUUID({ each: true, description: 'Notification IDs to update' })
+  @ArrayMinSize(1)
   ids!: string[];
 
-  @ValidateDate({ optional: true, description: 'Date when notifications were read' })
+  @ValidateDate({ optional: true, nullable: true, description: 'Date when notifications were read' })
   readAt?: Date | null;
 }
 
 export class NotificationDeleteAllDto {
   @ValidateUUID({ each: true, description: 'Notification IDs to delete' })
+  @ArrayMinSize(1)
   ids!: string[];
 }
 

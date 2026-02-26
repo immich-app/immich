@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
   import { Button, Heading, LoadingSpinner } from '@immich/ui';
@@ -26,7 +26,7 @@
       await activateProduct(productKey, activationKey);
 
       onActivate();
-      purchaseStore.setPurchaseStatus(true);
+      authManager.isPurchased = true;
     } catch (error) {
       handleError(error, $t('purchase_failed_activation'));
     } finally {

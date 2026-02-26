@@ -1,6 +1,7 @@
 <script lang="ts">
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -173,6 +174,8 @@
       }
 
       await deleteFace({ id: face.id, assetFaceDeleteDto: { force: false } });
+
+      eventManager.emit('PersonAssetDelete', { id: face.person.id, assetId });
 
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 

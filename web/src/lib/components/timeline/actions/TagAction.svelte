@@ -1,7 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiTagMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -20,9 +20,8 @@
 
   const handleTagAssets = async () => {
     const assets = [...getOwnedAssets()];
-    const success = await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
-
-    if (success) {
+    const didUpdate = await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
+    if (didUpdate) {
       clearSelect();
     }
   };

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import semver from 'semver';
-import { EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants';
+import { ErrorMessages, EXTENSION_NAMES, VECTOR_EXTENSIONS } from 'src/constants';
 import { OnEvent } from 'src/decorators';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -124,6 +124,17 @@ export class DatabaseService extends BaseService {
       const { database } = this.configRepository.getEnv();
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
+
+        this.logger.log('Checking for schema drift');
+        const drift = await this.databaseRepository.getSchemaDrift();
+        if (drift.items.length === 0) {
+          this.logger.log('No schema drift detected');
+        } else {
+          this.logger.warn(`${ErrorMessages.SchemaDrift} or run \`immich-admin schema-check\``);
+          for (const warning of drift.asHuman()) {
+            this.logger.warn(`  - ${warning}`);
+          }
+        }
       }
       await Promise.all([
         this.databaseRepository.prewarm(VectorIndex.Clip),

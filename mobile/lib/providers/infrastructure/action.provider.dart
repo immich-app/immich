@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -343,6 +343,22 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult> setAlbumCover(ActionSource source, String albumId) async {
+    final assets = _getAssets(source);
+    final asset = assets.first;
+    if (asset is! RemoteAsset) {
+      return const ActionResult(count: 1, success: false, error: 'Asset must be remote');
+    }
+
+    try {
+      await _service.setAlbumCover(albumId, asset.id);
+      return const ActionResult(count: 1, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to set album cover', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> updateDescription(ActionSource source, String description) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {
@@ -405,11 +421,15 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> shareAssets(ActionSource source, BuildContext context) async {
+  Future<ActionResult> shareAssets(
+    ActionSource source,
+    BuildContext context, {
+    Completer<void>? cancelCompleter,
+  }) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids, context);
+      await _service.shareAssets(ids, context, cancelCompleter: cancelCompleter);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);

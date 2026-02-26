@@ -1,4 +1,11 @@
-enum SortOrder { asc, desc }
+enum SortOrder {
+  asc,
+  desc;
+
+  SortOrder reverse() {
+    return this == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+  }
+}
 
 enum TextSearchType { context, filename, description, ocr }
 
@@ -11,3 +18,5 @@ enum ActionSource { timeline, viewer }
 enum CleanupStep { selectDate, scan, delete }
 
 enum AssetKeepType { none, photosOnly, videosOnly }
+
+enum AssetDateAggregation { start, end }

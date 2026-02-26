@@ -1,4 +1,4 @@
-import { getMyUser, init, isHttpError } from '@immich/sdk';
+import { ApiKeyResponseDto, getMyApiKey, getMyUser, init, isHttpError, Permission } from '@immich/sdk';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -32,6 +32,36 @@ export const authenticate = async (options: BaseOptions): Promise<AuthDto> => {
   }
 
   return auth;
+};
+
+export const s = (count: number) => (count === 1 ? '' : 's');
+
+let _apiKey: ApiKeyResponseDto;
+export const requirePermissions = async (permissions: Permission[]) => {
+  if (!_apiKey) {
+    _apiKey = await getMyApiKey();
+  }
+
+  if (_apiKey.permissions.includes(Permission.All)) {
+    return;
+  }
+
+  const missing: Permission[] = [];
+
+  for (const permission of permissions) {
+    if (!_apiKey.permissions.includes(permission)) {
+      missing.push(permission);
+    }
+  }
+
+  if (missing.length > 0) {
+    const combined = missing.map((permission) => `"${permission}"`).join(', ');
+    console.log(
+      `Missing required permission${s(missing.length)}: ${combined}.
+Please make sure your API key has the correct permissions.`,
+    );
+    process.exit(1);
+  }
 };
 
 export const connect = async (url: string, key: string) => {

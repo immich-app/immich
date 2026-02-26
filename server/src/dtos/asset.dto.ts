@@ -73,8 +73,7 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
   @ValidateUUID({ each: true, description: 'Asset IDs to update' })
   ids!: string[];
 
-  @ApiProperty({ description: 'Duplicate asset ID' })
-  @Optional()
+  @ValidateString({ optional: true, nullable: true, description: 'Duplicate ID' })
   duplicateId?: string | null;
 
   @ApiProperty({ description: 'Relative time offset in seconds' })

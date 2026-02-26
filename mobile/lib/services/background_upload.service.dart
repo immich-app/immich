@@ -164,8 +164,11 @@ class BackgroundUploadService {
 
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
+      _logger.info("No new backup candidates found, finishing background upload");
       return;
     }
+
+    _logger.info("Found ${candidates.length} backup candidates for background tasks");
 
     const batchSize = 100;
     final batch = candidates.take(batchSize).toList();
@@ -179,6 +182,7 @@ class BackgroundUploadService {
     }
 
     if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      _logger.info("Enqueuing ${tasks.length} background upload tasks");
       await enqueueTasks(tasks);
     }
   }

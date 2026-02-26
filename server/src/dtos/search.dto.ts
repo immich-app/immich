@@ -97,7 +97,7 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true, description: 'Filter by person IDs' })
   personIds?: string[];
 
-  @ValidateUUID({ each: true, optional: true, description: 'Filter by tag IDs' })
+  @ValidateUUID({ each: true, optional: true, nullable: true, description: 'Filter by tag IDs' })
   tagIds?: string[] | null;
 
   @ValidateUUID({ each: true, optional: true, description: 'Filter by album IDs' })

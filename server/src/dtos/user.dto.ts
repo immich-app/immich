@@ -26,7 +26,13 @@ export class UserUpdateMeDto {
   @IsNotEmpty()
   name?: string;
 
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
+  @ValidateEnum({
+    enum: UserAvatarColor,
+    name: 'UserAvatarColor',
+    optional: true,
+    nullable: true,
+    description: 'Avatar color',
+  })
   avatarColor?: UserAvatarColor | null;
 }
 
@@ -96,8 +102,18 @@ export class UserAdminCreateDto {
   @IsString()
   name!: string;
 
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
+  @ValidateEnum({
+    enum: UserAvatarColor,
+    name: 'UserAvatarColor',
+    optional: true,
+    nullable: true,
+    description: 'Avatar color',
+  })
   avatarColor?: UserAvatarColor | null;
+
+  @ApiPropertyOptional({ description: 'PIN code' })
+  @PinCode({ optional: true, nullable: true, emptyToNull: true })
+  pinCode?: string | null;
 
   @ApiPropertyOptional({ description: 'Storage label' })
   @Optional({ nullable: true })
@@ -135,7 +151,7 @@ export class UserAdminUpdateDto {
   password?: string;
 
   @ApiPropertyOptional({ description: 'PIN code' })
-  @PinCode({ optional: true, emptyToNull: true })
+  @PinCode({ optional: true, nullable: true, emptyToNull: true })
   pinCode?: string | null;
 
   @ApiPropertyOptional({ description: 'User name' })
@@ -144,7 +160,13 @@ export class UserAdminUpdateDto {
   @IsNotEmpty()
   name?: string;
 
-  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', optional: true, description: 'Avatar color' })
+  @ValidateEnum({
+    enum: UserAvatarColor,
+    name: 'UserAvatarColor',
+    optional: true,
+    nullable: true,
+    description: 'Avatar color',
+  })
   avatarColor?: UserAvatarColor | null;
 
   @ApiPropertyOptional({ description: 'Storage label' })

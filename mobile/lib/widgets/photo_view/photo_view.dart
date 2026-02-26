@@ -257,6 +257,7 @@ class PhotoView extends StatefulWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     this.customSize,
@@ -299,6 +300,7 @@ class PhotoView extends StatefulWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onScaleEnd,
     this.onLongPressStart,
     this.customSize,
@@ -416,6 +418,9 @@ class PhotoView extends StatefulWidget {
   /// A pointer that might cause a tap has contacted the screen at a particular
   /// location.
   final PhotoViewImageDragUpdateCallback? onDragUpdate;
+
+  /// A callback when a drag gesture is canceled by the system.
+  final VoidCallback? onDragCancel;
 
   /// A pointer that will trigger a scale has stopped contacting the screen at a
   /// particular location.
@@ -543,7 +548,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final computedOuterSize = widget.customSize ?? constraints.biggest;
-        final backgroundDecoration = widget.backgroundDecoration ?? const BoxDecoration(color: Colors.black);
+        final backgroundDecoration = widget.backgroundDecoration ?? const BoxDecoration(color: Colors.transparent);
 
         return widget._isCustomChild
             ? CustomChildWrapper(
@@ -564,6 +569,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
+                onDragCancel: widget.onDragCancel,
                 onScaleEnd: widget.onScaleEnd,
                 onLongPressStart: widget.onLongPressStart,
                 outerSize: computedOuterSize,
@@ -596,6 +602,7 @@ class _PhotoViewState extends State<PhotoView> with AutomaticKeepAliveClientMixi
                 onDragStart: widget.onDragStart,
                 onDragEnd: widget.onDragEnd,
                 onDragUpdate: widget.onDragUpdate,
+                onDragCancel: widget.onDragCancel,
                 onScaleEnd: widget.onScaleEnd,
                 onLongPressStart: widget.onLongPressStart,
                 outerSize: computedOuterSize,

@@ -38,6 +38,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | `MP2T`      | `.mts` `.m2ts` `.m2t` | :white_check_mark: |       |
 | `MP4`       | `.mp4` `.insv`        | :white_check_mark: |       |
 | `MPEG`      | `.mpg` `.mpe` `.mpeg` | :white_check_mark: |       |
+| `MXF`       | `.mxf`                | :white_check_mark: |       |
 | `QUICKTIME` | `.mov`                | :white_check_mark: |       |
 | `WEBM`      | `.webm`               | :white_check_mark: |       |
 | `WMV`       | `.wmv`                | :white_check_mark: |       |

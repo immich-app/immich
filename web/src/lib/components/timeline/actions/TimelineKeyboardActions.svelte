@@ -21,7 +21,7 @@
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { isModalOpen, modalManager } from '@immich/ui';
 
   type Props = {
     timelineManager: TimelineManager;
@@ -142,7 +142,7 @@
   };
 
   const shortcutList = $derived.by(() => {
-    if (searchStore.isSearchEnabled || $showAssetViewer) {
+    if (searchStore.isSearchEnabled || $showAssetViewer || isModalOpen()) {
       return [];
     }
 

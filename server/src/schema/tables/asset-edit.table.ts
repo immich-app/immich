@@ -1,6 +1,3 @@
-import { AssetEditAction, AssetEditActionParameter } from 'src/dtos/editing.dto';
-import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
 import {
   AfterDeleteTrigger,
   AfterInsertTrigger,
@@ -10,7 +7,10 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Unique,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { AssetEditAction, AssetEditParameters } from 'src/dtos/editing.dto';
+import { asset_edit_delete, asset_edit_insert } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_edit')
 @AfterInsertTrigger({ scope: 'statement', function: asset_edit_insert, referencingNewTableAs: 'inserted_edit' })
@@ -21,7 +21,7 @@ import {
   when: 'pg_trigger_depth() = 0',
 })
 @Unique({ columns: ['assetId', 'sequence'] })
-export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
+export class AssetEditTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
 
@@ -29,10 +29,10 @@ export class AssetEditTable<T extends AssetEditAction = AssetEditAction> {
   assetId!: string;
 
   @Column()
-  action!: T;
+  action!: AssetEditAction;
 
   @Column({ type: 'jsonb' })
-  parameters!: AssetEditActionParameter[T];
+  parameters!: AssetEditParameters;
 
   @Column({ type: 'integer' })
   sequence!: number;

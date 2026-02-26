@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as base_asset;
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:octo_image/octo_image.dart';
 
@@ -34,13 +35,21 @@ class ImmichImage extends StatelessWidget {
     }
 
     if (asset == null) {
-      return ImmichRemoteImageProvider(assetId: assetId!);
+      return RemoteFullImageProvider(assetId: assetId!, thumbhash: '', assetType: base_asset.AssetType.video);
     }
 
     if (useLocal(asset)) {
-      return ImmichLocalImageProvider(asset: asset, width: width, height: height);
+      return LocalFullImageProvider(
+        id: asset.localId!,
+        assetType: base_asset.AssetType.video,
+        size: Size(width, height),
+      );
     } else {
-      return ImmichRemoteImageProvider(assetId: asset.remoteId!);
+      return RemoteFullImageProvider(
+        assetId: asset.remoteId!,
+        thumbhash: asset.thumbhash ?? '',
+        assetType: base_asset.AssetType.video,
+      );
     }
   }
 

@@ -43,10 +43,10 @@ export const errorDto = {
     message: 'Invalid share key',
     correlationId: expect.any(String),
   },
-  invalidSharePassword: {
+  passwordRequired: {
     error: 'Unauthorized',
     statusCode: 401,
-    message: 'Invalid password',
+    message: 'Password required',
     correlationId: expect.any(String),
   },
   badRequest: (message: any = null) => ({

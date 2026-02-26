@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
@@ -78,6 +80,7 @@ class FixedSegment extends Segment {
       assetCount: numberOfAssets,
       tileHeight: tileHeight,
       spacing: spacing,
+      columnCount: columnCount,
     );
   }
 }
@@ -87,24 +90,32 @@ class _FixedSegmentRow extends ConsumerWidget {
   final int assetCount;
   final double tileHeight;
   final double spacing;
+  final int columnCount;
 
   const _FixedSegmentRow({
     required this.assetIndex,
     required this.assetCount,
     required this.tileHeight,
     required this.spacing,
+    required this.columnCount,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
+    final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
     if (isScrubbing) {
       return _buildPlaceholder(context);
     }
     if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
+      return _buildAssetRow(
+        context,
+        timelineService.getAssets(assetIndex, assetCount),
+        timelineService,
+        isDynamicLayout,
+      );
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -113,7 +124,7 @@ class _FixedSegmentRow extends ConsumerWidget {
         if (snapshot.connectionState != ConnectionState.done) {
           return _buildPlaceholder(context);
         }
-        return _buildAssetRow(context, snapshot.requireData, timelineService);
+        return _buildAssetRow(context, snapshot.requireData, timelineService, isDynamicLayout);
       },
     );
   }
@@ -122,23 +133,58 @@ class _FixedSegmentRow extends ConsumerWidget {
     return SegmentBuilder.buildPlaceholder(context, assetCount, size: Size.square(tileHeight), spacing: spacing);
   }
 
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets, TimelineService timelineService) {
-    return FixedTimelineRow(
-      dimension: tileHeight,
-      spacing: spacing,
-      textDirection: Directionality.of(context),
-      children: [
-        for (int i = 0; i < assets.length; i++)
-          TimelineAssetIndexWrapper(
+  Widget _buildAssetRow(
+    BuildContext context,
+    List<BaseAsset> assets,
+    TimelineService timelineService,
+    bool isDynamicLayout,
+  ) {
+    final children = [
+      for (int i = 0; i < assets.length; i++)
+        TimelineAssetIndexWrapper(
+          assetIndex: assetIndex + i,
+          segmentIndex: 0, // For simplicity, using 0 for now
+          child: _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
             assetIndex: assetIndex + i,
-            segmentIndex: 0, // For simplicity, using 0 for now
-            child: _AssetTileWidget(
-              key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-              asset: assets[i],
-              assetIndex: assetIndex + i,
-            ),
           ),
-      ],
+        ),
+    ];
+
+    final widths = List.filled(assets.length, tileHeight);
+
+    if (isDynamicLayout) {
+      final aspectRatios = assets.map((e) => (e.width ?? 1) / (e.height ?? 1)).toList();
+      final meanAspectRatio = aspectRatios.sum / assets.length;
+
+      // 1: mean width
+      // 0.5: width < mean - threshold
+      // 1.5: width > mean + threshold
+      final arConfiguration = aspectRatios.map((e) {
+        if (e - meanAspectRatio > 0.3) return 1.5;
+        if (e - meanAspectRatio < -0.3) return 0.5;
+        return 1.0;
+      });
+
+      // Normalize to get width distribution
+      final sum = arConfiguration.sum;
+
+      int index = 0;
+      for (final ratio in arConfiguration) {
+        // Distribute the available width proportionally based on aspect ratio configuration
+        widths[index++] = ((ratio * assets.length) / sum) * tileHeight;
+      }
+    }
+
+    return TimelineDragRegion(
+      child: TimelineRow(
+        height: tileHeight,
+        widths: widths,
+        spacing: spacing,
+        textDirection: Directionality.of(context),
+        children: children,
+      ),
     );
   }
 }

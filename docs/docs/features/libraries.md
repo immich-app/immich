@@ -80,6 +80,10 @@ There is an automatic scan job that is scheduled to run once a day. Its schedule
 
 This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
+### Deleting a Library
+
+When deleting an external library, all assets inside are immediately deleted along with the library. Note that while a library can take a long time to fully delete in the background, it is immediately removed from the library list. If the deletion process is interrupted (for example, due to server restart), it will be cleaned up in the next nightly cron job. The cleanup process can also be manually initiated by clicking the "Scan All Libraries" button in the library list.
+
 ## Usage
 
 Let's show a concrete example where we add an existing gallery to Immich. Here, we have the following folders we want to add:

@@ -29,15 +29,15 @@ import 'package:path_provider/path_provider.dart';
 void configureFileDownloaderNotifications() {
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupImage,
-    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), '${'file_name_text'.t()}: {filename}'),
+    complete: TaskNotification('download_finished'.t(), '${'file_name_text'.t()}: {filename}'),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupVideo,
-    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
-    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), '${'file_name_text'.t()}: {filename}'),
+    complete: TaskNotification('download_finished'.t(), '${'file_name_text'.t()}: {filename}'),
     progressBar: true,
   );
 

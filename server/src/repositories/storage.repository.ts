@@ -152,7 +152,7 @@ export class StorageRepository {
   }
 
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
-    await fs.rm(folder, options);
+    await fs.rm(folder, { ...options, maxRetries: 5, retryDelay: 100 });
   }
 
   async removeEmptyDirs(directory: string, self: boolean = false) {
@@ -168,7 +168,13 @@ export class StorageRepository {
     if (self) {
       const updated = await fs.readdir(directory);
       if (updated.length === 0) {
-        await fs.rmdir(directory);
+        try {
+          await fs.rmdir(directory);
+        } catch (error: Error | any) {
+          if (error.code !== 'ENOTEMPTY') {
+            this.logger.warn(`Attempted to remove directory, but failed: ${error}`);
+          }
+        }
       }
     }
   }

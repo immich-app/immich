@@ -455,6 +455,10 @@ typedef $$PersonEntityTableProcessedTableManager =
       i1.PersonEntityData,
       i0.PrefetchHooks Function({bool ownerId})
     >;
+i0.Index get idxPersonOwnerId => i0.Index(
+  'idx_person_owner_id',
+  'CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)',
+);
 
 class $PersonEntityTable extends i2.PersonEntity
     with i0.TableInfo<$PersonEntityTable, i1.PersonEntityData> {

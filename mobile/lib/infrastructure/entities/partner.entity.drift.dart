@@ -440,6 +440,10 @@ typedef $$PartnerEntityTableProcessedTableManager =
       i1.PartnerEntityData,
       i0.PrefetchHooks Function({bool sharedById, bool sharedWithId})
     >;
+i0.Index get idxPartnerSharedWithId => i0.Index(
+  'idx_partner_shared_with_id',
+  'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
+);
 
 class $PartnerEntityTable extends i2.PartnerEntity
     with i0.TableInfo<$PartnerEntityTable, i1.PartnerEntityData> {

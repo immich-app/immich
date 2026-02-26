@@ -6,11 +6,8 @@ export enum AssetAction {
   TRASH = 'trash',
   DELETE = 'delete',
   RESTORE = 'restore',
-  ADD = 'add',
-  ADD_TO_ALBUM = 'add-to-album',
   STACK = 'stack',
   UNSTACK = 'unstack',
-  KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
   SET_STACK_PRIMARY_ASSET = 'set-stack-primary-asset',
   REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
@@ -340,8 +337,8 @@ export const langs: Lang[] = [
   {
     name: 'Chinese (Simplified)',
     code: 'zh-CN',
-    weblateCode: 'zh_SIMPLIFIED',
-    loader: () => import('$i18n/zh_SIMPLIFIED.json'),
+    weblateCode: 'zh_Hans',
+    loader: () => import('$i18n/zh_Hans.json'),
   },
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];

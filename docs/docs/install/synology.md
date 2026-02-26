@@ -8,8 +8,6 @@ sidebar_position: 85
 This is a community contribution and not officially supported by the Immich team, but included here for convenience.
 
 Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
-
-**Please report app issues to the corresponding [Github Repository](https://github.com/truenas/charts/tree/master/community/immich).**
 :::
 
 Immich can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.

@@ -2,7 +2,7 @@ import { UserAdmin } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { AssetStatus, AssetType, AssetVisibility, SharedLinkType } from 'src/enum';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
@@ -31,7 +31,7 @@ export const sharedLinkStub = {
     albumId: null,
     album: null,
     description: null,
-    assets: [assetStub.image],
+    assets: [AssetFactory.create()],
     password: 'password',
     slug: null,
   }),

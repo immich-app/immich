@@ -25,7 +25,10 @@ export class SanitizedAssetResponseDto {
   id!: string;
   @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', description: 'Asset type' })
   type!: AssetType;
-  @ApiProperty({ description: 'Thumbhash for thumbnail generation' })
+  @ApiProperty({
+    description:
+      'Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.',
+  })
   thumbhash!: string | null;
   @ApiPropertyOptional({ description: 'Original MIME type' })
   originalMimeType?: string;
@@ -193,27 +196,30 @@ export type AssetMapOptions = {
   auth?: AuthDto;
 };
 
-// TODO: this is inefficient
 const peopleWithFaces = (
   faces?: AssetFace[],
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): PersonWithFacesResponseDto[] => {
-  const result: PersonWithFacesResponseDto[] = [];
-  if (faces) {
-    for (const face of faces) {
-      if (face.person) {
-        const existingPersonEntry = result.find((item) => item.id === face.person!.id);
-        if (existingPersonEntry) {
-          existingPersonEntry.faces.push(face);
-        } else {
-          result.push({ ...mapPerson(face.person!), faces: [mapFacesWithoutPerson(face, edits, assetDimensions)] });
-        }
-      }
-    }
+  if (!faces) {
+    return [];
   }
 
-  return result;
+  const peopleFaces: Map<string, PersonWithFacesResponseDto> = new Map();
+
+  for (const face of faces) {
+    if (!face.person) {
+      continue;
+    }
+
+    if (!peopleFaces.has(face.person.id)) {
+      peopleFaces.set(face.person.id, { ...mapPerson(face.person), faces: [] });
+    }
+    const mappedFace = mapFacesWithoutPerson(face, edits, assetDimensions);
+    peopleFaces.get(face.person.id)!.faces.push(mappedFace);
+  }
+
+  return [...peopleFaces.values()];
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {
@@ -275,7 +281,9 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
-    unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
+    unassignedFaces: entity.faces
+      ?.filter((face) => !face.person)
+      .map((a) => mapFacesWithoutPerson(a, entity.edits, assetDimensions)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,

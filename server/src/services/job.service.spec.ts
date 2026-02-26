@@ -1,7 +1,8 @@
-import { ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetType, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { JobService } from 'src/services/job.service';
 import { JobItem } from 'src/types';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(JobService.name, () => {
@@ -55,22 +56,22 @@ describe(JobService.name, () => {
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
         jobs: [],
-        stub: [assetStub.image],
+        stub: [AssetFactory.create({ id: 'asset-1' })],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1' } },
         jobs: [],
-        stub: [assetStub.video],
+        stub: [AssetFactory.create({ id: 'asset-1', type: AssetType.Video })],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.Ocr],
-        stub: [assetStub.livePhotoStillAsset],
+        stub: [AssetFactory.create({ id: 'asset-1', livePhotoVideoId: newUuid() })],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.Ocr, JobName.AssetEncodeVideo],
-        stub: [assetStub.video],
+        stub: [AssetFactory.create({ id: 'asset-1', type: AssetType.Video })],
       },
       {
         item: { name: JobName.SmartSearch, data: { id: 'asset-1' } },

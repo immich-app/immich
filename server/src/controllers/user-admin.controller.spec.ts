@@ -31,10 +31,53 @@ describe(UserAdminController.name, () => {
     });
   });
 
+  describe('PUT /admin/users/:id', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put(`/admin/users/${factory.uuid()}`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
   describe('POST /admin/users', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).post('/admin/users');
       expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should allow a null pinCode', async () => {
+      await request(ctx.getHttpServer()).post(`/admin/users`).send({
+        name: 'Test user',
+        email: 'test@immich.cloud',
+        password: 'password',
+        pinCode: null,
+      });
+      expect(service.create).toHaveBeenCalledWith(expect.objectContaining({ pinCode: null }));
+    });
+
+    it('should allow a null avatarColor', async () => {
+      await request(ctx.getHttpServer()).post(`/admin/users`).send({
+        name: 'Test user',
+        email: 'test@immich.cloud',
+        password: 'password',
+        avatarColor: null,
+      });
+      expect(service.create).toHaveBeenCalledWith(expect.objectContaining({ avatarColor: null }));
+    });
+
+    it(`should `, async () => {
+      const dto: UserAdminCreateDto = {
+        email: 'user@immich.app',
+        password: 'test',
+        name: 'Test User',
+        quotaSizeInBytes: 1.2,
+      };
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .post(`/admin/users`)
+        .set('Authorization', `Bearer token`)
+        .send(dto);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['quotaSizeInBytes must be an integer number'])));
     });
 
     it(`should not allow decimal quota`, async () => {
@@ -74,6 +117,18 @@ describe(UserAdminController.name, () => {
         .send({ quotaSizeInBytes: 1.2 });
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest(expect.arrayContaining(['quotaSizeInBytes must be an integer number'])));
+    });
+
+    it('should allow a null pinCode', async () => {
+      const id = factory.uuid();
+      await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ pinCode: null });
+      expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ pinCode: null }));
+    });
+
+    it('should allow a null avatarColor', async () => {
+      const id = factory.uuid();
+      await request(ctx.getHttpServer()).put(`/admin/users/${id}`).send({ avatarColor: null });
+      expect(service.update).toHaveBeenCalledWith(undefined, id, expect.objectContaining({ avatarColor: null }));
     });
   });
 });
