@@ -17,6 +17,7 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -34,6 +35,7 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.bottomSliverWidget,
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
@@ -41,13 +43,14 @@ class Timeline extends StatelessWidget {
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
-    this.initialScrollOffset,
     this.readOnly = false,
     this.persistentBottomBar = false,
+    this.loadingWidget,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? bottomSliverWidget;
   final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
@@ -55,9 +58,9 @@ class Timeline extends StatelessWidget {
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
   final bool snapToMonth;
-  final double? initialScrollOffset;
   final bool readOnly;
   final bool persistentBottomBar;
+  final Widget? loadingWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +85,14 @@ class Timeline extends StatelessWidget {
           child: _SliverTimeline(
             topSliverWidget: topSliverWidget,
             topSliverWidgetHeight: topSliverWidgetHeight,
+            bottomSliverWidget: bottomSliverWidget,
             appBar: appBar,
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
             persistentBottomBar: persistentBottomBar,
             snapToMonth: snapToMonth,
-            initialScrollOffset: initialScrollOffset,
             maxWidth: constraints.maxWidth,
+            loadingWidget: loadingWidget,
           ),
         ),
       ),
@@ -111,24 +115,26 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
     this.topSliverWidgetHeight,
+    this.bottomSliverWidget,
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
     this.persistentBottomBar = false,
     this.snapToMonth = true,
-    this.initialScrollOffset,
     this.maxWidth,
+    this.loadingWidget,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
+  final Widget? bottomSliverWidget;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
   final bool persistentBottomBar;
   final bool snapToMonth;
-  final double? initialScrollOffset;
   final double? maxWidth;
+  final Widget? loadingWidget;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -152,10 +158,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController(
-      initialScrollOffset: widget.initialScrollOffset ?? 0.0,
-      onAttach: _restoreAssetPosition,
-    );
+    _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
     final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
@@ -373,6 +376,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         }
       },
       child: asyncSegments.widgetWhen(
+        onLoading: widget.loadingWidget != null ? () => widget.loadingWidget! : null,
         onData: (segments) {
           final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
           final double appBarExpandedHeight = widget.appBar != null && widget.appBar is MesmerizingSliverAppBar
@@ -380,12 +384,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               : 0;
           final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-          const scrubberBottomPadding = 100.0;
           const bottomSheetOpenModifier = 120.0;
-          final bottomPadding =
-              context.padding.bottom +
-              (widget.appBar == null ? 0 : scrubberBottomPadding) +
-              (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+          final contentBottomPadding = context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+          final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
 
           final grid = CustomScrollView(
             primary: true,
@@ -408,7 +409,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   addRepaintBoundaries: false,
                 ),
               ),
-              SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
+              if (widget.bottomSliverWidget != null) widget.bottomSliverWidget!,
+              SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
             ],
           );
 
@@ -419,7 +421,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               layoutSegments: segments,
               timelineHeight: maxHeight,
               topPadding: topPadding,
-              bottomPadding: bottomPadding,
+              bottomPadding: scrubberBottomPadding,
               monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
               hasAppBar: widget.appBar != null,
               child: grid,
