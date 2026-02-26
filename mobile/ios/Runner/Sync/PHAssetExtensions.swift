@@ -2,17 +2,14 @@ import Photos
 
 extension PHAsset {
   var playbackStyleValue: Int64 {
-    if #available(iOS 11, *) {
-      switch playbackStyle {
-      case .image: return 0
-      case .imageAnimated: return 2
-      case .livePhoto: return 3
-      case .video: return 1
-      case .videoLooping: return 4
-      @unknown default: return 0
-      }
+    switch playbackStyle {
+    case .image: return 0
+    case .imageAnimated: return 2
+    case .livePhoto: return 3
+    case .video: return 1
+    case .videoLooping: return 4
+    @unknown default: return 0
     }
-    return 0
   }
 
   func toPlatformAsset() -> PlatformAsset {
@@ -41,7 +38,7 @@ extension PHAsset {
   var filename: String? {
     return value(forKey: "filename") as? String
   }
-  
+
   var adjustmentTimestamp: Int64? {
     if let date = value(forKey: "adjustmentTimestamp") as? Date {
       return Int64(date.timeIntervalSince1970)
