@@ -59,6 +59,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
+      add(MediaStore.MediaColumns.MIME_TYPE)
       // IS_FAVORITE is only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
@@ -108,6 +109,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
         val orientationColumn =
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
+        val mimeTypeColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
 
         while (c.moveToNext()) {
@@ -141,7 +143,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
           val orientation = c.getInt(orientationColumn)
+          val mimeType = c.getStringOrNull(mimeTypeColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
+
+          val playbackStyle: Long = when {
+            mediaType == 2 -> 1L           // video
+            mimeType == "image/gif" -> 2L  // animated
+            else -> 0L                     // static image
+          }
 
           val asset = PlatformAsset(
             id,
@@ -154,6 +163,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
             duration,
             orientation.toLong(),
             isFavorite,
+            playbackStyle = playbackStyle,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }

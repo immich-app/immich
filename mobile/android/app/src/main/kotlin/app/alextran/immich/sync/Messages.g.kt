@@ -92,7 +92,8 @@ data class PlatformAsset (
   val isFavorite: Boolean,
   val adjustmentTime: Long? = null,
   val latitude: Double? = null,
-  val longitude: Double? = null
+  val longitude: Double? = null,
+  val playbackStyle: Long
 )
  {
   companion object {
@@ -110,7 +111,8 @@ data class PlatformAsset (
       val adjustmentTime = pigeonVar_list[10] as Long?
       val latitude = pigeonVar_list[11] as Double?
       val longitude = pigeonVar_list[12] as Double?
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, adjustmentTime, latitude, longitude)
+      val playbackStyle = pigeonVar_list[13] as Long
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, adjustmentTime, latitude, longitude, playbackStyle)
     }
   }
   fun toList(): List<Any?> {
@@ -128,6 +130,7 @@ data class PlatformAsset (
       adjustmentTime,
       latitude,
       longitude,
+      playbackStyle,
     )
   }
   override fun equals(other: Any?): Boolean {

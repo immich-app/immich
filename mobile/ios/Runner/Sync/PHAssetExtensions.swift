@@ -1,6 +1,19 @@
 import Photos
 
 extension PHAsset {
+  var playbackStyleValue: Int64 {
+    if #available(iOS 11, *) {
+      switch playbackStyle {
+      case .image: return 0
+      case .imageAnimated: return 2
+      case .livePhoto: return 3
+      case .video, .videoLooping: return 1
+      default: return 0
+      }
+    }
+    return 0
+  }
+
   func toPlatformAsset() -> PlatformAsset {
     return PlatformAsset(
       id: localIdentifier,
@@ -15,7 +28,8 @@ extension PHAsset {
       isFavorite: isFavorite,
       adjustmentTime: adjustmentTimestamp,
       latitude: location?.coordinate.latitude,
-      longitude: location?.coordinate.longitude
+      longitude: location?.coordinate.longitude,
+      playbackStyle: playbackStyleValue
     )
   }
 
