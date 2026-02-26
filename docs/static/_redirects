@@ -23,6 +23,7 @@
 /features/storage-template /administration/storage-template 307
 /features/user-management /administration/user-management 307
 /developer/contributing /developer/pr-checklist 307
+/developer/open-api /api 307
 /guides/machine-learning /guides/remote-machine-learning 307
 /administration/password-login /administration/system-settings 307
 /features/search /features/searching 307

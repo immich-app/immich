@@ -30,11 +30,10 @@ import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
-
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 21;
+const int targetVersion = 22;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -98,6 +97,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     if (certData != null) {
       await networkApi.addCertificate(ClientCertData(data: certData.data, password: certData.password ?? ""));
     }
+  }
+
+  if (version < 22 && !Store.isBetaTimelineEnabled) {
+    await Store.put(StoreKey.needBetaMigration, true);
   }
 
   if (targetVersion >= 12) {

@@ -1,3 +1,4 @@
+import { schemaDiff } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import { isAbsolute, join } from 'node:path';
 import { SALT_ROUNDS } from 'src/constants';
@@ -5,7 +6,6 @@ import { MaintenanceAuthDto } from 'src/dtos/maintenance.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { schemaDiff } from 'src/sql-tools';
 import { createMaintenanceLoginUrl, generateMaintenanceSecret } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 

@@ -1,5 +1,5 @@
+import { registerEnum } from '@immich/sql-tools';
 import { AssetStatus, AssetVisibility, SourceType } from 'src/enum';
-import { registerEnum } from 'src/sql-tools';
 
 export const assets_status_enum = registerEnum({
   name: 'assets_status_enum',

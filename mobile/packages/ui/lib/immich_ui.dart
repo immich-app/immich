@@ -1,6 +1,6 @@
 export 'src/components/close_button.dart';
 export 'src/components/form.dart';
-export 'src/components/html_text.dart';
+export 'src/components/formatted_text.dart';
 export 'src/components/icon_button.dart';
 export 'src/components/password_input.dart';
 export 'src/components/text_button.dart';

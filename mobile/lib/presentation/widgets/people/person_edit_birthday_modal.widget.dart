@@ -25,7 +25,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.person.birthDate ?? DateTime.now();
+    _selectedDate = widget.person.birthDate ?? DateTime(DateTime.now().year - 30, 1, 1);
   }
 
   void saveBirthday() async {
@@ -90,6 +90,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
             selectedDate: _selectedDate,
             locale: context.locale,
             minimumDate: DateTime(1800, 1, 1),
+            maximumDate: DateTime.now(),
             onDateTimeChanged: (DateTime value) {
               setState(() {
                 _selectedDate = value;

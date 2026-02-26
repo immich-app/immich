@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     openvino_precision: ModelPrecision = ModelPrecision.FP32
     ocr_detection_static_size: int | None = None
     ocr_recognition_static_width: int | None = None
+    rocm_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

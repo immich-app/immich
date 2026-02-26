@@ -100,6 +100,8 @@ export class MemoryService extends BaseService {
         data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
+        showAt: dto.showAt,
+        hideAt: dto.hideAt,
         seenAt: dto.seenAt,
       },
       allowedAssetIds,
