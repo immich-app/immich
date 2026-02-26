@@ -410,6 +410,10 @@ class LocalSyncService {
     } else {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
     }
+    if (reviewMode) {
+      final result = await _trashSyncRepository.deleteOutdatedThrottled();
+      _log.info("syncTrashedAssets, outdated deleted: $result");
+    }
   }
 }
 
