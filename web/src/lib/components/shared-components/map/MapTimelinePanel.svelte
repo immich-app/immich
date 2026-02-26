@@ -91,9 +91,14 @@
   });
 
   const displayedAssetCount = $derived(timelineManager?.assetCount ?? assetCount);
+
+  $effect.pre(() => {
+    void timelineOptions;
+    assetInteraction.clearMultiselect();
+  });
 </script>
 
-<aside class="h-full w-full overflow-hidden bg-immich-bg dark:bg-immich-dark-bg flex flex-col">
+<aside class="h-full w-full overflow-hidden bg-immich-bg dark:bg-immich-dark-bg flex flex-col contain-content">
   <div class="flex items-center justify-between border-b border-gray-200 dark:border-immich-dark-gray pb-1 pe-1">
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />

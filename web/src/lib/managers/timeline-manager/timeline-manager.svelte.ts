@@ -258,10 +258,16 @@ export class TimelineManager extends VirtualScrollManager {
     if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
       return;
     }
-    await this.initTask.reset();
-    await this.#init(options);
-    this.updateViewportGeometry(false);
-    this.#createScrubberMonths();
+
+    this.suspendTransitions = true;
+    try {
+      await this.initTask.reset();
+      await this.#init(options);
+      this.updateViewportGeometry(false);
+      this.#createScrubberMonths();
+    } finally {
+      this.suspendTransitions = false;
+    }
   }
 
   async #init(options: TimelineManagerOptions) {

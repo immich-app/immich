@@ -78,14 +78,12 @@
 
       {#if isTimelinePanelVisible && selectedClusterBBox}
         <div class="h-1/2 min-h-0 w-full pt-2 sm:h-full sm:w-1/3 sm:ps-2 sm:pt-0">
-          {#key selectedClusterIds}
-            <MapTimelinePanel
-              bbox={selectedClusterBBox}
-              {selectedClusterIds}
-              assetCount={selectedClusterIds.size}
-              onClose={closeTimelinePanel}
-            />
-          {/key}
+          <MapTimelinePanel
+            bbox={selectedClusterBBox}
+            {selectedClusterIds}
+            assetCount={selectedClusterIds.size}
+            onClose={closeTimelinePanel}
+          />
         </div>
       {/if}
     </div>
