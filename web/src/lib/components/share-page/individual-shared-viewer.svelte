@@ -140,7 +140,7 @@
       </ControlAppBar>
     {/if}
     <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} />
+      <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
     </section>
   {:else if assets.length === 1}
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
