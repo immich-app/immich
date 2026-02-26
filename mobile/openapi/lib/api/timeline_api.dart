@@ -31,7 +31,7 @@ class TimelineApi {
   ///   Filter assets belonging to a specific album
   ///
   /// * [String] bbox:
-  ///   Bounding box coordinates as west,south,east,north
+  ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
@@ -148,7 +148,7 @@ class TimelineApi {
   ///   Filter assets belonging to a specific album
   ///
   /// * [String] bbox:
-  ///   Bounding box coordinates as west,south,east,north
+  ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
@@ -210,7 +210,7 @@ class TimelineApi {
   ///   Filter assets belonging to a specific album
   ///
   /// * [String] bbox:
-  ///   Bounding box coordinates as west,south,east,north
+  ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
@@ -323,7 +323,7 @@ class TimelineApi {
   ///   Filter assets belonging to a specific album
   ///
   /// * [String] bbox:
-  ///   Bounding box coordinates as west,south,east,north
+  ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
