@@ -9,7 +9,7 @@ extension PHAsset {
       case .livePhoto: return 3
       case .video: return 1
       case .videoLooping: return 4
-      default: return 0
+      @unknown default: return 0
       }
     }
     return 0
