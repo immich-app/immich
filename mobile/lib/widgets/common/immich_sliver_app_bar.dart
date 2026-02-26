@@ -62,7 +62,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
           pinned: pinned,
           snap: snap,
           expandedHeight: expandedHeight,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))),
           automaticallyImplyLeading: false,
           centerTitle: false,
           title: title ?? const _ImmichLogoWithText(),
