@@ -1,7 +1,7 @@
 import { UserAdmin } from 'src/database';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
-import { AssetStatus, AssetType, AssetVisibility, SharedLinkType } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, ChecksumAlgorithm, SharedLinkType } from 'src/enum';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -94,6 +94,7 @@ export const sharedLinkStub = {
         type: AssetType.Video,
         originalPath: 'fake_path/jpeg',
         checksum: Buffer.from('file hash', 'utf8'),
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
         fileModifiedAt: today,
         fileCreatedAt: today,
         localDateTime: today,

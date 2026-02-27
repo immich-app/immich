@@ -250,6 +250,7 @@ where
 select
   "asset"."id",
   "asset"."checksum",
+  "asset"."checksumAlgorithm",
   "asset"."deviceAssetId",
   "asset"."deviceId",
   "asset"."fileCreatedAt",

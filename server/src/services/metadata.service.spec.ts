@@ -7,6 +7,7 @@ import {
   AssetFileType,
   AssetType,
   AssetVisibility,
+  ChecksumAlgorithm,
   ExifOrientation,
   ImmichWorker,
   JobName,
@@ -651,6 +652,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
         deviceAssetId: 'NONE',
         deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
@@ -704,6 +706,7 @@ describe(MetadataService.name, () => {
       expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
         deviceAssetId: 'NONE',
         deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
@@ -757,6 +760,7 @@ describe(MetadataService.name, () => {
       expect(mocks.storage.readFile).toHaveBeenCalledWith(asset.originalPath, expect.any(Object));
       expect(mocks.asset.create).toHaveBeenCalledWith({
         checksum: expect.any(Buffer),
+        checksumAlgorithm: ChecksumAlgorithm.sha1File,
         deviceAssetId: 'NONE',
         deviceId: 'NONE',
         fileCreatedAt: asset.fileCreatedAt,
