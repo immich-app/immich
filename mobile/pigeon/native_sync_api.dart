@@ -31,7 +31,7 @@ class PlatformAsset {
   final double? latitude;
   final double? longitude;
 
-  // Enum: 0=image, 1=video, 2=animated, 3=livePhoto, 4=videoLooping
+  // Follows AssetPlaybackStyle enum: 0=unknown, 1=image, 2=video, 3=animated, 4=livePhoto, 5=videoLooping
   final int playbackStyle;
 
   const PlatformAsset({

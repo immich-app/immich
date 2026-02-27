@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.media.ExifInterface
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -23,6 +25,15 @@ import java.io.File
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 
+enum class PlaybackStyle {
+  UNKNOWN,       // 0
+  IMAGE,         // 1
+  VIDEO,         // 2
+  ANIMATED,      // 3
+  LIVE_PHOTO,    // 4
+  VIDEO_LOOPING, // 5
+}
+
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
   data class InvalidAsset(val assetId: String) : AssetResult()
@@ -38,6 +49,16 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
     private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+
+    // MediaStore.Files.FileColumns.SPECIAL_FORMAT — S Extensions 21+
+    // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
+    private const val SPECIAL_FORMAT_COLUMN = "_special_format"
+    private const val SPECIAL_FORMAT_GIF = 1
+    private const val SPECIAL_FORMAT_MOTION_PHOTO = 2
+    private const val SPECIAL_FORMAT_ANIMATED_WEBP = 3
+
+    // XMP column name for API 30+ fallback
+    private const val XMP_COLUMN = "xmp"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -63,6 +84,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       // IS_FAVORITE is only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
+      }
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        add(SPECIAL_FORMAT_COLUMN)
+      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        // Fallback: read XMP from MediaStore to detect Motion Photos
+        add(XMP_COLUMN)
       }
     }.toTypedArray()
 
@@ -111,9 +138,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
         val mimeTypeColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
+        val specialFormatColumn = c.getColumnIndex(SPECIAL_FORMAT_COLUMN)
+        val xmpColumn = c.getColumnIndex(XMP_COLUMN)
 
         while (c.moveToNext()) {
-          val id = c.getLong(idColumn).toString()
+          val numericId = c.getLong(idColumn)
+          val id = numericId.toString()
           val name = c.getStringOrNull(nameColumn)
           val bucketId = c.getStringOrNull(bucketIdColumn)
           val path = c.getStringOrNull(dataColumn)
@@ -127,10 +157,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
             continue
           }
 
-          val mediaType = when (c.getInt(mediaTypeColumn)) {
-            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> 1
-            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2
-            else -> 0
+          val rawMediaType = c.getInt(mediaTypeColumn)
+          val assetType: Long = when (rawMediaType) {
+            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> 1L
+            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2L
+            else -> 0L
           }
           // Date taken is milliseconds since epoch, Date added is seconds since epoch
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
@@ -140,22 +171,20 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val width = c.getInt(widthColumn).toLong()
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
-          val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
+          val duration = if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0L
           else c.getLong(durationColumn) / 1000
           val orientation = c.getInt(orientationColumn)
           val mimeType = c.getStringOrNull(mimeTypeColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
-          val playbackStyle: Long = when {
-            mediaType == 2 -> 1L           // video
-            mimeType == "image/gif" -> 2L  // animated
-            else -> 0L                     // static image
-          }
+          val playbackStyle = detectPlaybackStyle(
+            numericId, rawMediaType, mimeType, specialFormatColumn, xmpColumn, c
+          )
 
           val asset = PlatformAsset(
             id,
             name,
-            mediaType.toLong(),
+            assetType,
             createdAt,
             modifiedAt,
             width,
@@ -163,12 +192,105 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
             duration,
             orientation.toLong(),
             isFavorite,
-            playbackStyle = playbackStyle,
+            playbackStyle = playbackStyle.ordinal.toLong(),
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
       }
     }
+  }
+
+  /**
+   * Detects the playback style for an asset using _special_format (API 33+)
+   * or XMP / MIME / RIFF header fallbacks (pre-33).
+   */
+  @SuppressLint("NewApi")
+  private fun detectPlaybackStyle(
+    assetId: Long,
+    rawMediaType: Int,
+    mimeType: String?,
+    specialFormatColumn: Int,
+    xmpColumn: Int,
+    cursor: Cursor
+  ): PlaybackStyle {
+    // video currently has no special formats, so we can short circuit and avoid unnecessary work
+    if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
+      return PlaybackStyle.VIDEO
+    }
+
+    // API 33+: use _special_format from cursor
+    if (specialFormatColumn != -1) {
+      val specialFormat = cursor.getInt(specialFormatColumn)
+      return when {
+        specialFormat == SPECIAL_FORMAT_MOTION_PHOTO -> PlaybackStyle.LIVE_PHOTO
+        specialFormat == SPECIAL_FORMAT_GIF || specialFormat == SPECIAL_FORMAT_ANIMATED_WEBP -> PlaybackStyle.ANIMATED
+        rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> PlaybackStyle.VIDEO // technically isn't needed, but if code above gets changed later its better to have this as safeguard
+        rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> PlaybackStyle.IMAGE
+        else -> PlaybackStyle.UNKNOWN
+      }
+    }
+
+    // Pre-API 33 fallback
+    val uri = ContentUris.withAppendedId(
+      MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+      assetId
+    )
+
+    // Read XMP from cursor (API 30+) or ExifInterface stream (pre-30)
+    var xmp: String? = if (xmpColumn != -1) {
+      cursor.getBlob(xmpColumn)?.toString(Charsets.UTF_8)
+    } else null
+
+    if (xmp == null && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+      try {
+        ctx.contentResolver.openInputStream(uri)?.use { stream ->
+          xmp = ExifInterface(stream).getAttribute(ExifInterface.TAG_XMP)
+        }
+      } catch (_: Exception) { }
+    }
+
+    if (xmp != null && ("GCamera:MotionPhoto" in xmp!! || "Camera:MotionPhoto" in xmp!!)) {
+      return PlaybackStyle.LIVE_PHOTO
+    }
+
+    if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
+      if (mimeType == "image/gif") return PlaybackStyle.ANIMATED
+      if (mimeType == "image/webp") {
+        try {
+          ctx.contentResolver.openInputStream(uri)?.use { stream ->
+            val header = ByteArray(64)
+            if (stream.read(header) < 30) return PlaybackStyle.IMAGE
+
+            val riff = String(header, 0, 4, Charsets.US_ASCII)
+            val webp = String(header, 8, 4, Charsets.US_ASCII)
+            if (riff != "RIFF" || webp != "WEBP") return PlaybackStyle.IMAGE
+
+            var offset = 12
+            while (offset + 8 <= header.size) {
+              val chunk = String(header, offset, 4, Charsets.US_ASCII)
+              val size =
+                (header[offset + 4].toInt() and 0xFF) or
+                  ((header[offset + 5].toInt() and 0xFF) shl 8) or
+                  ((header[offset + 6].toInt() and 0xFF) shl 16) or
+                  ((header[offset + 7].toInt() and 0xFF) shl 24)
+
+              if (chunk == "VP8X") {
+                val flags = header[offset + 8].toInt() and 0xFF
+                return when {
+                  (flags and 0x02) != 0 -> PlaybackStyle.ANIMATED // Animation flag
+                  else -> PlaybackStyle.IMAGE
+                }
+              }
+
+              offset += 8 + size + (size % 2) // padding
+            }
+          }
+        } catch (_: Exception) { }
+      }
+      return PlaybackStyle.IMAGE
+    }
+
+    return PlaybackStyle.UNKNOWN
   }
 
   fun getAlbums(): List<PlatformAlbum> {

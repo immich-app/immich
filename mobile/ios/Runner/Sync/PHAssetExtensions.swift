@@ -3,11 +3,11 @@ import Photos
 extension PHAsset {
   var playbackStyleValue: Int64 {
     switch playbackStyle {
-    case .image: return 0
-    case .imageAnimated: return 2
-    case .livePhoto: return 3
-    case .video: return 1
-    case .videoLooping: return 4
+    case .image: return 1
+    case .imageAnimated: return 3
+    case .livePhoto: return 4
+    case .video: return 2
+    case .videoLooping: return 5
     @unknown default: return 0
     }
   }
