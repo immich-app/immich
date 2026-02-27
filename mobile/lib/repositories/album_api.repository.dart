@@ -97,7 +97,7 @@ class AlbumApiRepository extends ApiRepository {
     for (final result in response) {
       if (result.success) {
         added.add(result.id);
-      } else if (result.error == BulkIdResponseDtoErrorEnum.duplicate) {
+      } else if (result.error == BulkIdErrorReason.duplicate) {
         duplicates.add(result.id);
       }
     }
