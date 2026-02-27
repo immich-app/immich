@@ -86,7 +86,12 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final codec = await request.loadCodec();
-      if (codec == null || isCancelled) {
+      if (codec == null) {
+        PaintingBinding.instance.imageCache.evict(this);
+        return null;
+      }
+      if(isCancelled){
+        codec.dispose();
         PaintingBinding.instance.imageCache.evict(this);
         return null;
       }

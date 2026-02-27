@@ -41,6 +41,9 @@ class RemoteImageRequest extends ImageRequest {
 
     final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, encoded: true);
     if (info == null || _isCancelled) {
+      if (info case {'pointer': int pointer}) {
+        malloc.free(Pointer<Uint8>.fromAddress(pointer));
+      }
       return null;
     }
 

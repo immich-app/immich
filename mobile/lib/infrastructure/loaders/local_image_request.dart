@@ -56,6 +56,10 @@ class LocalImageRequest extends ImageRequest {
       encoded: true,
     );
     if (info == null || _isCancelled) {
+      // Free the native memory if the request was cancelled after the platform call returned.
+      if (info case {'pointer': int pointer}) {
+        malloc.free(Pointer<Uint8>.fromAddress(pointer));
+      }
       return null;
     }
 
