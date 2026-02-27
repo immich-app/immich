@@ -86,6 +86,8 @@ class AssetResponseDto {
   bool hasMetadata;
 
   /// Asset height
+  ///
+  /// Minimum value: 0
   num? height;
 
   /// Asset ID
@@ -159,7 +161,6 @@ class AssetResponseDto {
   /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.
   String? thumbhash;
 
-  /// Asset type
   AssetTypeEnum type;
 
   List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
@@ -167,10 +168,11 @@ class AssetResponseDto {
   /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.
   DateTime updatedAt;
 
-  /// Asset visibility
   AssetVisibility visibility;
 
   /// Asset width
+  ///
+  /// Minimum value: 0
   num? width;
 
   @override

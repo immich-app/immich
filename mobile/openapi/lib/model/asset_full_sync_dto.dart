@@ -31,6 +31,7 @@ class AssetFullSyncDto {
   /// Maximum number of assets to return
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int limit;
 
   /// Sync assets updated until this date
@@ -71,7 +72,9 @@ class AssetFullSyncDto {
     //  json[r'lastId'] = null;
     }
       json[r'limit'] = this.limit;
-      json[r'updatedUntil'] = this.updatedUntil.toUtc().toIso8601String();
+      json[r'updatedUntil'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedUntil.millisecondsSinceEpoch
+        : this.updatedUntil.toUtc().toIso8601String();
     if (this.userId != null) {
       json[r'userId'] = this.userId;
     } else {
@@ -91,7 +94,7 @@ class AssetFullSyncDto {
       return AssetFullSyncDto(
         lastId: mapValueOfType<String>(json, r'lastId'),
         limit: mapValueOfType<int>(json, r'limit')!,
-        updatedUntil: mapDateTime(json, r'updatedUntil', r'')!,
+        updatedUntil: mapDateTime(json, r'updatedUntil', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         userId: mapValueOfType<String>(json, r'userId'),
       );
     }

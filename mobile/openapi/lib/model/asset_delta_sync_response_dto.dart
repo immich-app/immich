@@ -24,7 +24,6 @@ class AssetDeltaSyncResponseDto {
   /// Whether full sync is needed
   bool needsFullSync;
 
-  /// Upserted assets
   List<AssetResponseDto> upserted;
 
   @override

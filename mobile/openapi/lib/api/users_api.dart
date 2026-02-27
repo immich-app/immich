@@ -447,7 +447,7 @@ class UsersApi {
   /// Retrieve user product key
   ///
   /// Retrieve information about whether the current user has a registered product key.
-  Future<LicenseResponseDto?> getUserLicense() async {
+  Future<UserLicense?> getUserLicense() async {
     final response = await getUserLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -456,7 +456,7 @@ class UsersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserLicense',) as UserLicense;
     
     }
     return null;
@@ -602,7 +602,7 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
-  Future<LicenseResponseDto?> setUserLicense(LicenseKeyDto licenseKeyDto,) async {
+  Future<UserLicense?> setUserLicense(LicenseKeyDto licenseKeyDto,) async {
     final response = await setUserLicenseWithHttpInfo(licenseKeyDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -611,7 +611,7 @@ class UsersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LicenseResponseDto',) as LicenseResponseDto;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserLicense',) as UserLicense;
     
     }
     return null;

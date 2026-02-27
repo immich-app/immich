@@ -520,7 +520,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
   Future<Response> runQueueCommandLegacyWithHttpInfo(QueueName name, QueueCommandDto queueCommandDto,) async {
@@ -556,7 +555,6 @@ class DeprecatedApi {
   /// Parameters:
   ///
   /// * [QueueName] name (required):
-  ///   Queue name
   ///
   /// * [QueueCommandDto] queueCommandDto (required):
   Future<QueueResponseLegacyDto?> runQueueCommandLegacy(QueueName name, QueueCommandDto queueCommandDto,) async {

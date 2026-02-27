@@ -864,7 +864,6 @@ class AssetsApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   Future<Response> getAssetStatisticsWithHttpInfo({ bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/statistics';
@@ -913,7 +912,6 @@ class AssetsApi {
   ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   Future<AssetStatsResponseDto?> getAssetStatistics({ bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     final response = await getAssetStatisticsWithHttpInfo( isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1592,7 +1590,6 @@ class AssetsApi {
   ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  ///   Asset visibility
   Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
@@ -1731,7 +1728,6 @@ class AssetsApi {
   ///   Sidecar file data
   ///
   /// * [AssetVisibility] visibility:
-  ///   Asset visibility
   Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, List<AssetMetadataUpsertItemDto>? metadata, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, metadata: metadata, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -1763,7 +1759,6 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  ///   Asset media size
   ///
   /// * [String] slug:
   Future<Response> viewAssetWithHttpInfo(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {
@@ -1819,7 +1814,6 @@ class AssetsApi {
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
-  ///   Asset media size
   ///
   /// * [String] slug:
   Future<MultipartFile?> viewAsset(String id, { bool? edited, String? key, AssetMediaSize? size, String? slug, }) async {

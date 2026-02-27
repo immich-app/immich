@@ -26,6 +26,7 @@ class OcrConfig {
   /// Maximum resolution for OCR processing
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int maxResolution;
 
   /// Minimum confidence score for text detection

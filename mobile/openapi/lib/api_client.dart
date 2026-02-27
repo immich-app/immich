@@ -264,6 +264,8 @@ class ApiClient {
           return AssetFaceWithoutPersonResponseDto.fromJson(value);
         case 'AssetFullSyncDto':
           return AssetFullSyncDto.fromJson(value);
+        case 'AssetIdErrorReason':
+          return AssetIdErrorReasonTypeTransformer().decode(value);
         case 'AssetIdsDto':
           return AssetIdsDto.fromJson(value);
         case 'AssetIdsResponseDto':
@@ -298,6 +300,8 @@ class ApiClient {
           return AssetOcrResponseDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
+        case 'AssetRejectReason':
+          return AssetRejectReasonTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStackResponseDto':
@@ -306,6 +310,8 @@ class ApiClient {
           return AssetStatsResponseDto.fromJson(value);
         case 'AssetTypeEnum':
           return AssetTypeEnumTypeTransformer().decode(value);
+        case 'AssetUploadAction':
+          return AssetUploadActionTypeTransformer().decode(value);
         case 'AssetVisibility':
           return AssetVisibilityTypeTransformer().decode(value);
         case 'AudioCodec':
@@ -402,8 +408,6 @@ class ApiClient {
           return LibraryStatsResponseDto.fromJson(value);
         case 'LicenseKeyDto':
           return LicenseKeyDto.fromJson(value);
-        case 'LicenseResponseDto':
-          return LicenseResponseDto.fromJson(value);
         case 'LogLevel':
           return LogLevelTypeTransformer().decode(value);
         case 'LoginCredentialDto':
@@ -530,6 +534,14 @@ class ApiClient {
           return PluginContextTypeTypeTransformer().decode(value);
         case 'PluginFilterResponseDto':
           return PluginFilterResponseDto.fromJson(value);
+        case 'PluginJsonSchema':
+          return PluginJsonSchema.fromJson(value);
+        case 'PluginJsonSchemaProperty':
+          return PluginJsonSchemaProperty.fromJson(value);
+        case 'PluginJsonSchemaPropertyAdditionalProperties':
+          return PluginJsonSchemaPropertyAdditionalProperties.fromJson(value);
+        case 'PluginJsonSchemaType':
+          return PluginJsonSchemaTypeTypeTransformer().decode(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
         case 'PluginTriggerResponseDto':

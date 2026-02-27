@@ -39,7 +39,9 @@ class AssetDeltaSyncDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'updatedAfter'] = this.updatedAfter.toUtc().toIso8601String();
+      json[r'updatedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAfter.millisecondsSinceEpoch
+        : this.updatedAfter.toUtc().toIso8601String();
       json[r'userIds'] = this.userIds;
     return json;
   }
@@ -53,7 +55,7 @@ class AssetDeltaSyncDto {
       final json = value.cast<String, dynamic>();
 
       return AssetDeltaSyncDto(
-        updatedAfter: mapDateTime(json, r'updatedAfter', r'')!,
+        updatedAfter: mapDateTime(json, r'updatedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')!,
         userIds: json[r'userIds'] is Iterable
             ? (json[r'userIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],

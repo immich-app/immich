@@ -43,6 +43,9 @@ class AlbumResponseDto {
   List<AlbumUserResponseDto> albumUsers;
 
   /// Number of assets
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int assetCount;
 
   List<AssetResponseDto> assets;
@@ -82,7 +85,6 @@ class AlbumResponseDto {
   ///
   DateTime? lastModifiedAssetTimestamp;
 
-  /// Asset sort order
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

@@ -34,7 +34,7 @@ class MetadataSearchDto {
     this.make,
     this.model,
     this.ocr,
-    this.order = AssetOrder.desc,
+    this.order,
     this.originalFileName,
     this.originalPath,
     this.page,
@@ -192,12 +192,6 @@ class MetadataSearchDto {
   String? libraryId;
 
   /// Filter by camera make
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? make;
 
   /// Filter by camera model
@@ -212,8 +206,13 @@ class MetadataSearchDto {
   ///
   String? ocr;
 
-  /// Sort order
-  AssetOrder order;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetOrder? order;
 
   /// Filter by original file name
   ///
@@ -325,7 +324,6 @@ class MetadataSearchDto {
   ///
   DateTime? trashedBefore;
 
-  /// Asset type filter
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -352,7 +350,6 @@ class MetadataSearchDto {
   ///
   DateTime? updatedBefore;
 
-  /// Filter by visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -468,7 +465,7 @@ class MetadataSearchDto {
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (ocr == null ? 0 : ocr!.hashCode) +
-    (order.hashCode) +
+    (order == null ? 0 : order!.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
@@ -514,12 +511,16 @@ class MetadataSearchDto {
     //  json[r'country'] = null;
     }
     if (this.createdAfter != null) {
-      json[r'createdAfter'] = this.createdAfter!.toUtc().toIso8601String();
+      json[r'createdAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdAfter!.millisecondsSinceEpoch
+        : this.createdAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'createdAfter'] = null;
     }
     if (this.createdBefore != null) {
-      json[r'createdBefore'] = this.createdBefore!.toUtc().toIso8601String();
+      json[r'createdBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.createdBefore!.millisecondsSinceEpoch
+        : this.createdBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'createdBefore'] = null;
     }
@@ -598,7 +599,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'ocr'] = null;
     }
+    if (this.order != null) {
       json[r'order'] = this.order;
+    } else {
+    //  json[r'order'] = null;
+    }
     if (this.originalFileName != null) {
       json[r'originalFileName'] = this.originalFileName;
     } else {
@@ -641,12 +646,16 @@ class MetadataSearchDto {
     //  json[r'tagIds'] = null;
     }
     if (this.takenAfter != null) {
-      json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
+      json[r'takenAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.takenAfter!.millisecondsSinceEpoch
+        : this.takenAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'takenAfter'] = null;
     }
     if (this.takenBefore != null) {
-      json[r'takenBefore'] = this.takenBefore!.toUtc().toIso8601String();
+      json[r'takenBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.takenBefore!.millisecondsSinceEpoch
+        : this.takenBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'takenBefore'] = null;
     }
@@ -656,12 +665,16 @@ class MetadataSearchDto {
     //  json[r'thumbnailPath'] = null;
     }
     if (this.trashedAfter != null) {
-      json[r'trashedAfter'] = this.trashedAfter!.toUtc().toIso8601String();
+      json[r'trashedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.trashedAfter!.millisecondsSinceEpoch
+        : this.trashedAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'trashedAfter'] = null;
     }
     if (this.trashedBefore != null) {
-      json[r'trashedBefore'] = this.trashedBefore!.toUtc().toIso8601String();
+      json[r'trashedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.trashedBefore!.millisecondsSinceEpoch
+        : this.trashedBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'trashedBefore'] = null;
     }
@@ -671,12 +684,16 @@ class MetadataSearchDto {
     //  json[r'type'] = null;
     }
     if (this.updatedAfter != null) {
-      json[r'updatedAfter'] = this.updatedAfter!.toUtc().toIso8601String();
+      json[r'updatedAfter'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedAfter!.millisecondsSinceEpoch
+        : this.updatedAfter!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedAfter'] = null;
     }
     if (this.updatedBefore != null) {
-      json[r'updatedBefore'] = this.updatedBefore!.toUtc().toIso8601String();
+      json[r'updatedBefore'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+        ? this.updatedBefore!.millisecondsSinceEpoch
+        : this.updatedBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'updatedBefore'] = null;
     }
@@ -723,8 +740,8 @@ class MetadataSearchDto {
         checksum: mapValueOfType<String>(json, r'checksum'),
         city: mapValueOfType<String>(json, r'city'),
         country: mapValueOfType<String>(json, r'country'),
-        createdAfter: mapDateTime(json, r'createdAfter', r''),
-        createdBefore: mapDateTime(json, r'createdBefore', r''),
+        createdAfter: mapDateTime(json, r'createdAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        createdBefore: mapDateTime(json, r'createdBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         description: mapValueOfType<String>(json, r'description'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
@@ -740,7 +757,7 @@ class MetadataSearchDto {
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         ocr: mapValueOfType<String>(json, r'ocr'),
-        order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
+        order: AssetOrder.fromJson(json[r'order']),
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
         page: num.parse('${json[r'page']}'),
@@ -756,14 +773,14 @@ class MetadataSearchDto {
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        takenAfter: mapDateTime(json, r'takenAfter', r''),
-        takenBefore: mapDateTime(json, r'takenBefore', r''),
+        takenAfter: mapDateTime(json, r'takenAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        takenBefore: mapDateTime(json, r'takenBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
-        trashedAfter: mapDateTime(json, r'trashedAfter', r''),
-        trashedBefore: mapDateTime(json, r'trashedBefore', r''),
+        trashedAfter: mapDateTime(json, r'trashedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        trashedBefore: mapDateTime(json, r'trashedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         type: AssetTypeEnum.fromJson(json[r'type']),
-        updatedAfter: mapDateTime(json, r'updatedAfter', r''),
-        updatedBefore: mapDateTime(json, r'updatedBefore', r''),
+        updatedAfter: mapDateTime(json, r'updatedAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        updatedBefore: mapDateTime(json, r'updatedBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
         withDeleted: mapValueOfType<bool>(json, r'withDeleted'),
         withExif: mapValueOfType<bool>(json, r'withExif'),

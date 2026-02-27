@@ -127,7 +127,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
-  ///   Suggestion type
   ///
   /// * [String] country:
   ///   Filter by country
@@ -198,7 +197,6 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [SearchSuggestionType] type (required):
-  ///   Suggestion type
   ///
   /// * [String] country:
   ///   Filter by country
@@ -434,7 +432,6 @@ class SearchApi {
   ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
-  ///   Asset type filter
   ///
   /// * [DateTime] updatedAfter:
   ///   Filter by update date (after)
@@ -443,7 +440,6 @@ class SearchApi {
   ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   ///
   /// * [bool] withDeleted:
   ///   Include deleted assets
@@ -657,7 +653,6 @@ class SearchApi {
   ///   Filter by trash date (before)
   ///
   /// * [AssetTypeEnum] type:
-  ///   Asset type filter
   ///
   /// * [DateTime] updatedAfter:
   ///   Filter by update date (after)
@@ -666,7 +661,6 @@ class SearchApi {
   ///   Filter by update date (before)
   ///
   /// * [AssetVisibility] visibility:
-  ///   Filter by visibility
   ///
   /// * [bool] withDeleted:
   ///   Include deleted assets
