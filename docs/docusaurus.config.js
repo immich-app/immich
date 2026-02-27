@@ -6,7 +6,7 @@ const prism = require('prism-react-renderer');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Immich',
-  tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
+  tagline: 'Self-hosted photo and video management solution',
   url: 'https://docs.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -93,33 +93,13 @@ const config = {
             position: 'right',
           },
           {
-            to: '/overview/quick-start',
+            href: 'https://immich.app/',
             position: 'right',
-            label: 'Docs',
-          },
-          {
-            href: 'https://immich.app/roadmap',
-            position: 'right',
-            label: 'Roadmap',
-          },
-          {
-            href: 'https://api.immich.app/',
-            position: 'right',
-            label: 'API',
-          },
-          {
-            href: 'https://immich.store',
-            position: 'right',
-            label: 'Merch',
+            label: 'Home',
           },
           {
             href: 'https://github.com/immich-app/immich',
             label: 'GitHub',
-            position: 'right',
-          },
-          {
-            href: 'https://discord.immich.app',
-            label: 'Discord',
             position: 'right',
           },
           {
@@ -134,19 +114,78 @@ const config = {
         style: 'light',
         links: [
           {
-            title: 'Overview',
+            title: 'Download',
             items: [
               {
-                label: 'Quick start',
-                to: '/overview/quick-start',
+                label: 'Android',
+                href: 'https://get.immich.app/android',
               },
               {
-                label: 'Installation',
-                to: '/install/requirements',
+                label: 'iOS',
+                href: 'https://get.immich.app/ios',
               },
               {
-                label: 'Contributing',
-                to: '/overview/support-the-project',
+                label: 'Server',
+                href: 'https://immich.app/download',
+              },
+            ],
+          },
+          {
+            title: 'Company',
+            items: [
+              {
+                label: 'FUTO',
+                href: 'https://futo.tech/',
+              },
+              {
+                label: 'Purchase',
+                href: 'https://buy.immich.app/',
+              },
+              {
+                label: 'Merch',
+                href: 'https://immich.store/',
+              },
+            ],
+          },
+          {
+            title: 'Sites',
+            items: [
+              {
+                label: 'Home',
+                href: 'https://immich.app',
+              },
+              {
+                label: 'My Immich',
+                href: 'https://my.immich.app/',
+              },
+              {
+                label: 'Awesome Immich',
+                href: 'https://awesome.immich.app/',
+              },
+              {
+                label: 'Immich API',
+                href: 'https://api.immich.app/',
+              },
+              {
+                label: 'Immich Data',
+                href: 'https://data.immich.app/',
+              },
+              {
+                label: 'Immich Datasets',
+                href: 'https://datasets.immich.app/',
+              },
+            ],
+          },
+          {
+            title: 'Miscellaneous',
+            items: [
+              {
+                label: 'Roadmap',
+                href: 'https://immich.app/roadmap',
+              },
+              {
+                label: 'Cursed Knowledge',
+                href: 'https://immich.app/cursed-knowledge',
               },
               {
                 label: 'Privacy Policy',
@@ -155,24 +194,7 @@ const config = {
             ],
           },
           {
-            title: 'Documentation',
-            items: [
-              {
-                label: 'Roadmap',
-                href: 'https://immich.app/roadmap',
-              },
-              {
-                label: 'API',
-                href: 'https://api.immich.app/',
-              },
-              {
-                label: 'Cursed Knowledge',
-                href: 'https://immich.app/cursed-knowledge',
-              },
-            ],
-          },
-          {
-            title: 'Links',
+            title: 'Social',
             items: [
               {
                 label: 'GitHub',

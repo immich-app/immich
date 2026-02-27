@@ -1423,6 +1423,20 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should handle 0 as unrated -> null', async () => {
+      const asset = AssetFactory.create();
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
+      mockReadTags({ Rating: 0 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: null,
+        }),
+        { lockedPropertiesBehavior: 'skip' },
+      );
+    });
+
     it('should handle valid negative rating value', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(asset);
@@ -1779,6 +1793,28 @@ describe(MetadataService.name, () => {
         'dateTimeOriginal',
         'timeZone',
       ]);
+    });
+
+    it('should write rating', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      asset.exifInfo.rating = 4;
+
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['rating']);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { Rating: 4 });
+      expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, ['rating']);
+    });
+
+    it('should write null rating as 0', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      asset.exifInfo.rating = null;
+
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['rating']);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { Rating: 0 });
+      expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, ['rating']);
     });
   });
 

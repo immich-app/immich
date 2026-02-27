@@ -344,8 +344,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@immich/sql-tools':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.3.2
+        version: 0.3.2
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.4(@nestjs/common@11.1.14(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(bullmq@5.69.3)
@@ -3017,8 +3017,9 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/sql-tools@0.2.0':
-    resolution: {integrity: sha512-AH0GRIUYrckNKuid5uO33vgRbGaznhRtArdQ91K310A1oUFjaoNzOaZyZhXwEmft3WYeC1bx4fdgUeois2QH5A==}
+  '@immich/sql-tools@0.3.2':
+    resolution: {integrity: sha512-UWhy/+Lf8C1dJip5wPfFytI3Vq/9UyDKQE1ROjXwVhT6E/CPgBkRLwHPetjYGPJ4o1JVVpRLnEEJCXdvzqVpGw==}
+    hasBin: true
 
   '@immich/svelte-markdown-preprocess@0.2.1':
     resolution: {integrity: sha512-mbr/g75lO8Zh+ELCuYrZP0XB4gf2UbK8rJcGYMYxFJJzMMunV+sm9FqtV1dbwW2dpXzCZGz1XPCEZ6oo526TbA==}
@@ -6057,6 +6058,10 @@ packages:
   commander@13.1.0:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
     engines: {node: '>=18'}
+
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
+    engines: {node: '>=20'}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -14855,8 +14860,9 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/sql-tools@0.2.0':
+  '@immich/sql-tools@0.3.2':
     dependencies:
+      commander: 14.0.3
       kysely: 0.28.11
       kysely-postgres-js: 3.0.0(kysely@0.28.11)(postgres@3.4.8)
       pg-connection-string: 2.11.0
@@ -18223,6 +18229,8 @@ snapshots:
   commander@12.1.0: {}
 
   commander@13.1.0: {}
+
+  commander@14.0.3: {}
 
   commander@2.20.3: {}
 

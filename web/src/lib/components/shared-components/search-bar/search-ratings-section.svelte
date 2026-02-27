@@ -4,13 +4,13 @@
   import Combobox from '../combobox.svelte';
 
   interface Props {
-    rating?: number;
+    rating?: number | null;
   }
 
   let { rating = $bindable() }: Props = $props();
 
   const options = [
-    { value: '0', label: $t('rating_count', { values: { count: 0 } }) },
+    { value: 'null', label: $t('rating_count', { values: { count: 0 } }) },
     { value: '1', label: $t('rating_count', { values: { count: 1 } }) },
     { value: '2', label: $t('rating_count', { values: { count: 2 } }) },
     { value: '3', label: $t('rating_count', { values: { count: 3 } }) },
@@ -26,7 +26,7 @@
     placeholder={$t('search_rating')}
     hideLabel
     {options}
-    selectedOption={rating === undefined ? undefined : options[rating]}
+    selectedOption={rating === undefined ? undefined : options[rating === null ? 0 : rating]}
     onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
   />
 </div>

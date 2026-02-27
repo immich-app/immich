@@ -1,5 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import {
+  ExpressionBuilder,
+  Insertable,
+  Kysely,
+  NotNull,
+  Selectable,
+  SelectQueryBuilder,
+  sql,
+  Updateable,
+  UpdateResult,
+} from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
@@ -36,6 +46,13 @@ import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
+export interface BoundingBox {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 interface AssetStatsOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -64,6 +81,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  bbox?: BoundingBox;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -119,6 +137,34 @@ interface GetByIdsRelations {
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
   sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;
+
+const getBoundingCircle = (bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const eastUnwrapped = west <= east ? east : east + 360;
+  const centerLongitude = (((west + eastUnwrapped) / 2 + 540) % 360) - 180;
+  const centerLatitude = (south + north) / 2;
+  const radius = sql<number>`greatest(
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${east})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${east}))
+  )`;
+
+  return { centerLatitude, centerLongitude, radius };
+};
+
+const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T>, bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const withLatitude = qb.where('asset_exif.latitude', '>=', south).where('asset_exif.latitude', '<=', north);
+
+  if (west <= east) {
+    return withLatitude.where('asset_exif.longitude', '>=', west).where('asset_exif.longitude', '<=', east);
+  }
+
+  return withLatitude.where((eb) =>
+    eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
+  );
+};
 
 @Injectable()
 export class AssetRepository {
@@ -651,6 +697,20 @@ export class AssetRepository {
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .where(
+                sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+                '@>',
+                sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+              );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
@@ -725,6 +785,18 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb.where(
+              sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+              '@>',
+              sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+            );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
