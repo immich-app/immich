@@ -410,7 +410,7 @@ class SearchApi {
   ///   Filter by person IDs
   ///
   /// * [num] rating:
-  ///   Filter by rating
+  ///   Filter by rating [1-5], or null for unrated
   ///
   /// * [num] size:
   ///   Number of results to return
@@ -633,7 +633,7 @@ class SearchApi {
   ///   Filter by person IDs
   ///
   /// * [num] rating:
-  ///   Filter by rating
+  ///   Filter by rating [1-5], or null for unrated
   ///
   /// * [num] size:
   ///   Number of results to return

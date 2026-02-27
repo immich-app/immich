@@ -1,3 +1,5 @@
+import { AssetEditAction } from 'src/dtos/editing.dto';
+import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -41,6 +43,27 @@ describe('audit', () => {
       await userRepo.delete(user, true);
       await expect(
         ctx.database.selectFrom('stack_audit').select(['id']).where('userId', '=', user.id).execute(),
+      ).resolves.toHaveLength(0);
+    });
+  });
+
+  describe('asset_edit_audit', () => {
+    it('should not cascade asset deletes to asset_edit_audit', async () => {
+      const assetEditRepo = ctx.get(AssetEditRepository);
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      await assetEditRepo.replaceAll(asset.id, [
+        {
+          action: AssetEditAction.Crop,
+          parameters: { x: 10, y: 20, width: 100, height: 200 },
+        },
+      ]);
+
+      await ctx.database.deleteFrom('asset').where('id', '=', asset.id).execute();
+
+      await expect(
+        ctx.database.selectFrom('asset_edit_audit').select(['id']).where('assetId', '=', asset.id).execute(),
       ).resolves.toHaveLength(0);
     });
   });

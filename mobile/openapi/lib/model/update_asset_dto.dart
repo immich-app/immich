@@ -71,16 +71,10 @@ class UpdateAssetDto {
   ///
   num? longitude;
 
-  /// Rating
+  /// Rating in range [1-5], or null for unrated
   ///
   /// Minimum value: -1
   /// Maximum value: 5
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? rating;
 
   /// Asset visibility
@@ -178,7 +172,9 @@ class UpdateAssetDto {
         latitude: num.parse('${json[r'latitude']}'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
         longitude: num.parse('${json[r'longitude']}'),
-        rating: num.parse('${json[r'rating']}'),
+        rating: json[r'rating'] == null
+            ? null
+            : num.parse('${json[r'rating']}'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }

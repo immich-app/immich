@@ -20,7 +20,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditActionListDto, AssetEditsDto } from 'src/dtos/editing.dto';
+import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -235,7 +235,7 @@ export class AssetController {
     description: 'Retrieve a series of edit actions (crop, rotate, mirror) associated with the specified asset.',
     history: new HistoryBuilder().added('v2.5.0').beta('v2.5.0'),
   })
-  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsDto> {
+  getAssetEdits(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetEditsResponseDto> {
     return this.service.getAssetEdits(auth, id);
   }
 
@@ -249,8 +249,8 @@ export class AssetController {
   editAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
-    @Body() dto: AssetEditActionListDto,
-  ): Promise<AssetEditsDto> {
+    @Body() dto: AssetEditsCreateDto,
+  ): Promise<AssetEditsResponseDto> {
     return this.service.editAsset(auth, id, dto);
   }
 

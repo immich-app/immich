@@ -106,6 +106,7 @@ import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_video.page.dart';
 import 'package:immich_mobile/presentation/pages/editing/drift_crop.page.dart';
+import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.page.dart';
 import 'package:immich_mobile/presentation/pages/editing/drift_edit.page.dart';
 import 'package:immich_mobile/presentation/pages/editing/drift_filter.page.dart';
 import 'package:immich_mobile/presentation/pages/local_timeline.page.dart';
@@ -198,6 +199,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditImageRoute.page),
     AutoRoute(page: CropImageRoute.page),
     AutoRoute(page: FilterImageRoute.page),
+    AutoRoute(page: ProfilePictureCropRoute.page),
     CustomRoute(
       page: FavoritesRoute.page,
       guards: [_authGuard, _duplicateGuard],

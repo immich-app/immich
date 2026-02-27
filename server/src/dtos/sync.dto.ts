@@ -2,6 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { AssetEditAction } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
   AssetOrder,
@@ -219,6 +220,24 @@ export class SyncAssetExifV1 {
 }
 
 @ExtraModel()
+export class SyncAssetEditV1 {
+  id!: string;
+  assetId!: string;
+
+  @ValidateEnum({ enum: AssetEditAction, name: 'AssetEditAction' })
+  action!: AssetEditAction;
+  parameters!: object;
+
+  @ApiProperty({ type: 'integer' })
+  sequence!: number;
+}
+
+@ExtraModel()
+export class SyncAssetEditDeleteV1 {
+  editId!: string;
+}
+
+@ExtraModel()
 export class SyncAssetMetadataV1 {
   @ApiProperty({ description: 'Asset ID' })
   assetId!: string;
@@ -423,6 +442,20 @@ export class SyncAssetFaceV1 {
 }
 
 @ExtraModel()
+export class SyncAssetFaceV2 extends SyncAssetFaceV1 {
+  @ApiProperty({ description: 'Face deleted at' })
+  deletedAt!: Date | null;
+  @ApiProperty({ description: 'Is the face visible in the asset' })
+  isVisible!: boolean;
+}
+
+export function syncAssetFaceV2ToV1(faceV2: SyncAssetFaceV2): SyncAssetFaceV1 {
+  const { deletedAt: _, isVisible: __, ...faceV1 } = faceV2;
+
+  return faceV1;
+}
+
+@ExtraModel()
 export class SyncAssetFaceDeleteV1 {
   @ApiProperty({ description: 'Asset face ID' })
   assetFaceId!: string;
@@ -466,6 +499,8 @@ export type SyncItem = {
   [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
   [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
+  [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
@@ -497,6 +532,7 @@ export type SyncItem = {
   [SyncEntityType.PersonV1]: SyncPersonV1;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
+  [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;

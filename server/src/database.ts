@@ -352,6 +352,7 @@ export const columns = {
     'asset_file.type',
     'asset_file.isEdited',
     'asset_file.isProgressive',
+    'asset_file.isTransparent',
   ],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
@@ -435,6 +436,13 @@ export const columns = {
     'asset_exif.profileDescription',
     'asset_exif.rating',
     'asset_exif.fps',
+  ],
+  syncAssetEdit: [
+    'asset_edit.id',
+    'asset_edit.assetId',
+    'asset_edit.sequence',
+    'asset_edit.action',
+    'asset_edit.parameters',
   ],
   exif: [
     'asset_exif.assetId',

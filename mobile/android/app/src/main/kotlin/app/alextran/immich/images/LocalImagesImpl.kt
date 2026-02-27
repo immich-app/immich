@@ -48,7 +48,6 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
     copyPixelsToBuffer(buffer)
-    recycle()
     return mapOf(
       "pointer" to pointer,
       "width" to width.toLong(),
@@ -57,8 +56,9 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
     )
   } catch (e: Exception) {
     NativeBuffer.free(pointer)
-    recycle()
     throw e
+  } finally {
+    recycle()
   }
 }
 

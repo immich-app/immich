@@ -98,6 +98,7 @@ export class JobService extends BaseService {
 
       case JobName.AssetEditThumbnailGeneration: {
         const asset = await this.assetRepository.getById(item.data.id);
+        const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
 
         if (asset) {
           this.websocketRepository.clientSend('AssetEditReadyV1', asset.ownerId, {
@@ -122,6 +123,7 @@ export class JobService extends BaseService {
               height: asset.height,
               isEdited: asset.isEdited,
             },
+            edit: edits,
           });
         }
 

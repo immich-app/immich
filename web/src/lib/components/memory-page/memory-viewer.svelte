@@ -277,7 +277,7 @@
   afterNavigate(({ from, to }) => {
     memoryStore.ready().then(
       () => {
-        let target = null;
+        let target;
         if (to?.params?.assetId) {
           target = to;
         } else if (from?.params?.assetId) {

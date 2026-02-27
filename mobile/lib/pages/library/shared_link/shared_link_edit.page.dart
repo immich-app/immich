@@ -29,6 +29,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
     final descriptionController = useTextEditingController(text: existingLink?.description ?? "");
     final descriptionFocusNode = useFocusNode();
     final passwordController = useTextEditingController(text: existingLink?.password ?? "");
+    final slugController = useTextEditingController(text: existingLink?.slug ?? "");
+    final slugFocusNode = useFocusNode();
     final showMetadata = useState(existingLink?.showMetadata ?? true);
     final allowDownload = useState(existingLink?.allowDownload ?? true);
     final allowUpload = useState(existingLink?.allowUpload ?? false);
@@ -105,6 +107,26 @@ class SharedLinkEditPage extends HookConsumerWidget {
           hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
           disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5))),
         ),
+      );
+    }
+
+    Widget buildSlugField() {
+      return TextField(
+        controller: slugController,
+        enabled: newShareLink.value.isEmpty,
+        focusNode: slugFocusNode,
+        textInputAction: TextInputAction.done,
+        autofocus: false,
+        decoration: InputDecoration(
+          labelText: 'custom_url'.tr(),
+          labelStyle: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+          border: const OutlineInputBorder(),
+          hintText: 'custom_url'.tr(),
+          hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
+          disabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5))),
+        ),
+        onTapOutside: (_) => slugFocusNode.unfocus(),
       );
     }
 
@@ -261,6 +283,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: allowUpload.value,
             description: descriptionController.text.isEmpty ? null : descriptionController.text,
             password: passwordController.text.isEmpty ? null : passwordController.text,
+            slug: slugController.text.isEmpty ? null : slugController.text,
             expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
           );
       ref.invalidate(sharedLinksStateProvider);
@@ -274,7 +297,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "${serverUrl}share/${newLink.key}";
+        final hasSlug = newLink.slug?.isNotEmpty == true;
+        final urlPath = hasSlug ? newLink.slug : newLink.key;
+        final basePath = hasSlug ? 's' : 'share';
+        newShareLink.value = "$serverUrl$basePath/$urlPath";
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(
@@ -292,6 +318,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? meta;
       String? desc;
       String? password;
+      String? slug;
       DateTime? expiry;
       bool? changeExpiry;
 
@@ -315,6 +342,12 @@ class SharedLinkEditPage extends HookConsumerWidget {
         password = passwordController.text;
       }
 
+      if (slugController.text != (existingLink!.slug ?? "")) {
+        slug = slugController.text.isEmpty ? null : slugController.text;
+      } else {
+        slug = existingLink!.slug;
+      }
+
       if (editExpiry.value) {
         expiry = expiryAfter.value == 0 ? null : calculateExpiry();
         changeExpiry = true;
@@ -329,6 +362,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             allowUpload: upload,
             description: desc,
             password: password,
+            slug: slug,
             expiresAt: expiry,
             changeExpiry: changeExpiry,
           );
@@ -349,6 +383,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             Padding(padding: const EdgeInsets.all(padding), child: buildLinkTitle()),
             Padding(padding: const EdgeInsets.all(padding), child: buildDescriptionField()),
             Padding(padding: const EdgeInsets.all(padding), child: buildPasswordField()),
+            Padding(padding: const EdgeInsets.all(padding), child: buildSlugField()),
             Padding(
               padding: const EdgeInsets.only(left: padding, right: padding, bottom: padding),
               child: buildShowMetaButton(),

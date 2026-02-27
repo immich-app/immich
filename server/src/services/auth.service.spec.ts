@@ -513,7 +513,7 @@ describe(AuthService.name, () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith(Buffer.from('auth_token (hashed)'));
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
@@ -574,7 +574,7 @@ describe(AuthService.name, () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
-      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith(Buffer.from('auth_token (hashed)'));
     });
   });
 
