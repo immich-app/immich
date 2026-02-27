@@ -1,11 +1,9 @@
 import { Plugin as ExtismPlugin, newPlugin } from '@extism/extism';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { validateOrReject } from 'class-validator';
 import { join } from 'node:path';
 import { Asset, WorkflowAction, WorkflowFilter } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
+import { PluginManifestDto, PluginManifestSchema } from 'src/dtos/plugin-manifest.dto';
 import { mapPlugin, PluginResponseDto, PluginTriggerResponseDto } from 'src/dtos/plugin.dto';
 import { JobName, JobStatus, PluginTriggerType, QueueName } from 'src/enum';
 import { pluginTriggers } from 'src/plugins';
@@ -138,14 +136,7 @@ export class PluginService extends BaseService {
   private async readAndValidateManifest(manifestPath: string): Promise<PluginManifestDto> {
     const content = await this.storageRepository.readTextFile(manifestPath);
     const manifestData = JSON.parse(content);
-    const manifest = plainToInstance(PluginManifestDto, manifestData);
-
-    await validateOrReject(manifest, {
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    });
-
-    return manifest;
+    return PluginManifestSchema.parse(manifestData);
   }
 
   ///////////////////////////////////////////

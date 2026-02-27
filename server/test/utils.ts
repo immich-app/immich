@@ -1,12 +1,14 @@
 import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
-import { CallHandler, ExecutionContext, Provider, ValidationPipe } from '@nestjs/common';
-import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
+import { ClsService } from 'nestjs-cls';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
@@ -14,6 +16,7 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
+import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -113,9 +116,12 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
   const moduleRef = await Test.createTestingModule({
     controllers: [controller],
     providers: [
-      { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
+      { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+      { provide: APP_PIPE, useClass: ZodValidationPipe },
+      { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
+      { provide: ClsService, useValue: { getId: vi.fn() } },
       { provide: AuthService, useValue: { authenticate: vi.fn() } },
       ...providers,
     ],

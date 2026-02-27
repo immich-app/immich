@@ -95,8 +95,8 @@ describe('/asset', () => {
       utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken, {
         isFavorite: true,
-        fileCreatedAt: yesterday.toISO(),
-        fileModifiedAt: yesterday.toISO(),
+        fileCreatedAt: yesterday.toUTC().toISO(),
+        fileModifiedAt: yesterday.toUTC().toISO(),
         assetData: { filename: 'example.mp4' },
       }),
       utils.createAsset(user1.accessToken),
@@ -435,7 +435,8 @@ describe('/asset', () => {
     it('should require access', async () => {
       const { status, body } = await request(app)
         .put(`/assets/${user2Assets[0].id}`)
-        .set('Authorization', `Bearer ${user1.accessToken}`);
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({});
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.noPermission);
     });

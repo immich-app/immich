@@ -517,6 +517,9 @@ importers:
       nestjs-otel:
         specifier: ^7.0.0
         version: 7.0.1(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)
+      nestjs-zod:
+        specifier: ^5.3.0
+        version: 5.3.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.2.6(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6)
       nodemailer:
         specifier: ^8.0.0
         version: 8.0.5
@@ -583,6 +586,9 @@ importers:
       validator:
         specifier: ^13.12.0
         version: 13.15.26
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.0
@@ -9390,6 +9396,17 @@ packages:
       '@nestjs/common': '>= 11 < 12'
       '@nestjs/core': '>= 11 < 12'
 
+  nestjs-zod@5.3.0:
+    resolution: {integrity: sha512-QY6imXm9heMOpWigjFHgMWPvc1ZQHeNQ7pdogo9Q5xj5F8HpqZ972vKlVdkaTyzYlOXJP/yVy3wlF1EjubDQPg==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/swagger': ^7.4.2 || ^8.0.0 || ^11.0.0
+      rxjs: ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@nestjs/swagger':
+        optional: true
+
   next-tick@1.1.0:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
 
@@ -12532,8 +12549,8 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
@@ -12545,33 +12562,33 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@2.0.21(zod@4.2.1)':
+  '@ai-sdk/gateway@2.0.21(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@4.2.1)
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
       '@vercel/oidc': 3.0.5
-      zod: 4.2.1
+      zod: 4.3.6
 
-  '@ai-sdk/provider-utils@3.0.19(zod@4.2.1)':
+  '@ai-sdk/provider-utils@3.0.19(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 4.2.1
+      zod: 4.3.6
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.115(react@19.2.4)(zod@4.2.1)':
+  '@ai-sdk/react@2.0.115(react@19.2.4)(zod@4.3.6)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.19(zod@4.2.1)
-      ai: 5.0.113(zod@4.2.1)
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
+      ai: 5.0.113(zod@4.3.6)
       react: 19.2.4
       swr: 2.3.8(react@19.2.4)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 4.2.1
+      zod: 4.3.6
 
   '@algolia/abtesting@1.12.0':
     dependencies:
@@ -13914,14 +13931,14 @@ snapshots:
 
   '@docsearch/react@4.3.2(@algolia/client-search@5.46.0)(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(search-insights@2.17.3)':
     dependencies:
-      '@ai-sdk/react': 2.0.115(react@19.2.4)(zod@4.2.1)
+      '@ai-sdk/react': 2.0.115(react@19.2.4)(zod@4.3.6)
       '@algolia/autocomplete-core': 1.19.2(@algolia/client-search@5.46.0)(algoliasearch@5.46.0)(search-insights@2.17.3)
       '@docsearch/core': 4.3.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@docsearch/css': 4.3.2
-      ai: 5.0.113(zod@4.2.1)
+      ai: 5.0.113(zod@4.3.6)
       algoliasearch: 5.46.0
       marked: 16.4.2
-      zod: 4.2.1
+      zod: 4.3.6
     optionalDependencies:
       '@types/react': 19.2.14
       react: 19.2.4
@@ -17935,13 +17952,13 @@ snapshots:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  ai@5.0.113(zod@4.2.1):
+  ai@5.0.113(zod@4.3.6):
     dependencies:
-      '@ai-sdk/gateway': 2.0.21(zod@4.2.1)
+      '@ai-sdk/gateway': 2.0.21(zod@4.3.6)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.19(zod@4.2.1)
+      '@ai-sdk/provider-utils': 3.0.19(zod@4.3.6)
       '@opentelemetry/api': 1.9.0
-      zod: 4.2.1
+      zod: 4.3.6
 
   ajv-formats@2.1.1(ajv@8.18.0):
     optionalDependencies:
@@ -22533,6 +22550,15 @@ snapshots:
       response-time: 2.3.4
       tslib: 2.8.1
 
+  nestjs-zod@5.3.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.2.6(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.3.6):
+    dependencies:
+      '@nestjs/common': 11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      deepmerge: 4.3.1
+      rxjs: 7.8.2
+      zod: 4.3.6
+    optionalDependencies:
+      '@nestjs/swagger': 11.2.6(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.18)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+
   next-tick@1.1.0: {}
 
   no-case@3.0.4:
@@ -26252,7 +26278,7 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod@4.2.1: {}
+  zod@4.3.6: {}
 
   zwitch@1.0.5: {}
 

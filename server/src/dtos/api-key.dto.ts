@@ -1,55 +1,42 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArrayMinSize, IsNotEmpty, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { Permission } from 'src/enum';
-import { Optional, ValidateEnum } from 'src/validation';
+import { isoDatetimeToDate } from 'src/validation';
+import z from 'zod';
 
-export class APIKeyCreateDto {
-  @ApiPropertyOptional({ description: 'API key name' })
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  name?: string;
+const PermissionSchema = z.enum(Permission).describe('List of permissions').meta({ id: 'Permission' });
 
-  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, description: 'List of permissions' })
-  @ArrayMinSize(1)
-  permissions!: Permission[];
-}
-
-export class APIKeyUpdateDto {
-  @ApiPropertyOptional({ description: 'API key name' })
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  name?: string;
-
-  @ValidateEnum({
-    enum: Permission,
-    name: 'Permission',
-    description: 'List of permissions',
-    each: true,
-    optional: true,
+const APIKeyCreateSchema = z
+  .object({
+    name: z.string().optional().describe('API key name'),
+    permissions: z.array(PermissionSchema).min(1).describe('List of permissions'),
   })
-  @ArrayMinSize(1)
-  permissions?: Permission[];
-}
+  .meta({ id: 'APIKeyCreateDto' });
 
-export class APIKeyResponseDto {
-  @ApiProperty({ description: 'API key ID' })
-  id!: string;
-  @ApiProperty({ description: 'API key name' })
-  name!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: Date;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: Date;
-  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, description: 'List of permissions' })
-  permissions!: Permission[];
-}
+const APIKeyUpdateSchema = z
+  .object({
+    name: z.string().optional().describe('API key name'),
+    permissions: z.array(PermissionSchema).min(1).optional().describe('List of permissions'),
+  })
+  .meta({ id: 'APIKeyUpdateDto' });
 
-export class APIKeyCreateResponseDto {
-  @ApiProperty({ description: 'API key secret (only shown once)' })
-  secret!: string;
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  apiKey!: APIKeyResponseDto;
-}
+const APIKeyResponseSchema = z
+  .object({
+    id: z.string().describe('API key ID'),
+    name: z.string().describe('API key name'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
+    updatedAt: isoDatetimeToDate.describe('Last update date'),
+    permissions: z.array(PermissionSchema).describe('List of permissions'),
+  })
+  .meta({ id: 'APIKeyResponseDto' });
+
+const APIKeyCreateResponseSchema = z
+  .object({
+    secret: z.string().describe('API key secret (only shown once)'),
+    apiKey: APIKeyResponseSchema,
+  })
+  .meta({ id: 'APIKeyCreateResponseDto' });
+
+export class APIKeyCreateDto extends createZodDto(APIKeyCreateSchema) {}
+export class APIKeyUpdateDto extends createZodDto(APIKeyUpdateSchema) {}
+export class APIKeyResponseDto extends createZodDto(APIKeyResponseSchema) {}
+export class APIKeyCreateResponseDto extends createZodDto(APIKeyCreateResponseSchema) {}

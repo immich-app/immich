@@ -318,7 +318,7 @@ export class AssetRepository {
       .execute();
   }
 
-  upsertMetadata(id: string, items: Array<{ key: string; value: object }>) {
+  upsertMetadata(id: string, items: Array<{ key: string; value: Record<string, unknown> }>) {
     if (items.length === 0) {
       return [];
     }

@@ -1,22 +1,32 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-export class DatabaseBackupDto {
-  filename!: string;
-  filesize!: number;
-  timezone!: string;
-}
+const DatabaseBackupSchema = z
+  .object({
+    filename: z.string().describe('Backup filename'),
+    filesize: z.number().describe('Backup file size'),
+    timezone: z.string().describe('Backup timezone'),
+  })
+  .meta({ id: 'DatabaseBackupDto' });
 
-export class DatabaseBackupListResponseDto {
-  backups!: DatabaseBackupDto[];
-}
+const DatabaseBackupListResponseSchema = z
+  .object({
+    backups: z.array(DatabaseBackupSchema).describe('List of backups'),
+  })
+  .meta({ id: 'DatabaseBackupListResponseDto' });
 
-export class DatabaseBackupUploadDto {
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
-  file?: any;
-}
+const DatabaseBackupUploadSchema = z
+  .object({
+    file: z.file().optional().describe('Database backup file'),
+  })
+  .meta({ id: 'DatabaseBackupUploadDto' });
 
-export class DatabaseBackupDeleteDto {
-  @IsString({ each: true })
-  backups!: string[];
-}
+const DatabaseBackupDeleteSchema = z
+  .object({
+    backups: z.array(z.string()).describe('Backup filenames to delete'),
+  })
+  .meta({ id: 'DatabaseBackupDeleteDto' });
+
+export class DatabaseBackupListResponseDto extends createZodDto(DatabaseBackupListResponseSchema) {}
+export class DatabaseBackupUploadDto extends createZodDto(DatabaseBackupUploadSchema) {}
+export class DatabaseBackupDeleteDto extends createZodDto(DatabaseBackupDeleteSchema) {}

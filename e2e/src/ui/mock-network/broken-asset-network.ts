@@ -69,7 +69,7 @@ export const createMockStackAsset = (ownerId: string): AssetResponseDto => {
     tags: [],
     people: [],
     unassignedFaces: [],
-    stack: null,
+    stack: undefined,
     isOffline: false,
     hasMetadata: true,
     duplicateId: null,

@@ -1,143 +1,84 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { WorkflowAction, WorkflowFilter } from 'src/database';
-import { PluginTriggerType } from 'src/enum';
-import type { ActionConfig, FilterConfig } from 'src/types/plugin-schema.types';
-import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import type { WorkflowAction, WorkflowFilter } from 'src/database';
+import { PluginTriggerTypeSchema } from 'src/enum';
+import { ActionConfigSchema, FilterConfigSchema } from 'src/types/plugin-schema.types';
+import z from 'zod';
 
-export class WorkflowFilterItemDto {
-  @ApiProperty({ description: 'Plugin filter ID' })
-  @IsUUID()
-  pluginFilterId!: string;
-
-  @ApiPropertyOptional({ description: 'Filter configuration' })
-  @IsObject()
-  @Optional()
-  filterConfig?: FilterConfig;
-}
-
-export class WorkflowActionItemDto {
-  @ApiProperty({ description: 'Plugin action ID' })
-  @IsUUID()
-  pluginActionId!: string;
-
-  @ApiPropertyOptional({ description: 'Action configuration' })
-  @IsObject()
-  @Optional()
-  actionConfig?: ActionConfig;
-}
-
-export class WorkflowCreateDto {
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Workflow trigger type' })
-  triggerType!: PluginTriggerType;
-
-  @ApiProperty({ description: 'Workflow name' })
-  @IsString()
-  @IsNotEmpty()
-  name!: string;
-
-  @ApiPropertyOptional({ description: 'Workflow description' })
-  @IsString()
-  @Optional()
-  description?: string;
-
-  @ValidateBoolean({ optional: true, description: 'Workflow enabled' })
-  enabled?: boolean;
-
-  @ApiProperty({ description: 'Workflow filters' })
-  @ValidateNested({ each: true })
-  @Type(() => WorkflowFilterItemDto)
-  filters!: WorkflowFilterItemDto[];
-
-  @ApiProperty({ description: 'Workflow actions' })
-  @ValidateNested({ each: true })
-  @Type(() => WorkflowActionItemDto)
-  actions!: WorkflowActionItemDto[];
-}
-
-export class WorkflowUpdateDto {
-  @ValidateEnum({
-    enum: PluginTriggerType,
-    name: 'PluginTriggerType',
-    optional: true,
-    description: 'Workflow trigger type',
+const WorkflowFilterItemSchema = z
+  .object({
+    pluginFilterId: z.uuidv4().describe('Plugin filter ID'),
+    filterConfig: FilterConfigSchema.optional(),
   })
-  triggerType?: PluginTriggerType;
+  .meta({ id: 'WorkflowFilterItemDto' });
 
-  @ApiPropertyOptional({ description: 'Workflow name' })
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
-  name?: string;
+const WorkflowActionItemSchema = z
+  .object({
+    pluginActionId: z.uuidv4().describe('Plugin action ID'),
+    actionConfig: ActionConfigSchema.optional(),
+  })
+  .meta({ id: 'WorkflowActionItemDto' });
 
-  @ApiPropertyOptional({ description: 'Workflow description' })
-  @IsString()
-  @Optional()
-  description?: string;
+const WorkflowCreateSchema = z
+  .object({
+    triggerType: PluginTriggerTypeSchema,
+    name: z.string().describe('Workflow name'),
+    description: z.string().optional().describe('Workflow description'),
+    enabled: z.boolean().optional().describe('Workflow enabled'),
+    filters: z.array(WorkflowFilterItemSchema).describe('Workflow filters'),
+    actions: z.array(WorkflowActionItemSchema).describe('Workflow actions'),
+  })
+  .meta({ id: 'WorkflowCreateDto' });
 
-  @ValidateBoolean({ optional: true, description: 'Workflow enabled' })
-  enabled?: boolean;
+const WorkflowUpdateSchema = z
+  .object({
+    triggerType: PluginTriggerTypeSchema.optional(),
+    name: z.string().optional().describe('Workflow name'),
+    description: z.string().optional().describe('Workflow description'),
+    enabled: z.boolean().optional().describe('Workflow enabled'),
+    filters: z.array(WorkflowFilterItemSchema).optional().describe('Workflow filters'),
+    actions: z.array(WorkflowActionItemSchema).optional().describe('Workflow actions'),
+  })
+  .meta({ id: 'WorkflowUpdateDto' });
 
-  @ApiPropertyOptional({ description: 'Workflow filters' })
-  @ValidateNested({ each: true })
-  @Type(() => WorkflowFilterItemDto)
-  @Optional()
-  filters?: WorkflowFilterItemDto[];
+const WorkflowFilterResponseSchema = z
+  .object({
+    id: z.string().describe('Filter ID'),
+    workflowId: z.string().describe('Workflow ID'),
+    pluginFilterId: z.string().describe('Plugin filter ID'),
+    filterConfig: FilterConfigSchema.nullable(),
+    order: z.number().describe('Filter order'),
+  })
+  .meta({ id: 'WorkflowFilterResponseDto' });
 
-  @ApiPropertyOptional({ description: 'Workflow actions' })
-  @ValidateNested({ each: true })
-  @Type(() => WorkflowActionItemDto)
-  @Optional()
-  actions?: WorkflowActionItemDto[];
-}
+const WorkflowActionResponseSchema = z
+  .object({
+    id: z.string().describe('Action ID'),
+    workflowId: z.string().describe('Workflow ID'),
+    pluginActionId: z.string().describe('Plugin action ID'),
+    actionConfig: ActionConfigSchema.nullable(),
+    order: z.number().describe('Action order'),
+  })
+  .meta({ id: 'WorkflowActionResponseDto' });
 
-export class WorkflowResponseDto {
-  @ApiProperty({ description: 'Workflow ID' })
-  id!: string;
-  @ApiProperty({ description: 'Owner user ID' })
-  ownerId!: string;
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Workflow trigger type' })
-  triggerType!: PluginTriggerType;
-  @ApiProperty({ description: 'Workflow name' })
-  name!: string | null;
-  @ApiProperty({ description: 'Workflow description' })
-  description!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: string;
-  @ApiProperty({ description: 'Workflow enabled' })
-  enabled!: boolean;
-  @ApiProperty({ description: 'Workflow filters' })
-  filters!: WorkflowFilterResponseDto[];
-  @ApiProperty({ description: 'Workflow actions' })
-  actions!: WorkflowActionResponseDto[];
-}
+const WorkflowResponseSchema = z
+  .object({
+    id: z.string().describe('Workflow ID'),
+    ownerId: z.string().describe('Owner user ID'),
+    triggerType: PluginTriggerTypeSchema,
+    name: z.string().nullable().describe('Workflow name'),
+    description: z.string().describe('Workflow description'),
+    createdAt: z.string().describe('Creation date'),
+    enabled: z.boolean().describe('Workflow enabled'),
+    filters: z.array(WorkflowFilterResponseSchema).describe('Workflow filters'),
+    actions: z.array(WorkflowActionResponseSchema).describe('Workflow actions'),
+  })
+  .meta({ id: 'WorkflowResponseDto' });
 
-export class WorkflowFilterResponseDto {
-  @ApiProperty({ description: 'Filter ID' })
-  id!: string;
-  @ApiProperty({ description: 'Workflow ID' })
-  workflowId!: string;
-  @ApiProperty({ description: 'Plugin filter ID' })
-  pluginFilterId!: string;
-  @ApiProperty({ description: 'Filter configuration' })
-  filterConfig!: FilterConfig | null;
-  @ApiProperty({ description: 'Filter order', type: 'number' })
-  order!: number;
-}
-
-export class WorkflowActionResponseDto {
-  @ApiProperty({ description: 'Action ID' })
-  id!: string;
-  @ApiProperty({ description: 'Workflow ID' })
-  workflowId!: string;
-  @ApiProperty({ description: 'Plugin action ID' })
-  pluginActionId!: string;
-  @ApiProperty({ description: 'Action configuration' })
-  actionConfig!: ActionConfig | null;
-  @ApiProperty({ description: 'Action order', type: 'number' })
-  order!: number;
-}
+export class WorkflowCreateDto extends createZodDto(WorkflowCreateSchema) {}
+export class WorkflowUpdateDto extends createZodDto(WorkflowUpdateSchema) {}
+export class WorkflowResponseDto extends createZodDto(WorkflowResponseSchema) {}
+class WorkflowFilterResponseDto extends createZodDto(WorkflowFilterResponseSchema) {}
+class WorkflowActionResponseDto extends createZodDto(WorkflowActionResponseSchema) {}
 
 export function mapWorkflowFilter(filter: WorkflowFilter): WorkflowFilterResponseDto {
   return {

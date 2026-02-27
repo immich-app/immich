@@ -283,6 +283,7 @@ export class LibraryService extends BaseService {
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
     const validation = new ValidateLibraryImportPathResponseDto();
     validation.importPath = importPath;
+    validation.isValid = false;
 
     if (StorageCore.isImmichPath(importPath)) {
       validation.message = 'Cannot use media upload folder for external libraries';

@@ -99,6 +99,7 @@
     "nestjs-kysely": "3.1.2",
     "nestjs-otel": "^7.0.0",
     "nodemailer": "^8.0.0",
+    "nestjs-zod": "^5.3.0",
     "openid-client": "^6.3.3",
     "pg": "^8.11.3",
     "pg-connection-string": "^2.9.1",
@@ -119,7 +120,8 @@
     "transformation-matrix": "^3.1.0",
     "ua-parser-js": "^2.0.0",
     "uuid": "^11.1.0",
-    "validator": "^13.12.0"
+    "validator": "^13.12.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",

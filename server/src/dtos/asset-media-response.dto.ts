@@ -1,47 +1,60 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ValidateEnum } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
 export enum AssetMediaStatus {
   CREATED = 'created',
   REPLACED = 'replaced',
   DUPLICATE = 'duplicate',
 }
-export class AssetMediaResponseDto {
-  @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus', description: 'Upload status' })
-  status!: AssetMediaStatus;
-  @ApiProperty({ description: 'Asset media ID' })
-  id!: string;
-}
+
+const AssetMediaStatusSchema = z.enum(AssetMediaStatus).describe('Upload status').meta({ id: 'AssetMediaStatus' });
+
+const AssetMediaResponseSchema = z
+  .object({
+    status: AssetMediaStatusSchema,
+    id: z.string().describe('Asset media ID'),
+  })
+  .meta({ id: 'AssetMediaResponseDto' });
 
 export enum AssetUploadAction {
   ACCEPT = 'accept',
   REJECT = 'reject',
 }
 
+const AssetUploadActionSchema = z.enum(AssetUploadAction).describe('Upload action').meta({ id: 'AssetUploadAction' });
+
 export enum AssetRejectReason {
   DUPLICATE = 'duplicate',
   UNSUPPORTED_FORMAT = 'unsupported-format',
 }
 
-export class AssetBulkUploadCheckResult {
-  @ApiProperty({ description: 'Asset ID' })
-  id!: string;
-  @ApiProperty({ description: 'Upload action', enum: AssetUploadAction })
-  action!: AssetUploadAction;
-  @ApiPropertyOptional({ description: 'Rejection reason if rejected', enum: AssetRejectReason })
-  reason?: AssetRejectReason;
-  @ApiPropertyOptional({ description: 'Existing asset ID if duplicate' })
-  assetId?: string;
-  @ApiPropertyOptional({ description: 'Whether existing asset is trashed' })
-  isTrashed?: boolean;
-}
+const AssetRejectReasonSchema = z
+  .enum(AssetRejectReason)
+  .describe('Rejection reason if rejected')
+  .meta({ id: 'AssetRejectReason' });
 
-export class AssetBulkUploadCheckResponseDto {
-  @ApiProperty({ description: 'Upload check results' })
-  results!: AssetBulkUploadCheckResult[];
-}
+const AssetBulkUploadCheckResultSchema = z
+  .object({
+    id: z.string().describe('Asset ID'),
+    action: AssetUploadActionSchema,
+    reason: AssetRejectReasonSchema.optional(),
+    assetId: z.string().optional().describe('Existing asset ID if duplicate'),
+    isTrashed: z.boolean().optional().describe('Whether existing asset is trashed'),
+  })
+  .meta({ id: 'AssetBulkUploadCheckResult' });
 
-export class CheckExistingAssetsResponseDto {
-  @ApiProperty({ description: 'Existing asset IDs' })
-  existingIds!: string[];
-}
+const AssetBulkUploadCheckResponseSchema = z
+  .object({
+    results: z.array(AssetBulkUploadCheckResultSchema).describe('Upload check results'),
+  })
+  .meta({ id: 'AssetBulkUploadCheckResponseDto' });
+
+const CheckExistingAssetsResponseSchema = z
+  .object({
+    existingIds: z.array(z.string()).describe('Existing asset IDs'),
+  })
+  .meta({ id: 'CheckExistingAssetsResponseDto' });
+
+export class AssetMediaResponseDto extends createZodDto(AssetMediaResponseSchema) {}
+export class AssetBulkUploadCheckResponseDto extends createZodDto(AssetBulkUploadCheckResponseSchema) {}
+export class CheckExistingAssetsResponseDto extends createZodDto(CheckExistingAssetsResponseSchema) {}

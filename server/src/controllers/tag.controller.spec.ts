@@ -54,7 +54,7 @@ describe(TagController.name, () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/tags/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('id must be a UUID')]));
+      expect(body).toEqual(errorDto.badRequest(['[id] Invalid UUID']));
     });
   });
 

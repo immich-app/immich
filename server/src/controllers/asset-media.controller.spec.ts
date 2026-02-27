@@ -82,7 +82,9 @@ describe(AssetMediaController.name, () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['metadata must be valid JSON']));
+      expect(body).toEqual(
+        factory.responses.badRequest(['[metadata] Invalid input: expected JSON string, received string']),
+      );
     });
 
     it('should require `deviceAssetId`', async () => {
@@ -92,7 +94,7 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto({ omit: 'deviceAssetId' }) });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['deviceAssetId must be a string', 'deviceAssetId should not be empty']),
+        factory.responses.badRequest(['[deviceAssetId] Invalid input: expected string, received undefined']),
       );
     });
 
@@ -102,7 +104,9 @@ describe(AssetMediaController.name, () => {
         .attach('assetData', assetData, filename)
         .field({ ...makeUploadDto({ omit: 'deviceId' }) });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['deviceId must be a string', 'deviceId should not be empty']));
+      expect(body).toEqual(
+        factory.responses.badRequest(['[deviceId] Invalid input: expected string, received undefined']),
+      );
     });
 
     it('should require `fileCreatedAt`', async () => {
@@ -112,7 +116,9 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto({ omit: 'fileCreatedAt' }) });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['fileCreatedAt must be a Date instance', 'fileCreatedAt should not be empty']),
+        factory.responses.badRequest([
+          '[fileCreatedAt] Invalid input: expected ISO 8601 datetime string, received undefined',
+        ]),
       );
     });
 
@@ -123,7 +129,9 @@ describe(AssetMediaController.name, () => {
         .field(makeUploadDto({ omit: 'fileModifiedAt' }));
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['fileModifiedAt must be a Date instance', 'fileModifiedAt should not be empty']),
+        factory.responses.badRequest([
+          '[fileModifiedAt] Invalid input: expected ISO 8601 datetime string, received undefined',
+        ]),
       );
     });
 
@@ -133,7 +141,9 @@ describe(AssetMediaController.name, () => {
         .attach('assetData', assetData, filename)
         .field({ ...makeUploadDto(), isFavorite: 'not-a-boolean' });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['isFavorite must be a boolean value']));
+      expect(body).toEqual(
+        factory.responses.badRequest(['[isFavorite] Invalid option: expected one of "true"|"false"']),
+      );
     });
 
     it('should throw if `visibility` is not an enum', async () => {
@@ -143,7 +153,7 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto(), visibility: 'not-an-option' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest([expect.stringContaining('visibility must be one of the following values:')]),
+        factory.responses.badRequest([expect.stringContaining('[visibility] Invalid option: expected one of')]),
       );
     });
 
