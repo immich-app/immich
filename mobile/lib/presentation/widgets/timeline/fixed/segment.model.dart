@@ -139,7 +139,6 @@ class _FixedSegmentRow extends ConsumerWidget {
     TimelineService timelineService,
     bool isDynamicLayout,
   ) {
-    final suppressStackIcon = timelineService.origin == TimelineOrigin.trash;
     final children = [
       for (int i = 0; i < assets.length; i++)
         TimelineAssetIndexWrapper(
@@ -149,7 +148,6 @@ class _FixedSegmentRow extends ConsumerWidget {
             key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
             asset: assets[i],
             assetIndex: assetIndex + i,
-            suppressStackIcon: suppressStackIcon,
           ),
         ),
     ];
@@ -194,9 +192,8 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
-  final bool suppressStackIcon;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, this.suppressStackIcon = false});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
 
   Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);
@@ -247,6 +244,7 @@ class _AssetTileWidget extends ConsumerWidget {
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final showStackIndicator = ref.read(timelineServiceProvider).origin != TimelineOrigin.trash;
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -256,8 +254,8 @@ class _AssetTileWidget extends ConsumerWidget {
           asset,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
+          showStackIndicator: showStackIndicator,
           heroOffset: heroOffset,
-          suppressStackIcon: suppressStackIcon,
         ),
       ),
     );

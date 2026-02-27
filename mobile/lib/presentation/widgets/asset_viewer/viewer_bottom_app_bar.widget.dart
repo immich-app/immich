@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class ViewerBottomAppBar extends ConsumerWidget {
   const ViewerBottomAppBar({super.key});
@@ -17,16 +15,15 @@ class ViewerBottomAppBar extends ConsumerWidget {
     if (!showControls) {
       opacity = 0.0;
     }
-    final allowAssetStack = ref.read(timelineServiceProvider).origin != TimelineOrigin.trash;
     return IgnorePointer(
       ignoring: opacity < 1.0,
       child: AnimatedOpacity(
         opacity: opacity,
         duration: Durations.short2,
-        child: Column(
+        child: const Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [if (allowAssetStack) const AssetStackRow(), const ViewerBottomBar()],
+          children: [AssetStackRow(), ViewerBottomBar()],
         ),
       ),
     );

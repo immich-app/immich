@@ -21,7 +21,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
     this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
-    this.suppressStackIcon = false,
+    this.showStackIndicator = false,
     super.key,
   });
 
@@ -31,7 +31,7 @@ class ThumbnailTile extends ConsumerStatefulWidget {
   final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
-  final bool suppressStackIcon;
+  final bool showStackIndicator;
 
   @override
   ConsumerState<ThumbnailTile> createState() => _ThumbnailTileState();
@@ -141,7 +141,7 @@ class _ThumbnailTileState extends ConsumerState<ThumbnailTile> {
                     duration: Durations.short4,
                     child: Align(
                       alignment: Alignment.topRight,
-                      child: _AssetTypeIcons(asset: asset, suppressStackIcon: widget.suppressStackIcon),
+                      child: _AssetTypeIcons(asset: asset, showStackIndicator: widget.showStackIndicator),
                     ),
                   ),
                 if (storageIndicator && asset != null)
@@ -283,14 +283,14 @@ class _TileOverlayIcon extends StatelessWidget {
 
 class _AssetTypeIcons extends StatelessWidget {
   final BaseAsset asset;
-  final bool suppressStackIcon;
+  final bool showStackIndicator;
 
-  const _AssetTypeIcons({required this.asset, required this.suppressStackIcon});
+  const _AssetTypeIcons({required this.asset, required this.showStackIndicator});
 
   @override
   Widget build(BuildContext context) {
     final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
-    final shouldShowStackIcon = !suppressStackIcon && remoteAsset?.stackId != null;
+    final shouldShowStackIcon = showStackIndicator && remoteAsset?.stackId != null;
     final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
 
     return Column(

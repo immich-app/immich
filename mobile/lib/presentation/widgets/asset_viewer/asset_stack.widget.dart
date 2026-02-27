@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class AssetStackRow extends ConsumerWidget {
   const AssetStackRow({super.key});
@@ -13,6 +15,11 @@ class AssetStackRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(assetViewerProvider.select((state) => state.currentAsset));
     if (asset == null) {
+      return const SizedBox.shrink();
+    }
+
+    final hideAssetStack = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
+    if (hideAssetStack) {
       return const SizedBox.shrink();
     }
 
