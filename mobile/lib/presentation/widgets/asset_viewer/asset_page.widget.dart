@@ -64,7 +64,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   @override
   void initState() {
     super.initState();
-    _proxyScrollController.addListener(_onScroll);
     _eventSubscription = EventStream.shared.listen(_onEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_proxyScrollController.hasClients) return;
@@ -94,6 +93,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   void _showDetails() {
     if (!_proxyScrollController.hasClients || _snapOffset <= 0) return;
+    _viewer.setShowingDetails(true);
     _proxyScrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
 
@@ -105,7 +105,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         SnapScrollPhysics.target(position, scrollVelocity, _snapOffset) < SnapScrollPhysics.minSnapDistance;
   }
 
-  void _onScroll() {
+  void _syncShowingDetails() {
     final offset = _proxyScrollController.offset;
     if (offset > SnapScrollPhysics.minSnapDistance) {
       _viewer.setShowingDetails(true);
@@ -149,6 +149,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case _DragIntent.scroll:
         if (_drag == null) _startProxyDrag();
         _drag?.update(details);
+
+        _syncShowingDetails();
       case _DragIntent.dismiss:
         _handleDragDown(context, details.localPosition - _dragStart!.localPosition);
     }
@@ -167,9 +169,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case _DragIntent.none:
       case _DragIntent.scroll:
         final scrollVelocity = -(details.primaryVelocity ?? 0.0);
-        if (_willClose(scrollVelocity)) {
-          _viewer.setShowingDetails(false);
-        }
+        _viewer.setShowingDetails(!_willClose(scrollVelocity));
+
         _drag?.end(details);
         _drag = null;
       case _DragIntent.dismiss:
