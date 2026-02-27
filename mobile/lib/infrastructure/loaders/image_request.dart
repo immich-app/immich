@@ -24,6 +24,8 @@ abstract class ImageRequest {
 
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0});
 
+  Future<ui.Codec?> loadCodec();
+
   void cancel() {
     if (_isCancelled) {
       return;
@@ -34,7 +36,7 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
+  Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(int address, int length) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
       malloc.free(pointer);
@@ -67,6 +69,14 @@ abstract class ImageRequest {
       return null;
     }
 
+    return (codec, descriptor);
+  }
+
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
+    final result = await _codecFromEncodedPlatformImage(address, length);
+    if (result == null) return null;
+
+    final (codec, descriptor) = result;
     final frame = await codec.getNextFrame();
     descriptor.dispose();
     codec.dispose();
