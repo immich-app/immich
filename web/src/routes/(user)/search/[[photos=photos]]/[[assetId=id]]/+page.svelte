@@ -326,7 +326,7 @@
 
   <section>
     {#if assetInteraction.selectionActive}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <AssetSelectControlBar
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -382,7 +382,7 @@
         </AssetSelectControlBar>
       </div>
     {:else}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">
