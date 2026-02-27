@@ -38,12 +38,12 @@
 <input
   use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
   onblur={handleUpdateName}
-  class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all {isOwned
+  class="w-full mb-2 border-b-2 border-transparent text-xl md:text-3xl lg:text-4xl text-primary outline-none transition-all truncate {isOwned
     ? 'hover:border-gray-400'
     : 'hover:border-transparent'} focus:border-b-2 focus:border-immich-primary focus:outline-none bg-light dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray placeholder:text-primary/90"
   type="text"
   bind:value={newAlbumName}
   disabled={!isOwned}
-  title={$t('edit_title')}
+  title={albumName}
   placeholder={$t('add_a_title')}
 />
