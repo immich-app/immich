@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -75,7 +75,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
       // IS_FAVORITE is only available on Android 11 and above
-      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
       }
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -214,7 +214,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       return when {
         specialFormat == SPECIAL_FORMAT_MOTION_PHOTO -> PlatformAssetPlaybackStyle.LIVE_PHOTO
         specialFormat == SPECIAL_FORMAT_GIF || specialFormat == SPECIAL_FORMAT_ANIMATED_WEBP -> PlatformAssetPlaybackStyle.IMAGE_ANIMATED
-        rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> PlatformAssetPlaybackStyle.VIDEO // technically isn't needed, but if code above gets changed later its better to have this as safeguard
         rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> PlatformAssetPlaybackStyle.IMAGE
         else -> PlatformAssetPlaybackStyle.UNKNOWN
       }
