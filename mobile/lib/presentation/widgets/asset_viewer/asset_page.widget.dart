@@ -259,7 +259,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) _viewer.setControls(false);
 
-      ref.read(videoPlayerControlsProvider.notifier).pause();
+      // Only pause video for motion photos, not regular video playback
+      final currentAsset = ref.read(currentAssetNotifier);
+      if (currentAsset == null || !currentAsset.isVideo) {
+        ref.read(videoPlayerControlsProvider.notifier).pause();
+      }
       return;
     }
 
@@ -340,10 +344,12 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDragCancel: _onDragCancel,
+      onTapUp: _onTapUp,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,
       basePosition: Alignment.center,
-      disableScaleGestures: true,
+      disableScaleGestures: showingDetails,
+      scaleStateChangedCallback: _onScaleStateChanged,
       minScale: PhotoViewComputedScale.contained,
       initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
@@ -354,7 +360,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         key: _NativeVideoViewerKey(displayAsset.heroTag),
         asset: displayAsset,
         scaleStateNotifier: _videoScaleStateNotifier,
-        disableScaleGestures: showingDetails,
+        disableScaleGestures: true,
         image: Image(
           image: getFullImageProvider(displayAsset, size: context.sizeData),
           height: context.height,
