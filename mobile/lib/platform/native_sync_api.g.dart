@@ -29,6 +29,8 @@ bool _deepEquals(Object? a, Object? b) {
   return a == b;
 }
 
+enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
+
 class PlatformAsset {
   PlatformAsset({
     required this.id,
@@ -73,7 +75,7 @@ class PlatformAsset {
 
   double? longitude;
 
-  int playbackStyle;
+  PlatformAssetPlaybackStyle playbackStyle;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -114,7 +116,7 @@ class PlatformAsset {
       adjustmentTime: result[10] as int?,
       latitude: result[11] as double?,
       longitude: result[12] as double?,
-      playbackStyle: result[13]! as int,
+      playbackStyle: result[13]! as PlatformAssetPlaybackStyle,
     );
   }
 
@@ -321,20 +323,23 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is PlatformAsset) {
+    } else if (value is PlatformAssetPlaybackStyle) {
       buffer.putUint8(129);
-      writeValue(buffer, value.encode());
-    } else if (value is PlatformAlbum) {
+      writeValue(buffer, value.index);
+    } else if (value is PlatformAsset) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else if (value is SyncDelta) {
+    } else if (value is PlatformAlbum) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
-    } else if (value is HashResult) {
+    } else if (value is SyncDelta) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
-    } else if (value is CloudIdResult) {
+    } else if (value is HashResult) {
       buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else if (value is CloudIdResult) {
+      buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -345,14 +350,17 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129:
-        return PlatformAsset.decode(readValue(buffer)!);
+        final int? value = readValue(buffer) as int?;
+        return value == null ? null : PlatformAssetPlaybackStyle.values[value];
       case 130:
-        return PlatformAlbum.decode(readValue(buffer)!);
+        return PlatformAsset.decode(readValue(buffer)!);
       case 131:
-        return SyncDelta.decode(readValue(buffer)!);
+        return PlatformAlbum.decode(readValue(buffer)!);
       case 132:
-        return HashResult.decode(readValue(buffer)!);
+        return SyncDelta.decode(readValue(buffer)!);
       case 133:
+        return HashResult.decode(readValue(buffer)!);
+      case 134:
         return CloudIdResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);

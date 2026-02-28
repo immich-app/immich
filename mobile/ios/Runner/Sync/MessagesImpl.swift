@@ -174,7 +174,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
             durationInSeconds: 0,
             orientation: 0,
             isFavorite: false,
-            playbackStyle: 0
+            playbackStyle: .unknown
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue

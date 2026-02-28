@@ -1,14 +1,14 @@
 import Photos
 
 extension PHAsset {
-  var playbackStyleValue: Int64 {
+  var platformPlaybackStyle: PlatformAssetPlaybackStyle {
     switch playbackStyle {
-    case .image: return 1
-    case .imageAnimated: return 3
-    case .livePhoto: return 4
-    case .video: return 2
-    case .videoLooping: return 5
-    @unknown default: return 0
+    case .image: return .image
+    case .imageAnimated: return .imageAnimated
+    case .livePhoto: return .livePhoto
+    case .video: return .video
+    case .videoLooping: return .videoLooping
+    @unknown default: return .unknown
     }
   }
 
@@ -27,7 +27,7 @@ extension PHAsset {
       adjustmentTime: adjustmentTimestamp,
       latitude: location?.coordinate.latitude,
       longitude: location?.coordinate.longitude,
-      playbackStyle: playbackStyleValue
+      playbackStyle: platformPlaybackStyle
     )
   }
 

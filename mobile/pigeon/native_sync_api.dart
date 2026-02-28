@@ -11,6 +11,15 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+enum PlatformAssetPlaybackStyle {
+  unknown,
+  image,
+  video,
+  imageAnimated,
+  livePhoto,
+  videoLooping,
+}
+
 class PlatformAsset {
   final String id;
   final String name;
@@ -31,8 +40,7 @@ class PlatformAsset {
   final double? latitude;
   final double? longitude;
 
-  // Follows AssetPlaybackStyle enum: 0=unknown, 1=image, 2=video, 3=animated, 4=livePhoto, 5=videoLooping
-  final int playbackStyle;
+  final PlatformAssetPlaybackStyle playbackStyle;
 
   const PlatformAsset({
     required this.id,
@@ -48,7 +56,7 @@ class PlatformAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
-    this.playbackStyle = 0,
+    this.playbackStyle = PlatformAssetPlaybackStyle.unknown,
   });
 }
 
