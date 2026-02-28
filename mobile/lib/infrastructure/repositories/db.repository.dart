@@ -232,6 +232,7 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from20To21: (m, v21) async {
             await m.addColumn(v21.localAssetEntity, v21.localAssetEntity.playbackStyle);
+            await m.addColumn(v21.trashedLocalAssetEntity, v21.trashedLocalAssetEntity.playbackStyle);
           },
         ),
       );

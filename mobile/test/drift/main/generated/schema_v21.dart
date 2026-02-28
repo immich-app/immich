@@ -7860,6 +7860,13 @@ class TrashedLocalAssetEntity extends Table
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  late final GeneratedColumn<int> playbackStyle = GeneratedColumn<int>(
+    'playback_style',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     name,
@@ -7875,6 +7882,7 @@ class TrashedLocalAssetEntity extends Table
     isFavorite,
     orientation,
     source,
+    playbackStyle,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7942,6 +7950,10 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}source'],
       )!,
+      playbackStyle: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}playback_style'],
+      ),
     );
   }
 
@@ -7971,6 +7983,7 @@ class TrashedLocalAssetEntityData extends DataClass
   final bool isFavorite;
   final int orientation;
   final int source;
+  final int? playbackStyle;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -7985,6 +7998,7 @@ class TrashedLocalAssetEntityData extends DataClass
     required this.isFavorite,
     required this.orientation,
     required this.source,
+    this.playbackStyle,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8010,6 +8024,9 @@ class TrashedLocalAssetEntityData extends DataClass
     map['is_favorite'] = Variable<bool>(isFavorite);
     map['orientation'] = Variable<int>(orientation);
     map['source'] = Variable<int>(source);
+    if (!nullToAbsent || playbackStyle != null) {
+      map['playback_style'] = Variable<int>(playbackStyle);
+    }
     return map;
   }
 
@@ -8032,6 +8049,7 @@ class TrashedLocalAssetEntityData extends DataClass
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
       source: serializer.fromJson<int>(json['source']),
+      playbackStyle: serializer.fromJson<int?>(json['playbackStyle']),
     );
   }
   @override
@@ -8051,6 +8069,7 @@ class TrashedLocalAssetEntityData extends DataClass
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
       'source': serializer.toJson<int>(source),
+      'playbackStyle': serializer.toJson<int?>(playbackStyle),
     };
   }
 
@@ -8068,6 +8087,7 @@ class TrashedLocalAssetEntityData extends DataClass
     bool? isFavorite,
     int? orientation,
     int? source,
+    Value<int?> playbackStyle = const Value.absent(),
   }) => TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -8084,6 +8104,9 @@ class TrashedLocalAssetEntityData extends DataClass
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
     source: source ?? this.source,
+    playbackStyle: playbackStyle.present
+        ? playbackStyle.value
+        : this.playbackStyle,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
@@ -8108,6 +8131,9 @@ class TrashedLocalAssetEntityData extends DataClass
           ? data.orientation.value
           : this.orientation,
       source: data.source.present ? data.source.value : this.source,
+      playbackStyle: data.playbackStyle.present
+          ? data.playbackStyle.value
+          : this.playbackStyle,
     );
   }
 
@@ -8126,7 +8152,8 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('source: $source')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
@@ -8146,6 +8173,7 @@ class TrashedLocalAssetEntityData extends DataClass
     isFavorite,
     orientation,
     source,
+    playbackStyle,
   );
   @override
   bool operator ==(Object other) =>
@@ -8163,7 +8191,8 @@ class TrashedLocalAssetEntityData extends DataClass
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation &&
-          other.source == this.source);
+          other.source == this.source &&
+          other.playbackStyle == this.playbackStyle);
 }
 
 class TrashedLocalAssetEntityCompanion
@@ -8181,6 +8210,7 @@ class TrashedLocalAssetEntityCompanion
   final Value<bool> isFavorite;
   final Value<int> orientation;
   final Value<int> source;
+  final Value<int?> playbackStyle;
   const TrashedLocalAssetEntityCompanion({
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -8195,6 +8225,7 @@ class TrashedLocalAssetEntityCompanion
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
     this.source = const Value.absent(),
+    this.playbackStyle = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
     required String name,
@@ -8210,6 +8241,7 @@ class TrashedLocalAssetEntityCompanion
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
     required int source,
+    this.playbackStyle = const Value.absent(),
   }) : name = Value(name),
        type = Value(type),
        id = Value(id),
@@ -8229,6 +8261,7 @@ class TrashedLocalAssetEntityCompanion
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
     Expression<int>? source,
+    Expression<int>? playbackStyle,
   }) {
     return RawValuesInsertable({
       if (name != null) 'name': name,
@@ -8244,6 +8277,7 @@ class TrashedLocalAssetEntityCompanion
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
       if (source != null) 'source': source,
+      if (playbackStyle != null) 'playback_style': playbackStyle,
     });
   }
 
@@ -8261,6 +8295,7 @@ class TrashedLocalAssetEntityCompanion
     Value<bool>? isFavorite,
     Value<int>? orientation,
     Value<int>? source,
+    Value<int?>? playbackStyle,
   }) {
     return TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -8276,6 +8311,7 @@ class TrashedLocalAssetEntityCompanion
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
       source: source ?? this.source,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
     );
   }
 
@@ -8321,6 +8357,9 @@ class TrashedLocalAssetEntityCompanion
     if (source.present) {
       map['source'] = Variable<int>(source.value);
     }
+    if (playbackStyle.present) {
+      map['playback_style'] = Variable<int>(playbackStyle.value);
+    }
     return map;
   }
 
@@ -8339,7 +8378,8 @@ class TrashedLocalAssetEntityCompanion
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation, ')
-          ..write('source: $source')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
