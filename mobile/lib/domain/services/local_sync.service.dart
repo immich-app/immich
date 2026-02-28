@@ -443,7 +443,7 @@ extension PlatformToLocalAsset on PlatformAsset {
   );
 }
 
-AssetPlaybackStyle? _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
+AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
   PlatformAssetPlaybackStyle.unknown => AssetPlaybackStyle.unknown,
   PlatformAssetPlaybackStyle.image => AssetPlaybackStyle.image,
   PlatformAssetPlaybackStyle.video => AssetPlaybackStyle.video,
