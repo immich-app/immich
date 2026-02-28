@@ -28,6 +28,8 @@ class MultiSelectState {
 
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
 
+  bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
+
   MultiSelectState copyWith({
     Set<BaseAsset>? selectedAssets,
     Set<BaseAsset>? lockedSelectionAssets,

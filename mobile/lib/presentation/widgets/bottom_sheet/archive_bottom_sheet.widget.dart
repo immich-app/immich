@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
@@ -37,9 +36,7 @@ class ArchiveBottomSheet extends ConsumerWidget {
           const ShareLinkActionButton(source: ActionSource.timeline),
           const UnArchiveActionButton(source: ActionSource.timeline),
           const FavoriteActionButton(source: ActionSource.timeline),
-          if (multiselect.selectedAssets.any((asset) => asset.storage == AssetState.remote)) ...[
-            const DownloadActionButton(source: ActionSource.timeline),
-          ],
+          if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(source: ActionSource.timeline),
