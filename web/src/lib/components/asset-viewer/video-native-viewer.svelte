@@ -1,7 +1,11 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
+  import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import {
@@ -13,7 +17,7 @@
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
@@ -50,6 +54,13 @@
   );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
+
+  $effect.pre(() => {
+    void assetId;
+    untrack(() => {
+      assetViewerManager.resetZoomState();
+    });
+  });
 
   onMount(() => {
     // Show video after mount to ensure fading in.
@@ -100,7 +111,15 @@
     }
   };
 
+  const onZoom = () => {
+    assetViewerManager.zoom = assetViewerManager.zoom > 1 ? 1 : 2;
+  };
+
   const onSwipe = (event: SwipeCustomEvent) => {
+    if (assetViewerManager.zoom > 1) {
+      return;
+    }
+
     if (event.detail.direction === 'left') {
       onNextAsset();
     }
@@ -119,6 +138,13 @@
   });
 </script>
 
+<AssetViewerEvents {onZoom} />
+
+<svelte:document
+  use:shortcuts={[
+    { shortcut: { key: 'z' }, onShortcut: onZoom, preventDefault: true },
+  ]}
+/>
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
@@ -136,30 +162,35 @@
         />
       </div>
     {:else}
-      <video
-        bind:this={videoPlayer}
-        loop={$loopVideoPreference && loopVideo}
-        autoplay={$autoPlayVideo}
-        playsinline
-        controls
-        disablePictureInPicture
-        class="h-full object-contain"
+      <div
+        use:zoomImageAction
         {...useSwipe(onSwipe)}
-        oncanplay={(e) => handleCanPlay(e.currentTarget)}
-        onended={onVideoEnded}
-        onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
-        onseeking={() => (isScrubbing = true)}
-        onseeked={() => (isScrubbing = false)}
-        onplaying={(e) => {
-          e.currentTarget.focus();
-        }}
-        onclose={() => onClose()}
-        muted={$videoViewerMuted}
-        bind:volume={$videoViewerVolume}
-        poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
-        src={assetFileUrl}
+        class="h-full w-full"
       >
-      </video>
+        <video
+          bind:this={videoPlayer}
+          loop={$loopVideoPreference && loopVideo}
+          autoplay={$autoPlayVideo}
+          playsinline
+          controls
+          disablePictureInPicture
+          class="h-full w-full object-contain"
+          oncanplay={(e) => handleCanPlay(e.currentTarget)}
+          onended={onVideoEnded}
+          onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
+          onseeking={() => (isScrubbing = true)}
+          onseeked={() => (isScrubbing = false)}
+          onplaying={(e) => {
+            e.currentTarget.focus();
+          }}
+          onclose={() => onClose()}
+          muted={$videoViewerMuted}
+          bind:volume={$videoViewerVolume}
+          poster={getAssetMediaUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
+          src={assetFileUrl}
+        >
+        </video>
+      </div>
 
       {#if isLoading}
         <div class="absolute flex place-content-center place-items-center">
