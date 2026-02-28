@@ -100,13 +100,13 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
-    encoded: Boolean,
+    preferEncoded: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
     val task = threadPool.submit {
       try {
-        if (encoded) {
+        if (preferEncoded) {
           getEncodedImageInternal(assetId, callback, signal)
         } else {
           getThumbnailBufferInternal(assetId, width, height, isVideo, callback, signal)

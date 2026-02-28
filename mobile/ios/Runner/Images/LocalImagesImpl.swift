@@ -64,7 +64,7 @@ class LocalImageApiImpl: LocalImageApi {
     }
   }
 
-  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, encoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
+  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, any Error>) -> Void) {
     let request = LocalImageRequest(callback: completion)
     let item = DispatchWorkItem {
       if request.isCancelled {
@@ -91,7 +91,7 @@ class LocalImageApiImpl: LocalImageApi {
         return completion(ImageProcessing.cancelledResult)
       }
 
-      if encoded {
+      if preferEncoded {
         let dataOptions = PHImageRequestOptions()
         dataOptions.isNetworkAccessAllowed = true
         dataOptions.isSynchronous = true

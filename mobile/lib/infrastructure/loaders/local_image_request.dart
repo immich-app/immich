@@ -1,14 +1,5 @@
 part of 'image_request.dart';
 
-/// Requests a local image from the platform.
-///
-/// The [encoded] flag controls the response format from the platform:
-/// - `encoded: true` — returns raw encoded bytes as `{pointer, length}`,
-///   used for animated images where a multi-frame codec is needed.
-/// - `encoded: false` — decodes the image to RGBA pixels and returns
-///   `{pointer, width, height, rowBytes}` for direct display.
-///
-/// Both iOS and Android respect the [encoded] flag for local images.
 class LocalImageRequest extends ImageRequest {
   final String localId;
   final int width;
@@ -31,7 +22,7 @@ class LocalImageRequest extends ImageRequest {
       width: width,
       height: height,
       isVideo: assetType == AssetType.video,
-      encoded: false,
+      preferEncoded: false,
     );
     if (info == null) {
       return null;
@@ -53,7 +44,7 @@ class LocalImageRequest extends ImageRequest {
       width: width,
       height: height,
       isVideo: assetType == AssetType.video,
-      encoded: true,
+      preferEncoded: true,
     );
     if (info == null) return null;
 

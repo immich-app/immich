@@ -1,16 +1,5 @@
 part of 'image_request.dart';
 
-/// Requests a remote image from the platform via HTTP.
-///
-/// The [encoded] flag controls the response format from the platform:
-/// - `encoded: true` — returns raw encoded bytes as `{pointer, length}`,
-///   used for animated images where a multi-frame codec is needed.
-/// - `encoded: false` — on iOS, decodes the image to RGBA pixels and returns
-///   `{pointer, width, height, rowBytes}`. On Android, the flag is ignored and
-///   raw encoded bytes are always returned as `{pointer, length}`.
-///
-/// The [load] method handles both response shapes via pattern matching to
-/// account for this platform difference.
 class RemoteImageRequest extends ImageRequest {
   final String uri;
   final Map<String, String> headers;
@@ -23,7 +12,7 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, encoded: false);
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: false);
     // Android always returns encoded data, so we need to check for both shapes of the response.
     final frame = switch (info) {
       {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
@@ -40,7 +29,7 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, encoded: true);
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: true);
     if (info == null) return null;
 
     final result = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!);

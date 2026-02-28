@@ -33,7 +33,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ] as CFDictionary
 
-  func requestImage(url: String, headers: [String : String], requestId: Int64, encoded: Bool, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
+  func requestImage(url: String, headers: [String : String], requestId: Int64, preferEncoded: Bool, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
     urlRequest.cachePolicy = .returnCacheDataElseLoad
     for (key, value) in headers {
@@ -41,7 +41,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     }
 
     let task = URLSessionManager.shared.session.dataTask(with: urlRequest) { data, response, error in
-      Self.handleCompletion(requestId: requestId, encoded: encoded, data: data, response: response, error: error)
+      Self.handleCompletion(requestId: requestId, encoded: preferEncoded, data: data, response: response, error: error)
     }
 
     let request = RemoteImageRequest(id: requestId, task: task, completion: completion)
