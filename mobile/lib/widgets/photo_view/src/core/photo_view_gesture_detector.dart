@@ -81,29 +81,33 @@ class PhotoViewGestureDetector extends StatelessWidget {
       );
     }
 
-    gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
-      () => DoubleTapGestureRecognizer(debugOwner: this),
-      (DoubleTapGestureRecognizer instance) {
-        instance.onDoubleTap = onDoubleTap;
-      },
-    );
+    if (onDoubleTap != null) {
+      gestures[DoubleTapGestureRecognizer] = GestureRecognizerFactoryWithHandlers<DoubleTapGestureRecognizer>(
+        () => DoubleTapGestureRecognizer(debugOwner: this),
+        (DoubleTapGestureRecognizer instance) {
+          instance.onDoubleTap = onDoubleTap;
+        },
+      );
+    }
 
-    gestures[PhotoViewGestureRecognizer] = GestureRecognizerFactoryWithHandlers<PhotoViewGestureRecognizer>(
-      () => PhotoViewGestureRecognizer(
-        hitDetector: hitDetector,
-        debugOwner: this,
-        validateAxis: axis,
-        touchSlopFactor: touchSlopFactor,
-      ),
-      (PhotoViewGestureRecognizer instance) {
-        instance
-          ..dragStartBehavior = DragStartBehavior.start
-          ..onStart = onScaleStart
-          ..onUpdate = onScaleUpdate
-          ..onEnd = onScaleEnd
-          ..disableScaleGestures = disableScaleGestures;
-      },
-    );
+    if (!disableScaleGestures) {
+      gestures[PhotoViewGestureRecognizer] = GestureRecognizerFactoryWithHandlers<PhotoViewGestureRecognizer>(
+        () => PhotoViewGestureRecognizer(
+          hitDetector: hitDetector,
+          debugOwner: this,
+          validateAxis: axis,
+          touchSlopFactor: touchSlopFactor,
+        ),
+        (PhotoViewGestureRecognizer instance) {
+          instance
+            ..dragStartBehavior = DragStartBehavior.start
+            ..onStart = onScaleStart
+            ..onUpdate = onScaleUpdate
+            ..onEnd = onScaleEnd
+            ..disableScaleGestures = disableScaleGestures;
+        },
+      );
+    }
 
     gestures[LongPressGestureRecognizer] = GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
       () => LongPressGestureRecognizer(debugOwner: this),
