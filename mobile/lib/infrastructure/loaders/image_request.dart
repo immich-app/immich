@@ -77,6 +77,12 @@ abstract class ImageRequest {
     if (result == null) return null;
 
     final (codec, descriptor) = result;
+    if (_isCancelled) {
+      descriptor.dispose();
+      codec.dispose();
+      return null;
+    }
+
     final frame = await codec.getNextFrame();
     descriptor.dispose();
     codec.dispose();
