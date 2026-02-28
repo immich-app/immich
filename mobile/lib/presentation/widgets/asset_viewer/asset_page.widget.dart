@@ -369,7 +369,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
       final size = context.sizeData;
       return PhotoView(
-        key: ValueKey(displayAsset.heroTag),
+        key: Key(displayAsset.heroTag),
         index: widget.index,
         imageProvider: getFullImageProvider(displayAsset, size: size),
         heroAttributes: heroAttributes,
@@ -397,7 +397,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     return PhotoView.customChild(
-      key: ValueKey(displayAsset),
+      key: Key(displayAsset.heroTag),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
@@ -413,12 +413,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       enablePanAlways: true,
       backgroundDecoration: backgroundDecoration,
       child: NativeVideoViewer(
-        key: ValueKey(displayAsset),
+        key: _NativeVideoViewerKey(displayAsset.heroTag),
         asset: displayAsset,
         scaleStateNotifier: _videoScaleStateNotifier,
         disableScaleGestures: showingDetails,
         image: Image(
-          key: ValueKey(displayAsset.heroTag),
           image: getFullImageProvider(displayAsset, size: context.sizeData),
           height: context.height,
           width: context.width,
@@ -521,4 +520,26 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       ),
     );
   }
+}
+
+// A global key is used for video viewers to prevent them from being
+// unnecessarily recreated. They're quite expensive, and maintain internal
+// state. This can cause videos to restart multiple times during normal usage,
+// like a hero animation.
+//
+// A plain ValueKey is insufficient, as it does not allow widgets to reparent. A
+// GlobalObjectKey is fragile, as it checks if the given objects are identical,
+// rather than equal. Hero tags are created with string interpolation, which
+// prevents Dart from interning them. As such, hero tags are not identical, even
+// if they are equal.
+class _NativeVideoViewerKey extends GlobalKey {
+  final String value;
+
+  const _NativeVideoViewerKey(this.value) : super.constructor();
+
+  @override
+  bool operator ==(Object other) => other is _NativeVideoViewerKey && other.value == value;
+
+  @override
+  int get hashCode => value.hashCode;
 }
