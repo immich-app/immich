@@ -90,7 +90,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         PaintingBinding.instance.imageCache.evict(this);
         return null;
       }
-      if(isCancelled){
+      if (isCancelled) {
         codec.dispose();
         PaintingBinding.instance.imageCache.evict(this);
         return null;
