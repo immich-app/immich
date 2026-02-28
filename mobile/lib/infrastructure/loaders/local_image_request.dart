@@ -48,11 +48,7 @@ class LocalImageRequest extends ImageRequest {
     );
     if (info == null) return null;
 
-    final result = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!);
-    if (result == null) return null;
-
-    final (codec, descriptor) = result;
-    descriptor.dispose();
+    final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);
     return codec;
   }
 
