@@ -119,10 +119,11 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           const MoveToLockFolderActionButton(source: ActionSource.timeline),
           if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
           if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
-          if (multiselect.hasLocal || multiselect.hasMerged) const DeleteActionButton(source: ActionSource.timeline),
+          if (multiselect.onlyLocal || multiselect.hasMerged) const DeleteActionButton(source: ActionSource.timeline),
         ],
-        if (multiselect.hasLocal || multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
-        if (multiselect.hasLocal) const UploadActionButton(source: ActionSource.timeline),
+        if (multiselect.onlyLocal || multiselect.hasMerged)
+          const DeleteLocalActionButton(source: ActionSource.timeline),
+        if (multiselect.onlyLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
       slivers: multiselect.hasRemote
           ? [
