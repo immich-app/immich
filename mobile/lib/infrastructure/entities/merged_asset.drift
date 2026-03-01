@@ -27,14 +27,7 @@ SELECT
 	NULL as longitude,
 	NULL as adjustmentTime,
 	rae.is_edited,
-	CASE
-		WHEN rae.type = 2 THEN 2
-		WHEN rae.live_photo_video_id IS NOT NULL THEN 4
-		WHEN rae.type = 1 AND rae.duration_in_seconds IS NOT NULL
-			AND rae.duration_in_seconds > 0 THEN 3
-		WHEN rae.type = 1 THEN 1
-		ELSE 0
-	END as playback_style
+	0 as playback_style
 FROM
 	remote_asset_entity rae
 LEFT JOIN
