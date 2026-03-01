@@ -256,16 +256,10 @@ class MetadataSearchDto {
   ///
   String? previewPath;
 
-  /// Filter by rating
+  /// Filter by rating [1-5], or null for unrated
   ///
   /// Minimum value: -1
   /// Maximum value: 5
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? rating;
 
   /// Number of results to return
@@ -754,7 +748,9 @@ class MetadataSearchDto {
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
-        rating: num.parse('${json[r'rating']}'),
+        rating: json[r'rating'] == null
+            ? null
+            : num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable

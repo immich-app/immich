@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsDateString,
@@ -16,6 +16,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { HistoryBuilder, Property } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
@@ -56,12 +57,19 @@ export class UpdateAssetBase {
   @IsNotEmpty()
   longitude?: number;
 
-  @ApiProperty({ description: 'Rating' })
-  @Optional()
+  @Property({
+    description: 'Rating in range [1-5], or null for unrated',
+    history: new HistoryBuilder()
+      .added('v1')
+      .stable('v2')
+      .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.'),
+  })
+  @Optional({ nullable: true })
   @IsInt()
   @Max(5)
   @Min(-1)
-  rating?: number;
+  @Transform(({ value }) => (value === 0 ? null : value))
+  rating?: number | null;
 
   @ApiProperty({ description: 'Asset description' })
   @Optional()

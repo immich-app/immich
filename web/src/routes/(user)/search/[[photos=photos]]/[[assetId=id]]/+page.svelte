@@ -276,6 +276,8 @@
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
+            {:else if searchKey === 'rating'}
+              {$t('rating_count', { values: { count: value ?? 0 } })}
             {:else if value === null || value === ''}
               {$t('unknown')}
             {:else}

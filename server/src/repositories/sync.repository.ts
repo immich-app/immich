@@ -53,6 +53,7 @@ export class SyncRepository {
   albumUser: AlbumUserSync;
   asset: AssetSync;
   assetExif: AssetExifSync;
+  assetEdit: AssetEditSync;
   assetFace: AssetFaceSync;
   assetMetadata: AssetMetadataSync;
   authUser: AuthUserSync;
@@ -75,6 +76,7 @@ export class SyncRepository {
     this.albumUser = new AlbumUserSync(this.db);
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
+    this.assetEdit = new AssetEditSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
     this.assetMetadata = new AssetMetadataSync(this.db);
     this.authUser = new AuthUserSync(this.db);
@@ -91,7 +93,7 @@ export class SyncRepository {
   }
 }
 
-class BaseSync {
+export class BaseSync {
   constructor(protected db: Kysely<DB>) {}
 
   protected backfillQuery<T extends keyof DB>(t: T, { nowId, beforeUpdateId, afterUpdateId }: SyncBackfillOptions) {
@@ -497,6 +499,30 @@ class AssetExifSync extends BaseSync {
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .where('assetId', 'in', (eb) => eb.selectFrom('asset').select('id').where('ownerId', '=', options.userId))
+      .stream();
+  }
+}
+
+class AssetEditSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_edit_audit', options)
+      .select(['asset_edit_audit.id', 'editId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit_audit.assetId')
+      .where('asset.ownerId', '=', options.userId)
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_edit_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_edit', options)
+      .select([...columns.syncAssetEdit, 'asset_edit.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_edit.assetId')
+      .where('asset.ownerId', '=', options.userId)
       .stream();
   }
 }

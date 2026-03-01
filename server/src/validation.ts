@@ -427,3 +427,25 @@ export function IsIPRange(options: IsIPRangeOptions, validationOptions?: Validat
     validationOptions,
   );
 }
+
+@ValidatorConstraint({ name: 'isGreaterThanOrEqualTo' })
+export class IsGreaterThanOrEqualToConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+    if (!Number.isFinite(value) || !Number.isFinite(relatedValue)) {
+      return true;
+    }
+
+    return Number(value) >= Number(relatedValue);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    return `${args.property} must be greater than or equal to ${relatedPropertyName}`;
+  }
+}
+
+export const IsGreaterThanOrEqualTo = (property: string, validationOptions?: ValidationOptions) => {
+  return Validate(IsGreaterThanOrEqualToConstraint, [property], validationOptions);
+};
