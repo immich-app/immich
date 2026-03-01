@@ -1,6 +1,7 @@
 package app.alextran.immich.sync
 
 import android.annotation.SuppressLint
+import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
