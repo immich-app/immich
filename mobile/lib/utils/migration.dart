@@ -34,7 +34,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 22;
+const int targetVersion = 23;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -100,7 +100,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     }
   }
 
-  if (version < 22 && Store.isBetaTimelineEnabled) {
+  if (version < 23 && Store.isBetaTimelineEnabled) {
     await _populateLocalAssetPlaybackStyle(drift);
   }
 
