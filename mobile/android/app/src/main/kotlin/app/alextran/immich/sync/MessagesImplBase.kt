@@ -92,7 +92,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     // _special_format requires S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
-    fun hasSpecialFormatColumn(): Boolean =
+    private fun hasSpecialFormatColumn(): Boolean =
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
         SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21
   }
