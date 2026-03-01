@@ -233,25 +233,6 @@ class Drift extends $Drift implements IDatabaseRepository {
           from20To21: (m, v21) async {
             await m.addColumn(v21.localAssetEntity, v21.localAssetEntity.playbackStyle);
             await m.addColumn(v21.trashedLocalAssetEntity, v21.trashedLocalAssetEntity.playbackStyle);
-
-            // Backfill playbackStyle for trashed local assets using remote asset data
-            // (trashed assets are not accessible via native API)
-            await customStatement('''
-              UPDATE trashed_local_asset_entity SET playback_style =
-                CASE
-                  WHEN type = 2 THEN 2
-                  WHEN EXISTS (SELECT 1 FROM remote_asset_entity rae
-                               WHERE rae.checksum = trashed_local_asset_entity.checksum
-                               AND rae.live_photo_video_id IS NOT NULL) THEN 4
-                  WHEN type = 1 AND EXISTS (SELECT 1 FROM remote_asset_entity rae
-                               WHERE rae.checksum = trashed_local_asset_entity.checksum
-                               AND rae.duration_in_seconds IS NOT NULL
-                               AND rae.duration_in_seconds > 0) THEN 3
-                  WHEN type = 1 THEN 1
-                  ELSE 0
-                END
-              WHERE playback_style = 0
-            ''');
           },
         ),
       );

@@ -18,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
@@ -400,6 +401,7 @@ Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
 Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
   try {
     final nativeApi = NativeSyncApi();
+
     final albums = await nativeApi.getAlbums();
     for (final album in albums) {
       final assets = await nativeApi.getAssetsForAlbum(album.id);
@@ -413,7 +415,21 @@ Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
         }
       });
     }
-    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local assets");
+
+    final trashedAssetMap = await nativeApi.getTrashedAssets();
+    for (final assets in trashedAssetMap.values) {
+      await db.batch((batch) {
+        for (final asset in assets) {
+          batch.update(
+            db.trashedLocalAssetEntity,
+            TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+            where: (t) => t.id.equals(asset.id),
+          );
+        }
+      });
+    }
+
+    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
   }
