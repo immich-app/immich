@@ -307,10 +307,7 @@ class _AssetTypeIcons extends StatelessWidget {
             child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
           ),
         if (isAnimated)
-          const Padding(
-              padding: EdgeInsets.only(right: 10.0, top: 6.0),
-              child: _TileOverlayIcon(Icons.gif_rounded)
-          ),
+          const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
       ],
     );
   }
