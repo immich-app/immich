@@ -43,26 +43,32 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
   private var hashTask: Job? = null
 
-  // Probe once at construction time whether _special_format is supported.
-  // Officially available at S Extensions level 21+, but actual support varies across
-  // devices regardless of the reported extension level -> so we probe at runtime.
-  // Falls back safely if permissions aren't granted yet; after the user grants access
-  // the correct projection will be picked up on the next app start.
-  protected val assetProjection: Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+  // Probed lazily on first use (typically a background thread) whether _special_format
+  // is supported. Officially available at S Extensions level 21+, but actual support
+  // varies across devices regardless of the reported extension level — so we probe at
+  // runtime. Falls back safely on older Android or if the probe fails (e.g. permissions
+  // not yet granted); the correct projection is picked up on the next app start.
+  protected val assetProjection: Array<String> by lazy {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@lazy ASSET_PROJECTION_FALLBACK
     try {
       val queryArgs = Bundle().apply { putInt(ContentResolver.QUERY_ARG_LIMIT, 1) }
-      ctx.contentResolver.query(
+      val cursor = ctx.contentResolver.query(
         MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
         arrayOf(SPECIAL_FORMAT_COLUMN),
         queryArgs,
         null
-      )?.close()
-      ASSET_PROJECTION
+      )
+      if(cursor == null){
+        return@lazy ASSET_PROJECTION_FALLBACK
+      }else {
+        cursor.close()
+        ASSET_PROJECTION
+      }
     } catch (e: Exception) {
-      Log.d(TAG, "Failed to probe _special_format support, using fallback projection", e)
+      Log.w(TAG, "Failed to probe _special_format support, using fallback projection", e)
       ASSET_PROJECTION_FALLBACK
     }
-  } else ASSET_PROJECTION_FALLBACK
+  }
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
