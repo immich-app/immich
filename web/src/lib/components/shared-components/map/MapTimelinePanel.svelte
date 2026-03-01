@@ -21,7 +21,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { locale, mapSettings } from '$lib/stores/preferences.store';
+  import { mapSettings } from '$lib/stores/preferences.store';
   import { preferences, user } from '$lib/stores/user.store';
   import {
     updateStackedAssetInTimeline,
@@ -90,8 +90,6 @@
     assetFilter: selectedClusterIds,
   });
 
-  const displayedAssetCount = $derived(timelineManager?.assetCount ?? assetCount);
-
   $effect.pre(() => {
     void timelineOptions;
     assetInteraction.clearMultiselect();
@@ -103,8 +101,7 @@
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />
       <p class="text-sm font-medium text-immich-fg dark:text-immich-dark-fg">
-        {displayedAssetCount.toLocaleString($locale)}
-        {$t('assets')}
+        {$t('assets_count', { values: { count: assetCount } })}
       </p>
     </div>
     <CloseButton onclick={onClose} />

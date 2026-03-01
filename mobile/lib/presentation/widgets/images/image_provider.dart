@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -70,6 +72,29 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         rethrow;
       }
       _log.warning('Non-fatal image load error', e, stack);
+    } finally {
+      this.request = null;
+    }
+  }
+
+  Future<ui.Codec?> loadCodecRequest(ImageRequest request) async {
+    if (isCancelled) {
+      this.request = null;
+      PaintingBinding.instance.imageCache.evict(this);
+      return null;
+    }
+
+    try {
+      final codec = await request.loadCodec();
+      if (codec == null || isCancelled) {
+        codec?.dispose();
+        PaintingBinding.instance.imageCache.evict(this);
+        return null;
+      }
+      return codec;
+    } catch (e) {
+      PaintingBinding.instance.imageCache.evict(this);
+      rethrow;
     } finally {
       this.request = null;
     }

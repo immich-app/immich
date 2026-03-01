@@ -404,7 +404,7 @@ export class AssetRepository {
             (qb) =>
               qb
                 .selectFrom('asset')
-                .selectAll('asset')
+                .select(['asset.id', 'asset.localDateTime'])
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
@@ -423,9 +423,7 @@ export class AssetRepository {
                 .as('a'),
             (join) => join.onTrue(),
           )
-          .innerJoin('asset_exif', 'a.id', 'asset_exif.assetId')
-          .selectAll('a')
-          .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo')),
+          .selectAll('a'),
       )
       .selectFrom('res')
       .select(sql<number>`date_part('year', ("localDateTime" at time zone 'UTC')::date)::int`.as('year'))
