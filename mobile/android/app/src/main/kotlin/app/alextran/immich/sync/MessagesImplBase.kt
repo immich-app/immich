@@ -43,9 +43,9 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
   private var hashTask: Job? = null
 
-  // Probed lazily on first use (typically a background thread) whether _special_format
-  // is supported. Officially available at S Extensions level 21+, but actual support
-  // varies across devices regardless of the reported extension level — so we probe at
+  // Probed lazily on first use whether _special_format is supported.
+  // Officially available at S Extensions level 21+, but actual support
+  // varies across devices regardless of the reported extension level -> So we probe at
   // runtime. Falls back safely on older Android or if the probe fails (e.g. permissions
   // not yet granted); the correct projection is picked up on the next app start.
   protected val assetProjection: Array<String> by lazy {
