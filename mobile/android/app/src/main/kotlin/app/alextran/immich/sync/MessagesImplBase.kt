@@ -42,6 +42,27 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
   private var hashTask: Job? = null
 
+  // Probe once at construction time whether _special_format is supported.
+  // Officially available at S Extensions level 21+, but actual support varies across
+  // devices regardless of the reported extension level -> so we probe at runtime.
+  // Falls back safely if permissions aren't granted yet; after the user grants access
+  // the correct projection will be picked up on the next app start.
+  protected val assetProjection: Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    try {
+      val queryArgs = Bundle().apply { putInt(ContentResolver.QUERY_ARG_LIMIT, 1) }
+      ctx.contentResolver.query(
+        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+        arrayOf(SPECIAL_FORMAT_COLUMN),
+        queryArgs,
+        null
+      )?.close()
+      ASSET_PROJECTION
+    } catch (e: Exception) {
+      Log.d(TAG, "Failed to probe _special_format support, using fallback projection", e)
+      ASSET_PROJECTION_FALLBACK
+    }
+  } else ASSET_PROJECTION_FALLBACK
+
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
@@ -61,7 +82,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString()
     )
     const val BUCKET_SELECTION = "(${MediaStore.Files.FileColumns.BUCKET_ID} = ?)"
-    val ASSET_PROJECTION = buildList {
+
+    // Projection without _special_format, used when the device doesn't support the column.
+    // _special_format is officially available at S Extensions level 21+, but some devices
+    // without that extension also support it, and some with it may not.
+    val ASSET_PROJECTION_FALLBACK = buildList {
       add(MediaStore.MediaColumns._ID)
       add(MediaStore.MediaColumns.DATA)
       add(MediaStore.MediaColumns.DISPLAY_NAME)
@@ -74,16 +99,16 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
-      // IS_FAVORITE is only available on Android 11 and above
+      // IS_FAVORITE, XMP is only available on Android 11 and above
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
-      }
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        add(SPECIAL_FORMAT_COLUMN)
-      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        // Fallback: read XMP from MediaStore to detect Motion Photos
         add(MediaStore.MediaColumns.XMP)
       }
+    }.toTypedArray()
+
+    val ASSET_PROJECTION = buildList {
+      addAll(ASSET_PROJECTION_FALLBACK)
+      add(SPECIAL_FORMAT_COLUMN)
     }.toTypedArray()
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
@@ -93,7 +118,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     volume: String,
     selection: String,
     selectionArgs: Array<String>,
-    projection: Array<String> = ASSET_PROJECTION,
+    projection: Array<String> = assetProjection,
     sortOrder: String? = null
   ): Cursor? = ctx.contentResolver.query(
     MediaStore.Files.getContentUri(volume),
@@ -108,7 +133,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     queryArgs: Bundle
   ): Cursor? = ctx.contentResolver.query(
     MediaStore.Files.getContentUri(volume),
-    ASSET_PROJECTION,
+    assetProjection,
     queryArgs,
     null
   )
