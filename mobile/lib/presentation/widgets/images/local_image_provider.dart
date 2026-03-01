@@ -61,7 +61,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final AssetType assetType;
   final bool isAnimated;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size, this.isAnimated = false});
+  LocalFullImageProvider({required this.id, required this.assetType, required this.size, required this.isAnimated});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {

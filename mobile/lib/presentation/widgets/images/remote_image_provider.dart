@@ -68,7 +68,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     required this.assetId,
     required this.thumbhash,
     required this.assetType,
-    this.isAnimated = false,
+    required this.isAnimated,
   });
 
   @override
