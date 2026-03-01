@@ -100,13 +100,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const sharedLink = getSharedLink();
   const currentAuthUser = get(authUser);
   const userPreferences = get(preferences);
-  const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
+  const isOwner = currentAuthUser && currentAuthUser.id === asset.ownerId;
 
   const Share: ActionItem = {
     title: $t('share'),
     icon: mdiShareVariantOutline,
     type: $t('assets'),
-    $if: () => !!(get(authUser) && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () => !!(currentAuthUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -129,7 +129,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
 
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => !currentAuthUser && sharedLink && sharedLink.allowDownload,
+    $if: () => isOwner || Boolean(sharedLink?.allowDownload),
   };
 
   const PlayMotionPhoto: ActionItem = {
