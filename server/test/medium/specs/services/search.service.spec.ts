@@ -94,19 +94,14 @@ describe(SearchService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
 
-      // Create primary asset
       const { asset: primaryAsset } = await ctx.newAsset({ ownerId: user.id });
-      // Create stacked asset
       const { asset: stackedAsset } = await ctx.newAsset({ ownerId: user.id });
-      // Create unstacked asset
       const { asset: unstackedAsset } = await ctx.newAsset({ ownerId: user.id });
 
-      // Stack assets (primary + stacked)
       await ctx.newStack({ ownerId: user.id }, [primaryAsset.id, stackedAsset.id]);
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      // Search without withStacked (should return only primary asset)
       const response = await sut.searchMetadata(auth, { withStacked: false });
 
       expect(response.assets.items.length).toBe(1);
