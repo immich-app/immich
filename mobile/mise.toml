@@ -38,15 +38,8 @@ run = "dart run build_runner watch --delete-conflicting-outputs"
 alias = "pigeon"
 description = "Generate pigeon platform code"
 run = [
-  "dart run pigeon --input pigeon/native_sync_api.dart",
-  "dart run pigeon --input pigeon/local_image_api.dart",
-  "dart run pigeon --input pigeon/remote_image_api.dart",
-  "dart run pigeon --input pigeon/background_worker_api.dart",
-  "dart run pigeon --input pigeon/background_worker_lock_api.dart",
-  "dart run pigeon --input pigeon/connectivity_api.dart",
-  "dart run pigeon --input pigeon/network_api.dart",
-  "dart run pigeon --input pigeon/view_intent_api.dart",
-  "dart format lib/platform/native_sync_api.g.dart lib/platform/local_image_api.g.dart lib/platform/remote_image_api.g.dart lib/platform/background_worker_api.g.dart lib/platform/background_worker_lock_api.g.dart lib/platform/connectivity_api.g.dart lib/platform/network_api.g.dart lib/platform/view_intent_api.g.dart",
+  "ls pigeon/*.dart | xargs -n1 -P4 -I{} dart run pigeon --input {}",
+  "dart format lib/platform/",
 ]
 
 [tasks."codegen:translation"]
@@ -149,10 +142,10 @@ run = "dcm fix lib"
 
 [tasks.checklist]
 run = [
-  {task = "codegen:pigeon" },
-  {task = "codegen:dart" },
-  {task = "codegen:translation" },
-  {task = "analyze" },
-  {task = "format" },
-  {task = "test" },
+  { task = "codegen:pigeon" },
+  { task = "codegen:dart" },
+  { task = "codegen:translation" },
+  { task = "analyze" },
+  { task = "format" },
+  { task = "test" },
 ]

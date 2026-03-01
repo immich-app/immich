@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart' as pm;
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
@@ -39,3 +42,32 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
 final notificationPermissionProvider = StateNotifierProvider<NotificationPermissionNotifier, PermissionStatus>(
   (ref) => NotificationPermissionNotifier(),
 );
+
+final batteryOptimizationProvider = AsyncNotifierProvider<BatteryOptimizationNotifier, PermissionStatus>(
+  BatteryOptimizationNotifier.new,
+);
+
+class BatteryOptimizationNotifier extends AsyncNotifier<PermissionStatus> {
+  Future<PermissionStatus> getBatteryOptimizationPermission() async {
+    final PermissionStatus status;
+    final isIgnoring = await ref.read(permissionApiProvider).isIgnoringBatteryOptimizations().then((p) => p.toStatus());
+    if (isIgnoring == PermissionStatus.granted) {
+      status = PermissionStatus.granted;
+    } else {
+      status = PermissionStatus.denied;
+    }
+    state = AsyncValue.data(status);
+    return status;
+  }
+
+  @override
+  FutureOr<PermissionStatus> build() => getBatteryOptimizationPermission();
+}
+
+extension on pm.PermissionStatus {
+  PermissionStatus toStatus() => switch (this) {
+    pm.PermissionStatus.granted => PermissionStatus.granted,
+    pm.PermissionStatus.denied => PermissionStatus.denied,
+    pm.PermissionStatus.permanentlyDenied => PermissionStatus.permanentlyDenied,
+  };
+}
