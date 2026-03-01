@@ -115,6 +115,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     val ASSET_PROJECTION = buildList {
       addAll(ASSET_PROJECTION_FALLBACK)
+      // XMP is only needed for the fallback path (no _special_format);
+      // if special_format is supported, we don't need it
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        remove(MediaStore.MediaColumns.XMP)
+      }
       add(SPECIAL_FORMAT_COLUMN)
     }.toTypedArray()
 
