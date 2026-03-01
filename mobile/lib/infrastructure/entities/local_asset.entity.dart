@@ -25,7 +25,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   RealColumn get longitude => real().nullable()();
 
-  IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().nullable()();
+  IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

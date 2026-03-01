@@ -9452,8 +9452,9 @@ i1.GeneratedColumn<int> _column_103(String aliasedName) =>
     i1.GeneratedColumn<int>(
       'playback_style',
       aliasedName,
-      true,
+      false,
       type: i1.DriftSqlType.int,
+      defaultValue: const CustomExpression('0'),
     );
 
 class Shape31 extends i0.VersionedTable {

@@ -28,7 +28,7 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 
   IntColumn get source => intEnum<TrashOrigin>()();
 
-  IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().nullable()();
+  IntColumn get playbackStyle => intEnum<AssetPlaybackStyle>().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id, albumId};

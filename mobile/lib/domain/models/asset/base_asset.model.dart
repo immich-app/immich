@@ -47,7 +47,7 @@ sealed class BaseAsset {
 
   bool get isMotionPhoto => livePhotoVideoId != null;
 
-  AssetPlaybackStyle? get playbackStyle {
+  AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
     if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
     if (isImage && durationInSeconds != null && durationInSeconds! > 0) return AssetPlaybackStyle.imageAnimated;

@@ -6,7 +6,7 @@ class LocalAsset extends BaseAsset {
   final String? cloudId;
   final int orientation;
   @override
-  final AssetPlaybackStyle? playbackStyle;
+  final AssetPlaybackStyle playbackStyle;
 
   final DateTime? adjustmentTime;
   final double? latitude;
@@ -27,7 +27,7 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
-    this.playbackStyle,
+    required this.playbackStyle,
     this.adjustmentTime,
     this.latitude,
     this.longitude,

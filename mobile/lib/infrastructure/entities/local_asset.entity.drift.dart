@@ -25,7 +25,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
-      i0.Value<i2.AssetPlaybackStyle?> playbackStyle,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
@@ -44,7 +44,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime?> adjustmentTime,
       i0.Value<double?> latitude,
       i0.Value<double?> longitude,
-      i0.Value<i2.AssetPlaybackStyle?> playbackStyle,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -133,7 +133,7 @@ class $$LocalAssetEntityTableFilterComposer
   );
 
   i0.ColumnWithTypeConverterFilters<
-    i2.AssetPlaybackStyle?,
+    i2.AssetPlaybackStyle,
     i2.AssetPlaybackStyle,
     int
   >
@@ -295,7 +295,7 @@ class $$LocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<double> get longitude =>
       $composableBuilder(column: $table.longitude, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle?, int>
+  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
   get playbackStyle => $composableBuilder(
     column: $table.playbackStyle,
     builder: (column) => column,
@@ -357,7 +357,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
-                i0.Value<i2.AssetPlaybackStyle?> playbackStyle =
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion(
                 name: name,
@@ -394,7 +394,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
                 i0.Value<double?> latitude = const i0.Value.absent(),
                 i0.Value<double?> longitude = const i0.Value.absent(),
-                i0.Value<i2.AssetPlaybackStyle?> playbackStyle =
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion.insert(
                 name: name,
@@ -625,16 +625,17 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     requiredDuringInsert: false,
   );
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle?, int>
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
   playbackStyle =
       i0.GeneratedColumn<int>(
         'playback_style',
         aliasedName,
-        true,
+        false,
         type: i0.DriftSqlType.int,
         requiredDuringInsert: false,
-      ).withConverter<i2.AssetPlaybackStyle?>(
-        i1.$LocalAssetEntityTable.$converterplaybackStylen,
+        defaultValue: const i4.Constant(0),
+      ).withConverter<i2.AssetPlaybackStyle>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle,
       );
   @override
   List<i0.GeneratedColumn> get $columns => [
@@ -835,11 +836,11 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.double,
         data['${effectivePrefix}longitude'],
       ),
-      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStylen.fromSql(
+      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStyle.fromSql(
         attachedDatabase.typeMapping.read(
           i0.DriftSqlType.int,
           data['${effectivePrefix}playback_style'],
-        ),
+        )!,
       ),
     );
   }
@@ -854,10 +855,6 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
   static i0.JsonTypeConverter2<i2.AssetPlaybackStyle, int, int>
   $converterplaybackStyle = const i0.EnumIndexConverter<i2.AssetPlaybackStyle>(
     i2.AssetPlaybackStyle.values,
-  );
-  static i0.JsonTypeConverter2<i2.AssetPlaybackStyle?, int?, int?>
-  $converterplaybackStylen = i0.JsonTypeConverter2.asNullable(
-    $converterplaybackStyle,
   );
   @override
   bool get withoutRowId => true;
@@ -882,7 +879,7 @@ class LocalAssetEntityData extends i0.DataClass
   final DateTime? adjustmentTime;
   final double? latitude;
   final double? longitude;
-  final i2.AssetPlaybackStyle? playbackStyle;
+  final i2.AssetPlaybackStyle playbackStyle;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -899,7 +896,7 @@ class LocalAssetEntityData extends i0.DataClass
     this.adjustmentTime,
     this.latitude,
     this.longitude,
-    this.playbackStyle,
+    required this.playbackStyle,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -939,9 +936,9 @@ class LocalAssetEntityData extends i0.DataClass
     if (!nullToAbsent || longitude != null) {
       map['longitude'] = i0.Variable<double>(longitude);
     }
-    if (!nullToAbsent || playbackStyle != null) {
+    {
       map['playback_style'] = i0.Variable<int>(
-        i1.$LocalAssetEntityTable.$converterplaybackStylen.toSql(playbackStyle),
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toSql(playbackStyle),
       );
     }
     return map;
@@ -970,8 +967,9 @@ class LocalAssetEntityData extends i0.DataClass
       adjustmentTime: serializer.fromJson<DateTime?>(json['adjustmentTime']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
-      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStylen
-          .fromJson(serializer.fromJson<int?>(json['playbackStyle'])),
+      playbackStyle: i1.$LocalAssetEntityTable.$converterplaybackStyle.fromJson(
+        serializer.fromJson<int>(json['playbackStyle']),
+      ),
     );
   }
   @override
@@ -995,10 +993,8 @@ class LocalAssetEntityData extends i0.DataClass
       'adjustmentTime': serializer.toJson<DateTime?>(adjustmentTime),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
-      'playbackStyle': serializer.toJson<int?>(
-        i1.$LocalAssetEntityTable.$converterplaybackStylen.toJson(
-          playbackStyle,
-        ),
+      'playbackStyle': serializer.toJson<int>(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toJson(playbackStyle),
       ),
     };
   }
@@ -1019,7 +1015,7 @@ class LocalAssetEntityData extends i0.DataClass
     i0.Value<DateTime?> adjustmentTime = const i0.Value.absent(),
     i0.Value<double?> latitude = const i0.Value.absent(),
     i0.Value<double?> longitude = const i0.Value.absent(),
-    i0.Value<i2.AssetPlaybackStyle?> playbackStyle = const i0.Value.absent(),
+    i2.AssetPlaybackStyle? playbackStyle,
   }) => i1.LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -1040,9 +1036,7 @@ class LocalAssetEntityData extends i0.DataClass
         : this.adjustmentTime,
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
-    playbackStyle: playbackStyle.present
-        ? playbackStyle.value
-        : this.playbackStyle,
+    playbackStyle: playbackStyle ?? this.playbackStyle,
   );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -1156,7 +1150,7 @@ class LocalAssetEntityCompanion
   final i0.Value<DateTime?> adjustmentTime;
   final i0.Value<double?> latitude;
   final i0.Value<double?> longitude;
-  final i0.Value<i2.AssetPlaybackStyle?> playbackStyle;
+  final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1249,7 +1243,7 @@ class LocalAssetEntityCompanion
     i0.Value<DateTime?>? adjustmentTime,
     i0.Value<double?>? latitude,
     i0.Value<double?>? longitude,
-    i0.Value<i2.AssetPlaybackStyle?>? playbackStyle,
+    i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
   }) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1323,7 +1317,7 @@ class LocalAssetEntityCompanion
     }
     if (playbackStyle.present) {
       map['playback_style'] = i0.Variable<int>(
-        i1.$LocalAssetEntityTable.$converterplaybackStylen.toSql(
+        i1.$LocalAssetEntityTable.$converterplaybackStyle.toSql(
           playbackStyle.value,
         ),
       );

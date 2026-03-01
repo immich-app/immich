@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
@@ -97,6 +98,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     if (certData != null) {
       await networkApi.addCertificate(ClientCertData(data: certData.data, password: certData.password ?? ""));
     }
+  }
+
+  if (version < 22 && Store.isBetaTimelineEnabled) {
+    await _populateLocalAssetPlaybackStyle(drift);
   }
 
   if (version < 22 && !Store.isBetaTimelineEnabled) {
@@ -391,6 +396,54 @@ Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
     dPrint(() => "[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
+
+Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
+  try {
+    // First, find which asset IDs still have unknown playbackStyle
+    final unknownIds =
+        await (db.localAssetEntity.selectOnly()
+              ..addColumns([db.localAssetEntity.id])
+              ..where(db.localAssetEntity.playbackStyle.equals(AssetPlaybackStyle.unknown.index)))
+            .map((row) => row.read(db.localAssetEntity.id)!)
+            .get();
+
+    if (unknownIds.isEmpty) {
+      dPrint(() => "[MIGRATION] No local assets with unknown playbackStyle");
+      return;
+    }
+
+    final unknownIdSet = unknownIds.toSet();
+    final nativeApi = NativeSyncApi();
+    final albums = await nativeApi.getAlbums();
+    for (final album in albums) {
+      if (unknownIdSet.isEmpty) break;
+      final assets = await nativeApi.getAssetsForAlbum(album.id);
+      await db.batch((batch) {
+        for (final asset in assets) {
+          if (unknownIdSet.remove(asset.id)) {
+            batch.update(
+              db.localAssetEntity,
+              LocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+              where: (t) => t.id.equals(asset.id),
+            );
+          }
+        }
+      });
+    }
+    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local assets");
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
+  }
+}
+
+AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
+  PlatformAssetPlaybackStyle.unknown => AssetPlaybackStyle.unknown,
+  PlatformAssetPlaybackStyle.image => AssetPlaybackStyle.image,
+  PlatformAssetPlaybackStyle.video => AssetPlaybackStyle.video,
+  PlatformAssetPlaybackStyle.imageAnimated => AssetPlaybackStyle.imageAnimated,
+  PlatformAssetPlaybackStyle.livePhoto => AssetPlaybackStyle.livePhoto,
+  PlatformAssetPlaybackStyle.videoLooping => AssetPlaybackStyle.videoLooping,
+};
 
 class _DeviceAsset {
   final String assetId;

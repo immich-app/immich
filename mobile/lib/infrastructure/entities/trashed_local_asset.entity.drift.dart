@@ -23,7 +23,7 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
       required i3.TrashOrigin source,
-      i0.Value<i2.AssetPlaybackStyle?> playbackStyle,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
     i1.TrashedLocalAssetEntityCompanion Function({
@@ -40,7 +40,7 @@ typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
       i0.Value<i3.TrashOrigin> source,
-      i0.Value<i2.AssetPlaybackStyle?> playbackStyle,
+      i0.Value<i2.AssetPlaybackStyle> playbackStyle,
     });
 
 class $$TrashedLocalAssetEntityTableFilterComposer
@@ -121,7 +121,7 @@ class $$TrashedLocalAssetEntityTableFilterComposer
   );
 
   i0.ColumnWithTypeConverterFilters<
-    i2.AssetPlaybackStyle?,
+    i2.AssetPlaybackStyle,
     i2.AssetPlaybackStyle,
     int
   >
@@ -267,7 +267,7 @@ class $$TrashedLocalAssetEntityTableAnnotationComposer
   i0.GeneratedColumnWithTypeConverter<i3.TrashOrigin, int> get source =>
       $composableBuilder(column: $table.source, builder: (column) => column);
 
-  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle?, int>
+  i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
   get playbackStyle => $composableBuilder(
     column: $table.playbackStyle,
     builder: (column) => column,
@@ -333,7 +333,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 i0.Value<i3.TrashOrigin> source = const i0.Value.absent(),
-                i0.Value<i2.AssetPlaybackStyle?> playbackStyle =
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
               }) => i1.TrashedLocalAssetEntityCompanion(
                 name: name,
@@ -366,7 +366,7 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
                 required i3.TrashOrigin source,
-                i0.Value<i2.AssetPlaybackStyle?> playbackStyle =
+                i0.Value<i2.AssetPlaybackStyle> playbackStyle =
                     const i0.Value.absent(),
               }) => i1.TrashedLocalAssetEntityCompanion.insert(
                 name: name,
@@ -579,16 +579,17 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         i1.$TrashedLocalAssetEntityTable.$convertersource,
       );
   @override
-  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle?, int>
+  late final i0.GeneratedColumnWithTypeConverter<i2.AssetPlaybackStyle, int>
   playbackStyle =
       i0.GeneratedColumn<int>(
         'playback_style',
         aliasedName,
-        true,
+        false,
         type: i0.DriftSqlType.int,
         requiredDuringInsert: false,
-      ).withConverter<i2.AssetPlaybackStyle?>(
-        i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen,
+        defaultValue: const i4.Constant(0),
+      ).withConverter<i2.AssetPlaybackStyle>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle,
       );
   @override
   List<i0.GeneratedColumn> get $columns => [
@@ -762,12 +763,12 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
           data['${effectivePrefix}source'],
         )!,
       ),
-      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen
+      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle
           .fromSql(
             attachedDatabase.typeMapping.read(
               i0.DriftSqlType.int,
               data['${effectivePrefix}playback_style'],
-            ),
+            )!,
           ),
     );
   }
@@ -784,10 +785,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
   static i0.JsonTypeConverter2<i2.AssetPlaybackStyle, int, int>
   $converterplaybackStyle = const i0.EnumIndexConverter<i2.AssetPlaybackStyle>(
     i2.AssetPlaybackStyle.values,
-  );
-  static i0.JsonTypeConverter2<i2.AssetPlaybackStyle?, int?, int?>
-  $converterplaybackStylen = i0.JsonTypeConverter2.asNullable(
-    $converterplaybackStyle,
   );
   @override
   bool get withoutRowId => true;
@@ -810,7 +807,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
   final bool isFavorite;
   final int orientation;
   final i3.TrashOrigin source;
-  final i2.AssetPlaybackStyle? playbackStyle;
+  final i2.AssetPlaybackStyle playbackStyle;
   const TrashedLocalAssetEntityData({
     required this.name,
     required this.type,
@@ -825,7 +822,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     required this.isFavorite,
     required this.orientation,
     required this.source,
-    this.playbackStyle,
+    required this.playbackStyle,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -859,9 +856,9 @@ class TrashedLocalAssetEntityData extends i0.DataClass
         i1.$TrashedLocalAssetEntityTable.$convertersource.toSql(source),
       );
     }
-    if (!nullToAbsent || playbackStyle != null) {
+    {
       map['playback_style'] = i0.Variable<int>(
-        i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen.toSql(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toSql(
           playbackStyle,
         ),
       );
@@ -892,8 +889,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       source: i1.$TrashedLocalAssetEntityTable.$convertersource.fromJson(
         serializer.fromJson<int>(json['source']),
       ),
-      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen
-          .fromJson(serializer.fromJson<int?>(json['playbackStyle'])),
+      playbackStyle: i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle
+          .fromJson(serializer.fromJson<int>(json['playbackStyle'])),
     );
   }
   @override
@@ -917,8 +914,8 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       'source': serializer.toJson<int>(
         i1.$TrashedLocalAssetEntityTable.$convertersource.toJson(source),
       ),
-      'playbackStyle': serializer.toJson<int?>(
-        i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen.toJson(
+      'playbackStyle': serializer.toJson<int>(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toJson(
           playbackStyle,
         ),
       ),
@@ -939,7 +936,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     bool? isFavorite,
     int? orientation,
     i3.TrashOrigin? source,
-    i0.Value<i2.AssetPlaybackStyle?> playbackStyle = const i0.Value.absent(),
+    i2.AssetPlaybackStyle? playbackStyle,
   }) => i1.TrashedLocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -956,9 +953,7 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
     source: source ?? this.source,
-    playbackStyle: playbackStyle.present
-        ? playbackStyle.value
-        : this.playbackStyle,
+    playbackStyle: playbackStyle ?? this.playbackStyle,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     i1.TrashedLocalAssetEntityCompanion data,
@@ -1062,7 +1057,7 @@ class TrashedLocalAssetEntityCompanion
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
   final i0.Value<i3.TrashOrigin> source;
-  final i0.Value<i2.AssetPlaybackStyle?> playbackStyle;
+  final i0.Value<i2.AssetPlaybackStyle> playbackStyle;
   const TrashedLocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -1147,7 +1142,7 @@ class TrashedLocalAssetEntityCompanion
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
     i0.Value<i3.TrashOrigin>? source,
-    i0.Value<i2.AssetPlaybackStyle?>? playbackStyle,
+    i0.Value<i2.AssetPlaybackStyle>? playbackStyle,
   }) {
     return i1.TrashedLocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -1215,7 +1210,7 @@ class TrashedLocalAssetEntityCompanion
     }
     if (playbackStyle.present) {
       map['playback_style'] = i0.Variable<int>(
-        i1.$TrashedLocalAssetEntityTable.$converterplaybackStylen.toSql(
+        i1.$TrashedLocalAssetEntityTable.$converterplaybackStyle.toSql(
           playbackStyle.value,
         ),
       );
