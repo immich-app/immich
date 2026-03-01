@@ -630,17 +630,20 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
+  async getUploadAssetIdByChecksum(
+    ownerId: string,
+    checksum: Buffer,
+  ): Promise<{ id: string; isTrashed: boolean } | undefined> {
     const asset = await this.db
       .selectFrom('asset')
-      .select('id')
+      .select(['id', 'deletedAt'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
       .limit(1)
       .executeTakeFirst();
 
-    return asset?.id;
+    return asset ? { id: asset.id, isTrashed: !!asset.deletedAt } : undefined;
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {

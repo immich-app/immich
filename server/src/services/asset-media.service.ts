@@ -52,12 +52,18 @@ export class AssetMediaService extends BaseService {
       return;
     }
 
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
-    if (!assetId) {
+    const result = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
+    if (!result) {
       return;
     }
 
-    return { id: assetId, status: AssetMediaStatus.DUPLICATE };
+    if (result.isTrashed) {
+      await this.trashRepository.restoreAll([result.id]);
+      await this.eventRepository.emit('AssetRestoreAll', { assetIds: [result.id], userId: auth.user.id });
+      return { id: result.id, status: AssetMediaStatus.RESTORED };
+    }
+
+    return { id: result.id, status: AssetMediaStatus.DUPLICATE };
   }
 
   canUploadFile({ auth, fieldName, file, body }: UploadRequest): true {
@@ -301,6 +307,15 @@ export class AssetMediaService extends BaseService {
       checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };
     }
 
+    const trashedIds = Object.values(checksumMap)
+      .filter((v) => v.isTrashed)
+      .map((v) => v.id);
+
+    if (trashedIds.length > 0) {
+      await this.trashRepository.restoreAll(trashedIds);
+      await this.eventRepository.emit('AssetRestoreAll', { assetIds: trashedIds, userId: auth.user.id });
+    }
+
     return {
       results: dto.assets.map(({ id, checksum }) => {
         const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];
@@ -310,7 +325,7 @@ export class AssetMediaService extends BaseService {
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
             assetId: duplicate.id,
-            isTrashed: duplicate.isTrashed,
+            isTrashed: false,
           };
         }
 
@@ -336,12 +351,17 @@ export class AssetMediaService extends BaseService {
 
     // handle duplicates with a success response
     if (isAssetChecksumConstraint(error)) {
-      const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
-      if (!duplicateId) {
+      const result = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+      if (!result) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
         throw new InternalServerErrorException();
       }
-      return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+      if (result.isTrashed) {
+        await this.trashRepository.restoreAll([result.id]);
+        await this.eventRepository.emit('AssetRestoreAll', { assetIds: [result.id], userId: auth.user.id });
+        return { status: AssetMediaStatus.RESTORED, id: result.id };
+      }
+      return { status: AssetMediaStatus.DUPLICATE, id: result.id };
     }
 
     this.logger.error(`Error uploading file ${error}`, error?.stack);

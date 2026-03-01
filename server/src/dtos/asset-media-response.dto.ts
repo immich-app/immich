@@ -5,6 +5,7 @@ export enum AssetMediaStatus {
   CREATED = 'created',
   REPLACED = 'replaced',
   DUPLICATE = 'duplicate',
+  RESTORED = 'restored',
 }
 export class AssetMediaResponseDto {
   @ValidateEnum({ enum: AssetMediaStatus, name: 'AssetMediaStatus', description: 'Upload status' })

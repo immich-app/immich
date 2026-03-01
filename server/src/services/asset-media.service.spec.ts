@@ -218,7 +218,7 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should find an existing asset', async () => {
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: 'asset-id', isTrashed: false });
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
@@ -227,12 +227,25 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should find an existing asset by base64', async () => {
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: 'asset-id', isTrashed: false });
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
       });
       expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
+
+    it('should restore a trashed asset and return restored status', async () => {
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: 'asset-id', isTrashed: true });
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'asset-id',
+        status: AssetMediaStatus.RESTORED,
+      });
+      expect(mocks.trash.restoreAll).toHaveBeenCalledWith(['asset-id']);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetRestoreAll', {
+        assetIds: ['asset-id'],
+        userId: authStub.admin.user.id,
+      });
     });
   });
 
@@ -390,13 +403,45 @@ describe(AssetMediaService.name, () => {
       (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       mocks.asset.create.mockRejectedValue(error);
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: assetEntity.id, isTrashed: false });
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
         status: AssetMediaStatus.DUPLICATE,
       });
 
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['fake_path/asset_1.jpeg', undefined] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should restore a trashed duplicate and return restored status', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
+
+      mocks.asset.create.mockRejectedValue(error);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: assetEntity.id, isTrashed: true });
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.RESTORED,
+      });
+
+      expect(mocks.trash.restoreAll).toHaveBeenCalledWith([assetEntity.id]);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetRestoreAll', {
+        assetIds: [assetEntity.id],
+        userId: authStub.user1.user.id,
+      });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
@@ -922,7 +967,7 @@ describe(AssetMediaService.name, () => {
 
       mocks.asset.update.mockRejectedValue(error);
       mocks.asset.getById.mockResolvedValueOnce(sidecarAsset);
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(sidecarAsset.id);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({ id: sidecarAsset.id, isTrashed: false });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
       // this is the original file size
       mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
@@ -1016,6 +1061,34 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
+    });
+
+    it('should restore trashed duplicates and return isTrashed as false', async () => {
+      const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
+
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: new Date() }]);
+
+      await expect(
+        sut.bulkUploadCheck(authStub.admin, {
+          assets: [{ id: '1', checksum: file1.toString('hex') }],
+        }),
+      ).resolves.toEqual({
+        results: [
+          {
+            id: '1',
+            assetId: 'asset-1',
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+            isTrashed: false,
+          },
+        ],
+      });
+
+      expect(mocks.trash.restoreAll).toHaveBeenCalledWith(['asset-1']);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetRestoreAll', {
+        assetIds: ['asset-1'],
+        userId: authStub.admin.user.id,
+      });
     });
   });
 
