@@ -1,5 +1,5 @@
-import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
 import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
+
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 import { sortBy } from 'lodash-es';
@@ -31,9 +31,42 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
   return duplicateAssets.pop();
 };
 
+/* ---------------------------- Duplicate diffing --------------------------- */
+
+// All metadata field keys checked for differences, in display order
+export const METADATA_FIELD_KEYS = [
+  'originalFileName',
+  'originalPath',
+  'fileSize',
+  'resolution',
+  'fileCreatedAt',
+  'fileModifiedAt',
+  'dateTimeOriginal',
+  'timeZone',
+  'modifyDate',
+  'city',
+  'state',
+  'country',
+  'latitude',
+  'longitude',
+  'make',
+  'model',
+  'lensModel',
+  'fNumber',
+  'focalLength',
+  'iso',
+  'exposureTime',
+  'description',
+  'rating',
+  'orientation',
+  'projectionType',
+] as const;
+
+export type MetadataFieldKey = (typeof METADATA_FIELD_KEYS)[number];
+export type DifferingMetadataFields = Partial<Record<MetadataFieldKey, boolean>>;
 
 export function normalizeForComparison(
-  key: keyof MetadataPreference,
+  key: MetadataFieldKey,
   value: string | number | boolean | null | undefined,
 ): string | number | boolean | null | undefined {
   if (value === null || value === undefined) {
@@ -59,14 +92,10 @@ export function normalizeForComparison(
   return value;
 }
 
-export type DifferingMetadataFields = {
-  [key in keyof MetadataPreference]?: boolean;
-};
-
 // Helper function to get the value of a metadata field for an asset for comparison purposes only.
 function getValueForAsset(
   asset: AssetResponseDto,
-  key: keyof MetadataPreference,
+  key: MetadataFieldKey,
 ): string | number | boolean | null | undefined {
   switch (key) {
     case 'fileCreatedAt':
@@ -90,49 +119,34 @@ function getValueForAsset(
   }
 }
 
-// Helper function to exclude fields that have no value across all assets, even if they are selected in the metadata preferences.
-function hasAnyValue(assets: AssetResponseDto[], key: keyof MetadataPreference): boolean {
+// Helper function to exclude fields that have no value across all assets.
+function hasAnyValue(assets: AssetResponseDto[], key: MetadataFieldKey): boolean {
   return assets.some((asset) => {
     const value = getValueForAsset(asset, key);
     return value !== null && value !== undefined;
   });
 }
 
-// Computes which metadata fields differ across a list of assets based on the user's selected metadata preferences and whether to show all metadata or only differing metadata.
-export function computeDifferingMetadataFields(
-  assets: AssetResponseDto[],
-  selectedMetadataFields: MetadataPreference,
-  showAllMetadata: boolean,
-): DifferingMetadataFields {
+// Computes which metadata fields differ across a list of assets.
+export function computeDifferingMetadataFields(assets: AssetResponseDto[]): DifferingMetadataFields {
   const diffs: DifferingMetadataFields = {};
 
-  if (showAllMetadata) {
-    for (const key in selectedMetadataFields) {
-      const metaKey = key as keyof MetadataPreference;
-      if (selectedMetadataFields[metaKey] && hasAnyValue(assets, metaKey)) {
-        diffs[metaKey] = true;
-      }
-    }
-    return diffs;
-  }
-
-  for (const key in selectedMetadataFields) {
-    const metaKey = key as keyof MetadataPreference;
-    if (!selectedMetadataFields[metaKey]) {
+  for (const key of METADATA_FIELD_KEYS) {
+    if (!hasAnyValue(assets, key)) {
       continue;
     }
 
     const uniqueValues = new Set<string | number | boolean | null | undefined>();
 
     for (const asset of assets) {
-      const value = getValueForAsset(asset, metaKey);
+      const value = getValueForAsset(asset, key);
       if (value !== undefined && value !== null) {
-        uniqueValues.add(normalizeForComparison(metaKey, value));
+        uniqueValues.add(normalizeForComparison(key, value));
       }
     }
 
     if (uniqueValues.size > 1) {
-      diffs[metaKey] = true;
+      diffs[key] = true;
     }
   }
 

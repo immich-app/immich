@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
+  import { type DifferingMetadataFields, METADATA_FIELD_KEYS, type MetadataFieldKey } from '$lib/utils/duplicate-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
@@ -42,9 +42,9 @@
     isSelected: boolean;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
-    selectedMetadataFields: MetadataPreference;
-    differingMetadataFields: { [key: string]: boolean | undefined };
-    showAllMetadata?: boolean;
+    differingMetadataFields: DifferingMetadataFields;
+    showMore?: boolean;
+    intialVisibleCount?: number;
   }
 
   let {
@@ -52,9 +52,9 @@
     isSelected,
     onSelectAsset,
     onViewAsset,
-    selectedMetadataFields,
     differingMetadataFields,
-    showAllMetadata = false,
+    showMore = false,
+    intialVisibleCount = 5,
   }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
@@ -68,15 +68,17 @@
       : fromISODateTimeUTC(asset.localDateTime),
   );
 
-  // Whether a field is selected AND differs (or showAllMetadata is on)
-  const isVisible = (key: keyof MetadataPreference): boolean =>
-    !!selectedMetadataFields[key] && !!differingMetadataFields[key];
+  // Ordered list of keys that differ, sliced based on show-more state
+  let visibleKeySet = $derived(
+    new Set(
+      METADATA_FIELD_KEYS.filter((k) => !!differingMetadataFields[k]).slice(
+        0,
+        showMore ? Number.POSITIVE_INFINITY : intialVisibleCount,
+      ),
+    ),
+  );
 
-  // Only highlight differing fields when showing all metadata
-  const isHighlighted = (key: keyof MetadataPreference): boolean => showAllMetadata && !!differingMetadataFields[key];
-
-  // Option to hide labels and rely on icons only.
-  let showLabels = $derived(selectedMetadataFields.showLabels);
+  const isVisible = (key: MetadataFieldKey): boolean => visibleKeySet.has(key);
 
   const formatISODateToLocale = (iso: string): string => {
     return fromISODateTimeUTC(iso).toLocaleString(
@@ -85,22 +87,23 @@
     );
   };
 
-  const getBasePath = (fullpath: string, fileName: string): string => {
-    if (fileName && fullpath.endsWith(fileName)) {
-      return fullpath.slice(0, -(fileName.length + 1));
-    }
-    return fullpath;
-  };
-
   function truncateMiddle(path: string, maxLength: number = 50): string {
     if (path.length <= maxLength) {
       return path;
     }
 
-    const start = Math.floor(maxLength / 2) - 2;
-    const end = Math.floor(maxLength / 2) - 2;
+    // Always preserve the last segment (filename + extension) at the end
+    const lastSlash = path.lastIndexOf('/');
+    const tail = lastSlash === -1 ? path : path.slice(lastSlash); // includes the leading '/'
 
-    return path.slice(0, Math.max(0, start)) + '...' + path.slice(Math.max(0, path.length - end));
+    // If the tail alone already fills the budget, fall back to symmetric truncation
+    if (tail.length >= maxLength - 3) {
+      const half = Math.floor((maxLength - 3) / 2);
+      return path.slice(0, half) + '...' + path.slice(-half);
+    }
+
+    const headLength = maxLength - 3 - tail.length;
+    return path.slice(0, headLength) + '...' + tail;
   }
 </script>
 
@@ -173,74 +176,39 @@
   >
     <!-- FILE -->
     {#if isVisible('originalFileName')}
-      <InfoRow
-        icon={mdiFileImageOutline}
-        highlight={isHighlighted('originalFileName')}
-        title={$t('file_name_text')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiFileImageOutline} title={$t('file_name_text')}>
         {asset.originalFileName}
       </InfoRow>
     {/if}
     {#if isVisible('originalPath')}
-      <InfoRow
-        icon={mdiFolderOutline}
-        highlight={isHighlighted('originalPath')}
-        title={$t('path')}
-        showLabel={showLabels}
-      >
-        {truncateMiddle(getBasePath(asset.originalPath, asset.originalFileName)) || $t('unknown')}
+      <InfoRow icon={mdiFolderOutline} title={$t('path')}>
+        {truncateMiddle(asset.originalPath) || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('fileSize')}
-      <InfoRow
-        icon={mdiWeightKilogram}
-        highlight={isHighlighted('fileSize')}
-        title={$t('file_size')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiWeightKilogram} title={$t('file_size')}>
         {getFileSize(asset)}
       </InfoRow>
     {/if}
     {#if isVisible('resolution')}
-      <InfoRow
-        icon={mdiFitToScreen}
-        highlight={isHighlighted('resolution')}
-        title={$t('resolution')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiFitToScreen} title={$t('resolution')}>
         {getAssetResolution(asset) || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('fileCreatedAt')}
-      <InfoRow
-        icon={mdiFileClockOutline}
-        highlight={isHighlighted('fileCreatedAt')}
-        title={$t('created_at')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiFileClockOutline} title={$t('created_at')}>
         {formatISODateToLocale(asset.fileCreatedAt)}
       </InfoRow>
     {/if}
     {#if isVisible('fileModifiedAt')}
-      <InfoRow
-        icon={mdiFileEditOutline}
-        highlight={isHighlighted('fileModifiedAt')}
-        title={$t('updated_at')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiFileEditOutline} title={$t('updated_at')}>
         {formatISODateToLocale(asset.fileModifiedAt)}
       </InfoRow>
     {/if}
 
     <!-- DATE/TIME -->
     {#if isVisible('dateTimeOriginal')}
-      <InfoRow
-        icon={mdiCalendar}
-        highlight={isHighlighted('dateTimeOriginal')}
-        title={$t('duplicates_metadata_modal.date_time_original')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiCalendar} title={$t('date_time_original')}>
         {#if dateTime}
           {dateTime.toLocaleString(
             {
@@ -260,29 +228,19 @@
       </InfoRow>
     {/if}
     {#if isVisible('timeZone')}
-      <InfoRow icon={mdiEarth} highlight={isHighlighted('timeZone')} title={$t('timezone')} showLabel={showLabels}>
+      <InfoRow icon={mdiEarth} title={$t('timezone')}>
         {dateTime?.offsetNameShort ?? $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('modifyDate')}
-      <InfoRow
-        icon={mdiClockEditOutline}
-        highlight={isHighlighted('modifyDate')}
-        title={$t('duplicates_metadata_modal.modify_date')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiClockEditOutline} title={$t('modify_date')}>
         {asset.exifInfo?.modifyDate ? formatISODateToLocale(asset.exifInfo.modifyDate) : $t('unknown')}
       </InfoRow>
     {/if}
 
     <!-- LOCATION -->
     {#if isVisible('city') || isVisible('state') || isVisible('country')}
-      <InfoRow
-        icon={mdiMapMarkerOutline}
-        highlight={isHighlighted('city') || isHighlighted('state') || isHighlighted('country')}
-        title={$t('location')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiMapMarkerOutline} title={$t('location')}>
         {#if locationParts.length > 0}
           {locationParts.join(', ')}
         {:else}
@@ -291,12 +249,7 @@
       </InfoRow>
     {/if}
     {#if isVisible('latitude') || isVisible('longitude')}
-      <InfoRow
-        icon={mdiCrosshairsGps}
-        highlight={isHighlighted('latitude') || isHighlighted('longitude')}
-        title={$t('gps')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiCrosshairsGps} title={$t('gps')}>
         {#if asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null}
           {asset.exifInfo.latitude.toFixed(4)}, {asset.exifInfo.longitude.toFixed(4)}
         {:else}
@@ -307,32 +260,22 @@
 
     <!-- CAMERA -->
     {#if isVisible('make')}
-      <InfoRow icon={mdiCameraOutline} highlight={isHighlighted('make')} title={$t('make')} showLabel={showLabels}>
+      <InfoRow icon={mdiCameraOutline} title={$t('make')}>
         {asset.exifInfo?.make || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('model')}
-      <InfoRow icon={mdiCamera} highlight={isHighlighted('model')} title={$t('model')} showLabel={showLabels}>
+      <InfoRow icon={mdiCamera} title={$t('model')}>
         {asset.exifInfo?.model || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('lensModel')}
-      <InfoRow
-        icon={mdiCameraIris}
-        highlight={isHighlighted('lensModel')}
-        title={$t('lens_model')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiCameraIris} title={$t('lens_model')}>
         {asset.exifInfo?.lensModel || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('fNumber')}
-      <InfoRow
-        icon={mdiCameraIris}
-        highlight={isHighlighted('fNumber')}
-        title={$t('duplicates_metadata_modal.f_number')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiCameraIris} title={$t('f_number')}>
         {#if asset.exifInfo?.fNumber != null}
           f/{asset.exifInfo.fNumber.toFixed(1)}
         {:else}
@@ -341,12 +284,7 @@
       </InfoRow>
     {/if}
     {#if isVisible('focalLength')}
-      <InfoRow
-        icon={mdiRayStartArrow}
-        highlight={isHighlighted('focalLength')}
-        title={$t('duplicates_metadata_modal.focal_length')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiRayStartArrow} title={$t('focal_length')}>
         {#if asset.exifInfo?.focalLength != null}
           {asset.exifInfo.focalLength} mm
         {:else}
@@ -355,12 +293,7 @@
       </InfoRow>
     {/if}
     {#if isVisible('iso')}
-      <InfoRow
-        icon={mdiBrightness6}
-        highlight={isHighlighted('iso')}
-        title={$t('duplicates_metadata_modal.iso')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiBrightness6} title={$t('iso')}>
         {#if asset.exifInfo?.iso != null}
           ISO {asset.exifInfo.iso}
         {:else}
@@ -369,55 +302,35 @@
       </InfoRow>
     {/if}
     {#if isVisible('exposureTime')}
-      <InfoRow
-        icon={mdiTimerOutline}
-        highlight={isHighlighted('exposureTime')}
-        title={$t('duplicates_metadata_modal.exposure_time')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiTimerOutline} title={$t('exposure_time')}>
         {asset.exifInfo?.exposureTime || $t('unknown')}
       </InfoRow>
     {/if}
 
     <!-- OTHER -->
     {#if isVisible('description')}
-      <InfoRow
-        icon={mdiTextBox}
-        highlight={isHighlighted('description')}
-        title={$t('description')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiTextBox} title={$t('description')}>
         {asset.exifInfo?.description || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('rating')}
-      <InfoRow icon={mdiStarOutline} highlight={isHighlighted('rating')} title={$t('rating')} showLabel={showLabels}>
-        {asset.exifInfo?.rating != null ? `${asset.exifInfo.rating} stars` : $t('unknown')}
+      <InfoRow icon={mdiStarOutline} title={$t('rating')}>
+        {asset.exifInfo?.rating == null ? $t('unknown') : `${asset.exifInfo.rating} stars`}
       </InfoRow>
     {/if}
     {#if isVisible('orientation')}
-      <InfoRow
-        icon={mdiPhoneRotateLandscape}
-        highlight={isHighlighted('orientation')}
-        title={$t('duplicates_metadata_modal.orientation')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiPhoneRotateLandscape} title={$t('orientation')}>
         {asset.exifInfo?.orientation || $t('unknown')}
       </InfoRow>
     {/if}
     {#if isVisible('projectionType')}
-      <InfoRow
-        icon={mdiPanorama}
-        highlight={isHighlighted('projectionType')}
-        title={$t('duplicates_metadata_modal.projection_type')}
-        showLabel={showLabels}
-      >
+      <InfoRow icon={mdiPanorama} title={$t('projection_type')}>
         {asset.exifInfo?.projectionType || $t('unknown')}
       </InfoRow>
     {/if}
 
-    <!-- Albums always shown, not part of metadata preference -->
-    <InfoRow icon={mdiAlbum} borderBottom={false} title={$t('albums')} showLabel={showLabels}>
+    <!-- Albums always shown -->
+    <InfoRow icon={mdiAlbum} borderBottom={false} title={$t('albums')}>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
       {:then albums}

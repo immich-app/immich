@@ -4,7 +4,6 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
   import {
@@ -14,30 +13,32 @@
   } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, Icon } from '@immich/ui';
+  import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+
+  const INITIAL_VISIBLE_COUNT = 5;
 
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
-    selectedMetadataFields: MetadataPreference;
-    showAllMetadata?: boolean;
   }
 
-  let { assets, onResolve, onStack, selectedMetadataFields, showAllMetadata = false }: Props = $props();
+  let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
 
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  let differingMetadataFields: DifferingMetadataFields = $derived(
-    computeDifferingMetadataFields(assets, selectedMetadataFields, showAllMetadata),
-  );
+  let differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+
+  let differingCount = $derived(Object.values(differingMetadataFields).filter(Boolean).length);
+  let hasMore = $derived(differingCount > INITIAL_VISIBLE_COUNT);
+  let showMore = $state(false);
 
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
@@ -176,13 +177,24 @@
           {onSelectAsset}
           isSelected={selectedAssetIds.has(asset.id)}
           {onViewAsset}
-          {selectedMetadataFields}
           {differingMetadataFields}
-          {showAllMetadata}
+          {showMore}
+          intialVisibleCount={INITIAL_VISIBLE_COUNT}
         />
       {/each}
     </div>
   </div>
+
+  {#if hasMore}
+    <div class="flex justify-center pb-2">
+      <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
+        <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
+        {showMore
+          ? $t('show_less')
+          : $t('show_more_fields', { values: { count: differingCount - INITIAL_VISIBLE_COUNT } })}
+      </Button>
+    </div>
+  {/if}
 </div>
 
 {#if $showAssetViewer}
