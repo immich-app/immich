@@ -159,7 +159,7 @@
     imageError = imageLoaded = true;
   };
 
-  onDestroy(() => imageManager.cancelPreloadUrl(imageLoaderUrl));
+  onDestroy(() => imageManager.cancel(asset, targetImageSize));
 
   let imageLoaderUrl = $derived(
     getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || assetViewerManager.zoom > 1 }),
