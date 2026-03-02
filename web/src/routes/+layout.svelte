@@ -4,6 +4,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
@@ -33,6 +34,7 @@
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
   import '../app.css';
 
   interface Props {
@@ -122,18 +124,18 @@
 
     if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
       modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
-
-      websocketStore.connected.subscribe((connected) => {
-        if (connected) {
-          void getServerConfig().then(({ maintenanceMode }) => {
-            if (maintenanceMode === isRestarting.isMaintenanceMode) {
-              location.reload();
-            }
-          });
-        }
-      });
     }
   });
+
+  const onWebsocketConnect = async () => {
+    const isRestarting = get(serverRestarting);
+    if (isRestarting && maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
+      const { maintenanceMode } = await getServerConfig();
+      if (maintenanceMode === isRestarting.isMaintenanceMode) {
+        location.reload();
+      }
+    }
+  };
 
   const userCommands: ActionItem[] = [
     {
@@ -182,6 +184,8 @@
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
+
+<OnEvents {onWebsocketConnect} />
 
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />

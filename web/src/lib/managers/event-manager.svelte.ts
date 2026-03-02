@@ -87,6 +87,8 @@ export type Events = {
   WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEvent];
+
+  WebsocketConnect: [];
 };
 
 export const eventManager = new BaseEventManager<Events>();
