@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -80,8 +78,9 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     if (key.isAnimated) {
       return AnimatedImageStreamCompleter(
-        codec: _loadAnimatedCodec(key),
+        stream: _animatedCodec(key, decode),
         scale: 1.0,
+        initialImage: getInitialImage(RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash)),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -132,16 +131,33 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     yield* loadRequest(originalRequest, decode);
   }
 
-  Future<ui.Codec> _loadAnimatedCodec(RemoteFullImageProvider key) async {
-    final request = this.request = RemoteImageRequest(
-      uri: getOriginalUrlForRemoteId(key.assetId),
-      headers: ApiService.getRequestHeaders(),
+  Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* initialImageStream();
+
+    if (isCancelled) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return;
+    }
+
+    final headers = ApiService.getRequestHeaders();
+    final previewRequest = request = RemoteImageRequest(
+      uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
+      headers: headers,
     );
-    final codec = await loadCodecRequest(request);
+    yield* loadRequest(previewRequest, decode, evictOnError: false);
+
+    if (isCancelled) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return;
+    }
+
+    // always try original for animated, since previews don't support animation
+    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+    final codec = await loadCodecRequest(originalRequest);
     if (codec == null) {
       throw StateError('Failed to load animated codec for asset ${key.assetId}');
     }
-    return codec;
+    yield codec;
   }
 
   @override

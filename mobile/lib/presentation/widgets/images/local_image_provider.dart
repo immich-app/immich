@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -72,8 +70,9 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     if (key.isAnimated) {
       return AnimatedImageStreamCompleter(
-        codec: _loadAnimatedCodec(key),
+        stream: _animatedCodec(key, decode),
         scale: 1.0,
+        initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Id', key.id),
@@ -127,13 +126,34 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* loadRequest(request, decode);
   }
 
-  Future<ui.Codec> _loadAnimatedCodec(LocalFullImageProvider key) async {
-    final request = this.request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
-    final codec = await loadCodecRequest(request);
+  Stream<Object> _animatedCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* initialImageStream();
+
+    if (isCancelled) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return;
+    }
+
+    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final previewRequest = request = LocalImageRequest(
+      localId: key.id,
+      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      assetType: key.assetType,
+    );
+    yield* loadRequest(previewRequest, decode);
+
+    if (isCancelled) {
+      PaintingBinding.instance.imageCache.evict(this);
+      return;
+    }
+
+    // always try original for animated, since previews don't support animation
+    final originalRequest = request = LocalImageRequest(localId: key.id, size: Size.zero, assetType: key.assetType);
+    final codec = await loadCodecRequest(originalRequest);
     if (codec == null) {
       throw StateError('Failed to load animated codec for local asset ${key.id}');
     }
-    return codec;
+    yield codec;
   }
 
   @override
