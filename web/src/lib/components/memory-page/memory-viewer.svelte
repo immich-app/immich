@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
@@ -55,6 +54,7 @@
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
 
   let memoryGallery: HTMLElement | undefined = $state();
@@ -234,6 +234,22 @@
       handlePromiseError(handleAction('galleryOutOfView', 'play'));
     }
     galleryFirstLoad = false;
+  };
+
+  const galleryObserver: Attachment<HTMLElement> = (element) => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          handleGalleryScrollsIntoView();
+        } else {
+          handleGalleryScrollsOutOfView();
+        }
+      },
+      { rootMargin: '0px 0px -200px 0px' },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
   };
 
   const loadFromParams = (page: Page | NavigationTarget | null) => {
@@ -644,15 +660,7 @@
       />
     </div>
 
-    <div
-      id="gallery-memory"
-      use:intersectionObserver={{
-        onIntersect: handleGalleryScrollsIntoView,
-        onSeparate: handleGalleryScrollsOutOfView,
-        bottom: '-200px',
-      }}
-      bind:this={memoryGallery}
-    >
+    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         {viewerAssets}
