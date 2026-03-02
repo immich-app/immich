@@ -14,6 +14,7 @@
     type PluginConstructor,
   } from '@photo-sphere-viewer/core';
   import '@photo-sphere-viewer/core/index.css';
+  import { EquirectangularTilesAdapter } from '@photo-sphere-viewer/equirectangular-tiles-adapter';
   import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
   import '@photo-sphere-viewer/markers-plugin/index.css';
   import { ResolutionPlugin } from '@photo-sphere-viewer/resolution-plugin';
@@ -29,6 +30,14 @@
     strokeLinejoin: 'round',
   };
 
+  const SHARED_VIEWER_CONFIG = {
+    touchmoveTwoFingers: false,
+    mousewheelCtrlKey: false,
+    minFov: 15,
+    maxFov: 90,
+    zoomSpeed: 0.5,
+    fisheye: false,
+  };
   // Adapted as well as possible from classlist 'border-2 border-blue-500 bg-blue-500/10 hover:border-blue-600 hover:border-3'
   const OCR_BOX_SVG_STYLE = {
     fill: 'var(--color-blue-500)',
@@ -40,15 +49,31 @@
   const OCR_TOOLTIP_HTML_CLASS =
     'flex items-center justify-center text-white bg-black/50 cursor-text pointer-events-auto whitespace-pre-wrap wrap-break-word select-text';
 
+  type TileConfig = {
+    width: number;
+    cols: number;
+    rows: number;
+  };
+
   type Props = {
-    panorama: string | { source: string };
+    baseUrl: string | { source: string };
+    tileUrl?: (col: number, row: number, level: number) => string | null;
+    tileconfig?: TileConfig;
     originalPanorama?: string | { source: string };
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
   };
 
-  let { panorama, originalPanorama, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+  let {
+    baseUrl,
+    tileUrl,
+    tileconfig,
+    originalPanorama,
+    adapter = EquirectangularAdapter,
+    plugins = [],
+    navbar = false,
+  }: Props = $props();
 
   let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
@@ -172,20 +197,32 @@
       return;
     }
 
-    viewer = new Viewer({
-      adapter,
-      plugins: [
-        MarkersPlugin,
-        SettingsPlugin,
-        [
-          ResolutionPlugin,
-          {
+    if (tileconfig) {
+      viewer = new Viewer({
+        adapter: EquirectangularTilesAdapter,
+        panorama: {
+          ...tileconfig,
+          baseUrl,
+          tileUrl,
+        },
+        plugins: [MarkersPlugin, ...plugins],
+        container,
+        navbar,
+        ...SHARED_VIEWER_CONFIG,
+      });
+    } else {
+      viewer = new Viewer({
+        adapter,
+        plugins: [
+          MarkersPlugin,
+          SettingsPlugin,
+          ResolutionPlugin.withConfig({
             defaultResolution: $alwaysLoadOriginalFile && originalPanorama ? 'original' : 'default',
             resolutions: [
               {
                 id: 'default',
                 label: 'Default',
-                panorama,
+                panorama: baseUrl,
               },
               ...(originalPanorama
                 ? [
@@ -197,23 +234,24 @@
                   ]
                 : []),
             ],
-          },
+          }),
+          ...plugins,
         ],
-        ...plugins,
-      ],
-      container,
-      touchmoveTwoFingers: false,
-      mousewheelCtrlKey: false,
-      navbar,
-      minFov: 15,
-      maxFov: 90,
-      zoomSpeed: 0.5,
-      fisheye: false,
-    });
+        container,
+        navbar,
+        ...SHARED_VIEWER_CONFIG,
+      });
+    }
+
     const resolutionPlugin = viewer.getPlugin<ResolutionPlugin>(ResolutionPlugin);
     const zoomHandler = ({ zoomLevel }: events.ZoomUpdatedEvent) => {
       // zoomLevel is 0-100
       assetViewerManager.zoom = zoomLevel / 50;
+
+      if (!resolutionPlugin) {
+        hasChangedResolution = true;
+        return;
+      }
 
       if (Math.round(zoomLevel) >= 75 && !hasChangedResolution) {
         // Replace the preview with the original

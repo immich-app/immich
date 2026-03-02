@@ -12,6 +12,7 @@ import {
   getAssetOriginalPath,
   getAssetPlaybackPath,
   getAssetThumbnailPath,
+  getAssetTilePath,
   getBaseUrl,
   getPeopleThumbnailPath,
   getUserProfileImagePath,
@@ -236,6 +237,13 @@ export const getAssetPlaybackUrl = (options: AssetUrlOptions) => {
   const { id, cacheKey: c } = options;
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c });
 };
+
+type TileUrlOptions = { id: string, level: number, col: number, row: number, cacheKey?: string | null };
+
+export const getAssetTileUrl = (options: TileUrlOptions) => {
+  const { id, level, col, row, cacheKey } = options;
+  return createUrl(getAssetTilePath(id, level, col, row), { ...authManager.params, c: cacheKey });
+}
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });

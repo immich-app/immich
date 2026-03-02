@@ -21,6 +21,7 @@ export const getAssetFiles = (files: AssetFile[]) => ({
   fullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: false }),
   previewFile: getAssetFile(files, AssetFileType.Preview, { isEdited: false }),
   thumbnailFile: getAssetFile(files, AssetFileType.Thumbnail, { isEdited: false }),
+  tilesPath: getAssetFile(files, AssetFileType.Tiles, { isEdited: false }),
   sidecarFile: getAssetFile(files, AssetFileType.Sidecar, { isEdited: false }),
 
   editedFullsizeFile: getAssetFile(files, AssetFileType.FullSize, { isEdited: true }),

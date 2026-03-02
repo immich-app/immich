@@ -123,23 +123,6 @@ export class MediaRepository {
     }
   }
 
-  async copyTagGroup(tagGroup: string, source: string, target: string): Promise<boolean> {
-    try {
-      await exiftool.write(
-        target,
-        {},
-        {
-          ignoreMinorErrors: true,
-          writeArgs: ['-TagsFromFile', source, `-${tagGroup}:all>${tagGroup}:all`, '-overwrite_original'],
-        },
-      );
-      return true;
-    } catch (error: any) {
-      this.logger.warn(`Could not copy tag data to image: ${error.message}`);
-      return false;
-    }
-  }
-
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
     const pipeline = await this.getImageDecodingPipeline(input, options);
     return pipeline.raw().toBuffer({ resolveWithObject: true });
@@ -180,6 +163,20 @@ export class MediaRepository {
     });
 
     await decoded.toFile(output);
+  }
+
+  /**
+   * For output file path 'output.dz', this creates an 'output.dzi' file and 'output_files' directory containing tiles
+   */
+  async generateTiles(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    await pipeline
+      .toFormat(options.format)
+      .tile({
+        depth: 'one',
+        size: options.size,
+      })
+      .toFile(output);
   }
 
   private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {

@@ -24,11 +24,10 @@
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
     <PhotoSphereViewer
-      panorama={{ source: getAssetPlaybackUrl({ id: asset.id }) }}
+      baseUrl={{ source: getAssetPlaybackUrl({ id: asset.id }) }}
       originalPanorama={{ source: getAssetUrl({ asset, forceOriginal: true })! }}
       plugins={[videoPlugin]}
       {adapter}
-      navbar
     />
   {:catch}
     {$t('errors.failed_to_load_asset')}

@@ -9,6 +9,7 @@ import {
   PersonPathType,
   RawExtractedFormat,
   StorageFolder,
+  TilesFormat,
 } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -32,9 +33,16 @@ export interface MoveRequest {
   };
 }
 
+export type GeneratedImageType =
+  | AssetPathType.Thumbnail
+  | AssetPathType.Preview
+  | AssetPathType.FullSize
+  | AssetPathType.Tiles;
+export type GeneratedAssetType = GeneratedImageType | AssetPathType.EncodedVideo;
+
 export type ThumbnailPathEntity = { id: string; ownerId: string };
 
-export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat; isEdited: boolean };
+export type ImagePathOptions = { fileType: AssetFileType; format: ImageFormat | RawExtractedFormat | TilesFormat; isEdited: boolean };
 
 let instance: StorageCore | null;
 

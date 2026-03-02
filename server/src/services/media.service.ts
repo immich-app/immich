@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE, TILE_TARGET_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile, Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -19,6 +19,7 @@ import {
   QueueName,
   RawExtractedFormat,
   StorageFolder,
+  TilesFormat,
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   TranscodeTarget,
@@ -53,6 +54,15 @@ interface UpsertFileOptions {
   isEdited: boolean;
   isProgressive: boolean;
   isTransparent: boolean;
+}
+
+interface TileInfo {
+  path: string;
+  info: {
+    width: number;
+    cols: number;
+    rows: number;
+  };
 }
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
@@ -163,6 +173,8 @@ export class MediaService extends BaseService {
     await this.storageCore.moveAssetImage(asset, AssetFileType.FullSize, image.fullsize.format);
     await this.storageCore.moveAssetImage(asset, AssetFileType.Preview, image.preview.format);
     await this.storageCore.moveAssetImage(asset, AssetFileType.Thumbnail, image.thumbnail.format);
+    // TODO:
+    // await this.storageCore.moveAssetImage(asset, AssetFileType.Tiles, image.???.format);
     await this.storageCore.moveAssetVideo(asset);
 
     return JobStatus.Success;
@@ -383,23 +395,52 @@ export class MediaService extends BaseService {
       );
     }
 
-    const outputs = await Promise.all(promises);
-
+    // TODO: probably extract to helper method
+    let tileInfo: TileInfo | undefined;
     if (asset.exifInfo.projectionType === 'EQUIRECTANGULAR') {
-      const promises = [
-        this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, previewFile.path),
-        fullsizeFile
-          ? this.mediaRepository.copyTagGroup('XMP-GPano', asset.originalPath, fullsizeFile.path)
-          : Promise.resolve(),
-      ];
-      await Promise.all(promises);
+      // TODO: get uncropped width from asset (FullPanoWidthPixels if present).
+      const originalSize = 12_988;
+      // Get the number of tiles at the exact target size, rounded up (to at least 1 tile).
+      const numTilesExact = Math.ceil(originalSize / TILE_TARGET_SIZE);
+      // Then round up to the nearest power of 2 (photo-sphere-viewer requirement).
+      const numTiles = Math.pow(2, Math.ceil(Math.log2(numTilesExact)));
+      const tileSize = Math.ceil(originalSize / numTiles);
+
+      const tileOptions = {
+        ...previewOptions,
+        size: tileSize,
+      };
+
+      tileInfo = {
+        path: StorageCore.getImagePath(asset, { fileType: AssetFileType.Tiles, format: TilesFormat.Dz, isEdited: useEdits }),
+        info: {
+          width: originalSize,
+          cols: numTiles,
+          rows: numTiles / 2,
+        }
+      };
+      // TODO: reverse comment state
+      // TODO: handle cropped panoramas here. Tile as normal but save some offset?
+      // promises.push(this.mediaRepository.generateTiles(data, tileOptions, tileInfo.path));
+      console.log(tileOptions, tileInfo);
+      tileInfo = undefined;
     }
+
+    const outputs = await Promise.all(promises);
 
     const decodedDimensions = { width: info.width, height: info.height };
     const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
+    const files = [previewFile, thumbnailFile];
+    if (fullsizeFile) {
+      files.push(fullsizeFile);
+    }
+    if (tileInfo) {
+      console.warn('TODO: should push tile info to files');
+      // files.push(tileInfo);
+    }
 
     return {
-      files: fullsizeFile ? [previewFile, thumbnailFile, fullsizeFile] : [previewFile, thumbnailFile],
+      files,
       thumbhash: outputs[0] as Buffer,
       fullsizeDimensions,
     };
