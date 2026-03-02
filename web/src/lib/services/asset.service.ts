@@ -100,7 +100,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
   const sharedLink = getSharedLink();
   const currentAuthUser = get(authUser);
   const userPreferences = get(preferences);
-  const isOwner = currentAuthUser && currentAuthUser.id === asset.ownerId;
+  const isOwner = !!(currentAuthUser && currentAuthUser.id === asset.ownerId);
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -129,7 +129,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
 
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => isOwner || Boolean(sharedLink?.allowDownload),
+    $if: () => isOwner || !!sharedLink?.allowDownload,
   };
 
   const PlayMotionPhoto: ActionItem = {
