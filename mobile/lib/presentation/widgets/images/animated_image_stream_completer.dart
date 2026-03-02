@@ -60,11 +60,12 @@ class AnimatedImageStreamCompleter extends MultiFrameImageStreamCompleter {
         }
       },
       onDone: () {
-          // also complete if we are done but no error occurred, and we didn't call complete yet
-          if (!codecCompleter.isCompleted) {
-            codecCompleter.completeError(StateError('Stream closed without providing a codec'));
-          }
-      }
+        // also complete if we are done but no error occurred, and we didn't call complete yet
+        // could happen on cancellation
+        if (!codecCompleter.isCompleted) {
+          codecCompleter.completeError(StateError('Stream closed without providing a codec'));
+        }
+      },
     );
 
     return self;
