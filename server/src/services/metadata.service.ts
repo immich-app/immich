@@ -169,7 +169,7 @@ export class MetadataService extends BaseService {
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
-      throw new Error(`Metadata service init failed`);
+      throw new Error('Metadata service init failed', { cause: error });
     }
   }
 
@@ -286,7 +286,7 @@ export class MetadataService extends BaseService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
-      colorspace: exifTags.ColorSpace ?? null,
+      colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
       make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
@@ -301,7 +301,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -451,7 +451,7 @@ export class MetadataService extends BaseService {
         dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
-        rating: asset.exifInfo.rating,
+        rating: asset.exifInfo.rating ?? 0,
         tags: asset.exifInfo.tags,
         timeZone: asset.exifInfo.timeZone,
       },

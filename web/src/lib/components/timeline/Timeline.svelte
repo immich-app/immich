@@ -332,7 +332,7 @@
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: ViewportTopMonth;
-        let monthGroupHeight = 0;
+        let monthGroupHeight: number;
         if (i === -1) {
           // lead-in
           monthGroup = 'lead-in';

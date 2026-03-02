@@ -233,6 +233,14 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { albumUser: { albumId, userId, role }, result };
   }
 
+  async softDeleteAsset(assetId: string) {
+    await this.database.updateTable('asset').set({ deletedAt: new Date() }).where('id', '=', assetId).execute();
+  }
+
+  async softDeleteAlbum(albumId: string) {
+    await this.database.updateTable('album').set({ deletedAt: new Date() }).where('id', '=', albumId).execute();
+  }
+
   async newJobStatus(dto: Partial<Insertable<AssetJobStatusTable>> & { assetId: string }) {
     const jobStatus = mediumFactory.assetJobStatusInsert({ assetId: dto.assetId });
     const result = await this.get(AssetRepository).upsertJobStatus(jobStatus);
@@ -634,7 +642,7 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
   };
 };
 
-const sha256 = (value: string) => createHash('sha256').update(value).digest('base64');
+const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
 const sessionInsert = ({
   id = newUuid(),

@@ -1004,7 +1004,7 @@ class TransformManager implements EditToolManager {
       ];
     }
 
-    let cursorName = '';
+    let cursorName: string;
     if (onTopLeftCorner || onBottomRightCorner) {
       cursorName = 'nwse-resize';
     } else if (onTopRightCorner || onBottomLeftCorner) {

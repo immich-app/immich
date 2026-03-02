@@ -148,7 +148,7 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   updateId: newUuidV7(),
   deviceOS: 'android',
   deviceType: 'mobile',
-  token: 'abc123',
+  token: Buffer.from('abc123'),
   parentId: null,
   expiresAt: null,
   userId: newUuid(),

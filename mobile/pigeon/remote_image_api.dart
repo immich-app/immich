@@ -19,6 +19,7 @@ abstract class RemoteImageApi {
     String url, {
     required Map<String, String> headers,
     required int requestId,
+    required bool preferEncoded,
   });
 
   void cancelRequest(int requestId);

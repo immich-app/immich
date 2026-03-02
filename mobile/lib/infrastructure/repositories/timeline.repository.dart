@@ -101,6 +101,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   isFavorite: row.isFavorite,
                   durationInSeconds: row.durationInSeconds,
                   orientation: row.orientation,
+                  playbackStyle: AssetPlaybackStyle.values[row.playbackStyle],
                   cloudId: row.iCloudId,
                   latitude: row.latitude,
                   longitude: row.longitude,

@@ -117,6 +117,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription = EventStream.shared.listen(_onEvent);
 
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
+
+    final assetViewer = ref.read(assetViewerProvider);
+    _setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails);
   }
 
   @override
@@ -226,6 +229,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _onAssetChanged(index);
   }
 
+  void _setSystemUIMode(bool controls, bool details) {
+    final mode = !controls || (CurrentPlatform.isIOS && details)
+        ? SystemUiMode.immersiveSticky
+        : SystemUiMode.edgeToEdge;
+    unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+  }
+
   @override
   Widget build(BuildContext context) {
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
@@ -245,10 +255,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     ref.listen(assetViewerProvider.select((value) => (value.showingControls, value.showingDetails)), (_, state) {
       final (controls, details) = state;
-      final mode = !controls || (CurrentPlatform.isIOS && details)
-          ? SystemUiMode.immersiveSticky
-          : SystemUiMode.edgeToEdge;
-      unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+      _setSystemUIMode(controls, details);
     });
 
     return PopScope(

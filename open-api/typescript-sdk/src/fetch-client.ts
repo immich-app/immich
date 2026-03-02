@@ -834,8 +834,8 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating */
-    rating?: number;
+    /** Rating in range [1-5], or null for unrated */
+    rating?: number | null;
     /** Time zone (IANA timezone) */
     timeZone?: string;
     /** Asset visibility */
@@ -944,8 +944,8 @@ export type UpdateAssetDto = {
     livePhotoVideoId?: string | null;
     /** Longitude coordinate */
     longitude?: number;
-    /** Rating */
-    rating?: number;
+    /** Rating in range [1-5], or null for unrated */
+    rating?: number | null;
     /** Asset visibility */
     visibility?: AssetVisibility;
 };
@@ -1711,8 +1711,8 @@ export type MetadataSearchDto = {
     personIds?: string[];
     /** Filter by preview file path */
     previewPath?: string;
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating [1-5], or null for unrated */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1827,8 +1827,8 @@ export type RandomSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating [1-5], or null for unrated */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1903,8 +1903,8 @@ export type SmartSearchDto = {
     query?: string;
     /** Asset ID to use as search reference */
     queryAssetId?: string;
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating [1-5], or null for unrated */
+    rating?: number | null;
     /** Number of results to return */
     size?: number;
     /** Filter by state/province name */
@@ -1969,8 +1969,8 @@ export type StatisticsSearchDto = {
     ocr?: string;
     /** Filter by person IDs */
     personIds?: string[];
-    /** Filter by rating */
-    rating?: number;
+    /** Filter by rating [1-5], or null for unrated */
+    rating?: number | null;
     /** Filter by state/province name */
     state?: string | null;
     /** Filter by tag IDs */
@@ -2966,6 +2966,16 @@ export type SyncAlbumV1 = {
 export type SyncAssetDeleteV1 = {
     /** Asset ID */
     assetId: string;
+};
+export type SyncAssetEditDeleteV1 = {
+    editId: string;
+};
+export type SyncAssetEditV1 = {
+    action: AssetEditAction;
+    assetId: string;
+    id: string;
+    parameters: object;
+    sequence: number;
 };
 export type SyncAssetExifV1 = {
     /** Asset ID */
@@ -5444,7 +5454,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     model?: string | null;
     ocr?: string;
     personIds?: string[];
-    rating?: number;
+    rating?: number | null;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;
@@ -6411,8 +6421,9 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
+    bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -6432,6 +6443,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         data: TimeBucketAssetResponseDto;
     }>(`/timeline/bucket${QS.query(QS.explode({
         albumId,
+        bbox,
         isFavorite,
         isTrashed,
         key,
@@ -6452,8 +6464,9 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
+    bbox?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
@@ -6472,6 +6485,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         data: TimeBucketsResponseDto[];
     }>(`/timeline/buckets${QS.query(QS.explode({
         albumId,
+        bbox,
         isFavorite,
         isTrashed,
         key,
@@ -7230,6 +7244,8 @@ export enum SyncEntityType {
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    AssetEditV1 = "AssetEditV1",
+    AssetEditDeleteV1 = "AssetEditDeleteV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     PartnerV1 = "PartnerV1",
@@ -7281,6 +7297,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AssetEditsV1 = "AssetEditsV1",
     AssetMetadataV1 = "AssetMetadataV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",

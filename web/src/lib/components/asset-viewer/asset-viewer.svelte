@@ -223,7 +223,7 @@
     }
 
     void tracker.invoke(async () => {
-      let hasNext = false;
+      let hasNext: boolean;
 
       if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
         hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();

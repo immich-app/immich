@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
@@ -33,7 +35,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 22;
+const int targetVersion = 23;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -97,6 +99,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     if (certData != null) {
       await networkApi.addCertificate(ClientCertData(data: certData.data, password: certData.password ?? ""));
     }
+  }
+
+  if (version < 23 && Store.isBetaTimelineEnabled) {
+    await _populateLocalAssetPlaybackStyle(drift);
   }
 
   if (version < 22 && !Store.isBetaTimelineEnabled) {
@@ -391,6 +397,52 @@ Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
     dPrint(() => "[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
+
+Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
+  try {
+    final nativeApi = NativeSyncApi();
+
+    final albums = await nativeApi.getAlbums();
+    for (final album in albums) {
+      final assets = await nativeApi.getAssetsForAlbum(album.id);
+      await db.batch((batch) {
+        for (final asset in assets) {
+          batch.update(
+            db.localAssetEntity,
+            LocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+            where: (t) => t.id.equals(asset.id),
+          );
+        }
+      });
+    }
+
+    final trashedAssetMap = await nativeApi.getTrashedAssets();
+    for (final assets in trashedAssetMap.values) {
+      await db.batch((batch) {
+        for (final asset in assets) {
+          batch.update(
+            db.trashedLocalAssetEntity,
+            TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+            where: (t) => t.id.equals(asset.id),
+          );
+        }
+      });
+    }
+
+    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
+  } catch (error) {
+    dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
+  }
+}
+
+AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
+  PlatformAssetPlaybackStyle.unknown => AssetPlaybackStyle.unknown,
+  PlatformAssetPlaybackStyle.image => AssetPlaybackStyle.image,
+  PlatformAssetPlaybackStyle.video => AssetPlaybackStyle.video,
+  PlatformAssetPlaybackStyle.imageAnimated => AssetPlaybackStyle.imageAnimated,
+  PlatformAssetPlaybackStyle.livePhoto => AssetPlaybackStyle.livePhoto,
+  PlatformAssetPlaybackStyle.videoLooping => AssetPlaybackStyle.videoLooping,
+};
 
 class _DeviceAsset {
   final String assetId;

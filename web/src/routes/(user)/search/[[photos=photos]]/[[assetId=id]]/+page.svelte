@@ -276,6 +276,8 @@
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
+            {:else if searchKey === 'rating'}
+              {$t('rating_count', { values: { count: value ?? 0 } })}
             {:else if value === null || value === ''}
               {$t('unknown')}
             {:else}
@@ -324,7 +326,7 @@
 
   <section>
     {#if assetInteraction.selectionActive}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <AssetSelectControlBar
           assets={assetInteraction.selectedAssets}
           clearSelect={() => cancelMultiselect(assetInteraction)}
@@ -380,7 +382,7 @@
         </AssetSelectControlBar>
       </div>
     {:else}
-      <div class="fixed top-0 start-0 w-full">
+      <div class="fixed top-0 start-0 w-full z-2">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">

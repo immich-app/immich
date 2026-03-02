@@ -9407,10 +9407,27 @@
             "name": "rating",
             "required": false,
             "in": "query",
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable",
             "schema": {
               "minimum": -1,
               "maximum": 5,
+              "nullable": true,
               "type": "number"
             }
           },
@@ -13476,6 +13493,16 @@
             }
           },
           {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -13648,6 +13675,16 @@
             "description": "Filter assets belonging to a specific album",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
             }
           },
@@ -15872,10 +15909,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "timeZone": {
             "description": "Time zone (IANA timezone)",
@@ -18988,10 +19042,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -20714,10 +20785,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -22088,10 +22176,27 @@
             "type": "string"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "size": {
             "description": "Number of results to return",
@@ -22322,10 +22427,27 @@
             "type": "array"
           },
           "rating": {
-            "description": "Filter by rating",
+            "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "state": {
             "description": "Filter by state/province name",
@@ -22611,6 +22733,48 @@
         },
         "required": [
           "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditDeleteV1": {
+        "properties": {
+          "editId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "editId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetEditV1": {
+        "properties": {
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetEditAction"
+              }
+            ]
+          },
+          "assetId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "sequence": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action",
+          "assetId",
+          "id",
+          "parameters",
+          "sequence"
         ],
         "type": "object"
       },
@@ -23163,6 +23327,8 @@
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "AssetEditV1",
+          "AssetEditDeleteV1",
           "AssetMetadataV1",
           "AssetMetadataDeleteV1",
           "PartnerV1",
@@ -23460,6 +23626,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AssetEditsV1",
           "AssetMetadataV1",
           "AuthUsersV1",
           "MemoriesV1",
@@ -25164,10 +25331,27 @@
             "type": "number"
           },
           "rating": {
-            "description": "Rating",
+            "description": "Rating in range [1-5], or null for unrated",
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "nullable": true,
+            "type": "number",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v2.6.0",
+                "state": "Updated",
+                "description": "Using -1 as a rating is deprecated and will be removed in the next major version."
+              }
+            ],
+            "x-immich-state": "Stable"
           },
           "visibility": {
             "allOf": [

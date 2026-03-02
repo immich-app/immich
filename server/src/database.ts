@@ -437,6 +437,13 @@ export const columns = {
     'asset_exif.rating',
     'asset_exif.fps',
   ],
+  syncAssetEdit: [
+    'asset_edit.id',
+    'asset_edit.assetId',
+    'asset_edit.sequence',
+    'asset_edit.action',
+    'asset_edit.parameters',
+  ],
   exif: [
     'asset_exif.assetId',
     'asset_exif.autoStackId',
