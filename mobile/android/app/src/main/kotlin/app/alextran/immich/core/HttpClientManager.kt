@@ -32,6 +32,7 @@ private const val CERT_ALIAS = "client_cert"
 private const val PREFS_NAME = "immich.ssl"
 private const val PREFS_CERT_ALIAS = "immich.client_cert"
 private const val PREFS_HEADERS = "immich.request_headers"
+private const val PREFS_SERVER_URL = "immich.server_url"
 
 /**
  * Manages a shared OkHttpClient with SSL configuration support.
@@ -152,14 +153,22 @@ object HttpClientManager {
     synchronized(this) { clientChangedListeners.add(listener) }
   }
 
-  fun setRequestHeaders(headerMap: Map<String, String>) {
+  fun setRequestHeaders(headerMap: Map<String, String>, serverUrls: List<String>) {
     synchronized(this) {
       val builder = Headers.Builder()
       headerMap.forEach { (key, value) -> builder[key] = value }
       val newHeaders = builder.build()
-      if (headers == newHeaders) return
+      val headersChanged = headers != newHeaders
+      val newUrl = serverUrls.firstOrNull()
+      val urlChanged = newUrl != prefs.getString(PREFS_SERVER_URL, null)
+      if (!headersChanged && !urlChanged) return
       headers = newHeaders
-      prefs.edit { putString(PREFS_HEADERS, JSONObject(headerMap).toString()) }
+      prefs.edit {
+        if (headersChanged) putString(PREFS_HEADERS, JSONObject(headerMap).toString())
+        if (urlChanged) {
+          if (newUrl != null) putString(PREFS_SERVER_URL, newUrl) else remove(PREFS_SERVER_URL)
+        }
+      }
     }
   }
 

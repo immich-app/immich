@@ -80,6 +80,6 @@ private class NetworkApiImpl() : NetworkApi {
   }
 
   override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>) {
-    HttpClientManager.setRequestHeaders(headers)
+    HttpClientManager.setRequestHeaders(headers, serverUrls)
   }
 }
