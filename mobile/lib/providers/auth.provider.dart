@@ -90,7 +90,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _widgetService.clearCredentials();
 
       await _authService.logout();
-      await _apiService.updateHeaders();
       await _ref.read(backgroundUploadServiceProvider).cancel();
       _ref.read(foregroundUploadServiceProvider).cancel();
     } finally {

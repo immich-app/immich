@@ -85,8 +85,6 @@ class NetworkApiImpl: NetworkApi {
           }
         }
       }
-    } else {
-      URLSessionManager.cookieStorage.removeCookies(since: .distantPast)
     }
 
     if serverUrls.first != UserDefaults.group.string(forKey: SERVER_URL_KEY) {
