@@ -2,7 +2,6 @@
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { intersectionObserver } from '$lib/actions/intersection-observer';
-  import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
@@ -362,7 +361,8 @@
   id="memory-viewer"
   class="w-full bg-immich-dark-gray"
   bind:this={memoryWrapper}
-  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
 >
   {#if current}
     <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
