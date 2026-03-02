@@ -14,7 +14,6 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.wi
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -329,40 +328,40 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       );
     }
 
-    return Stack(
-      children: [
-        PhotoView.customChild(
-          key: Key(displayAsset.heroTag),
-          onDragStart: _onDragStart,
-          onDragUpdate: _onDragUpdate,
-          onDragEnd: _onDragEnd,
-          onDragCancel: _onDragCancel,
-          onTapUp: _onTapUp,
-          heroAttributes: heroAttributes,
-          basePosition: Alignment.center,
-          disableScaleGestures: showingDetails,
-          scaleStateChangedCallback: _onScaleStateChanged,
-          onPageBuild: _onPageBuild,
-          enablePanAlways: true,
-          backgroundDecoration: backgroundDecoration,
-          child: SizedBox(
-            width: context.width,
-            height: context.height,
-            child: NativeVideoViewer(
-              key: _NativeVideoViewerKey(displayAsset.heroTag),
-              asset: displayAsset,
-              image: Image(
-                image: getFullImageProvider(displayAsset, size: context.sizeData),
-                fit: BoxFit.contain,
-                height: context.height,
-                width: context.width,
-                alignment: Alignment.center,
-              ),
-            ),
-          ),
+    final Size childSize;
+    if (displayAsset.width != null && displayAsset.height != null) {
+      final r = displayAsset.width! / displayAsset.height!;
+      final w = math.min(context.width, context.height * r);
+      childSize = Size(w, w / r);
+    } else {
+      childSize = Size(context.height, context.height);
+    }
+
+    return PhotoView.customChild(
+      key: Key(displayAsset.heroTag),
+      childSize: childSize,
+      filterQuality: FilterQuality.low,
+      onDragStart: _onDragStart,
+      onDragUpdate: _onDragUpdate,
+      onDragEnd: _onDragEnd,
+      onDragCancel: _onDragCancel,
+      onTapUp: _onTapUp,
+      heroAttributes: heroAttributes,
+      basePosition: Alignment.center,
+      disableScaleGestures: showingDetails,
+      scaleStateChangedCallback: _onScaleStateChanged,
+      onPageBuild: _onPageBuild,
+      enablePanAlways: true,
+      backgroundDecoration: backgroundDecoration,
+      child: NativeVideoViewer(
+        key: _NativeVideoViewerKey(displayAsset.heroTag),
+        asset: displayAsset,
+        image: Image(
+          image: getFullImageProvider(displayAsset, size: childSize),
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
-        const Center(child: VideoViewerControls()),
-      ],
+      ),
     );
   }
 

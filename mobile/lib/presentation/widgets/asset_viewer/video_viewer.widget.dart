@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -393,13 +394,9 @@ class NativeVideoViewer extends HookConsumerWidget {
         if (aspectRatio.value != null && !isCasting)
           Visibility.maintain(
             visible: isVisible.value,
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent ? NativeVideoPlayerView(onViewReady: initController) : null,
-              ),
-            ),
+            child: NativeVideoPlayerView(onViewReady: initController),
           ),
+        const Center(child: VideoViewerControls()),
       ],
     );
   }
