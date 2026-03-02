@@ -283,8 +283,7 @@
         </div>
       {:else if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000') && mouseOver}
         <!-- GIF -->
-        <div class="absolute top-0 h-full w-full pointer-events-none">
-          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+        <div class="absolute h-full w-full pointer-events-none">
           <ImageThumbnail
             class={imageClass}
             {brokenAssetClass}
@@ -294,11 +293,6 @@
             heightStyle="{height}px"
             curve={selected}
           />
-          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
-            <span class="pe-2 pt-2">
-              <Icon data-icon-playable-pause icon={mdiMotionPauseOutline} size="24" />
-            </span>
-          </div>
         </div>
       {/if}
 
@@ -318,7 +312,7 @@
       <!-- icon overlay -->
       <div class="z-2 absolute inset-0">
         <!-- Gradient overlay on hover -->
-        {#if !usingMobileDevice && !disabled}
+        {#if !usingMobileDevice && !disabled && !asset.isVideo}
           <div
             class={[
               'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100 ',
@@ -354,7 +348,7 @@
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-          <div class={['z-2  absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['z-2 absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
@@ -362,7 +356,7 @@
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon data-icon-equirectangular icon={mdiRotate360} size="24" />
+              <Icon icon={mdiRotate360} size="24" />
             </span>
           </div>
         {/if}
@@ -370,7 +364,7 @@
         {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
           <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon data-icon-playable icon={mdiFileGifBox} size="24" />
+              <Icon icon={mouseOver ? mdiMotionPauseOutline : mdiFileGifBox} size="24" />
             </span>
           </div>
         {/if}
@@ -385,7 +379,7 @@
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon data-icon-stack icon={mdiCameraBurst} size="24" />
+              <Icon icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
