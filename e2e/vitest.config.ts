@@ -1,3 +1,4 @@
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const skipDockerSetup = process.env.VITEST_DISABLE_DOCKER_SETUP === 'true';
@@ -20,10 +21,8 @@ export default defineConfig({
     globalSetup,
     testTimeout: 15_000,
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        singleThread: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
   },
+  plugins: [tsconfigPaths()],
 });

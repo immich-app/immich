@@ -27,7 +27,7 @@
     "@eslint/js": "^10.0.0",
     "@faker-js/faker": "^10.1.0",
     "@immich/cli": "workspace:*",
-    "@immich/e2e-auth-server":  "workspace:*",
+    "@immich/e2e-auth-server": "workspace:*",
     "@immich/sdk": "workspace:*",
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
@@ -54,7 +54,8 @@
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.28.0",
     "utimes": "^5.2.1",
-    "vitest": "^3.0.0"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.0.0"
   },
   "volta": {
     "node": "24.13.1"
