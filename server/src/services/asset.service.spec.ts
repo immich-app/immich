@@ -566,6 +566,8 @@ describe(AssetService.name, () => {
         .file({ type: AssetFileType.Thumbnail })
         .file({ type: AssetFileType.Preview })
         .file({ type: AssetFileType.FullSize })
+        .file({ type: AssetFileType.Preview, isEdited: true })
+        .file({ type: AssetFileType.Thumbnail, isEdited: true })
         .build();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
 
