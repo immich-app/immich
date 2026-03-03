@@ -49,8 +49,8 @@
     "prepack": "pnpm run build",
     "test": "vitest",
     "test:cov": "vitest --coverage",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format": "prettier --cache --check .",
+    "format:fix": "prettier --cache --write --list-different .",
     "check": "tsc --noEmit"
   },
   "repository": {
