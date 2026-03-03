@@ -14,6 +14,7 @@ if (!skipDockerSetup) {
 
 export default defineConfig({
   test: {
+    name: 'e2e:maintenance',
     retry: process.env.CI ? 4 : 0,
     include: ['src/specs/maintenance/server/**/*.e2e-spec.ts'],
     globalSetup,
