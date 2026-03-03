@@ -197,6 +197,7 @@
   });
 
   const faceToNameMap = $derived.by(() => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
     for (const person of asset.people ?? []) {
       for (const face of person.faces ?? []) {
