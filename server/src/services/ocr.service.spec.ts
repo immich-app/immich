@@ -59,6 +59,23 @@ describe(OcrService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.Ocr, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForOcrJob).toHaveBeenCalledWith(true);
     });
+
+    it('should flush jobs in batches when exceeding pagination size', async () => {
+      // Create more than JOBS_ASSET_PAGINATION_SIZE (1000) assets to trigger mid-loop flush
+      const assets = Array.from({ length: 1001 }, (_, i) => AssetFactory.create({ id: `asset-${i}` }));
+      mocks.assetJob.streamForOcrJob.mockReturnValue(makeStream(assets));
+
+      await sut.handleQueueOcr({ force: false });
+
+      // Should have been called twice: once when hitting 1000, once for the remaining 1
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(2);
+
+      const firstBatch = mocks.job.queueAll.mock.calls[0][0];
+      expect(firstBatch).toHaveLength(1000);
+
+      const secondBatch = mocks.job.queueAll.mock.calls[1][0];
+      expect(secondBatch).toHaveLength(1);
+    });
   });
 
   describe('handleOcr', () => {

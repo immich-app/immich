@@ -99,5 +99,32 @@ describe(TrashService.name, () => {
         },
       ]);
     });
+
+    it('should process assets in batches when count exceeds pagination size', async () => {
+      // JOBS_ASSET_PAGINATION_SIZE is 1000, so we need more than 1000 items to trigger a batch flush
+      const totalAssets = 1001;
+      mocks.trash.getDeletedIds.mockReturnValue(makeAssetIdStream(totalAssets));
+
+      await expect(sut.handleEmptyTrash()).resolves.toEqual(JobStatus.Success);
+
+      // Should have been called twice: once for the first 1000, once for the remaining 1
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(2);
+
+      // First batch: 1000 assets
+      const firstBatchCall = mocks.job.queueAll.mock.calls[0][0];
+      expect(firstBatchCall).toHaveLength(1000);
+      expect(firstBatchCall[0]).toEqual({
+        name: JobName.AssetDelete,
+        data: { id: 'asset-1', deleteOnDisk: true },
+      });
+
+      // Second batch: 1 remaining asset
+      const secondBatchCall = mocks.job.queueAll.mock.calls[1][0];
+      expect(secondBatchCall).toHaveLength(1);
+      expect(secondBatchCall[0]).toEqual({
+        name: JobName.AssetDelete,
+        data: { id: 'asset-1001', deleteOnDisk: true },
+      });
+    });
   });
 });

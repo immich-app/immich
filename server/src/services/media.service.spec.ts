@@ -3994,5 +3994,337 @@ describe(MediaService.name, () => {
       expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
+
+    it('should update database when isTransparent changes', async () => {
+      const asset = {
+        id: 'asset-id',
+        files: [
+          {
+            id: 'file-1',
+            assetId: 'asset-id',
+            type: AssetFileType.Preview,
+            path: '/same/preview.jpg',
+            isEdited: false,
+            isProgressive: false,
+            isTransparent: false,
+          },
+        ],
+      };
+
+      await sut['syncFiles'](asset.files, [
+        {
+          assetId: asset.id,
+          type: AssetFileType.Preview,
+          path: '/same/preview.jpg',
+          isEdited: false,
+          isProgressive: false,
+          isTransparent: true,
+        },
+      ]);
+
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+        {
+          assetId: 'asset-id',
+          path: '/same/preview.jpg',
+          type: AssetFileType.Preview,
+          isEdited: false,
+          isProgressive: false,
+          isTransparent: true,
+        },
+      ]);
+      // No file delete because path didn't change
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('onBootstrap', () => {
+    it('should detect video interfaces', async () => {
+      mocks.storage.readdir.mockResolvedValue(['renderD128']);
+      mocks.storage.stat.mockRejectedValue(new Error('not found'));
+
+      await sut.onBootstrap();
+
+      expect(sut.videoInterfaces).toEqual({ dri: ['renderD128'], mali: false });
+      expect(mocks.storage.readdir).toHaveBeenCalledWith('/dev/dri');
+    });
+
+    it('should handle missing /dev/dri', async () => {
+      mocks.storage.readdir.mockRejectedValue(new Error('ENOENT'));
+      mocks.storage.stat.mockRejectedValue(new Error('not found'));
+
+      await sut.onBootstrap();
+
+      expect(sut.videoInterfaces).toEqual({ dri: [], mali: false });
+    });
+
+    it('should detect mali OpenCL', async () => {
+      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.storage.stat.mockResolvedValue({
+        isFile: () => true,
+        isCharacterDevice: () => true,
+      } as any);
+
+      await sut.onBootstrap();
+
+      expect(sut.videoInterfaces).toEqual({ dri: [], mali: true });
+    });
+
+    it('should handle mali check when stat returns non-file', async () => {
+      mocks.storage.readdir.mockResolvedValue([]);
+      mocks.storage.stat.mockResolvedValue({
+        isFile: () => false,
+        isCharacterDevice: () => true,
+      } as any);
+
+      await sut.onBootstrap();
+
+      expect(sut.videoInterfaces).toEqual({ dri: [], mali: false });
+    });
+  });
+
+  describe('handleQueueMigration - no empty dir removal', () => {
+    it('should not remove empty directories when other jobs are waiting', async () => {
+      const asset = AssetFactory.create();
+
+      mocks.assetJob.streamForMigrationJob.mockReturnValue(makeStream([asset]));
+      mocks.job.getJobCounts.mockResolvedValue({ active: 1, waiting: 5 } as JobCounts);
+      mocks.person.getAll.mockReturnValue(makeStream());
+
+      await expect(sut.handleQueueMigration()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.removeEmptyDirs).not.toHaveBeenCalled();
+    });
+
+    it('should not remove empty directories when multiple jobs are active', async () => {
+      const asset = AssetFactory.create();
+
+      mocks.assetJob.streamForMigrationJob.mockReturnValue(makeStream([asset]));
+      mocks.job.getJobCounts.mockResolvedValue({ active: 2, waiting: 0 } as JobCounts);
+      mocks.person.getAll.mockReturnValue(makeStream());
+
+      await expect(sut.handleQueueMigration()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.removeEmptyDirs).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleVideoConversion - remux required', () => {
+    beforeEach(() => {
+      const asset = AssetFactory.create({ id: 'video-id', type: AssetType.Video, originalPath: '/original/path.ext' });
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
+      sut.videoInterfaces = { dri: ['renderD128'], mali: true };
+    });
+
+    it('should remux MOV files that do not need transcoding', async () => {
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.matroskaContainer,
+        format: { formatName: 'mov,mp4,m4a,3gp,3g2,mj2', formatLongName: 'QuickTime / MOV', duration: 0, bitrate: 0 },
+      });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.Optimal, acceptedContainers: [] },
+      });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.transcode).toHaveBeenCalled();
+    });
+
+    it('should not remux when transcode is disabled', async () => {
+      mocks.media.probe.mockResolvedValue({
+        ...probeStub.matroskaContainer,
+        format: { formatName: 'mov,mp4,m4a,3gp,3g2,mj2', formatLongName: 'QuickTime / MOV', duration: 0, bitrate: 0 },
+      });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.Disabled, acceptedContainers: [] },
+      });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleVideoConversion - hardware acceleration fallback', () => {
+    beforeEach(() => {
+      const asset = AssetFactory.create({ id: 'video-id', type: AssetType.Video, originalPath: '/original/path.ext' });
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
+      sut.videoInterfaces = { dri: ['renderD128'], mali: true };
+    });
+
+    it('should fall back to software decoding when hw decode fails', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.All,
+          accel: TranscodeHardwareAcceleration.Nvenc,
+          accelDecode: true,
+        },
+      });
+      mocks.media.transcode
+        .mockRejectedValueOnce(new Error('HW decode failed'))
+        .mockResolvedValueOnce(void 0);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
+    });
+
+    it('should fall back to full software when partial fallback also fails', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.All,
+          accel: TranscodeHardwareAcceleration.Nvenc,
+          accelDecode: true,
+        },
+      });
+      mocks.media.transcode
+        .mockRejectedValueOnce(new Error('HW decode failed'))
+        .mockRejectedValueOnce(new Error('HW encode failed'))
+        .mockResolvedValueOnce(void 0);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(3);
+    });
+
+    it('should fall back to software when hw accel fails without accelDecode', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.All,
+          accel: TranscodeHardwareAcceleration.Nvenc,
+          accelDecode: false,
+        },
+      });
+      mocks.media.transcode
+        .mockRejectedValueOnce(new Error('HW encode failed'))
+        .mockResolvedValueOnce(void 0);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      // skips partial fallback (accelDecode was false), goes straight to full software
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('handleVideoConversion - delete existing encoded video', () => {
+    it('should delete existing encoded video when transcoding is no longer required', async () => {
+      const asset = AssetFactory.create({
+        id: 'video-id',
+        type: AssetType.Video,
+        originalPath: '/original/path.ext',
+        encodedVideoPath: '/encoded/path.mp4',
+      });
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
+      sut.videoInterfaces = { dri: ['renderD128'], mali: true };
+
+      mocks.media.probe.mockResolvedValue(probeStub.matroskaContainer);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Required,
+          acceptedVideoCodecs: [VideoCodec.Hevc],
+          acceptedContainers: ['matroska,webm'],
+        },
+      });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['/encoded/path.mp4'] },
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'video-id', encodedVideoPath: null });
+    });
+  });
+
+  describe('handleVideoConversion - debug frame counting', () => {
+    it('should enable frame counting when debug logging is enabled', async () => {
+      const asset = AssetFactory.create({ id: 'video-id', type: AssetType.Video, originalPath: '/original/path.ext' });
+      mocks.assetJob.getForVideoConversion.mockResolvedValue(asset);
+      sut.videoInterfaces = { dri: ['renderD128'], mali: true };
+
+      mocks.logger.isLevelEnabled.mockReturnValue(true);
+      mocks.media.probe.mockResolvedValue(probeStub.multipleVideoStreams);
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.probe).toHaveBeenCalledWith('/original/path.ext', { countFrames: true });
+    });
+  });
+
+  describe('handleGenerateThumbnails - asset type checks', () => {
+    let rawInfo: RawImageInfo;
+
+    beforeEach(() => {
+      rawInfo = { width: 100, height: 100, channels: 3 };
+      mocks.person.getFaces.mockResolvedValue([]);
+      mocks.ocr.getByAssetId.mockResolvedValue([]);
+      mocks.media.decodeImage.mockImplementation((input) =>
+        Promise.resolve(
+          typeof input === 'string'
+            ? { data: rawBuffer, info: rawInfo as OutputInfo }
+            : { data: fullsizeBuffer, info: rawInfo as OutputInfo },
+        ),
+      );
+      mocks.media.getImageMetadata.mockResolvedValue({ width: 100, height: 100, isTransparent: false });
+    });
+
+    it('should skip non-image non-video assets', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Other as any }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should skip hidden assets', async () => {
+      const asset = AssetFactory.from({ visibility: AssetVisibility.Hidden }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(asset);
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+    });
+
+    it('should return failed when asset is not found', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(void 0);
+
+      await expect(sut.handleGenerateThumbnails({ id: 'non-existent' })).resolves.toBe(JobStatus.Failed);
+    });
+  });
+
+  describe('handleAssetEditThumbnailGeneration - not found', () => {
+    it('should return failed when asset is not found', async () => {
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(void 0);
+
+      await expect(sut.handleAssetEditThumbnailGeneration({ id: 'non-existent' })).resolves.toBe(JobStatus.Failed);
+    });
+  });
+
+  describe('handleGeneratePersonThumbnail - video without preview', () => {
+    it('should return failed for video person without preview path', async () => {
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue({
+        ...personThumbnailStub.newThumbnailMiddle,
+        type: AssetType.Video,
+        previewPath: null,
+      });
+
+      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.Failed);
+    });
+  });
+
+  describe('handleQueueGenerateThumbnails - person without face', () => {
+    it('should skip person without a random face', async () => {
+      const person = PersonFactory.create({ thumbnailPath: undefined });
+
+      mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([]));
+      mocks.person.getAll.mockReturnValue(makeStream([person]));
+      mocks.person.getRandomFace.mockResolvedValue(void 0);
+
+      await sut.handleQueueGenerateThumbnails({ force: false });
+
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+    });
   });
 });

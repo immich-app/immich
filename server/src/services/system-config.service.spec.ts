@@ -359,6 +359,21 @@ describe(SystemConfigService.name, () => {
       expect(mocks.systemMetadata.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should auto-add targetAudioCodec to acceptedAudioCodecs if not present', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      mocks.systemMetadata.readFile.mockResolvedValue(
+        JSON.stringify({
+          ffmpeg: {
+            targetAudioCodec: AudioCodec.Aac,
+            acceptedAudioCodecs: [AudioCodec.Mp3],
+          },
+        }),
+      );
+
+      const config = await sut.getSystemConfig();
+      expect(config.ffmpeg.acceptedAudioCodecs).toContain(AudioCodec.Aac);
+    });
+
     it('should allow underscores in the machine learning url', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       const partialConfig = { machineLearning: { urls: ['immich_machine_learning'] } };
@@ -443,9 +458,192 @@ describe(SystemConfigService.name, () => {
     });
   });
 
+  describe('onBootstrap', () => {
+    it('should emit ConfigInit event with the config', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+
+      await sut.onBootstrap();
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('ConfigInit', { newConfig: expect.any(Object) });
+    });
+
+    it('should log deprecation warning when IMMICH_MACHINE_LEARNING_PING_TIMEOUT is set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT = '5000';
+
+      await sut.onBootstrap();
+
+      expect(mocks.logger.deprecate).toHaveBeenCalled();
+
+      delete process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT;
+    });
+
+    it('should log deprecation warning when IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME is set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = '10000';
+
+      await sut.onBootstrap();
+
+      expect(mocks.logger.deprecate).toHaveBeenCalled();
+
+      delete process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME;
+    });
+
+    it('should not log deprecation warning when neither env var is set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      delete process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT;
+      delete process.env.IMMICH_MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME;
+
+      await sut.onBootstrap();
+
+      expect(mocks.logger.deprecate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('onShutdown', () => {
+    it('should teardown machine learning repository', () => {
+      sut.onShutdown();
+
+      expect(mocks.machineLearning.teardown).toHaveBeenCalled();
+    });
+  });
+
+  describe('onConfigInit', () => {
+    it('should set log level from config when no env level is set', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({}));
+
+      sut.onConfigInit({
+        newConfig: {
+          ...defaults,
+          logging: { enabled: true, level: LogLevel.Debug },
+        },
+      });
+
+      expect(mocks.logger.setLogLevel).toHaveBeenCalledWith(LogLevel.Debug);
+    });
+
+    it('should use env log level when set', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ logLevel: LogLevel.Verbose }));
+
+      sut.onConfigInit({
+        newConfig: {
+          ...defaults,
+          logging: { enabled: true, level: LogLevel.Debug },
+        },
+      });
+
+      expect(mocks.logger.setLogLevel).toHaveBeenCalledWith(LogLevel.Verbose);
+    });
+
+    it('should set log level to false when logging is disabled', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({}));
+
+      sut.onConfigInit({
+        newConfig: {
+          ...defaults,
+          logging: { enabled: false, level: LogLevel.Log },
+        },
+      });
+
+      expect(mocks.logger.setLogLevel).toHaveBeenCalledWith(false);
+    });
+
+    it('should setup machine learning repository', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({}));
+
+      sut.onConfigInit({
+        newConfig: defaults,
+      });
+
+      expect(mocks.machineLearning.setup).toHaveBeenCalledWith(defaults.machineLearning);
+    });
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should call onConfigInit and clear the config cache', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({}));
+
+      sut.onConfigUpdate({
+        newConfig: defaults,
+        oldConfig: defaults,
+      });
+
+      expect(mocks.logger.setLogLevel).toHaveBeenCalled();
+      expect(mocks.machineLearning.setup).toHaveBeenCalled();
+    });
+  });
+
+  describe('onConfigValidate', () => {
+    it('should not throw when logging config changes and no env log level is set', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({}));
+
+      expect(() =>
+        sut.onConfigValidate({
+          newConfig: { ...defaults, logging: { enabled: true, level: LogLevel.Debug } },
+          oldConfig: defaults,
+        }),
+      ).not.toThrow();
+    });
+
+    it('should throw when logging config changes while IMMICH_LOG_LEVEL env var is set', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ logLevel: LogLevel.Verbose }));
+
+      expect(() =>
+        sut.onConfigValidate({
+          newConfig: { ...defaults, logging: { enabled: true, level: LogLevel.Debug } },
+          oldConfig: defaults,
+        }),
+      ).toThrow('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
+    });
+
+    it('should not throw when logging config has not changed even with env var set', () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ logLevel: LogLevel.Verbose }));
+
+      expect(() =>
+        sut.onConfigValidate({
+          newConfig: defaults,
+          oldConfig: defaults,
+        }),
+      ).not.toThrow();
+    });
+  });
+
+  describe('updateConfig', () => {
+    it('should throw a BadRequestException when validation fails', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      mocks.event.emit.mockImplementation((event) => {
+        if (event === 'ConfigValidate') {
+          throw new Error('Validation failed');
+        }
+        return undefined as any;
+      });
+
+      await expect(sut.updateSystemConfig(defaults)).rejects.toThrow(BadRequestException);
+      expect(mocks.logger.warn).toHaveBeenCalled();
+    });
+
+    it('should wrap non-Error validation failures in a BadRequestException', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({});
+      mocks.event.emit.mockImplementation((event) => {
+        if (event === 'ConfigValidate') {
+          throw 'string error';
+        }
+        return undefined as any;
+      });
+
+      await expect(sut.updateSystemConfig(defaults)).rejects.toThrow(BadRequestException);
+    });
+  });
+
   describe('getCustomCss', () => {
     it('should return the default theme', async () => {
       await expect(sut.getCustomCss()).resolves.toEqual(defaults.theme.customCss);
+    });
+
+    it('should return custom CSS when set', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ theme: { customCss: 'body { color: red; }' } });
+
+      await expect(sut.getCustomCss()).resolves.toEqual('body { color: red; }');
     });
   });
 });

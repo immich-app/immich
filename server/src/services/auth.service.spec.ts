@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdmin } from 'src/database';
 import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
-import { AuthType, Permission } from 'src/enum';
+import { AuthType, JobName, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
 import { UserMetadataItem } from 'src/types';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
@@ -1122,6 +1122,551 @@ describe(AuthService.name, () => {
       mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
 
       await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
+    });
+
+    it('should reset the PIN code using password', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: 'password (hashed)' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.lockAll.mockResolvedValue(void 0);
+
+      await sut.resetPinCode(factory.auth({ user }), { password: 'password' });
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { pinCode: null });
+      expect(mocks.session.lockAll).toHaveBeenCalledWith(user.id);
+    });
+
+    it('should throw if no pinCode and no password provided', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+
+      await expect(sut.resetPinCode(factory.auth({ user }), {})).rejects.toThrow(
+        'Either password or pinCode is required',
+      );
+    });
+
+    it('should throw if user does not have a PIN code', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: '' });
+
+      await expect(sut.resetPinCode(factory.auth({ user }), { pinCode: '123456' })).rejects.toThrow(
+        'User does not have a PIN code',
+      );
+    });
+
+    it('should throw if the password does not match', async () => {
+      const user = factory.userAdmin();
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: 'password (hashed)' });
+      mocks.crypto.compareBcrypt.mockReturnValue(false);
+
+      await expect(sut.resetPinCode(factory.auth({ user }), { password: 'wrong' })).rejects.toThrow('Wrong password');
+    });
+  });
+
+  describe('setupPinCode', () => {
+    it('should throw if user is not found', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getForPinCode.mockResolvedValue(void 0 as any);
+
+      await expect(sut.setupPinCode(auth, { pinCode: '123456' })).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+  });
+
+  describe('adminSignUp', () => {
+    it('should throw if admin setup is disabled', async () => {
+      mocks.config.getEnv.mockReturnValue({ setup: { allow: false } } as any);
+
+      await expect(
+        sut.adminSignUp({ email: 'test@immich.com', password: 'password', name: 'admin' }),
+      ).rejects.toThrow('Admin setup is disabled');
+    });
+  });
+
+  describe('getAuthStatus', () => {
+    it('should return the auth status for a user with a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user, session: { id: newUuid() } });
+      auth.session!.hasElevatedPermission = true;
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: 'hashed-pin', password: 'hashed-password' });
+      mocks.session.get.mockResolvedValue({
+        ...factory.session(),
+        expiresAt: new Date('2025-01-01'),
+        pinExpiresAt: new Date('2025-01-01'),
+      });
+
+      const result = await sut.getAuthStatus(auth);
+
+      expect(result).toEqual({
+        pinCode: true,
+        password: true,
+        isElevated: true,
+        expiresAt: new Date('2025-01-01').toISOString(),
+        pinExpiresAt: new Date('2025-01-01').toISOString(),
+      });
+    });
+
+    it('should return the auth status for a user without a PIN code', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: null, password: null });
+
+      const result = await sut.getAuthStatus(auth);
+
+      expect(result).toEqual({
+        pinCode: false,
+        password: false,
+        isElevated: false,
+        expiresAt: undefined,
+        pinExpiresAt: undefined,
+      });
+    });
+
+    it('should throw if user is not found', async () => {
+      const auth = factory.auth();
+      mocks.user.getForPinCode.mockResolvedValue(void 0 as any);
+
+      await expect(sut.getAuthStatus(auth)).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+  });
+
+  describe('unlockSession', () => {
+    it('should unlock the session with a valid PIN code', async () => {
+      const user = factory.userAdmin();
+      const sessionId = newUuid();
+      const auth = factory.auth({ user, session: { id: sessionId } });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockImplementation((a, b) => `${a} (hashed)` === b);
+      mocks.session.update.mockResolvedValue(factory.session());
+
+      await sut.unlockSession(auth, { pinCode: '123456' });
+
+      expect(mocks.session.update).toHaveBeenCalledWith(sessionId, {
+        pinExpiresAt: expect.any(Date),
+      });
+    });
+
+    it('should throw if no session is present', async () => {
+      const auth = factory.auth();
+
+      await expect(sut.unlockSession(auth, { pinCode: '123456' })).rejects.toThrow(
+        'This endpoint can only be used with a session token',
+      );
+    });
+
+    it('should throw if pin code is wrong', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user, session: { id: newUuid() } });
+
+      mocks.user.getForPinCode.mockResolvedValue({ pinCode: '123456 (hashed)', password: '' });
+      mocks.crypto.compareBcrypt.mockReturnValue(false);
+
+      await expect(sut.unlockSession(auth, { pinCode: '000000' })).rejects.toThrow('Wrong PIN code');
+    });
+  });
+
+  describe('lockSession', () => {
+    it('should lock the session', async () => {
+      const sessionId = newUuid();
+      const auth = factory.auth({ session: { id: sessionId } });
+      mocks.session.update.mockResolvedValue(factory.session());
+
+      await sut.lockSession(auth);
+
+      expect(mocks.session.update).toHaveBeenCalledWith(sessionId, { pinExpiresAt: null });
+    });
+
+    it('should throw if no session is present', async () => {
+      const auth = factory.auth();
+
+      await expect(sut.lockSession(auth)).rejects.toThrow(
+        'This endpoint can only be used with a session token',
+      );
+    });
+  });
+
+  describe('validate - session with elevated permission', () => {
+    it('should return hasElevatedPermission true when pinExpiresAt is in the future', async () => {
+      const session = factory.session({ updatedAt: new Date() });
+      const futureDate = DateTime.now().plus({ minutes: 10 }).toJSDate();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+        pinExpiresAt: futureDate,
+        appVersion: null,
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      const result = await sut.authenticate({
+        headers: { 'x-immich-user-token': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+
+      expect(result.session?.hasElevatedPermission).toBe(true);
+    });
+
+    it('should return hasElevatedPermission false when pinExpiresAt is in the past', async () => {
+      const session = factory.session({ updatedAt: new Date() });
+      const pastDate = DateTime.now().minus({ minutes: 10 }).toJSDate();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+        pinExpiresAt: pastDate,
+        appVersion: null,
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      const result = await sut.authenticate({
+        headers: { 'x-immich-user-token': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+
+      expect(result.session?.hasElevatedPermission).toBe(false);
+    });
+
+    it('should extend pinExpiresAt when within 5 minutes of expiry', async () => {
+      const session = factory.session({ updatedAt: new Date() });
+      const nearExpiry = DateTime.now().plus({ minutes: 3 }).toJSDate();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+        pinExpiresAt: nearExpiry,
+        appVersion: null,
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+      mocks.session.update.mockResolvedValue(session);
+
+      await sut.authenticate({
+        headers: { 'x-immich-user-token': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+
+      expect(mocks.session.update).toHaveBeenCalledWith(session.id, {
+        pinExpiresAt: expect.any(Date),
+      });
+    });
+  });
+
+  describe('validate - query params', () => {
+    it('should validate using session key query param', async () => {
+      const session = factory.session();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+        pinExpiresAt: null,
+        appVersion: null,
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      await expect(
+        sut.authenticate({
+          headers: {},
+          queryParams: { sessionKey: 'session_token' },
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({
+        user: sessionWithToken.user,
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+        },
+      });
+    });
+
+    it('should validate using api key query param', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.All] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      await expect(
+        sut.authenticate({
+          headers: {},
+          queryParams: { apiKey: 'my_api_key' },
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
+    });
+
+    it('should validate shared link key from query params', async () => {
+      const user = factory.userAdmin();
+      const sharedLink = { ...sharedLinkStub.valid, user } as any;
+
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
+
+      await expect(
+        sut.authenticate({
+          headers: {},
+          queryParams: { key: sharedLink.key.toString('base64url') },
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user, sharedLink });
+    });
+  });
+
+  describe('callback - state and codeVerifier from cookies', () => {
+    it('should throw if state is missing from both dto and cookies', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+
+      await expect(sut.callback({ url: 'http://test', codeVerifier: 'foo' }, {}, loginDetails)).rejects.toThrow(
+        'OAuth state is missing',
+      );
+    });
+
+    it('should throw if code verifier is missing from both dto and cookies', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+
+      await expect(sut.callback({ url: 'http://test', state: 'foo' }, {}, loginDetails)).rejects.toThrow(
+        'OAuth code verifier is missing',
+      );
+    });
+
+    it('should use state from cookie when not in dto', async () => {
+      const user = factory.userAdmin();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', codeVerifier: 'foo' },
+        { cookie: 'immich_oauth_state=cookie-state' },
+        loginDetails,
+      );
+
+      expect(mocks.oauth.getProfile).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(String),
+        'cookie-state',
+        'foo',
+      );
+    });
+
+    it('should use code verifier from cookie when not in dto', async () => {
+      const user = factory.userAdmin();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'foo' },
+        { cookie: 'immich_oauth_code_verifier=cookie-verifier' },
+        loginDetails,
+      );
+
+      expect(mocks.oauth.getProfile).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.any(String),
+        'foo',
+        'cookie-verifier',
+      );
+    });
+  });
+
+  describe('link - state and codeVerifier validation', () => {
+    it('should throw if state is missing', async () => {
+      const auth = factory.auth();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+
+      await expect(
+        sut.link(auth, { url: 'http://immich/user-settings?code=abc123', codeVerifier: 'foo' }, {}),
+      ).rejects.toThrow('OAuth state is missing');
+    });
+
+    it('should throw if code verifier is missing', async () => {
+      const auth = factory.auth();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+
+      await expect(
+        sut.link(auth, { url: 'http://immich/user-settings?code=abc123', state: 'foo' }, {}),
+      ).rejects.toThrow('OAuth code verifier is missing');
+    });
+
+    it('should allow linking when duplicate is the same user', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user, apiKey: { permissions: [] } });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.getByOAuthId.mockResolvedValue(user as any);
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.link(
+        auth,
+        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: sub });
+    });
+  });
+
+  describe('callback - profile name handling', () => {
+    it('should use given_name and family_name when name is not available', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.oauth.getProfile.mockResolvedValue({
+        sub: user.oauthId,
+        email: user.email,
+        given_name: 'John',
+        family_name: 'Doe',
+      });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.create.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ name: 'John Doe' }));
+    });
+
+    it('should use profile name when available', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.oauth.getProfile.mockResolvedValue({
+        sub: user.oauthId,
+        email: user.email,
+        name: 'Full Name',
+        given_name: 'John',
+        family_name: 'Doe',
+      });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(factory.userAdmin({ isAdmin: true }));
+      mocks.user.create.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ name: 'Full Name' }));
+    });
+  });
+
+  describe('callback - profile picture error handling', () => {
+    it('should handle errors when syncing profile picture', async () => {
+      const user = factory.userAdmin({ oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfile.mockResolvedValue({
+        sub: user.oauthId,
+        email: user.email,
+        picture: 'https://auth.immich.cloud/profiles/1.jpg',
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.oauth.getProfilePicture.mockRejectedValue(new Error('network error'));
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      // should not throw - the error is caught and logged
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toBeDefined();
+    });
+
+    it('should queue file deletion for old profile path', async () => {
+      const fileId = newUuid();
+      const user = factory.userAdmin({ oauthId: 'oauth-id', profileImagePath: '/old/profile.jpg' });
+      // Need profileImagePath to be empty for syncProfilePicture to be called
+      const userNoProfile = { ...user, profileImagePath: '' };
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfile.mockResolvedValue({
+        sub: userNoProfile.oauthId,
+        email: userNoProfile.email,
+        picture: 'https://auth.immich.cloud/profiles/1.jpg',
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(userNoProfile);
+      mocks.crypto.randomUUID.mockReturnValue(fileId);
+      mocks.oauth.getProfilePicture.mockResolvedValue({
+        contentType: 'image/jpeg',
+        data: new Uint8Array([1, 2, 3]).buffer,
+      });
+      mocks.user.update.mockResolvedValue(userNoProfile);
+      mocks.session.create.mockResolvedValue(factory.session());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      // no old path so no file delete should be queued
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.FileDelete }),
+      );
+    });
+  });
+
+  describe('logout - oauth logout endpoint returns empty', () => {
+    it('should return login URL when oauth logout endpoint is empty', async () => {
+      const auth = factory.auth();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.oauth.getLogoutEndpoint.mockResolvedValue('');
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: '/auth/login?autoLaunch=0',
+      });
+    });
+  });
+
+  describe('validate - session token header', () => {
+    it('should validate using x-immich-session-token header', async () => {
+      const session = factory.session();
+      const sessionWithToken = {
+        id: session.id,
+        updatedAt: session.updatedAt,
+        user: factory.authUser(),
+        pinExpiresAt: null,
+        appVersion: null,
+      };
+
+      mocks.session.getByToken.mockResolvedValue(sessionWithToken);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-session-token': 'session_token' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+        }),
+      ).resolves.toEqual({
+        user: sessionWithToken.user,
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+        },
+      });
     });
   });
 });

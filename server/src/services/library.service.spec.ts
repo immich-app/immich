@@ -336,6 +336,34 @@ describe(LibraryService.name, () => {
       );
     });
 
+    it('should batch assets into chunks when exceeding pagination size', async () => {
+      const library = factory.library({ importPaths: ['/foo'] });
+      // Create more assets than JOBS_LIBRARY_PAGINATION_SIZE (10_000)
+      const assets = Array.from({ length: JOBS_LIBRARY_PAGINATION_SIZE + 1 }, () =>
+        AssetFactory.create({ libraryId: library.id, isExternal: true }),
+      );
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.library.streamAssetIds.mockReturnValue(makeStream(assets));
+      mocks.asset.getLibraryAssetCount.mockResolvedValue(assets.length);
+      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });
+
+      const response = await sut.handleQueueSyncAssets({ id: library.id });
+
+      expect(response).toBe(JobStatus.Success);
+      // Should be called twice: once for the full batch at pagination size and once for the remaining 1
+      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: JobName.LibrarySyncAssets,
+          data: expect.objectContaining({
+            libraryId: library.id,
+            assetIds: expect.any(Array),
+          }),
+        }),
+      );
+    });
+
     it("should fail if library can't be found", async () => {
       await expect(sut.handleQueueSyncAssets({ id: newUuid() })).resolves.toBe(JobStatus.Skipped);
     });
@@ -690,6 +718,15 @@ describe(LibraryService.name, () => {
       });
 
       expect(mocks.library.getStatistics).toHaveBeenCalledWith(library.id);
+    });
+
+    it('should throw an error when library is not found', async () => {
+      const libraryId = newUuid();
+
+      mocks.library.getStatistics.mockResolvedValue(undefined);
+
+      await expect(sut.getStatistics(libraryId)).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.library.getStatistics).toHaveBeenCalledWith(libraryId);
     });
   });
 
@@ -1126,6 +1163,54 @@ describe(LibraryService.name, () => {
       mocks.library.streamAssetIds.mockReturnValue(makeStream([AssetFactory.create()]));
 
       await expect(sut.handleDeleteLibrary({ id: library.id })).resolves.toBe(JobStatus.Success);
+    });
+  });
+
+  describe('handleAssetRemoval', () => {
+    it('should remove an asset by path when found', async () => {
+      const library = factory.library();
+      const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
+
+      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(asset);
+
+      await expect(
+        sut.handleAssetRemoval({ libraryId: library.id, paths: [asset.originalPath] }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.getByLibraryIdAndOriginalPath).toHaveBeenCalledWith(library.id, asset.originalPath);
+      expect(mocks.asset.remove).toHaveBeenCalledWith(asset);
+    });
+
+    it('should handle when asset is not found for a path', async () => {
+      const library = factory.library();
+
+      mocks.asset.getByLibraryIdAndOriginalPath.mockResolvedValue(undefined);
+
+      await expect(
+        sut.handleAssetRemoval({ libraryId: library.id, paths: ['/data/missing.jpg'] }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.getByLibraryIdAndOriginalPath).toHaveBeenCalledWith(library.id, '/data/missing.jpg');
+      expect(mocks.asset.remove).not.toHaveBeenCalled();
+    });
+
+    it('should handle multiple paths', async () => {
+      const library = factory.library();
+      const asset1 = AssetFactory.create({ libraryId: library.id });
+      const asset2 = AssetFactory.create({ libraryId: library.id });
+
+      mocks.asset.getByLibraryIdAndOriginalPath
+        .mockResolvedValueOnce(asset1)
+        .mockResolvedValueOnce(asset2);
+
+      await expect(
+        sut.handleAssetRemoval({
+          libraryId: library.id,
+          paths: [asset1.originalPath, asset2.originalPath],
+        }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.remove).toHaveBeenCalledTimes(2);
     });
   });
 

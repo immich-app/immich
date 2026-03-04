@@ -161,6 +161,36 @@ describe(DownloadService.name, () => {
 
       expect(archiveMock.addFile).toHaveBeenCalledWith('/path/to/realpath.jpg', asset.originalFileName);
     });
+
+    it('should stream S3 assets by resolving the backend', async () => {
+      const archiveMock = {
+        addFile: vitest.fn(),
+        finalize: vitest.fn(),
+        stream: new Readable(),
+      };
+      const mockStream = new Readable();
+
+      // S3 asset has a relative (non-absolute) path
+      const asset = AssetFactory.create({ originalPath: 's3://bucket/key/photo.jpg' });
+      // Override originalPath to a relative (non-absolute) path so isAbsolute returns false
+      const s3Asset = { ...asset, originalPath: 'upload/library/photo.jpg' };
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([s3Asset.id]));
+      mocks.asset.getForOriginals.mockResolvedValue([s3Asset]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
+
+      // Mock StorageService.resolveBackendForKey
+      const { StorageService } = await import('src/services/storage.service');
+      const mockBackend = { get: vitest.fn().mockResolvedValue({ stream: mockStream }) };
+      vitest.spyOn(StorageService, 'resolveBackendForKey').mockReturnValue(mockBackend as any);
+
+      await expect(sut.downloadArchive(authStub.admin, { assetIds: [s3Asset.id] })).resolves.toEqual({
+        stream: archiveMock.stream,
+      });
+
+      expect(mockBackend.get).toHaveBeenCalledWith('upload/library/photo.jpg');
+      expect(archiveMock.addFile).toHaveBeenCalledWith(mockStream, s3Asset.originalFileName);
+    });
   });
 
   describe('getDownloadInfo', () => {

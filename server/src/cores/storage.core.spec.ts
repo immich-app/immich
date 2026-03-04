@@ -7,6 +7,20 @@ vitest.mock('src/constants', () => ({
 }));
 
 describe('StorageCore', () => {
+  describe('getMediaLocation', () => {
+    it('should throw an error when media location is not set', () => {
+      StorageCore.setMediaLocation(undefined as unknown as string);
+      // Reset internal state by setting to undefined
+      // The method checks for `=== undefined`
+      expect(() => StorageCore.getMediaLocation()).toThrow('Media location is not set.');
+    });
+
+    it('should return the media location when set', () => {
+      StorageCore.setMediaLocation('/media');
+      expect(StorageCore.getMediaLocation()).toBe('/media');
+    });
+  });
+
   describe('isImmichPath', () => {
     beforeAll(() => {
       StorageCore.setMediaLocation('/photos');
@@ -30,6 +44,91 @@ describe('StorageCore', () => {
     it('should return false for paths outside the APP_MEDIA_LOCATION', () => {
       const nonImmichPath = '/some/other/path';
       expect(StorageCore.isImmichPath(nonImmichPath)).toBe(false);
+    });
+  });
+
+  describe('getFolderLocation', () => {
+    beforeEach(() => {
+      StorageCore.setMediaLocation('/data');
+    });
+
+    it('should return the folder location for a given user', () => {
+      const result = StorageCore.getFolderLocation(StorageFolder.Thumbnails, 'user-1');
+      expect(result).toBe('/data/thumbs/user-1');
+    });
+
+    it('should return the folder location for encoded video', () => {
+      const result = StorageCore.getFolderLocation(StorageFolder.EncodedVideo, 'user-2');
+      expect(result).toBe('/data/encoded-video/user-2');
+    });
+  });
+
+  describe('getLibraryFolder', () => {
+    beforeEach(() => {
+      StorageCore.setMediaLocation('/data');
+    });
+
+    it('should use storageLabel when available', () => {
+      const result = StorageCore.getLibraryFolder({ storageLabel: 'my-label', id: 'user-id' });
+      expect(result).toBe('/data/library/my-label');
+    });
+
+    it('should fall back to user id when storageLabel is null', () => {
+      const result = StorageCore.getLibraryFolder({ storageLabel: null, id: 'user-id' });
+      expect(result).toBe('/data/library/user-id');
+    });
+  });
+
+  describe('getAndroidMotionPath', () => {
+    beforeEach(() => {
+      StorageCore.setMediaLocation('/data');
+    });
+
+    it('should return a nested path under EncodedVideo with -MP.mp4 suffix', () => {
+      const result = StorageCore.getAndroidMotionPath({ id: 'asset-1', ownerId: 'user-1' }, 'motion-uuid');
+      expect(result).toContain('encoded-video');
+      expect(result).toContain('user-1');
+      expect(result).toContain('motion-uuid-MP.mp4');
+    });
+  });
+
+  describe('isAndroidMotionPath', () => {
+    beforeEach(() => {
+      StorageCore.setMediaLocation('/data');
+    });
+
+    it('should return true for paths under EncodedVideo', () => {
+      const result = StorageCore.isAndroidMotionPath('/data/encoded-video/user-1/ab/cd/some-file-MP.mp4');
+      expect(result).toBe(true);
+    });
+
+    it('should return false for paths not under EncodedVideo', () => {
+      const result = StorageCore.isAndroidMotionPath('/data/library/user-1/some-file.mp4');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getNestedFolder', () => {
+    beforeEach(() => {
+      StorageCore.setMediaLocation('/data');
+    });
+
+    it('should return the correct nested folder path', () => {
+      const result = StorageCore.getNestedFolder(StorageFolder.Thumbnails, 'user-1', 'abcdef.webp');
+      expect(result).toBe('/data/thumbs/user-1/ab/cd');
+    });
+  });
+
+  describe('getTempPathInDir', () => {
+    it('should return a path in the given directory with a .tmp extension', () => {
+      const result = StorageCore.getTempPathInDir('/tmp/immich');
+      expect(result).toMatch(/^\/tmp\/immich\/[\da-f-]+\.tmp$/);
+    });
+
+    it('should return a unique path each time', () => {
+      const result1 = StorageCore.getTempPathInDir('/tmp/immich');
+      const result2 = StorageCore.getTempPathInDir('/tmp/immich');
+      expect(result1).not.toBe(result2);
     });
   });
 

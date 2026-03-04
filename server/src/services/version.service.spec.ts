@@ -49,6 +49,36 @@ describe(VersionService.name, () => {
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
       expect(mocks.versionHistory.create).not.toHaveBeenCalled();
     });
+
+    it('should add a new version to upgrade history when version differs', async () => {
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: '1.130.0',
+      });
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.versionHistory.create).toHaveBeenCalledWith({ version: serverVersion.toString() });
+      expect(mocks.logger.log).toHaveBeenCalledWith(expect.stringContaining('upgrade history'));
+      // Previous version is >= 1.129.0, so no MemoryGenerate job
+      expect(mocks.job.queue).not.toHaveBeenCalledWith({ name: JobName.MemoryGenerate });
+    });
+
+    it('should queue MemoryGenerate job when upgrading from a version older than 1.129.0', async () => {
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: '1.128.0',
+      });
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.versionHistory.create).toHaveBeenCalledWith({ version: serverVersion.toString() });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.MemoryGenerate });
+    });
   });
 
   describe('getVersion', () => {

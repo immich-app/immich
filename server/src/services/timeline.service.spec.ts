@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AssetVisibility } from 'src/enum';
 import { TimelineService } from 'src/services/timeline.service';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -203,6 +203,25 @@ describe(TimelineService.name, () => {
           userId: authStub.admin.user.id,
         }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw UnauthorizedException when visibility is Locked and no elevated permission', async () => {
+      await expect(
+        sut.getTimeBucket(authStub.admin, {
+          timeBucket: 'bucket',
+          visibility: AssetVisibility.Locked,
+          userId: authStub.admin.user.id,
+        }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException for getTimeBuckets when visibility is Locked and no elevated permission', async () => {
+      await expect(
+        sut.getTimeBuckets(authStub.admin, {
+          visibility: AssetVisibility.Locked,
+          userId: authStub.admin.user.id,
+        }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });

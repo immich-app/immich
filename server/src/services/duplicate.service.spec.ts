@@ -31,6 +31,8 @@ describe(SearchService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(DuplicateService));
+    mocks.duplicateRepository.delete.mockResolvedValue(undefined as any);
+    mocks.duplicateRepository.deleteAll.mockResolvedValue(undefined as any);
   });
 
   it('should work', () => {
@@ -52,6 +54,26 @@ describe(SearchService.name, () => {
           assets: [expect.objectContaining({ id: asset.id }), expect.objectContaining({ id: asset.id })],
         },
       ]);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a specific duplicate group', async () => {
+      const duplicateId = newUuid();
+
+      await sut.delete(authStub.admin, duplicateId);
+
+      expect(mocks.duplicateRepository.delete).toHaveBeenCalledWith(authStub.admin.user.id, duplicateId);
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should delete multiple duplicate groups', async () => {
+      const ids = [newUuid(), newUuid()];
+
+      await sut.deleteAll(authStub.admin, { ids });
+
+      expect(mocks.duplicateRepository.deleteAll).toHaveBeenCalledWith(authStub.admin.user.id, ids);
     });
   });
 
@@ -128,6 +150,16 @@ describe(SearchService.name, () => {
         },
       ]);
     });
+
+    it('should batch queue assets when exceeding pagination size', async () => {
+      const assets = Array.from({ length: 1001 }, () => AssetFactory.create());
+      mocks.assetJob.streamForSearchDuplicates.mockReturnValue(makeStream(assets));
+
+      await sut.handleQueueSearchDuplicates({});
+
+      // Should have been called at least twice: once for the batch of 1000, once for the remaining 1
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('handleSearchDuplicates', () => {
@@ -200,6 +232,16 @@ describe(SearchService.name, () => {
 
       expect(result).toBe(JobStatus.Skipped);
       expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is not visible, skipping`);
+    });
+
+    it('should skip if asset is locked', async () => {
+      const asset = AssetFactory.create({ visibility: AssetVisibility.Locked });
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue({ ...hasEmbedding, ...asset });
+
+      const result = await sut.handleSearchDuplicates({ id: asset.id });
+
+      expect(result).toBe(JobStatus.Skipped);
+      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${asset.id} is locked, skipping`);
     });
 
     it('should fail if asset is missing embedding', async () => {
@@ -277,6 +319,59 @@ describe(SearchService.name, () => {
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
         assetId: hasDupe.id,
         duplicatesDetectedAt: expect.any(Date),
+      });
+    });
+
+    it('should not remove duplicateId if no duplicates found and asset has no duplicateId', async () => {
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(hasEmbedding);
+      mocks.duplicateRepository.search.mockResolvedValue([]);
+
+      const result = await sut.handleSearchDuplicates({ id: hasEmbedding.id });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: hasEmbedding.id,
+        duplicatesDetectedAt: expect.any(Date),
+      });
+    });
+
+    it('should use asset duplicateId as target when asset already has one', async () => {
+      const existingDuplicateId = 'existing-duplicate-id';
+      const assetWithDupe = { ...hasEmbedding, duplicateId: existingDuplicateId };
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(assetWithDupe);
+      mocks.duplicateRepository.search.mockResolvedValue([
+        { assetId: 'other-asset', distance: 0.01, duplicateId: null },
+      ]);
+      mocks.duplicateRepository.merge.mockResolvedValue();
+
+      const result = await sut.handleSearchDuplicates({ id: assetWithDupe.id });
+
+      expect(result).toBe(JobStatus.Success);
+      expect(mocks.duplicateRepository.merge).toHaveBeenCalledWith({
+        assetIds: ['other-asset', assetWithDupe.id],
+        targetId: existingDuplicateId,
+        sourceIds: [],
+      });
+    });
+
+    it('should merge multiple duplicate IDs into one target', async () => {
+      mocks.assetJob.getForSearchDuplicatesJob.mockResolvedValue(hasEmbedding);
+      mocks.duplicateRepository.search.mockResolvedValue([
+        { assetId: 'dup-1', distance: 0.01, duplicateId: 'dup-id-1' },
+        { assetId: 'dup-2', distance: 0.01, duplicateId: 'dup-id-2' },
+        { assetId: 'dup-3', distance: 0.01, duplicateId: 'dup-id-1' },
+      ]);
+      mocks.duplicateRepository.merge.mockResolvedValue();
+
+      const result = await sut.handleSearchDuplicates({ id: hasEmbedding.id });
+
+      expect(result).toBe(JobStatus.Success);
+      // Should use first duplicate ID (dup-id-1) as target, dup-id-2 as source
+      expect(mocks.duplicateRepository.merge).toHaveBeenCalledWith({
+        assetIds: expect.arrayContaining(['dup-2', hasEmbedding.id]),
+        targetId: 'dup-id-1',
+        sourceIds: ['dup-id-2'],
       });
     });
   });
