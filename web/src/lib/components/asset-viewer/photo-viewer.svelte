@@ -221,7 +221,6 @@
 
     const faceBoxes = getBoundingBox(faces, overlayMetrics);
 
-    const hoveredFaceIndices: number[] = [];
     for (const [index, box] of faceBoxes.entries()) {
       if (mouseX >= box.left && mouseX <= box.left + box.width && mouseY >= box.top && mouseY <= box.top + box.height) {
         $boundingBoxesArray.push(faces[index]);
