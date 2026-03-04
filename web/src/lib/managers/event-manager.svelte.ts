@@ -33,7 +33,6 @@ export type Events = {
   ApiKeyDelete: [ApiKeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
-  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
   AssetsArchive: [string[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];

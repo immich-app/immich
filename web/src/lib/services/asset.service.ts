@@ -9,7 +9,6 @@ import { user as authUser, preferences } from '$lib/stores/user.store';
 import type { AssetControlContext } from '$lib/types';
 import { getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
 import { asQueryString } from '$lib/utils/shared-links';
@@ -17,8 +16,6 @@ import {
   AssetJobName,
   AssetTypeEnum,
   AssetVisibility,
-  copyAsset,
-  deleteAssets,
   getAssetInfo,
   getBaseUrl,
   runAssetJobs,
@@ -360,14 +357,6 @@ const handleUnfavorite = async (asset: AssetResponseDto) => {
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: asset.isFavorite } }));
   }
-};
-
-export const handleReplaceAsset = async (oldAssetId: string) => {
-  const [newAssetId] = await openFileUploadDialog({ multiple: false });
-  await copyAsset({ assetCopyDto: { sourceId: oldAssetId, targetId: newAssetId } });
-  await deleteAssets({ assetBulkDeleteDto: { ids: [oldAssetId], force: true } });
-
-  eventManager.emit('AssetReplace', { oldAssetId, newAssetId });
 };
 
 const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
