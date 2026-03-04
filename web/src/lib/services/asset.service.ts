@@ -297,7 +297,6 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     {
       filename: asset.originalFileName,
       id: asset.id,
-      size: asset.exifInfo?.fileSizeInByte || 0,
     },
   ];
 
@@ -311,7 +310,6 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
       assets.push({
         filename: motionAsset.originalFileName,
         id: asset.livePhotoVideoId,
-        size: motionAsset.exifInfo?.fileSizeInByte || 0,
       });
     }
   }
@@ -325,7 +323,7 @@ export const handleDownloadAsset = async (asset: AssetResponseDto, { edited }: {
     }
 
     try {
-      toastManager.success($t('downloading_asset_filename', { values: { filename: asset.originalFileName } }));
+      toastManager.success($t('downloading_asset_filename', { values: { filename } }));
       downloadUrl(
         getBaseUrl() +
           `/assets/${id}/original` +
