@@ -435,9 +435,19 @@ extension PlatformToLocalAsset on PlatformAsset {
     durationInSeconds: durationInSeconds,
     isFavorite: isFavorite,
     orientation: orientation,
+    playbackStyle: _toPlaybackStyle(playbackStyle),
     adjustmentTime: tryFromSecondsSinceEpoch(adjustmentTime, isUtc: true),
     latitude: latitude,
     longitude: longitude,
     isEdited: false,
   );
 }
+
+AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {
+  PlatformAssetPlaybackStyle.unknown => AssetPlaybackStyle.unknown,
+  PlatformAssetPlaybackStyle.image => AssetPlaybackStyle.image,
+  PlatformAssetPlaybackStyle.video => AssetPlaybackStyle.video,
+  PlatformAssetPlaybackStyle.imageAnimated => AssetPlaybackStyle.imageAnimated,
+  PlatformAssetPlaybackStyle.livePhoto => AssetPlaybackStyle.livePhoto,
+  PlatformAssetPlaybackStyle.videoLooping => AssetPlaybackStyle.videoLooping,
+};

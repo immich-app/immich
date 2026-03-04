@@ -12,7 +12,8 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId);
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: false);
+    // Android always returns encoded data, so we need to check for both shapes of the response.
     final frame = switch (info) {
       {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
       {'pointer': int pointer, 'width': int width, 'height': int height, 'rowBytes': int rowBytes} =>
@@ -20,6 +21,19 @@ class RemoteImageRequest extends ImageRequest {
       _ => null,
     };
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
+  }
+
+  @override
+  Future<ui.Codec?> loadCodec() async {
+    if (_isCancelled) {
+      return null;
+    }
+
+    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: true);
+    if (info == null) return null;
+
+    final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);
+    return codec;
   }
 
   @override

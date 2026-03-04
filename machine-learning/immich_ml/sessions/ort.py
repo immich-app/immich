@@ -8,7 +8,7 @@ import onnxruntime as ort
 from numpy.typing import NDArray
 
 from immich_ml.models.constants import SUPPORTED_PROVIDERS
-from immich_ml.schemas import SessionNode
+from immich_ml.schemas import ModelPrecision, SessionNode
 
 from ..config import log, settings
 
@@ -90,8 +90,17 @@ class OrtSession:
             match provider:
                 case "CPUExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested"}
-                case "CUDAExecutionProvider" | "ROCMExecutionProvider":
+                case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
+                case "MIGraphXExecutionProvider":
+                    migraphx_dir = self.model_path.parent / "migraphx"
+                    # MIGraphX does not create the underlying folder and will crash if it does not exist
+                    migraphx_dir.mkdir(parents=True, exist_ok=True)
+                    options = {
+                        "device_id": settings.device_id,
+                        "migraphx_model_cache_dir": migraphx_dir.as_posix(),
+                        "migraphx_fp16_enable": "1" if settings.rocm_precision == ModelPrecision.FP16 else "0",
+                    }
                 case "OpenVINOExecutionProvider":
                     openvino_dir = self.model_path.parent / "openvino"
                     device = f"GPU.{settings.device_id}"

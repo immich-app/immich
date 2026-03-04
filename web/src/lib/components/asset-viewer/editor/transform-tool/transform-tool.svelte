@@ -134,7 +134,7 @@
             ></div>
           {/if}
         </Button>
-        <span class="text-sm text-white text-left">{ratio.label}</span>
+        <span class="text-sm text-white">{ratio.label}</span>
       </HStack>
     {/each}
   </div>

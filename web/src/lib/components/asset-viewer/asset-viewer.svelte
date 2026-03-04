@@ -1,12 +1,10 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -14,7 +12,6 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
-  import { Route } from '$lib/route';
   import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -30,7 +27,6 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
-    getAllAlbums,
     getAssetInfo,
     getStack,
     type AlbumResponseDto,
@@ -105,7 +101,6 @@
   const asset = $derived(cursor.current);
   const nextAsset = $derived(cursor.nextAsset);
   const previousAsset = $derived(cursor.previousAsset);
-  let appearsInAlbums: AlbumResponseDto[] = $state([]);
   let sharedLink = getSharedLink();
   let previewStackedAsset: AssetResponseDto | undefined = $state();
   let fullscreenElement = $state<Element>();
@@ -147,7 +142,7 @@
     }
   };
 
-  onMount(async () => {
+  onMount(() => {
     syncAssetViewerOpenClass(true);
     unsubscribes.push(
       slideshowState.subscribe((value) => {
@@ -166,8 +161,6 @@
         }
       }),
     );
-
-    await onAlbumAddAssets();
   });
 
   onDestroy(() => {
@@ -179,18 +172,6 @@
     assetViewerManager.closeEditor();
     syncAssetViewerOpenClass(false);
   });
-
-  const onAlbumAddAssets = async () => {
-    if (authManager.isSharedLink) {
-      return;
-    }
-
-    try {
-      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
-    } catch (error) {
-      console.error('Error getting album that asset belong to', error);
-    }
-  };
 
   const closeViewer = () => {
     onClose?.(asset);
@@ -363,7 +344,6 @@
 
   const refresh = async () => {
     await refreshStack();
-    await onAlbumAddAssets();
     ocrManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
@@ -379,21 +359,6 @@
     imageManager.preload(cursor.nextAsset);
     imageManager.preload(cursor.previousAsset);
   });
-
-  const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
-    if (oldAssetId !== asset.id) {
-      return;
-    }
-
-    await new Promise((promise) => setTimeout(promise, 500));
-    await goto(Route.viewAsset({ id: newAssetId }));
-  };
-
-  const onAssetUpdate = (update: AssetResponseDto) => {
-    if (asset.id === update.id) {
-      cursor = { ...cursor, current: update };
-    }
-  };
 
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
@@ -441,7 +406,6 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
-<OnEvents {onAssetReplace} {onAssetUpdate} {onAlbumAddAssets} />
 
 <svelte:document bind:fullscreenElement />
 
@@ -586,7 +550,7 @@
     >
       {#if showDetailPanel}
         <div class="w-90 h-full">
-          <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} />
+          <DetailPanel {asset} currentAlbum={album} />
         </div>
       {:else if assetViewerManager.isShowEditor}
         <div class="w-100 h-full">

@@ -18,9 +18,10 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -36,11 +37,11 @@
   import { ActionButton, CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiArrowRight,
     mdiCompare,
     mdiDotsVertical,
     mdiImageSearch,
     mdiPresentationPlay,
-    mdiUpload,
     mdiVideoOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -84,7 +85,7 @@
   const Close: ActionItem = $derived({
     title: $t('go_back'),
     type: $t('assets'),
-    icon: mdiArrowLeft,
+    icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
     $if: () => !!onClose,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
@@ -168,11 +169,6 @@
         {#if !isLocked}
           {#if isOwner}
             <ArchiveAction {asset} {onAction} {preAction} />
-            <MenuOption
-              icon={mdiUpload}
-              onClick={() => handleReplaceAsset(asset.id)}
-              text={$t('replace_with_upload')}
-            />
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}

@@ -17,6 +17,6 @@
     "esModuleInterop": true,
     "baseUrl": "./"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "vitest*.config.ts"],
   "exclude": ["dist", "node_modules"]
 }

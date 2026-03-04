@@ -107,7 +107,7 @@
   <span class="pe-2 pt-2 drop-shadow-[1px_1px_6px_rgb(0_0_0)]" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
     {#if enablePlayback}
       {#if loading}
-        <LoadingSpinner />
+        <LoadingSpinner size="large" />
       {:else if error}
         <Icon icon={mdiAlertCircleOutline} size="24" class="text-red-600" />
       {:else}

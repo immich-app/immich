@@ -79,6 +79,7 @@ class Settings(BaseSettings):
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
     openvino_precision: ModelPrecision = ModelPrecision.FP32
+    rocm_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
     def device_id(self) -> str:

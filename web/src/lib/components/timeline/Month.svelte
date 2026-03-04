@@ -54,7 +54,6 @@
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
-  {@const absoluteWidth = dayGroup.left}
   {@const isDayGroupSelected = assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
@@ -64,7 +63,8 @@
     ]}
     data-group
     style:position="absolute"
-    style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
+    style:inset-inline-start={dayGroup.start + 'px'}
+    style:top={dayGroup.top + 'px'}
     onmouseenter={() => (hoveredDayGroup = dayGroup.groupTitle)}
     onmouseleave={() => (hoveredDayGroup = null)}
   >

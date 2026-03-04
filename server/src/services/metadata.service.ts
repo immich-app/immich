@@ -301,7 +301,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -451,7 +451,7 @@ export class MetadataService extends BaseService {
         dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
-        rating: asset.exifInfo.rating,
+        rating: asset.exifInfo.rating ?? 0,
         tags: asset.exifInfo.tags,
         timeZone: asset.exifInfo.timeZone,
       },

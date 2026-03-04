@@ -158,12 +158,14 @@ export class StorageTemplateService extends BaseService {
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
-      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+      const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+        includeHidden: true,
+      });
       if (!livePhotoVideo) {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
     }
     return JobStatus.Success;
   }
@@ -191,10 +193,12 @@ export class StorageTemplateService extends BaseService {
 
       // move motion part of live photo
       if (asset.livePhotoVideoId) {
-        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId);
+        const livePhotoVideo = await this.assetJobRepository.getForStorageTemplateJob(asset.livePhotoVideoId, {
+          includeHidden: true,
+        });
         if (livePhotoVideo) {
           const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename });
+          await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
         }
       }
     }
@@ -214,7 +218,7 @@ export class StorageTemplateService extends BaseService {
     await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
 
-  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata) {
+  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata, stillPhoto?: StorageAsset) {
     if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
@@ -224,7 +228,7 @@ export class StorageTemplateService extends BaseService {
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
       const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
-      const newPath = await this.getTemplatePath(asset, metadata);
+      const newPath = await this.getTemplatePath(asset, metadata, stillPhoto);
 
       if (!fileSizeInByte) {
         this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);
@@ -255,7 +259,11 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
-  private async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
+  private async getTemplatePath(
+    asset: StorageAsset,
+    metadata: MoveAssetMetadata,
+    stillPhoto?: StorageAsset,
+  ): Promise<string> {
     const { storageLabel, filename } = metadata;
 
     try {
@@ -296,8 +304,12 @@ export class StorageTemplateService extends BaseService {
       let albumName = null;
       let albumStartDate = null;
       let albumEndDate = null;
+      const assetForMetadata = stillPhoto || asset;
+
       if (this.template.needsAlbum) {
-        const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
+        // For motion videos, use the still photo's album information since motion videos
+        // don't have album metadata attached directly
+        const albums = await this.albumRepository.getByAssetId(assetForMetadata.ownerId, assetForMetadata.id);
         const album = albums?.[0];
         if (album) {
           albumName = album.albumName || null;
@@ -310,16 +322,18 @@ export class StorageTemplateService extends BaseService {
         }
       }
 
+      // For motion videos that are part of live photos, use the still photo's date
+      // to ensure both parts end up in the same folder
       const storagePath = this.render(this.template.compiled, {
-        asset,
+        asset: assetForMetadata,
         filename: sanitized,
         extension,
         albumName,
         albumStartDate,
         albumEndDate,
-        make: asset.make,
-        model: asset.model,
-        lensModel: asset.lensModel,
+        make: assetForMetadata.make,
+        model: assetForMetadata.model,
+        lensModel: assetForMetadata.lensModel,
       });
       const fullPath = path.normalize(path.join(rootPath, storagePath));
       let destination = `${fullPath}.${extension}`;

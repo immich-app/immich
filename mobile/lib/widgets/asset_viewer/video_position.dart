@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/formatted_duration.dart';
 
 class VideoPosition extends HookConsumerWidget {
-  const VideoPosition({super.key});
+  final String videoPlayerName;
+
+  const VideoPosition({super.key, required this.videoPlayerName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,7 +19,7 @@ class VideoPosition extends HookConsumerWidget {
 
     final (position, duration) = isCasting
         ? ref.watch(castProvider.select((c) => (c.currentTime, c.duration)))
-        : ref.watch(videoPlaybackValueProvider.select((v) => (v.position, v.duration)));
+        : ref.watch(videoPlayerProvider(videoPlayerName).select((v) => (v.position, v.duration)));
 
     final wasPlaying = useRef<bool>(true);
     return duration == Duration.zero
@@ -44,13 +45,13 @@ class VideoPosition extends HookConsumerWidget {
                       activeColor: Colors.white,
                       inactiveColor: whiteOpacity75,
                       onChangeStart: (value) {
-                        final state = ref.read(videoPlaybackValueProvider).state;
-                        wasPlaying.value = state != VideoPlaybackState.paused;
-                        ref.read(videoPlayerControlsProvider.notifier).pause();
+                        final status = ref.read(videoPlayerProvider(videoPlayerName)).status;
+                        wasPlaying.value = status != VideoPlaybackStatus.paused;
+                        ref.read(videoPlayerProvider(videoPlayerName).notifier).pause();
                       },
                       onChangeEnd: (value) {
                         if (wasPlaying.value) {
-                          ref.read(videoPlayerControlsProvider.notifier).play();
+                          ref.read(videoPlayerProvider(videoPlayerName).notifier).play();
                         }
                       },
                       onChanged: (value) {
@@ -61,10 +62,7 @@ class VideoPosition extends HookConsumerWidget {
                           return;
                         }
 
-                        ref.read(videoPlayerControlsProvider.notifier).position = seekToDuration;
-
-                        // This immediately updates the slider position without waiting for the video to update
-                        ref.read(videoPlaybackValueProvider.notifier).position = seekToDuration;
+                        ref.read(videoPlayerProvider(videoPlayerName).notifier).seekTo(seekToDuration);
                       },
                     ),
                   ),

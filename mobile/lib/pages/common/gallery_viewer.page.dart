@@ -20,7 +20,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -367,9 +366,6 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = 0;
 
                 ref.read(currentAssetProvider.notifier).set(newAsset);
-                if (newAsset.isVideo || newAsset.isMotionPhoto) {
-                  ref.read(videoPlaybackValueProvider.notifier).reset();
-                }
 
                 // Wait for page change animation to finish, then precache the next image
                 Timer(const Duration(milliseconds: 400), () {

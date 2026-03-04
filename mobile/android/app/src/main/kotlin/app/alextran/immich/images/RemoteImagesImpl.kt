@@ -51,6 +51,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     url: String,
     headers: Map<String, String>,
     requestId: Long,
+    @Suppress("UNUSED_PARAMETER") preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
