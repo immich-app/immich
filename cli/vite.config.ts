@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, UserConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
@@ -17,4 +17,8 @@ export default defineConfig({
     noExternal: /^(?!node:).*$/,
   },
   plugins: [tsconfigPaths()],
-});
+  test: {
+    name: 'cli:unit',
+    globals: true,
+  },
+} as UserConfig);

@@ -7,6 +7,7 @@ import android.database.Cursor
 import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
+import android.os.ext.SdkExtensions
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
@@ -78,15 +79,22 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
       }
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (hasSpecialFormatColumn()) {
         add(SPECIAL_FORMAT_COLUMN)
       } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         // Fallback: read XMP from MediaStore to detect Motion Photos
+        // only needed if SPECIAL_FORMAT column isn't available
         add(MediaStore.MediaColumns.XMP)
       }
     }.toTypedArray()
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
+
+    // _special_format requires S Extensions 21+
+    // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
+    private fun hasSpecialFormatColumn(): Boolean =
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+        SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21
   }
 
   protected fun getCursor(

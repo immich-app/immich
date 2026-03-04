@@ -24,8 +24,7 @@ jobs:
           persist-credentials: false
 
       - name: Check for breaking API changes
-        # sha is pinning to a commit instead of a tag since the action does not tag versions
-        uses: oasdiff/oasdiff-action/breaking@ccb863950ce437a50f8f1a40d2a1112117e06ce4
+        uses: oasdiff/oasdiff-action/breaking@65fef71494258f00f911d7a71edb0482c5378899 # v0.0.30
         with:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json
