@@ -1,12 +1,10 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
-  import OnEvents from '$lib/components/OnEvents.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -14,7 +12,6 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { imageManager } from '$lib/managers/ImageManager.svelte';
-  import { Route } from '$lib/route';
   import { getAssetActions } from '$lib/services/asset.service';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -363,21 +360,6 @@
     imageManager.preload(cursor.previousAsset);
   });
 
-  const onAssetReplace = async ({ oldAssetId, newAssetId }: { oldAssetId: string; newAssetId: string }) => {
-    if (oldAssetId !== asset.id) {
-      return;
-    }
-
-    await new Promise((promise) => setTimeout(promise, 500));
-    await goto(Route.viewAsset({ id: newAssetId }));
-  };
-
-  const onAssetUpdate = (update: AssetResponseDto) => {
-    if (asset.id === update.id) {
-      cursor = { ...cursor, current: update };
-    }
-  };
-
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
       return asset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
@@ -424,7 +406,6 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
-<OnEvents {onAssetReplace} {onAssetUpdate} />
 
 <svelte:document bind:fullscreenElement />
 

@@ -21,7 +21,7 @@
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -42,7 +42,6 @@
     mdiDotsVertical,
     mdiImageSearch,
     mdiPresentationPlay,
-    mdiUpload,
     mdiVideoOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -170,11 +169,6 @@
         {#if !isLocked}
           {#if isOwner}
             <ArchiveAction {asset} {onAction} {preAction} />
-            <MenuOption
-              icon={mdiUpload}
-              onClick={() => handleReplaceAsset(asset.id)}
-              text={$t('replace_with_upload')}
-            />
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
