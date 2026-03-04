@@ -144,7 +144,7 @@
       type = AssetTypeEnum.Video;
     }
 
-    const query = filter.query || undefined;
+    const query = filter.query.trim() || undefined;
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,

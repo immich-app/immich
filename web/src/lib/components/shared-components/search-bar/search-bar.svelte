@@ -77,32 +77,38 @@
   };
 
   const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
+    const normalizedTerm = term.trim();
     const searchType = getSearchType();
     switch (searchType) {
       case 'smart': {
-        return { query: term };
+        return { query: normalizedTerm };
       }
       case 'metadata': {
-        return { originalFileName: term };
+        return { originalFileName: normalizedTerm };
       }
       case 'description': {
-        return { description: term };
+        return { description: normalizedTerm };
       }
       case 'fullPath': {
-        return { originalPath: term };
+        return { originalPath: normalizedTerm };
       }
       case 'ocr': {
-        return { ocr: term };
+        return { ocr: normalizedTerm };
       }
       default: {
-        return { query: term };
+        return { query: normalizedTerm };
       }
     }
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
-    value = searchTerm;
-    await handleSearch(buildSearchPayload(searchTerm));
+    const normalizedTerm = searchTerm.trim();
+    if (!normalizedTerm) {
+      return;
+    }
+
+    value = normalizedTerm;
+    await handleSearch(buildSearchPayload(normalizedTerm));
   };
 
   const onFilterClick = async () => {
@@ -134,8 +140,14 @@
   };
 
   const onSubmit = () => {
-    handlePromiseError(handleSearch(buildSearchPayload(value)));
-    saveSearchTerm(value);
+    const searchTerm = value.trim();
+    if (!searchTerm) {
+      return;
+    }
+
+    value = searchTerm;
+    handlePromiseError(handleSearch(buildSearchPayload(searchTerm)));
+    saveSearchTerm(searchTerm);
   };
 
   const onClear = () => {
