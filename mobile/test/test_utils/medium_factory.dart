@@ -27,6 +27,7 @@ class MediumFactory {
       type: type ?? AssetType.image,
       createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
       updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
+      playbackStyle: AssetPlaybackStyle.image,
       isEdited: false,
     );
   }

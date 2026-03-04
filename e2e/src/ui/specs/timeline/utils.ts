@@ -102,9 +102,9 @@ export const thumbnailUtils = {
   async expectThumbnailIsNotArchive(page: Page, assetId: string) {
     await expect(thumbnailUtils.withAssetId(page, assetId).locator('[data-icon-archive]')).toHaveCount(0);
   },
-  async expectSelectedReadonly(page: Page, assetId: string) {
+  async expectSelectedDisabled(page: Page, assetId: string) {
     await expect(
-      page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"][data-selected]`),
+      page.locator(`[data-thumbnail-focus-container][data-asset="${assetId}"][data-selected][data-disabled]`),
     ).toBeVisible();
   },
   async expectTimelineHasOnScreenAssets(page: Page) {

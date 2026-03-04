@@ -14,6 +14,7 @@ import android.util.Size
 import androidx.annotation.RequiresApi
 import app.alextran.immich.NativeBuffer
 import kotlin.math.*
+import java.io.IOException
 import java.util.concurrent.Executors
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
@@ -99,12 +100,17 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     width: Long,
     height: Long,
     isVideo: Boolean,
+    preferEncoded: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
     val task = threadPool.submit {
       try {
-        getThumbnailBufferInternal(assetId, width, height, isVideo, callback, signal)
+        if (preferEncoded) {
+          getEncodedImageInternal(assetId, callback, signal)
+        } else {
+          getThumbnailBufferInternal(assetId, width, height, isVideo, callback, signal)
+        }
       } catch (e: Exception) {
         when (e) {
           is OperationCanceledException -> callback(CANCELLED)
@@ -130,6 +136,35 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
         } catch (_: Exception) {
         }
       }
+    }
+  }
+
+  private fun getEncodedImageInternal(
+    assetId: String,
+    callback: (Result<Map<String, Long>?>) -> Unit,
+    signal: CancellationSignal
+  ) {
+    signal.throwIfCanceled()
+    val id = assetId.toLong()
+    val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
+
+    signal.throwIfCanceled()
+    val bytes = resolver.openInputStream(uri)?.use { it.readBytes() }
+      ?: throw IOException("Could not read image data for $assetId")
+
+    signal.throwIfCanceled()
+    val pointer = NativeBuffer.allocate(bytes.size)
+    try {
+      val buffer = NativeBuffer.wrap(pointer, bytes.size)
+      buffer.put(bytes)
+      signal.throwIfCanceled()
+      callback(Result.success(mapOf(
+        "pointer" to pointer,
+        "length" to bytes.size.toLong()
+      )))
+    } catch (e: Exception) {
+      NativeBuffer.free(pointer)
+      throw e
     }
   }
 

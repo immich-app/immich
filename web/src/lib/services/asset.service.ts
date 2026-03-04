@@ -106,7 +106,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     title: $t('share'),
     icon: mdiShareVariantOutline,
     type: $t('assets'),
-    $if: () => !!(get(authUser) && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
+    $if: () => !!(currentAuthUser && !asset.isTrashed && asset.visibility !== AssetVisibility.Locked),
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds: [asset.id] }),
   };
 
@@ -129,7 +129,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
 
   const SharedLinkDownload: ActionItem = {
     ...Download,
-    $if: () => !currentAuthUser && sharedLink && sharedLink.allowDownload,
+    $if: () => isOwner || !!sharedLink?.allowDownload,
   };
 
   const PlayMotionPhoto: ActionItem = {

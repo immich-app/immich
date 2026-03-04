@@ -8,10 +8,9 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -22,7 +21,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
+    final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     if (asset == null) {
       return const SizedBox.shrink();
     }
@@ -35,16 +34,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
-    double opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
-    final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
       ref.watch(albumActivityProvider(album.id, asset.id));
     }
 
-    if (!showControls) {
-      opacity = 0.0;
-    }
+    final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
 

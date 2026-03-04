@@ -70,7 +70,7 @@ class RemoteImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable 
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RemoteImageApi {
-  func requestImage(url: String, headers: [String: String], requestId: Int64, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
+  func requestImage(url: String, headers: [String: String], requestId: Int64, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
   func cancelRequest(requestId: Int64) throws
   func clearCache(completion: @escaping (Result<Int64, Error>) -> Void)
 }
@@ -88,7 +88,8 @@ class RemoteImageApiSetup {
         let urlArg = args[0] as! String
         let headersArg = args[1] as! [String: String]
         let requestIdArg = args[2] as! Int64
-        api.requestImage(url: urlArg, headers: headersArg, requestId: requestIdArg) { result in
+        let preferEncodedArg = args[3] as! Bool
+        api.requestImage(url: urlArg, headers: headersArg, requestId: requestIdArg, preferEncoded: preferEncodedArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))

@@ -11,6 +11,10 @@ enum AssetType {
 
 enum AssetState { local, remote, merged }
 
+// do not change!
+// keep in sync with PlatformAssetPlaybackStyle
+enum AssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
+
 sealed class BaseAsset {
   final String name;
   final String? checksum;
@@ -42,6 +46,14 @@ sealed class BaseAsset {
   bool get isVideo => type == AssetType.video;
 
   bool get isMotionPhoto => livePhotoVideoId != null;
+
+  AssetPlaybackStyle get playbackStyle {
+    if (isVideo) return AssetPlaybackStyle.video;
+    if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
+    if (isImage && durationInSeconds != null && durationInSeconds! > 0) return AssetPlaybackStyle.imageAnimated;
+    if (isImage) return AssetPlaybackStyle.image;
+    return AssetPlaybackStyle.unknown;
+  }
 
   Duration get duration {
     final durationInSeconds = this.durationInSeconds;

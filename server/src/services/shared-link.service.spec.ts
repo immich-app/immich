@@ -69,8 +69,9 @@ describe(SharedLinkService.name, () => {
 
     it('should accept a valid shared link auth token', async () => {
       mocks.sharedLink.get.mockResolvedValue({ ...sharedLinkStub.individual, password: '123' });
-      mocks.crypto.hashSha256.mockReturnValue('hashed-auth-token');
-      await expect(sut.getMine(authStub.adminSharedLink, ['hashed-auth-token'])).resolves.toBeDefined();
+      const secret = Buffer.from('auth-token-123');
+      mocks.crypto.hashSha256.mockReturnValue(secret);
+      await expect(sut.getMine(authStub.adminSharedLink, [secret.toString('base64')])).resolves.toBeDefined();
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(
         authStub.adminSharedLink.user.id,
         authStub.adminSharedLink.sharedLink?.id,

@@ -18,6 +18,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
@@ -36,6 +37,7 @@
   import { ActionButton, CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiArrowRight,
     mdiCompare,
     mdiDotsVertical,
     mdiImageSearch,
@@ -84,7 +86,7 @@
   const Close: ActionItem = $derived({
     title: $t('go_back'),
     type: $t('assets'),
-    icon: mdiArrowLeft,
+    icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
     $if: () => !!onClose,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],

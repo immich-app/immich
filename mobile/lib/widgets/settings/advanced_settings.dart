@@ -135,7 +135,7 @@ class AdvancedSettings extends HookConsumerWidget {
           title: "advanced_settings_enable_alternate_media_filter_title".tr(),
           subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
         ),
-      const BetaTimelineListTile(),
+      if (!Store.isBetaTimelineEnabled) const BetaTimelineListTile(),
       if (Store.isBetaTimelineEnabled)
         SettingsSwitchListTile(
           valueNotifier: readonlyModeEnabled,

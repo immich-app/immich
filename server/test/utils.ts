@@ -1,3 +1,4 @@
+import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -9,7 +10,6 @@ import multer from 'multer';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Duplex, Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
-import postgres from 'postgres';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
@@ -70,7 +70,7 @@ import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
-import { asPostgresConnectionConfig, getKyselyConfig } from 'src/utils/database';
+import { getKyselyConfig } from 'src/utils/database';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -445,13 +445,8 @@ const withDatabase = (url: string, name: string) => url.replace(`/${templateName
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
-  const sql = postgres({
-    ...asPostgresConnectionConfig({
-      connectionType: 'url',
-      url: withDatabase(testUrl, 'postgres'),
-    }),
-    max: 1,
-  });
+  const connection = { connectionType: 'url', url: withDatabase(testUrl, 'postgres') } as DatabaseConnectionParams;
+  const sql = createPostgres({ maxConnections: 1, connection });
 
   const randomSuffix = Math.random().toString(36).slice(2, 7);
   const dbName = `immich_${suffix ?? randomSuffix}`;

@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -321,26 +323,32 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).watchSingleOrNull();
   }
 
-  Future<DateTime?> getNewestAssetTimestamp(String albumId) {
-    final query = _db.remoteAlbumAssetEntity.selectOnly()
-      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.localDateTime.max()])
-      ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
-      ]);
+  Future<List<String>> getSortedAlbumIds(List<String> albumIds, {required AssetDateAggregation aggregation}) async {
+    if (albumIds.isEmpty) return [];
 
-    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.max())).getSingleOrNull();
-  }
+    final jsonIds = jsonEncode(albumIds);
+    final sqlAgg = aggregation == AssetDateAggregation.start ? 'MIN' : 'MAX';
 
-  Future<DateTime?> getOldestAssetTimestamp(String albumId) {
-    final query = _db.remoteAlbumAssetEntity.selectOnly()
-      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.localDateTime.min()])
-      ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
-      ]);
+    final rows = await _db
+        .customSelect(
+          '''
+          SELECT
+            raae.album_id,
+            $sqlAgg(rae.local_date_time) AS asset_date
+          FROM json_each(?) ids
+          INNER JOIN remote_album_asset_entity raae
+            ON raae.album_id = ids.value
+          INNER JOIN remote_asset_entity rae
+            ON rae.id = raae.asset_id
+          GROUP BY raae.album_id
+          ORDER BY asset_date ASC
+          ''',
+          variables: [Variable<String>(jsonIds)],
+          readsFrom: {_db.remoteAlbumAssetEntity, _db.remoteAssetEntity},
+        )
+        .get();
 
-    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.min())).getSingleOrNull();
+    return rows.map((row) => row.read<String>('album_id')).toList();
   }
 
   Future<int> getCount() {

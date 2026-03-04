@@ -85,6 +85,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             durationInSeconds: Value(item.asset.durationInSeconds),
             isFavorite: Value(item.asset.isFavorite),
             orientation: Value(item.asset.orientation),
+            playbackStyle: Value(item.asset.playbackStyle),
             source: TrashOrigin.localSync,
           );
 
@@ -147,6 +148,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             durationInSeconds: Value(asset.durationInSeconds),
             isFavorite: Value(asset.isFavorite),
             orientation: Value(asset.orientation),
+            playbackStyle: Value(asset.playbackStyle),
             createdAt: Value(asset.createdAt),
             updatedAt: Value(asset.updatedAt),
             source: const Value(TrashOrigin.remoteSync),
@@ -195,6 +197,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         checksum: Value(e.checksum),
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
+        playbackStyle: Value(e.playbackStyle),
       );
     });
 
@@ -245,6 +248,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         checksum: Value(e.asset.checksum),
         isFavorite: Value(e.asset.isFavorite),
         orientation: Value(e.asset.orientation),
+        playbackStyle: Value(e.asset.playbackStyle),
         source: TrashOrigin.localUser,
         albumId: e.albumId,
       );

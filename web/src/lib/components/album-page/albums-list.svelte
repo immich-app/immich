@@ -46,6 +46,7 @@
     userSettings,
     allowEdit = false,
     showOwner = false,
+    // eslint-disable-next-line no-useless-assignment
     albumGroupIds = $bindable([]),
     empty,
   }: Props = $props();

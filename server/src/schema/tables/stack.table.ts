@@ -1,7 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { stack_delete_audit } from 'src/schema/functions';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   CreateDateColumn,
@@ -11,7 +7,11 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { stack_delete_audit } from 'src/schema/functions';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('stack')
 @UpdatedAtTrigger('stack_updatedAt')

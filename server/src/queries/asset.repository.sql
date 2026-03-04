@@ -123,13 +123,13 @@ with
           ) as "year"
       )
     select
-      "a".*,
-      to_json("asset_exif") as "exifInfo"
+      "a".*
     from
       "today"
       inner join lateral (
         select
-          "asset".*
+          "asset"."id",
+          "asset"."localDateTime"
         from
           "asset"
           inner join "asset_job_status" on "asset"."id" = "asset_job_status"."assetId"
@@ -151,7 +151,6 @@ with
         limit
           $7
       ) as "a" on true
-      inner join "asset_exif" on "a"."id" = "asset_exif"."assetId"
   )
 select
   date_part(

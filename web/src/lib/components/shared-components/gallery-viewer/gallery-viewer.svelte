@@ -45,6 +45,7 @@
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
     arrowNavigation?: boolean;
+    allowDeletion?: boolean;
   };
 
   let {
@@ -60,6 +61,7 @@
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
     arrowNavigation = true,
+    allowDeletion = true,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset } = assetViewingStore;
@@ -273,11 +275,15 @@
       if (assetInteraction.selectionActive) {
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
-          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+          { shortcut: { key: 'D', ctrl: true }, onShortcut: deselectAllAssets },
         );
+        if (allowDeletion) {
+          shortcuts.push(
+            { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+            { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+            { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+          );
+        }
       }
 
       return shortcuts;

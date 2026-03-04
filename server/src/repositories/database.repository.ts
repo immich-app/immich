@@ -1,3 +1,4 @@
+import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
@@ -21,7 +22,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
-import { schemaDiff, schemaFromCode, schemaFromDatabase } from 'src/sql-tools';
+import { immich_uuid_v7 } from 'src/schema/functions';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
@@ -288,8 +289,13 @@ export class DatabaseRepository {
   }
 
   async getSchemaDrift() {
-    const source = schemaFromCode({ overrides: true, namingStrategy: 'default' });
-    const target = await schemaFromDatabase(this.db, {});
+    const source = schemaFromCode({
+      overrides: true,
+      namingStrategy: 'default',
+      uuidFunction: (version) => (version === 7 ? `${immich_uuid_v7.name}()` : 'uuid_generate_v4()'),
+    });
+    const { database } = this.configRepository.getEnv();
+    const target = await schemaFromDatabase({ connection: database.config });
 
     const drift = schemaDiff(source, target, {
       tables: { ignoreExtra: true },

@@ -50,6 +50,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
+    // eslint-disable-next-line no-useless-assignment
     scrubberWidth = $bindable(),
   }: Props = $props();
 
