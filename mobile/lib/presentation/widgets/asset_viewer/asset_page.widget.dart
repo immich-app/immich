@@ -6,7 +6,6 @@ import 'package:flutter/gestures.dart' show Drag, kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -275,25 +274,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     });
   }
 
-  static bool _isFlipped(BaseAsset asset) =>
-      asset is LocalAsset && CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
-
-  static Size? _assetSize(BaseAsset asset) {
-    if (asset.width == null || asset.height == null) return null;
-
-    final w = asset.width!.toDouble();
-    final h = asset.height!.toDouble();
-    return _isFlipped(asset) ? Size(h, w) : Size(w, h);
-  }
-
   double _getImageHeight(double maxWidth, double maxHeight, BaseAsset? asset) {
     final sb = _viewController?.scaleBoundaries;
     if (sb != null) return sb.childSize.height * sb.initialScale;
 
-    final size = asset != null ? _assetSize(asset) : null;
-    if (size == null) return maxHeight;
+    if (asset == null || asset.width == null || asset.height == null) return maxHeight;
 
-    final r = size.width / size.height;
+    final r = asset.width! / asset.height!;
     return math.min(maxWidth / r, maxHeight);
   }
 
@@ -342,7 +329,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     return PhotoView.customChild(
       key: Key(asset.heroTag),
-      childSize: _assetSize(asset),
+      childSize: asset.width != null && asset.height != null
+          ? Size(asset.width!.toDouble(), asset.height!.toDouble())
+          : null,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
