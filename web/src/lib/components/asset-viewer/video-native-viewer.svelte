@@ -60,6 +60,7 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     if (assetFileUrl) {
+      hasFocused = false;
       videoPlayer?.load();
     }
   });
@@ -152,6 +153,7 @@
         onseeking={() => (isScrubbing = true)}
         onseeked={() => (isScrubbing = false)}
         onplaying={(e) => {
+          console.log(`playing - ${hasFocused ? 'focused' : ''}`);
           if (!hasFocused) {
             e.currentTarget.focus();
             hasFocused = true;
