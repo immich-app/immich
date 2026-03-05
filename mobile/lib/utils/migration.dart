@@ -417,7 +417,8 @@ Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
     }
 
     final trashedAssetMap = await nativeApi.getTrashedAssets();
-    for (final assets in trashedAssetMap.values) {
+    for (final entry in trashedAssetMap.cast<String, List<Object?>>().entries) {
+      final assets = entry.value.cast<PlatformAsset>();
       await db.batch((batch) {
         for (final asset in assets) {
           batch.update(
