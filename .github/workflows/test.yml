@@ -62,9 +62,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
@@ -84,7 +81,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Run ci-unit
-        run: mise run ci-unit
+        run: mise run //server:ci-unit
 
   cli-unit-tests:
     name: Unit Test CLI
@@ -380,7 +377,7 @@ jobs:
           cache-dependency-path: '**/pnpm-lock.yaml'
 
       - name: Setup packages
-        run: pnpm --filter "@immich/*" install --frozen-lockfile && pnpm --filter "@immich/*" build
+        run: pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && pnpm --filter @immich/sdk --filter @immich/cli build
 
       - name: Run setup web
         run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
@@ -678,7 +675,6 @@ jobs:
 
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
-
       - name: Run API generation
         run: mise //:open-api
         working-directory: open-api
@@ -717,9 +713,6 @@ jobs:
           --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
@@ -741,18 +734,21 @@ jobs:
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
 
+      - name: Build plugins
+        run: mise //:plugins
+
       - name: Build the app
-        run: pnpm build
+        run: mise //server:build
 
       - name: Run existing migrations
-        run: pnpm migrations:run
+        run: pnpm --filter immich migrations:run
 
       - name: Test npm run schema:reset command works
-        run: pnpm schema:reset
+        run: pnpm --filter immich schema:reset
 
       - name: Generate new migrations
         continue-on-error: true
-        run: pnpm migrations:generate src/TestMigration
+        run: pnpm --filter migrations:generate src/TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -768,7 +764,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${CHANGED_FILES}"
-          cat ./src/*-TestMigration.ts
+          cat ./server/src/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

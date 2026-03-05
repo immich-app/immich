@@ -23,7 +23,7 @@
     showDateRange = false,
     showItemCount = false,
     preload = false,
-    onShowContextMenu = undefined,
+    onShowContextMenu,
   }: Props = $props();
 
   const showAlbumContextMenu = (e: MouseEvent) => {

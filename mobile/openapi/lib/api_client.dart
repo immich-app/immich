@@ -516,26 +516,10 @@ class ApiClient {
           return PinCodeSetupDto.fromJson(value);
         case 'PlacesResponseDto':
           return PlacesResponseDto.fromJson(value);
-        case 'PluginActionResponseDto':
-          return PluginActionResponseDto.fromJson(value);
-        case 'PluginContextType':
-          return PluginContextTypeTypeTransformer().decode(value);
-        case 'PluginFilterResponseDto':
-          return PluginFilterResponseDto.fromJson(value);
-        case 'PluginJsonSchema':
-          return PluginJsonSchema.fromJson(value);
-        case 'PluginJsonSchemaProperty':
-          return PluginJsonSchemaProperty.fromJson(value);
-        case 'PluginJsonSchemaPropertyAdditionalProperties':
-          return PluginJsonSchemaPropertyAdditionalProperties.fromJson(value);
-        case 'PluginJsonSchemaType':
-          return PluginJsonSchemaTypeTypeTransformer().decode(value);
+        case 'PluginMethodResponseDto':
+          return PluginMethodResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
-        case 'PluginTriggerResponseDto':
-          return PluginTriggerResponseDto.fromJson(value);
-        case 'PluginTriggerType':
-          return PluginTriggerTypeTypeTransformer().decode(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':
@@ -880,18 +864,22 @@ class ApiClient {
           return VideoCodecTypeTransformer().decode(value);
         case 'VideoContainer':
           return VideoContainerTypeTransformer().decode(value);
-        case 'WorkflowActionItemDto':
-          return WorkflowActionItemDto.fromJson(value);
-        case 'WorkflowActionResponseDto':
-          return WorkflowActionResponseDto.fromJson(value);
         case 'WorkflowCreateDto':
           return WorkflowCreateDto.fromJson(value);
-        case 'WorkflowFilterItemDto':
-          return WorkflowFilterItemDto.fromJson(value);
-        case 'WorkflowFilterResponseDto':
-          return WorkflowFilterResponseDto.fromJson(value);
         case 'WorkflowResponseDto':
           return WorkflowResponseDto.fromJson(value);
+        case 'WorkflowShareResponseDto':
+          return WorkflowShareResponseDto.fromJson(value);
+        case 'WorkflowShareStepDto':
+          return WorkflowShareStepDto.fromJson(value);
+        case 'WorkflowStepDto':
+          return WorkflowStepDto.fromJson(value);
+        case 'WorkflowTrigger':
+          return WorkflowTriggerTypeTransformer().decode(value);
+        case 'WorkflowTriggerResponseDto':
+          return WorkflowTriggerResponseDto.fromJson(value);
+        case 'WorkflowType':
+          return WorkflowTypeTypeTransformer().decode(value);
         case 'WorkflowUpdateDto':
           return WorkflowUpdateDto.fromJson(value);
         default:

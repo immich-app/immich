@@ -73,14 +73,40 @@ class PluginsApi {
     return null;
   }
 
-  /// List all plugin triggers
+  /// Retrieve plugin methods
   ///
-  /// Retrieve a list of all available plugin triggers.
+  /// Retrieve a list of plugin methods
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getPluginTriggersWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [String] description:
+  ///
+  /// * [bool] enabled:
+  ///   Whether the plugin method is enabled
+  ///
+  /// * [String] id:
+  ///   Plugin method ID
+  ///
+  /// * [String] name:
+  ///
+  /// * [String] pluginName:
+  ///   Plugin name
+  ///
+  /// * [String] pluginVersion:
+  ///   Plugin version
+  ///
+  /// * [String] title:
+  ///
+  /// * [WorkflowTrigger] trigger:
+  ///   Workflow trigger
+  ///
+  /// * [WorkflowType] type:
+  ///   Workflow types
+  Future<Response> searchPluginMethodsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
     // ignore: prefer_const_declarations
-    final apiPath = r'/plugins/triggers';
+    final apiPath = r'/plugins/methods';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -88,6 +114,34 @@ class PluginsApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (description != null) {
+      queryParams.addAll(_queryParams('', 'description', description));
+    }
+    if (enabled != null) {
+      queryParams.addAll(_queryParams('', 'enabled', enabled));
+    }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
+    if (pluginName != null) {
+      queryParams.addAll(_queryParams('', 'pluginName', pluginName));
+    }
+    if (pluginVersion != null) {
+      queryParams.addAll(_queryParams('', 'pluginVersion', pluginVersion));
+    }
+    if (title != null) {
+      queryParams.addAll(_queryParams('', 'title', title));
+    }
+    if (trigger != null) {
+      queryParams.addAll(_queryParams('', 'trigger', trigger));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
 
     const contentTypes = <String>[];
 
@@ -103,11 +157,37 @@ class PluginsApi {
     );
   }
 
-  /// List all plugin triggers
+  /// Retrieve plugin methods
   ///
-  /// Retrieve a list of all available plugin triggers.
-  Future<List<PluginTriggerResponseDto>?> getPluginTriggers() async {
-    final response = await getPluginTriggersWithHttpInfo();
+  /// Retrieve a list of plugin methods
+  ///
+  /// Parameters:
+  ///
+  /// * [String] description:
+  ///
+  /// * [bool] enabled:
+  ///   Whether the plugin method is enabled
+  ///
+  /// * [String] id:
+  ///   Plugin method ID
+  ///
+  /// * [String] name:
+  ///
+  /// * [String] pluginName:
+  ///   Plugin name
+  ///
+  /// * [String] pluginVersion:
+  ///   Plugin version
+  ///
+  /// * [String] title:
+  ///
+  /// * [WorkflowTrigger] trigger:
+  ///   Workflow trigger
+  ///
+  /// * [WorkflowType] type:
+  ///   Workflow types
+  Future<List<PluginMethodResponseDto>?> searchPluginMethods({ String? description, bool? enabled, String? id, String? name, String? pluginName, String? pluginVersion, String? title, WorkflowTrigger? trigger, WorkflowType? type, }) async {
+    final response = await searchPluginMethodsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, pluginName: pluginName, pluginVersion: pluginVersion, title: title, trigger: trigger, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -116,8 +196,8 @@ class PluginsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<PluginTriggerResponseDto>') as List)
-        .cast<PluginTriggerResponseDto>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<PluginMethodResponseDto>') as List)
+        .cast<PluginMethodResponseDto>()
         .toList(growable: false);
 
     }
@@ -129,7 +209,23 @@ class PluginsApi {
   /// Retrieve a list of plugins available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getPluginsWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [String] description:
+  ///
+  /// * [bool] enabled:
+  ///   Whether the plugin is enabled
+  ///
+  /// * [String] id:
+  ///   Plugin ID
+  ///
+  /// * [String] name:
+  ///
+  /// * [String] title:
+  ///
+  /// * [String] version:
+  Future<Response> searchPluginsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/plugins';
 
@@ -139,6 +235,25 @@ class PluginsApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (description != null) {
+      queryParams.addAll(_queryParams('', 'description', description));
+    }
+    if (enabled != null) {
+      queryParams.addAll(_queryParams('', 'enabled', enabled));
+    }
+    if (id != null) {
+      queryParams.addAll(_queryParams('', 'id', id));
+    }
+    if (name != null) {
+      queryParams.addAll(_queryParams('', 'name', name));
+    }
+    if (title != null) {
+      queryParams.addAll(_queryParams('', 'title', title));
+    }
+    if (version != null) {
+      queryParams.addAll(_queryParams('', 'version', version));
+    }
 
     const contentTypes = <String>[];
 
@@ -157,8 +272,24 @@ class PluginsApi {
   /// List all plugins
   ///
   /// Retrieve a list of plugins available to the authenticated user.
-  Future<List<PluginResponseDto>?> getPlugins() async {
-    final response = await getPluginsWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [String] description:
+  ///
+  /// * [bool] enabled:
+  ///   Whether the plugin is enabled
+  ///
+  /// * [String] id:
+  ///   Plugin ID
+  ///
+  /// * [String] name:
+  ///
+  /// * [String] title:
+  ///
+  /// * [String] version:
+  Future<List<PluginResponseDto>?> searchPlugins({ String? description, bool? enabled, String? id, String? name, String? title, String? version, }) async {
+    final response = await searchPluginsWithHttpInfo( description: description, enabled: enabled, id: id, name: name, title: title, version: version, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
