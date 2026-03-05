@@ -1,18 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
@@ -99,11 +98,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     if (authenticationState.isAuthenticated) {
       try {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
-        final headers = ApiService.getRequestHeaders();
-        if (endpoint.userInfo.isNotEmpty) {
-          headers["Authorization"] = "Basic ${base64.encode(utf8.encode(endpoint.userInfo))}";
-        }
-
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
         Socket socket = io(
@@ -111,11 +105,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
           OptionBuilder()
               .setPath("${endpoint.path}/socket.io")
               .setTransports(['websocket'])
+              .setWebSocketConnector(NetworkRepository.createWebSocket)
               .enableReconnection()
               .enableForceNew()
               .enableForceNewConnection()
               .enableAutoConnect()
-              .setExtraHeaders(headers)
               .build(),
         );
 
@@ -160,11 +154,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
     _batchedAssetUploadReady.clear();
 
-    var socket = state.socket?.disconnect();
-
-    if (socket?.disconnected == true) {
-      state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
-    }
+    state.socket?.dispose();
+    state = WebsocketState(isConnected: false, socket: null, pendingChanges: state.pendingChanges);
   }
 
   void stopListenToEvent(String eventName) {
