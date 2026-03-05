@@ -430,9 +430,10 @@ Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
           }
         });
       }
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
+    } else {
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local assets");
     }
-
-    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
   }
