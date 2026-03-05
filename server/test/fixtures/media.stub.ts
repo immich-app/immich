@@ -112,7 +112,7 @@ export const probeStub = {
   }),
   videoStream40Mbps: Object.freeze<VideoInfo>({
     ...probeStubDefault,
-    videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000 }],
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000, codecName: 'h264' }],
   }),
   videoStreamMTS: Object.freeze<VideoInfo>({
     ...probeStubDefault,
