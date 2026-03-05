@@ -424,23 +424,22 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Stream<List<Bucket>> _watchPersonBucket(String userId, String personId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    final idQuery = _db.assetFaceEntity.selectOnly()
+      ..addColumns([_db.assetFaceEntity.assetId])
+      ..where(
+        _db.assetFaceEntity.personId.equals(personId) &
+            _db.assetFaceEntity.isVisible.equals(true) &
+            _db.assetFaceEntity.deletedAt.isNull(),
+      );
+
     if (groupBy == GroupAssetsBy.none) {
       final query = _db.remoteAssetEntity.selectOnly()
         ..addColumns([_db.remoteAssetEntity.id.count()])
-        ..join([
-          innerJoin(
-            _db.assetFaceEntity,
-            _db.assetFaceEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-            useColumns: false,
-          ),
-        ])
         ..where(
-          _db.remoteAssetEntity.deletedAt.isNull() &
+          _db.remoteAssetEntity.id.isInQuery(idQuery) &
+              _db.remoteAssetEntity.deletedAt.isNull() &
               _db.remoteAssetEntity.ownerId.equals(userId) &
-              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-              _db.assetFaceEntity.personId.equals(personId) &
-              _db.assetFaceEntity.isVisible.equals(true) &
-              _db.assetFaceEntity.deletedAt.isNull(),
+              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
         );
 
       return query.map((row) {
@@ -454,20 +453,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
     final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([assetCountExp, dateExp])
-      ..join([
-        innerJoin(
-          _db.assetFaceEntity,
-          _db.assetFaceEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-          useColumns: false,
-        ),
-      ])
       ..where(
-        _db.remoteAssetEntity.deletedAt.isNull() &
+        _db.remoteAssetEntity.id.isInQuery(idQuery) &
             _db.remoteAssetEntity.ownerId.equals(userId) &
             _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-            _db.assetFaceEntity.personId.equals(personId) &
-            _db.assetFaceEntity.isVisible.equals(true) &
-            _db.assetFaceEntity.deletedAt.isNull(),
+            _db.remoteAssetEntity.deletedAt.isNull(),
       )
       ..groupBy([dateExp])
       ..orderBy([OrderingTerm.desc(dateExp)]);
@@ -485,26 +475,26 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
   }) {
-    final query =
-        _db.remoteAssetEntity.select().join([
-            innerJoin(
-              _db.assetFaceEntity,
-              _db.assetFaceEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
-              useColumns: false,
-            ),
-          ])
-          ..where(
-            _db.remoteAssetEntity.deletedAt.isNull() &
-                _db.remoteAssetEntity.ownerId.equals(userId) &
-                _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
-                _db.assetFaceEntity.personId.equals(personId) &
-                _db.assetFaceEntity.isVisible.equals(true) &
-                _db.assetFaceEntity.deletedAt.isNull(),
-          )
-          ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
-          ..limit(count, offset: offset);
+    final idQuery = _db.assetFaceEntity.selectOnly()
+      ..addColumns([_db.assetFaceEntity.assetId])
+      ..where(
+        _db.assetFaceEntity.personId.equals(personId) &
+            _db.assetFaceEntity.isVisible.equals(true) &
+            _db.assetFaceEntity.deletedAt.isNull(),
+      );
 
-    return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.id.isInQuery(idQuery) &
+            row.deletedAt.isNull() &
+            row.ownerId.equals(userId) &
+            row.visibility.equalsValue(AssetVisibility.timeline),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.toDto()).get();
   }
 
   TimelineQuery map(List<String> userIds, TimelineMapOptions options, GroupAssetsBy groupBy) => (
