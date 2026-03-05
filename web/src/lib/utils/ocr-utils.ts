@@ -1,16 +1,5 @@
 import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { ZoomImageWheelState } from '@zoom-image/core';
-
-const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
-  const ratio = img.naturalWidth / img.naturalHeight;
-  let width = img.height * ratio;
-  let height = img.height;
-  if (width > img.width) {
-    width = img.width;
-    height = img.width / ratio;
-  }
-  return { width, height };
-};
+import type { ContentMetrics } from '$lib/utils/container-utils';
 
 export type Point = {
   x: number;
@@ -66,53 +55,17 @@ export const calculateBoundingBoxMatrix = (points: Point[]): { matrix: number[];
   return { matrix, width, height };
 };
 
-/**
- * Convert normalized OCR coordinates to screen coordinates
- * OCR coordinates are normalized (0-1) and represent the 4 corners of a rotated rectangle
- */
-export const getOcrBoundingBoxes = (
-  ocrData: OcrBoundingBox[],
-  zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
-): OcrBox[] => {
-  if (photoViewer === null || !photoViewer.naturalWidth || !photoViewer.naturalHeight) {
-    return [];
-  }
-
-  const clientHeight = photoViewer.clientHeight;
-  const clientWidth = photoViewer.clientWidth;
-  const { width, height } = getContainedSize(photoViewer);
-
-  const offset = {
-    x: ((clientWidth - width) / 2) * zoom.currentZoom + zoom.currentPositionX,
-    y: ((clientHeight - height) / 2) * zoom.currentZoom + zoom.currentPositionY,
-  };
-
-  return getOcrBoundingBoxesAtSize(
-    ocrData,
-    { width: width * zoom.currentZoom, height: height * zoom.currentZoom },
-    offset,
-  );
-};
-
-export const getOcrBoundingBoxesAtSize = (
-  ocrData: OcrBoundingBox[],
-  targetSize: { width: number; height: number },
-  offset?: Point,
-) => {
+export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentMetrics): OcrBox[] => {
   const boxes: OcrBox[] = [];
-
   for (const ocr of ocrData) {
-    // Convert normalized coordinates (0-1) to actual pixel positions
-    // OCR provides 4 corners of a potentially rotated rectangle
     const points = [
       { x: ocr.x1, y: ocr.y1 },
       { x: ocr.x2, y: ocr.y2 },
       { x: ocr.x3, y: ocr.y3 },
       { x: ocr.x4, y: ocr.y4 },
     ].map((point) => ({
-      x: targetSize.width * point.x + (offset?.x ?? 0),
-      y: targetSize.height * point.y + (offset?.y ?? 0),
+      x: point.x * metrics.contentWidth + metrics.offsetX,
+      y: point.y * metrics.contentHeight + metrics.offsetY,
     }));
 
     boxes.push({

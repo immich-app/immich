@@ -11,10 +11,11 @@
   import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
+  import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { type ContentMetrics, getContentMetrics } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
@@ -52,6 +53,7 @@
   let imageLoaded: boolean = $state(false);
   let originalImageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
+  let visibleImageReady: boolean = $state(false);
 
   let loader = $state<HTMLImageElement>();
 
@@ -67,11 +69,23 @@
     $boundingBoxesArray = [];
   });
 
-  let ocrBoxes = $derived(
-    ocrManager.showOverlay && assetViewerManager.imgRef
-      ? getOcrBoundingBoxes(ocrManager.data, assetViewerManager.zoomState, assetViewerManager.imgRef)
-      : [],
-  );
+  const overlayMetrics = $derived.by((): ContentMetrics => {
+    if (!assetViewerManager.imgRef || !visibleImageReady) {
+      return { contentWidth: 0, contentHeight: 0, offsetX: 0, offsetY: 0 };
+    }
+
+    const { contentWidth, contentHeight, offsetX, offsetY } = getContentMetrics(assetViewerManager.imgRef);
+    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
+
+    return {
+      contentWidth: contentWidth * currentZoom,
+      contentHeight: contentHeight * currentZoom,
+      offsetX: offsetX * currentZoom + currentPositionX,
+      offsetY: offsetY * currentZoom + currentPositionY,
+    };
+  });
+
+  let ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
 
   let isOcrActive = $derived(ocrManager.showOverlay);
 
@@ -176,10 +190,47 @@
         imageLoaded = false;
         originalImageLoaded = false;
         imageError = false;
+        visibleImageReady = false;
       });
     }
     lastUrl = imageLoaderUrl;
   });
+
+  const faceToNameMap = $derived.by(() => {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const map = new Map<Faces, string>();
+    for (const person of asset.people ?? []) {
+      for (const face of person.faces ?? []) {
+        map.set(face, person.name);
+      }
+    }
+    return map;
+  });
+
+  const faces = $derived(Array.from(faceToNameMap.keys()));
+
+  const handleImageMouseMove = (event: MouseEvent) => {
+    $boundingBoxesArray = [];
+    if (!assetViewerManager.imgRef || !element || isFaceEditMode.value || ocrManager.showOverlay) {
+      return;
+    }
+
+    const containerRect = element.getBoundingClientRect();
+    const mouseX = event.clientX - containerRect.left;
+    const mouseY = event.clientY - containerRect.top;
+
+    const faceBoxes = getBoundingBox(faces, overlayMetrics);
+
+    for (const [index, box] of faceBoxes.entries()) {
+      if (mouseX >= box.left && mouseX <= box.left + box.width && mouseY >= box.top && mouseY <= box.top + box.height) {
+        $boundingBoxesArray.push(faces[index]);
+      }
+    }
+  };
+
+  const handleImageMouseLeave = () => {
+    $boundingBoxesArray = [];
+  };
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} />
@@ -203,6 +254,9 @@
   class="relative h-full w-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
+  role="presentation"
+  onmousemove={handleImageMouseMove}
+  onmouseleave={handleImageMouseLeave}
 >
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
@@ -226,18 +280,27 @@
       <img
         bind:this={assetViewerManager.imgRef}
         src={imageLoaderUrl}
+        onload={() => (visibleImageReady = true)}
         alt={$getAltText(toTimelineAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
-      <!-- eslint-disable-next-line svelte/require-each-key -->
-      {#each getBoundingBox($boundingBoxesArray, assetViewerManager.zoomState, assetViewerManager.imgRef) as boundingbox}
+      {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox, index (boundingbox.id)}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
+        {#if faceToNameMap.get($boundingBoxesArray[index])}
+          <div
+            class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
+            style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
+              boundingbox.width}px; transform: translateX(-100%);"
+          >
+            {faceToNameMap.get($boundingBoxesArray[index])}
+          </div>
+        {/if}
       {/each}
 
       {#each ocrBoxes as ocrBox (ocrBox.id)}

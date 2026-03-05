@@ -4,6 +4,7 @@
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncement from '$lib/components/VersionAnnouncement.svelte';
@@ -19,6 +20,7 @@
   import { copyToClipboard } from '$lib/utils';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
+  import { getServerConfig } from '@immich/sdk';
   import {
     CommandPaletteDefaultProvider,
     TooltipProvider,
@@ -31,6 +33,7 @@
   import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiSync, mdiThemeLightDark } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { get } from 'svelte/store';
   import '../app.css';
 
   interface Props {
@@ -120,19 +123,18 @@
 
     if (maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
       modalManager.show(ServerRestartingModal, {}).catch((error) => console.error('Error [ServerRestartBox]:', error));
-
-      // we will be disconnected momentarily
-      // wait for reconnect then reload
-      let waiting = false;
-      websocketStore.connected.subscribe((connected) => {
-        if (!connected) {
-          waiting = true;
-        } else if (connected && waiting) {
-          location.reload();
-        }
-      });
     }
   });
+
+  const onWebsocketConnect = async () => {
+    const isRestarting = get(serverRestarting);
+    if (isRestarting && maintenanceShouldRedirect(isRestarting.isMaintenanceMode, location)) {
+      const { maintenanceMode } = await getServerConfig();
+      if (maintenanceMode === isRestarting.isMaintenanceMode) {
+        location.reload();
+      }
+    }
+  };
 
   const userCommands: ActionItem[] = [
     {
@@ -181,6 +183,8 @@
 
   const commands = $derived([...userCommands, ...adminCommands]);
 </script>
+
+<OnEvents {onWebsocketConnect} />
 
 <CommandPaletteDefaultProvider name="Global" actions={commands} />
 <VersionAnnouncement />

@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/memories/memory_bottom_info.dart';
@@ -166,9 +165,6 @@ class MemoryPage extends HookConsumerWidget {
       final asset = currentMemory.value.assets[otherIndex];
       currentAsset.value = asset;
       ref.read(currentAssetProvider.notifier).set(asset);
-      if (asset.isVideo || asset.isMotionPhoto) {
-        ref.read(videoPlaybackValueProvider.notifier).reset();
-      }
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called

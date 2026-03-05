@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -49,7 +49,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
   }
 
   List<Widget> _buildMenuChildren() {
-    final asset = ref.read(currentAssetNotifier);
+    final asset = ref.read(assetViewerProvider).currentAsset;
     if (asset == null) return [];
 
     final user = ref.read(currentUserProvider);
@@ -103,7 +103,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
   }
 
   void _openAlbumSelector() {
-    final currentAsset = ref.read(currentAssetNotifier);
+    final currentAsset = ref.read(assetViewerProvider).currentAsset;
     if (currentAsset == null) {
       ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
       return;
@@ -133,7 +133,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
   }
 
   Future<void> _addCurrentAssetToAlbum(RemoteAlbum album) async {
-    final latest = ref.read(currentAssetNotifier);
+    final latest = ref.read(assetViewerProvider).currentAsset;
 
     if (latest == null) {
       ImmichToast.show(context: context, msg: "Cannot load asset information.", toastType: ToastType.error);
@@ -169,7 +169,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final asset = ref.watch(currentAssetNotifier);
+    final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     if (asset == null) {
       return const SizedBox.shrink();
     }
