@@ -1,8 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
-  import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
@@ -55,6 +53,7 @@
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
 
   let memoryGallery: HTMLElement | undefined = $state();
@@ -236,6 +235,22 @@
     galleryFirstLoad = false;
   };
 
+  const galleryObserver: Attachment<HTMLElement> = (element) => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          handleGalleryScrollsIntoView();
+        } else {
+          handleGalleryScrollsOutOfView();
+        }
+      },
+      { rootMargin: '0px 0px -200px 0px' },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  };
+
   const loadFromParams = (page: Page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     return memoryStore.getMemoryAsset(assetId);
@@ -362,7 +377,8 @@
   id="memory-viewer"
   class="w-full bg-immich-dark-gray"
   bind:this={memoryWrapper}
-  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
 >
   {#if current}
     <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
@@ -644,15 +660,7 @@
       />
     </div>
 
-    <div
-      id="gallery-memory"
-      use:intersectionObserver={{
-        onIntersect: handleGalleryScrollsIntoView,
-        onSeparate: handleGalleryScrollsOutOfView,
-        bottom: '-200px',
-      }}
-      bind:this={memoryGallery}
-    >
+    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
         {viewerAssets}

@@ -13493,6 +13493,16 @@
             }
           },
           {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
+              "type": "string"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -13665,6 +13675,16 @@
             "description": "Filter assets belonging to a specific album",
             "schema": {
               "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "bbox",
+            "required": false,
+            "in": "query",
+            "description": "Bounding box coordinates as west,south,east,north (WGS84)",
+            "schema": {
+              "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
             }
           },

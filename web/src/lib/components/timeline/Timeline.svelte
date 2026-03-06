@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
@@ -259,8 +258,6 @@
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
-
-  const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
   onMount(() => {
     if (!enableRouting) {
@@ -620,7 +617,7 @@
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
-  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
@@ -634,7 +631,7 @@
     style:height={timelineManager.totalViewerHeight + 'px'}
   >
     <section
-      use:resizeObserver={topSectionResizeObserver}
+      bind:clientHeight={timelineManager.topSectionHeight}
       class:invisible
       style:position="absolute"
       style:left="0"

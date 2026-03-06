@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +29,6 @@ import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -43,7 +41,7 @@ class BackgroundService {
   static const MethodChannel _backgroundChannel = MethodChannel('immich/backgroundChannel');
   static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
-  CancellationToken? _cancellationToken;
+  Completer<void>? _cancellationToken;
   bool _canceledBySystem = false;
   int _wantsLockTime = 0;
   bool _hasLock = false;
@@ -321,7 +319,8 @@ class BackgroundService {
         }
       case "systemStop":
         _canceledBySystem = true;
-        _cancellationToken?.cancel();
+        _cancellationToken?.complete();
+        _cancellationToken = null;
         return true;
       default:
         dPrint(() => "Unknown method ${call.method}");
@@ -341,7 +340,6 @@ class BackgroundService {
       ],
     );
 
-    HttpSSLOptions.apply();
     await ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     dPrint(() => "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
@@ -441,7 +439,8 @@ class BackgroundService {
       ),
     );
 
-    _cancellationToken = CancellationToken();
+    _cancellationToken?.complete();
+    _cancellationToken = Completer<void>();
     final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
     final bool ok = await backupService.backupAsset(
@@ -455,7 +454,7 @@ class BackgroundService {
       isBackground: true,
     );
 
-    if (!ok && !_cancellationToken!.isCancelled) {
+    if (!ok && !_cancellationToken!.isCompleted) {
       unawaited(
         _showErrorNotification(
           title: "backup_background_service_error_title".tr(),
@@ -467,7 +466,7 @@ class BackgroundService {
     return ok;
   }
 
-  void _onAssetUploaded({bool shouldNotify = false}) async {
+  void _onAssetUploaded({bool shouldNotify = false}) {
     if (!shouldNotify) {
       return;
     }

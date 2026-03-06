@@ -62,7 +62,10 @@ export const websocketStore = {
 export const websocketEvents = createEventEmitter(websocket);
 
 websocket
-  .on('connect', () => websocketStore.connected.set(true))
+  .on('connect', () => {
+    eventManager.emit('WebsocketConnect');
+    websocketStore.connected.set(true);
+  })
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))

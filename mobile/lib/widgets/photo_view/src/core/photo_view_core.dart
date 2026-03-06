@@ -420,7 +420,11 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   Widget _buildChild() {
     return widget.hasCustomChild
-        ? widget.customChild!
+        ? SizedBox(
+            width: scaleBoundaries.childSize.width * scale,
+            height: scaleBoundaries.childSize.height * scale,
+            child: widget.customChild!,
+          )
         : Image(
             key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,
             image: widget.imageProvider!,
@@ -428,7 +432,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             gaplessPlayback: widget.gaplessPlayback ?? false,
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             isAntiAlias: widget.filterQuality == FilterQuality.high,
           );
   }

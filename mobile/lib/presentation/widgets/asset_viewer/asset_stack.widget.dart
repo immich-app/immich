@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class AssetStackRow extends ConsumerWidget {
-  const AssetStackRow({super.key});
+  final List<RemoteAsset> stack;
+
+  const AssetStackRow({super.key, required this.stack});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(assetViewerProvider.select((state) => state.currentAsset));
-    if (asset == null) {
+    if (stack.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -23,38 +22,28 @@ class AssetStackRow extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final stackChildren = ref.watch(stackChildrenNotifier(asset)).valueOrNull;
-    if (stackChildren == null || stackChildren.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
-    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
-    if (showingDetails) {
-      return const SizedBox.shrink();
-    }
-    return _StackList(stack: stackChildren);
-  }
-}
-
-class _StackList extends ConsumerWidget {
-  final List<RemoteAsset> stack;
-
-  const _StackList({required this.stack});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 5.0,
-            children: List.generate(stack.length, (i) {
-              final asset = stack[i];
-              return _StackItem(key: ValueKey(asset.heroTag), asset: asset, index: i);
-            }),
+    return IgnorePointer(
+      ignoring: opacity < 1.0,
+      child: AnimatedOpacity(
+        opacity: opacity,
+        duration: Durations.short2,
+        child: Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 5.0,
+                children: List.generate(stack.length, (i) {
+                  final asset = stack[i];
+                  return _StackItem(key: ValueKey(asset.heroTag), asset: asset, index: i);
+                }),
+              ),
+            ),
           ),
         ),
       ),
@@ -74,8 +63,9 @@ class _StackItem extends ConsumerStatefulWidget {
 
 class _StackItemState extends ConsumerState<_StackItem> {
   void _onTap() {
-    ref.read(currentAssetNotifier.notifier).setAsset(widget.asset);
-    ref.read(assetViewerProvider.notifier).setStackIndex(widget.index);
+    final notifier = ref.read(assetViewerProvider.notifier);
+    notifier.setAsset(widget.asset);
+    notifier.setStackIndex(widget.index);
   }
 
   @override

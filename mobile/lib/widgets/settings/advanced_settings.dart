@@ -10,12 +10,10 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
@@ -31,15 +29,12 @@ class AdvancedSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    bool isLoggedIn = ref.read(currentUserProvider) != null;
-
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
-    final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
     final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
@@ -120,15 +115,8 @@ class AdvancedSettings extends HookConsumerWidget {
         subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
       ),
       if (!Store.isBetaTimelineEnabled) const LocalStorageSettings(),
-      SettingsSwitchListTile(
-        enabled: !isLoggedIn,
-        valueNotifier: allowSelfSignedSSLCert,
-        title: "advanced_settings_self_signed_ssl_title".tr(),
-        subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: HttpSSLOptions.applyFromSettings,
-      ),
       const CustomProxyHeaderSettings(),
-      SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
+      const SslClientCertSettings(),
       if (!Store.isBetaTimelineEnabled)
         SettingsSwitchListTile(
           valueNotifier: useAlternatePMFilter,

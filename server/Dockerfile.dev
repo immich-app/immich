@@ -1,9 +1,9 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202601131104@sha256:8d907eb3fe10dba4a1e034fd0060ea68c01854d92fcc9debc6b868b98f888ba7 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202603031112@sha256:837536db5fd9e432f0f474ef9b61712fe3b3815821c3e4edf5e5b0b1f1ed30ad AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
-  COREPACK_HOME=/tmp \ 
+  COREPACK_HOME=/tmp \
   PNPM_HOME=/buildcache/pnpm-store
 
 RUN npm install --global corepack@latest && \
