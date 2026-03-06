@@ -204,8 +204,8 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   }
 
   /**
-   * Detects the playback style for an asset using _special_format (API 33+)
-   * or XMP / MIME / RIFF header fallbacks (pre-33).
+   * Detects the playback style for an asset using _special_format (SDK Extension 21+)
+   * or XMP / MIME / RIFF header fallbacks.
    */
   @SuppressLint("NewApi")
   private fun detectPlaybackStyle(
