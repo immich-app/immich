@@ -70,6 +70,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       add(MediaStore.MediaColumns.DATE_ADDED)
       add(MediaStore.MediaColumns.DATE_MODIFIED)
       add(MediaStore.Files.FileColumns.MEDIA_TYPE)
+      add(MediaStore.MediaColumns.MIME_TYPE)
       add(MediaStore.MediaColumns.BUCKET_ID)
       add(MediaStore.MediaColumns.WIDTH)
       add(MediaStore.MediaColumns.HEIGHT)
@@ -131,6 +132,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         val dateAddedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED)
         val dateModifiedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
         val mediaTypeColumn = c.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE)
+        val mimeTypeColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE)
         val bucketIdColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.BUCKET_ID)
         val widthColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
         val heightColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT)
@@ -176,8 +178,9 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
+          val mimeType = c.getString(mimeTypeColumn)
           val playbackStyle = detectPlaybackStyle(
-            numericId, rawMediaType, specialFormatColumn, xmpColumn, c
+            numericId, rawMediaType, mimeType, specialFormatColumn, xmpColumn, c
           )
 
           val asset = PlatformAsset(
@@ -207,6 +210,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   private fun detectPlaybackStyle(
     assetId: Long,
     rawMediaType: Int,
+    mimeType: String,
     specialFormatColumn: Int,
     xmpColumn: Int,
     cursor: Cursor
@@ -255,20 +259,28 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       return PlatformAssetPlaybackStyle.LIVE_PHOTO
     }
 
-    try {
-      ctx.contentResolver.openInputStream(uri)?.use { stream ->
+    // Use MIME type to detect animated formats without opening file streams
+    if (mimeType == "image/gif") {
+      return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+    }
+
+    // Only WebP needs a stream check to distinguish static vs animated
+    if (mimeType == "image/webp") {
+      try {
         val glide = Glide.get(ctx)
-        val type = ImageHeaderParserUtils.getType(
-          glide.registry.imageHeaderParsers,
-          stream,
-          glide.arrayPool
-        )
-        if (type == ImageHeaderParser.ImageType.GIF || type == ImageHeaderParser.ImageType.ANIMATED_WEBP) {
-          return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+        ctx.contentResolver.openInputStream(uri)?.use { stream ->
+          val type = ImageHeaderParserUtils.getType(
+            glide.registry.imageHeaderParsers,
+            stream,
+            glide.arrayPool
+          )
+          if (type == ImageHeaderParser.ImageType.ANIMATED_WEBP) {
+            return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+          }
         }
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to parse image header for asset $assetId", e)
       }
-    } catch (e: Exception) {
-      Log.w(TAG, "Failed to parse image header for asset $assetId", e)
     }
 
     return PlatformAssetPlaybackStyle.IMAGE
