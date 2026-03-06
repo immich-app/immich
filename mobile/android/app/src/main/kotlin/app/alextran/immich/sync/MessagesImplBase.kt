@@ -235,7 +235,37 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       return PlatformAssetPlaybackStyle.UNKNOWN
     }
 
-    // Pre-API 33 fallback
+    // GIFs are always animated and cannot be motion photos; no I/O needed
+    if (mimeType == "image/gif") {
+      return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+    }
+
+    // Only WebP needs a stream check to distinguish static vs animated;
+    // WebP files are not used as motion photos, so skip XMP detection
+    if (mimeType == "image/webp") {
+      val uri = ContentUris.withAppendedId(
+        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+        assetId
+      )
+      try {
+        val glide = Glide.get(ctx)
+        ctx.contentResolver.openInputStream(uri)?.use { stream ->
+          val type = ImageHeaderParserUtils.getType(
+            glide.registry.imageHeaderParsers,
+            stream,
+            glide.arrayPool
+          )
+          if (type == ImageHeaderParser.ImageType.ANIMATED_WEBP) {
+            return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+          }
+        }
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to parse image header for asset $assetId", e)
+      }
+      return PlatformAssetPlaybackStyle.IMAGE
+    }
+
+    // Motion photo detection via XMP (only relevant for JPEG/HEIC)
     val uri = ContentUris.withAppendedId(
       MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
       assetId
@@ -257,30 +287,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     if (xmp != null && "Camera:MotionPhoto" in xmp) {
       return PlatformAssetPlaybackStyle.LIVE_PHOTO
-    }
-
-    // Use MIME type to detect animated formats without opening file streams
-    if (mimeType == "image/gif") {
-      return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
-    }
-
-    // Only WebP needs a stream check to distinguish static vs animated
-    if (mimeType == "image/webp") {
-      try {
-        val glide = Glide.get(ctx)
-        ctx.contentResolver.openInputStream(uri)?.use { stream ->
-          val type = ImageHeaderParserUtils.getType(
-            glide.registry.imageHeaderParsers,
-            stream,
-            glide.arrayPool
-          )
-          if (type == ImageHeaderParser.ImageType.ANIMATED_WEBP) {
-            return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
-          }
-        }
-      } catch (e: Exception) {
-        Log.w(TAG, "Failed to parse image header for asset $assetId", e)
-      }
     }
 
     return PlatformAssetPlaybackStyle.IMAGE
