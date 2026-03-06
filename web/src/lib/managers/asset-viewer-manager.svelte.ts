@@ -2,6 +2,7 @@ import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import type { ZoomImageWheelState } from '@zoom-image/core';
+import { cubicOut } from 'svelte/easing';
 
 const isShowDetailPanel = new PersistedLocalStorage<boolean>('asset-viewer-state', false);
 
@@ -21,6 +22,7 @@ export type Events = {
 
 export class AssetViewerManager extends BaseEventManager<Events> {
   #zoomState = $state(createDefaultZoomState());
+  #animationFrameId: number | null = null;
 
   imgRef = $state<HTMLImageElement | undefined>();
   isShowActivityPanel = $state(false);
@@ -45,6 +47,7 @@ export class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   set zoom(zoom: number) {
+    this.cancelZoomAnimation();
     this.zoomState = { ...this.zoomState, currentZoom: zoom };
   }
 
@@ -69,7 +72,35 @@ export class AssetViewerManager extends BaseEventManager<Events> {
     this.#zoomState = state;
   }
 
+  cancelZoomAnimation() {
+    if (this.#animationFrameId !== null) {
+      cancelAnimationFrame(this.#animationFrameId);
+      this.#animationFrameId = null;
+    }
+  }
+
+  animatedZoom(targetZoom: number, duration = 300) {
+    this.cancelZoomAnimation();
+
+    const startZoom = this.#zoomState.currentZoom;
+    const startTime = performance.now();
+
+    const frame = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const linearProgress = Math.min(elapsed / duration, 1);
+      const easedProgress = cubicOut(linearProgress);
+      const interpolatedZoom = startZoom + (targetZoom - startZoom) * easedProgress;
+
+      this.zoomState = { ...this.#zoomState, currentZoom: interpolatedZoom };
+
+      this.#animationFrameId = linearProgress < 1 ? requestAnimationFrame(frame) : null;
+    };
+
+    this.#animationFrameId = requestAnimationFrame(frame);
+  }
+
   resetZoomState() {
+    this.cancelZoomAnimation();
     this.zoomState = createDefaultZoomState();
   }
 
