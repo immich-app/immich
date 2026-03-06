@@ -50,8 +50,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   bool _showingDetails = false;
   bool _isZoomed = false;
 
-  final _scrollController = ScrollController();
-  late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
+  final _scrollController = SnapScrollController();
   double _snapOffset = 0.0;
 
   DragStartDetails? _dragStart;
@@ -63,17 +62,17 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_proxyScrollController.hasClients) return;
-      _proxyScrollController.snapPosition.snapOffset = _snapOffset;
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.snapPosition.snapOffset = _snapOffset;
       if (_showingDetails && _snapOffset > 0) {
-        _proxyScrollController.jumpTo(_snapOffset);
+        _scrollController.jumpTo(_snapOffset);
       }
     });
   }
 
   @override
   void dispose() {
-    _proxyScrollController.dispose();
+    _scrollController.dispose();
     _scaleBoundarySub?.cancel();
     _eventSubscription?.cancel();
     super.dispose();
@@ -88,21 +87,20 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _showDetails() {
-    if (!_proxyScrollController.hasClients || _snapOffset <= 0) return;
+    if (!_scrollController.hasClients || _snapOffset <= 0) return;
     _viewer.setShowingDetails(true);
-    _proxyScrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
+    _scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
 
-  bool _willClose(double scrollVelocity) {
-    if (!_proxyScrollController.hasClients || _snapOffset <= 0) return false;
-
-    final position = _proxyScrollController.position;
-    return _proxyScrollController.position.pixels < _snapOffset &&
-        SnapScrollPhysics.target(position, scrollVelocity, _snapOffset) < SnapScrollPhysics.minSnapDistance;
-  }
+  bool _willClose(double scrollVelocity) =>
+      _scrollController.hasClients &&
+      _snapOffset > 0 &&
+      _scrollController.position.pixels < _snapOffset &&
+      SnapScrollPhysics.target(_scrollController.position, scrollVelocity, _snapOffset) <
+          SnapScrollPhysics.minSnapDistance;
 
   void _syncShowingDetails() {
-    final offset = _proxyScrollController.offset;
+    final offset = _scrollController.offset;
     if (offset > SnapScrollPhysics.minSnapDistance) {
       _viewer.setShowingDetails(true);
     } else if (offset < SnapScrollPhysics.minSnapDistance - kTouchSlop) {
@@ -124,8 +122,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _startProxyDrag() {
-    if (_proxyScrollController.hasClients && _dragStart != null) {
-      _drag = _proxyScrollController.position.drag(_dragStart!, () => _drag = null);
+    if (_scrollController.hasClients && _dragStart != null) {
+      _drag = _scrollController.position.drag(_dragStart!, () => _drag = null);
     }
   }
 
@@ -294,7 +292,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required PhotoViewHeroAttributes? heroAttributes,
     required bool isCurrent,
     required bool isPlayingMotionVideo,
-    required BoxDecoration backgroundDecoration,
   }) {
     final size = context.sizeData;
 
@@ -305,7 +302,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         imageProvider: getFullImageProvider(asset, size: size),
         heroAttributes: heroAttributes,
         loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
-        backgroundDecoration: backgroundDecoration,
         gaplessPlayback: true,
         filterQuality: FilterQuality.high,
         tightMode: true,
@@ -347,7 +343,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
-      backgroundDecoration: backgroundDecoration,
       child: NativeVideoViewer(
         key: _NativeVideoViewerKey(asset.heroTag),
         asset: asset,
@@ -390,57 +385,52 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     _snapOffset = detailsOffset - snapTarget;
 
-    if (_proxyScrollController.hasClients) {
-      _proxyScrollController.snapPosition.snapOffset = _snapOffset;
+    if (_scrollController.hasClients) {
+      _scrollController.snapPosition.snapOffset = _snapOffset;
     }
 
     return Stack(
       children: [
-        Offstage(
-          child: SingleChildScrollView(
-            controller: _proxyScrollController,
-            physics: const SnapScrollPhysics(),
-            child: const SizedBox.shrink(),
-          ),
-        ),
         SingleChildScrollView(
           controller: _scrollController,
-          physics: const NeverScrollableScrollPhysics(),
-          child: Stack(
-            children: [
-              SizedBox(
-                width: viewportWidth,
-                height: viewportHeight,
-                child: _buildPhotoView(
-                  asset: displayAsset,
-                  heroAttributes: isCurrent
-                      ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}')
-                      : null,
-                  isCurrent: isCurrent,
-                  isPlayingMotionVideo: isPlayingMotionVideo,
-                  backgroundDecoration: BoxDecoration(color: _showingDetails ? Colors.black : Colors.transparent),
+          physics: const SnapScrollPhysics(),
+          child: ColoredBox(
+            color: _showingDetails ? Colors.black : Colors.transparent,
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: viewportWidth,
+                  height: viewportHeight,
+                  child: _buildPhotoView(
+                    asset: displayAsset,
+                    heroAttributes: isCurrent
+                        ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}')
+                        : null,
+                    isCurrent: isCurrent,
+                    isPlayingMotionVideo: isPlayingMotionVideo,
+                  ),
                 ),
-              ),
-              IgnorePointer(
-                ignoring: !_showingDetails,
-                child: Column(
-                  children: [
-                    SizedBox(height: detailsOffset),
-                    GestureDetector(
-                      onVerticalDragStart: _beginDrag,
-                      onVerticalDragUpdate: _updateDrag,
-                      onVerticalDragEnd: _endDrag,
-                      onVerticalDragCancel: _onDragCancel,
-                      child: AnimatedOpacity(
-                        opacity: _showingDetails ? 1.0 : 0.0,
-                        duration: Durations.short2,
-                        child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                IgnorePointer(
+                  ignoring: !_showingDetails,
+                  child: Column(
+                    children: [
+                      SizedBox(height: detailsOffset),
+                      GestureDetector(
+                        onVerticalDragStart: _beginDrag,
+                        onVerticalDragUpdate: _updateDrag,
+                        onVerticalDragEnd: _endDrag,
+                        onVerticalDragCancel: _onDragCancel,
+                        child: AnimatedOpacity(
+                          opacity: _showingDetails ? 1.0 : 0.0,
+                          duration: Durations.short2,
+                          child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         if (stackChildren != null && stackChildren.isNotEmpty)

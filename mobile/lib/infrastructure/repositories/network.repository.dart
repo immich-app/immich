@@ -1,67 +1,55 @@
+import 'dart:ffi';
 import 'dart:io';
 
-import 'package:cronet_http/cronet_http.dart';
 import 'package:cupertino_http/cupertino_http.dart';
 import 'package:http/http.dart' as http;
-import 'package:immich_mobile/utils/user_agent.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:ok_http/ok_http.dart';
+import 'package:web_socket/web_socket.dart';
 
 class NetworkRepository {
-  static late Directory _cachePath;
-  static late String _userAgent;
-  static final _clients = <String, http.Client>{};
+  static http.Client? _client;
+  static Pointer<Void>? _clientPointer;
 
-  static Future<void> init() {
-    return (
-      getTemporaryDirectory().then((cachePath) => _cachePath = cachePath),
-      getUserAgentString().then((userAgent) => _userAgent = userAgent),
-    ).wait;
+  static Future<void> init() async {
+    final clientPointer = Pointer<Void>.fromAddress(await networkApi.getClientPointer());
+    if (clientPointer == _clientPointer) {
+      return;
+    }
+    _clientPointer = clientPointer;
+    _client?.close();
+    if (Platform.isIOS) {
+      final session = URLSession.fromRawPointer(clientPointer.cast());
+      _client = CupertinoClient.fromSharedSession(session);
+    } else {
+      _client = OkHttpClient.fromJniGlobalRef(clientPointer);
+    }
   }
 
-  static void reset() {
-    Future.microtask(init);
-    for (final client in _clients.values) {
-      client.close();
+  static Future<void> setHeaders(Map<String, String> headers, List<String> serverUrls) async {
+    await networkApi.setRequestHeaders(headers, serverUrls);
+    if (Platform.isIOS) {
+      await init();
     }
-    _clients.clear();
+  }
+
+  // ignore: avoid-unused-parameters
+  static Future<WebSocket> createWebSocket(Uri uri, {Map<String, String>? headers, Iterable<String>? protocols}) {
+    if (Platform.isIOS) {
+      final session = URLSession.fromRawPointer(_clientPointer!.cast());
+      return CupertinoWebSocket.connectWithSession(session, uri, protocols: protocols);
+    } else {
+      return OkHttpWebSocket.connectFromJniGlobalRef(_clientPointer!, uri, protocols: protocols);
+    }
   }
 
   const NetworkRepository();
 
-  /// Note: when disk caching is enabled, only one client may use a given directory at a time.
-  /// Different isolates or engines must use different directories.
-  http.Client getHttpClient(
-    String directoryName, {
-    CacheMode cacheMode = CacheMode.memory,
-    int diskCapacity = 0,
-    int maxConnections = 6,
-    int memoryCapacity = 10 << 20,
-  }) {
-    final cachedClient = _clients[directoryName];
-    if (cachedClient != null) {
-      return cachedClient;
-    }
-
-    final directory = Directory('${_cachePath.path}/$directoryName');
-    directory.createSync(recursive: true);
-    if (Platform.isAndroid) {
-      final engine = CronetEngine.build(
-        cacheMode: cacheMode,
-        cacheMaxSize: diskCapacity,
-        storagePath: directory.path,
-        userAgent: _userAgent,
-      );
-      return _clients[directoryName] = CronetClient.fromCronetEngine(engine, closeEngine: true);
-    }
-
-    final config = URLSessionConfiguration.defaultSessionConfiguration()
-      ..httpMaximumConnectionsPerHost = maxConnections
-      ..cache = URLCache.withCapacity(
-        diskCapacity: diskCapacity,
-        memoryCapacity: memoryCapacity,
-        directory: directory.uri,
-      )
-      ..httpAdditionalHeaders = {'User-Agent': _userAgent};
-    return _clients[directoryName] = CupertinoClient.fromSessionConfiguration(config);
-  }
+  /// Returns a shared HTTP client that uses native SSL configuration.
+  ///
+  /// On iOS: Uses SharedURLSessionManager's URLSession.
+  /// On Android: Uses SharedHttpClientManager's OkHttpClient.
+  ///
+  /// Must call [init] before using this method.
+  static http.Client get client => _client!;
 }

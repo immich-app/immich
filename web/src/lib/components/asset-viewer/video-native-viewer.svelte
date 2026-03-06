@@ -50,6 +50,7 @@
   );
   let isScrubbing = $state(false);
   let showVideo = $state(false);
+  let hasFocused = $state(false);
 
   onMount(() => {
     // Show video after mount to ensure fading in.
@@ -59,6 +60,7 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     if (assetFileUrl) {
+      hasFocused = false;
       videoPlayer?.load();
     }
   });
@@ -151,7 +153,10 @@
         onseeking={() => (isScrubbing = true)}
         onseeked={() => (isScrubbing = false)}
         onplaying={(e) => {
-          e.currentTarget.focus();
+          if (!hasFocused) {
+            e.currentTarget.focus();
+            hasFocused = true;
+          }
         }}
         onclose={() => onClose()}
         muted={$videoViewerMuted}

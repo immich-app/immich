@@ -7,8 +7,8 @@
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
+    "format": "prettier --cache --check .",
+    "format:fix": "prettier --cache --write --list-different .",
     "start": "pnpm run start:dev",
     "nest": "nest",
     "start:dev": "nest start --watch --",

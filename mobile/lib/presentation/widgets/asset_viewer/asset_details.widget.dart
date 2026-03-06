@@ -27,18 +27,21 @@ class AssetDetails extends ConsumerWidget {
         color: context.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const DragHandle(),
-          DateTimeDetails(asset: asset, exifInfo: exifInfo),
-          PeopleDetails(asset: asset),
-          LocationDetails(asset: asset, exifInfo: exifInfo),
-          TechnicalDetails(asset: asset, exifInfo: exifInfo),
-          RatingDetails(exifInfo: exifInfo),
-          AppearsInDetails(asset: asset),
-          SizedBox(height: context.padding.bottom + 48),
-        ],
+      child: SafeArea(
+        top: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const DragHandle(),
+            DateTimeDetails(asset: asset, exifInfo: exifInfo),
+            PeopleDetails(asset: asset),
+            LocationDetails(asset: asset, exifInfo: exifInfo),
+            TechnicalDetails(asset: asset, exifInfo: exifInfo),
+            RatingDetails(exifInfo: exifInfo),
+            AppearsInDetails(asset: asset),
+            SizedBox(height: context.padding.bottom + 48),
+          ],
+        ),
       ),
     );
   }

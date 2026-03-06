@@ -33,7 +33,6 @@ export type Events = {
   ApiKeyDelete: [ApiKeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
-  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
   AssetsArchive: [string[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
@@ -87,6 +86,8 @@ export type Events = {
   WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEvent];
+
+  WebsocketConnect: [];
 };
 
 export const eventManager = new BaseEventManager<Events>();

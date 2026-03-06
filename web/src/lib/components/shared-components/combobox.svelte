@@ -180,6 +180,17 @@
     onSelect(selectedOption);
   };
 
+  // TODO: move this combobox component into @immich/ui
+  // Bits UI dialogs use `contain: layout` so fixed descendants are positioned in dialog space
+  const getModalBounds = () => {
+    const modalRoot = input?.closest('[data-dialog-content]');
+    if (!modalRoot || !getComputedStyle(modalRoot).contain.includes('layout')) {
+      return;
+    }
+
+    return modalRoot.getBoundingClientRect();
+  };
+
   const calculatePosition = (boundary: DOMRect | undefined) => {
     const visualViewport = window.visualViewport;
 
@@ -187,29 +198,35 @@
       return;
     }
 
-    const left = boundary.left + (visualViewport?.offsetLeft || 0);
-    const offsetTop = visualViewport?.offsetTop || 0;
+    const modalBounds = getModalBounds();
+    const offsetTop = modalBounds?.top || 0;
+    const offsetLeft = modalBounds?.left || 0;
+    const rootHeight = modalBounds?.height || window.innerHeight;
+
+    const top = boundary.top - offsetTop;
+    const bottom = boundary.bottom - offsetTop;
+    const left = boundary.left - offsetLeft;
 
     if (dropdownDirection === 'top') {
       return {
-        bottom: `${window.innerHeight - boundary.top - offsetTop}px`,
+        bottom: `${rootHeight - top}px`,
         left: `${left}px`,
         width: `${boundary.width}px`,
-        maxHeight: maxHeight(boundary.top - dropdownOffset),
+        maxHeight: maxHeight(top - dropdownOffset),
       };
     }
 
-    const viewportHeight = visualViewport?.height || 0;
-    const availableHeight = viewportHeight - boundary.bottom;
+    const viewportHeight = visualViewport?.height || rootHeight;
+    const availableHeight = modalBounds ? rootHeight - bottom : viewportHeight - boundary.bottom;
     return {
-      top: `${boundary.bottom + offsetTop}px`,
+      top: `${bottom}px`,
       left: `${left}px`,
       width: `${boundary.width}px`,
       maxHeight: maxHeight(availableHeight - dropdownOffset),
     };
   };
 
-  const maxHeight = (size: number) => `min(${size}px,18rem)`;
+  const maxHeight = (size: number) => `min(${Math.max(size, 0)}px,18rem)`;
 
   const onPositionChange = () => {
     if (!isOpen) {
