@@ -350,7 +350,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final heroAttributes = isCurrentPage ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}') : null;
 
     if (displayAsset.isImage && !isPlayingMotionVideo) {
-      if (CurrentPlatform.isIOS17OrAbove) {
+      if (CurrentPlatform.isIOS17OrAbove && isCurrentPage) {
         return _buildHdrPhotoView(
           displayAsset,
           heroAttributes: heroAttributes,

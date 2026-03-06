@@ -100,8 +100,11 @@ class HDRImageViewController: NSObject, FlutterPlatformView {
     DispatchQueue.main.async { [weak self] in
       guard let self = self else { return }
       self.imageView.image = image
-      self.imageView.alpha = 1
-      self.channel.invokeMethod("onImageLoaded", arguments: nil)
+      UIView.animate(withDuration: 0.3) {
+        self.imageView.alpha = 1
+      } completion: { _ in
+        self.channel.invokeMethod("onImageLoaded", arguments: nil)
+      }
     }
   }
 }
