@@ -272,18 +272,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     }
 
 
-    // Read XMP from cursor (API 30+) or ExifInterface stream (pre-30)
+    // Read XMP from cursor (API 30+)
     val xmp: String? = if (xmpColumn != -1) {
       cursor.getBlob(xmpColumn)?.toString(Charsets.UTF_8)
     } else {
-      try {
-        ctx.contentResolver.openInputStream(uri)?.use { stream ->
-          ExifInterface(stream).getAttribute(ExifInterface.TAG_XMP)
-        }
-      } catch (e: Exception) {
-        Log.w(TAG, "Failed to read XMP for asset $assetId", e)
-        null
-      }
+      // if xmp column is not available, we are on API 29 or below
+      // theoretically there were motion photos but the Camera:MotionPhoto xmp tag
+      // was only added in Android 11, so we should not have to worry about parsing XMP on older versions
+      null
     }
 
     if (xmp != null && "Camera:MotionPhoto" in xmp) {
