@@ -8,6 +8,7 @@ import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
+import { getForAsset, getForAssetDeletion, getForPartner } from 'test/mappers';
 import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -71,7 +72,7 @@ describe(AssetService.name, () => {
   describe('getRandom', () => {
     it('should get own random assets', async () => {
       mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
+      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
 
       await sut.getRandom(authStub.admin, 1);
 
@@ -82,8 +83,8 @@ describe(AssetService.name, () => {
       const partner = factory.partner({ inTimeline: false });
       const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
-      mocks.partner.getAll.mockResolvedValue([partner]);
+      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
 
       await sut.getRandom(auth, 1);
 
@@ -94,8 +95,8 @@ describe(AssetService.name, () => {
       const partner = factory.partner({ inTimeline: true });
       const auth = factory.auth({ user: { id: partner.sharedWithId } });
 
-      mocks.asset.getRandom.mockResolvedValue([AssetFactory.create()]);
-      mocks.partner.getAll.mockResolvedValue([partner]);
+      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
 
       await sut.getRandom(auth, 1);
 
@@ -107,7 +108,7 @@ describe(AssetService.name, () => {
     it('should allow owner access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -121,7 +122,7 @@ describe(AssetService.name, () => {
     it('should allow shared link access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.adminSharedLink, asset.id);
 
@@ -134,7 +135,7 @@ describe(AssetService.name, () => {
     it('should strip metadata for shared link if exif is disabled', async () => {
       const asset = AssetFactory.from().exif({ description: 'foo' }).build();
       mocks.access.asset.checkSharedLinkAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       const result = await sut.get(
         { ...authStub.adminSharedLink, sharedLink: { ...authStub.adminSharedLink.sharedLink!, showExif: false } },
@@ -152,7 +153,7 @@ describe(AssetService.name, () => {
     it('should allow partner sharing access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -162,7 +163,7 @@ describe(AssetService.name, () => {
     it('should allow shared album access', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkAlbumAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await sut.get(authStub.admin, asset.id);
 
@@ -204,8 +205,8 @@ describe(AssetService.name, () => {
     it('should update the asset', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
-      mocks.asset.update.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { isFavorite: true });
 
@@ -215,8 +216,8 @@ describe(AssetService.name, () => {
     it('should update the exif description', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
-      mocks.asset.update.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.update.mockResolvedValue(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { description: 'Test description' });
 
@@ -229,8 +230,8 @@ describe(AssetService.name, () => {
     it('should update the exif rating', async () => {
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(asset);
-      mocks.asset.update.mockResolvedValueOnce(asset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
+      mocks.asset.update.mockResolvedValueOnce(getForAsset(asset));
 
       await sut.update(authStub.admin, asset.id, { rating: 3 });
 
@@ -274,7 +275,7 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.from().owner(auth.user).build();
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       await expect(
         sut.update(authStub.admin, asset.id, {
@@ -301,7 +302,7 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video });
       const asset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValue(motionAsset);
+      mocks.asset.getById.mockResolvedValue(getForAsset(motionAsset));
 
       await expect(
         sut.update(auth, asset.id, {
@@ -327,9 +328,9 @@ describe(AssetService.name, () => {
       const motionAsset = AssetFactory.create({ type: AssetType.Video, visibility: AssetVisibility.Timeline });
       const stillAsset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([stillAsset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
-      mocks.asset.getById.mockResolvedValueOnce(stillAsset);
-      mocks.asset.update.mockResolvedValue(stillAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(stillAsset));
+      mocks.asset.update.mockResolvedValue(getForAsset(stillAsset));
       const auth = AuthFactory.from(motionAsset.owner).build();
 
       await sut.update(auth, stillAsset.id, { livePhotoVideoId: motionAsset.id });
@@ -354,9 +355,9 @@ describe(AssetService.name, () => {
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
       const unlinkedAsset = AssetFactory.create();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
-      mocks.asset.getById.mockResolvedValueOnce(asset);
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
-      mocks.asset.update.mockResolvedValueOnce(unlinkedAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
+      mocks.asset.update.mockResolvedValueOnce(getForAsset(unlinkedAsset));
 
       await sut.update(auth, asset.id, { livePhotoVideoId: null });
 
@@ -569,7 +570,7 @@ describe(AssetService.name, () => {
         .file({ type: AssetFileType.Preview, isEdited: true })
         .file({ type: AssetFileType.Thumbnail, isEdited: true })
         .build();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
@@ -583,7 +584,7 @@ describe(AssetService.name, () => {
           },
         ],
       ]);
-      expect(mocks.asset.remove).toHaveBeenCalledWith(asset);
+      expect(mocks.asset.remove).toHaveBeenCalledWith(getForAssetDeletion(asset));
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
@@ -591,11 +592,7 @@ describe(AssetService.name, () => {
         .stack({}, (builder) => builder.asset())
         .build();
       mocks.stack.delete.mockResolvedValue();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue({
-        ...asset,
-        // TODO the specific query filters out the primary asset from `stack.assets`. This should be in a mapper eventually
-        stack: { ...asset.stack!, assets: asset.stack!.assets.filter(({ id }) => id !== asset.stack!.primaryAssetId) },
-      });
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
@@ -605,7 +602,7 @@ describe(AssetService.name, () => {
     it('should delete a live photo', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
 
       await sut.handleAssetDeletion({
@@ -622,7 +619,7 @@ describe(AssetService.name, () => {
     it('should not delete a live motion part if it is being used by another asset', async () => {
       const asset = AssetFactory.create({ livePhotoVideoId: newUuid() });
       mocks.asset.getLivePhotoCount.mockResolvedValue(2);
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
 
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
 
@@ -633,7 +630,7 @@ describe(AssetService.name, () => {
 
     it('should update usage', async () => {
       const asset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
-      mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(getForAssetDeletion(asset));
       await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(asset.ownerId, -5000);
     });

@@ -4,13 +4,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Stats } from 'node:fs';
 import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
-import { AssetMediaCreateDto, AssetMediaReplaceDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadBody } from 'src/types';
@@ -22,6 +21,7 @@ import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { getForAsset } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -152,13 +152,6 @@ const createDto = Object.freeze({
   duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
-const replaceDto = Object.freeze({
-  deviceAssetId: 'deviceAssetId',
-  deviceId: 'deviceId',
-  fileModifiedAt: new Date('2024-04-15T23:41:36.910Z'),
-  fileCreatedAt: new Date('2024-04-15T23:41:36.910Z'),
-}) as AssetMediaReplaceDto;
-
 const assetEntity = Object.freeze({
   id: 'id_1',
   ownerId: 'user_id_1',
@@ -179,25 +172,6 @@ const assetEntity = Object.freeze({
   },
   livePhotoVideoId: null,
 } as MapAsset);
-
-const existingAsset = Object.freeze({
-  ...assetEntity,
-  duration: null,
-  type: AssetType.Image,
-  checksum: Buffer.from('_getExistingAsset', 'utf8'),
-  libraryId: 'libraryId',
-  originalFileName: 'existing-filename.jpeg',
-}) as MapAsset;
-
-const sidecarAsset = Object.freeze({
-  ...existingAsset,
-  checksum: Buffer.from('_getExistingAssetWithSideCar', 'utf8'),
-}) as MapAsset;
-
-const copiedAsset = Object.freeze({
-  id: 'copied-asset',
-  originalPath: 'copied-path',
-}) as MapAsset;
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
@@ -434,7 +408,7 @@ describe(AssetMediaService.name, () => {
         .owner(authStub.user1.user)
         .build();
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
       mocks.asset.create.mockResolvedValueOnce(asset);
 
       await expect(
@@ -451,7 +425,7 @@ describe(AssetMediaService.name, () => {
     it('should hide the linked motion asset', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video }).owner(authStub.user1.user).build();
       const asset = AssetFactory.create();
-      mocks.asset.getById.mockResolvedValueOnce(motionAsset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(motionAsset));
       mocks.asset.create.mockResolvedValueOnce(asset);
 
       await expect(
@@ -470,7 +444,7 @@ describe(AssetMediaService.name, () => {
 
     it('should handle a sidecar file', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).build();
-      mocks.asset.getById.mockResolvedValueOnce(asset);
+      mocks.asset.getById.mockResolvedValueOnce(getForAsset(asset));
       mocks.asset.create.mockResolvedValueOnce(asset);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo, fileStub.photoSidecar)).resolves.toEqual({
@@ -773,177 +747,6 @@ describe(AssetMediaService.name, () => {
       ).resolves.toEqual({ existingIds: ['42'] });
 
       expect(mocks.asset.getByDeviceIds).toHaveBeenCalledWith(userStub.admin.id, '420', ['69']);
-    });
-  });
-
-  describe('replaceAsset', () => {
-    it('should fail the auth check when update photo does not exist', async () => {
-      await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
-        'Not found or no asset.update access',
-      );
-
-      expect(mocks.asset.create).not.toHaveBeenCalled();
-    });
-
-    it('should fail if asset cannot be fetched', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, fileStub.photo)).rejects.toThrow(
-        'Asset not found',
-      );
-
-      expect(mocks.asset.create).not.toHaveBeenCalled();
-    });
-
-    it('should update a photo with no sidecar to photo with no sidecar', async () => {
-      const updatedFile = fileStub.photo;
-      const updatedAsset = { ...existingAsset, ...updatedFile };
-      mocks.asset.getById.mockResolvedValueOnce(existingAsset);
-      mocks.asset.getById.mockResolvedValueOnce(updatedAsset);
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([existingAsset.id]));
-      // this is the original file size
-      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
-      // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
-
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatus.REPLACED,
-        id: 'copied-asset',
-      });
-
-      expect(mocks.asset.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: existingAsset.id,
-          originalFileName: 'photo1.jpeg',
-          originalPath: 'fake_path/photo1.jpeg',
-        }),
-      );
-      expect(mocks.asset.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          originalFileName: 'existing-filename.jpeg',
-          originalPath: 'fake_path/asset_1.jpeg',
-        }),
-      );
-      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
-        expect.objectContaining({
-          assetId: existingAsset.id,
-          type: AssetFileType.Sidecar,
-        }),
-      );
-
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
-        deletedAt: expect.any(Date),
-        status: AssetStatus.Trashed,
-      });
-      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
-      expect(mocks.storage.utimes).toHaveBeenCalledWith(
-        updatedFile.originalPath,
-        expect.any(Date),
-        new Date(replaceDto.fileModifiedAt),
-      );
-    });
-
-    it('should update a photo with sidecar to photo with sidecar', async () => {
-      const updatedFile = fileStub.photo;
-      const sidecarFile = fileStub.photoSidecar;
-      const updatedAsset = { ...sidecarAsset, ...updatedFile };
-      mocks.asset.getById.mockResolvedValueOnce(existingAsset);
-      mocks.asset.getById.mockResolvedValueOnce(updatedAsset);
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
-      // this is the original file size
-      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
-      // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
-
-      await expect(
-        sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile, sidecarFile),
-      ).resolves.toEqual({
-        status: AssetMediaStatus.REPLACED,
-        id: 'copied-asset',
-      });
-
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
-        deletedAt: expect.any(Date),
-        status: AssetStatus.Trashed,
-      });
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(
-        expect.objectContaining({
-          assetId: existingAsset.id,
-          path: sidecarFile.originalPath,
-          type: AssetFileType.Sidecar,
-        }),
-      );
-      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
-      expect(mocks.storage.utimes).toHaveBeenCalledWith(
-        updatedFile.originalPath,
-        expect.any(Date),
-        new Date(replaceDto.fileModifiedAt),
-      );
-    });
-
-    it('should update a photo with a sidecar to photo with no sidecar', async () => {
-      const updatedFile = fileStub.photo;
-
-      const updatedAsset = { ...sidecarAsset, ...updatedFile };
-      mocks.asset.getById.mockResolvedValueOnce(sidecarAsset);
-      mocks.asset.getById.mockResolvedValueOnce(updatedAsset);
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
-      // this is the original file size
-      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
-      // this is for the copy call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
-
-      await expect(sut.replaceAsset(authStub.user1, existingAsset.id, replaceDto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatus.REPLACED,
-        id: 'copied-asset',
-      });
-
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([copiedAsset.id], {
-        deletedAt: expect.any(Date),
-        status: AssetStatus.Trashed,
-      });
-      expect(mocks.asset.deleteFile).toHaveBeenCalledWith(
-        expect.objectContaining({
-          assetId: existingAsset.id,
-          type: AssetFileType.Sidecar,
-        }),
-      );
-      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, updatedFile.size);
-      expect(mocks.storage.utimes).toHaveBeenCalledWith(
-        updatedFile.originalPath,
-        expect.any(Date),
-        new Date(replaceDto.fileModifiedAt),
-      );
-    });
-
-    it('should handle a photo with sidecar to duplicate photo ', async () => {
-      const updatedFile = fileStub.photo;
-      const error = new Error('unique key violation');
-      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
-
-      mocks.asset.update.mockRejectedValue(error);
-      mocks.asset.getById.mockResolvedValueOnce(sidecarAsset);
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(sidecarAsset.id);
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([sidecarAsset.id]));
-      // this is the original file size
-      mocks.storage.stat.mockResolvedValue({ size: 0 } as Stats);
-      // this is for the clone call
-      mocks.asset.create.mockResolvedValue(copiedAsset);
-
-      await expect(sut.replaceAsset(authStub.user1, sidecarAsset.id, replaceDto, updatedFile)).resolves.toEqual({
-        status: AssetMediaStatus.DUPLICATE,
-        id: sidecarAsset.id,
-      });
-
-      expect(mocks.asset.create).not.toHaveBeenCalled();
-      expect(mocks.asset.updateAll).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
-      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
-
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: [updatedFile.originalPath, undefined] },
-      });
-      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
     });
   });
 

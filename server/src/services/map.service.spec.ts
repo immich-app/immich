@@ -3,6 +3,7 @@ import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { userStub } from 'test/fixtures/user.stub';
+import { getForAlbum, getForPartner } from 'test/mappers';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -52,7 +53,7 @@ describe(MapService.name, () => {
         state: asset.exifInfo.state,
         country: asset.exifInfo.country,
       };
-      mocks.partner.getAll.mockResolvedValue([partner]);
+      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
 
       const markers = await sut.getMapMarkers(auth, { withPartners: true });
@@ -81,8 +82,10 @@ describe(MapService.name, () => {
       };
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
-      mocks.album.getOwned.mockResolvedValue([AlbumFactory.create()]);
-      mocks.album.getShared.mockResolvedValue([AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build()]);
+      mocks.album.getOwned.mockResolvedValue([getForAlbum(AlbumFactory.create())]);
+      mocks.album.getShared.mockResolvedValue([
+        getForAlbum(AlbumFactory.from().albumUser({ userId: userStub.user1.id }).build()),
+      ]);
 
       const markers = await sut.getMapMarkers(auth, { withSharedAlbums: true });
 
