@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -39,7 +38,7 @@ const asNightlyTasksCron = (config: SystemConfig) => {
 
 @Injectable()
 export class QueueService extends BaseService {
-  private services: ClassConstructor<unknown>[] = [];
+  private services: (new (...args: any[]) => unknown)[] = [];
   private nightlyJobsLock = false;
 
   @OnEvent({ name: 'ConfigInit' })
@@ -96,7 +95,7 @@ export class QueueService extends BaseService {
     }
   }
 
-  setServices(services: ClassConstructor<unknown>[]) {
+  setServices(services: (new (...args: any[]) => unknown)[]) {
     this.services = services;
   }
 

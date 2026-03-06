@@ -3,7 +3,6 @@ import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
-import { ClassConstructor } from 'class-transformer';
 import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
 import multer from 'multer';
@@ -93,7 +92,7 @@ export type ControllerContext = {
   close: () => Promise<void>;
 };
 
-export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
+export const controllerSetup = async (controller: new (...args: any[]) => unknown, providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
   const upload = multer({ storage: multer.memoryStorage() });
   const memoryFileInterceptor = {
@@ -164,14 +163,14 @@ const mockFn = (label: string, { strict }: { strict: boolean }) => {
   });
 };
 
-export const mockBaseService = <T extends BaseService>(service: ClassConstructor<T>) => {
+export const mockBaseService = <T extends BaseService>(service: new (...args: any[]) => T) => {
   return automock(service, { args: [{ setContext: () => {} }], strict: false });
 };
 
 export const automock = <T>(
-  Dependency: ClassConstructor<T>,
+  Dependency: new (...args: any[]) => T,
   options?: {
-    args?: ConstructorParameters<ClassConstructor<T>>;
+    args?: ConstructorParameters<new (...args: any[]) => T>;
     strict?: boolean;
   },
 ): AutoMocked<T> => {

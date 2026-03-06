@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
 import { OnEvent } from 'src/decorators';
@@ -61,7 +60,7 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigValidate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
     const { logLevel } = this.configRepository.getEnv();
-    if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && logLevel) {
+    if (!_.isEqual(toPlainObject(newConfig.logging), oldConfig.logging) && logLevel) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }

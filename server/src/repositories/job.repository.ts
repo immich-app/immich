@@ -2,7 +2,6 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
-import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
 import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto';
@@ -34,7 +33,7 @@ export class JobRepository {
     this.logger.setContext(JobRepository.name);
   }
 
-  setup(services: ClassConstructor<unknown>[]) {
+  setup(services: (new (...args: any[]) => unknown)[]) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
 
     // discovery

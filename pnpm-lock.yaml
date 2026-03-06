@@ -433,12 +433,6 @@ importers:
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
-      class-transformer:
-        specifier: ^0.5.1
-        version: 0.5.1
-      class-validator:
-        specifier: ^0.15.0
-        version: 0.15.1
       compression:
         specifier: ^1.8.0
         version: 1.8.1
@@ -18617,13 +18611,15 @@ snapshots:
 
   cjs-module-lexer@2.2.0: {}
 
-  class-transformer@0.5.1: {}
+  class-transformer@0.5.1:
+    optional: true
 
   class-validator@0.15.1:
     dependencies:
       '@types/validator': 13.15.10
       libphonenumber-js: 1.12.38
       validator: 13.15.26
+    optional: true
 
   clean-css@5.3.3:
     dependencies:
@@ -21500,7 +21496,8 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  libphonenumber-js@1.12.38: {}
+  libphonenumber-js@1.12.38:
+    optional: true
 
   lightningcss-android-arm64@1.32.0:
     optional: true
