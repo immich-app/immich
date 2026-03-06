@@ -1874,22 +1874,6 @@ class HeaderSettingsRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [ImmichUIShowcasePage]
-class ImmichUIShowcaseRoute extends PageRouteInfo<void> {
-  const ImmichUIShowcaseRoute({List<PageRouteInfo>? children})
-    : super(ImmichUIShowcaseRoute.name, initialChildren: children);
-
-  static const String name = 'ImmichUIShowcaseRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const ImmichUIShowcasePage();
-    },
-  );
-}
-
-/// generated route for
 /// [LibraryPage]
 class LibraryRoute extends PageRouteInfo<void> {
   const LibraryRoute({List<PageRouteInfo>? children})
@@ -2456,6 +2440,44 @@ class PlacesCollectionRouteArgs {
   @override
   String toString() {
     return 'PlacesCollectionRouteArgs{key: $key, currentLocation: $currentLocation}';
+  }
+}
+
+/// generated route for
+/// [ProfilePictureCropPage]
+class ProfilePictureCropRoute
+    extends PageRouteInfo<ProfilePictureCropRouteArgs> {
+  ProfilePictureCropRoute({
+    Key? key,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ProfilePictureCropRoute.name,
+         args: ProfilePictureCropRouteArgs(key: key, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'ProfilePictureCropRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<ProfilePictureCropRouteArgs>();
+      return ProfilePictureCropPage(key: args.key, asset: args.asset);
+    },
+  );
+}
+
+class ProfilePictureCropRouteArgs {
+  const ProfilePictureCropRouteArgs({this.key, required this.asset});
+
+  final Key? key;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'ProfilePictureCropRouteArgs{key: $key, asset: $asset}';
   }
 }
 

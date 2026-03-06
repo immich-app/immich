@@ -12,6 +12,7 @@ import {
   type MaintenanceStatusResponseDto,
   type NotificationDto,
   type ServerVersionResponseDto,
+  type SyncAssetEditV1,
   type SyncAssetV1,
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
@@ -41,7 +42,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV1: (data: { asset: SyncAssetV1 }) => void;
+  AssetEditReadyV1: (data: { asset: SyncAssetV1; edit: SyncAssetEditV1[] }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -61,7 +62,10 @@ export const websocketStore = {
 export const websocketEvents = createEventEmitter(websocket);
 
 websocket
-  .on('connect', () => websocketStore.connected.set(true))
+  .on('connect', () => {
+    eventManager.emit('WebsocketConnect');
+    websocketStore.connected.set(true);
+  })
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))

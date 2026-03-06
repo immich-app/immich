@@ -1,9 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ActionButton from '$lib/components/ActionButton.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
@@ -20,9 +18,10 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { getAssetActions, handleReplaceAsset } from '$lib/services/asset.service';
+  import { getAssetActions } from '$lib/services/asset.service';
   import { user } from '$lib/stores/user.store';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -35,14 +34,14 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
+    mdiArrowRight,
     mdiCompare,
     mdiDotsVertical,
     mdiImageSearch,
     mdiPresentationPlay,
-    mdiUpload,
     mdiVideoOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -86,60 +85,17 @@
   const Close: ActionItem = $derived({
     title: $t('go_back'),
     type: $t('assets'),
-    icon: mdiArrowLeft,
+    icon: languageManager.rtl ? mdiArrowRight : mdiArrowLeft,
     $if: () => !!onClose,
     onAction: () => onClose?.(),
     shortcuts: [{ key: 'Escape' }],
   });
 
-  const {
-    Share,
-    Download,
-    DownloadOriginal,
-    SharedLinkDownload,
-    Offline,
-    Favorite,
-    Unfavorite,
-    PlayMotionPhoto,
-    StopMotionPhoto,
-    ZoomIn,
-    ZoomOut,
-    Copy,
-    Info,
-    Edit,
-    RefreshFacesJob,
-    RefreshMetadataJob,
-    RegenerateThumbnailJob,
-    TranscodeVideoJob,
-  } = $derived(getAssetActions($t, asset));
+  const Actions = $derived(getAssetActions($t, asset));
   const sharedLink = getSharedLink();
 </script>
 
-<CommandPaletteDefaultProvider
-  name={$t('assets')}
-  actions={withoutIcons([
-    Close,
-    Cast,
-    Share,
-    Download,
-    DownloadOriginal,
-    SharedLinkDownload,
-    Offline,
-    Favorite,
-    Unfavorite,
-    PlayMotionPhoto,
-    StopMotionPhoto,
-    ZoomIn,
-    ZoomOut,
-    Copy,
-    Info,
-    Edit,
-    RefreshFacesJob,
-    RefreshMetadataJob,
-    RegenerateThumbnailJob,
-    TranscodeVideoJob,
-  ])}
-/>
+<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 transition-transform duration-200"
@@ -150,23 +106,23 @@
 
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
     <ActionButton action={Cast} />
-    <ActionButton action={Share} />
-    <ActionButton action={Offline} />
-    <ActionButton action={PlayMotionPhoto} />
-    <ActionButton action={StopMotionPhoto} />
-    <ActionButton action={ZoomIn} />
-    <ActionButton action={ZoomOut} />
-    <ActionButton action={Copy} />
-    <ActionButton action={SharedLinkDownload} />
-    <ActionButton action={Info} />
-    <ActionButton action={Favorite} />
-    <ActionButton action={Unfavorite} />
+    <ActionButton action={Actions.Share} />
+    <ActionButton action={Actions.Offline} />
+    <ActionButton action={Actions.PlayMotionPhoto} />
+    <ActionButton action={Actions.StopMotionPhoto} />
+    <ActionButton action={Actions.ZoomIn} />
+    <ActionButton action={Actions.ZoomOut} />
+    <ActionButton action={Actions.Copy} />
+    <ActionButton action={Actions.SharedLinkDownload} />
+    <ActionButton action={Actions.Info} />
+    <ActionButton action={Actions.Favorite} />
+    <ActionButton action={Actions.Unfavorite} />
 
     {#if isOwner}
       <RatingAction {asset} {onAction} />
     {/if}
 
-    <ActionButton action={Edit} />
+    <ActionButton action={Actions.Edit} />
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
@@ -178,17 +134,14 @@
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
 
-        <ActionMenuItem action={Download} />
-        <ActionMenuItem action={DownloadOriginal} />
+        <ActionMenuItem action={Actions.Download} />
+        <ActionMenuItem action={Actions.DownloadOriginal} />
 
-        {#if !isLocked}
-          {#if asset.isTrashed}
-            <RestoreAction {asset} {onAction} />
-          {:else}
-            <AddToAlbumAction {asset} {onAction} />
-            <AddToAlbumAction {asset} {onAction} shared />
-          {/if}
+        {#if !isLocked && asset.isTrashed}
+          <RestoreAction {asset} {onAction} />
         {/if}
+
+        <ActionMenuItem action={Actions.AddToAlbum} />
 
         {#if isOwner}
           <AddToStackAction {asset} {stack} {onAction} />
@@ -216,11 +169,6 @@
         {#if !isLocked}
           {#if isOwner}
             <ArchiveAction {asset} {onAction} {preAction} />
-            <MenuOption
-              icon={mdiUpload}
-              onClick={() => handleReplaceAsset(asset.id)}
-              text={$t('replace_with_upload')}
-            />
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
@@ -251,10 +199,10 @@
         {/if}
         {#if isOwner}
           <hr />
-          <ActionMenuItem action={RefreshFacesJob} />
-          <ActionMenuItem action={RefreshMetadataJob} />
-          <ActionMenuItem action={RegenerateThumbnailJob} />
-          <ActionMenuItem action={TranscodeVideoJob} />
+          <ActionMenuItem action={Actions.RefreshFacesJob} />
+          <ActionMenuItem action={Actions.RefreshMetadataJob} />
+          <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+          <ActionMenuItem action={Actions.TranscodeVideoJob} />
         {/if}
       </ButtonContextMenu>
     {/if}

@@ -28,10 +28,9 @@ class FoldersStore {
     if (this.initialized) {
       return this.folders!;
     }
-    this.initialized = true;
-
     this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
     this.folders.collapse();
+    this.initialized = true;
     return this.folders;
   }
 

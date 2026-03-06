@@ -18,7 +18,7 @@ from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from immich_ml.config import Settings, settings
+from immich_ml.config import MaxBatchSize, Settings, settings
 from immich_ml.main import load, preload_models
 from immich_ml.models.base import InferenceModel
 from immich_ml.models.cache import ModelCache
@@ -26,6 +26,9 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
+from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
@@ -179,7 +182,7 @@ class TestOrtSession:
     OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
-    ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
+    ROCM_EP = ["MIGraphXExecutionProvider", "CPUExecutionProvider"]
     COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
@@ -289,12 +292,38 @@ class TestOrtSession:
 
         assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
 
-    def test_sets_provider_options_for_rocm(self) -> None:
+    def test_sets_provider_options_for_rocm(self, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
 
-        session = OrtSession("ViT-B-32__openai", providers=["ROCMExecutionProvider"])
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
 
-        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "0",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
+
+    def test_sets_rocm_to_fp16_if_enabled(self, path: mock.Mock, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mocker.patch.object(settings, "rocm_precision", ModelPrecision.FP16)
+        mkdir = mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+
+        session = OrtSession(model_path, providers=["MIGraphXExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_id": "1",
+                "migraphx_model_cache_dir": "/cache/ViT-B-32__openai/textual/migraphx",
+                "migraphx_fp16_enable": "1",
+            }
+        ]
+        mkdir.assert_called_once_with(parents=True, exist_ok=True)
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
@@ -828,6 +857,78 @@ class TestFaceRecognition:
         update_dims.assert_not_called()
         onnx.load.assert_not_called()
         onnx.save.assert_not_called()
+
+    def test_set_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=2))
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size == 2
+
+    def test_ignore_other_custom_max_batch_size(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=2))
+
+        recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
+
+        assert recognizer.batch_size is None
+
+
+class TestOcr:
+    def test_set_det_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_detector = TextDetector("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_detector.postprocess.box_thresh == 0.8
+
+    def test_set_rec_min_score(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", min_score=0.8, cache_dir="test_cache")
+
+        assert text_recognizer.min_score == 0.8
+
+    def test_set_rec_set_default_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+        )
+
+    def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=4))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=4, rec_img_shape=(3, 48, 320))
+        )
+
+    def test_ignore_other_custom_max_batch_size(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        rapid_recognizer = mocker.patch("immich_ml.models.ocr.recognition.RapidTextRecognizer")
+        mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=3))
+
+        text_recognizer = TextRecognizer("PP-OCRv5_mobile", cache_dir="test_cache")
+        text_recognizer.load()
+
+        rapid_recognizer.assert_called_once_with(
+            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+        )
 
 
 @pytest.mark.asyncio

@@ -216,7 +216,8 @@ select
           "asset_file"."path",
           "asset_file"."type",
           "asset_file"."isEdited",
-          "asset_file"."isProgressive"
+          "asset_file"."isProgressive",
+          "asset_file"."isTransparent"
         from
           "asset_file"
         where
@@ -561,6 +562,7 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -592,6 +594,7 @@ from
 where
   "asset"."deletedAt" is null
   and "asset"."id" = $2
+  and "asset"."visibility" != $3
 
 -- AssetJobRepository.streamForStorageTemplateJob
 select
@@ -601,6 +604,7 @@ select
   "asset"."checksum",
   "asset"."originalPath",
   "asset"."isExternal",
+  "asset"."visibility",
   "asset"."originalFileName",
   "asset"."livePhotoVideoId",
   "asset"."fileCreatedAt",
@@ -631,6 +635,7 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."deletedAt" is null
+  and "asset"."visibility" != $2
 
 -- AssetJobRepository.streamForDeletedJob
 select

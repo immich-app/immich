@@ -1,5 +1,6 @@
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { user } from '$lib/stores/user.store';
+import type { AssetControlContext } from '$lib/types';
 import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
@@ -21,6 +22,14 @@ export class AssetInteraction {
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
+
+  asControlContext(): AssetControlContext {
+    return {
+      getOwnedAssets: () => this.selectedAssets.filter((asset) => asset.ownerId === this.userId),
+      getAssets: () => this.selectedAssets,
+      clearSelect: () => this.clearMultiselect(),
+    };
+  }
 
   isAllTrashed = $derived(this.selectedAssets.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.selectedAssets.every((asset) => asset.visibility === AssetVisibility.Archive));

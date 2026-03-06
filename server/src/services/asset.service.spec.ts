@@ -566,6 +566,8 @@ describe(AssetService.name, () => {
         .file({ type: AssetFileType.Thumbnail })
         .file({ type: AssetFileType.Preview })
         .file({ type: AssetFileType.FullSize })
+        .file({ type: AssetFileType.Preview, isEdited: true })
+        .file({ type: AssetFileType.Thumbnail, isEdited: true })
         .build();
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(asset);
 
@@ -660,7 +662,7 @@ describe(AssetService.name, () => {
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getForOcr.mockResolvedValue({ edits: [], ...asset.exifInfo });
 
       await expect(sut.getOcr(authStub.admin, asset.id)).resolves.toEqual([ocr1, ocr2]);
 
@@ -676,7 +678,7 @@ describe(AssetService.name, () => {
       const asset = AssetFactory.from().exif().build();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.ocr.getByAssetId.mockResolvedValue([]);
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getForOcr.mockResolvedValue({ edits: [], ...asset.exifInfo });
       await expect(sut.getOcr(authStub.admin, asset.id)).resolves.toEqual([]);
 
       expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith(asset.id);

@@ -17,9 +17,16 @@
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetMediaSize,
+    getAllAlbums,
+    getAssetInfo,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+  } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
     mdiCalendar,
@@ -38,16 +45,16 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
+  import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
   interface Props {
     asset: AssetResponseDto;
-    albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
   }
 
-  let { asset, albums = [], currentAlbum = null }: Props = $props();
+  let { asset, currentAlbum = null }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -74,14 +81,33 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
 
+  const refreshAlbums = async () => {
+    if (authManager.isSharedLink) {
+      return [];
+    }
+
+    try {
+      return await getAllAlbums({ assetId: asset.id });
+    } catch (error) {
+      handleError(error, 'Error getting asset album membership');
+      return [];
+    }
+  };
+
+  let albums = $derived(refreshAlbums());
+
   $effect(() => {
     if (!previousId) {
       previousId = asset.id;
+      return;
     }
-    if (asset.id !== previousId) {
-      showEditFaces = false;
-      previousId = asset.id;
+
+    if (asset.id === previousId) {
+      return;
     }
+
+    showEditFaces = false;
+    previousId = asset.id;
   });
 
   const getMegapixel = (width: number, height: number): number | undefined => {
@@ -118,6 +144,8 @@
     });
   };
 </script>
+
+<OnEvents onAlbumAddAssets={() => (albums = refreshAlbums())} />
 
 <section class="relative p-2">
   <div class="flex place-items-center gap-2">
@@ -502,37 +530,39 @@
   </section>
 {/if}
 
-{#if albums.length > 0}
-  <section class="px-6 py-6 dark:text-immich-dark-fg">
-    <div class="pb-4">
-      <Text size="small" color="muted">{$t('appears_in')}</Text>
-    </div>
-    {#each albums as album (album.id)}
-      <a href={Route.viewAlbum(album)}>
-        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
-          <div>
-            <img
-              alt={album.albumName}
-              class="h-12.5 w-12.5 rounded object-cover"
-              src={album.albumThumbnailAssetId &&
-                getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
-              draggable="false"
-            />
-          </div>
+{#await albums then albums}
+  {#if albums.length > 0}
+    <section class="px-6 py-6 dark:text-immich-dark-fg">
+      <div class="pb-4">
+        <Text size="small" color="muted">{$t('appears_in')}</Text>
+      </div>
+      {#each albums as album (album.id)}
+        <a href={Route.viewAlbum(album)}>
+          <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
+            <div>
+              <img
+                alt={album.albumName}
+                class="h-12.5 w-12.5 rounded object-cover"
+                src={album.albumThumbnailAssetId &&
+                  getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
+                draggable="false"
+              />
+            </div>
 
-          <div class="mb-auto mt-auto">
-            <p class="dark:text-immich-dark-primary">{album.albumName}</p>
-            <div class="flex flex-col gap-0 text-sm">
-              <div>
-                <AlbumListItemDetails {album} />
+            <div class="mb-auto mt-auto">
+              <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+              <div class="flex flex-col gap-0 text-sm">
+                <div>
+                  <AlbumListItemDetails {album} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </a>
-    {/each}
-  </section>
-{/if}
+        </a>
+      {/each}
+    </section>
+  {/if}
+{/await}
 
 {#if $preferences?.tags?.enabled}
   <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">

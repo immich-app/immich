@@ -30,6 +30,7 @@ class SyncRequestType {
   static const albumAssetExifsV1 = SyncRequestType._(r'AlbumAssetExifsV1');
   static const assetsV1 = SyncRequestType._(r'AssetsV1');
   static const assetExifsV1 = SyncRequestType._(r'AssetExifsV1');
+  static const assetEditsV1 = SyncRequestType._(r'AssetEditsV1');
   static const assetMetadataV1 = SyncRequestType._(r'AssetMetadataV1');
   static const authUsersV1 = SyncRequestType._(r'AuthUsersV1');
   static const memoriesV1 = SyncRequestType._(r'MemoriesV1');
@@ -42,6 +43,7 @@ class SyncRequestType {
   static const usersV1 = SyncRequestType._(r'UsersV1');
   static const peopleV1 = SyncRequestType._(r'PeopleV1');
   static const assetFacesV1 = SyncRequestType._(r'AssetFacesV1');
+  static const assetFacesV2 = SyncRequestType._(r'AssetFacesV2');
   static const userMetadataV1 = SyncRequestType._(r'UserMetadataV1');
 
   /// List of all possible values in this [enum][SyncRequestType].
@@ -53,6 +55,7 @@ class SyncRequestType {
     albumAssetExifsV1,
     assetsV1,
     assetExifsV1,
+    assetEditsV1,
     assetMetadataV1,
     authUsersV1,
     memoriesV1,
@@ -65,6 +68,7 @@ class SyncRequestType {
     usersV1,
     peopleV1,
     assetFacesV1,
+    assetFacesV2,
     userMetadataV1,
   ];
 
@@ -111,6 +115,7 @@ class SyncRequestTypeTypeTransformer {
         case r'AlbumAssetExifsV1': return SyncRequestType.albumAssetExifsV1;
         case r'AssetsV1': return SyncRequestType.assetsV1;
         case r'AssetExifsV1': return SyncRequestType.assetExifsV1;
+        case r'AssetEditsV1': return SyncRequestType.assetEditsV1;
         case r'AssetMetadataV1': return SyncRequestType.assetMetadataV1;
         case r'AuthUsersV1': return SyncRequestType.authUsersV1;
         case r'MemoriesV1': return SyncRequestType.memoriesV1;
@@ -123,6 +128,7 @@ class SyncRequestTypeTypeTransformer {
         case r'UsersV1': return SyncRequestType.usersV1;
         case r'PeopleV1': return SyncRequestType.peopleV1;
         case r'AssetFacesV1': return SyncRequestType.assetFacesV1;
+        case r'AssetFacesV2': return SyncRequestType.assetFacesV2;
         case r'UserMetadataV1': return SyncRequestType.userMetadataV1;
         default:
           if (!allowNull) {

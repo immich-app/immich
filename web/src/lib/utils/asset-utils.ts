@@ -1,10 +1,8 @@
-import { goto } from '$app/navigation';
 import ToastAction from '$lib/components/ToastAction.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { Route } from '$lib/route';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, withError } from '$lib/utils';
@@ -13,10 +11,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
-  addAssetsToAlbum as addAssets,
-  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
-  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -40,77 +35,6 @@ import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
-
-export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
-  const result = await addAssets({
-    ...authManager.params,
-    id: albumId,
-    bulkIdsDto: {
-      ids: assetIds,
-    },
-  });
-  const count = result.filter(({ success }) => success).length;
-  const duplicateErrorCount = result.filter(({ error }) => error === 'duplicate').length;
-  const $t = get(t);
-
-  if (showNotification) {
-    let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
-    if (count > 0) {
-      description = $t('assets_added_to_album_count', { values: { count } });
-    } else if (duplicateErrorCount > 0) {
-      description = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
-    }
-    toastManager.custom(
-      {
-        component: ToastAction,
-        props: {
-          title: $t('info'),
-          color: 'primary',
-          description,
-          button: {
-            text: $t('view_album'),
-            color: 'primary',
-            onClick() {
-              return goto(Route.viewAlbum({ id: albumId }));
-            },
-          },
-        },
-      },
-      { timeout: 5000 },
-    );
-  }
-};
-
-export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
-  const result = await addToAlbums({
-    ...authManager.params,
-    albumsAddAssetsDto: {
-      albumIds,
-      assetIds,
-    },
-  });
-
-  if (!showNotification) {
-    return result;
-  }
-
-  if (showNotification) {
-    const $t = get(t);
-
-    if (result.error === BulkIdErrorReason.Duplicate) {
-      toastManager.info($t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }));
-      return result;
-    }
-    if (result.error) {
-      toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
-      return result;
-    }
-    toastManager.success(
-      $t('assets_added_to_albums_count', { values: { albumTotal: albumIds.length, assetTotal: assetIds.length } }),
-    );
-    return result;
-  }
-};
 
 export const tagAssets = async ({
   assetIds,
@@ -212,7 +136,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
       const { data } = await downloadRequest({
         method: 'POST',
         url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds },
+        data: { assetIds: archive.assetIds, edited: true },
         signal: abort.signal,
         onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
       });
@@ -300,19 +224,54 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
-if (isSafari) {
-  supportedImageMimeTypes.add('image/heic').add('image/heif');
-}
+async function addSupportedMimeTypes(): Promise<void> {
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
+  if (isSafari) {
+    const match = navigator.userAgent.match(/Version\/(\d+)/);
 
-function checkJxlSupport(): void {
-  const img = new Image();
-  img.addEventListener('load', () => {
+    if (!match) {
+      return;
+    }
+
+    const majorVersion = Number.parseInt(match[1]);
+    const MIN_REQUIRED_VERSION = 17;
+
+    if (majorVersion >= MIN_REQUIRED_VERSION) {
+      supportedImageMimeTypes.add('image/jxl').add('image/heic').add('image/heif');
+    }
+
+    return;
+  }
+
+  if (globalThis.isSecureContext && typeof ImageDecoder !== 'undefined') {
+    const dynamicMimeTypes = [{ type: 'image/jxl' }, { type: 'image/heic', aliases: ['image/heif'] }];
+
+    for (const mime of dynamicMimeTypes) {
+      const isMimeTypeSupported = await ImageDecoder.isTypeSupported(mime.type);
+      if (isMimeTypeSupported) {
+        for (const mimeType of [mime.type, ...(mime.aliases || [])]) {
+          supportedImageMimeTypes.add(mimeType);
+        }
+      }
+    }
+
+    return;
+  }
+
+  const jxlImg = new Image();
+  jxlImg.addEventListener('load', () => {
     supportedImageMimeTypes.add('image/jxl');
   });
-  img.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+  jxlImg.src = 'data:image/jxl;base64,/woIAAAMABKIAgC4AF3lEgA='; // Small valid JPEG XL image
+
+  const heicImg = new Image();
+  heicImg.addEventListener('load', () => {
+    supportedImageMimeTypes.add('image/heic');
+  });
+  heicImg.src =
+    'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
-checkJxlSupport();
+void addSupportedMimeTypes();
 
 /**
  * Returns true if the asset is an image supported by web browsers, false otherwise

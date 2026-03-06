@@ -96,7 +96,7 @@ export class AssetFactory {
   }
 
   face(dto: AssetFaceLike = {}, builder?: FactoryBuilder<AssetFaceFactory>) {
-    this.#faces.push(build(AssetFaceFactory.from(dto), builder));
+    this.#faces.push(build(AssetFaceFactory.from({ assetId: this.value?.id, ...dto }), builder));
     return this;
   }
 

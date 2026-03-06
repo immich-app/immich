@@ -1,6 +1,3 @@
-import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { partner_delete_audit } from 'src/schema/functions';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -10,7 +7,10 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { partner_delete_audit } from 'src/schema/functions';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('partner')
 @UpdatedAtTrigger('partner_updatedAt')

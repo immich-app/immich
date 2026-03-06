@@ -1,8 +1,7 @@
 {
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[dart]": {
     "editor.defaultFormatter": "Dart-Code.dart-code",
@@ -19,18 +18,15 @@
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[svelte]": {
     "editor.codeActionsOnSave": {
@@ -38,8 +34,7 @@
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "svelte.svelte-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
@@ -47,18 +42,45 @@
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "cSpell.words": ["immich"],
+  "css.lint.unknownAtRules": "ignore",
+  "editor.bracketPairColorization.enabled": true,
   "editor.formatOnSave": true,
+  "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "svelte"],
+  "eslint.workingDirectories": [
+    { "directory": "cli", "changeProcessCWD": true },
+    { "directory": "e2e", "changeProcessCWD": true },
+    { "directory": "server", "changeProcessCWD": true },
+    { "directory": "web", "changeProcessCWD": true }
+  ],
+  "files.watcherExclude": {
+    "**/.jj/**": true,
+    "**/.git/**": true,
+    "**/node_modules/**": true,
+    "**/build/**": true,
+    "**/dist/**": true,
+    "**/.svelte-kit/**": true
+  },
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
     "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock, pnpm-workspace.yaml, .pnpmfile.cjs"
   },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/build": true,
+    "**/dist": true,
+    "**/.svelte-kit": true,
+    "**/open-api/typescript-sdk/src": true
+  },
   "svelte.enable-ts-plugin": true,
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  "tailwindCSS.experimental.configFile": {
+    "web/src/app.css": "web/src/**"
+  },
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "vitest.maximumConfigs": 10
 }

@@ -33,13 +33,12 @@ export type Events = {
   ApiKeyDelete: [ApiKeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
-  AssetReplace: [{ oldAssetId: string; newAssetId: string }];
   AssetsArchive: [string[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
 
-  AlbumAddAssets: [];
+  AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
@@ -87,6 +86,8 @@ export type Events = {
   WorkflowDelete: [WorkflowResponseDto];
 
   ReleaseEvent: [ReleaseEvent];
+
+  WebsocketConnect: [];
 };
 
 export const eventManager = new BaseEventManager<Events>();

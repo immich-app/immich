@@ -240,18 +240,16 @@ class ApiClient {
           return AssetDeltaSyncResponseDto.fromJson(value);
         case 'AssetEditAction':
           return AssetEditActionTypeTransformer().decode(value);
-        case 'AssetEditActionCrop':
-          return AssetEditActionCrop.fromJson(value);
-        case 'AssetEditActionListDto':
-          return AssetEditActionListDto.fromJson(value);
-        case 'AssetEditActionListDtoEditsInner':
-          return AssetEditActionListDtoEditsInner.fromJson(value);
-        case 'AssetEditActionMirror':
-          return AssetEditActionMirror.fromJson(value);
-        case 'AssetEditActionRotate':
-          return AssetEditActionRotate.fromJson(value);
-        case 'AssetEditsDto':
-          return AssetEditsDto.fromJson(value);
+        case 'AssetEditActionItemDto':
+          return AssetEditActionItemDto.fromJson(value);
+        case 'AssetEditActionItemDtoParameters':
+          return AssetEditActionItemDtoParameters.fromJson(value);
+        case 'AssetEditActionItemResponseDto':
+          return AssetEditActionItemResponseDto.fromJson(value);
+        case 'AssetEditsCreateDto':
+          return AssetEditsCreateDto.fromJson(value);
+        case 'AssetEditsResponseDto':
+          return AssetEditsResponseDto.fromJson(value);
         case 'AssetFaceCreateDto':
           return AssetFaceCreateDto.fromJson(value);
         case 'AssetFaceDeleteDto':
@@ -356,6 +354,8 @@ class ApiClient {
           return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
+        case 'DownloadArchiveDto':
+          return DownloadArchiveDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -676,12 +676,18 @@ class ApiClient {
           return SyncAlbumV1.fromJson(value);
         case 'SyncAssetDeleteV1':
           return SyncAssetDeleteV1.fromJson(value);
+        case 'SyncAssetEditDeleteV1':
+          return SyncAssetEditDeleteV1.fromJson(value);
+        case 'SyncAssetEditV1':
+          return SyncAssetEditV1.fromJson(value);
         case 'SyncAssetExifV1':
           return SyncAssetExifV1.fromJson(value);
         case 'SyncAssetFaceDeleteV1':
           return SyncAssetFaceDeleteV1.fromJson(value);
         case 'SyncAssetFaceV1':
           return SyncAssetFaceV1.fromJson(value);
+        case 'SyncAssetFaceV2':
+          return SyncAssetFaceV2.fromJson(value);
         case 'SyncAssetMetadataDeleteV1':
           return SyncAssetMetadataDeleteV1.fromJson(value);
         case 'SyncAssetMetadataV1':
