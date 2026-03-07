@@ -189,6 +189,7 @@ const SystemConfigOAuthSchema = z
       })
       .describe('Issuer URL'),
     scope: z.string().describe('Scope'),
+    prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
     signingAlgorithm: z.string().describe('Signing algorithm'),
     profileSigningAlgorithm: z.string().describe('Profile signing algorithm'),
     storageLabelClaim: z.string().describe('Storage label claim'),

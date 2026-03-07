@@ -106,6 +106,7 @@ export type SystemConfig = {
     issuerUrl: string;
     mobileOverrideEnabled: boolean;
     mobileRedirectUri: string;
+    prompt: string;
     scope: string;
     signingAlgorithm: string;
     profileSigningAlgorithm: string;
@@ -298,6 +299,7 @@ export const defaults = Object.freeze<SystemConfig>({
     issuerUrl: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',

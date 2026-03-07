@@ -140,6 +140,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     issuerUrl: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',
+    prompt: '',
     scope: 'openid email profile',
     signingAlgorithm: 'RS256',
     profileSigningAlgorithm: 'none',
