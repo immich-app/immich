@@ -2526,6 +2526,8 @@ export type SystemConfigOAuthDto = {
     mobileRedirectUri: string;
     /** Profile signing algorithm */
     profileSigningAlgorithm: string;
+    /** OAuth prompt parameter (e.g. select_account, login, consent) */
+    prompt: string;
     /** Role claim */
     roleClaim: string;
     /** Scope */

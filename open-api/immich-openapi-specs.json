@@ -24347,6 +24347,10 @@
             "description": "Profile signing algorithm",
             "type": "string"
           },
+          "prompt": {
+            "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
+            "type": "string"
+          },
           "roleClaim": {
             "description": "Role claim",
             "type": "string"
@@ -24390,6 +24394,7 @@
           "mobileOverrideEnabled",
           "mobileRedirectUri",
           "profileSigningAlgorithm",
+          "prompt",
           "roleClaim",
           "scope",
           "signingAlgorithm",
