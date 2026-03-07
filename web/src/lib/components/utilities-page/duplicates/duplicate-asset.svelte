@@ -105,10 +105,157 @@
     const headLength = maxLength - 3 - tail.length;
     return path.slice(0, headLength) + '...' + tail;
   }
+
+  type MetadataItem = {
+    icon: string;
+    title: string;
+    render: string;
+    keys: MetadataFieldKey[];
+  };
+
+  let metadataItems = $derived(
+    (
+      [
+        {
+          icon: mdiFileImageOutline,
+          title: $t('file_name_text'),
+          render: asset.originalFileName,
+          keys: ['originalFileName'],
+        },
+        {
+          icon: mdiFolderOutline,
+          title: $t('path'),
+          render: truncateMiddle(asset.originalPath) || $t('unknown'),
+          keys: ['originalPath'],
+        },
+        { icon: mdiWeightKilogram, title: $t('file_size'), render: getFileSize(asset), keys: ['fileSize'] },
+        {
+          icon: mdiFitToScreen,
+          title: $t('resolution'),
+          render: getAssetResolution(asset) || $t('unknown'),
+          keys: ['resolution'],
+        },
+        {
+          icon: mdiFileClockOutline,
+          title: $t('created_at'),
+          render: formatISODateToLocale(asset.fileCreatedAt),
+          keys: ['fileCreatedAt'],
+        },
+        {
+          icon: mdiFileEditOutline,
+          title: $t('updated_at'),
+          render: formatISODateToLocale(asset.fileModifiedAt),
+          keys: ['fileModifiedAt'],
+        },
+        {
+          icon: mdiCalendar,
+          title: $t('date_time_original'),
+          render: dateTime
+            ? dateTime.toLocaleString(
+                {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  timeZoneName: 'shortOffset',
+                },
+                { locale: $locale },
+              )
+            : $t('unknown'),
+          keys: ['dateTimeOriginal'],
+        },
+        {
+          icon: mdiEarth,
+          title: $t('timezone'),
+          render: dateTime?.offsetNameShort ?? $t('unknown'),
+          keys: ['timeZone'],
+        },
+        {
+          icon: mdiClockEditOutline,
+          title: $t('modify_date'),
+          render: asset.exifInfo?.modifyDate ? formatISODateToLocale(asset.exifInfo.modifyDate) : $t('unknown'),
+          keys: ['modifyDate'],
+        },
+        {
+          icon: mdiMapMarkerOutline,
+          title: $t('location'),
+          render: locationParts.length > 0 ? locationParts.join(', ') : $t('unknown'),
+          keys: ['city', 'state', 'country'],
+        },
+        {
+          icon: mdiCrosshairsGps,
+          title: $t('gps'),
+          render:
+            asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null
+              ? `${asset.exifInfo.latitude.toFixed(4)}, ${asset.exifInfo.longitude.toFixed(4)}`
+              : $t('unknown'),
+          keys: ['latitude', 'longitude'],
+        },
+        { icon: mdiCameraOutline, title: $t('make'), render: asset.exifInfo?.make || $t('unknown'), keys: ['make'] },
+        { icon: mdiCamera, title: $t('model'), render: asset.exifInfo?.model || $t('unknown'), keys: ['model'] },
+        {
+          icon: mdiCameraIris,
+          title: $t('lens_model'),
+          render: asset.exifInfo?.lensModel || $t('unknown'),
+          keys: ['lensModel'],
+        },
+        {
+          icon: mdiCameraIris,
+          title: $t('f_number'),
+          render: asset.exifInfo?.fNumber == null ? $t('unknown') : `f/${asset.exifInfo.fNumber.toFixed(1)}`,
+          keys: ['fNumber'],
+        },
+        {
+          icon: mdiRayStartArrow,
+          title: $t('focal_length'),
+          render: asset.exifInfo?.focalLength == null ? $t('unknown') : `${asset.exifInfo.focalLength} mm`,
+          keys: ['focalLength'],
+        },
+        {
+          icon: mdiBrightness6,
+          title: $t('iso'),
+          render: asset.exifInfo?.iso == null ? $t('unknown') : `ISO ${asset.exifInfo.iso}`,
+          keys: ['iso'],
+        },
+        {
+          icon: mdiTimerOutline,
+          title: $t('exposure_time'),
+          render: asset.exifInfo?.exposureTime || $t('unknown'),
+          keys: ['exposureTime'],
+        },
+        {
+          icon: mdiTextBox,
+          title: $t('description'),
+          render: asset.exifInfo?.description || $t('unknown'),
+          keys: ['description'],
+        },
+        {
+          icon: mdiStarOutline,
+          title: $t('rating'),
+          render: asset.exifInfo?.rating == null ? $t('unknown') : `${asset.exifInfo.rating} stars`,
+          keys: ['rating'],
+        },
+        {
+          icon: mdiPhoneRotateLandscape,
+          title: $t('orientation'),
+          render: String(asset.exifInfo?.orientation || $t('unknown')),
+          keys: ['orientation'],
+        },
+        {
+          icon: mdiPanorama,
+          title: $t('projection_type'),
+          render: asset.exifInfo?.projectionType || $t('unknown'),
+          keys: ['projectionType'],
+        },
+      ] satisfies MetadataItem[]
+    ).filter(({ keys }) => keys.some((k) => isVisible(k))),
+  );
 </script>
 
 <div class="relative w-full">
-  <div class="min-w-60 max-w-full min-w-0 overflow-hidden transition-colors border rounded-lg flex-1">
+  <div class="min-w-60 max-w-full overflow-hidden transition-colors border rounded-lg flex-1">
     <button
       type="button"
       onclick={() => onSelectAsset(asset)}
@@ -174,160 +321,11 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    <!-- FILE -->
-    {#if isVisible('originalFileName')}
-      <InfoRow icon={mdiFileImageOutline} title={$t('file_name_text')}>
-        {asset.originalFileName}
+    {#each metadataItems as { icon, title, render, keys } (keys[0])}
+      <InfoRow {icon} {title}>
+        {render}
       </InfoRow>
-    {/if}
-    {#if isVisible('originalPath')}
-      <InfoRow icon={mdiFolderOutline} title={$t('path')}>
-        {truncateMiddle(asset.originalPath) || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('fileSize')}
-      <InfoRow icon={mdiWeightKilogram} title={$t('file_size')}>
-        {getFileSize(asset)}
-      </InfoRow>
-    {/if}
-    {#if isVisible('resolution')}
-      <InfoRow icon={mdiFitToScreen} title={$t('resolution')}>
-        {getAssetResolution(asset) || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('fileCreatedAt')}
-      <InfoRow icon={mdiFileClockOutline} title={$t('created_at')}>
-        {formatISODateToLocale(asset.fileCreatedAt)}
-      </InfoRow>
-    {/if}
-    {#if isVisible('fileModifiedAt')}
-      <InfoRow icon={mdiFileEditOutline} title={$t('updated_at')}>
-        {formatISODateToLocale(asset.fileModifiedAt)}
-      </InfoRow>
-    {/if}
-
-    <!-- DATE/TIME -->
-    {#if isVisible('dateTimeOriginal')}
-      <InfoRow icon={mdiCalendar} title={$t('date_time_original')}>
-        {#if dateTime}
-          {dateTime.toLocaleString(
-            {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-              second: '2-digit',
-              timeZoneName: 'shortOffset',
-            },
-            { locale: $locale },
-          )}
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-    {#if isVisible('timeZone')}
-      <InfoRow icon={mdiEarth} title={$t('timezone')}>
-        {dateTime?.offsetNameShort ?? $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('modifyDate')}
-      <InfoRow icon={mdiClockEditOutline} title={$t('modify_date')}>
-        {asset.exifInfo?.modifyDate ? formatISODateToLocale(asset.exifInfo.modifyDate) : $t('unknown')}
-      </InfoRow>
-    {/if}
-
-    <!-- LOCATION -->
-    {#if isVisible('city') || isVisible('state') || isVisible('country')}
-      <InfoRow icon={mdiMapMarkerOutline} title={$t('location')}>
-        {#if locationParts.length > 0}
-          {locationParts.join(', ')}
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-    {#if isVisible('latitude') || isVisible('longitude')}
-      <InfoRow icon={mdiCrosshairsGps} title={$t('gps')}>
-        {#if asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null}
-          {asset.exifInfo.latitude.toFixed(4)}, {asset.exifInfo.longitude.toFixed(4)}
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-
-    <!-- CAMERA -->
-    {#if isVisible('make')}
-      <InfoRow icon={mdiCameraOutline} title={$t('make')}>
-        {asset.exifInfo?.make || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('model')}
-      <InfoRow icon={mdiCamera} title={$t('model')}>
-        {asset.exifInfo?.model || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('lensModel')}
-      <InfoRow icon={mdiCameraIris} title={$t('lens_model')}>
-        {asset.exifInfo?.lensModel || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('fNumber')}
-      <InfoRow icon={mdiCameraIris} title={$t('f_number')}>
-        {#if asset.exifInfo?.fNumber != null}
-          f/{asset.exifInfo.fNumber.toFixed(1)}
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-    {#if isVisible('focalLength')}
-      <InfoRow icon={mdiRayStartArrow} title={$t('focal_length')}>
-        {#if asset.exifInfo?.focalLength != null}
-          {asset.exifInfo.focalLength} mm
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-    {#if isVisible('iso')}
-      <InfoRow icon={mdiBrightness6} title={$t('iso')}>
-        {#if asset.exifInfo?.iso != null}
-          ISO {asset.exifInfo.iso}
-        {:else}
-          {$t('unknown')}
-        {/if}
-      </InfoRow>
-    {/if}
-    {#if isVisible('exposureTime')}
-      <InfoRow icon={mdiTimerOutline} title={$t('exposure_time')}>
-        {asset.exifInfo?.exposureTime || $t('unknown')}
-      </InfoRow>
-    {/if}
-
-    <!-- OTHER -->
-    {#if isVisible('description')}
-      <InfoRow icon={mdiTextBox} title={$t('description')}>
-        {asset.exifInfo?.description || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('rating')}
-      <InfoRow icon={mdiStarOutline} title={$t('rating')}>
-        {asset.exifInfo?.rating == null ? $t('unknown') : `${asset.exifInfo.rating} stars`}
-      </InfoRow>
-    {/if}
-    {#if isVisible('orientation')}
-      <InfoRow icon={mdiPhoneRotateLandscape} title={$t('orientation')}>
-        {asset.exifInfo?.orientation || $t('unknown')}
-      </InfoRow>
-    {/if}
-    {#if isVisible('projectionType')}
-      <InfoRow icon={mdiPanorama} title={$t('projection_type')}>
-        {asset.exifInfo?.projectionType || $t('unknown')}
-      </InfoRow>
-    {/if}
+    {/each}
 
     <!-- Albums always shown -->
     <InfoRow icon={mdiAlbum} borderBottom={false} title={$t('albums')}>
