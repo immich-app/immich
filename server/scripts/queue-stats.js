@@ -56,6 +56,8 @@ const QUEUE_NAMES = [
   'notifications',
   'backupDatabase',
   'ocr',
+  // Editor queue: thumbnail generation after asset edits (crop, etc.).
+  'editor',
   // Newly added backgroundTask queue: triggers microservices start but suppresses keep-alive.
   'backgroundTask',
 ];
