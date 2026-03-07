@@ -333,7 +333,7 @@ class BottomGalleryBar extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 40.0),
             child: Column(
               children: [
-                if (asset.isVideo) const VideoControls(),
+                if (asset.isVideo) VideoControls(videoPlayerName: asset.id.toString()),
                 BottomNavigationBar(
                   elevation: 0.0,
                   backgroundColor: Colors.transparent,

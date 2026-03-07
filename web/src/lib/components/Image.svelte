@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { imageManager } from '$lib/managers/ImageManager.svelte';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { onDestroy, untrack } from 'svelte';
   import type { HTMLImgAttributes } from 'svelte/elements';
 
@@ -28,7 +28,7 @@
   onDestroy(() => {
     destroyed = true;
     if (capturedSource !== undefined) {
-      imageManager.cancelPreloadUrl(capturedSource);
+      cancelImageUrl(capturedSource);
     }
   });
 

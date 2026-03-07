@@ -2,9 +2,8 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   final String uri;
-  final Map<String, String> headers;
 
-  RemoteImageRequest({required this.uri, required this.headers});
+  RemoteImageRequest({required this.uri});
 
   @override
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
@@ -12,7 +11,7 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: false);
+    final info = await remoteImageApi.requestImage(uri, requestId: requestId, preferEncoded: false);
     // Android always returns encoded data, so we need to check for both shapes of the response.
     final frame = switch (info) {
       {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
@@ -29,7 +28,7 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, headers: headers, requestId: requestId, preferEncoded: true);
+    final info = await remoteImageApi.requestImage(uri, requestId: requestId, preferEncoded: true);
     if (info == null) return null;
 
     final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);

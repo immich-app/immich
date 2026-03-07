@@ -80,51 +80,28 @@ class DriftSearchPage extends HookConsumerWidget {
     final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    final isSearching = useState(false);
-
     final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
-    SnackBar searchInfoSnackBar(String message) {
-      return SnackBar(
-        content: Text(message, style: context.textTheme.labelLarge),
-        showCloseIcon: true,
-        behavior: SnackBarBehavior.fixed,
-        closeIconColor: context.colorScheme.onSurface,
-      );
-    }
-
-    searchFilter(SearchFilter filter) async {
-      if (filter.isEmpty) {
-        return;
-      }
-
+    searchFilter(SearchFilter filter) {
       if (preFilter == null && filter == previousFilter.value) {
         return;
       }
 
-      isSearching.value = true;
-      ref.watch(paginatedSearchProvider.notifier).clear();
-      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter);
+      ref.read(paginatedSearchProvider.notifier).clear();
 
-      if (!hasResult) {
-        context.showSnackBar(searchInfoSnackBar('search_no_result'.t(context: context)));
+      if (filter.isEmpty) {
+        previousFilter.value = null;
+        return;
       }
 
+      unawaited(ref.read(paginatedSearchProvider.notifier).search(filter));
       previousFilter.value = filter;
-      isSearching.value = false;
     }
 
     search() => searchFilter(filter.value);
 
-    loadMoreSearchResult() async {
-      isSearching.value = true;
-      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
-
-      if (!hasResult) {
-        context.showSnackBar(searchInfoSnackBar('search_no_more_result'.t(context: context)));
-      }
-
-      isSearching.value = false;
+    loadMoreSearchResults() {
+      unawaited(ref.read(paginatedSearchProvider.notifier).search(filter.value));
     }
 
     searchPreFilter() {
@@ -742,10 +719,10 @@ class DriftSearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          if (isSearching.value)
-            const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
+          if (filter.value.isEmpty)
+            const _SearchSuggestions()
           else
-            _SearchResultGrid(onScrollEnd: loadMoreSearchResult),
+            _SearchResultGrid(onScrollEnd: loadMoreSearchResults),
         ],
       ),
     );
@@ -757,45 +734,85 @@ class _SearchResultGrid extends ConsumerWidget {
 
   const _SearchResultGrid({required this.onScrollEnd});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final assets = ref.watch(paginatedSearchProvider.select((s) => s.assets));
+  bool _onScrollUpdateNotification(ScrollNotification notification) {
+    final metrics = notification.metrics;
 
-    if (assets.isEmpty) {
-      return const _SearchEmptyContent();
+    if (metrics.axis != Axis.vertical) return false;
+
+    final isBottomSheet = notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
+    final remaining = metrics.maxScrollExtent - metrics.pixels;
+
+    if (remaining < metrics.viewportDimension && !isBottomSheet) {
+      onScrollEnd();
     }
 
-    return NotificationListener<ScrollEndNotification>(
-      onNotification: (notification) {
-        final isBottomSheetNotification =
-            notification.context?.findAncestorWidgetOfExactType<DraggableScrollableSheet>() != null;
+    return false;
+  }
 
-        final metrics = notification.metrics;
-        final isVerticalScroll = metrics.axis == Axis.vertical;
+  Widget? _bottomWidget(BuildContext context, WidgetRef ref) {
+    final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
 
-        if (metrics.pixels >= metrics.maxScrollExtent && isVerticalScroll && !isBottomSheetNotification) {
-          onScrollEnd();
-          ref.read(paginatedSearchProvider.notifier).setScrollOffset(metrics.maxScrollExtent);
-        }
+    if (isLoading) {
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
 
-        return true;
-      },
+    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
+
+    if (hasMore) return null;
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: Center(
+          child: Text(
+            'search_no_more_result'.t(context: context),
+            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceVariant),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasAssets = ref.watch(paginatedSearchProvider.select((s) => s.assets.isNotEmpty));
+    final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
+
+    if (!hasAssets && !isLoading) {
+      return const _SearchNoResults();
+    }
+
+    return NotificationListener<ScrollUpdateNotification>(
+      onNotification: _onScrollUpdateNotification,
       child: SliverFillRemaining(
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineOrigin.search);
-              ref.onDispose(timelineService.dispose);
-              return timelineService;
+              final notifier = ref.read(paginatedSearchProvider.notifier);
+              final service = ref
+                  .watch(timelineFactoryProvider)
+                  .fromAssetStream(
+                    () => ref.read(paginatedSearchProvider).assets,
+                    notifier.assetCount,
+                    TimelineOrigin.search,
+                  );
+              ref.onDispose(service.dispose);
+              return service;
             }),
           ],
           child: Timeline(
-            key: ValueKey(assets.length),
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
-            initialScrollOffset: ref.read(paginatedSearchProvider.select((s) => s.scrollOffset)),
+            loadingWidget: const SizedBox.shrink(),
+            bottomSliverWidget: _bottomWidget(context, ref),
           ),
         ),
       ),
@@ -803,8 +820,35 @@ class _SearchResultGrid extends ConsumerWidget {
   }
 }
 
-class _SearchEmptyContent extends StatelessWidget {
-  const _SearchEmptyContent();
+class _SearchNoResults extends StatelessWidget {
+  const _SearchNoResults();
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off_rounded, size: 72, color: context.colorScheme.onSurfaceVariant),
+            const SizedBox(height: 24),
+            Text(
+              'search_no_result'.t(context: context),
+              textAlign: TextAlign.center,
+              style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchSuggestions extends StatelessWidget {
+  const _SearchSuggestions();
 
   @override
   Widget build(BuildContext context) {
