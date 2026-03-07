@@ -63,6 +63,7 @@
       make: 'FUJIFILM',
       model: 'X-T50',
       lensModel: 'XF27mm F2.8 R WR',
+      counter: '42',
     };
 
     const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());

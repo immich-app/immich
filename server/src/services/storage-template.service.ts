@@ -71,6 +71,7 @@ interface RenderMetadata {
   make: string | null;
   model: string | null;
   lensModel: string | null;
+  counter?: number;
 }
 
 @Injectable()
@@ -80,6 +81,7 @@ export class StorageTemplateService extends BaseService {
     raw: string;
     needsAlbum: boolean;
     needsAlbumMetadata: boolean;
+    needsCounter: boolean;
   } | null = null;
 
   private get template() {
@@ -122,6 +124,7 @@ export class StorageTemplateService extends BaseService {
         make: 'FUJIFILM',
         model: 'X-T50',
         lensModel: 'XF27mm F2.8 R WR',
+        counter: 0,
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -324,7 +327,7 @@ export class StorageTemplateService extends BaseService {
 
       // For motion videos that are part of live photos, use the still photo's date
       // to ensure both parts end up in the same folder
-      const storagePath = this.render(this.template.compiled, {
+      const renderOptions: RenderMetadata = {
         asset: assetForMetadata,
         filename: sanitized,
         extension,
@@ -334,15 +337,16 @@ export class StorageTemplateService extends BaseService {
         make: assetForMetadata.make,
         model: assetForMetadata.model,
         lensModel: assetForMetadata.lensModel,
-      });
-      const fullPath = path.normalize(path.join(rootPath, storagePath));
-      let destination = `${fullPath}.${extension}`;
+      };
+      const storagePath = this.render(this.template.compiled, renderOptions);
+      let fullPath = path.normalize(path.join(rootPath, storagePath));
 
       if (!fullPath.startsWith(rootPath)) {
         this.logger.warn(`Skipped attempt to access an invalid path: ${fullPath}. Path should start with ${rootPath}`);
         return source;
       }
 
+      let destination = `${fullPath}.${extension}`;
       if (source === destination) {
         return source;
       }
@@ -369,16 +373,34 @@ export class StorageTemplateService extends BaseService {
         }
       }
 
-      let duplicateCount = 0;
+      const exists = await this.storageRepository.checkFileExists(destination);
+      if (!exists) {
+        return destination;
+      }
+
+      let counter = 1;
+      let newFullPath = (counter: number): string => `${fullPath}+${counter}`;
+      if (this.template.needsCounter) {
+        newFullPath = (counter: number): string => {
+          const storagePath = this.render(this.template.compiled, { ...renderOptions, counter });
+          return path.normalize(path.join(rootPath, storagePath));
+        };
+      }
 
       while (true) {
+        fullPath = newFullPath(counter);
+        destination = `${fullPath}.${extension}`;
+
+        if (source === destination) {
+          break;
+        }
+
         const exists = await this.storageRepository.checkFileExists(destination);
         if (!exists) {
           break;
         }
 
-        duplicateCount++;
-        destination = `${fullPath}+${duplicateCount}.${extension}`;
+        counter++;
       }
 
       return destination;
@@ -394,11 +416,23 @@ export class StorageTemplateService extends BaseService {
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
       needsAlbum: template.includes('album'),
       needsAlbumMetadata: template.includes('album-startDate') || template.includes('album-endDate'),
+      needsCounter: template.includes('counter'),
     };
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName, albumStartDate, albumEndDate, make, model, lensModel } = options;
+    const {
+      filename,
+      extension,
+      asset,
+      albumName,
+      albumStartDate,
+      albumEndDate,
+      make,
+      model,
+      lensModel,
+      counter = 0,
+    } = options;
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
@@ -411,6 +445,7 @@ export class StorageTemplateService extends BaseService {
       make: make ?? '',
       model: model ?? '',
       lensModel: lensModel ?? '',
+      counter: String(counter),
     };
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;

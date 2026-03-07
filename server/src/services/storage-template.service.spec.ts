@@ -35,7 +35,7 @@ describe(StorageTemplateService.name, () => {
           newConfig: {
             storageTemplate: {
               template:
-                '{{y}}{{M}}{{W}}{{d}}{{h}}{{m}}{{s}}{{filename}}{{ext}}{{filetype}}{{filetypefull}}{{assetId}}{{#if album}}{{album}}{{else}}other{{/if}}',
+                '{{y}}{{M}}{{W}}{{d}}{{h}}{{m}}{{s}}{{filename}}{{ext}}{{filetype}}{{filetypefull}}{{assetId}}{{counter}}{{#if album}}{{album}}{{else}}other{{/if}}',
             },
           } as SystemConfig,
           oldConfig: {} as SystemConfig,
@@ -841,6 +841,114 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: motionAsset.id,
         originalPath: expect.stringContaining(`/${album.albumName}/`),
+      });
+    });
+  });
+
+  describe('counter token', () => {
+    it('should render counter as 0 when no duplicate exists', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{MM}}/{{filename}}_{{counter}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath: asset.originalPath,
+        newPath: `/data/library/${user.id}/2022/06/${asset.originalFileName.slice(0, -4)}_0.jpg`,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: asset.id,
+        originalPath: expect.stringContaining('_0.jpg'),
+      });
+    });
+
+    it('should increment counter when duplicate exists', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{MM}}/{{filename}}_{{counter}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      // First check (counter=0) exists, second check (counter=1) does not
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(false);
+
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath: asset.originalPath,
+        newPath: `/data/library/${user.id}/2022/06/${asset.originalFileName.slice(0, -4)}_1.jpg`,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: asset.id,
+        originalPath: expect.stringContaining('_1.jpg'),
+      });
+    });
+
+    it('should increment counter multiple times for multiple duplicates', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}/{{MM}}/{{filename}}_{{counter}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      // counter=0 exists, counter=1 exists, counter=2 does not
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(true);
+      mocks.storage.checkFileExists.mockResolvedValueOnce(false);
+
+      mocks.move.create.mockResolvedValue({
+        id: '123',
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath: asset.originalPath,
+        newPath: `/data/library/${user.id}/2022/06/${asset.originalFileName.slice(0, -4)}_2.jpg`,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(3);
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: asset.id,
+        originalPath: expect.stringContaining('_2.jpg'),
       });
     });
   });

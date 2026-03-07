@@ -52,6 +52,7 @@
         <ul>
           <li>{`{{assetId}}`} - Asset ID</li>
           <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
+          <li>{`{{counter}}`} - Counter</li>
         </ul>
       </div>
     </div>
