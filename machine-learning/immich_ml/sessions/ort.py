@@ -94,7 +94,6 @@ class OrtSession:
                         "migraphx_fp16_enable": "1" if settings.rocm_precision == ModelPrecision.FP16 else "0",
                     }
                 case "OpenVINOExecutionProvider":
-                    device = f"GPU.{settings.device_id}"
                     device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
                     # Check for available devices, preferring GPU over CPU
                     gpu_devices = [d for d in device_ids if d.startswith("GPU")]
