@@ -264,7 +264,8 @@ class TestOrtSession:
             }
         ]
 
-    def test_sets_openvino_to_fp16_if_enabled(self, mocker: MockerFixture) -> None:
+    @pytest.mark.ov_device_ids(["GPU.0", "GPU.1", "CPU"])
+    def test_sets_openvino_to_fp16_if_enabled(self, ov_device_ids: list[str], mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
         mocker.patch.object(settings, "openvino_precision", ModelPrecision.FP16)
