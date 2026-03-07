@@ -178,7 +178,10 @@
 
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 
-      await assetViewerManager.setAssetId(assetId);
+      onRefresh();
+      if (peopleWithFaces.length === 0) {
+        onClose();
+      }
     } catch (error) {
       handleError(error, $t('error_delete_face'));
     }
