@@ -6,7 +6,10 @@ void main() {
     String? result;
 
     result = getVersionCompatibilityMessage(1, 0, 2, 0);
-    expect(result, 'Your app major version is not compatible with the server!');
+    expect(
+      result,
+      'Your app major version is not compatible with the server. If this happens while signing in, make sure the Server URL points to your Immich server, not an API key or shared link, and try adding /api to the end of the URL.',
+    );
 
     result = getVersionCompatibilityMessage(1, 106, 1, 105);
     expect(
