@@ -13503,6 +13503,15 @@
             }
           },
           {
+            "name": "field",
+            "required": false,
+            "in": "query",
+            "description": "Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.",
+            "schema": {
+              "$ref": "#/components/schemas/AssetDateField"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -13686,6 +13695,15 @@
             "schema": {
               "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
+            }
+          },
+          {
+            "name": "field",
+            "required": false,
+            "in": "query",
+            "description": "Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.",
+            "schema": {
+              "$ref": "#/components/schemas/AssetDateField"
             }
           },
           {
@@ -16076,6 +16094,13 @@
           "targetId"
         ],
         "type": "object"
+      },
+      "AssetDateField": {
+        "enum": [
+          "taken",
+          "uploaded"
+        ],
+        "type": "string"
       },
       "AssetDeltaSyncDto": {
         "properties": {

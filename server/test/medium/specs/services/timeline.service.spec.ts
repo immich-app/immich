@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetDateField, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -27,20 +27,37 @@ beforeAll(async () => {
 
 describe(TimelineService.name, () => {
   describe('getTimeBuckets', () => {
-    it('should get time buckets by month', async () => {
+    it('should get time buckets by month using localDateTime (default)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user });
       const dates = [new Date('1970-01-01'), new Date('1970-02-10'), new Date('1970-02-11'), new Date('1970-02-11')];
       for (const localDateTime of dates) {
-        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime });
+        const createdAt = new Date('1980-01-01');
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime, createdAt });
         await ctx.newExif({ assetId: asset.id, make: 'Canon' });
       }
-
       const response = sut.getTimeBuckets(auth, {});
       await expect(response).resolves.toEqual([
         { count: 3, timeBucket: '1970-02-01' },
         { count: 1, timeBucket: '1970-01-01' },
+      ]);
+    });
+
+    it('should get time buckets by month using createdAt', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user });
+      const dates = [new Date('1980-01-01'), new Date('1980-02-10'), new Date('1980-02-11'), new Date('1980-02-11')];
+      for (const createdAt of dates) {
+        const localDateTime = new Date('1970-01-01');
+        const { asset } = await ctx.newAsset({ ownerId: user.id, createdAt, localDateTime });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+      }
+      const response = sut.getTimeBuckets(auth, { field: 'createdAt' as AssetDateField });
+      await expect(response).resolves.toEqual([
+        { count: 3, timeBucket: '1980-02-01' },
+        { count: 1, timeBucket: '1980-01-01' },
       ]);
     });
 

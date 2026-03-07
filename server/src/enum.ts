@@ -52,6 +52,13 @@ export enum AlbumUserRole {
   Viewer = 'viewer',
 }
 
+export enum AssetDateField {
+  /** Date taken / captured (localDateTime) */
+  LocalDateTime = 'localDateTime',
+  /** Date uploaded to Immich (createdAt) */
+  CreatedAt = 'createdAt',
+}
+
 export enum AssetOrder {
   Asc = 'asc',
   Desc = 'desc',
