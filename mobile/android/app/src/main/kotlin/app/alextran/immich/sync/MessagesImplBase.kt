@@ -16,6 +16,7 @@ import app.alextran.immich.core.ImmichPlugin
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
+import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -255,7 +256,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         val glide = Glide.get(ctx)
         ctx.contentResolver.openInputStream(uri)?.use { stream ->
           val type = ImageHeaderParserUtils.getType(
-            glide.registry.imageHeaderParsers,
+            listOf(DefaultImageHeaderParser()),
             stream,
             glide.arrayPool
           )
