@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsInt,
@@ -92,6 +92,16 @@ export class SystemConfigFFmpegDto {
   targetAudioCodec!: AudioCodec;
 
   @ValidateEnum({ enum: AudioCodec, name: 'AudioCodec', each: true, description: 'Accepted audio codecs' })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      const libopusIndex = value.indexOf('libopus');
+      if (libopusIndex !== -1) {
+        value[libopusIndex] = 'opus';
+      }
+    }
+
+    return value;
+  })
   acceptedAudioCodecs!: AudioCodec[];
 
   @ValidateEnum({ enum: VideoContainer, name: 'VideoContainer', each: true, description: 'Accepted containers' })

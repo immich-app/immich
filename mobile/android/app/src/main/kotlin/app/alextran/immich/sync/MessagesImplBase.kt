@@ -185,16 +185,17 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
             numericId, rawMediaType, mimeTypeColumn, specialFormatColumn, xmpColumn, c
           )
 
+          val isFlipped = orientation == 90 || orientation == 270
           val asset = PlatformAsset(
             id,
             name,
             assetType,
             createdAt,
             modifiedAt,
-            width,
-            height,
+            if (isFlipped) height else width,
+            if (isFlipped) width else height,
             duration,
-            orientation.toLong(),
+            0L,
             isFavorite,
             playbackStyle = playbackStyle,
           )
