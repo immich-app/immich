@@ -255,6 +255,7 @@
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
   role="presentation"
+  ondblclick={onZoom}
   onmousemove={handleImageMouseMove}
   onmouseleave={handleImageMouseLeave}
 >

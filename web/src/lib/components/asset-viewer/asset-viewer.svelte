@@ -362,7 +362,7 @@
 
   const viewerKind = $derived.by(() => {
     if (previewStackedAsset) {
-      return asset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
+      return previewStackedAsset.type === AssetTypeEnum.Image ? 'StackPhotoViewer' : 'StackVideoViewer';
     }
     if (asset.type === AssetTypeEnum.Video) {
       return 'VideoViewer';
