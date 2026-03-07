@@ -355,8 +355,8 @@ class TestOrtSession:
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
-        assert session.sess_options.inter_op_num_threads == 1
-        assert session.sess_options.intra_op_num_threads == 1
+        assert session.sess_options.inter_op_num_threads == 0
+        assert session.sess_options.intra_op_num_threads == 0
 
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
     def test_sets_default_sess_options_if_openvino_gpu(self, ov_device_ids: list[str]) -> None:
