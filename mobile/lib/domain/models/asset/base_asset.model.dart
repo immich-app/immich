@@ -45,11 +45,11 @@ sealed class BaseAsset {
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
 
-  bool get isMotionPhoto => livePhotoVideoId != null;
+  bool get isMotionPhoto => playbackStyle == AssetPlaybackStyle.livePhoto;
 
   AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
-    if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
+    if (livePhotoVideoId != null) return AssetPlaybackStyle.livePhoto;
     if (isImage && durationInSeconds != null && durationInSeconds! > 0) return AssetPlaybackStyle.imageAnimated;
     if (isImage) return AssetPlaybackStyle.image;
     return AssetPlaybackStyle.unknown;
