@@ -129,6 +129,10 @@
   });
 
   $effect(() => {
+    assetViewerManager.imageLoaderStatus = status;
+  });
+
+  $effect(() => {
     if (assetViewerManager.zoom > 1 && status.quality.original !== 'success') {
       untrack(() => void adaptiveImageLoader.trigger('original'));
     }
