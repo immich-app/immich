@@ -20,7 +20,7 @@ type RepoDeps = {
   logger: LoggingRepository;
 };
 
-const asyncLock = new AsyncLock();
+const asyncLock = new AsyncLock({ maxExecutionTime: 60000 });
 let config: SystemConfig | null = null;
 let lastUpdated: number | null = null;
 
