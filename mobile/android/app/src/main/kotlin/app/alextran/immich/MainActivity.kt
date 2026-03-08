@@ -7,6 +7,8 @@ import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 import app.alextran.immich.background.BackgroundWorkerFgHostApi
 import app.alextran.immich.background.BackgroundWorkerLockApi
+import app.alextran.immich.cloudprovider.CloudProviderApi
+import app.alextran.immich.cloudprovider.CloudProviderApiImpl
 import app.alextran.immich.connectivity.ConnectivityApi
 import app.alextran.immich.connectivity.ConnectivityApiImpl
 import app.alextran.immich.core.HttpClientManager
@@ -48,6 +50,7 @@ class MainActivity : FlutterFragmentActivity() {
 
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
+      CloudProviderApi.setUp(messenger, CloudProviderApiImpl(ctx))
 
       flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(backgroundEngineLockImpl)

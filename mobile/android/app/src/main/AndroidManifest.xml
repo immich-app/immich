@@ -20,6 +20,9 @@
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
+  <!-- Cloud Media Provider permission (API 34+) -->
+  <uses-permission android:name="com.android.providers.media.permission.MANAGE_CLOUD_MEDIA_PROVIDERS" />
+
   <!-- Foreground service permission -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -148,6 +151,29 @@
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
 
+
+    <!-- Cloud Media Provider (API 34+) -->
+    <provider
+      android:name=".cloudprovider.ImmichCloudMediaProvider"
+      android:authorities="${applicationId}.cloudmedia"
+      android:exported="true"
+      android:permission="com.android.providers.media.permission.MANAGE_CLOUD_MEDIA_PROVIDERS">
+      <intent-filter>
+        <action android:name="android.content.action.CLOUD_MEDIA_PROVIDER" />
+      </intent-filter>
+    </provider>
+
+    <!-- Document Provider (SAF) - works with ACTION_OPEN_DOCUMENT / ACTION_GET_CONTENT -->
+    <provider
+      android:name=".cloudprovider.ImmichDocumentProvider"
+      android:authorities="${applicationId}.documents"
+      android:exported="true"
+      android:grantUriPermissions="true"
+      android:permission="android.permission.MANAGE_DOCUMENTS">
+      <intent-filter>
+        <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+      </intent-filter>
+    </provider>
 
     <!-- Widgets -->
     <receiver
