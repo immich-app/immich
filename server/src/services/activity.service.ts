@@ -19,14 +19,37 @@ import { BaseService } from 'src/services/base.service';
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
-    const activities = await this.activityRepository.search({
+
+    const { take, before } = dto;
+    const searchOptions = {
       userId: dto.userId,
       albumId: dto.albumId,
       assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
       isLiked: dto.type && dto.type === ReactionType.LIKE,
-    });
+    };
 
-    return activities.map((activity) => mapActivity(activity));
+    const activities = await this.activityRepository.search({ ...searchOptions, take, before });
+    const results = activities.map((activity) => mapActivity(activity));
+
+    if (take !== undefined) {
+      // Paginated: query returned DESC-ordered rows; reverse to return ASC
+      results.reverse();
+
+      // Complete the boundary timestamp group: the oldest item's createdAt may be shared
+      // by other activities not returned due to the take limit (e.g. bulk operations).
+      // Fetch all activities at exactly that timestamp and prepend any not already loaded.
+      if (results.length > 0) {
+        const boundaryTime = results[0].createdAt;
+        const loadedIds = new Set(results.filter((a) => +new Date(a.createdAt) === +new Date(boundaryTime)).map((a) => a.id));
+        const extras = await this.activityRepository.search({ ...searchOptions, at: boundaryTime });
+        const newExtras = extras.map(mapActivity).filter((a) => !loadedIds.has(a.id));
+        return [...newExtras, ...results];
+      }
+
+      return results;
+    }
+
+    return results;
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {

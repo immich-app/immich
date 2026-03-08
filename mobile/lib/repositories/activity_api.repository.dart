@@ -14,8 +14,8 @@ class ActivityApiRepository extends ApiRepository {
 
   ActivityApiRepository(this._api);
 
-  Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
-    final response = await checkNull(_api.getActivities(albumId, assetId: assetId));
+  Future<List<Activity>> getAll(String albumId, {String? assetId, int? take, DateTime? before}) async {
+    final response = await checkNull(_api.getActivities(albumId, assetId: assetId, take: take, before: before));
     return response.map(_toActivity).toList();
   }
 

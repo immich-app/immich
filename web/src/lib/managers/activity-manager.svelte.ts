@@ -20,19 +20,24 @@ type ActivityCache = {
   commentCount: number;
   likeCount: number;
   isLiked: ActivityResponseDto | null;
+  hasMore: boolean;
 };
 
 class ActivityManager {
+  static readonly PAGE_SIZE = 50;
+
   #albumId = $state<string | undefined>();
   #assetId = $state<string | undefined>();
   #activities = $state<ActivityResponseDto[]>([]);
   #commentCount = $state(0);
   #likeCount = $state(0);
   #isLiked = $state<ActivityResponseDto | null>(null);
+  #hasMore = $state(true);
 
   #cache = new Map<CacheKey, ActivityCache>();
 
   isLoading = $state(false);
+  isLoadingMore = $state(false);
 
   get assetId() {
     return this.#assetId;
@@ -52,6 +57,10 @@ class ActivityManager {
 
   get isLiked() {
     return this.#isLiked;
+  }
+
+  get hasMore() {
+    return this.#hasMore;
   }
 
   #getCacheKey(albumId: string, assetId?: string) {
@@ -111,9 +120,7 @@ class ActivityManager {
       this.#likeCount--;
     }
 
-    this.#activities = index
-      ? this.#activities.splice(index, 1)
-      : this.#activities.filter(({ id }) => id !== activity.id);
+    this.#activities = this.#activities.filter(({ id }) => id !== activity.id);
 
     await deleteActivity({ id: activity.id });
     this.#invalidateCache(this.#albumId, this.#assetId);
@@ -148,11 +155,13 @@ class ActivityManager {
       this.#commentCount = cached.commentCount;
       this.#likeCount = cached.likeCount;
       this.#isLiked = cached.isLiked ?? null;
+      this.#hasMore = cached.hasMore;
       this.isLoading = false;
       return;
     }
 
-    this.#activities = await getActivities({ albumId, assetId });
+    this.#activities = await getActivities({ albumId, assetId, take: ActivityManager.PAGE_SIZE });
+    this.#hasMore = this.#activities.length >= ActivityManager.PAGE_SIZE;
 
     const [liked] = await getActivities({
       albumId,
@@ -172,9 +181,30 @@ class ActivityManager {
       commentCount: this.#commentCount,
       likeCount: this.#likeCount,
       isLiked: this.#isLiked,
+      hasMore: this.#hasMore,
     });
 
     this.isLoading = false;
+  }
+
+  async loadMore() {
+    if (!this.#albumId || !this.#hasMore || this.isLoadingMore || this.#activities.length === 0) {
+      return;
+    }
+
+    this.isLoadingMore = true;
+    try {
+      const older = await getActivities({
+        albumId: this.#albumId,
+        assetId: this.#assetId,
+        take: ActivityManager.PAGE_SIZE,
+        before: this.#activities[0].createdAt,
+      });
+      this.#activities = [...older, ...this.#activities];
+      this.#hasMore = older.length >= ActivityManager.PAGE_SIZE;
+    } finally {
+      this.isLoadingMore = false;
+    }
   }
 
   reset() {
@@ -183,6 +213,7 @@ class ActivityManager {
     this.#activities = [];
     this.#commentCount = 0;
     this.#likeCount = 0;
+    this.#hasMore = true;
   }
 }
 

@@ -34,6 +34,20 @@ class DriftActivitiesPage extends HookConsumerWidget {
       scrollToBottom();
     }
 
+    useEffect(() {
+      void onScroll() {
+        // In a reversed ListView, scrolling toward older items means reaching maxScrollExtent
+        if (listViewScrollController.position.pixels >=
+            listViewScrollController.position.maxScrollExtent - 200) {
+          if (activityNotifier.hasMore && !activityNotifier.isLoadingMore) {
+            activityNotifier.loadMore();
+          }
+        }
+      }
+      listViewScrollController.addListener(onScroll);
+      return () => listViewScrollController.removeListener(onScroll);
+    }, [listViewScrollController]);
+
     return ProviderScope(
       overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
       child: Scaffold(
@@ -67,7 +81,14 @@ class DriftActivitiesPage extends HookConsumerWidget {
                     controller: listViewScrollController,
                     padding: const EdgeInsets.only(top: 8, bottom: 80),
                     reverse: true,
-                    children: activityWidgets,
+                    children: [
+                      ...activityWidgets,
+                      if (activityNotifier.isLoadingMore)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: CircularProgressIndicator.adaptive()),
+                        ),
+                    ],
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,

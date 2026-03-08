@@ -45,6 +45,8 @@ const ActivitySearchSchema = ActivitySchema.extend({
   type: ReactionTypeSchema.optional(),
   level: ReactionLevelSchema.optional(),
   userId: z.uuidv4().optional().describe('Filter by user ID'),
+  take: z.coerce.number().int().min(1).optional().describe('Maximum number of activities to return'),
+  before: isoDatetimeToDate.optional().describe('Return activities created before this date (for pagination)'),
 });
 
 const ActivityCreateSchema = ActivitySchema.extend({

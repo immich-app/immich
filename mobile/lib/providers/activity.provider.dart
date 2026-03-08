@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 
+const _pageSize = 50;
+
 // ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>
 
@@ -13,11 +15,46 @@ class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (Stri
   late String albumId;
   late String? assetId;
 
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+
+  bool get hasMore => _hasMore;
+  bool get isLoadingMore => _isLoadingMore;
+
   @override
   Future<List<Activity>> build((String albumId, String? assetId) args) async {
     albumId = args.$1;
     assetId = args.$2;
-    return ref.watch(activityServiceProvider).getAllActivities(albumId, assetId: assetId);
+    _hasMore = true;
+    _isLoadingMore = false;
+    final activities = await ref.watch(activityServiceProvider).getAllActivities(
+      albumId,
+      assetId: assetId,
+      take: _pageSize,
+    );
+    _hasMore = activities.length >= _pageSize;
+    return activities;
+  }
+
+  Future<void> loadMore() async {
+    final activities = state.valueOrNull;
+    if (!_hasMore || _isLoadingMore || activities == null || activities.isEmpty) {
+      return;
+    }
+
+    _isLoadingMore = true;
+    try {
+      final older = await ref.watch(activityServiceProvider).getAllActivities(
+        albumId,
+        assetId: assetId,
+        take: _pageSize,
+        before: activities.first.createdAt,
+      );
+      _hasMore = older.length >= _pageSize;
+      state = AsyncData([...older, ...activities]);
+    } finally {
+      _isLoadingMore = false;
+    }
   }
 
   Future<void> removeActivity(String id) async {

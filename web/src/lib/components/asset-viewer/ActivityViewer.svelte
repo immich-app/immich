@@ -17,6 +17,7 @@
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiSend, mdiThumbUp } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
+  import { tick } from 'svelte';
   import { fromAction } from 'svelte/attachments';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
 
@@ -71,11 +72,11 @@
     try {
       await activityManager.deleteActivity(reaction, index);
 
-      const deleteMessages: Record<ReactionType, string> = {
+      const deleteMessages: Partial<Record<ReactionType, string>> = {
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      toastManager.primary(deleteMessages[reaction.type]);
+      toastManager.primary(deleteMessages[reaction.type] ?? $t('removed'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }
@@ -98,11 +99,42 @@
     isSendingMessage = false;
   };
 
+  let scrollContainer: HTMLElement | undefined = $state();
+  let hasScrolledToBottom = false;
+  let isAdjustingScroll = false;
+
   $effect(() => {
     if (assetId && previousAssetId != assetId) {
       previousAssetId = assetId;
+      hasScrolledToBottom = false;
     }
   });
+
+  $effect(() => {
+    // Scroll to bottom only on the initial load of activities
+    if (scrollContainer && activityManager.activities.length > 0 && !hasScrolledToBottom) {
+      hasScrolledToBottom = true;
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  });
+
+  const loadMoreAndPreserveScroll = async () => {
+    if (!scrollContainer) return;
+    const prevScrollHeight = scrollContainer.scrollHeight;
+    const prevScrollTop = scrollContainer.scrollTop;
+    await activityManager.loadMore();
+    await tick();
+    isAdjustingScroll = true;
+    scrollContainer.scrollTop = prevScrollTop + (scrollContainer.scrollHeight - prevScrollHeight);
+    isAdjustingScroll = false;
+  };
+
+  const onScrollContainer = () => {
+    if (isAdjustingScroll || !scrollContainer || activityManager.isLoadingMore || !activityManager.hasMore) return;
+    if (scrollContainer.scrollTop < 200) {
+      void loadMoreAndPreserveScroll();
+    }
+  };
 
   const onsubmit = async (event: Event) => {
     event.preventDefault();
@@ -130,7 +162,14 @@
       <div
         class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
+        bind:this={scrollContainer}
+        onscroll={onScrollContainer}
       >
+        {#if activityManager.isLoadingMore}
+          <div class="flex justify-center py-3">
+            <LoadingSpinner />
+          </div>
+        {/if}
         {#each activityManager.activities as reaction, index (reaction.id)}
           {#if reaction.type === ReactionType.Comment}
             <div class="mt-3 flex justify-start gap-4 rounded-lg bg-gray-200 py-3 ps-3 dark:bg-gray-800">

@@ -20,9 +20,9 @@ class ActivityService with ErrorLoggerMixin {
 
   ActivityService(this._activityApiRepository, this._timelineFactory, this._assetService);
 
-  Future<List<Activity>> getAllActivities(String albumId, {String? assetId}) async {
+  Future<List<Activity>> getAllActivities(String albumId, {String? assetId, int? take, DateTime? before}) async {
     return logError(
-      () => _activityApiRepository.getAll(albumId, assetId: assetId),
+      () => _activityApiRepository.getAll(albumId, assetId: assetId, take: take, before: before),
       defaultValue: [],
       errorMessage: "Failed to get all activities for album $albumId",
     );

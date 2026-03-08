@@ -3195,11 +3195,13 @@ export type SyncUserV1 = {
 /**
  * List all activities
  */
-export function getActivities({ albumId, assetId, level, $type, userId }: {
+export function getActivities({ albumId, assetId, before, level, $type, take, userId }: {
     albumId: string;
     assetId?: string;
+    before?: Date;
     level?: ReactionLevel;
     $type?: ReactionType;
+    take?: number;
     userId?: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3208,8 +3210,10 @@ export function getActivities({ albumId, assetId, level, $type, userId }: {
     }>(`/activities${QS.query(QS.explode({
         albumId,
         assetId,
+        before,
         level,
         "type": $type,
+        take,
         userId
     }))}`, {
         ...opts

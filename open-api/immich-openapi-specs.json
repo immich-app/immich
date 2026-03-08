@@ -29,11 +29,31 @@
             }
           },
           {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "Return activities created before this date (for pagination)",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
             "name": "level",
             "required": false,
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/ReactionLevel"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of activities to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
