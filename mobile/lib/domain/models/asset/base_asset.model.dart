@@ -45,12 +45,14 @@ sealed class BaseAsset {
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
 
-  bool get isMotionPhoto => livePhotoVideoId != null;
+  /// True for remote assets with a paired live-photo video ([livePhotoVideoId] != null)
+  /// and for local assets whose playback style was resolved to [AssetPlaybackStyle.livePhoto].
+  bool get isMotionPhoto => playbackStyle == AssetPlaybackStyle.livePhoto;
   bool get isAnimatedImage => playbackStyle == AssetPlaybackStyle.imageAnimated;
 
   AssetPlaybackStyle get playbackStyle {
     if (isVideo) return AssetPlaybackStyle.video;
-    if (isMotionPhoto) return AssetPlaybackStyle.livePhoto;
+    if (livePhotoVideoId != null) return AssetPlaybackStyle.livePhoto;
     if (isImage && durationInSeconds != null && durationInSeconds! > 0) return AssetPlaybackStyle.imageAnimated;
     if (isImage) return AssetPlaybackStyle.image;
     return AssetPlaybackStyle.unknown;

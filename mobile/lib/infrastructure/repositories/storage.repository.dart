@@ -12,7 +12,6 @@ class StorageRepository {
 
   Future<File?> getFileForAsset(String assetId) async {
     File? file;
-    final log = Logger('StorageRepository');
 
     try {
       final entity = await AssetEntity.fromId(assetId);
@@ -34,37 +33,32 @@ class StorageRepository {
   }
 
   Future<File?> getMotionFileForAsset(LocalAsset asset) async {
+    return getMotionFileById(asset.id);
+  }
+
+  Future<File?> getMotionFileById(String assetId) async {
     File? file;
-    final log = Logger('StorageRepository');
 
     try {
-      final entity = await AssetEntity.fromId(asset.id);
+      final entity = await AssetEntity.fromId(assetId);
       file = await entity?.originFileWithSubtype;
       if (file == null) {
-        log.warning(
-          "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        );
+        log.warning("Cannot get motion file for asset $assetId");
         return null;
       }
 
       final exists = await file.exists();
       if (!exists) {
-        log.warning("Motion file for asset ${asset.id} does not exist");
+        log.warning("Motion file for asset $assetId does not exist");
         return null;
       }
     } catch (error, stackTrace) {
-      log.warning(
-        "Error getting motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
-        error,
-        stackTrace,
-      );
+      log.warning("Error getting motion file for asset $assetId", error, stackTrace);
     }
     return file;
   }
 
   Future<AssetEntity?> getAssetEntityForAsset(LocalAsset asset) async {
-    final log = Logger('StorageRepository');
-
     AssetEntity? entity;
 
     try {
@@ -130,8 +124,6 @@ class StorageRepository {
   }
 
   Future<void> clearCache() async {
-    final log = Logger('StorageRepository');
-
     try {
       await PhotoManager.clearFileCache();
     } catch (error, stackTrace) {

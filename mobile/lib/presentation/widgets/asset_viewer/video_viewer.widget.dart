@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -100,9 +101,12 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (!mounted) return null;
 
     try {
-      if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
+      if (videoAsset.hasLocal) {
         final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-        final file = await StorageRepository().getFileForAsset(id);
+        File? file = videoAsset.isMotionPhoto
+            ? await StorageRepository().getMotionFileById(id)
+            : await StorageRepository().getFileForAsset(id);
+
         if (!mounted) return null;
 
         if (file == null) {
