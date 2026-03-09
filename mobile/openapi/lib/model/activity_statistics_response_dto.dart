@@ -17,8 +17,10 @@ class ActivityStatisticsResponseDto {
     required this.likes,
   });
 
+  /// Number of comments
   int comments;
 
+  /// Number of likes
   int likes;
 
   @override

@@ -27,7 +27,7 @@ class Thumbnail extends StatefulWidget {
     this.fit = BoxFit.cover,
     Size size = kThumbnailResolution,
     super.key,
-  }) : imageProvider = RemoteThumbProvider(assetId: remoteId, thumbhash: thumbhash),
+  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash),
        thumbhashProvider = null;
 
   Thumbnail.fromAsset({
@@ -233,16 +233,6 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
-    final imageProvider = widget.imageProvider;
-    if (imageProvider is CancellableImageProvider) {
-      imageProvider.cancel();
-    }
-
-    final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider is CancellableImageProvider) {
-      thumbhashProvider.cancel();
-    }
-
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();

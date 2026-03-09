@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Trigger type
 class PluginTriggerType {
   /// Instantiate a new enum with the provided [value].
   const PluginTriggerType._(this.value);

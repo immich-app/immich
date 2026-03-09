@@ -1,10 +1,10 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
 
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleDownloadAsset } from '$lib/services/asset.service';
   import { downloadArchive } from '$lib/utils/asset-utils';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDownload } from '@mdi/js';

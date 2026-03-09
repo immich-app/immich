@@ -39,7 +39,7 @@
         <Icon {icon} size="30" class="text-primary" />
       {/if}
       {#if title}
-        <p class="uppercase text-xl text-primary">
+        <p class="text-xl text-primary font-medium">
           {title}
         </p>
       {/if}

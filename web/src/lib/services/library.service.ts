@@ -20,17 +20,16 @@ import {
   type UpdateLibraryDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
+import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 
-export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResponseDto[]) => {
+export const getLibrariesActions = ($t: MessageFormatter) => {
   const ScanAll: ActionItem = {
     title: $t('scan_all_libraries'),
     type: $t('command'),
     icon: mdiSync,
     onAction: () => handleScanAllLibraries(),
     shortcuts: { shift: true, key: 'r' },
-    $if: () => libraries.length > 0,
   };
 
   const Create: ActionItem = {
@@ -45,6 +44,13 @@ export const getLibrariesActions = ($t: MessageFormatter, libraries: LibraryResp
 };
 
 export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponseDto) => {
+  const Detail: ActionItem = {
+    icon: mdiInformationOutline,
+    type: $t('command'),
+    title: $t('details'),
+    onAction: () => goto(Route.viewLibrary(library)),
+  };
+
   const Edit: ActionItem = {
     icon: mdiPencilOutline,
     type: $t('command'),
@@ -60,6 +66,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     color: 'danger',
     onAction: () => handleDeleteLibrary(library),
     shortcuts: { key: 'Backspace' },
+    shortcutOptions: { ignoreInputFields: true },
   };
 
   const AddFolder: ActionItem = {
@@ -84,7 +91,7 @@ export const getLibraryActions = ($t: MessageFormatter, library: LibraryResponse
     shortcuts: { shift: true, key: 'r' },
   };
 
-  return { Edit, Delete, AddFolder, AddExclusionPattern, Scan };
+  return { Detail, Edit, Delete, AddFolder, AddExclusionPattern, Scan };
 };
 
 export const getLibraryFolderActions = ($t: MessageFormatter, library: LibraryResponseDto, folder: string) => {

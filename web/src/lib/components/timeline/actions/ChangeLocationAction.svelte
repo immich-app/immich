@@ -1,8 +1,8 @@
 <script lang="ts">
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { user } from '$lib/stores/user.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { handleError } from '$lib/utils/handle-error';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button, modalManager, toastManager } from '@immich/ui';
+  import { Button, modalManager, Text, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
   import DeviceCard from './device-card.svelte';
 
   interface Props {
@@ -50,31 +51,39 @@
 </script>
 
 <section class="my-4">
-  {#if currentSession}
-    <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
-        {$t('current_device')}
-      </h3>
-      <DeviceCard session={currentSession} />
+  <div in:fade={{ duration: 500 }}>
+    <div class="sm:ms-8 flex flex-col gap-4">
+      {#if currentSession}
+        <div class="mb-6">
+          <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">
+            {$t('current_device')}
+          </Text>
+          <DeviceCard session={currentSession} />
+        </div>
+      {/if}
+      {#if otherSessions.length > 0}
+        <div class="mb-6">
+          <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">
+            {$t('other_devices')}
+          </Text>
+          {#each otherSessions as session, index (session.id)}
+            <DeviceCard {session} onDelete={() => handleDelete(session)} />
+            {#if index !== otherSessions.length - 1}
+              <hr class="my-3" />
+            {/if}
+          {/each}
+        </div>
+
+        <div class="my-3">
+          <hr />
+        </div>
+
+        <div class="flex justify-end">
+          <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}
+            >{$t('log_out_all_devices')}</Button
+          >
+        </div>
+      {/if}
     </div>
-  {/if}
-  {#if otherSessions.length > 0}
-    <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
-        {$t('other_devices')}
-      </h3>
-      {#each otherSessions as session, index (session.id)}
-        <DeviceCard {session} onDelete={() => handleDelete(session)} />
-        {#if index !== otherSessions.length - 1}
-          <hr class="my-3" />
-        {/if}
-      {/each}
-    </div>
-    <h3 class="uppercase mb-2 text-xs font-medium text-primary">
-      {$t('log_out_all_devices')}
-    </h3>
-    <div class="flex justify-end">
-      <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
-    </div>
-  {/if}
+  </div>
 </section>

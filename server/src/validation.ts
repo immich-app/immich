@@ -33,6 +33,7 @@ import {
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
+import { Property, PropertyOptions } from 'src/decorators';
 import { isIP, isIPRange } from 'validator';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class FileNotEmptyValidator extends FileValidator {
 }
 
 type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+export const ValidateUUID = (options?: UUIDOptions & PropertyOptions) => {
   const { optional, each, nullable, ...apiPropertyOptions } = {
     optional: false,
     each: false,
@@ -75,7 +76,7 @@ export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
   };
   return applyDecorators(
     IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
+    Property({ format: 'uuid', ...apiPropertyOptions }),
     optional ? Optional({ nullable }) : IsNotEmpty(),
     each ? IsArray() : IsString(),
   );
@@ -231,19 +232,20 @@ export const ValidateHexColor = () => {
   return applyDecorators(...decorators);
 };
 
-type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
-export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
-  const { optional, nullable, format, ...apiPropertyOptions } = {
-    optional: false,
-    nullable: false,
-    format: 'date-time',
-    ...options,
-  };
+type DateOptions = OptionalOptions & { optional?: boolean; format?: 'date' | 'date-time' };
+export const ValidateDate = (options?: DateOptions & PropertyOptions) => {
+  const {
+    optional,
+    nullable = false,
+    emptyToNull = false,
+    format = 'date-time',
+    ...apiPropertyOptions
+  } = options || {};
 
-  const decorators = [
-    ApiProperty({ format, ...apiPropertyOptions }),
+  return applyDecorators(
+    Property({ format, ...apiPropertyOptions }),
     IsDate(),
-    optional ? Optional({ nullable: true }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
     Transform(({ key, value }) => {
       if (value === null || value === undefined) {
         return value;
@@ -255,19 +257,17 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
 
       return new Date(value as string);
     }),
-  ];
-
-  if (optional) {
-    decorators.push(Optional({ nullable }));
-  }
-
-  return applyDecorators(...decorators);
+  );
 };
 
-type StringOptions = { optional?: boolean; nullable?: boolean; trim?: boolean };
+type StringOptions = OptionalOptions & { optional?: boolean; trim?: boolean };
 export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
-  const { optional, nullable, trim, ...apiPropertyOptions } = options || {};
-  const decorators = [ApiProperty(apiPropertyOptions), IsString(), optional ? Optional({ nullable }) : IsNotEmpty()];
+  const { optional, nullable, emptyToNull, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [
+    ApiProperty(apiPropertyOptions),
+    IsString(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
+  ];
 
   if (trim) {
     decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
@@ -276,11 +276,11 @@ export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => 
   return applyDecorators(...decorators);
 };
 
-type BooleanOptions = { optional?: boolean; nullable?: boolean };
-export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) => {
-  const { optional, nullable, ...apiPropertyOptions } = options || {};
+type BooleanOptions = OptionalOptions & { optional?: boolean };
+export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
+  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = options || {};
   const decorators = [
-    ApiProperty(apiPropertyOptions),
+    Property(apiPropertyOptions),
     IsBoolean(),
     Transform(({ value }) => {
       if (value == 'true') {
@@ -290,7 +290,7 @@ export const ValidateBoolean = (options?: BooleanOptions & ApiPropertyOptions) =
       }
       return value;
     }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
+    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
   ];
 
   return applyDecorators(...decorators);
@@ -427,3 +427,25 @@ export function IsIPRange(options: IsIPRangeOptions, validationOptions?: Validat
     validationOptions,
   );
 }
+
+@ValidatorConstraint({ name: 'isGreaterThanOrEqualTo' })
+export class IsGreaterThanOrEqualToConstraint implements ValidatorConstraintInterface {
+  validate(value: unknown, args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+    if (!Number.isFinite(value) || !Number.isFinite(relatedValue)) {
+      return true;
+    }
+
+    return Number(value) >= Number(relatedValue);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    const relatedPropertyName = args.constraints?.[0] as string;
+    return `${args.property} must be greater than or equal to ${relatedPropertyName}`;
+  }
+}
+
+export const IsGreaterThanOrEqualTo = (property: string, validationOptions?: ValidationOptions) => {
+  return Validate(IsGreaterThanOrEqualToConstraint, [property], validationOptions);
+};

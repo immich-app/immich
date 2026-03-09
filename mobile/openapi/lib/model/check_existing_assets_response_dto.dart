@@ -16,6 +16,7 @@ class CheckExistingAssetsResponseDto {
     this.existingIds = const [],
   });
 
+  /// Existing asset IDs
   List<String> existingIds;
 
   @override

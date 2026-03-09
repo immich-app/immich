@@ -17,8 +17,10 @@ class TagsResponse {
     this.sidebarWeb = true,
   });
 
+  /// Whether tags are enabled
   bool enabled;
 
+  /// Whether tags appear in web sidebar
   bool sidebarWeb;
 
   @override

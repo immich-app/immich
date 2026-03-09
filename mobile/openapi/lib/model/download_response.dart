@@ -17,8 +17,10 @@ class DownloadResponse {
     this.includeEmbeddedVideos = false,
   });
 
+  /// Maximum archive size in bytes
   int archiveSize;
 
+  /// Whether to include embedded videos in downloads
   bool includeEmbeddedVideos;
 
   @override

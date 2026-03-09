@@ -18,6 +18,7 @@ class EmailNotificationsUpdate {
     this.enabled,
   });
 
+  /// Whether to receive email notifications for album invites
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -26,6 +27,7 @@ class EmailNotificationsUpdate {
   ///
   bool? albumInvite;
 
+  /// Whether to receive email notifications for album updates
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,6 +36,7 @@ class EmailNotificationsUpdate {
   ///
   bool? albumUpdate;
 
+  /// Whether email notifications are enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

@@ -23,20 +23,28 @@ class UsageByUserDto {
     required this.videos,
   });
 
+  /// Number of photos
   int photos;
 
+  /// User quota size in bytes (null if unlimited)
   int? quotaSizeInBytes;
 
+  /// Total storage usage in bytes
   int usage;
 
+  /// Storage usage for photos in bytes
   int usagePhotos;
 
+  /// Storage usage for videos in bytes
   int usageVideos;
 
+  /// User ID
   String userId;
 
+  /// User name
   String userName;
 
+  /// Number of videos
   int videos;
 
   @override

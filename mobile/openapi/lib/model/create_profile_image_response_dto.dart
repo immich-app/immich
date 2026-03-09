@@ -18,10 +18,13 @@ class CreateProfileImageResponseDto {
     required this.userId,
   });
 
+  /// Profile image change date
   DateTime profileChangedAt;
 
+  /// Profile image file path
   String profileImagePath;
 
+  /// User ID
   String userId;
 
   @override

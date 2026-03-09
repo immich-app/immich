@@ -2,8 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
-
-import 'logger_db.repository.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.drift.dart';
 
 @DriftDatabase(tables: [LogMessageEntity])
 class DriftLogger extends $DriftLogger implements IDatabaseRepository {
@@ -22,6 +21,7 @@ class DriftLogger extends $DriftLogger implements IDatabaseRepository {
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
       await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
 }

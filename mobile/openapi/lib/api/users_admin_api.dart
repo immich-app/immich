@@ -318,10 +318,13 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<Response> getUserStatisticsAdminWithHttpInfo(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users/{id}/statistics'
@@ -367,10 +370,13 @@ class UsersAdminApi {
   /// * [String] id (required):
   ///
   /// * [bool] isFavorite:
+  ///   Filter by favorite status
   ///
   /// * [bool] isTrashed:
+  ///   Filter by trash status
   ///
   /// * [AssetVisibility] visibility:
+  ///   Filter by visibility
   Future<AssetStatsResponseDto?> getUserStatisticsAdmin(String id, { bool? isFavorite, bool? isTrashed, AssetVisibility? visibility, }) async {
     final response = await getUserStatisticsAdminWithHttpInfo(id,  isFavorite: isFavorite, isTrashed: isTrashed, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -452,8 +458,10 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id:
+  ///   User ID filter
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted users
   Future<Response> searchUsersAdminWithHttpInfo({ String? id, bool? withDeleted, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/users';
@@ -493,8 +501,10 @@ class UsersAdminApi {
   /// Parameters:
   ///
   /// * [String] id:
+  ///   User ID filter
   ///
   /// * [bool] withDeleted:
+  ///   Include deleted users
   Future<List<UserAdminResponseDto>?> searchUsersAdmin({ String? id, bool? withDeleted, }) async {
     final response = await searchUsersAdminWithHttpInfo( id: id, withDeleted: withDeleted, );
     if (response.statusCode >= HttpStatus.badRequest) {

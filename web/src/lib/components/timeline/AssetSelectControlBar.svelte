@@ -1,16 +1,6 @@
 <script lang="ts" module>
-  import { createContext } from '$lib/utils/context';
+  import { setAssetControlContext } from '$lib/utils/context';
   import { t } from 'svelte-i18n';
-
-  export interface AssetControlContext {
-    // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => TimelineAsset[]; // All assets includes partners' assets
-    getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
-    clearSelect: () => void;
-  }
-
-  const { get: getAssetControlContext, set: setContext } = createContext<AssetControlContext>();
-  export { getAssetControlContext };
 </script>
 
 <script lang="ts">
@@ -19,20 +9,20 @@
   import type { Snippet } from 'svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
-  interface Props {
+  type Props = {
     assets: TimelineAsset[];
     clearSelect: () => void;
     ownerId?: string | undefined;
     children?: Snippet;
     forceDark?: boolean;
-  }
+  };
 
   let { assets, clearSelect, ownerId = undefined, children, forceDark }: Props = $props();
 
-  setContext({
+  setAssetControlContext({
     getAssets: () => assets,
     getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
-    clearSelect,
+    clearSelect: () => clearSelect(),
   });
 </script>
 

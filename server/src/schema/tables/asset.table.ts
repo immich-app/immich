@@ -1,10 +1,3 @@
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
-import { asset_delete_audit } from 'src/schema/functions';
-import { LibraryTable } from 'src/schema/tables/library.table';
-import { StackTable } from 'src/schema/tables/stack.table';
-import { UserTable } from 'src/schema/tables/user.table';
 import {
   AfterDeleteTrigger,
   Column,
@@ -17,7 +10,14 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
+import { asset_delete_audit } from 'src/schema/functions';
+import { LibraryTable } from 'src/schema/tables/library.table';
+import { StackTable } from 'src/schema/tables/stack.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 
 @Table('asset')
@@ -54,6 +54,11 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   name: 'asset_originalFilename_trigram_idx',
   using: 'gin',
   expression: 'f_unaccent("originalFileName") gin_trgm_ops',
+})
+@Index({
+  name: 'asset_id_timeline_notDeleted_idx',
+  columns: ['id'],
+  where: `visibility = 'timeline' AND "deletedAt" IS NULL`,
 })
 // For all assets, each originalpath must be unique per user and library
 export class AssetTable {

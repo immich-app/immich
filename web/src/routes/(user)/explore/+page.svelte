@@ -1,15 +1,14 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import { Route } from '$lib/route';
-  import { websocketEvents } from '$lib/stores/websocket';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -29,16 +28,16 @@
 
   let hasPeople = $derived(data.response.total > 0);
 
-  onMount(() => {
-    return websocketEvents.on('on_person_thumbnail', (personId: string) => {
-      people.map((person) => {
-        if (person.id === personId) {
-          person.updatedAt = Date.now().toString();
-        }
-      });
-    });
-  });
+  const onPersonThumbnailReady = ({ id }: { id: string }) => {
+    for (const person of people) {
+      if (person.id === id) {
+        person.updatedAt = new Date().toISOString();
+      }
+    }
+  };
 </script>
+
+<OnEvents {onPersonThumbnailReady} />
 
 <UserPageLayout title={data.meta.title}>
   {#if hasPeople}
@@ -91,7 +90,7 @@
             <a class="relative" href={Route.search({ city: item.value })} draggable="false">
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
-                  src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                  src={getAssetMediaUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
                   alt={item.value}
                   class="object-cover aspect-square w-full"
                 />

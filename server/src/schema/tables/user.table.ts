@@ -1,7 +1,3 @@
-import { ColumnType } from 'kysely';
-import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { UserAvatarColor, UserStatus } from 'src/enum';
-import { user_delete_audit } from 'src/schema/functions';
 import {
   AfterDeleteTrigger,
   Column,
@@ -13,7 +9,11 @@ import {
   Table,
   Timestamp,
   UpdateDateColumn,
-} from 'src/sql-tools';
+} from '@immich/sql-tools';
+import { ColumnType } from 'kysely';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { UserAvatarColor, UserStatus } from 'src/enum';
+import { user_delete_audit } from 'src/schema/functions';
 
 @Table('user')
 @UpdatedAtTrigger('user_updatedAt')

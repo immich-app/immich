@@ -32,9 +32,14 @@ import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
+import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
+import { Tasks } from 'src/utils/tasks';
+
+const POSTGRES_INT_MAX = 2_147_483_647;
+const POSTGRES_INT_MIN = -2_147_483_648;
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -88,7 +93,10 @@ const validate = <T>(value: T): NonNullable<T> | null => {
     return null;
   }
 
-  if (typeof value === 'number' && (Number.isNaN(value) || !Number.isFinite(value))) {
+  if (
+    typeof value === 'number' &&
+    (Number.isNaN(value) || !Number.isFinite(value) || value < POSTGRES_INT_MIN || value > POSTGRES_INT_MAX)
+  ) {
     return null;
   }
 
@@ -161,7 +169,7 @@ export class MetadataService extends BaseService {
       this.logger.log(`Initialized local reverse geocoder`);
     } catch (error: Error | any) {
       this.logger.error(`Unable to initialize reverse geocoding: ${error}`, error?.stack);
-      throw new Error(`Metadata service init failed`);
+      throw new Error('Metadata service init failed', { cause: error });
     }
   }
 
@@ -254,6 +262,8 @@ export class MetadataService extends BaseService {
       }
     }
 
+    const tags = this.getTagList(exifTags);
+
     const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
 
@@ -276,11 +286,11 @@ export class MetadataService extends BaseService {
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
-      colorspace: exifTags.ColorSpace ?? null,
+      colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
-      make: exifTags.Make ?? exifTags?.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
-      model: exifTags.Model ?? exifTags?.Device?.ModelName ?? exifTags.AndroidModel ?? null,
+      make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
+      model: exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? null,
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
@@ -291,43 +301,51 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
       autoStackId: this.getAutoStackId(exifTags),
+
+      tags: tags.length > 0 ? tags : null,
     };
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
     const assetWidth = isSidewards ? validate(height) : validate(width);
     const assetHeight = isSidewards ? validate(width) : validate(height);
 
-    const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' }),
-      this.assetRepository.update({
-        id: asset.id,
-        duration: this.getDuration(exifTags),
-        localDateTime: dates.localDateTime,
-        fileCreatedAt: dates.dateTimeOriginal ?? undefined,
-        fileModifiedAt: stats.mtime,
+    const tasks = new Tasks();
 
-        // only update the dimensions if they don't already exist
-        // we don't want to overwrite width/height that are modified by edits
-        width: asset.width == null ? assetWidth : undefined,
-        height: asset.height == null ? assetHeight : undefined,
-      }),
-      this.applyTagList(asset, exifTags),
-    ];
+    tasks.push(
+      () =>
+        this.assetRepository.update({
+          id: asset.id,
+          duration: this.getDuration(exifTags),
+          localDateTime: dates.localDateTime,
+          fileCreatedAt: dates.dateTimeOriginal ?? undefined,
+          fileModifiedAt: stats.mtime,
+
+          // only update the dimensions if they don't already exist
+          // we don't want to overwrite width/height that are modified by edits
+          width: asset.width == null ? assetWidth : undefined,
+          height: asset.height == null ? assetHeight : undefined,
+        }),
+      async () => {
+        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
+        await this.applyTagList(asset);
+      },
+    );
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
+      tasks.push(() => this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
+      tasks.push(() => this.applyTaggedFaces(asset, exifTags));
     }
 
-    await Promise.all(promises);
+    await tasks.all();
+
     if (exifData.livePhotoCID) {
       await this.linkLivePhotos(asset, exifData);
     }
@@ -405,35 +423,37 @@ export class MetadataService extends BaseService {
 
   @OnEvent({ name: 'AssetTag' })
   async handleTagAsset({ assetId }: ArgOf<'AssetTag'>) {
-    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId, tags: true } });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId } });
   }
 
   @OnEvent({ name: 'AssetUntag' })
   async handleUntagAsset({ assetId }: ArgOf<'AssetUntag'>) {
-    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId, tags: true } });
+    await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId } });
   }
 
   @OnJob({ name: JobName.SidecarWrite, queue: QueueName.Sidecar })
   async handleSidecarWrite(job: JobOf<JobName.SidecarWrite>): Promise<JobStatus> {
-    const { id, tags } = job;
+    const { id } = job;
     const asset = await this.assetJobRepository.getForSidecarWriteJob(id);
     if (!asset) {
       return JobStatus.Failed;
     }
 
     const lockedProperties = await this.assetJobRepository.getLockedPropertiesForMetadataExtraction(id);
-    const tagsList = (asset.tags || []).map((tag) => tag.value);
 
     const { sidecarFile } = getAssetFiles(asset.files);
     const sidecarPath = sidecarFile?.path || `${asset.originalPath}.xmp`;
 
-    const { description, dateTimeOriginal, latitude, longitude, rating } = _.pick(
+    const { description, dateTimeOriginal, latitude, longitude, rating, tags, timeZone } = _.pick(
       {
         description: asset.exifInfo.description,
-        dateTimeOriginal: asset.exifInfo.dateTimeOriginal,
+        // the kysely type is wrong here; fixed in 0.28.3
+        dateTimeOriginal: asset.exifInfo.dateTimeOriginal as string | null,
         latitude: asset.exifInfo.latitude,
         longitude: asset.exifInfo.longitude,
-        rating: asset.exifInfo.rating,
+        rating: asset.exifInfo.rating ?? 0,
+        tags: asset.exifInfo.tags,
+        timeZone: asset.exifInfo.timeZone,
       },
       lockedProperties,
     );
@@ -442,11 +462,11 @@ export class MetadataService extends BaseService {
       <Tags>{
         Description: description,
         ImageDescription: description,
-        DateTimeOriginal: dateTimeOriginal ? String(dateTimeOriginal) : undefined,
+        DateTimeOriginal: mergeTimeZone(dateTimeOriginal, timeZone)?.toISO(),
         GPSLatitude: latitude,
         GPSLongitude: longitude,
         Rating: rating,
-        TagsList: tags ? tagsList : undefined,
+        TagsList: tags?.length ? tags : undefined,
       },
       _.isUndefined,
     );
@@ -519,6 +539,15 @@ export class MetadataService extends BaseService {
         for (const tag of EXIF_DATE_TAGS) {
           delete mediaTags[tag];
         }
+
+        // exiftool-vendored derives tz information from the date.
+        // if the sidecar file has date information, we also assume the tz information come from there.
+        //
+        // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
+        // and as such the tags aren't overwritten when returning all tags.
+        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
+          delete mediaTags[tag];
+        }
       }
     }
 
@@ -560,11 +589,14 @@ export class MetadataService extends BaseService {
     return tags;
   }
 
-  private async applyTagList(asset: { id: string; ownerId: string }, exifTags: ImmichTags) {
-    const tags = this.getTagList(exifTags);
-    const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
+  private async applyTagList({ id, ownerId }: { id: string; ownerId: string }) {
+    const asset = await this.assetRepository.getForMetadataExtractionTags(id);
+    const results = await upsertTags(this.tagRepository, {
+      userId: ownerId,
+      tags: asset?.tags ?? [],
+    });
     await this.tagRepository.replaceAssetTags(
-      asset.id,
+      id,
       results.map((tag) => tag.id),
     );
   }
@@ -886,8 +918,8 @@ export class MetadataService extends BaseService {
     }
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
-    if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
+    let timeZone = exifTags.zone ?? null;
+    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -895,7 +927,7 @@ export class MetadataService extends BaseService {
 
     if (timeZone) {
       this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
       );
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);

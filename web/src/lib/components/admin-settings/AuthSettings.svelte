@@ -105,7 +105,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ISSUER_URL"
+                label="issuer_url"
                 bind:value={configToEdit.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -114,7 +114,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT_ID"
+                label="client_id"
                 bind:value={configToEdit.oauth.clientId}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -123,7 +123,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="CLIENT_SECRET"
+                label="client_secret"
                 description={$t('admin.oauth_client_secret_description')}
                 bind:value={configToEdit.oauth.clientSecret}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -132,7 +132,7 @@
 
               {#if configToEdit.oauth.clientSecret}
                 <SettingSelect
-                  label="TOKEN_ENDPOINT_AUTH_METHOD"
+                  label="token_endpoint_auth_method"
                   bind:value={configToEdit.oauth.tokenEndpointAuthMethod}
                   disabled={disabled || !configToEdit.oauth.enabled || !configToEdit.oauth.clientSecret}
                   isEdited={!(configToEdit.oauth.tokenEndpointAuthMethod === config.oauth.tokenEndpointAuthMethod)}
@@ -146,7 +146,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="SCOPE"
+                label="scope"
                 bind:value={configToEdit.oauth.scope}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -155,7 +155,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="ID_TOKEN_SIGNED_RESPONSE_ALG"
+                label="id_token_signed_response_alg"
                 bind:value={configToEdit.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
@@ -164,7 +164,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label="USERINFO_SIGNED_RESPONSE_ALG"
+                label="userinfo_signed_response_alg"
                 bind:value={configToEdit.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}

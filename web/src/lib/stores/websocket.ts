@@ -12,6 +12,8 @@ import {
   type MaintenanceStatusResponseDto,
   type NotificationDto,
   type ServerVersionResponseDto,
+  type SyncAssetEditV1,
+  type SyncAssetV1,
 } from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
@@ -40,7 +42,7 @@ export interface Events {
   AppRestartV1: (event: AppRestartEvent) => void;
 
   MaintenanceStatusV1: (event: MaintenanceStatusResponseDto) => void;
-  AssetEditReadyV1: (data: { asset: { id: string } }) => void;
+  AssetEditReadyV1: (data: { asset: SyncAssetV1; edit: SyncAssetEditV1[] }) => void;
 }
 
 const websocket: Socket<Events> = io({
@@ -60,7 +62,10 @@ export const websocketStore = {
 export const websocketEvents = createEventEmitter(websocket);
 
 websocket
-  .on('connect', () => websocketStore.connected.set(true))
+  .on('connect', () => {
+    eventManager.emit('WebsocketConnect');
+    websocketStore.connected.set(true);
+  })
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
   .on('AppRestartV1', (mode) => websocketStore.serverRestarting.set(mode))
@@ -76,6 +81,8 @@ websocket
   .on('on_new_release', (event) => eventManager.emit('ReleaseEvent', event))
   .on('on_session_delete', () => authManager.logout())
   .on('on_user_delete', (id) => eventManager.emit('UserAdminDeleted', { id }))
+  .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))
+  .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
   .on('on_notification', () => notificationManager.refresh())
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 

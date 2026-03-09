@@ -50,5 +50,14 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertBulkMetadata: vitest.fn(),
     deleteMetadataByKey: vitest.fn(),
     deleteBulkMetadata: vitest.fn(),
+    getForOriginal: vitest.fn(),
+    getForOriginals: vitest.fn(),
+    getForThumbnail: vitest.fn(),
+    getForVideo: vitest.fn(),
+    getForEdit: vitest.fn(),
+    getForOcr: vitest.fn(),
+    getForMetadataExtractionTags: vitest.fn(),
+    getForFaces: vitest.fn(),
+    getForUpdateTags: vitest.fn(),
   };
 };

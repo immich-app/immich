@@ -8,7 +8,7 @@ import onnxruntime as ort
 from numpy.typing import NDArray
 
 from immich_ml.models.constants import SUPPORTED_PROVIDERS
-from immich_ml.schemas import SessionNode
+from immich_ml.schemas import ModelPrecision, SessionNode
 
 from ..config import log, settings
 
@@ -64,14 +64,6 @@ class OrtSession:
     def _providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
         log.debug(f"Available ORT providers: {available_providers}")
-        if (openvino := "OpenVINOExecutionProvider") in available_providers:
-            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-            log.debug(f"Available OpenVINO devices: {device_ids}")
-
-            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-            if not gpu_devices:
-                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
-                available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
@@ -90,15 +82,31 @@ class OrtSession:
             match provider:
                 case "CPUExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested"}
-                case "CUDAExecutionProvider" | "ROCMExecutionProvider":
+                case "CUDAExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
-                case "OpenVINOExecutionProvider":
-                    openvino_dir = self.model_path.parent / "openvino"
-                    device = f"GPU.{settings.device_id}"
+                case "MIGraphXExecutionProvider":
+                    migraphx_dir = self.model_path.parent / "migraphx"
+                    # MIGraphX does not create the underlying folder and will crash if it does not exist
+                    migraphx_dir.mkdir(parents=True, exist_ok=True)
                     options = {
-                        "device_type": device,
+                        "device_id": settings.device_id,
+                        "migraphx_model_cache_dir": migraphx_dir.as_posix(),
+                        "migraphx_fp16_enable": "1" if settings.rocm_precision == ModelPrecision.FP16 else "0",
+                    }
+                case "OpenVINOExecutionProvider":
+                    device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+                    # Check for available devices, preferring GPU over CPU
+                    gpu_devices = [d for d in device_ids if d.startswith("GPU")]
+                    if gpu_devices:
+                        device_type = f"GPU.{settings.device_id}"
+                        log.debug(f"OpenVINO: Using GPU device {device_type}")
+                    else:
+                        device_type = "CPU"
+                        log.debug("OpenVINO: No GPU found, using CPU")
+                    options = {
+                        "device_type": device_type,
                         "precision": settings.openvino_precision.value,
-                        "cache_dir": openvino_dir.as_posix(),
+                        "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                     }
                 case "CoreMLExecutionProvider":
                     options = {
@@ -130,12 +138,14 @@ class OrtSession:
         sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
+        # Set inter_op threads
         if settings.model_inter_op_threads > 0:
             sess_options.inter_op_num_threads = settings.model_inter_op_threads
         # these defaults work well for CPU, but bottleneck GPU
         elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.inter_op_num_threads = 1
 
+        # Set intra_op threads
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:

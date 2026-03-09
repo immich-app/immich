@@ -18,10 +18,13 @@ class SystemConfigStorageTemplateDto {
     required this.template,
   });
 
+  /// Enabled
   bool enabled;
 
+  /// Hash verification enabled
   bool hashVerificationEnabled;
 
+  /// Template
   String template;
 
   @override

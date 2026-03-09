@@ -8,9 +8,9 @@
   import { setSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
-  import { getMySharedLink, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { sharedLinkLogin, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { Button, Logo, PasswordInput } from '@immich/ui';
-  import { tick } from 'svelte';
+  import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -39,7 +39,7 @@
 
   const handlePasswordSubmit = async () => {
     try {
-      sharedLink = await getMySharedLink({ password, key, slug });
+      sharedLink = await sharedLinkLogin({ key, slug, sharedLinkLoginDto: { password } });
       setSharedLink(sharedLink);
       passwordRequired = false;
       title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
@@ -60,6 +60,10 @@
     event.preventDefault();
     await handlePasswordSubmit();
   };
+
+  onDestroy(() => {
+    setSharedLink(undefined);
+  });
 </script>
 
 <svelte:head>

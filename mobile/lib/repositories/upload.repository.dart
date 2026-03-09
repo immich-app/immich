@@ -3,20 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:logging/logging.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-
-class UploadTaskWithFile {
-  final File file;
-  final UploadTask task;
-
-  const UploadTaskWithFile({required this.file, required this.task});
-}
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -97,26 +91,27 @@ class UploadRepository {
   Future<UploadResult> uploadFile({
     required File file,
     required String originalFileName,
-    required Map<String, String> headers,
     required Map<String, String> fields,
-    required Client httpClient,
-    required CancellationToken cancelToken,
-    required void Function(int bytes, int totalBytes) onProgress,
+    required Completer<void>? cancelToken,
+    void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final baseRequest = ProgressMultipartRequest(
+      'POST',
+      Uri.parse('$savedEndpoint/assets'),
+      abortTrigger: cancelToken?.future,
+      onProgress: onProgress,
+    );
 
     try {
       final fileStream = file.openRead();
       final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
 
-      final baseRequest = _CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
-
-      baseRequest.headers.addAll(headers);
       baseRequest.fields.addAll(fields);
       baseRequest.files.add(assetRawUploadData);
 
-      final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+      final response = await NetworkRepository.client.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {
@@ -145,13 +140,41 @@ class UploadRepository {
       } catch (e) {
         return UploadResult.error(errorMessage: 'Failed to parse server response');
       }
-    } on CancelledException {
+    } on RequestAbortedException {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();
     } catch (error, stackTrace) {
       logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
       return UploadResult.error(errorMessage: error.toString());
     }
+  }
+}
+
+class ProgressMultipartRequest extends MultipartRequest with Abortable {
+  ProgressMultipartRequest(super.method, super.url, {this.abortTrigger, this.onProgress});
+
+  @override
+  final Future<void>? abortTrigger;
+
+  final void Function(int bytes, int totalBytes)? onProgress;
+
+  @override
+  ByteStream finalize() {
+    final byteStream = super.finalize();
+    if (onProgress == null) return byteStream;
+
+    final total = contentLength;
+    var bytes = 0;
+    final stream = byteStream.transform(
+      StreamTransformer.fromHandlers(
+        handleData: (List<int> data, EventSink<List<int>> sink) {
+          bytes += data.length;
+          onProgress!(bytes, total);
+          sink.add(data);
+        },
+      ),
+    );
+    return ByteStream(stream);
   }
 }
 
@@ -180,28 +203,5 @@ class UploadResult {
 
   factory UploadResult.cancelled() {
     return const UploadResult(isSuccess: false, isCancelled: true);
-  }
-}
-
-class _CustomMultipartRequest extends MultipartRequest {
-  _CustomMultipartRequest(super.method, super.url, {required this.onProgress});
-
-  final void Function(int bytes, int totalBytes) onProgress;
-
-  @override
-  ByteStream finalize() {
-    final byteStream = super.finalize();
-    final total = contentLength;
-    var bytes = 0;
-
-    final t = StreamTransformer.fromHandlers(
-      handleData: (List<int> data, EventSink<List<int>> sink) {
-        bytes += data.length;
-        onProgress.call(bytes, total);
-        sink.add(data);
-      },
-    );
-    final stream = byteStream.transform(t);
-    return ByteStream(stream);
   }
 }

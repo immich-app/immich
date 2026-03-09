@@ -14,8 +14,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
@@ -230,10 +230,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     elevation: 3,
                     child: CircleAvatar(
                       maxRadius: 84 / 2,
-                      backgroundImage: NetworkImage(
-                        getFaceThumbnailUrl(widget.person.id),
-                        headers: ApiService.getRequestHeaders(),
-                      ),
+                      backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(widget.person.id)),
                     ),
                   ),
                 ),

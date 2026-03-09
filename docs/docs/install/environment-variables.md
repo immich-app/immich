@@ -17,11 +17,11 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 
 ## Docker Compose
 
-| Variable           | Description                     |  Default  | Containers               |
-| :----------------- | :------------------------------ | :-------: | :----------------------- |
-| `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
-| `UPLOAD_LOCATION`  | Host path for uploads           |           | server                   |
-| `DB_DATA_LOCATION` | Host path for Postgres database |           | database                 |
+| Variable           | Description                     | Default | Containers               |
+| :----------------- | :------------------------------ | :-----: | :----------------------- |
+| `IMMICH_VERSION`   | Image tags                      |  `v2`   | server, machine learning |
+| `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
+| `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
@@ -166,6 +166,8 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_PRELOAD__CLIP__VISUAL`                    | Comma-separated list of (visual) CLIP model(s) to preload and cache                                                                                          |                                 | machine learning |
 | `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION` | Comma-separated list of (recognition) facial recognition model(s) to preload and cache                                                                       |                                 | machine learning |
 | `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION`   | Comma-separated list of (detection) facial recognition model(s) to preload and cache                                                                         |                                 | machine learning |
+| `MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION`                | Comma-separated list of (recognition) OCR model(s) to preload and cache                                                                                      |                                 | machine learning |
+| `MACHINE_LEARNING_PRELOAD__OCR__DETECTION`                  | Comma-separated list of (detection) OCR model(s) to preload and cache                                                                                        |                                 | machine learning |
 | `MACHINE_LEARNING_ANN`                                      | Enable ARM-NN hardware acceleration if supported                                                                                                             |             `True`              | machine learning |
 | `MACHINE_LEARNING_ANN_FP16_TURBO`                           | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN)                                                          |             `False`             | machine learning |
 | `MACHINE_LEARNING_ANN_TUNING_LEVEL`                         | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                                                                                 |               `2`               | machine learning |

@@ -20,14 +20,19 @@ class WorkflowActionResponseDto {
     required this.workflowId,
   });
 
+  /// Action configuration
   Object? actionConfig;
 
+  /// Action ID
   String id;
 
+  /// Action order
   num order;
 
+  /// Plugin action ID
   String pluginActionId;
 
+  /// Workflow ID
   String workflowId;
 
   @override

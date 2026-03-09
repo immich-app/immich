@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -31,7 +31,6 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
   @override
   Widget build(BuildContext context) {
     final people = ref.watch(driftGetAllPeopleProvider);
-    final headers = ApiService.getRequestHeaders();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -90,7 +89,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                             elevation: 3,
                             child: CircleAvatar(
                               maxRadius: isTablet ? 100 / 2 : 96 / 2,
-                              backgroundImage: NetworkImage(getFaceThumbnailUrl(person.id), headers: headers),
+                              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
                             ),
                           ),
                         ),

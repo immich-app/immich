@@ -111,11 +111,11 @@ export class TimelineManager extends VirtualScrollManager {
   constructor() {
     super();
 
-    const onAssetUpdate = (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]);
-
-    eventManager.on('AssetUpdate', onAssetUpdate);
-
-    this.#unsubscribes.push(() => eventManager.off('AssetUpdate', onAssetUpdate));
+    this.#unsubscribes.push(
+      eventManager.on({
+        AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
+      }),
+    );
   }
 
   override get scrollTop(): number {
@@ -258,10 +258,16 @@ export class TimelineManager extends VirtualScrollManager {
     if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
       return;
     }
-    await this.initTask.reset();
-    await this.#init(options);
-    this.updateViewportGeometry(false);
-    this.#createScrubberMonths();
+
+    this.suspendTransitions = true;
+    try {
+      await this.initTask.reset();
+      await this.#init(options);
+      this.updateViewportGeometry(false);
+      this.#createScrubberMonths();
+    } finally {
+      this.suspendTransitions = false;
+    }
   }
 
   async #init(options: TimelineManagerOptions) {
@@ -589,7 +595,8 @@ export class TimelineManager extends VirtualScrollManager {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed, asset.isTrashed)
+      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
     );
   }
 

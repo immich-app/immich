@@ -26,6 +26,7 @@ class AssetBulkUpdateDto {
     this.visibility,
   });
 
+  /// Original date and time
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -34,6 +35,7 @@ class AssetBulkUpdateDto {
   ///
   String? dateTimeOriginal;
 
+  /// Relative time offset in seconds
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -42,6 +44,7 @@ class AssetBulkUpdateDto {
   ///
   num? dateTimeRelative;
 
+  /// Asset description
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -50,10 +53,13 @@ class AssetBulkUpdateDto {
   ///
   String? description;
 
+  /// Duplicate ID
   String? duplicateId;
 
+  /// Asset IDs to update
   List<String> ids;
 
+  /// Mark as favorite
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -62,6 +68,7 @@ class AssetBulkUpdateDto {
   ///
   bool? isFavorite;
 
+  /// Latitude coordinate
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -70,6 +77,7 @@ class AssetBulkUpdateDto {
   ///
   num? latitude;
 
+  /// Longitude coordinate
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -78,16 +86,13 @@ class AssetBulkUpdateDto {
   ///
   num? longitude;
 
+  /// Rating in range [1-5], or null for unrated
+  ///
   /// Minimum value: -1
   /// Maximum value: 5
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? rating;
 
+  /// Time zone (IANA timezone)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -96,6 +101,7 @@ class AssetBulkUpdateDto {
   ///
   String? timeZone;
 
+  /// Asset visibility
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -211,7 +217,9 @@ class AssetBulkUpdateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
-        rating: num.parse('${json[r'rating']}'),
+        rating: json[r'rating'] == null
+            ? null
+            : num.parse('${json[r'rating']}'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );

@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Context type
 class PluginContextType {
   /// Instantiate a new enum with the provided [value].
   const PluginContextType._(this.value);

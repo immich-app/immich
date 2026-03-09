@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
-
-import 'photo_view_hit_corners.dart';
+import 'package:immich_mobile/widgets/photo_view/src/core/photo_view_hit_corners.dart';
 
 /// Credit to [eduribas](https://github.com/eduribas/photo_view/commit/508d9b77dafbcf88045b4a7fee737eed4064ea2c)
 /// for the gist
@@ -16,6 +15,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
+    this.onDragCancel,
     this.onLongPressStart,
     this.child,
     this.onTapUp,
@@ -34,6 +34,7 @@ class PhotoViewGestureDetector extends StatelessWidget {
   final GestureDragEndCallback? onDragEnd;
   final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
+  final GestureDragCancelCallback? onDragCancel;
 
   final GestureTapUpCallback? onTapUp;
   final GestureTapDownCallback? onTapDown;
@@ -73,7 +74,8 @@ class PhotoViewGestureDetector extends StatelessWidget {
           instance
             ..onStart = onDragStart
             ..onUpdate = onDragUpdate
-            ..onEnd = onDragEnd;
+            ..onEnd = onDragEnd
+            ..onCancel = onDragCancel;
         },
       );
     }
@@ -203,9 +205,13 @@ class PhotoViewGestureRecognizer extends ScaleGestureRecognizer {
 
   void _decideIfWeAcceptEvent(PointerEvent event) {
     final move = _initialFocalPoint! - _currentFocalPoint!;
-    final bool shouldMove = validateAxis == Axis.vertical
-        ? hitDetector!.shouldMove(move, Axis.vertical)
-        : hitDetector!.shouldMove(move, Axis.horizontal);
+
+    // Accept gesture if movement is possible in the direction the user is swiping
+    final bool isHorizontalGesture = move.dx.abs() > move.dy.abs();
+    final bool shouldMove = isHorizontalGesture
+        ? hitDetector!.shouldMove(move, Axis.horizontal)
+        : hitDetector!.shouldMove(move, Axis.vertical);
+
     if (shouldMove || _pointerLocations.keys.length > 1) {
       final double spanDelta = (_currentSpan! - _initialSpan!).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint!).distance;

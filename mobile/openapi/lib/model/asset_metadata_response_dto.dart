@@ -18,10 +18,13 @@ class AssetMetadataResponseDto {
     required this.value,
   });
 
+  /// Metadata key
   String key;
 
+  /// Last update date
   DateTime updatedAt;
 
+  /// Metadata value (object)
   Object value;
 
   @override

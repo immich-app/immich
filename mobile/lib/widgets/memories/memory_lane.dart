@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -34,9 +33,6 @@ class MemoryLane extends HookConsumerWidget {
                       if (memories[memoryIndex].assets.isNotEmpty) {
                         final asset = memories[memoryIndex].assets[0];
                         ref.read(currentAssetProvider.notifier).set(asset);
-                        if (asset.isVideo || asset.isMotionPhoto) {
-                          ref.read(videoPlaybackValueProvider.notifier).reset();
-                        }
                       }
                       context.pushRoute(MemoryRoute(memories: memories, memoryIndex: memoryIndex));
                     },

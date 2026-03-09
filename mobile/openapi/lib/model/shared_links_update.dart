@@ -17,6 +17,7 @@ class SharedLinksUpdate {
     this.sidebarWeb,
   });
 
+  /// Whether shared links are enabled
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -25,6 +26,7 @@ class SharedLinksUpdate {
   ///
   bool? enabled;
 
+  /// Whether shared links appear in web sidebar
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated

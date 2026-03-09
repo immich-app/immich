@@ -16,6 +16,7 @@ class TestEmailResponseDto {
     required this.messageId,
   });
 
+  /// Email message ID
   String messageId;
 
   @override

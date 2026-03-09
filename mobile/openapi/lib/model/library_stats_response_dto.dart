@@ -19,12 +19,16 @@ class LibraryStatsResponseDto {
     this.videos = 0,
   });
 
+  /// Number of photos
   int photos;
 
+  /// Total number of assets
   int total;
 
+  /// Storage usage in bytes
   int usage;
 
+  /// Number of videos
   int videos;
 
   @override

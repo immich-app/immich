@@ -40,54 +40,79 @@ class SyncAssetExifV1 {
     required this.timeZone,
   });
 
+  /// Asset ID
   String assetId;
 
+  /// City
   String? city;
 
+  /// Country
   String? country;
 
+  /// Date time original
   DateTime? dateTimeOriginal;
 
+  /// Description
   String? description;
 
+  /// Exif image height
   int? exifImageHeight;
 
+  /// Exif image width
   int? exifImageWidth;
 
+  /// Exposure time
   String? exposureTime;
 
+  /// F number
   double? fNumber;
 
+  /// File size in byte
   int? fileSizeInByte;
 
+  /// Focal length
   double? focalLength;
 
+  /// FPS
   double? fps;
 
+  /// ISO
   int? iso;
 
+  /// Latitude
   double? latitude;
 
+  /// Lens model
   String? lensModel;
 
+  /// Longitude
   double? longitude;
 
+  /// Make
   String? make;
 
+  /// Model
   String? model;
 
+  /// Modify date
   DateTime? modifyDate;
 
+  /// Orientation
   String? orientation;
 
+  /// Profile description
   String? profileDescription;
 
+  /// Projection type
   String? projectionType;
 
+  /// Rating
   int? rating;
 
+  /// State
   String? state;
 
+  /// Time zone
   String? timeZone;
 
   @override

@@ -17,8 +17,10 @@ class AssetMetadataUpsertItemDto {
     required this.value,
   });
 
+  /// Metadata key
   String key;
 
+  /// Metadata value (object)
   Object value;
 
   @override

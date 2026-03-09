@@ -2,9 +2,9 @@ import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { SearchService } from 'src/services/search.service';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
-import { personStub } from 'test/fixtures/person.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
 
@@ -25,17 +25,18 @@ describe(SearchService.name, () => {
 
   describe('searchPerson', () => {
     it('should pass options to search', async () => {
-      const { name } = personStub.withName;
+      const auth = AuthFactory.create();
+      const name = 'foo';
 
       mocks.person.getByName.mockResolvedValue([]);
 
-      await sut.searchPerson(authStub.user1, { name, withHidden: false });
+      await sut.searchPerson(auth, { name, withHidden: false });
 
-      expect(mocks.person.getByName).toHaveBeenCalledWith(authStub.user1.user.id, name, { withHidden: false });
+      expect(mocks.person.getByName).toHaveBeenCalledWith(auth.user.id, name, { withHidden: false });
 
-      await sut.searchPerson(authStub.user1, { name, withHidden: true });
+      await sut.searchPerson(auth, { name, withHidden: true });
 
-      expect(mocks.person.getByName).toHaveBeenCalledWith(authStub.user1.user.id, name, { withHidden: true });
+      expect(mocks.person.getByName).toHaveBeenCalledWith(auth.user.id, name, { withHidden: true });
     });
   });
 
@@ -64,16 +65,18 @@ describe(SearchService.name, () => {
 
   describe('getExploreData', () => {
     it('should get assets by city and tag', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.from()
+        .exif({ latitude: 42, longitude: 69, city: 'city', state: 'state', country: 'country' })
+        .build();
       mocks.asset.getAssetIdByCity.mockResolvedValue({
         fieldName: 'exifInfo.city',
-        items: [{ value: 'test-city', data: assetStub.withLocation.id }],
+        items: [{ value: 'city', data: asset.id }],
       });
-      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([assetStub.withLocation]);
-      const expectedResponse = [
-        { fieldName: 'exifInfo.city', items: [{ value: 'test-city', data: mapAsset(assetStub.withLocation) }] },
-      ];
+      mocks.asset.getByIdsWithAllRelationsButStacks.mockResolvedValue([asset as never]);
+      const expectedResponse = [{ fieldName: 'exifInfo.city', items: [{ value: 'city', data: mapAsset(asset) }] }];
 
-      const result = await sut.getExploreData(authStub.user1);
+      const result = await sut.getExploreData(auth);
 
       expect(result).toEqual(expectedResponse);
     });

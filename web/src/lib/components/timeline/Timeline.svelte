@@ -1,7 +1,6 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Month from '$lib/components/timeline/Month.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
@@ -20,8 +19,7 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
@@ -106,8 +104,8 @@
   let scrubberWidth = $state(0);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  const maxMd = $derived(mobileDevice.maxMd);
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const maxMd = $derived(mediaQueryManager.maxMd);
+  const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   $effect(() => {
     const layoutOptions = maxMd
@@ -261,8 +259,6 @@
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
 
-  const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
-
   onMount(() => {
     if (!enableRouting) {
       invisible = false;
@@ -333,7 +329,7 @@
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: ViewportTopMonth;
-        let monthGroupHeight = 0;
+        let monthGroupHeight: number;
         if (i === -1) {
           // lead-in
           monthGroup = 'lead-in';
@@ -411,11 +407,7 @@
       }
     }
 
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
   };
 
   const onSelectAssets = async (asset: TimelineAsset) => {
@@ -423,11 +415,6 @@
       return;
     }
     onSelect(asset);
-
-    if (singleSelect) {
-      timelineManager.scrollTo(0);
-      return;
-    }
 
     const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
@@ -448,53 +435,49 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
+      const startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
+      const endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
 
-      if (startBucket === null || endBucket === null) {
+      if (!startBucket || !endBucket) {
         return;
       }
 
+      const monthGroups = timelineManager.months;
+      const startBucketIndex = monthGroups.indexOf(startBucket);
+      const endBucketIndex = monthGroups.indexOf(endBucket);
+
+      if (startBucketIndex === -1 || endBucketIndex === -1) {
+        return;
+      }
+
+      const rangeStartIndex = Math.min(startBucketIndex, endBucketIndex);
+      const rangeEndIndex = Math.max(startBucketIndex, endBucketIndex);
+
       // Select/deselect assets in range (start,end)
-      let started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === endBucket) {
-          break;
-        }
-        if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
-          for (const asset of monthGroup.assetsIterator()) {
-            if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-            } else {
-              handleSelectAsset(asset);
-            }
+      for (let index = rangeStartIndex + 1; index < rangeEndIndex; index++) {
+        const monthGroup = monthGroups[index];
+        await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+        for (const monthAsset of monthGroup.assetsIterator()) {
+          if (deselect) {
+            assetInteraction.removeAssetFromMultiselectGroup(monthAsset.id);
+          } else {
+            handleSelectAsset(monthAsset);
           }
-        }
-        if (monthGroup === startBucket) {
-          started = true;
         }
       }
 
       // Update date group selection in range [start,end]
-      started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-        if (started) {
-          // Split month group into day groups and check each group
-          for (const dayGroup of monthGroup.dayGroups) {
-            const dayGroupTitle = dayGroup.groupTitle;
-            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
-            } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
-            }
+      for (let index = rangeStartIndex; index <= rangeEndIndex; index++) {
+        const monthGroup = monthGroups[index];
+
+        // Split month group into day groups and check each group
+        for (const dayGroup of monthGroup.dayGroups) {
+          const dayGroupTitle = dayGroup.groupTitle;
+          if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+            assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
+          } else {
+            assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
           }
-        }
-        if (monthGroup === endBucket) {
-          break;
         }
       }
     }
@@ -559,7 +542,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
 
-    isSelectingAllAssets.set(timelineManager.assetCount === assetInteraction.selectedAssets.length);
+    assetInteraction.selectAll = timelineManager.assetCount === assetInteraction.selectedAssets.length;
   };
 
   const _onClick = (
@@ -634,7 +617,7 @@
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
-  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
@@ -648,7 +631,7 @@
     style:height={timelineManager.totalViewerHeight + 'px'}
   >
     <section
-      use:resizeObserver={topSectionResizeObserver}
+      bind:clientHeight={timelineManager.topSectionHeight}
       class:invisible
       style:position="absolute"
       style:left="0"

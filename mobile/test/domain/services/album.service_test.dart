@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
@@ -12,38 +13,6 @@ void main() {
   late RemoteAlbumService sut;
   late DriftRemoteAlbumRepository mockRemoteAlbumRepo;
   late DriftAlbumApiRepository mockAlbumApiRepo;
-
-  setUp(() {
-    mockRemoteAlbumRepo = MockRemoteAlbumRepository();
-    mockAlbumApiRepo = MockDriftAlbumApiRepository();
-    sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
-
-    when(() => mockRemoteAlbumRepo.getNewestAssetTimestamp(any())).thenAnswer((invocation) {
-      // Simulate a timestamp for the newest asset in the album
-      final albumID = invocation.positionalArguments[0] as String;
-
-      if (albumID == '1') {
-        return Future.value(DateTime(2023, 1, 1));
-      } else if (albumID == '2') {
-        return Future.value(DateTime(2023, 2, 1));
-      }
-
-      return Future.value(DateTime.fromMillisecondsSinceEpoch(0));
-    });
-
-    when(() => mockRemoteAlbumRepo.getOldestAssetTimestamp(any())).thenAnswer((invocation) {
-      // Simulate a timestamp for the oldest asset in the album
-      final albumID = invocation.positionalArguments[0] as String;
-
-      if (albumID == '1') {
-        return Future.value(DateTime(2019, 1, 1));
-      } else if (albumID == '2') {
-        return Future.value(DateTime(2019, 2, 1));
-      }
-
-      return Future.value(DateTime.fromMillisecondsSinceEpoch(0));
-    });
-  });
 
   final albumA = RemoteAlbum(
     id: '1',
@@ -73,6 +42,21 @@ void main() {
     isShared: false,
   );
 
+  setUp(() {
+    mockRemoteAlbumRepo = MockRemoteAlbumRepository();
+    mockAlbumApiRepo = MockDriftAlbumApiRepository();
+
+    when(
+      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.end),
+    ).thenAnswer((_) async => ['1', '2']);
+
+    when(
+      () => mockRemoteAlbumRepo.getSortedAlbumIds(any(), aggregation: AssetDateAggregation.start),
+    ).thenAnswer((_) async => ['1', '2']);
+
+    sut = RemoteAlbumService(mockRemoteAlbumRepo, mockAlbumApiRepo);
+  });
+
   group('sortAlbums', () {
     test('should sort correctly based on name', () async {
       final albums = [albumB, albumA];
@@ -85,35 +69,47 @@ void main() {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.created);
-      expect(result, [albumA, albumB]);
+      expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on updatedAt', () async {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.lastModified);
-      expect(result, [albumA, albumB]);
+      expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on assetCount', () async {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.assetCount);
-      expect(result, [albumA, albumB]);
+      expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on newestAssetTimestamp', () async {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostRecent);
-      expect(result, [albumA, albumB]);
+      expect(result, [albumB, albumA]);
     });
 
     test('should sort correctly based on oldestAssetTimestamp', () async {
       final albums = [albumB, albumA];
 
       final result = await sut.sortAlbums(albums, AlbumSortMode.mostOldest);
-      expect(result, [albumB, albumA]);
+      expect(result, [albumA, albumB]);
+    });
+
+    test('should flip order when isReverse is true for all modes', () async {
+      final albums = [albumB, albumA];
+
+      for (final mode in AlbumSortMode.values) {
+        final normal = await sut.sortAlbums(albums, mode, isReverse: false);
+        final reversed = await sut.sortAlbums(albums, mode, isReverse: true);
+
+        // reversed should be the exact inverse of normal
+        expect(reversed, normal.reversed.toList(), reason: 'Mode: $mode');
+      }
     });
   });
 }

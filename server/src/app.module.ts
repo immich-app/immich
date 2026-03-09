@@ -33,6 +33,7 @@ import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
 import { QueueService } from 'src/services/queue.service';
 import { getKyselyConfig } from 'src/utils/database';
 
@@ -114,6 +115,7 @@ export class ApiModule extends BaseModule {}
     AppRepository,
     MaintenanceHealthRepository,
     MaintenanceWebsocketRepository,
+    DatabaseBackupService,
     MaintenanceWorkerService,
     ...commonMiddleware,
     { provide: APP_GUARD, useClass: MaintenanceAuthGuard },

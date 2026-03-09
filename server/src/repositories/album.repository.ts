@@ -44,9 +44,9 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'album'>) => {
 };
 
 const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) => {
-  return jsonArrayFrom(eb.selectFrom('shared_link').selectAll().whereRef('shared_link.albumId', '=', 'album.id')).as(
-    'sharedLinks',
-  );
+  return jsonArrayFrom(
+    eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
+  ).as('sharedLinks');
 };
 
 const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
@@ -283,7 +283,7 @@ export class AlbumRepository {
 
       return tx
         .selectFrom('album')
-        .selectAll()
+        .selectAll('album')
         .where('id', '=', newAlbum.id)
         .select(withOwner)
         .select(withAssets)

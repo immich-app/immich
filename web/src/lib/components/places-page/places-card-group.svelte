@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Route } from '$lib/route';
   import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
@@ -45,7 +45,7 @@
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-39 justify-center overflow-hidden rounded-xl brightness-75 filter"
           >
             <img
-              src={getAssetThumbnailUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
+              src={getAssetMediaUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
               alt={city}
               class="object-cover w-39 h-39"
               loading="lazy"

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { ScrubberMonth, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
@@ -50,6 +50,7 @@
     onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
+    // eslint-disable-next-line no-useless-assignment
     scrubberWidth = $bindable(),
   }: Props = $props();
 
@@ -65,7 +66,7 @@
   const toScrollY = (percent: number) => percent * (height - (PADDING_TOP + PADDING_BOTTOM));
   const toTimelineY = (scrollY: number) => scrollY / (height - (PADDING_TOP + PADDING_BOTTOM));
 
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
+  const usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   const MOBILE_WIDTH = 20;
   const DESKTOP_WIDTH = 60;

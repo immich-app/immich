@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Queue command to execute
 class QueueCommand {
   /// Instantiate a new enum with the provided [value].
   const QueueCommand._(this.value);

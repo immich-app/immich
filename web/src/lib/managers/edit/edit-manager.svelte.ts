@@ -1,12 +1,14 @@
 import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
-import { editAsset, removeAssetEdits, type AssetEditsDto, type AssetResponseDto } from '@immich/sdk';
+import { getFormatter } from '$lib/utils/i18n';
+import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
 
-export type EditAction = AssetEditsDto['edits'][number];
+export type EditAction = AssetEditsCreateDto['edits'][number];
 export type EditActions = EditAction[];
 
 export interface EditToolManager {
@@ -14,6 +16,7 @@ export interface EditToolManager {
   onDeactivate: () => void;
   resetAllChanges: () => Promise<void>;
   hasChanges: boolean;
+  canReset: boolean;
   edits: EditAction[];
 }
 
@@ -40,28 +43,33 @@ export class EditManager {
 
   currentAsset = $state<AssetResponseDto | null>(null);
   selectedTool = $state<EditTool | null>(null);
-  hasChanges = $derived(this.tools.some((t) => t.manager.hasChanges));
 
   // used to disable multiple confirm dialogs and mouse events while one is open
   isShowingConfirmDialog = $state(false);
   isApplyingEdits = $state(false);
   hasAppliedEdits = $state(false);
 
+  hasUnsavedChanges = $derived(this.tools.some((t) => t.manager.hasChanges) && !this.hasAppliedEdits);
+  canReset = $derived(this.tools.some((t) => t.manager.canReset));
+
   async closeConfirm(): Promise<boolean> {
     // Prevent multiple dialogs (usually happens with rapid escape key presses)
     if (this.isShowingConfirmDialog) {
       return false;
     }
-    if (!this.hasChanges || this.hasAppliedEdits) {
+
+    if (!this.hasUnsavedChanges) {
       return true;
     }
 
     this.isShowingConfirmDialog = true;
 
+    const t = await getFormatter();
+
     const confirmed = await modalManager.show(ConfirmModal, {
-      title: 'Discard Edits?',
-      prompt: 'You have unsaved edits. Are you sure you want to discard them?',
-      confirmText: 'Discard Edits',
+      title: t('editor_discard_edits_title'),
+      prompt: t('editor_discard_edits_prompt'),
+      confirmText: t('editor_discard_edits_confirm'),
     });
 
     this.isShowingConfirmDialog = false;
@@ -76,7 +84,7 @@ export class EditManager {
     this.selectedTool = this.tools[0];
   }
 
-  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsDto) {
+  async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsCreateDto) {
     this.hasAppliedEdits = false;
     if (this.selectedTool?.type === toolType) {
       return;
@@ -110,31 +118,36 @@ export class EditManager {
     this.isApplyingEdits = true;
 
     const edits = this.tools.flatMap((tool) => tool.manager.edits);
+    if (!this.currentAsset) {
+      return false;
+    }
+
+    const assetId = this.currentAsset.id;
+    const t = await getFormatter();
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent(
-        'AssetEditReadyV1',
-        (event) => event.asset.id === this.currentAsset!.id,
-        10_000,
-      );
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, 10_000);
 
       await (edits.length === 0
-        ? removeAssetEdits({ id: this.currentAsset!.id })
+        ? removeAssetEdits({ id: assetId })
         : editAsset({
-            id: this.currentAsset!.id,
-            assetEditActionListDto: {
+            id: assetId,
+            assetEditsCreateDto: {
               edits,
             },
           }));
 
       await editCompleted;
-      toastManager.success('Edits applied successfully');
+
+      eventManager.emit('AssetEditsApplied', assetId);
+
+      toastManager.success(t('editor_edits_applied_success'));
       this.hasAppliedEdits = true;
 
       return true;
     } catch {
-      toastManager.danger('Failed to apply edits');
+      toastManager.danger(t('editor_edits_applied_error'));
       return false;
     } finally {
       this.isApplyingEdits = false;

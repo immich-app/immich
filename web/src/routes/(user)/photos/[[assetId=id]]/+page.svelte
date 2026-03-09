@@ -1,11 +1,10 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
+  import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
-  import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
@@ -23,12 +22,13 @@
   import { AssetAction } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
     updateStackedAssetInTimeline,
     updateUnstackedAssetInTimeline,
@@ -39,8 +39,8 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
-  import { ImageCarousel } from '@immich/ui';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
+  import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -60,8 +60,6 @@
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
-
-  const isAllUserOwned = $derived($user && selectedAssets.every((asset) => asset.ownerId === $user.id));
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -98,7 +96,7 @@
       title: $memoryLaneTitle(memory),
       href: Route.memories({ id: memory.assets[0].id }),
       alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
-      src: getAssetThumbnailUrl(memory.assets[0].id),
+      src: getAssetMediaUrl({ id: memory.assets[0].id }),
     })),
   );
 </script>
@@ -128,14 +126,14 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
+    {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+    <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
-    <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
-    </ButtonContextMenu>
+    <ActionButton action={Actions.AddToAlbum} />
 
-    {#if isAllUserOwned}
+    {#if assetInteraction.isAllUserOwned}
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
@@ -175,7 +173,9 @@
         />
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <hr />
-        <AssetJobActions />
+        <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+        <ActionMenuItem action={Actions.RefreshMetadataJob} />
+        <ActionMenuItem action={Actions.TranscodeVideoJob} />
       </ButtonContextMenu>
     {:else}
       <DownloadAction />

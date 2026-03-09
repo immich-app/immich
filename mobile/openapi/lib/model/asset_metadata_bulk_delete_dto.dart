@@ -16,6 +16,7 @@ class AssetMetadataBulkDeleteDto {
     this.items = const [],
   });
 
+  /// Metadata items to delete
   List<AssetMetadataBulkDeleteItemDto> items;
 
   @override

@@ -251,17 +251,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
@@ -313,17 +318,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     final response = await memoriesStatisticsWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -412,17 +422,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
@@ -474,17 +489,22 @@ class MemoriesApi {
   /// Parameters:
   ///
   /// * [DateTime] for_:
+  ///   Filter by date
   ///
   /// * [bool] isSaved:
+  ///   Filter by saved status
   ///
   /// * [bool] isTrashed:
+  ///   Include trashed memories
   ///
   /// * [MemorySearchOrder] order:
+  ///   Sort order
   ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
+  ///   Memory type
   Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, }) async {
     final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {

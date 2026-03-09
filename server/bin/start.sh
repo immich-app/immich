@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
-echo "Initializing Immich $IMMICH_SOURCE_REF"
+
+# Quiet mode suppresses informational output (enabled for immich-admin)
+QUIET=false
+if [ "$1" = "immich-admin" ]; then
+  QUIET=true
+fi
+
+# Helper function that only logs when not in quiet mode
+log_message() {
+  if [ "$QUIET" = "false" ]; then
+    echo "$@"
+  fi
+}
+
+log_message "Initializing Immich $IMMICH_SOURCE_REF"
 
 # TODO: Update to mimalloc v3 when verified memory isn't released issue is fixed
 # lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.3"
@@ -30,16 +44,20 @@ read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
 read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
 
 if CPU_CORES="${CPU_CORES:=$(get-cpus.sh 2>/dev/null)}"; then
-  echo "Detected CPU Cores: $CPU_CORES"
+  log_message "Detected CPU Cores: $CPU_CORES"
   if [ "$CPU_CORES" -gt 4 ]; then
     export UV_THREADPOOL_SIZE=$CPU_CORES
   fi
 else
-  echo "skipping get-cpus.sh - not found in PATH or failed: using default UV_THREADPOOL_SIZE"
+  log_message "skipping get-cpus.sh - not found in PATH or failed: using default UV_THREADPOOL_SIZE"
 fi
 
 if [ -f "${SERVER_HOME}/dist/main.js" ]; then
-  exec node "${SERVER_HOME}/dist/main.js" "$@"
+  if [ "$QUIET" = "true" ]; then
+    exec node --no-warnings "${SERVER_HOME}/dist/main.js" "$@"
+  else
+    exec node "${SERVER_HOME}/dist/main.js" "$@"
+  fi
 else
   echo "Error: ${SERVER_HOME}/dist/main.js not found"
   if [ "$IMMICH_ENV" = "development" ]; then

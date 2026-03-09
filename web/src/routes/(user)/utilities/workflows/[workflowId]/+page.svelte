@@ -338,7 +338,7 @@
       <div class="w-full border-t-2 border-dashed border-light-200"></div>
     </div>
     <div class="relative flex justify-center text-xs uppercase">
-      <span class="bg-white dark:bg-black px-2 font-semibold text-light-500">THEN</span>
+      <Text class="bg-white dark:bg-black px-2" fontWeight="semi-bold" size="tiny" color="muted">{$t('then')}</Text>
     </div>
   </div>
 {/snippet}

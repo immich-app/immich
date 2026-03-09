@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -51,17 +53,27 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
+  StreamSubscription? _eventSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventSubscription = EventStream.shared.listen<MapMarkerReloadEvent>(_onEvent);
+  }
 
   @override
   void dispose() {
     _debouncer.dispose();
     bottomSheetOffset.dispose();
+    _eventSubscription?.cancel();
     super.dispose();
   }
 
   void onMapCreated(MapLibreMapController controller) {
     mapController = controller;
   }
+
+  void _onEvent(_) => _debouncer.run(() => setBounds(forceReload: true));
 
   Future<void> onMapReady() async {
     final controller = mapController;
@@ -98,7 +110,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       );
     }
 
-    _debouncer.run(setBounds);
+    _debouncer.run(() => setBounds(forceReload: true));
     controller.addListener(onMapMoved);
   }
 
@@ -110,7 +122,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     _debouncer.run(setBounds);
   }
 
-  Future<void> setBounds() async {
+  Future<void> setBounds({bool forceReload = false}) async {
     final controller = mapController;
     if (controller == null || !mounted) {
       return;
@@ -127,7 +139,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     final bounds = await controller.getVisibleRegion();
     unawaited(
       _reloadMutex.run(() async {
-        if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
+        if (mounted && (ref.read(mapStateProvider.notifier).setBounds(bounds) || forceReload)) {
           final markers = await ref.read(mapMarkerProvider(bounds).future);
           await reloadMarkers(markers);
         }
@@ -203,7 +215,7 @@ class _Map extends StatelessWidget {
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
           attributionButtonPosition: AttributionButtonPosition.topRight,
-          attributionButtonMargins: Platform.isIOS ? const Point(40, 12) : const Point(40, 72),
+          attributionButtonMargins: const Point(8, kToolbarHeight),
         ),
       ),
     );
@@ -244,7 +256,7 @@ class _DynamicMyLocationButton extends StatelessWidget {
       valueListenable: bottomSheetOffset,
       builder: (context, offset, child) {
         return Positioned(
-          right: 16,
+          right: 20,
           bottom: context.height * (offset - 0.02) + context.padding.bottom,
           child: AnimatedOpacity(
             opacity: offset < 0.8 ? 1 : 0,

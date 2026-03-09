@@ -2,6 +2,7 @@
   "name": "Immich - Mobile",
   "service": "immich-server",
   "runServices": [
+    "immich-init",
     "immich-server",
     "redis",
     "database",
@@ -35,7 +36,7 @@
   },
   "forwardPorts": [],
   "overrideCommand": true,
-  "workspaceFolder": "/workspaces/immich",
+  "workspaceFolder": "/usr/src/app",
   "remoteUser": "node",
   "userEnvProbe": "loginInteractiveShell",
   "remoteEnv": {

@@ -19,12 +19,17 @@ export function getServerErrorMessage(error: unknown) {
   return data?.message || error.message;
 }
 
-export function handleError(error: unknown, message: string) {
-  if ((error as Error)?.name === 'AbortError') {
+export function standardizeError(error: unknown) {
+  return error instanceof Error ? error : new Error(String(error));
+}
+
+export function handleError(error: unknown, localizedMessage: string) {
+  const standardizedError = standardizeError(error);
+  if (standardizedError.name === 'AbortError') {
     return;
   }
 
-  console.error(`[handleError]: ${message}`, error, (error as Error)?.stack);
+  console.error(`[handleError]: ${standardizedError}`, error, standardizedError.stack);
 
   try {
     let serverMessage = getServerErrorMessage(error);
@@ -32,13 +37,22 @@ export function handleError(error: unknown, message: string) {
       serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
     }
 
-    const errorMessage = serverMessage || message;
+    const errorMessage = serverMessage || localizedMessage;
 
     toastManager.danger(errorMessage);
 
     return errorMessage;
   } catch (error) {
     console.error(error);
-    return message;
+    return localizedMessage;
+  }
+}
+
+export async function handleErrorAsync<T>(fn: () => Promise<T>, localizedMessage: string): Promise<T | undefined> {
+  try {
+    return await fn();
+  } catch (error: unknown) {
+    handleError(error, localizedMessage);
+    return;
   }
 }

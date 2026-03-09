@@ -214,6 +214,14 @@ class ActionService {
     return true;
   }
 
+  Future<bool> updateRating(String assetId, int rating) async {
+    // update remote first, then local to ensure consistency
+    await _assetApiRepository.updateRating(assetId, rating);
+    await _remoteAssetRepository.updateRating(assetId, rating);
+
+    return true;
+  }
+
   Future<void> stack(String userId, List<String> remoteIds) async {
     final stack = await _assetApiRepository.stack(remoteIds);
     await _remoteAssetRepository.stack(userId, stack);
@@ -224,12 +232,18 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) {
-    return _assetMediaRepository.shareAssets(assets, context);
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) {
+    return _assetMediaRepository.shareAssets(assets, context, cancelCompleter: cancelCompleter);
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
     return _downloadRepository.downloadAllAssets(assets);
+  }
+
+  Future<bool> setAlbumCover(String albumId, String assetId) async {
+    final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, thumbnailAssetId: assetId);
+    await _remoteAlbumRepository.update(updatedAlbum);
+    return true;
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

@@ -45,9 +45,6 @@ export enum AssetFileType {
   Preview = 'preview',
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
-  FullSizeEdited = 'fullsize_edited',
-  PreviewEdited = 'preview_edited',
-  ThumbnailEdited = 'thumbnail_edited',
 }
 
 export enum AlbumUserRole {
@@ -149,6 +146,8 @@ export enum Permission {
   FaceUpdate = 'face.update',
   FaceDelete = 'face.delete',
 
+  FolderRead = 'folder.read',
+
   JobCreate = 'job.create',
   JobRead = 'job.read',
 
@@ -162,6 +161,9 @@ export enum Permission {
   TimelineDownload = 'timeline.download',
 
   Maintenance = 'maintenance',
+
+  MapRead = 'map.read',
+  MapSearch = 'map.search',
 
   MemoryCreate = 'memory.create',
   MemoryRead = 'memory.read',
@@ -369,14 +371,7 @@ export enum ManualJobName {
 
 export enum AssetPathType {
   Original = 'original',
-  FullSize = 'fullsize',
-  Preview = 'preview',
-  EditedFullSize = 'edited_fullsize',
-  EditedPreview = 'edited_preview',
-  EditedThumbnail = 'edited_thumbnail',
-  Thumbnail = 'thumbnail',
   EncodedVideo = 'encoded_video',
-  Sidecar = 'sidecar',
 }
 
 export enum PersonPathType {
@@ -387,7 +382,7 @@ export enum UserPathType {
   Profile = 'profile',
 }
 
-export type PathType = AssetPathType | PersonPathType | UserPathType;
+export type PathType = AssetFileType | AssetPathType | PersonPathType | UserPathType;
 
 export enum TranscodePolicy {
   All = 'all',
@@ -414,7 +409,9 @@ export enum VideoCodec {
 export enum AudioCodec {
   Mp3 = 'mp3',
   Aac = 'aac',
-  LibOpus = 'libopus',
+  /** @deprecated Use `Opus` instead */
+  Libopus = 'libopus',
+  Opus = 'opus',
   PcmS16le = 'pcm_s16le',
 }
 
@@ -725,6 +722,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetEditsV1 = 'AssetEditsV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
@@ -737,6 +735,7 @@ export enum SyncRequestType {
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
   AssetFacesV1 = 'AssetFacesV1',
+  AssetFacesV2 = 'AssetFacesV2',
   UserMetadataV1 = 'UserMetadataV1',
 }
 
@@ -749,6 +748,8 @@ export enum SyncEntityType {
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetEditV1 = 'AssetEditV1',
+  AssetEditDeleteV1 = 'AssetEditDeleteV1',
   AssetMetadataV1 = 'AssetMetadataV1',
   AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 
@@ -795,6 +796,7 @@ export enum SyncEntityType {
   PersonDeleteV1 = 'PersonDeleteV1',
 
   AssetFaceV1 = 'AssetFaceV1',
+  AssetFaceV2 = 'AssetFaceV2',
   AssetFaceDeleteV1 = 'AssetFaceDeleteV1',
 
   UserMetadataV1 = 'UserMetadataV1',
@@ -824,14 +826,6 @@ export enum NotificationType {
 export enum OAuthTokenEndpointAuthMethod {
   ClientSecretPost = 'client_secret_post',
   ClientSecretBasic = 'client_secret_basic',
-}
-
-export enum DatabaseSslMode {
-  Disable = 'disable',
-  Allow = 'allow',
-  Prefer = 'prefer',
-  Require = 'require',
-  VerifyFull = 'verify-full',
 }
 
 export enum AssetVisibility {

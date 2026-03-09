@@ -115,7 +115,7 @@
               options={[
                 { value: AudioCodec.Aac, text: 'AAC' },
                 { value: AudioCodec.Mp3, text: 'MP3' },
-                { value: AudioCodec.Libopus, text: 'Opus' },
+                { value: AudioCodec.Opus, text: 'Opus' },
                 { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
               ]}
               isEdited={!isEqual(
@@ -174,7 +174,7 @@
               options={[
                 { value: AudioCodec.Aac, text: 'aac' },
                 { value: AudioCodec.Mp3, text: 'mp3' },
-                { value: AudioCodec.Libopus, text: 'opus' },
+                { value: AudioCodec.Opus, text: 'opus' },
               ]}
               name="acodec"
               isEdited={configToEdit.ffmpeg.targetAudioCodec !== config.ffmpeg.targetAudioCodec}

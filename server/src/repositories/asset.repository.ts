@@ -1,5 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
+import {
+  ExpressionBuilder,
+  Insertable,
+  Kysely,
+  NotNull,
+  Selectable,
+  SelectQueryBuilder,
+  sql,
+  Updateable,
+  UpdateResult,
+} from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
@@ -35,6 +46,13 @@ import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
+export interface BoundingBox {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
 interface AssetStatsOptions {
   isFavorite?: boolean;
   isTrashed?: boolean;
@@ -63,6 +81,7 @@ interface AssetBuilderOptions {
   assetType?: AssetType;
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
+  bbox?: BoundingBox;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -118,6 +137,34 @@ interface GetByIdsRelations {
 
 const distinctLocked = <T extends LockableProperty[] | null>(eb: ExpressionBuilder<DB, 'asset_exif'>, columns: T) =>
   sql<T>`nullif(array(select distinct unnest(${eb.ref('asset_exif.lockedProperties')} || ${columns})), '{}')`;
+
+const getBoundingCircle = (bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const eastUnwrapped = west <= east ? east : east + 360;
+  const centerLongitude = (((west + eastUnwrapped) / 2 + 540) % 360) - 180;
+  const centerLatitude = (south + north) / 2;
+  const radius = sql<number>`greatest(
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${south}, ${east})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${west})),
+    earth_distance(ll_to_earth_public(${centerLatitude}, ${centerLongitude}), ll_to_earth_public(${north}, ${east}))
+  )`;
+
+  return { centerLatitude, centerLongitude, radius };
+};
+
+const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T>, bbox: BoundingBox) => {
+  const { west, south, east, north } = bbox;
+  const withLatitude = qb.where('asset_exif.latitude', '>=', south).where('asset_exif.latitude', '<=', north);
+
+  if (west <= east) {
+    return withLatitude.where('asset_exif.longitude', '>=', west).where('asset_exif.longitude', '<=', east);
+  }
+
+  return withLatitude.where((eb) =>
+    eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
+  );
+};
 
 @Injectable()
 export class AssetRepository {
@@ -178,6 +225,7 @@ export class AssetRepository {
                 bitsPerSample: ref('bitsPerSample'),
                 rating: ref('rating'),
                 fps: ref('fps'),
+                tags: ref('tags'),
                 lockedProperties:
                   lockedPropertiesBehavior === 'append'
                     ? distinctLocked(eb, exif.lockedProperties ?? null)
@@ -250,8 +298,6 @@ export class AssetRepository {
               duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
               facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
-              previewAt: eb.ref('excluded.previewAt'),
-              thumbnailAt: eb.ref('excluded.thumbnailAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
@@ -358,9 +404,8 @@ export class AssetRepository {
             (qb) =>
               qb
                 .selectFrom('asset')
-                .selectAll('asset')
+                .select(['asset.id', 'asset.localDateTime'])
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
-                .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('asset.ownerId', '=', anyUuid(ownerIds))
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
@@ -378,9 +423,7 @@ export class AssetRepository {
                 .as('a'),
             (join) => join.onTrue(),
           )
-          .innerJoin('asset_exif', 'a.id', 'asset_exif.assetId')
-          .selectAll('a')
-          .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo')),
+          .selectAll('a'),
       )
       .selectFrom('res')
       .select(sql<number>`date_part('year', ("localDateTime" at time zone 'UTC')::date)::int`.as('year'))
@@ -652,6 +695,20 @@ export class AssetRepository {
           .select(truncatedDate<Date>().as('timeBucket'))
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb
+              .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+              .where(
+                sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+                '@>',
+                sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+              );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
           .$if(!!options.albumId, (qb) =>
@@ -726,6 +783,18 @@ export class AssetRepository {
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(!!options.bbox, (qb) => {
+            const bbox = options.bbox!;
+            const circle = getBoundingCircle(bbox);
+
+            const withBoundingCircle = qb.where(
+              sql`earth_box(ll_to_earth_public(${circle.centerLatitude}, ${circle.centerLongitude}), ${circle.radius})`,
+              '@>',
+              sql`ll_to_earth_public(asset_exif.latitude, asset_exif.longitude)`,
+            );
+
+            return withBoundingBox(withBoundingCircle, bbox);
+          })
           .where(truncatedDate(), '=', timeBucket.replace(/^[+-]/, ''))
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
@@ -903,31 +972,41 @@ export class AssetRepository {
       .execute();
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
+  async upsertFile(
+    file: Pick<
+      Insertable<AssetFileTable>,
+      'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+    >,
+  ): Promise<void> {
     await this.db
       .insertInto('asset_file')
-      .values(value)
+      .values(file)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
         })),
       )
       .execute();
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFileTable>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(
+    files: Pick<
+      Insertable<AssetFileTable>,
+      'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+    >[],
+  ): Promise<void> {
     if (files.length === 0) {
       return;
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
     await this.db
       .insertInto('asset_file')
-      .values(values)
+      .values(files)
       .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+        oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
           path: eb.ref('excluded.path'),
+          isProgressive: eb.ref('excluded.isProgressive'),
+          isTransparent: eb.ref('excluded.isTransparent'),
         })),
       )
       .execute();
@@ -1005,5 +1084,121 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
 
     return count;
+  }
+
+  private buildGetForOriginal(ids: string[], isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .select('originalFileName')
+      .where('asset.id', 'in', ids)
+      .$if(isEdited, (qb) =>
+        qb
+          .leftJoin('asset_file', (join) =>
+            join
+              .onRef('asset.id', '=', 'asset_file.assetId')
+              .on('asset_file.isEdited', '=', true)
+              .on('asset_file.type', '=', AssetFileType.FullSize),
+          )
+          .select('asset_file.path as editedPath'),
+      )
+      .select('originalPath');
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, true] })
+  getForOriginal(id: string, isEdited: boolean) {
+    return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], true] })
+  getForOriginals(ids: string[], isEdited: boolean) {
+    return this.buildGetForOriginal(ids, isEdited).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
+  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .leftJoin('asset_file', (join) =>
+        join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
+      )
+      .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForVideo(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.encodedVideoPath', 'asset.originalPath'])
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', AssetType.Video)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForOcr(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', id)
+      .select(withEdits)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageWidth', 'asset_exif.exifImageHeight', 'asset_exif.orientation'])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForEdit(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .where('asset.id', '=', id)
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select([
+        'asset_exif.exifImageWidth',
+        'asset_exif.exifImageHeight',
+        'asset_exif.orientation',
+        'asset_exif.projectionType',
+      ])
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForMetadataExtractionTags(id: string) {
+    return this.db
+      .selectFrom('asset_exif')
+      .select('asset_exif.tags')
+      .where('asset_exif.assetId', '=', id)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForFaces(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
+      .select(['asset_exif.exifImageHeight', 'asset_exif.exifImageWidth', 'asset_exif.orientation'])
+      .select(withEdits)
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getForUpdateTags(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('tag')
+            .select('tag.value')
+            .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+            .whereRef('asset.id', '=', 'tag_asset.assetId'),
+        ).as('tags'),
+      )
+      .where('asset.id', '=', id)
+      .executeTakeFirstOrThrow();
   }
 }

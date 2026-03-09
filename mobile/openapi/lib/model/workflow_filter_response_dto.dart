@@ -20,14 +20,19 @@ class WorkflowFilterResponseDto {
     required this.workflowId,
   });
 
+  /// Filter configuration
   Object? filterConfig;
 
+  /// Filter ID
   String id;
 
+  /// Filter order
   num order;
 
+  /// Plugin filter ID
   String pluginFilterId;
 
+  /// Workflow ID
   String workflowId;
 
   @override

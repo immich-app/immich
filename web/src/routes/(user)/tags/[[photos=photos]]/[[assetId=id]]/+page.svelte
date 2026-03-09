@@ -9,7 +9,6 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -25,12 +24,14 @@
   import SkipLink from '$lib/elements/SkipLink.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getTagActions } from '$lib/services/tag.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { mdiDotsVertical, mdiPlus, mdiTag, mdiTagMultiple } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, Text } from '@immich/ui';
+  import { mdiDotsVertical, mdiTag, mdiTagMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -82,7 +83,7 @@
     <Sidebar>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} breakpoint="md" />
       <section>
-        <div class="uppercase text-xs ps-4 mb-2 dark:text-white">{$t('explorer')}</div>
+        <Text class="ps-4 mb-4" size="small">{$t('explorer')}</Text>
         <div class="h-full">
           <TreeItems icons={{ default: mdiTag, active: mdiTag }} {tree} active={tag.path} {getLink} />
         </div>
@@ -119,12 +120,11 @@
         assets={assetInteraction.selectedAssets}
         clearSelect={() => assetInteraction.clearMultiselect()}
       >
+        {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
+        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
         <CreateSharedLink />
         <SelectAllAssets {timelineManager} {assetInteraction} />
-        <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-          <AddToAlbum />
-          <AddToAlbum shared />
-        </ButtonContextMenu>
+        <ActionButton action={Actions.AddToAlbum} />
         <FavoriteAction
           removeFavorite={assetInteraction.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}

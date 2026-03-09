@@ -105,6 +105,12 @@ export class VersionService extends BaseService {
   @OnEvent({ name: 'WebsocketConnect' })
   async onWebsocketConnection({ userId }: ArgOf<'WebsocketConnect'>) {
     this.websocketRepository.clientSend('on_server_version', userId, serverVersion);
+
+    const { newVersionCheck } = await this.getConfig({ withCache: true });
+    if (!newVersionCheck.enabled) {
+      return;
+    }
+
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
     if (metadata) {
       this.websocketRepository.clientSend('on_new_release', userId, asNotification(metadata));

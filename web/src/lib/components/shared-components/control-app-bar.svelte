@@ -1,7 +1,5 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { IconButton } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onDestroy, onMount, type Snippet } from 'svelte';
@@ -46,11 +44,6 @@
     }
   };
 
-  const handleClose = () => {
-    $isSelectingAllAssets = false;
-    onClose();
-  };
-
   onMount(() => {
     if (browser) {
       document.addEventListener('scroll', onScroll, { passive: true });
@@ -82,7 +75,7 @@
       {#if showBackButton}
         <IconButton
           aria-label={$t('close')}
-          onclick={handleClose}
+          onclick={onClose}
           color="secondary"
           shape="round"
           variant="ghost"

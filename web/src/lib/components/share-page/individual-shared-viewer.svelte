@@ -10,7 +10,7 @@
   import { Route } from '$lib/route';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -110,7 +110,7 @@
       <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-            <Logo variant={mobileDevice.maxMd ? 'icon' : 'inline'} class="min-w-10" />
+            <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />
           </a>
         {/snippet}
 
@@ -140,7 +140,7 @@
       </ControlAppBar>
     {/if}
     <section class="my-40 mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
-      <GalleryViewer {assets} {assetInteraction} {viewport} />
+      <GalleryViewer {assets} {assetInteraction} {viewport} allowDeletion={false} />
     </section>
   {:else if assets.length === 1}
     {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}

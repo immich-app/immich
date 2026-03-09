@@ -20,6 +20,7 @@ class PlacesResponseDto {
     required this.name,
   });
 
+  /// Administrative level 1 name (state/province)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -28,6 +29,7 @@ class PlacesResponseDto {
   ///
   String? admin1name;
 
+  /// Administrative level 2 name (county/district)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -36,10 +38,13 @@ class PlacesResponseDto {
   ///
   String? admin2name;
 
+  /// Latitude coordinate
   num latitude;
 
+  /// Longitude coordinate
   num longitude;
 
+  /// Place name
   String name;
 
   @override

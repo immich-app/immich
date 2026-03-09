@@ -10,6 +10,7 @@
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -74,7 +75,7 @@
 </script>
 
 <div id="location-selection">
-  <p class="uppercase immich-form-label">{$t('place')}</p>
+  <Text fontWeight="medium">{$t('place')}</Text>
 
   <div class="grid grid-auto-fit-40 gap-5 mt-1">
     <div class="w-full">

@@ -176,6 +176,7 @@ select
     where
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'preview'
+      and "asset_file"."isEdited" = $1
   ) as "previewPath"
 from
   "person"
@@ -183,7 +184,7 @@ from
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "person"."id" = $1
+  "person"."id" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.reassignFace
@@ -291,19 +292,6 @@ select
     from
       (
         select
-          "asset".*
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-      ) as obj
-  ) as "asset",
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
           "person".*
         from
           "person"
@@ -354,3 +342,14 @@ from
   "person"
 where
   "id" in ($1)
+
+-- PersonRepository.getForFeatureFaceUpdate
+select
+  "asset_face"."id"
+from
+  "asset_face"
+  inner join "asset" on "asset"."id" = "asset_face"."assetId"
+  and "asset"."isOffline" = $1
+where
+  "asset_face"."assetId" = $2
+  and "asset_face"."personId" = $3

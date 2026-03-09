@@ -59,7 +59,7 @@ export class NotificationAdminService extends BaseService {
   async getTemplate(name: EmailTemplate, customTemplate: string) {
     const { server, templates } = await this.getConfig({ withCache: false });
 
-    let templateResponse = '';
+    let templateResponse: string;
 
     switch (name) {
       case EmailTemplate.WELCOME: {

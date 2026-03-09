@@ -28,14 +28,14 @@
 
   let id: string = generateId();
 
-  let sliderId = $derived(`${id}-slider`);
+  let switchId = $derived(`input-${id}`);
   let subtitleId = $derived(subtitle ? `${id}-subtitle` : undefined);
 </script>
 
 <div class="flex place-items-center justify-between">
   <div class="me-2">
     <div class="flex h-6.5 place-items-center gap-1">
-      <label class="font-medium text-primary text-sm" for={sliderId}>
+      <label class="font-medium text-primary text-sm" for={switchId}>
         {title}
       </label>
       {#if isEdited}
@@ -54,5 +54,5 @@
     {@render children?.()}
   </div>
 
-  <Switch id={sliderId} bind:checked {disabled} onCheckedChange={onToggle} aria-describedby={subtitleId} />
+  <Switch {id} bind:checked {disabled} onCheckedChange={onToggle} aria-describedby={subtitleId} />
 </div>

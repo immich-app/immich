@@ -16,6 +16,7 @@ class SyncPersonDeleteV1 {
     required this.personId,
   });
 
+  /// Person ID
   String personId;
 
   @override

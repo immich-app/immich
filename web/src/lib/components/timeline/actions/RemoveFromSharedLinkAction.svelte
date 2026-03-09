@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { shortcut } from '$lib/actions/shortcut';
   import { handleRemoveSharedLinkAssets } from '$lib/services/shared-link.service';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';
@@ -22,6 +23,8 @@
     }
   };
 </script>
+
+<svelte:document use:shortcut={{ shortcut: { key: 'Delete' }, onShortcut: handleSelect }} />
 
 <IconButton
   shape="round"

@@ -7,7 +7,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { getAssetType } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
@@ -142,7 +142,7 @@
                 <a class="aspect-square w-19 h-19" href={Route.viewAlbumAsset({ albumId, assetId: reaction.assetId })}>
                   <img
                     class="rounded-lg w-19 h-19 object-cover"
-                    src={getAssetThumbnailUrl(reaction.assetId)}
+                    src={getAssetMediaUrl({ id: reaction.assetId })}
                     alt="Profile picture of {reaction.user.name}, who commented on this asset"
                   />
                 </a>
@@ -195,7 +195,7 @@
                   >
                     <img
                       class="rounded-lg w-19 h-19 object-cover"
-                      src={getAssetThumbnailUrl(reaction.assetId)}
+                      src={getAssetMediaUrl({ id: reaction.assetId })}
                       alt="Profile picture of {reaction.user.name}, who liked this asset"
                     />
                   </a>

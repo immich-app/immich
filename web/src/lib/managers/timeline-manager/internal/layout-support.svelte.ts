@@ -39,7 +39,7 @@ export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthG
     if (fitsInCurrentRow) {
       dayGroup.row = dayGroupRow;
       dayGroup.col = dayGroupCol++;
-      dayGroup.left = cumulativeWidth;
+      dayGroup.start = cumulativeWidth;
       dayGroup.top = cumulativeHeight;
 
       cumulativeWidth += dayGroup.width + timelineManager.gap;
@@ -53,7 +53,7 @@ export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthG
       // Position at start of new row
       dayGroup.row = dayGroupRow;
       dayGroup.col = dayGroupCol;
-      dayGroup.left = 0;
+      dayGroup.start = 0;
       dayGroup.top = cumulativeHeight;
 
       dayGroupCol++;

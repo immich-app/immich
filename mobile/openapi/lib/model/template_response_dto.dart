@@ -17,8 +17,10 @@ class TemplateResponseDto {
     required this.name,
   });
 
+  /// Template HTML content
   String html;
 
+  /// Template name
   String name;
 
   @override

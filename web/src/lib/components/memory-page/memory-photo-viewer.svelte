@@ -1,7 +1,7 @@
 <script lang="ts">
   import { assetViewerFadeDuration } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -35,7 +35,7 @@
     };
   });
 
-  const imageLoaderUrl = $derived(getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Preview }));
+  const imageLoaderUrl = $derived(getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview }));
 </script>
 
 {#if !imageLoaded}

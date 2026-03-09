@@ -5,6 +5,7 @@
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
@@ -21,14 +22,13 @@
   let selectedRowIndex: number = $state(-1);
 
   interface Props {
-    shared: boolean;
     onClose: (albums?: AlbumResponseDto[]) => void;
   }
 
-  let { shared, onClose }: Props = $props();
+  let { onClose }: Props = $props();
 
   onMount(async () => {
-    albums = await getAllAlbums({ shared: shared || undefined });
+    albums = await getAllAlbums({});
     recentAlbums = albums.sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });
@@ -36,7 +36,7 @@
   const multiSelectedAlbumIds: string[] = $state([]);
   const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
 
-  const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
+  const rowConverter = new AlbumModalRowConverter($albumViewSettings.sortBy, $albumViewSettings.sortOrder);
   const albumModalRows = $derived(
     rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
   );
@@ -44,6 +44,7 @@
 
   const onNewAlbum = async (name: string) => {
     const album = await createAlbum({ createAlbumDto: { albumName: name } });
+    eventManager.emit('AlbumCreate', album);
     onClose([album]);
   };
 
@@ -146,7 +147,7 @@
   };
 </script>
 
-<Modal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose} size="small">
+<Modal title={$t('add_to_album')} {onClose} size="small">
   <ModalBody>
     <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}

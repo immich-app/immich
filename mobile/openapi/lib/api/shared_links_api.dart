@@ -160,8 +160,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
@@ -201,8 +203,10 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] albumId:
+  ///   Filter by album ID
   ///
   /// * [String] id:
+  ///   Filter by shared link ID
   Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
     final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -232,10 +236,12 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
   ///
   /// * [String] token:
+  ///   Access token
   Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? slug, String? token, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
@@ -283,10 +289,12 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] password:
+  ///   Link password
   ///
   /// * [String] slug:
   ///
   /// * [String] token:
+  ///   Access token
   Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? password, String? slug, String? token, }) async {
     final response = await getMySharedLinkWithHttpInfo( key: key, password: password, slug: slug, token: token, );
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -483,6 +491,77 @@ class SharedLinksApi {
         .cast<AssetIdsResponseDto>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Shared link login
+  ///
+  /// Login to a password protected shared link
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> sharedLinkLoginWithHttpInfo(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/shared-links/login';
+
+    // ignore: prefer_final_locals
+    Object? postBody = sharedLinkLoginDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Shared link login
+  ///
+  /// Login to a password protected shared link
+  ///
+  /// Parameters:
+  ///
+  /// * [SharedLinkLoginDto] sharedLinkLoginDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<SharedLinkResponseDto?> sharedLinkLogin(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
+    final response = await sharedLinkLoginWithHttpInfo(sharedLinkLoginDto,  key: key, slug: slug, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'SharedLinkResponseDto',) as SharedLinkResponseDto;
+    
     }
     return null;
   }

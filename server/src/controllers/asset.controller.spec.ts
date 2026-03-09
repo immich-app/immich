@@ -24,6 +24,34 @@ describe(AssetController.name, () => {
       await request(ctx.getHttpServer()).put(`/assets`);
       expect(ctx.authenticate).toHaveBeenCalled();
     });
+
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets`)
+        .send({ ids: ['123'] });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(['each value in ids must be a UUID']));
+    });
+
+    it('should require duplicateId to be a string', async () => {
+      const id = factory.uuid();
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets`)
+        .send({ ids: [id], duplicateId: true });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.badRequest(['duplicateId must be a string']));
+    });
+
+    it('should accept a null duplicateId', async () => {
+      const id = factory.uuid();
+      await request(ctx.getHttpServer())
+        .put(`/assets`)
+        .send({ ids: [id], duplicateId: null });
+
+      expect(service.updateAll).toHaveBeenCalledWith(undefined, expect.objectContaining({ duplicateId: null }));
+    });
   });
 
   describe('DELETE /assets', () => {
@@ -179,10 +207,26 @@ describe(AssetController.name, () => {
     });
 
     it('should reject invalid rating', async () => {
-      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
+      for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: -2 }]) {
         const { status, body } = await request(ctx.getHttpServer()).put(`/assets/${factory.uuid()}`).send(test);
         expect(status).toBe(400);
         expect(body).toEqual(factory.responses.badRequest());
+      }
+    });
+
+    it('should convert rating 0 to null', async () => {
+      const assetId = factory.uuid();
+      const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send({ rating: 0 });
+      expect(service.update).toHaveBeenCalledWith(undefined, assetId, { rating: null });
+      expect(status).toBe(200);
+    });
+
+    it('should leave correct ratings as-is', async () => {
+      const assetId = factory.uuid();
+      for (const test of [{ rating: -1 }, { rating: 1 }, { rating: 5 }]) {
+        const { status } = await request(ctx.getHttpServer()).put(`/assets/${assetId}`).send(test);
+        expect(service.update).toHaveBeenCalledWith(undefined, assetId, test);
+        expect(status).toBe(200);
       }
     });
   });
@@ -339,6 +383,31 @@ describe(AssetController.name, () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(factory.responses.badRequest(expect.arrayContaining(['id must be a UUID'])));
+    });
+
+    it('should check the action and parameters discriminator', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/edits`)
+        .send({
+          edits: [
+            {
+              action: 'rotate',
+              parameters: {
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 100,
+              },
+            },
+          ],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.badRequest(
+          expect.arrayContaining([expect.stringContaining('parameters.angle must be one of the following values')]),
+        ),
+      );
     });
 
     it('should require at least one edit', async () => {

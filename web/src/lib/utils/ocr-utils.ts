@@ -1,122 +1,71 @@
 import type { OcrBoundingBox } from '$lib/stores/ocr.svelte';
-import type { ZoomImageWheelState } from '@zoom-image/core';
+import type { ContentMetrics } from '$lib/utils/container-utils';
 
-const getContainedSize = (img: HTMLImageElement): { width: number; height: number } => {
-  const ratio = img.naturalWidth / img.naturalHeight;
-  let width = img.height * ratio;
-  let height = img.height;
-  if (width > img.width) {
-    width = img.width;
-    height = img.width / ratio;
-  }
-  return { width, height };
+export type Point = {
+  x: number;
+  y: number;
 };
 
 export interface OcrBox {
   id: string;
-  points: { x: number; y: number }[];
+  points: Point[];
   text: string;
   confidence: number;
 }
 
-export interface BoundingBoxDimensions {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-  rotation: number;
-  skewX: number;
-  skewY: number;
-}
-
 /**
- * Calculate bounding box dimensions and properties from OCR points
+ * Calculate bounding box transform from OCR points. Result matrix can be used as input for css matrix3d.
  * @param points - Array of 4 corner points of the bounding box
- * @returns Dimensions, rotation, and skew values for the bounding box
+ * @returns 4x4 matrix to transform the div with text onto the polygon defined by the corner points, and size to set on the source div.
  */
-export const calculateBoundingBoxDimensions = (points: { x: number; y: number }[]): BoundingBoxDimensions => {
+export const calculateBoundingBoxMatrix = (points: Point[]): { matrix: number[]; width: number; height: number } => {
   const [topLeft, topRight, bottomRight, bottomLeft] = points;
-  const minX = Math.min(...points.map(({ x }) => x));
-  const maxX = Math.max(...points.map(({ x }) => x));
-  const minY = Math.min(...points.map(({ y }) => y));
-  const maxY = Math.max(...points.map(({ y }) => y));
-  const width = maxX - minX;
-  const height = maxY - minY;
-  const centerX = (minX + maxX) / 2;
-  const centerY = (minY + maxY) / 2;
 
-  // Calculate rotation angle from the bottom edge (bottomLeft to bottomRight)
-  const rotation = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x) * (180 / Math.PI);
+  // Approximate width and height to prevent text distortion as much as possible
+  const distance = (p1: Point, p2: Point) => Math.hypot(p2.x - p1.x, p2.y - p1.y);
+  const width = Math.max(distance(topLeft, topRight), distance(bottomLeft, bottomRight));
+  const height = Math.max(distance(topLeft, bottomLeft), distance(topRight, bottomRight));
 
-  // Calculate skew angles to handle perspective distortion
-  // SkewX: compare left and right edges
-  const leftEdgeAngle = Math.atan2(bottomLeft.y - topLeft.y, bottomLeft.x - topLeft.x);
-  const rightEdgeAngle = Math.atan2(bottomRight.y - topRight.y, bottomRight.x - topRight.x);
-  const skewX = (rightEdgeAngle - leftEdgeAngle) * (180 / Math.PI);
+  const dx1 = topRight.x - bottomRight.x;
+  const dx2 = bottomLeft.x - bottomRight.x;
+  const dx3 = topLeft.x - topRight.x + bottomRight.x - bottomLeft.x;
 
-  // SkewY: compare top and bottom edges
-  const topEdgeAngle = Math.atan2(topRight.y - topLeft.y, topRight.x - topLeft.x);
-  const bottomEdgeAngle = Math.atan2(bottomRight.y - bottomLeft.y, bottomRight.x - bottomLeft.x);
-  const skewY = (bottomEdgeAngle - topEdgeAngle) * (180 / Math.PI);
+  const dy1 = topRight.y - bottomRight.y;
+  const dy2 = bottomLeft.y - bottomRight.y;
+  const dy3 = topLeft.y - topRight.y + bottomRight.y - bottomLeft.y;
 
-  return {
-    minX,
-    maxX,
-    minY,
-    maxY,
-    width,
-    height,
-    centerX,
-    centerY,
-    rotation,
-    skewX,
-    skewY,
-  };
+  const det = dx1 * dy2 - dx2 * dy1;
+  const a13 = (dx3 * dy2 - dx2 * dy3) / det;
+  const a23 = (dx1 * dy3 - dx3 * dy1) / det;
+
+  const a11 = (1 + a13) * topRight.x - topLeft.x;
+  const a21 = (1 + a23) * bottomLeft.x - topLeft.x;
+
+  const a12 = (1 + a13) * topRight.y - topLeft.y;
+  const a22 = (1 + a23) * bottomLeft.y - topLeft.y;
+
+  // prettier-ignore
+  const matrix = [
+    a11 / width, a12 / width, 0, a13 / width,
+    a21 / height, a22 / height, 0, a23 / height,
+    0, 0, 1, 0,
+    topLeft.x, topLeft.y, 0, 1,
+  ];
+
+  return { matrix, width, height };
 };
 
-/**
- * Convert normalized OCR coordinates to screen coordinates
- * OCR coordinates are normalized (0-1) and represent the 4 corners of a rotated rectangle
- */
-export const getOcrBoundingBoxes = (
-  ocrData: OcrBoundingBox[],
-  zoom: ZoomImageWheelState,
-  photoViewer: HTMLImageElement | null,
-): OcrBox[] => {
+export const getOcrBoundingBoxes = (ocrData: OcrBoundingBox[], metrics: ContentMetrics): OcrBox[] => {
   const boxes: OcrBox[] = [];
-
-  if (photoViewer === null || !photoViewer.naturalWidth || !photoViewer.naturalHeight) {
-    return boxes;
-  }
-
-  const clientHeight = photoViewer.clientHeight;
-  const clientWidth = photoViewer.clientWidth;
-  const { width, height } = getContainedSize(photoViewer);
-
-  const imageWidth = photoViewer.naturalWidth;
-  const imageHeight = photoViewer.naturalHeight;
-
   for (const ocr of ocrData) {
-    // Convert normalized coordinates (0-1) to actual pixel positions
-    // OCR provides 4 corners of a potentially rotated rectangle
     const points = [
       { x: ocr.x1, y: ocr.y1 },
       { x: ocr.x2, y: ocr.y2 },
       { x: ocr.x3, y: ocr.y3 },
       { x: ocr.x4, y: ocr.y4 },
     ].map((point) => ({
-      x:
-        (width / imageWidth) * zoom.currentZoom * point.x * imageWidth +
-        ((clientWidth - width) / 2) * zoom.currentZoom +
-        zoom.currentPositionX,
-      y:
-        (height / imageHeight) * zoom.currentZoom * point.y * imageHeight +
-        ((clientHeight - height) / 2) * zoom.currentZoom +
-        zoom.currentPositionY,
+      x: point.x * metrics.contentWidth + metrics.offsetX,
+      y: point.y * metrics.contentHeight + metrics.offsetY,
     }));
 
     boxes.push({

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import { getAssetControlContext } from '$lib/utils/context';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { intersectionObserver } from '$lib/actions/intersection-observer';
-  import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
@@ -10,7 +8,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -25,16 +22,17 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { memoryStore, type MemoryAsset } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, AssetTypeEnum, getAssetInfo } from '@immich/sdk';
-  import { IconButton, toastManager } from '@immich/ui';
+  import { ActionButton, IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
     mdiChevronDown,
@@ -48,7 +46,6 @@
     mdiImageSearch,
     mdiPause,
     mdiPlay,
-    mdiPlus,
     mdiSelectAll,
     mdiVolumeHigh,
     mdiVolumeOff,
@@ -56,6 +53,7 @@
   import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
 
   let memoryGallery: HTMLElement | undefined = $state();
@@ -68,7 +66,12 @@
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
-  let currentTimelineAssets = $derived(current?.memory.assets || []);
+  let currentTimelineAssets = $derived(current?.memory.assets ?? []);
+  let viewerAssets = $derived([
+    ...(current?.previousMemory?.assets ?? []),
+    ...(current?.memory.assets ?? []),
+    ...(current?.nextMemory?.assets ?? []),
+  ]);
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
@@ -232,6 +235,22 @@
     galleryFirstLoad = false;
   };
 
+  const galleryObserver: Attachment<HTMLElement> = (element) => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          handleGalleryScrollsIntoView();
+        } else {
+          handleGalleryScrollsOutOfView();
+        }
+      },
+      { rootMargin: '0px 0px -200px 0px' },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  };
+
   const loadFromParams = (page: Page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     return memoryStore.getMemoryAsset(assetId);
@@ -273,7 +292,7 @@
   afterNavigate(({ from, to }) => {
     memoryStore.ready().then(
       () => {
-        let target = null;
+        let target;
         if (to?.params?.assetId) {
           target = to;
         } else if (from?.params?.assetId) {
@@ -324,6 +343,7 @@
       assets={assetInteraction.selectedAssets}
       clearSelect={() => cancelMultiselect(assetInteraction)}
     >
+      {@const Actions = getAssetBulkActions($t, assetInteraction.asControlContext())}
       <CreateSharedLink />
       <IconButton
         shape="round"
@@ -334,10 +354,7 @@
         onclick={handleSelectAll}
       />
 
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
-      </ButtonContextMenu>
+      <ActionButton action={Actions.AddToAlbum} />
 
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
 
@@ -360,7 +377,8 @@
   id="memory-viewer"
   class="w-full bg-immich-dark-gray"
   bind:this={memoryWrapper}
-  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+  bind:clientHeight={viewport.height}
+  bind:clientWidth={viewport.width}
 >
   {#if current}
     <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
@@ -449,7 +467,7 @@
             {#if current.previousMemory && current.previousMemory.assets.length > 0}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
+                src={getAssetMediaUrl({ id: current.previousMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('previous_memory')}
                 draggable="false"
               />
@@ -598,7 +616,7 @@
             {#if current.nextMemory && current.nextMemory.assets.length > 0}
               <img
                 class="h-full w-full rounded-2xl object-cover"
-                src={getAssetThumbnailUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
+                src={getAssetMediaUrl({ id: current.nextMemory.assets[0].id, size: AssetMediaSize.Preview })}
                 alt={$t('next_memory')}
                 draggable="false"
               />
@@ -642,17 +660,10 @@
       />
     </div>
 
-    <div
-      id="gallery-memory"
-      use:intersectionObserver={{
-        onIntersect: handleGalleryScrollsIntoView,
-        onSeparate: handleGalleryScrollsOutOfView,
-        bottom: '-200px',
-      }}
-      bind:this={memoryGallery}
-    >
+    <div id="gallery-memory" {@attach galleryObserver} bind:this={memoryGallery}>
       <GalleryViewer
         assets={currentTimelineAssets}
+        {viewerAssets}
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}

@@ -1,6 +1,6 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { ViewService } from 'src/services/view.service';
-import { assetStub } from 'test/fixtures/asset.stub';
+import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -32,8 +32,8 @@ describe(ViewService.name, () => {
     it('should return assets by original path', async () => {
       const path = '/asset';
 
-      const asset1 = { ...assetStub.image, originalPath: '/asset/path1' };
-      const asset2 = { ...assetStub.image, originalPath: '/asset/path2' };
+      const asset1 = AssetFactory.create({ originalPath: '/asset/path1' });
+      const asset2 = AssetFactory.create({ originalPath: '/asset/path2' });
 
       const mockAssets = [asset1, asset2];
 

@@ -60,8 +60,10 @@ export const getSharedLinkActions = ($t: MessageFormatter, sharedLink: SharedLin
   return { Edit, Delete, Copy, ViewQrCode };
 };
 
-const asUrl = (sharedLink: SharedLinkResponseDto) => {
-  const path = sharedLink.slug ? `s/${sharedLink.slug}` : `share/${sharedLink.key}`;
+export const asUrl = (sharedLink: SharedLinkResponseDto) => {
+  const path = sharedLink.slug
+    ? `s/${encodeURIComponent(sharedLink.slug)}`
+    : `share/${encodeURIComponent(sharedLink.key)}`;
   return new URL(path, serverConfigManager.value.externalDomain || globalThis.location.origin).href;
 };
 

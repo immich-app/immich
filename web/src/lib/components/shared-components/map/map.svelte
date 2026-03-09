@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
   import { addProtocol, setRTLTextPlugin } from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
 
@@ -10,12 +10,13 @@
 
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import { Theme } from '$lib/constants';
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
@@ -48,6 +49,7 @@
     Popup,
     ScaleControl,
   } from 'svelte-maplibre';
+  import type { SelectionBBox } from './types';
 
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
@@ -60,6 +62,7 @@
     useLocationPin?: boolean;
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
+    onClusterSelect?: (assetIds: string[], bbox: SelectionBBox) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
@@ -78,6 +81,7 @@
     useLocationPin = false,
     onOpenInMapView = undefined,
     onSelect = () => {},
+    onClusterSelect,
     onClickPoint = () => {},
     popup,
     rounded = false,
@@ -130,9 +134,30 @@
       return;
     }
 
-    const mapSource = map?.getSource('geojson') as GeoJSONSource;
+    const mapSource = map.getSource('geojson') as GeoJSONSource;
     const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
-    const ids = leaves.map((leaf) => leaf.properties?.id);
+    const ids = leaves.map((leaf) => leaf.properties?.id as string);
+
+    if (onClusterSelect && ids.length > 1) {
+      const [firstLongitude, firstLatitude] = (leaves[0].geometry as Point).coordinates;
+      let west = firstLongitude;
+      let south = firstLatitude;
+      let east = firstLongitude;
+      let north = firstLatitude;
+
+      for (const leaf of leaves.slice(1)) {
+        const [longitude, latitude] = (leaf.geometry as Point).coordinates;
+        west = Math.min(west, longitude);
+        south = Math.min(south, latitude);
+        east = Math.max(east, longitude);
+        north = Math.max(north, latitude);
+      }
+
+      const bbox = { west, south, east, north };
+      onClusterSelect(ids, bbox);
+      return;
+    }
+
     onSelect(ids);
   }
 
@@ -292,7 +317,13 @@
 
     untrack(() => map?.jumpTo({ center, zoom }));
   });
+
+  const onAssetsDelete = async () => {
+    mapMarkers = await loadMapMarkers();
+  };
 </script>
+
+<OnEvents {onAssetsDelete} />
 
 <!--  We handle style loading ourselves so we set style blank here -->
 <MapLibre
@@ -381,7 +412,7 @@
             <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
           {:else}
             <img
-              src={getAssetThumbnailUrl(feature.properties?.id)}
+              src={getAssetMediaUrl({ id: feature.properties?.id })}
               class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
               alt={feature.properties?.city && feature.properties.country
                 ? $t('map_marker_for_images', {

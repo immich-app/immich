@@ -191,6 +191,7 @@ describe(TagService.name, () => {
     it('should upsert records', async () => {
       mocks.access.tag.checkOwnerAccess.mockResolvedValue(new Set(['tag-1', 'tag-2']));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }, { value: 'tag-2' }] });
       mocks.tag.upsertAssetIds.mockResolvedValue([
         { tagId: 'tag-1', assetId: 'asset-1' },
         { tagId: 'tag-1', assetId: 'asset-2' },
@@ -204,6 +205,18 @@ describe(TagService.name, () => {
       ).resolves.toEqual({
         count: 6,
       });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
         { tagId: 'tag-1', assetId: 'asset-1' },
         { tagId: 'tag-1', assetId: 'asset-2' },
@@ -229,6 +242,7 @@ describe(TagService.name, () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.addAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [{ value: 'tag-1' }] });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
 
       await expect(
@@ -240,6 +254,14 @@ describe(TagService.name, () => {
         { id: 'asset-2', success: true },
       ]);
 
+      expect(mocks.asset.upsertExif).not.toHaveBeenCalledWith(
+        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
+        { lockedPropertiesBehavior: 'append' },
+      );
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);
     });
@@ -249,6 +271,7 @@ describe(TagService.name, () => {
     it('should throw an error for an invalid id', async () => {
       mocks.tag.getAssetIds.mockResolvedValue(new Set());
       mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await expect(sut.removeAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'not_found' },
@@ -259,6 +282,7 @@ describe(TagService.name, () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
       mocks.tag.removeAssetIds.mockResolvedValue();
+      mocks.asset.getForUpdateTags.mockResolvedValue({ tags: [] });
 
       await expect(
         sut.removeAssets(authStub.admin, 'tag-1', {

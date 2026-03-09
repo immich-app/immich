@@ -17,8 +17,10 @@ class DownloadArchiveInfo {
     required this.size,
   });
 
+  /// Asset IDs in this archive
   List<String> assetIds;
 
+  /// Archive size in bytes
   int size;
 
   @override
