@@ -14,6 +14,8 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiClockOutline,
+    mdiClockTimeThree,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -78,6 +80,13 @@
       </span>
     {/snippet}
   </NavbarItem>
+
+  <NavbarItem
+    title={$t('recently_added')}
+    href={Route.recentlyAdded()}
+    icon={mdiClockOutline}
+    activeIcon={mdiClockTimeThree}
+  />
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
     <NavbarItem title={$t('tags')} href={Route.tags()} icon={{ icon: mdiTagMultipleOutline, flipped: true }} />

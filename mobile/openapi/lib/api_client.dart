@@ -234,6 +234,8 @@ class ApiClient {
           return AssetBulkUploadCheckResult.fromJson(value);
         case 'AssetCopyDto':
           return AssetCopyDto.fromJson(value);
+        case 'AssetDateField':
+          return AssetDateFieldTypeTransformer().decode(value);
         case 'AssetDeltaSyncDto':
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':

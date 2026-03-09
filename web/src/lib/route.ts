@@ -95,6 +95,7 @@ export const Route = {
   viewAsset: ({ id }: { id: string }) => `/photos/${id}`,
   archive: () => '/archive',
   favorites: () => '/favorites',
+  recentlyAdded: () => '/recently-added',
   locked: () => '/locked',
   trash: () => '/trash',
   viewTrashedAsset: ({ id }: { id: string }) => `/trash/photos/${id}`,

@@ -355,6 +355,7 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetCopyDto](doc//AssetCopyDto.md)
+ - [AssetDateField](doc//AssetDateField.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetEditAction](doc//AssetEditAction.md)

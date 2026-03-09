@@ -65,17 +65,18 @@ export const fromISODateTimeWithOffsetToObject = (isoDateTimeUtc: string, utcOff
 
 export const getTimes = (isoDateTimeUtc: string, localUtcOffsetHours: number) => {
   const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
-  const fileCreatedAt = (utcDateTime as DateTime<true>).toObject();
+  const originalDateTime = (utcDateTime as DateTime<true>).toObject();
 
   // Apply the offset to get the local time
   // Note: offset is in hours (may be fractional), positive for east of UTC, negative for west
   const luxonLocalDateTime = utcDateTime.plus({ hours: localUtcOffsetHours });
+
   // Return as plain object (keeping the local time but in UTC zone context)
-  const localDateTime = (luxonLocalDateTime.setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toObject();
+  const adjustedDateTime = (luxonLocalDateTime.setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toObject();
 
   return {
-    fileCreatedAt,
-    localDateTime,
+    originalDateTime,
+    adjustedDateTime,
   };
 };
 

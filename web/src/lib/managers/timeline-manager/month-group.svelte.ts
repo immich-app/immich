@@ -1,4 +1,4 @@
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetDateField, AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
@@ -157,12 +157,19 @@ export class MonthGroup {
     };
   }
 
-  addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
+  addAssets(
+    bucketAssets: TimeBucketAssetResponseDto,
+    preSorted: boolean,
+    field: AssetDateField = AssetDateField.LocalDateTime,
+  ): TimelineAsset[] {
     const addContext = new GroupInsertionCache();
+    const dateField = field === AssetDateField.CreatedAt ? 'createdAt' : 'fileCreatedAt';
+    const offsetHoursField = field === AssetDateField.CreatedAt ? 'createdOffsetHours' : 'localOffsetHours';
+
     for (let i = 0; i < bucketAssets.id.length; i++) {
-      const { localDateTime, fileCreatedAt } = getTimes(
-        bucketAssets.fileCreatedAt[i],
-        bucketAssets.localOffsetHours[i],
+      const { adjustedDateTime, originalDateTime } = getTimes(
+        bucketAssets[dateField][i],
+        bucketAssets[offsetHoursField][i],
       );
 
       const timelineAsset: TimelineAsset = {
@@ -176,8 +183,8 @@ export class MonthGroup {
         isTrashed: bucketAssets.isTrashed[i],
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
-        localDateTime,
-        fileCreatedAt,
+        adjustedDateTime,
+        originalDateTime,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
@@ -203,6 +210,7 @@ export class MonthGroup {
 
       this.addTimelineAsset(timelineAsset, addContext);
     }
+
     if (preSorted) {
       return addContext.unprocessedAssets;
     }
@@ -221,22 +229,22 @@ export class MonthGroup {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
-    const { localDateTime } = timelineAsset;
+    const { adjustedDateTime } = timelineAsset;
 
     const { year, month } = this.yearMonth;
-    if (month !== localDateTime.month || year !== localDateTime.year) {
+    if (month !== adjustedDateTime.month || year !== adjustedDateTime.year) {
       addContext.unprocessedAssets.push(timelineAsset);
       return;
     }
 
-    let dayGroup = addContext.getDayGroup(localDateTime) || this.findDayGroupByDay(localDateTime.day);
+    let dayGroup = addContext.getDayGroup(adjustedDateTime) || this.findDayGroupByDay(adjustedDateTime.day);
     if (dayGroup) {
-      addContext.setDayGroup(dayGroup, localDateTime);
+      addContext.setDayGroup(dayGroup, adjustedDateTime);
     } else {
-      const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
-      dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
+      const groupTitle = formatGroupTitle(fromTimelinePlainDate(adjustedDateTime));
+      dayGroup = new DayGroup(this, this.dayGroups.length, adjustedDateTime.day, groupTitle);
       this.dayGroups.push(dayGroup);
-      addContext.setDayGroup(dayGroup, localDateTime);
+      addContext.setDayGroup(dayGroup, adjustedDateTime);
       addContext.newDayGroups.add(dayGroup);
     }
 

@@ -58,6 +58,9 @@ String parameterToString(dynamic value) {
   if (value is AlbumUserRole) {
     return AlbumUserRoleTypeTransformer().encode(value).toString();
   }
+  if (value is AssetDateField) {
+    return AssetDateFieldTypeTransformer().encode(value).toString();
+  }
   if (value is AssetEditAction) {
     return AssetEditActionTypeTransformer().encode(value).toString();
   }

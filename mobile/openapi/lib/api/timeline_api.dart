@@ -33,6 +33,9 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [AssetDateField] field:
+  ///   Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -66,7 +69,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, String? bbox, AssetDateField? field, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -82,6 +85,9 @@ class TimelineApi {
     }
     if (bbox != null) {
       queryParams.addAll(_queryParams('', 'bbox', bbox));
+    }
+    if (field != null) {
+      queryParams.addAll(_queryParams('', 'field', field));
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
@@ -150,6 +156,9 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [AssetDateField] field:
+  ///   Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -183,8 +192,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, String? bbox, AssetDateField? field, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, bbox: bbox, field: field, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -212,6 +221,9 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [AssetDateField] field:
+  ///   Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -245,7 +257,7 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, String? bbox, AssetDateField? field, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -261,6 +273,9 @@ class TimelineApi {
     }
     if (bbox != null) {
       queryParams.addAll(_queryParams('', 'bbox', bbox));
+    }
+    if (field != null) {
+      queryParams.addAll(_queryParams('', 'field', field));
     }
     if (isFavorite != null) {
       queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
@@ -325,6 +340,9 @@ class TimelineApi {
   /// * [String] bbox:
   ///   Bounding box coordinates as west,south,east,north (WGS84)
   ///
+  /// * [AssetDateField] field:
+  ///   Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.
+  ///
   /// * [bool] isFavorite:
   ///   Filter by favorite status (true for favorites only, false for non-favorites only)
   ///
@@ -358,8 +376,8 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, bbox: bbox, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, String? bbox, AssetDateField? field, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, bbox: bbox, field: field, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

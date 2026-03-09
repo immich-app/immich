@@ -1,5 +1,5 @@
 import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
-import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+import type { AssetDateField, AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
@@ -9,6 +9,7 @@ export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>
   timelineAlbumId?: string;
   deferInit?: boolean;
   assetFilter?: Set<string>;
+  field?: AssetDateField;
 };
 
 export type AssetDescriptor = { id: string };
@@ -20,8 +21,8 @@ export type TimelineAsset = {
   ownerId: string;
   ratio: number;
   thumbhash: string | null;
-  localDateTime: TimelineDateTime;
-  fileCreatedAt: TimelineDateTime;
+  adjustedDateTime: TimelineDateTime;
+  originalDateTime: TimelineDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;

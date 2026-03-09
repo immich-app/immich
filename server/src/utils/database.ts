@@ -238,8 +238,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>() {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(column: 'localDateTime' | 'createdAt' = 'localDateTime') {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${sql.ref(`asset.${column}`)} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {

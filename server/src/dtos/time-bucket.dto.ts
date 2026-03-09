@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import type { BBoxDto } from 'src/dtos/bbox.dto';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetDateField, AssetOrder, AssetVisibility } from 'src/enum';
 import { ValidateBBox } from 'src/utils/bbox';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -46,6 +46,15 @@ export class TimeBucketDto {
     optional: true,
   })
   order?: AssetOrder;
+
+  @ValidateEnum({
+    enum: AssetDateField,
+    name: 'AssetDateField',
+    description:
+      'Which date field to use for grouping assets in the timeline (taken = capture date, uploaded = upload date). Defaults to taken.',
+    optional: true,
+  })
+  field?: AssetDateField;
 
   @ValidateEnum({
     enum: AssetVisibility,
@@ -136,9 +145,24 @@ export class TimeBucketAssetResponseDto {
   @ApiProperty({
     type: 'array',
     items: { type: 'string' },
+    description: 'Array of dataabase creation timestamps in UTC',
+  })
+  createdAt!: string[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'string' },
     description: 'Array of file creation timestamps in UTC',
   })
   fileCreatedAt!: string[];
+
+  @ApiProperty({
+    type: 'array',
+    items: { type: 'number' },
+    description:
+      "Array of UTC offset hours at the time each photo was added to Immich. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'createdAt' will give you the time the photo was adding from a users's perspective.",
+  })
+  createdOffsetHours!: number[];
 
   @ApiProperty({
     type: 'array',
