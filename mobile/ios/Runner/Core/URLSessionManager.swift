@@ -4,6 +4,7 @@ import native_video_player
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
 let SERVER_URL_KEY = "immich.server_url"
+let SERVER_URLS_KEY = "immich.server_urls"
 let APP_GROUP = "group.app.immich.share"
 
 extension UserDefaults {
@@ -34,22 +35,43 @@ class URLSessionManager: NSObject {
     return "Immich_iOS_\(version)"
   }()
   static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
-  
+  private static var serverUrls: [String] = []
+  private static var isDuplicating = false
+
   var sessionPointer: UnsafeMutableRawPointer {
     Unmanaged.passUnretained(session).toOpaque()
   }
-  
+
   private override init() {
     delegate = URLSessionManagerDelegate()
     session = Self.buildSession(delegate: delegate)
     super.init()
+    Self.serverUrls = UserDefaults.group.stringArray(forKey: SERVER_URLS_KEY) ?? []
+    NotificationCenter.default.addObserver(
+      Self.self,
+      selector: #selector(cookiesDidChange),
+      name: NSHTTPCookieManagerCookiesChangedNotification,
+      object: cookieStorage
+    )
   }
 
   func recreateSession() {
     session = Self.buildSession(delegate: delegate)
   }
 
-  static func duplicateAuthCookies(serverUrls: [String]) {
+  static func setServerUrls(_ urls: [String]) {
+    guard urls != serverUrls else { return }
+    serverUrls = urls
+    UserDefaults.group.set(urls, forKey: SERVER_URLS_KEY)
+    duplicateAuthCookies()
+  }
+
+  @objc private static func cookiesDidChange(_ notification: Notification) {
+    guard !isDuplicating, !serverUrls.isEmpty else { return }
+    duplicateAuthCookies()
+  }
+
+  private static func duplicateAuthCookies() {
     let authCookieNames: Set<String> = ["immich_access_token", "immich_is_authenticated", "immich_auth_type"]
     let allCookies = cookieStorage.cookies ?? []
 
@@ -61,6 +83,9 @@ class URLSessionManager: NSObject {
     }
 
     guard !sourceCookies.isEmpty else { return }
+
+    isDuplicating = true
+    defer { isDuplicating = false }
 
     for serverUrl in serverUrls {
       guard let url = URL(string: serverUrl), let domain = url.host else { continue }

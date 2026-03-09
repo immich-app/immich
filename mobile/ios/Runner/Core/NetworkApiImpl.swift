@@ -63,7 +63,7 @@ class NetworkApiImpl: NetworkApi {
       UserDefaults.group.set(serverUrls.first, forKey: SERVER_URL_KEY)
     }
 
-    URLSessionManager.duplicateAuthCookies(serverUrls: serverUrls)
+    URLSessionManager.setServerUrls(serverUrls)
 
     if headers != UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] {
       UserDefaults.group.set(headers, forKey: HEADERS_KEY)
