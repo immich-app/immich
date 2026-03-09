@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
 import { resolve } from 'node:path';
 import { DB } from 'src/schema';
-import { ExifTestContext } from 'test/medium.factory';
+import { ExifTestContext, testAssetsDir } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
 
 let database: Kysely<DB>;
@@ -10,7 +10,7 @@ const setup = async (testAssetPath: string) => {
   const ctx = new ExifTestContext(database);
 
   const { user } = await ctx.newUser();
-  const originalPath = resolve(`../e2e/test-assets/${testAssetPath}`);
+  const originalPath = resolve(testAssetsDir, testAssetPath);
   const { asset } = await ctx.newAsset({ ownerId: user.id, originalPath });
 
   return { ctx, sut: ctx.sut, asset };

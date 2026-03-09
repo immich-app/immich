@@ -6,21 +6,20 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 
 const _kSeparator = '  •  ';
 
 class TechnicalDetails extends ConsumerWidget {
-  const TechnicalDetails({super.key});
+  final BaseAsset asset;
+  final ExifInfo? exifInfo;
+
+  const TechnicalDetails({super.key, required this.asset, this.exifInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetNotifier);
-    if (asset == null) return const SizedBox.shrink();
-
-    final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
+    final exifInfo = this.exifInfo;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
 

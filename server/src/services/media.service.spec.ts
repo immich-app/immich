@@ -2015,6 +2015,13 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should not transcode when policy bitrate and bitrate lower than max bitrate', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream40Mbps);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Bitrate, maxBitrate: '50M' } });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
     it('should transcode when policy bitrate and bitrate higher than max bitrate', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream40Mbps);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Bitrate, maxBitrate: '30M' } });
@@ -2030,19 +2037,18 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode when max bitrate is not a number', async () => {
+    it('should not transcode when max bitrate is not a number', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStream40Mbps);
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Bitrate, maxBitrate: 'foo' } });
       await sut.handleVideoConversion({ id: 'video-id' });
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: expect.any(Array),
-          outputOptions: expect.any(Array),
-          twoPass: false,
-        }),
-      );
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should not transcode when max bitrate is 0', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream40Mbps);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Bitrate, maxBitrate: '0' } });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
     it('should not scale resolution if no target resolution', async () => {
@@ -2563,6 +2569,50 @@ describe(MediaService.name, () => {
       });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    describe('should skip transcoding for accepted audio codecs with optimal policy if video is fine', () => {
+      const acceptedCodecs = [
+        { codec: 'aac', probeStub: probeStub.audioStreamAac },
+        { codec: 'mp3', probeStub: probeStub.audioStreamMp3 },
+        { codec: 'opus', probeStub: probeStub.audioStreamOpus },
+      ];
+
+      beforeEach(() => {
+        mocks.systemMetadata.get.mockResolvedValue({
+          ffmpeg: {
+            targetVideoCodec: VideoCodec.Hevc,
+            transcode: TranscodePolicy.Optimal,
+            targetResolution: '1080p',
+          },
+        });
+      });
+
+      it.each(acceptedCodecs)('should skip $codec', async ({ probeStub }) => {
+        mocks.media.probe.mockResolvedValue(probeStub);
+        await sut.handleVideoConversion({ id: 'video-id' });
+        expect(mocks.media.transcode).not.toHaveBeenCalled();
+      });
+    });
+
+    it('should use libopus audio encoder when target audio is opus', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.audioStreamAac);
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          targetAudioCodec: AudioCodec.Opus,
+          transcode: TranscodePolicy.All,
+        },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:a libopus']),
+          twoPass: false,
+        }),
+      );
     });
 
     it('should fail if hwaccel is enabled for an unsupported codec', async () => {

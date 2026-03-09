@@ -35,7 +35,7 @@ import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 23;
+const int targetVersion = 24;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -103,6 +103,10 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (version < 23 && Store.isBetaTimelineEnabled) {
     await _populateLocalAssetPlaybackStyle(drift);
+  }
+
+  if (version < 24 && Store.isBetaTimelineEnabled) {
+    await _applyLocalAssetOrientation(drift);
   }
 
   if (version < 22 && !Store.isBetaTimelineEnabled) {
@@ -416,23 +420,39 @@ Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
       });
     }
 
-    final trashedAssetMap = await nativeApi.getTrashedAssets();
-    for (final assets in trashedAssetMap.values) {
-      await db.batch((batch) {
-        for (final asset in assets) {
-          batch.update(
-            db.trashedLocalAssetEntity,
-            TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
-            where: (t) => t.id.equals(asset.id),
-          );
-        }
-      });
+    if (Platform.isAndroid) {
+      final trashedAssetMap = await nativeApi.getTrashedAssets();
+      for (final entry in trashedAssetMap.cast<String, List<Object?>>().entries) {
+        final assets = entry.value.cast<PlatformAsset>();
+        await db.batch((batch) {
+          for (final asset in assets) {
+            batch.update(
+              db.trashedLocalAssetEntity,
+              TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+              where: (t) => t.id.equals(asset.id),
+            );
+          }
+        });
+      }
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
+    } else {
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local assets");
     }
-
-    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
   }
+}
+
+Future<void> _applyLocalAssetOrientation(Drift db) {
+  final query = db.localAssetEntity.update()
+    ..where((filter) => (filter.orientation.equals(90) | (filter.orientation.equals(270))));
+  return query.write(
+    LocalAssetEntityCompanion.custom(
+      width: db.localAssetEntity.height,
+      height: db.localAssetEntity.width,
+      orientation: const Variable(0),
+    ),
+  );
 }
 
 AssetPlaybackStyle _toPlaybackStyle(PlatformAssetPlaybackStyle style) => switch (style) {

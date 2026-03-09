@@ -276,6 +276,19 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: origin,
   );
 
+  TimelineQuery fromAssetStream(List<BaseAsset> Function() getAssets, Stream<int> assetCount, TimelineOrigin origin) =>
+      (
+        bucketSource: () async* {
+          yield _generateBuckets(getAssets().length);
+          yield* assetCount.map(_generateBuckets);
+        },
+        assetSource: (offset, count) {
+          final assets = getAssets();
+          return Future.value(assets.skip(offset).take(count).toList(growable: false));
+        },
+        origin: origin,
+      );
+
   TimelineQuery fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin origin) {
     // Sort assets by date descending and group by day
     final sorted = List<BaseAsset>.from(assets)..sort((a, b) => b.createdAt.compareTo(a.createdAt));

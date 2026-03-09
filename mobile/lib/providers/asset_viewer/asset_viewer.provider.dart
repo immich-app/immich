@@ -1,5 +1,7 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class AssetViewerState {
@@ -68,6 +70,12 @@ class AssetViewerState {
 class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   @override
   AssetViewerState build() {
+    ref.listen(_watchedCurrentAssetProvider, (_, next) {
+      final updated = next.valueOrNull;
+      if (updated != null) {
+        state = state.copyWith(currentAsset: updated);
+      }
+    });
     return const AssetViewerState();
   }
 
@@ -75,10 +83,8 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     state = const AssetViewerState();
   }
 
-  void setAsset(BaseAsset? asset) {
-    if (asset == state.currentAsset) {
-      return;
-    }
+  void setAsset(BaseAsset asset) {
+    if (asset == state.currentAsset) return;
     state = state.copyWith(currentAsset: asset, stackIndex: 0);
   }
 
@@ -95,7 +101,10 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     }
     state = state.copyWith(showingDetails: showing, showingControls: showing ? true : state.showingControls);
     if (showing) {
-      ref.read(videoPlayerControlsProvider.notifier).pause();
+      final heroTag = state.currentAsset?.heroTag;
+      if (heroTag != null) {
+        ref.read(videoPlayerProvider(heroTag).notifier).pause();
+      }
     }
   }
 
@@ -126,3 +135,10 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
 }
 
 final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);
+
+final _watchedCurrentAssetProvider = StreamProvider<BaseAsset?>((ref) {
+  ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+  final asset = ref.read(assetViewerProvider).currentAsset;
+  if (asset == null) return const Stream.empty();
+  return ref.read(assetServiceProvider).watchAsset(asset);
+});

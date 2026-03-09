@@ -3,6 +3,7 @@ import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
+import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
@@ -77,6 +78,9 @@ import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.reposito
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, wait } from 'test/utils';
 import { Mocked } from 'vitest';
+
+// eslint-disable-next-line unicorn/prefer-module
+export const testAssetsDir = resolve(__dirname, '../../e2e/test-assets');
 
 interface ClassConstructor<T = any> extends Function {
   new (...args: any[]): T;

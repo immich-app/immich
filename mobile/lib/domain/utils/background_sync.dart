@@ -196,11 +196,11 @@ class BackgroundSyncManager {
     });
   }
 
-  Future<void> syncWebsocketEditBatch(List<dynamic> batchData) {
+  Future<void> syncWebsocketEdit(dynamic data) {
     if (_syncWebsocketTask != null) {
       return _syncWebsocketTask!.future;
     }
-    _syncWebsocketTask = _handleWsAssetEditReadyV1Batch(batchData);
+    _syncWebsocketTask = _handleWsAssetEditReadyV1(data);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
     });
@@ -242,7 +242,7 @@ Cancelable<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => ru
   debugLabel: 'websocket-batch',
 );
 
-Cancelable<void> _handleWsAssetEditReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
-  computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetEditReadyV1Batch(batchData),
+Cancelable<void> _handleWsAssetEditReadyV1(dynamic data) => runInIsolateGentle(
+  computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetEditReadyV1(data),
   debugLabel: 'websocket-edit',
 );
