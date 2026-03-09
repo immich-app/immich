@@ -14,7 +14,6 @@
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,18 +23,18 @@
   let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
 
-  let selectedAssetIds = $state(new SvelteSet<string>());
-  let trashCount = $derived(assets.length - selectedAssetIds.size);
+  let selectedAssetIds = $state<string[]>([]);
+  let trashCount = $derived(assets.length - selectedAssetIds.length);
 
   $effect(() => {
     if (assets.length === 0) {
-      selectedAssetIds = new SvelteSet<string>();
+      selectedAssetIds = [];
       return;
     }
 
     const suggestedAsset = suggestBestDuplicate(assets, duplicateTiePreference.value) ?? assets[0];
 
-    selectedAssetIds = new SvelteSet<string>([suggestedAsset.id]);
+    selectedAssetIds = [suggestedAsset.id];
   });
 
   onDestroy(() => {
@@ -53,19 +52,17 @@
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
-    if (selectedAssetIds.has(asset.id)) {
-      selectedAssetIds.delete(asset.id);
-    } else {
-      selectedAssetIds.add(asset.id);
-    }
+    selectedAssetIds = selectedAssetIds.includes(asset.id)
+      ? selectedAssetIds.filter((id) => id !== asset.id)
+      : [...selectedAssetIds, asset.id];
   };
 
   const onSelectNone = () => {
-    selectedAssetIds.clear();
+    selectedAssetIds = [];
   };
 
   const onSelectAll = () => {
-    selectedAssetIds = new SvelteSet(assets.map((asset) => asset.id));
+    selectedAssetIds = assets.map((asset) => asset.id);
   };
 
   const onViewAsset = async ({ id }: AssetResponseDto) => {
@@ -75,7 +72,7 @@
   };
 
   const handleResolve = () => {
-    const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
+    const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.includes(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
     onResolve(duplicateAssetIds, trashIds);
   };
@@ -149,7 +146,7 @@
         leadingIcon={mdiImageMultipleOutline}
         class="rounded-e-full"
         onclick={handleStack}
-        disabled={selectedAssetIds.size !== 1}
+        disabled={selectedAssetIds.length !== 1}
       >
         {$t('stack')}
       </Button>
@@ -159,7 +156,13 @@
   <div class="overflow-x-auto p-2">
     <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
       {#each assets as asset (asset.id)}
-        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
+        <DuplicateAsset
+          {assets}
+          {asset}
+          {onSelectAsset}
+          isSelected={selectedAssetIds.includes(asset.id)}
+          {onViewAsset}
+        />
       {/each}
     </div>
   </div>
