@@ -186,5 +186,3 @@ class AdvancedSettings extends HookConsumerWidget {
     return SettingsSubPageScaffold(settings: advancedSettings);
   }
 }
-
-
