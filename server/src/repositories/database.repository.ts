@@ -55,7 +55,7 @@ export const probes: Record<VectorIndex, number> = {
 
 @Injectable()
 export class DatabaseRepository {
-  private readonly asyncLock = new AsyncLock({ maxExecutionTime: 60000 });
+  private readonly asyncLock = new AsyncLock({ maxExecutionTime: 60_000 });
 
   constructor(
     @InjectKysely() private db: Kysely<DB>,
