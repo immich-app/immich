@@ -3,13 +3,11 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/platform/cloud_provider_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
@@ -66,28 +64,6 @@ class AdvancedSettings extends HookConsumerWidget {
       return null;
     }, []);
 
-    final isCloudProviderSupported = useState(false);
-    final cloudProviderAdbCommand = useState('');
-    final cloudProviderAdbDisableCommand = useState('');
-
-    useEffect(() {
-      if (Platform.isAndroid) {
-        () async {
-          final deviceInfo = DeviceInfoPlugin();
-          final androidInfo = await deviceInfo.androidInfo;
-          if (androidInfo.version.sdkInt >= 34) {
-            isCloudProviderSupported.value = true;
-            try {
-              final api = CloudProviderApi();
-              cloudProviderAdbCommand.value = await api.getAdbSetupCommand();
-              cloudProviderAdbDisableCommand.value = await api.getAdbDisableCommand();
-            } catch (_) {}
-          }
-        }();
-      }
-      return null;
-    }, []);
-
     final advancedSettings = [
       SettingsSwitchListTile(
         enabled: true,
@@ -124,11 +100,6 @@ class AdvancedSettings extends HookConsumerWidget {
               },
             ),
           ],
-        ),
-      if (isCloudProviderSupported.value)
-        _CloudProviderTile(
-          adbEnableCommand: cloudProviderAdbCommand.value,
-          adbDisableCommand: cloudProviderAdbDisableCommand.value,
         ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
@@ -216,95 +187,4 @@ class AdvancedSettings extends HookConsumerWidget {
   }
 }
 
-class _CloudProviderTile extends StatelessWidget {
-  final String adbEnableCommand;
-  final String adbDisableCommand;
 
-  const _CloudProviderTile({required this.adbEnableCommand, required this.adbDisableCommand});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'advanced_settings_cloud_provider_title'.tr(),
-            style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'advanced_settings_cloud_provider_description'.tr(),
-            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 12),
-          _CommandBlock(label: 'advanced_settings_cloud_provider_enable_label'.tr(), command: adbEnableCommand),
-          const SizedBox(height: 8),
-          _CommandBlock(label: 'advanced_settings_cloud_provider_disable_label'.tr(), command: adbDisableCommand),
-          const SizedBox(height: 8),
-          Text(
-            'advanced_settings_cloud_provider_help'.tr(),
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CommandBlock extends StatelessWidget {
-  final String label;
-  final String command;
-
-  const _CommandBlock({required this.label, required this.command});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        const SizedBox(height: 4),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  command,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.copy, size: 18),
-                visualDensity: VisualDensity.compact,
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: command));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('advanced_settings_cloud_provider_copied'.tr()),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
