@@ -136,10 +136,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
-    final headers = ApiService.getRequestHeaders();
     final previewRequest = request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId, type: AssetMediaSize.preview, thumbhash: key.thumbhash),
-      headers: headers,
     );
     yield* loadRequest(previewRequest, decode, evictOnError: false);
 
@@ -149,7 +147,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     // always try original for animated, since previews don't support animation
-    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+    final originalRequest = request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId));
     final codec = await loadCodecRequest(originalRequest);
     if (codec == null) {
       throw StateError('Failed to load animated codec for asset ${key.assetId}');
