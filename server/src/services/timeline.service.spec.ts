@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { AssetVisibility } from 'src/enum';
+import { AssetDateField, AssetVisibility } from 'src/enum';
 import { TimelineService } from 'src/services/timeline.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -24,6 +24,15 @@ describe(TimelineService.name, () => {
       });
     });
 
+    it('should pass AssetDateField to repository', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([]);
+      await sut.getTimeBuckets(authStub.admin, { field: AssetDateField.CreatedAt });
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith({
+        userIds: [authStub.admin.user.id],
+        field: AssetDateField.CreatedAt,
+      });
+    });
+
     it('should pass bbox options to repository when all bbox fields are provided', async () => {
       mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
 
@@ -44,6 +53,20 @@ describe(TimelineService.name, () => {
   });
 
   describe('getTimeBucket', () => {
+    it('should pass AssetDateField to repository', async () => {
+      mocks.asset.getTimeBucket.mockResolvedValue([]);
+      await sut.getTimeBucket(authStub.admin, { timeBucket: 'bucket', field: AssetDateField.CreatedAt });
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        {
+          timeBucket: 'bucket',
+          field: AssetDateField.CreatedAt,
+          userIds: [authStub.admin.user.id],
+        },
+        authStub.admin,
+      );
+    });
+
     it('should return the assets for a album time bucket if user has album.read', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
       const json = `[{ id: ['asset-id'] }]`;

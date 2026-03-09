@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetDateField, AssetVisibility } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -27,6 +27,31 @@ beforeAll(async () => {
 
 describe(TimelineService.name, () => {
   describe('getTimeBuckets', () => {
+    it('should bucket assets by month using createdAt', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const dates = [
+        [new Date('1980-01-01'), new Date('1980-02-10'), new Date('1980-02-11'), new Date('1980-03-11')],
+        [new Date('1970-01-01'), new Date('1970-02-10'), new Date('1970-02-11'), new Date('1970-02-11')],
+      ];
+      for (let i = 0; i < dates[0].length; i++) {
+        const { asset } = await ctx.newAsset({
+          ownerId: user.id,
+          createdAt: dates[0][i],
+          localDateTime: dates[1][i],
+        });
+        await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+      }
+      const auth = factory.auth({ user });
+      const response = sut.getTimeBuckets(auth, { field: AssetDateField.CreatedAt });
+
+      await expect(response).resolves.toEqual([
+        { count: 1, timeBucket: '1980-03-01' },
+        { count: 2, timeBucket: '1980-02-01' },
+        { count: 1, timeBucket: '1980-01-01' },
+      ]);
+    });
+
     it('should get time buckets by month', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -125,7 +150,9 @@ describe(TimelineService.name, () => {
         isImage: [],
         isTrashed: [],
         livePhotoVideoId: [],
+        createdAt: [],
         fileCreatedAt: [],
+        createdOffsetHours: [],
         localOffsetHours: [],
         ownerId: [],
         projectionType: [],
