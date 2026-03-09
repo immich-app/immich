@@ -420,21 +420,24 @@ Future<void> _populateLocalAssetPlaybackStyle(Drift db) async {
       });
     }
 
-    final trashedAssetMap = await nativeApi.getTrashedAssets();
-    for (final entry in trashedAssetMap.cast<String, List<Object?>>().entries) {
-      final assets = entry.value.cast<PlatformAsset>();
-      await db.batch((batch) {
-        for (final asset in assets) {
-          batch.update(
-            db.trashedLocalAssetEntity,
-            TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
-            where: (t) => t.id.equals(asset.id),
-          );
-        }
-      });
+    if (Platform.isAndroid) {
+      final trashedAssetMap = await nativeApi.getTrashedAssets();
+      for (final entry in trashedAssetMap.cast<String, List<Object?>>().entries) {
+        final assets = entry.value.cast<PlatformAsset>();
+        await db.batch((batch) {
+          for (final asset in assets) {
+            batch.update(
+              db.trashedLocalAssetEntity,
+              TrashedLocalAssetEntityCompanion(playbackStyle: Value(_toPlaybackStyle(asset.playbackStyle))),
+              where: (t) => t.id.equals(asset.id),
+            );
+          }
+        });
+      }
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
+    } else {
+      dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local assets");
     }
-
-    dPrint(() => "[MIGRATION] Successfully populated playbackStyle for local and trashed assets");
   } catch (error) {
     dPrint(() => "[MIGRATION] Error while populating playbackStyle: $error");
   }

@@ -39,6 +39,7 @@ export type Events = {
   AssetsTag: [string[]];
 
   AlbumAddAssets: [{ assetIds: string[]; albumIds: string[] }];
+  AlbumCreate: [AlbumResponseDto];
   AlbumUpdate: [AlbumResponseDto];
   AlbumDelete: [AlbumResponseDto];
   AlbumShare: [];
