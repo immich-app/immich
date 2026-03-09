@@ -5,6 +5,7 @@
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
@@ -43,6 +44,7 @@
 
   const onNewAlbum = async (name: string) => {
     const album = await createAlbum({ createAlbumDto: { albumName: name } });
+    eventManager.emit('AlbumCreate', album);
     onClose([album]);
   };
 
