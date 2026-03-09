@@ -1,0 +1,66 @@
+name: Deploy Demo
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Demo
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push server image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/slopich-server:latest
+          cache-from: type=gha,scope=demo-server
+          cache-to: type=gha,mode=max,scope=demo-server
+          build-args: |
+            DEVICE=cpu
+
+      - name: Build and push ML image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: machine-learning
+          file: machine-learning/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/slopich-machine-learning:latest
+          cache-from: type=gha,scope=demo-ml
+          cache-to: type=gha,mode=max,scope=demo-ml
+          build-args: |
+            DEVICE=cpu
+
+      - name: Deploy to demo server
+        uses: appleboy/ssh-action@v1 # v1.2.2
+        with:
+          host: ${{ secrets.DEMO_SSH_HOST }}
+          username: ${{ secrets.DEMO_SSH_USER }}
+          key: ${{ secrets.DEMO_SSH_KEY }}
+          script: /opt/slopich/deploy.sh

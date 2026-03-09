@@ -1,0 +1,189 @@
+name: Democracy
+
+on:
+  schedule:
+    # Run every 15 minutes to check for PRs that have passed the 24-hour voting window
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  process-votes:
+    name: Process PR Votes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Process eligible PRs
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const VOTING_WINDOW_HOURS = 24;
+            const MIN_TOTAL_REACTIONS = 4;
+            const MIN_LIKE_RATIO = 0.75;
+
+            // Fetch all open PRs
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              sort: 'created',
+              direction: 'asc',
+              per_page: 100,
+            });
+
+            console.log(`Found ${prs.length} open PRs`);
+
+            for (const pr of prs) {
+              const createdAt = new Date(pr.created_at);
+              const now = new Date();
+              const hoursOpen = (now - createdAt) / (1000 * 60 * 60);
+
+              console.log(`\nPR #${pr.number}: "${pr.title}" (open ${hoursOpen.toFixed(1)}h)`);
+
+              // Skip PRs that haven't been open long enough
+              if (hoursOpen < VOTING_WINDOW_HOURS) {
+                console.log(`  Skipping: only ${hoursOpen.toFixed(1)}h old (need ${VOTING_WINDOW_HOURS}h)`);
+                continue;
+              }
+
+              // Get reactions on the PR (via the issue reactions API)
+              const reactions = await github.paginate(github.rest.reactions.listForIssue, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                per_page: 100,
+              });
+
+              const likes = reactions.filter(r => r.content === '+1').length;
+              const dislikes = reactions.filter(r => r.content === '-1').length;
+              const totalVotes = likes + dislikes;
+              const likeRatio = totalVotes > 0 ? likes / totalVotes : 0;
+
+              console.log(`  Votes: ${likes} 👍 / ${dislikes} 👎 (${totalVotes} total, ${(likeRatio * 100).toFixed(0)}% approval)`);
+
+              // Check CI status
+              const checks = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.sha,
+              });
+
+              const failedChecks = checks.data.check_runs.filter(
+                c => c.status === 'completed' && c.conclusion !== 'success' && c.conclusion !== 'skipped' && c.conclusion !== 'neutral'
+              );
+              const pendingChecks = checks.data.check_runs.filter(
+                c => c.status !== 'completed'
+              );
+
+              // Also check commit statuses
+              const statuses = await github.rest.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.sha,
+              });
+
+              const ciPassed = failedChecks.length === 0 &&
+                               pendingChecks.length === 0 &&
+                               statuses.data.state !== 'failure' &&
+                               statuses.data.state !== 'pending';
+
+              if (!ciPassed) {
+                const failedNames = failedChecks.map(c => c.name).join(', ');
+                const pendingNames = pendingChecks.map(c => c.name).join(', ');
+                console.log(`  CI status: failed=[${failedNames}] pending=[${pendingNames}] combined=${statuses.data.state}`);
+              }
+
+              // Check mergeability
+              // Need to fetch the full PR to get mergeable status
+              const fullPr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+
+              const isMergeable = fullPr.data.mergeable === true && fullPr.data.mergeable_state !== 'dirty';
+
+              // Determine outcome
+              const votePassed = totalVotes >= MIN_TOTAL_REACTIONS && likeRatio >= MIN_LIKE_RATIO;
+
+              if (votePassed && ciPassed && isMergeable) {
+                console.log(`  ✅ MERGING: votes passed, CI passed, mergeable`);
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: [
+                    `## 🗳️ Democracy has spoken!`,
+                    ``,
+                    `This PR has been **merged** by popular vote after the ${VOTING_WINDOW_HOURS}-hour voting window.`,
+                    ``,
+                    `| Metric | Value | Required |`,
+                    `|--------|-------|----------|`,
+                    `| 👍 Likes | ${likes} | - |`,
+                    `| 👎 Dislikes | ${dislikes} | - |`,
+                    `| Total votes | ${totalVotes} | ≥ ${MIN_TOTAL_REACTIONS} |`,
+                    `| Approval | ${(likeRatio * 100).toFixed(0)}% | ≥ ${(MIN_LIKE_RATIO * 100).toFixed(0)}% |`,
+                    `| CI | ✅ Passed | Required |`,
+                  ].join('\n'),
+                });
+
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  merge_method: 'squash',
+                });
+              } else {
+                // Build rejection reasons
+                const reasons = [];
+                if (totalVotes < MIN_TOTAL_REACTIONS) {
+                  reasons.push(`Not enough votes: ${totalVotes} < ${MIN_TOTAL_REACTIONS} required`);
+                }
+                if (totalVotes >= MIN_TOTAL_REACTIONS && likeRatio < MIN_LIKE_RATIO) {
+                  reasons.push(`Approval too low: ${(likeRatio * 100).toFixed(0)}% < ${(MIN_LIKE_RATIO * 100).toFixed(0)}% required`);
+                }
+                if (!ciPassed) {
+                  reasons.push('CI checks did not pass');
+                }
+                if (!isMergeable) {
+                  reasons.push('PR has merge conflicts');
+                }
+
+                console.log(`  ❌ CLOSING: ${reasons.join(', ')}`);
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: [
+                    `## 🗳️ Democracy has spoken!`,
+                    ``,
+                    `This PR has been **closed** after the ${VOTING_WINDOW_HOURS}-hour voting window. It did not meet the requirements for merging.`,
+                    ``,
+                    `| Metric | Value | Required |`,
+                    `|--------|-------|----------|`,
+                    `| 👍 Likes | ${likes} | - |`,
+                    `| 👎 Dislikes | ${dislikes} | - |`,
+                    `| Total votes | ${totalVotes} | ≥ ${MIN_TOTAL_REACTIONS} |`,
+                    `| Approval | ${(likeRatio * 100).toFixed(0)}% | ≥ ${(MIN_LIKE_RATIO * 100).toFixed(0)}% |`,
+                    `| CI | ${ciPassed ? '✅ Passed' : '❌ Failed'} | Required |`,
+                    `| Mergeable | ${isMergeable ? '✅ Yes' : '❌ No'} | Required |`,
+                    ``,
+                    `**Reasons:**`,
+                    reasons.map(r => `- ${r}`).join('\n'),
+                  ].join('\n'),
+                });
+
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  state: 'closed',
+                });
+              }
+            }

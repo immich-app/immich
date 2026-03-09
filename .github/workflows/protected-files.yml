@@ -1,0 +1,48 @@
+name: Protected Files Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  check-protected-files:
+    name: Check Protected Files
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Check for changes to protected files
+        run: |
+          PROTECTED_PATHS=".github/workflows/ Makefile"
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+
+          VIOLATIONS=""
+          for path in $PROTECTED_PATHS; do
+            MATCHES=$(echo "$CHANGED_FILES" | grep "^${path}" || true)
+            if [ -n "$MATCHES" ]; then
+              VIOLATIONS="${VIOLATIONS}${MATCHES}"$'\n'
+            fi
+          done
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "::error::Changes to protected files are not allowed!"
+            echo ""
+            echo "The following protected files were modified:"
+            echo "$VIOLATIONS"
+            echo ""
+            echo "PRs must not modify files in .github/workflows/ or the Makefile."
+            exit 1
+          fi
+
+          echo "No protected files were modified."
