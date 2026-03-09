@@ -44,4 +44,6 @@ abstract class NetworkApi {
   int getClientPointer();
 
   void setRequestHeaders(Map<String, String> headers, List<String> serverUrls);
+
+  void bootstrapCookies(String token, List<String> serverUrls);
 }

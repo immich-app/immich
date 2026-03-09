@@ -39,7 +39,7 @@ class NetworkApiPlugin : FlutterPlugin, ActivityAware {
   }
 }
 
-private class NetworkApiImpl() : NetworkApi {
+private class NetworkApiImpl : NetworkApi {
   var activity: Activity? = null
 
   override fun addCertificate(clientData: ClientCertData, callback: (Result<Unit>) -> Unit) {
@@ -81,5 +81,9 @@ private class NetworkApiImpl() : NetworkApi {
 
   override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>) {
     HttpClientManager.setRequestHeaders(headers, serverUrls)
+  }
+
+  override fun bootstrapCookies(token: String, serverUrls: List<String>) {
+    HttpClientManager.bootstrapCookies(token, serverUrls)
   }
 }

@@ -49,6 +49,45 @@ class URLSessionManager: NSObject {
     session = Self.buildSession(delegate: delegate)
   }
 
+  static func duplicateAuthCookies(serverUrls: [String]) {
+    let authCookieNames: Set<String> = ["immich_access_token", "immich_is_authenticated", "immich_auth_type"]
+    let allCookies = cookieStorage.cookies ?? []
+
+    var sourceCookies: [String: HTTPCookie] = [:]
+    for cookie in allCookies {
+      if authCookieNames.contains(cookie.name) {
+        sourceCookies[cookie.name] = cookie
+      }
+    }
+
+    guard !sourceCookies.isEmpty else { return }
+
+    for serverUrl in serverUrls {
+      guard let url = URL(string: serverUrl), let domain = url.host else { continue }
+      let isSecure = serverUrl.hasPrefix("https")
+
+      for (_, source) in sourceCookies {
+        if allCookies.contains(where: { $0.name == source.name && $0.domain == domain && $0.value == source.value }) {
+          continue
+        }
+
+        var properties: [HTTPCookiePropertyKey: Any] = [
+          .name: source.name,
+          .value: source.value,
+          .domain: domain,
+          .path: "/",
+          .expires: source.expiresDate ?? Date().addingTimeInterval(400 * 24 * 60 * 60),
+        ]
+        if isSecure { properties[.secure] = "TRUE" }
+        if source.isHTTPOnly { properties[.init("HttpOnly")] = "TRUE" }
+
+        if let cookie = HTTPCookie(properties: properties) {
+          cookieStorage.setCookie(cookie)
+        }
+      }
+    }
+  }
+
   private static func buildSession(delegate: URLSessionManagerDelegate) -> URLSession {
     let config = URLSessionConfiguration.default
     config.urlCache = urlCache

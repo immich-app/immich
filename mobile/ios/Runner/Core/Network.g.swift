@@ -226,6 +226,7 @@ protocol NetworkApi {
   func hasCertificate() throws -> Bool
   func getClientPointer() throws -> Int64
   func setRequestHeaders(headers: [String: String], serverUrls: [String]) throws
+  func bootstrapCookies(token: String, serverUrls: [String]) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -324,6 +325,22 @@ class NetworkApiSetup {
       }
     } else {
       setRequestHeadersChannel.setMessageHandler(nil)
+    }
+    let bootstrapCookiesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.bootstrapCookies\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      bootstrapCookiesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let tokenArg = args[0] as! String
+        let serverUrlsArg = args[1] as! [String]
+        do {
+          try api.bootstrapCookies(token: tokenArg, serverUrls: serverUrlsArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      bootstrapCookiesChannel.setMessageHandler(nil)
     }
   }
 }

@@ -123,7 +123,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> saveAuthInfo({required String accessToken}) async {
-    await _apiService.setAccessToken(accessToken);
+    await Store.put(StoreKey.accessToken, accessToken);
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
@@ -145,7 +145,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user = serverUser;
         await Store.put(StoreKey.deviceId, deviceId);
         await Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-        await Store.put(StoreKey.accessToken, accessToken);
       }
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {

@@ -185,6 +185,7 @@ interface NetworkApi {
   fun hasCertificate(): Boolean
   fun getClientPointer(): Long
   fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>)
+  fun bootstrapCookies(token: String, serverUrls: List<String>)
 
   companion object {
     /** The codec used by NetworkApi. */
@@ -289,6 +290,25 @@ interface NetworkApi {
             val serverUrlsArg = args[1] as List<String>
             val wrapped: List<Any?> = try {
               api.setRequestHeaders(headersArg, serverUrlsArg)
+              listOf(null)
+            } catch (exception: Throwable) {
+              NetworkPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NetworkApi.bootstrapCookies$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val tokenArg = args[0] as String
+            val serverUrlsArg = args[1] as List<String>
+            val wrapped: List<Any?> = try {
+              api.bootstrapCookies(tokenArg, serverUrlsArg)
               listOf(null)
             } catch (exception: Throwable) {
               NetworkPigeonUtils.wrapError(exception)
