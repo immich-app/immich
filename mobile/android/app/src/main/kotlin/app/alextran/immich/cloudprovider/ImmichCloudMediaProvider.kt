@@ -171,6 +171,7 @@ class ImmichCloudMediaProvider : CloudMediaProvider() {
 
     val cursor = MatrixCursor(ALBUM_PROJECTION)
     for (album in albums) {
+      if (album.coverAssetId == null) continue
       cursor.addRow(
         arrayOf(
           album.id,
@@ -187,7 +188,13 @@ class ImmichCloudMediaProvider : CloudMediaProvider() {
       CloudMediaProviderContract.EXTRA_MEDIA_COLLECTION_ID,
       ImmichCloudRepository.getMediaCollectionId()
     )
+    cursorExtras.putStringArrayList(
+      ContentResolver.EXTRA_HONORED_ARGS,
+      arrayListOf(CloudMediaProviderContract.EXTRA_SYNC_GENERATION)
+    )
     cursor.extras = cursorExtras
+
+    Log.d(TAG, "onQueryAlbums: returning ${albums.size} albums")
 
     return cursor
   }
