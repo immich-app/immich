@@ -33,6 +33,7 @@
     mdiCamera,
     mdiCameraIris,
     mdiClose,
+    mdiCloudUpload,
     mdiEye,
     mdiEyeOff,
     mdiImageOutline,
@@ -68,6 +69,7 @@
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );
+  let createdAt = $derived(asset.createdAt ? fromISODateTimeUTC(asset.createdAt) : undefined);
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -131,6 +133,21 @@
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
+
+  const formatDate = (dt: DateTime) =>
+    dt.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
+
+  const formatTime = (dt: DateTime, showTimeZone?: string) =>
+    dt.toLocaleString(
+      {
+        weekday: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: showTimeZone ? 'longOffset' : undefined,
+      },
+      { locale: $locale },
+    );
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -307,29 +324,9 @@
           </div>
 
           <div>
-            <p>
-              {dateTime.toLocaleString(
-                {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                },
-                { locale: $locale },
-              )}
-            </p>
+            <p>{formatDate(dateTime)}</p>
             <div class="flex gap-2 text-sm">
-              <p>
-                {dateTime.toLocaleString(
-                  {
-                    weekday: 'short',
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    timeZoneName: timeZone ? 'longOffset' : undefined,
-                  },
-                  { locale: $locale },
-                )}
-              </p>
+              <p>{formatTime(dateTime, timeZone)}</p>
             </div>
           </div>
         </div>
@@ -349,6 +346,22 @@
         </div>
         <div class="p-1">
           <Icon icon={mdiPencil} size="20" />
+        </div>
+      </div>
+    {/if}
+
+    {#if createdAt}
+      <div class="flex w-full text-start gap-4 py-4">
+        <div>
+          <Icon icon={mdiCloudUpload} size="24" />
+        </div>
+
+        <div>
+          <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">{$t('asset_uploaded')}</p>
+          <p>{formatDate(createdAt)}</p>
+          <div class="flex gap-2 text-sm">
+            <p>{formatTime(createdAt)}</p>
+          </div>
         </div>
       </div>
     {/if}
