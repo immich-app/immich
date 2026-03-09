@@ -15,7 +15,7 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
-  import { type ContentMetrics, getContentMetrics } from '$lib/utils/container-utils';
+  import { getContentMetrics, type ContentMetrics } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
@@ -75,7 +75,7 @@
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    (containerWidth, containerHeight); // trigger recomputation on resize
+    [containerWidth, containerHeight]; // trigger recomputation on resize
 
     const { contentWidth, contentHeight, offsetX, offsetY } = getContentMetrics(assetViewerManager.imgRef);
     const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
