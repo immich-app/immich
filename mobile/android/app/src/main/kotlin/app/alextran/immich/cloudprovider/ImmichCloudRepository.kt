@@ -630,44 +630,12 @@ object ImmichCloudRepository {
       .addQueryParameter("size", sizeParam)
       .build()
     val request = Request.Builder().url(urlWithParams).get().build()
-    return downloadToParcelFd(request)
+    return downloadToTempFile(request, "preview_${assetId}_$sizeParam")
   }
 
   fun openVideoStream(assetId: String): ParcelFileDescriptor? {
     val url = buildUrl("/assets/$assetId/video/playback") ?: return null
     val request = Request.Builder().url(url).get().build()
-    return downloadToParcelFd(request)
-  }
-
-  private fun downloadToParcelFd(request: Request): ParcelFileDescriptor? {
-    return try {
-      val pipe = ParcelFileDescriptor.createPipe()
-      val readEnd = pipe[0]
-      val writeEnd = pipe[1]
-
-      Thread {
-        try {
-          val response = getClient().newCall(request).execute()
-          if (response.isSuccessful) {
-            ParcelFileDescriptor.AutoCloseOutputStream(writeEnd).use { output ->
-              response.body?.byteStream()?.use { input ->
-                input.copyTo(output, bufferSize = 8192)
-              }
-            }
-          } else {
-            Log.e(TAG, "Download failed: ${response.code} url=${request.url}")
-            writeEnd.close()
-          }
-        } catch (e: IOException) {
-          Log.e(TAG, "Download IO error", e)
-          try { writeEnd.close() } catch (_: Exception) {}
-        }
-      }.start()
-
-      readEnd
-    } catch (e: Exception) {
-      Log.e(TAG, "Failed to create pipe", e)
-      null
-    }
+    return downloadToTempFile(request, "video_$assetId")
   }
 }
