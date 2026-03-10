@@ -106,7 +106,8 @@
   };
 
   const onZoom = () => {
-    assetViewerManager.zoom = assetViewerManager.zoom > 1 ? 1 : 2;
+    const targetZoom = assetViewerManager.zoom > 1 ? 1 : 2;
+    assetViewerManager.animatedZoom(targetZoom);
   };
 
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
