@@ -70,13 +70,14 @@ extension on AssetResponseDto {
         _ => AssetVisibility.timeline,
       },
       durationInSeconds: duration.toDuration()?.inSeconds ?? 0,
-      height: exifInfo?.exifImageHeight?.toInt(),
-      width: exifInfo?.exifImageWidth?.toInt(),
+      height: height?.toInt(),
+      width: width?.toInt(),
       isFavorite: isFavorite,
       livePhotoVideoId: livePhotoVideoId,
       thumbHash: thumbhash,
       localId: null,
       type: type.toAssetType(),
+      stackId: stack?.id,
       isEdited: isEdited,
     );
   }

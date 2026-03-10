@@ -112,7 +112,7 @@ export const probeStub = {
   }),
   videoStream40Mbps: Object.freeze<VideoInfo>({
     ...probeStubDefault,
-    videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000 }],
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000, codecName: 'h264' }],
   }),
   videoStreamMTS: Object.freeze<VideoInfo>({
     ...probeStubDefault,
@@ -220,6 +220,14 @@ export const probeStub = {
   audioStreamAac: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecName: 'aac', bitrate: 100 }],
+  }),
+  audioStreamMp3: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ index: 1, codecName: 'mp3', bitrate: 100 }],
+  }),
+  audioStreamOpus: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ index: 1, codecName: 'opus', bitrate: 100 }],
   }),
   audioStreamUnknown: Object.freeze<VideoInfo>({
     ...probeStubDefault,

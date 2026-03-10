@@ -49,6 +49,7 @@
 }
 
 @theme {
+  --font-sans: 'GoogleSans', sans-serif;
   --font-mono: 'GoogleSansCode', monospace;
 
   --spacing-18: 4.5rem;
@@ -100,7 +101,7 @@
   }
 
   :root {
-    font-family: 'GoogleSans', sans-serif;
+    font-family: var(--font-sans);
     letter-spacing: 0.1px;
 
     /* Used by layouts to ensure proper spacing between navbar and content */

@@ -16,6 +16,7 @@ import app.alextran.immich.core.ImmichPlugin
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
+import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -81,10 +82,13 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       }
       if (hasSpecialFormatColumn()) {
         add(SPECIAL_FORMAT_COLUMN)
-      } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        // Fallback: read XMP from MediaStore to detect Motion Photos
-        // only needed if SPECIAL_FORMAT column isn't available
-        add(MediaStore.MediaColumns.XMP)
+      } else {
+        // fallback to mimetype and xmp for playback style detection on older Android versions
+        // both only needed if special format column is not available
+        add(MediaStore.MediaColumns.MIME_TYPE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+          add(MediaStore.MediaColumns.XMP)
+        }
       }
     }.toTypedArray()
 
@@ -131,6 +135,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         val dateAddedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_ADDED)
         val dateModifiedColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED)
         val mediaTypeColumn = c.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE)
+        val mimeTypeColumn = c.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
         val bucketIdColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.BUCKET_ID)
         val widthColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.WIDTH)
         val heightColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.HEIGHT)
@@ -177,19 +182,20 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
           val playbackStyle = detectPlaybackStyle(
-            numericId, rawMediaType, specialFormatColumn, xmpColumn, c
+            numericId, rawMediaType, mimeTypeColumn, specialFormatColumn, xmpColumn, c
           )
 
+          val isFlipped = orientation == 90 || orientation == 270
           val asset = PlatformAsset(
             id,
             name,
             assetType,
             createdAt,
             modifiedAt,
-            width,
-            height,
+            if (isFlipped) height else width,
+            if (isFlipped) width else height,
             duration,
-            orientation.toLong(),
+            0L,
             isFavorite,
             playbackStyle = playbackStyle,
           )
@@ -200,13 +206,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   }
 
   /**
-   * Detects the playback style for an asset using _special_format (API 33+)
-   * or XMP / MIME / RIFF header fallbacks (pre-33).
+   * Detects the playback style for an asset using _special_format (SDK Extension 21+)
+   * or XMP / MIME / RIFF header fallbacks.
    */
   @SuppressLint("NewApi")
   private fun detectPlaybackStyle(
     assetId: Long,
     rawMediaType: Int,
+    mimeTypeColumn: Int,
     specialFormatColumn: Int,
     xmpColumn: Int,
     cursor: Cursor
@@ -231,44 +238,54 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       return PlatformAssetPlaybackStyle.UNKNOWN
     }
 
-    // Pre-API 33 fallback
+    val mimeType = if (mimeTypeColumn != -1) cursor.getString(mimeTypeColumn) else null
+
+    // GIFs are always animated and cannot be motion photos; no I/O needed
+    if (mimeType == "image/gif") {
+      return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+    }
+
     val uri = ContentUris.withAppendedId(
       MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
       assetId
     )
 
-    // Read XMP from cursor (API 30+) or ExifInterface stream (pre-30)
+    // Only WebP needs a stream check to distinguish static vs animated;
+    // WebP files are not used as motion photos, so skip XMP detection
+    if (mimeType == "image/webp") {
+      try {
+        val glide = Glide.get(ctx)
+        ctx.contentResolver.openInputStream(uri)?.use { stream ->
+          val type = ImageHeaderParserUtils.getType(
+            listOf(DefaultImageHeaderParser()),
+            stream,
+            glide.arrayPool
+          )
+          // Also check for GIF just in case MIME type is incorrect; Doesn't hurt performance
+          if (type == ImageHeaderParser.ImageType.ANIMATED_WEBP || type == ImageHeaderParser.ImageType.GIF) {
+            return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
+          }
+        }
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to parse image header for asset $assetId", e)
+      }
+      // if mimeType is webp but not animated, its just an image.
+      return PlatformAssetPlaybackStyle.IMAGE
+    }
+
+
+    // Read XMP from cursor (API 30+)
     val xmp: String? = if (xmpColumn != -1) {
       cursor.getBlob(xmpColumn)?.toString(Charsets.UTF_8)
     } else {
-      try {
-        ctx.contentResolver.openInputStream(uri)?.use { stream ->
-          ExifInterface(stream).getAttribute(ExifInterface.TAG_XMP)
-        }
-      } catch (e: Exception) {
-        Log.w(TAG, "Failed to read XMP for asset $assetId", e)
-        null
-      }
+      // if xmp column is not available, we are on API 29 or below
+      // theoretically there were motion photos but the Camera:MotionPhoto xmp tag
+      // was only added in Android 11, so we should not have to worry about parsing XMP on older versions
+      null
     }
 
     if (xmp != null && "Camera:MotionPhoto" in xmp) {
       return PlatformAssetPlaybackStyle.LIVE_PHOTO
-    }
-
-    try {
-      ctx.contentResolver.openInputStream(uri)?.use { stream ->
-        val glide = Glide.get(ctx)
-        val type = ImageHeaderParserUtils.getType(
-          glide.registry.imageHeaderParsers,
-          stream,
-          glide.arrayPool
-        )
-        if (type == ImageHeaderParser.ImageType.GIF || type == ImageHeaderParser.ImageType.ANIMATED_WEBP) {
-          return PlatformAssetPlaybackStyle.IMAGE_ANIMATED
-        }
-      }
-    } catch (e: Exception) {
-      Log.w(TAG, "Failed to parse image header for asset $assetId", e)
     }
 
     return PlatformAssetPlaybackStyle.IMAGE

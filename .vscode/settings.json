@@ -1,8 +1,7 @@
 {
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[dart]": {
     "editor.defaultFormatter": "Dart-Code.dart-code",
@@ -15,49 +14,40 @@
   },
   "[javascript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit",
       "source.organizeImports": "explicit",
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[svelte]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit",
       "source.organizeImports": "explicit",
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "svelte.svelte-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "[typescript]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit",
       "source.organizeImports": "explicit",
       "source.removeUnusedImports": "explicit"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2
+    "editor.formatOnSave": true
   },
   "cSpell.words": ["immich"],
   "css.lint.unknownAtRules": "ignore",
   "editor.bracketPairColorization.enabled": true,
   "editor.formatOnSave": true,
-  "editor.guides.bracketPairs": "active",
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "svelte"],
   "eslint.workingDirectories": [
@@ -91,6 +81,6 @@
   "tailwindCSS.experimental.configFile": {
     "web/src/app.css": "web/src/**"
   },
-  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
   "vitest.maximumConfigs": 10
 }

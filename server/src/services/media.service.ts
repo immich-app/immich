@@ -717,7 +717,8 @@ export class MediaService extends BaseService {
     const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
-    const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const maxBitrate = this.parseBitrateToBps(ffmpegConfig.maxBitrate);
+    const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
     const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
@@ -769,6 +770,7 @@ export class MediaService extends BaseService {
     const bitrateValue = Number.parseInt(bitrateString);
 
     if (Number.isNaN(bitrateValue)) {
+      this.logger.log(`Maximum bitrate '${bitrateString} is not a number and will be ignored.`);
       return 0;
     }
 
