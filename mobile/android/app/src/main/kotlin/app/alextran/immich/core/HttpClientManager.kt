@@ -17,7 +17,6 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -315,7 +314,7 @@ object HttpClientManager {
       val parsed = urls.mapNotNull { it.toHttpUrlOrNull() }
       if (parsed.map { it.host } == serverUrls.map { it.host }) return
       serverUrls = parsed
-      if (duplicateAuthCookies()) persist()
+      if (syncAuthCookies()) persist()
     }
 
     @Synchronized
@@ -327,20 +326,30 @@ object HttpClientManager {
         cookies.any { it.name == existing.name && it.domain == existing.domain && it.path == existing.path }
       }
       store.addAll(cookies)
-      val duplicated = serverUrls.any { it.host == url.host } && duplicateAuthCookies()
-      if (changed || duplicated) persist()
+      val synced = serverUrls.any { it.host == url.host } && syncAuthCookies()
+      if (changed || synced) persist()
     }
 
     @Synchronized
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
       val now = System.currentTimeMillis()
-      store.removeAll { it.expiresAt < now }
+      if (store.removeAll { it.expiresAt < now }) {
+        syncAuthCookies()
+        persist()
+      }
       return store.filter { it.matches(url) }
     }
 
-    private fun duplicateAuthCookies(): Boolean {
-      val sourceCookies = store.filter { it.name in AUTH_COOKIE_NAMES }.associateBy { it.name }
-      if (sourceCookies.isEmpty()) return false
+    private fun syncAuthCookies(): Boolean {
+      val serverHosts = serverUrls.map { it.host }.toSet()
+      val now = System.currentTimeMillis()
+      val sourceCookies = store
+        .filter { it.name in AUTH_COOKIE_NAMES && it.domain in serverHosts && it.expiresAt > now }
+        .associateBy { it.name }
+
+      if (sourceCookies.isEmpty()) {
+        return store.removeAll { it.name in AUTH_COOKIE_NAMES && it.domain in serverHosts }
+      }
 
       var changed = false
       for (url in serverUrls) {

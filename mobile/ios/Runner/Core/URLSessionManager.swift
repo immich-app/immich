@@ -3,7 +3,6 @@ import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
-let SERVER_URL_KEY = "immich.server_url"
 let SERVER_URLS_KEY = "immich.server_urls"
 let APP_GROUP = "group.app.immich.share"
 
@@ -36,7 +35,7 @@ class URLSessionManager: NSObject {
   }()
   static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
   private static var serverUrls: [String] = []
-  private static var isDuplicating = false
+  private static var isSyncing = false
 
   var sessionPointer: UnsafeMutableRawPointer {
     Unmanaged.passUnretained(session).toOpaque()
@@ -63,29 +62,40 @@ class URLSessionManager: NSObject {
     guard urls != serverUrls else { return }
     serverUrls = urls
     UserDefaults.group.set(urls, forKey: SERVER_URLS_KEY)
-    duplicateAuthCookies()
+    syncAuthCookies()
   }
 
   @objc private static func cookiesDidChange(_ notification: Notification) {
-    guard !isDuplicating, !serverUrls.isEmpty else { return }
-    duplicateAuthCookies()
+    guard !isSyncing, !serverUrls.isEmpty else { return }
+    syncAuthCookies()
   }
 
-  private static func duplicateAuthCookies() {
+  private static func syncAuthCookies() {
     let authCookieNames: Set<String> = ["immich_access_token", "immich_is_authenticated", "immich_auth_type"]
+    let serverHosts = Set(serverUrls.compactMap { URL(string: $0)?.host })
     let allCookies = cookieStorage.cookies ?? []
+    let now = Date()
+
+    let serverAuthCookies = allCookies.filter {
+      authCookieNames.contains($0.name) && serverHosts.contains($0.domain)
+    }
 
     var sourceCookies: [String: HTTPCookie] = [:]
-    for cookie in allCookies {
-      if authCookieNames.contains(cookie.name) {
+    for cookie in serverAuthCookies {
+      if cookie.expiresDate.map({ $0 > now }) ?? true {
         sourceCookies[cookie.name] = cookie
       }
     }
 
-    guard !sourceCookies.isEmpty else { return }
+    isSyncing = true
+    defer { isSyncing = false }
 
-    isDuplicating = true
-    defer { isDuplicating = false }
+    if sourceCookies.isEmpty {
+      for cookie in serverAuthCookies {
+        cookieStorage.deleteCookie(cookie)
+      }
+      return
+    }
 
     for serverUrl in serverUrls {
       guard let url = URL(string: serverUrl), let domain = url.host else { continue }
