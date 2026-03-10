@@ -230,7 +230,7 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: expect.stringContaining(
-          `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${album.albumName}/${asset.originalFileName}`,
+          `/data/library/${user.id}/${asset.fileCreatedAt.getUTCFullYear()}/${album.albumName}/${asset.originalFileName}`,
         ),
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
@@ -249,11 +249,11 @@ describe(StorageTemplateService.name, () => {
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
-      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      const month = (asset.fileCreatedAt.getUTCMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: expect.stringContaining(
-          `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/other/${month}/${asset.originalFileName}`,
+          `/data/library/${user.id}/${asset.fileCreatedAt.getUTCFullYear()}/other/${month}/${asset.originalFileName}`,
         ),
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
@@ -287,11 +287,11 @@ describe(StorageTemplateService.name, () => {
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
-      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      const month = (asset.fileCreatedAt.getUTCMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: expect.stringContaining(
-          `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month} - ${album.albumName}/${asset.originalFileName}`,
+          `/data/library/${user.id}/${asset.fileCreatedAt.getUTCFullYear()}/${month} - ${album.albumName}/${asset.originalFileName}`,
         ),
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
@@ -312,13 +312,56 @@ describe(StorageTemplateService.name, () => {
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
 
-      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      const month = (asset.fileCreatedAt.getUTCMonth() + 1).toString().padStart(2, '0');
       expect(mocks.move.create).toHaveBeenCalledWith({
         entityId: asset.id,
-        newPath: `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
+        newPath: `/data/library/${user.id}/${asset.fileCreatedAt.getUTCFullYear()}/${month}/${asset.originalFileName}`,
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
       });
+    });
+
+    it('should render storage datetime tokens in UTC to preserve chronological filename ordering across time zones', async () => {
+      const user = UserFactory.create();
+      const assetBerlin = AssetFactory.from({
+        fileCreatedAt: new Date('2025-12-02T14:00:00.000Z'),
+        originalFileName: 'A.jpg',
+      })
+        .owner(user)
+        .exif({ timeZone: 'Europe/Berlin' })
+        .build();
+      const assetLondon = AssetFactory.from({
+        fileCreatedAt: new Date('2025-12-02T14:55:00.000Z'),
+        originalFileName: 'B.jpg',
+      })
+        .owner(user)
+        .exif({ timeZone: 'Europe/London' })
+        .build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{y}}{{MM}}{{dd}}_{{HH}}{{mm}}{{ss}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(assetBerlin));
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(assetLondon));
+
+      await expect(sut.handleMigrationSingle({ id: assetBerlin.id })).resolves.toBe(JobStatus.Success);
+      await expect(sut.handleMigrationSingle({ id: assetLondon.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          entityId: assetBerlin.id,
+          newPath: `/data/library/${user.id}/20251202_140000/A.jpg`,
+        }),
+      );
+      expect(mocks.move.create).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          entityId: assetLondon.id,
+          newPath: `/data/library/${user.id}/20251202_145500/B.jpg`,
+        }),
+      );
     });
 
     it('should migrate previously failed move from original path when it still exists', async () => {
