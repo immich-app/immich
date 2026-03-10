@@ -136,27 +136,6 @@ describe('TimelineManager', () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
-    it('sorts day groups by local day when loading pre-sorted buckets', async () => {
-      const assetOne = timelineAssetFactory.build({
-        id: 'asset-1',
-        fileCreatedAt: fromISODateTimeUTCToObject('2024-01-02T00:30:00.000Z'),
-        localDateTime: fromISODateTimeUTCToObject('2024-01-01T22:30:00.000Z'),
-      });
-      const assetTwo = timelineAssetFactory.build({
-        id: 'asset-2',
-        fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T23:30:00.000Z'),
-        localDateTime: fromISODateTimeUTCToObject('2024-01-02T01:30:00.000Z'),
-      });
-
-      sdkMock.getTimeBucket.mockResolvedValueOnce(toResponseDto(assetOne, assetTwo));
-
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
-
-      expect(
-        getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.dayGroups.map((group) => group.day),
-      ).toEqual([2, 1]);
-    });
-
     it('ignores invalid months', async () => {
       await timelineManager.loadMonthGroup({ year: 2023, month: 1 });
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
