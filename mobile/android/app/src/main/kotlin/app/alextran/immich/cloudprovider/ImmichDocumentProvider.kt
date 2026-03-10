@@ -14,9 +14,11 @@ import app.alextran.immich.R
 private const val TAG = "ImmichDocProvider"
 private const val ROOT_ID = "immich"
 private const val ROOT_DOC_ID = "root"
-private const val ALBUMS_DOC_ID = "albums"
 private const val ALL_PHOTOS_DOC_ID = "all_photos"
+private const val ALBUMS_DOC_ID = "albums"
+private const val PEOPLE_DOC_ID = "people"
 private const val ALBUM_PREFIX = "album:"
+private const val PERSON_PREFIX = "person:"
 private const val ASSET_PREFIX = "asset:"
 
 class ImmichDocumentProvider : DocumentsProvider() {
@@ -85,6 +87,16 @@ class ImmichDocumentProvider : DocumentsProvider() {
           add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
         }
       }
+      documentId == PEOPLE_DOC_ID -> {
+        result.newRow().apply {
+          add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, PEOPLE_DOC_ID)
+          add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, "People")
+          add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR)
+          add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+          add(DocumentsContract.Document.COLUMN_SIZE, null)
+          add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
+        }
+      }
       documentId.startsWith(ALBUM_PREFIX) -> {
         val albumId = documentId.removePrefix(ALBUM_PREFIX)
         val albums = ImmichCloudRepository.queryAlbums()
@@ -97,6 +109,21 @@ class ImmichDocumentProvider : DocumentsProvider() {
             add(DocumentsContract.Document.COLUMN_FLAGS, 0)
             add(DocumentsContract.Document.COLUMN_SIZE, null)
             add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, album.dateTakenMillis)
+          }
+        }
+      }
+      documentId.startsWith(PERSON_PREFIX) -> {
+        val personId = documentId.removePrefix(PERSON_PREFIX)
+        val people = ImmichCloudRepository.queryPeople()
+        val person = people.find { it.id == personId }
+        if (person != null) {
+          result.newRow().apply {
+            add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, documentId)
+            add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, person.name)
+            add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR)
+            add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+            add(DocumentsContract.Document.COLUMN_SIZE, null)
+            add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
           }
         }
       }
@@ -137,6 +164,14 @@ class ImmichDocumentProvider : DocumentsProvider() {
           add(DocumentsContract.Document.COLUMN_SIZE, null)
           add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
         }
+        result.newRow().apply {
+          add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, PEOPLE_DOC_ID)
+          add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, "People")
+          add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR)
+          add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+          add(DocumentsContract.Document.COLUMN_SIZE, null)
+          add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
+        }
       }
       ALL_PHOTOS_DOC_ID -> {
         val queryResult = ImmichCloudRepository.queryAllAssets(pageSize = 500)
@@ -157,10 +192,29 @@ class ImmichDocumentProvider : DocumentsProvider() {
           }
         }
       }
+      PEOPLE_DOC_ID -> {
+        val people = ImmichCloudRepository.queryPeople()
+        for (person in people) {
+          result.newRow().apply {
+            add(DocumentsContract.Document.COLUMN_DOCUMENT_ID, "$PERSON_PREFIX${person.id}")
+            add(DocumentsContract.Document.COLUMN_DISPLAY_NAME, person.name)
+            add(DocumentsContract.Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR)
+            add(DocumentsContract.Document.COLUMN_FLAGS, 0)
+            add(DocumentsContract.Document.COLUMN_SIZE, null)
+            add(DocumentsContract.Document.COLUMN_LAST_MODIFIED, System.currentTimeMillis())
+          }
+        }
+      }
       else -> {
         if (parentDocumentId.startsWith(ALBUM_PREFIX)) {
           val albumId = parentDocumentId.removePrefix(ALBUM_PREFIX)
           val queryResult = ImmichCloudRepository.queryAlbumAssets(albumId = albumId, pageSize = 500)
+          for (asset in queryResult.assets) {
+            addAssetRow(result, asset)
+          }
+        } else if (parentDocumentId.startsWith(PERSON_PREFIX)) {
+          val personId = parentDocumentId.removePrefix(PERSON_PREFIX)
+          val queryResult = ImmichCloudRepository.queryPersonAssets(personId = personId, pageSize = 500)
           for (asset in queryResult.assets) {
             addAssetRow(result, asset)
           }
@@ -212,11 +266,13 @@ class ImmichDocumentProvider : DocumentsProvider() {
   override fun isChildDocument(parentDocumentId: String, documentId: String): Boolean {
     return when {
       parentDocumentId == ROOT_DOC_ID -> {
-        documentId == ALL_PHOTOS_DOC_ID || documentId == ALBUMS_DOC_ID
+        documentId == ALL_PHOTOS_DOC_ID || documentId == ALBUMS_DOC_ID || documentId == PEOPLE_DOC_ID
       }
       parentDocumentId == ALL_PHOTOS_DOC_ID -> documentId.startsWith(ASSET_PREFIX)
       parentDocumentId == ALBUMS_DOC_ID -> documentId.startsWith(ALBUM_PREFIX)
+      parentDocumentId == PEOPLE_DOC_ID -> documentId.startsWith(PERSON_PREFIX)
       parentDocumentId.startsWith(ALBUM_PREFIX) -> documentId.startsWith(ASSET_PREFIX)
+      parentDocumentId.startsWith(PERSON_PREFIX) -> documentId.startsWith(ASSET_PREFIX)
       else -> false
     }
   }

@@ -9,7 +9,9 @@ import android.util.Log
 import app.alextran.immich.core.HttpClientManager
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -41,6 +43,12 @@ data class ImmichAlbum(
   val dateTakenMillis: Long
 )
 
+data class ImmichPerson(
+  val id: String,
+  val name: String,
+  val coverAssetId: String?
+)
+
 data class QueryResult(
   val assets: List<ImmichAsset>,
   val nextPageToken: String?
@@ -51,6 +59,9 @@ object ImmichCloudRepository {
   private lateinit var syncPrefs: SharedPreferences
 
   private var syncGeneration: Long = 0
+  private var cachedPeople: List<ImmichPerson>? = null
+  private var peopleCacheTime: Long = 0
+  private val PEOPLE_CACHE_TTL_MS = 5 * 60 * 1000L
 
   fun initialize(context: Context) {
     appContext = context.applicationContext
@@ -580,6 +591,170 @@ object ImmichCloudRepository {
     }
   }
 
+  fun queryPeople(): List<ImmichPerson> {
+    val now = System.currentTimeMillis()
+    cachedPeople?.let { cached ->
+      if (now - peopleCacheTime < PEOPLE_CACHE_TTL_MS) return cached
+    }
+
+    val db = openDatabase()
+    if (db == null) {
+      Log.w(TAG, "queryPeople: DB not available")
+      return emptyList()
+    }
+    return try {
+      val people = mutableListOf<ImmichPerson>()
+      db.rawQuery(
+        """
+        SELECT id, name
+        FROM person_entity
+        WHERE is_hidden = 0 AND name != ''
+        ORDER BY name COLLATE NOCASE
+        """.trimIndent(),
+        null
+      ).use { cursor ->
+        while (cursor.moveToNext()) {
+          val personId = cursor.getString(0)
+          people.add(
+            ImmichPerson(
+              id = personId,
+              name = cursor.getString(1),
+              coverAssetId = "person:$personId"
+            )
+          )
+        }
+      }
+      cachedPeople = people
+      peopleCacheTime = now
+      Log.d(TAG, "queryPeople: returning ${people.size} people from local DB")
+      people
+    } catch (e: Exception) {
+      Log.e(TAG, "queryPeople error", e)
+      emptyList()
+    } finally {
+      db.close()
+    }
+  }
+
+  fun queryPersonAssets(
+    personId: String,
+    pageSize: Int = 1000,
+    pageToken: String? = null
+  ): QueryResult {
+    Log.d(TAG, "queryPersonAssets: personId=$personId, pageSize=$pageSize, pageToken=$pageToken")
+    return try {
+      val page = pageToken?.toIntOrNull() ?: 1
+      val url = buildUrl("/search/metadata") ?: return QueryResult(emptyList(), null)
+      val jsonBody = JSONObject().apply {
+        put("personIds", org.json.JSONArray().put(personId))
+        put("page", page)
+        put("size", pageSize)
+      }
+      val mediaType = "application/json".toMediaType()
+      val requestBody = jsonBody.toString().toRequestBody(mediaType)
+      val request = Request.Builder().url(url).post(requestBody).build()
+      val response = getClient().newCall(request).execute()
+      if (!response.isSuccessful) {
+        Log.e(TAG, "queryPersonAssets API failed: ${response.code}")
+        response.close()
+        return QueryResult(emptyList(), null)
+      }
+      val body = response.body?.string() ?: "{}"
+      response.close()
+      val result = JSONObject(body)
+      val assetsObj = result.optJSONObject("assets") ?: return QueryResult(emptyList(), null)
+      val items = assetsObj.optJSONArray("items") ?: return QueryResult(emptyList(), null)
+      val total = assetsObj.optInt("total", 0)
+
+      val assets = mutableListOf<ImmichAsset>()
+      for (i in 0 until items.length()) {
+        val a = items.getJSONObject(i)
+        assets.add(assetFromApiJson(a))
+      }
+
+      val fetched = (page - 1) * pageSize + assets.size
+      val nextToken = if (fetched < total) (page + 1).toString() else null
+      Log.d(TAG, "queryPersonAssets: returning ${assets.size} assets, nextToken=$nextToken")
+      QueryResult(assets, nextToken)
+    } catch (e: Exception) {
+      Log.e(TAG, "queryPersonAssets error", e)
+      QueryResult(emptyList(), null)
+    }
+  }
+
+  fun searchAssets(
+    query: String,
+    pageSize: Int = 100,
+    pageToken: String? = null
+  ): QueryResult {
+    Log.d(TAG, "searchAssets: query=$query, pageSize=$pageSize, pageToken=$pageToken")
+    return try {
+      val page = pageToken?.toIntOrNull() ?: 1
+      val url = buildUrl("/search/smart") ?: return QueryResult(emptyList(), null)
+      val jsonBody = JSONObject().apply {
+        put("query", query)
+        put("page", page)
+        put("size", pageSize)
+      }
+      val mediaType = "application/json".toMediaType()
+      val requestBody = jsonBody.toString().toRequestBody(mediaType)
+      val request = Request.Builder().url(url).post(requestBody).build()
+      val response = getClient().newCall(request).execute()
+      if (!response.isSuccessful) {
+        Log.e(TAG, "searchAssets API failed: ${response.code}")
+        response.close()
+        return QueryResult(emptyList(), null)
+      }
+      val body = response.body?.string() ?: "{}"
+      response.close()
+      val result = JSONObject(body)
+      val assetsObj = result.optJSONObject("assets") ?: return QueryResult(emptyList(), null)
+      val items = assetsObj.optJSONArray("items") ?: return QueryResult(emptyList(), null)
+      val total = assetsObj.optInt("total", 0)
+
+      val assets = mutableListOf<ImmichAsset>()
+      for (i in 0 until items.length()) {
+        val a = items.getJSONObject(i)
+        assets.add(assetFromApiJson(a))
+      }
+
+      val fetched = (page - 1) * pageSize + assets.size
+      val nextToken = if (fetched < total) (page + 1).toString() else null
+      Log.d(TAG, "searchAssets: returning ${assets.size} assets, nextToken=$nextToken")
+      QueryResult(assets, nextToken)
+    } catch (e: Exception) {
+      Log.e(TAG, "searchAssets error", e)
+      QueryResult(emptyList(), null)
+    }
+  }
+
+  private fun assetFromApiJson(a: JSONObject): ImmichAsset {
+    val id = a.getString("id")
+    val type = a.optString("type", "IMAGE")
+    val isImage = type == "IMAGE"
+    val createdAt = a.optString("fileCreatedAt", a.optString("createdAt", ""))
+    val exifInfo = a.optJSONObject("exifInfo")
+    val fileSize = exifInfo?.optLong("fileSizeInByte", 1) ?: 1L
+    val orientation = exifInfo?.optString("orientation", "0")?.toIntOrNull() ?: 0
+    val width = exifInfo?.optInt("exifImageWidth", 0) ?: 0
+    val height = exifInfo?.optInt("exifImageHeight", 0) ?: 0
+    val duration = a.optString("duration", "")
+    val durationMillis = parseDuration(duration)
+
+    return ImmichAsset(
+      id = id,
+      mimeType = if (isImage) "image/jpeg" else "video/mp4",
+      dateTakenMillis = parseIso8601(createdAt),
+      width = width,
+      height = height,
+      sizeBytes = if (fileSize > 0) fileSize else 1L,
+      durationMillis = durationMillis,
+      isFavorite = a.optBoolean("isFavorite", false),
+      orientation = orientation,
+      isImage = isImage
+    )
+  }
+
   private fun parseIso8601(dateStr: String): Long {
     return try {
       java.time.Instant.parse(dateStr).toEpochMilli()
@@ -596,6 +771,12 @@ object ImmichCloudRepository {
   }
 
   fun openMedia(assetId: String): ParcelFileDescriptor? {
+    if (assetId.startsWith("person:")) {
+      val personId = assetId.removePrefix("person:")
+      val url = buildUrl("/people/$personId/thumbnail") ?: return null
+      val request = Request.Builder().url(url).get().build()
+      return downloadToTempFile(request, "person_thumb_$personId")
+    }
     val url = buildUrl("/assets/$assetId/original") ?: return null
     val request = Request.Builder().url(url).get().build()
     return downloadToTempFile(request, "media_$assetId")
@@ -624,6 +805,12 @@ object ImmichCloudRepository {
   }
 
   fun openPreview(assetId: String, size: Point): ParcelFileDescriptor? {
+    if (assetId.startsWith("person:")) {
+      val personId = assetId.removePrefix("person:")
+      val url = buildUrl("/people/$personId/thumbnail") ?: return null
+      val request = Request.Builder().url(url).get().build()
+      return downloadToTempFile(request, "person_thumb_$personId")
+    }
     val sizeParam = if (size.x <= 250 && size.y <= 250) "thumbnail" else "preview"
     val url = buildUrl("/assets/$assetId/thumbnail") ?: return null
     val urlWithParams = url.newBuilder()

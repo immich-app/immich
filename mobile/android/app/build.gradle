@@ -30,7 +30,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-  compileSdkVersion 35
+  compileSdkVersion 36
   ndkVersion = "28.2.13676358"
 
   compileOptions {
