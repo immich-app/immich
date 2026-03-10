@@ -1,9 +1,9 @@
 import {
-  Action,
   AssetBulkUploadCheckItem,
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
+  AssetUploadAction,
   Permission,
   addAssetsToAlbum,
   checkBulkUpload,
@@ -234,7 +234,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       const results = response.results as AssetBulkUploadCheckResults;
 
       for (const { id: filepath, assetId, action } of results) {
-        if (action === Action.Accept) {
+        if (action === AssetUploadAction.Accept) {
           newFiles.push(filepath);
         } else {
           // rejects are always duplicates
