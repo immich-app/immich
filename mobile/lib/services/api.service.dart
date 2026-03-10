@@ -201,7 +201,7 @@ class ApiService {
       return const {};
     }
 
-    return jsonDecode(customHeadersStr) as Map<String, String>;
+    return (jsonDecode(customHeadersStr) as Map).cast<String, String>();
   }
 
   ApiClient get apiClient => _apiClient;
