@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     model_ttl_poll_s: int = 10
     workers: int = 1
     worker_timeout: int = 300
+    worker_max_requests: int = 0
+    worker_max_requests_jitter: int = 0
     http_keepalive_timeout_s: int = 2
     test_full: bool = False
     request_threads: int = os.cpu_count() or 4
