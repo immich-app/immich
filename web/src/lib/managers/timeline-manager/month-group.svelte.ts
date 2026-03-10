@@ -203,16 +203,17 @@ export class MonthGroup {
 
       this.addTimelineAsset(timelineAsset, addContext);
     }
+
+    if (addContext.newDayGroups.size > 0) {
+      this.sortDayGroups();
+    }
+
     if (preSorted) {
       return addContext.unprocessedAssets;
     }
 
     for (const group of addContext.existingDayGroups) {
       group.sortAssets(this.#sortOrder);
-    }
-
-    if (addContext.newDayGroups.size > 0) {
-      this.sortDayGroups();
     }
 
     addContext.sort(this, this.#sortOrder);
