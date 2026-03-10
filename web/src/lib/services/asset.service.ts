@@ -230,7 +230,9 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto) =
     icon: mdiFaceRecognition,
     type: $t('assets'),
     $if: () => isOwner && asset.type === AssetTypeEnum.Image && !asset.isTrashed,
-    onAction: () => (isFaceEditMode.value = !isFaceEditMode.value),
+    onAction: () => {
+      isFaceEditMode.value = !isFaceEditMode.value;
+    },
     shortcuts: { key: 'p' },
   };
 
