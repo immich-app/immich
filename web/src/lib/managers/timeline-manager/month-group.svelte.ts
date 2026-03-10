@@ -17,6 +17,11 @@ import {
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
+import {
+  ViewportProximity,
+  isInOrNearViewport as isInOrNearViewportUtil,
+  isInViewport as isInViewportUtil,
+} from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
@@ -25,8 +30,7 @@ import type { AssetDescriptor, Direction, MoveAsset, TimelineAsset } from './typ
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class MonthGroup {
-  #intersecting: boolean = $state(false);
-  actuallyIntersecting: boolean = $state(false);
+  #viewportProximity: ViewportProximity = $state(ViewportProximity.FarFromViewport);
   isLoaded: boolean = $state(false);
   dayGroups: DayGroup[] = $state([]);
   readonly timelineManager: TimelineManager;
@@ -78,21 +82,25 @@ export class MonthGroup {
     }
   }
 
-  set intersecting(newValue: boolean) {
-    const old = this.#intersecting;
+  set viewportProximity(newValue: ViewportProximity) {
+    const old = this.#viewportProximity;
     if (old === newValue) {
       return;
     }
-    this.#intersecting = newValue;
-    if (newValue) {
+    this.#viewportProximity = newValue;
+    if (isInOrNearViewportUtil(newValue)) {
       void this.timelineManager.loadMonthGroup(this.yearMonth);
     } else {
       this.cancel();
     }
   }
 
-  get intersecting() {
-    return this.#intersecting;
+  get isInOrNearViewport() {
+    return isInOrNearViewportUtil(this.#viewportProximity);
+  }
+
+  get isInViewport() {
+    return isInViewportUtil(this.#viewportProximity);
   }
 
   get lastDayGroup() {

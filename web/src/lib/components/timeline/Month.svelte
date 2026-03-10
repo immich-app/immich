@@ -3,7 +3,7 @@
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import { assetsSnapshot, filterIsInOrNearViewport } from '$lib/managers/timeline-manager/utils.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
@@ -14,7 +14,16 @@
   import type { Snippet } from 'svelte';
 
   type Props = {
-    thumbnail: Snippet<[{ asset: TimelineAsset; position: CommonPosition; dayGroup: DayGroup; groupIndex: number }]>;
+    thumbnail: Snippet<
+      [
+        {
+          asset: TimelineAsset;
+          position: CommonPosition;
+          dayGroup: DayGroup;
+          groupIndex: number;
+        },
+      ]
+    >;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
     singleSelect: boolean;
     assetInteraction: AssetInteraction;
@@ -37,10 +46,6 @@
 
   const transitionDuration = $derived(monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150);
 
-  const filterIntersecting = <T extends { intersecting: boolean }>(intersectables: T[]) => {
-    return intersectables.filter(({ intersecting }) => intersecting);
-  };
-
   const getDayGroupFullDate = (dayGroup: DayGroup): string => {
     const { month, year } = dayGroup.monthGroup.yearMonth;
     const date = fromTimelinePlainDate({
@@ -52,7 +57,7 @@
   };
 </script>
 
-{#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
+{#each filterIsInOrNearViewport(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
   {@const isDayGroupSelected = assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section

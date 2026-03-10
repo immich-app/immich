@@ -642,7 +642,7 @@
     </section>
 
     {#each timelineManager.months as monthGroup (monthGroup.viewId)}
-      {@const display = monthGroup.intersecting}
+      {@const isInOrNearViewport = monthGroup.isInOrNearViewport}
       {@const absoluteHeight = monthGroup.top}
 
       {#if !monthGroup.isLoaded}
@@ -654,7 +654,7 @@
         >
           <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
-      {:else if display}
+      {:else if isInOrNearViewport}
         <div
           class="month-group"
           style:height={monthGroup.height + 'px'}
