@@ -38,7 +38,7 @@
 
   const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    await goto(Route.viewPerson(person, { previousRoute: Route.people(), action: 'merge' }));
+    await goto(Route.viewPerson(person, { action: 'merge' }));
   };
 
   const onSelect = async (selected: PersonResponseDto) => {

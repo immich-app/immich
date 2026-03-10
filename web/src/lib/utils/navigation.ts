@@ -159,3 +159,22 @@ export const setQueryValue = async (queryKey: string, queryValue: string) => {
   urlObject.searchParams.set(queryKey, queryValue);
   await goto(urlObject, { keepFocus: true });
 };
+
+/**
+ * Navigates back using browser history when available, falls back to a default route.
+ * This properly handles multi-level deep navigation by using the browser's history stack.
+ *
+ * @param fallbackRoute - The route to navigate to if history.back() is not available (e.g., direct page load)
+ * @param navOptions - Optional navigation options
+ *
+ * @example
+ * // Navigate back or go to explore if no history
+ * await navigateBack(Route.explore());
+ */
+export const navigateBack = async (fallbackRoute: string, navOptions?: Parameters<typeof goto>[1]) => {
+  if (globalThis.history && globalThis.history.length > 1) {
+    globalThis.history.back();
+  } else {
+    await goto(fallbackRoute, navOptions);
+  }
+};

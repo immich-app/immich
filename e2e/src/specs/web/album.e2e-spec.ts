@@ -1,7 +1,13 @@
-import { LoginResponseDto } from '@immich/sdk';
-import { expect, test } from '@playwright/test';
+import { LoginResponseDto, SharedLinkType } from '@immich/sdk';
+import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { testAssetDir, utils } from 'src/utils';
+
+const closeFromAppBar = async (page: Page) => {
+  const closeButton = page.locator('#asset-selection-app-bar').getByLabel('Close');
+  await expect(closeButton).toBeVisible();
+  await closeButton.click();
+};
 
 test.describe('Album', () => {
   let admin: LoginResponseDto;
@@ -59,5 +65,98 @@ test.describe('Album', () => {
 
     await expect(page.locator('#immich-asset-viewer')).not.toBeVisible();
     await expect(mapModal).toBeVisible();
+  });
+
+  test('navigates back to /albums from an album detail', async ({ context, page }) => {
+    const album = await utils.createAlbum(admin.accessToken, {
+      albumName: `Albums Backstack ${Date.now()}`,
+    });
+
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/albums');
+    await expect(page).toHaveURL('/albums');
+
+    const albumLink = page.locator('main').locator(`a[href="/albums/${album.id}"]`).first();
+    await expect(albumLink).toBeVisible();
+
+    await albumLink.click();
+    await expect(page).toHaveURL(`/albums/${album.id}`);
+
+    await closeFromAppBar(page);
+
+    await expect(page).toHaveURL('/albums');
+  });
+
+  test('navigates back to /sharing from a shared album detail', async ({ context, page }) => {
+    const album = await utils.createAlbum(admin.accessToken, {
+      albumName: `Shared Regression ${Date.now()}`,
+    });
+
+    await utils.createSharedLink(admin.accessToken, {
+      type: SharedLinkType.Album,
+      albumId: album.id,
+    });
+
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/sharing');
+    await expect(page).toHaveURL('/sharing');
+
+    const sharedAlbumLink = page.locator('main').locator(`a[href^="/albums/${album.id}"]`).first();
+    await expect(sharedAlbumLink).toBeVisible();
+
+    await sharedAlbumLink.click();
+    await expect(page).toHaveURL(`/albums/${album.id}`);
+
+    await closeFromAppBar(page);
+
+    await expect(page).toHaveURL('/sharing');
+  });
+
+  test('navigates back to /people/:id/photos/:id from album detail opened from people flow', async ({
+    context,
+    page,
+  }) => {
+    const asset = await utils.createAsset(admin.accessToken);
+    const person = await utils.createPerson(admin.accessToken, {
+      name: `Person Backstack ${Date.now()}`,
+    });
+    await utils.createFace({ assetId: asset.id, personId: person.id });
+
+    const album = await utils.createAlbum(admin.accessToken, {
+      albumName: `People Album Backstack ${Date.now()}`,
+      assetIds: [asset.id],
+    });
+
+    await utils.setAuthCookies(context, admin.accessToken);
+
+    await page.goto('/people');
+    await expect(page).toHaveURL('/people');
+
+    const personLink = page.locator('main').locator(`a[href="/people/${person.id}"]`).first();
+    await expect(personLink).toBeVisible();
+    await personLink.click();
+
+    await expect(page).toHaveURL(`/people/${person.id}`);
+
+    const personAsset = page.locator(`[data-asset-id="${asset.id}"]`).first();
+    await expect(personAsset).toBeVisible();
+    await personAsset.click();
+
+    await expect(page).toHaveURL(`/people/${person.id}/photos/${asset.id}`);
+
+    // Open info panel to access album link
+    await page.getByLabel('Info').click();
+
+    const albumLink = page.locator(`a[href="/albums/${album.id}"]`).first();
+    await expect(albumLink).toBeVisible();
+    await albumLink.click();
+
+    await expect(page).toHaveURL(`/albums/${album.id}`);
+
+    await closeFromAppBar(page);
+
+    await expect(page).toHaveURL(`/people/${person.id}/photos/${asset.id}`);
   });
 });

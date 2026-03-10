@@ -47,7 +47,6 @@ export enum QueryParameter {
   ID = 'id',
   IS_OPEN = 'isOpen',
   OPEN_SETTING = 'openSetting',
-  PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
   SEARCHED_PEOPLE = 'searchedPeople',
   SMART_SEARCH = 'smartSearch',
