@@ -1,5 +1,6 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
@@ -15,12 +16,13 @@
 
   const handleUpdateThumbnail = async () => {
     try {
-      await updateAlbumInfo({
+      const response = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           albumThumbnailAssetId: asset.id,
         },
       });
+      eventManager.emit('AlbumUpdate', response);
       toastManager.success($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));

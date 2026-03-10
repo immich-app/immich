@@ -44,10 +44,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   NativeVideoPlayerController? _controller;
   Timer? _bufferingTimer;
   Timer? _seekTimer;
-
-  void attachController(NativeVideoPlayerController controller) {
-    _controller = controller;
-  }
+  VideoPlaybackStatus? _holdStatus;
 
   @override
   void dispose() {
@@ -57,6 +54,19 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     _controller = null;
 
     super.dispose();
+  }
+
+  void attachController(NativeVideoPlayerController controller) {
+    _controller = controller;
+  }
+
+  Future<void> load(VideoSource source) async {
+    _startBufferingTimer();
+    try {
+      await _controller?.loadVideoSource(source);
+    } catch (e) {
+      _log.severe('Error loading video source: $e');
+    }
   }
 
   Future<void> pause() async {
@@ -94,14 +104,48 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   }
 
   void seekTo(Duration position) {
-    if (_controller == null) return;
+    if (_controller == null || state.position == position) return;
 
     state = state.copyWith(position: position);
 
-    _seekTimer?.cancel();
-    _seekTimer = Timer(const Duration(milliseconds: 100), () {
-      _controller?.seekTo(position.inMilliseconds);
+    if (_seekTimer?.isActive ?? false) return;
+
+    _seekTimer = Timer(const Duration(milliseconds: 150), () {
+      _controller?.seekTo(state.position.inMilliseconds);
     });
+  }
+
+  void toggle() {
+    _holdStatus = null;
+
+    switch (state.status) {
+      case VideoPlaybackStatus.paused:
+        play();
+      case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
+        pause();
+      case VideoPlaybackStatus.completed:
+        restart();
+    }
+  }
+
+  /// Pauses playback and preserves the current status for later restoration.
+  void hold() {
+    if (_holdStatus != null) return;
+
+    _holdStatus = state.status;
+    pause();
+  }
+
+  /// Restores playback to the status before [hold] was called.
+  void release() {
+    final status = _holdStatus;
+    _holdStatus = null;
+
+    switch (status) {
+      case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
+        play();
+      default:
+    }
   }
 
   Future<void> restart() async {
@@ -149,13 +193,12 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     final position = Duration(milliseconds: playbackInfo.position);
     if (state.position == position) return;
 
-    if (state.status == VideoPlaybackStatus.buffering) {
-      state = state.copyWith(position: position, status: VideoPlaybackStatus.playing);
-    } else {
-      state = state.copyWith(position: position);
-    }
+    if (state.status == VideoPlaybackStatus.playing) _startBufferingTimer();
 
-    _startBufferingTimer();
+    state = state.copyWith(
+      position: position,
+      status: state.status == VideoPlaybackStatus.buffering ? VideoPlaybackStatus.playing : null,
+    );
   }
 
   void onNativeStatusChanged() {
@@ -173,9 +216,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
         onNativePlaybackEnded();
     }
 
-    if (state.status != newStatus) {
-      state = state.copyWith(status: newStatus);
-    }
+    if (state.status != newStatus) state = state.copyWith(status: newStatus);
   }
 
   void onNativePlaybackEnded() {
@@ -186,7 +227,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   void _startBufferingTimer() {
     _bufferingTimer?.cancel();
     _bufferingTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && state.status == VideoPlaybackStatus.playing) {
+      if (mounted && state.status != VideoPlaybackStatus.completed) {
         state = state.copyWith(status: VideoPlaybackStatus.buffering);
       }
     });
