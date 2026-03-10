@@ -1,6 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { MemoryService } from 'src/services/memory.service';
 import { OnThisDayData } from 'src/types';
+import { AssetFactory } from 'test/factories/asset.factory';
+import { MemoryFactory } from 'test/factories/memory.factory';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -27,9 +29,9 @@ describe(MemoryService.name, () => {
   describe('search', () => {
     it('should search memories', async () => {
       const [userId] = newUuids();
-      const asset = factory.asset();
-      const memory1 = factory.memory({ ownerId: userId, assets: [asset] });
-      const memory2 = factory.memory({ ownerId: userId });
+      const asset = AssetFactory.create();
+      const memory1 = MemoryFactory.from({ ownerId: userId }).asset(asset).build();
+      const memory2 = MemoryFactory.create({ ownerId: userId });
 
       mocks.memory.search.mockResolvedValue([memory1, memory2]);
 
@@ -64,7 +66,7 @@ describe(MemoryService.name, () => {
 
     it('should get a memory by id', async () => {
       const userId = newUuid();
-      const memory = factory.memory({ ownerId: userId });
+      const memory = MemoryFactory.create({ ownerId: userId });
 
       mocks.memory.get.mockResolvedValue(memory);
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
@@ -81,7 +83,7 @@ describe(MemoryService.name, () => {
   describe('create', () => {
     it('should skip assets the user does not have access to', async () => {
       const [assetId, userId] = newUuids();
-      const memory = factory.memory({ ownerId: userId });
+      const memory = MemoryFactory.create({ ownerId: userId });
 
       mocks.memory.create.mockResolvedValue(memory);
 
@@ -109,8 +111,8 @@ describe(MemoryService.name, () => {
 
     it('should create a memory', async () => {
       const [assetId, userId] = newUuids();
-      const asset = factory.asset({ id: assetId, ownerId: userId });
-      const memory = factory.memory({ assets: [asset] });
+      const asset = AssetFactory.create({ id: assetId, ownerId: userId });
+      const memory = MemoryFactory.from().asset(asset).build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.memory.create.mockResolvedValue(memory);
@@ -131,7 +133,7 @@ describe(MemoryService.name, () => {
     });
 
     it('should create a memory without assets', async () => {
-      const memory = factory.memory();
+      const memory = MemoryFactory.create();
 
       mocks.memory.create.mockResolvedValue(memory);
 
@@ -155,7 +157,7 @@ describe(MemoryService.name, () => {
     });
 
     it('should update a memory', async () => {
-      const memory = factory.memory();
+      const memory = MemoryFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.memory.update.mockResolvedValue(memory);
@@ -198,7 +200,7 @@ describe(MemoryService.name, () => {
 
     it('should require asset access', async () => {
       const assetId = newUuid();
-      const memory = factory.memory();
+      const memory = MemoryFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.memory.get.mockResolvedValue(memory);
@@ -212,8 +214,8 @@ describe(MemoryService.name, () => {
     });
 
     it('should skip assets already in the memory', async () => {
-      const asset = factory.asset();
-      const memory = factory.memory({ assets: [asset] });
+      const asset = AssetFactory.create();
+      const memory = MemoryFactory.from().asset(asset).build();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.memory.get.mockResolvedValue(memory);
@@ -228,7 +230,7 @@ describe(MemoryService.name, () => {
 
     it('should add assets', async () => {
       const assetId = newUuid();
-      const memory = factory.memory();
+      const memory = MemoryFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
@@ -266,8 +268,8 @@ describe(MemoryService.name, () => {
     });
 
     it('should remove assets', async () => {
-      const memory = factory.memory();
-      const asset = factory.asset();
+      const memory = MemoryFactory.create();
+      const asset = AssetFactory.create();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));

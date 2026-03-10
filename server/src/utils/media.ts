@@ -1,3 +1,4 @@
+import { AUDIO_ENCODER } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { CQMode, ToneMapping, TranscodeHardwareAcceleration, TranscodeTarget, VideoCodec } from 'src/enum';
 import {
@@ -117,7 +118,7 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
     const videoCodec = [TranscodeTarget.All, TranscodeTarget.Video].includes(target) ? this.getVideoCodec() : 'copy';
-    const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioCodec() : 'copy';
+    const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioEncoder() : 'copy';
 
     const options = [
       `-c:v ${videoCodec}`,
@@ -305,8 +306,8 @@ export class BaseConfig implements VideoCodecSWConfig {
     return [options];
   }
 
-  getAudioCodec(): string {
-    return this.config.targetAudioCodec;
+  getAudioEncoder(): string {
+    return AUDIO_ENCODER[this.config.targetAudioCodec];
   }
 
   getVideoCodec(): string {
