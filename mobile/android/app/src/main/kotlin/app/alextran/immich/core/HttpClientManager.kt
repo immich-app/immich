@@ -39,6 +39,17 @@ private const val PREFS_CERT_ALIAS = "immich.client_cert"
 private const val PREFS_HEADERS = "immich.request_headers"
 private const val PREFS_SERVER_URLS = "immich.server_urls"
 private const val PREFS_COOKIES = "immich.cookies"
+private const val COOKIE_EXPIRY_DAYS = 400L
+
+private enum class AuthCookie(val cookieName: String, val httpOnly: Boolean) {
+  ACCESS_TOKEN("immich_access_token", httpOnly = true),
+  IS_AUTHENTICATED("immich_is_authenticated", httpOnly = false),
+  AUTH_TYPE("immich_auth_type", httpOnly = true);
+
+  companion object {
+    val names = entries.map { it.cookieName }.toSet()
+  }
+}
 
 /**
  * Manages a shared OkHttpClient with SSL configuration support.
@@ -189,18 +200,19 @@ object HttpClientManager {
 
       if (token != null) {
         val url = serverUrls.firstNotNullOfOrNull { it.toHttpUrlOrNull() } ?: return
-        val expiry = System.currentTimeMillis() + 400L * 24 * 60 * 60 * 1000
-        fun cookie(name: String, value: String, httpOnly: Boolean) =
-          Cookie.Builder().name(name).value(value).domain(url.host).path("/").expiresAt(expiry)
+        val expiry = System.currentTimeMillis() + COOKIE_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+        val values = mapOf(
+          AuthCookie.ACCESS_TOKEN to token,
+          AuthCookie.IS_AUTHENTICATED to "true",
+          AuthCookie.AUTH_TYPE to "password",
+        )
+        cookieJar.saveFromResponse(url, values.map { (cookie, value) ->
+          Cookie.Builder().name(cookie.cookieName).value(value).domain(url.host).path("/").expiresAt(expiry)
             .apply {
               if (url.isHttps) secure()
-              if (httpOnly) httpOnly()
+              if (cookie.httpOnly) httpOnly()
             }.build()
-        cookieJar.saveFromResponse(url, listOf(
-          cookie("immich_access_token", token, httpOnly = true),
-          cookie("immich_is_authenticated", "true", httpOnly = false),
-          cookie("immich_auth_type", "password", httpOnly = true),
-        ))
+        })
       }
     }
   }
@@ -300,9 +312,6 @@ object HttpClientManager {
     private var serverUrls = listOf<HttpUrl>()
     private var prefs: SharedPreferences? = null
 
-    companion object {
-      val AUTH_COOKIE_NAMES = setOf("immich_access_token", "immich_is_authenticated", "immich_auth_type")
-    }
 
     fun init(prefs: SharedPreferences) {
       this.prefs = prefs
@@ -344,11 +353,11 @@ object HttpClientManager {
       val serverHosts = serverUrls.map { it.host }.toSet()
       val now = System.currentTimeMillis()
       val sourceCookies = store
-        .filter { it.name in AUTH_COOKIE_NAMES && it.domain in serverHosts && it.expiresAt > now }
+        .filter { it.name in AuthCookie.names && it.domain in serverHosts && it.expiresAt > now }
         .associateBy { it.name }
 
       if (sourceCookies.isEmpty()) {
-        return store.removeAll { it.name in AUTH_COOKIE_NAMES && it.domain in serverHosts }
+        return store.removeAll { it.name in AuthCookie.names && it.domain in serverHosts }
       }
 
       var changed = false

@@ -5,6 +5,28 @@ let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
 let SERVER_URLS_KEY = "immich.server_urls"
 let APP_GROUP = "group.app.immich.share"
+let COOKIE_EXPIRY_DAYS: TimeInterval = 400
+
+enum AuthCookie: CaseIterable {
+  case accessToken, isAuthenticated, authType
+
+  var name: String {
+    switch self {
+    case .accessToken: return "immich_access_token"
+    case .isAuthenticated: return "immich_is_authenticated"
+    case .authType: return "immich_auth_type"
+    }
+  }
+
+  var httpOnly: Bool {
+    switch self {
+    case .accessToken, .authType: return true
+    case .isAuthenticated: return false
+    }
+  }
+
+  static let names: Set<String> = Set(allCases.map(\.name))
+}
 
 extension UserDefaults {
   static let group = UserDefaults(suiteName: APP_GROUP)!
@@ -48,9 +70,9 @@ class URLSessionManager: NSObject {
     Self.serverUrls = UserDefaults.group.stringArray(forKey: SERVER_URLS_KEY) ?? []
     NotificationCenter.default.addObserver(
       Self.self,
-      selector: #selector(cookiesDidChange),
+      selector: #selector(Self.cookiesDidChange),
       name: NSHTTPCookieManagerCookiesChangedNotification,
-      object: cookieStorage
+      object: Self.cookieStorage
     )
   }
 
@@ -71,13 +93,12 @@ class URLSessionManager: NSObject {
   }
 
   private static func syncAuthCookies() {
-    let authCookieNames: Set<String> = ["immich_access_token", "immich_is_authenticated", "immich_auth_type"]
     let serverHosts = Set(serverUrls.compactMap { URL(string: $0)?.host })
     let allCookies = cookieStorage.cookies ?? []
     let now = Date()
 
     let serverAuthCookies = allCookies.filter {
-      authCookieNames.contains($0.name) && serverHosts.contains($0.domain)
+      AuthCookie.names.contains($0.name) && serverHosts.contains($0.domain)
     }
 
     var sourceCookies: [String: HTTPCookie] = [:]
@@ -111,7 +132,7 @@ class URLSessionManager: NSObject {
           .value: source.value,
           .domain: domain,
           .path: "/",
-          .expires: source.expiresDate ?? Date().addingTimeInterval(400 * 24 * 60 * 60),
+          .expires: source.expiresDate ?? Date().addingTimeInterval(COOKIE_EXPIRY_DAYS * 24 * 60 * 60),
         ]
         if isSecure { properties[.secure] = "TRUE" }
         if source.isHTTPOnly { properties[.init("HttpOnly")] = "TRUE" }
