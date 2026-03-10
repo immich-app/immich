@@ -38,7 +38,6 @@ private const val CERT_ALIAS = "client_cert"
 private const val PREFS_NAME = "immich.ssl"
 private const val PREFS_CERT_ALIAS = "immich.client_cert"
 private const val PREFS_HEADERS = "immich.request_headers"
-private const val PREFS_SERVER_URL = "immich.server_url"
 private const val PREFS_SERVER_URLS = "immich.server_urls"
 private const val PREFS_COOKIES = "immich.cookies"
 
@@ -177,17 +176,15 @@ object HttpClientManager {
       val newHeaders = builder.build()
 
       val headersChanged = headers != newHeaders
-      val newUrl = serverUrls.firstOrNull()
-      val urlChanged = newUrl != prefs.getString(PREFS_SERVER_URL, null)
+      val urlsChanged = Json.encodeToString(serverUrls) != prefs.getString(PREFS_SERVER_URLS, null)
 
       headers = newHeaders
       cookieJar.setServerUrls(serverUrls)
 
-      if (headersChanged || urlChanged) {
+      if (headersChanged || urlsChanged) {
         prefs.edit {
           putString(PREFS_HEADERS, Json.encodeToString(headerMap))
           putString(PREFS_SERVER_URLS, Json.encodeToString(serverUrls))
-          if (newUrl != null) putString(PREFS_SERVER_URL, newUrl) else remove(PREFS_SERVER_URL)
         }
       }
     }
