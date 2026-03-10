@@ -19,7 +19,6 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -248,11 +247,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) _viewer.setControls(false);
-
-      final heroTag = ref.read(assetViewerProvider).currentAsset?.heroTag;
-      if (heroTag != null) {
-        ref.read(videoPlayerProvider(heroTag).notifier).pause();
-      }
       return;
     }
 
