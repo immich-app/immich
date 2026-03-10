@@ -26,8 +26,8 @@ class NetworkRepository {
     }
   }
 
-  static Future<void> setHeaders(Map<String, String> headers, List<String> serverUrls) async {
-    await networkApi.setRequestHeaders(headers, serverUrls);
+  static Future<void> setHeaders(Map<String, String> headers, List<String> serverUrls, {String? token}) async {
+    await networkApi.setRequestHeaders(headers, serverUrls, token);
     if (Platform.isIOS) {
       await init();
     }

@@ -25,6 +25,7 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/platform/network_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -115,7 +116,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     if (accessToken != null && accessToken.isNotEmpty) {
       final serverUrls = ApiService.getServerUrls();
       if (serverUrls.isNotEmpty) {
-        await networkApi.bootstrapCookies(accessToken, serverUrls);
+        await NetworkRepository.setHeaders(ApiService.getRequestHeaders(), serverUrls, token: accessToken);
       }
     }
   }

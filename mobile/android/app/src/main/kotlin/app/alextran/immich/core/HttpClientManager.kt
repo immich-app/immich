@@ -168,7 +168,7 @@ object HttpClientManager {
     synchronized(this) { clientChangedListeners.add(listener) }
   }
 
-  fun setRequestHeaders(headerMap: Map<String, String>, serverUrls: List<String>) {
+  fun setRequestHeaders(headerMap: Map<String, String>, serverUrls: List<String>, token: String?) {
     synchronized(this) {
       val builder = Headers.Builder()
       headerMap.forEach { (key, value) -> builder[key] = value }
@@ -186,23 +186,23 @@ object HttpClientManager {
           putString(PREFS_SERVER_URLS, Json.encodeToString(serverUrls))
         }
       }
-    }
-  }
 
-  fun bootstrapCookies(token: String, serverUrls: List<String>) {
-    val url = serverUrls.firstNotNullOfOrNull { it.toHttpUrlOrNull() } ?: return
-    val expiry = System.currentTimeMillis() + 400L * 24 * 60 * 60 * 1000
-    fun cookie(name: String, value: String, httpOnly: Boolean) =
-      Cookie.Builder().name(name).value(value).domain(url.host).path("/").expiresAt(expiry)
-        .apply {
-          if (url.isHttps) secure()
-          if (httpOnly) httpOnly()
-        }.build()
-    cookieJar.saveFromResponse(url, listOf(
-      cookie("immich_access_token", token, httpOnly = true),
-      cookie("immich_is_authenticated", "true", httpOnly = false),
-      cookie("immich_auth_type", "password", httpOnly = true),
-    ))
+      if (token != null) {
+        val url = serverUrls.firstNotNullOfOrNull { it.toHttpUrlOrNull() } ?: return
+        val expiry = System.currentTimeMillis() + 400L * 24 * 60 * 60 * 1000
+        fun cookie(name: String, value: String, httpOnly: Boolean) =
+          Cookie.Builder().name(name).value(value).domain(url.host).path("/").expiresAt(expiry)
+            .apply {
+              if (url.isHttps) secure()
+              if (httpOnly) httpOnly()
+            }.build()
+        cookieJar.saveFromResponse(url, listOf(
+          cookie("immich_access_token", token, httpOnly = true),
+          cookie("immich_is_authenticated", "true", httpOnly = false),
+          cookie("immich_auth_type", "password", httpOnly = true),
+        ))
+      }
+    }
   }
 
   fun loadCookieHeader(url: String): String? {

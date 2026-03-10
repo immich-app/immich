@@ -301,37 +301,14 @@ class NetworkApi {
     }
   }
 
-  Future<void> setRequestHeaders(Map<String, String> headers, List<String> serverUrls) async {
+  Future<void> setRequestHeaders(Map<String, String> headers, List<String> serverUrls, String? token) async {
     final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NetworkApi.setRequestHeaders$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[headers, serverUrls]);
-    final List<Object?>? pigeonVar_replyList =
-        await pigeonVar_sendFuture as List<Object?>?;
-    if (pigeonVar_replyList == null) {
-      throw _createConnectionError(pigeonVar_channelName);
-    } else if (pigeonVar_replyList.length > 1) {
-      throw PlatformException(
-        code: pigeonVar_replyList[0]! as String,
-        message: pigeonVar_replyList[1] as String?,
-        details: pigeonVar_replyList[2],
-      );
-    } else {
-      return;
-    }
-  }
-
-  Future<void> bootstrapCookies(String token, List<String> serverUrls) async {
-    final String pigeonVar_channelName = 'dev.flutter.pigeon.immich_mobile.NetworkApi.bootstrapCookies$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[token, serverUrls]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[headers, serverUrls, token]);
     final List<Object?>? pigeonVar_replyList =
         await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {

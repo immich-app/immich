@@ -79,11 +79,7 @@ private class NetworkApiImpl : NetworkApi {
     return HttpClientManager.getClientPointer()
   }
 
-  override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>) {
-    HttpClientManager.setRequestHeaders(headers, serverUrls)
-  }
-
-  override fun bootstrapCookies(token: String, serverUrls: List<String>) {
-    HttpClientManager.bootstrapCookies(token, serverUrls)
+  override fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>, token: String?) {
+    HttpClientManager.setRequestHeaders(headers, serverUrls, token)
   }
 }

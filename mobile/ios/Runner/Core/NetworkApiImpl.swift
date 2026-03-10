@@ -58,39 +58,39 @@ class NetworkApiImpl: NetworkApi {
     return Int64(Int(bitPattern: pointer))
   }
   
-  func setRequestHeaders(headers: [String : String], serverUrls: [String]) throws {
+  func setRequestHeaders(headers: [String : String], serverUrls: [String], token: String?) throws {
     URLSessionManager.setServerUrls(serverUrls)
+
+    if let token = token {
+      let expiry = Date().addingTimeInterval(400 * 24 * 60 * 60)
+      for serverUrl in serverUrls {
+        guard let url = URL(string: serverUrl), let domain = url.host else { continue }
+        let isSecure = serverUrl.hasPrefix("https")
+        let cookies: [(String, String, Bool)] = [
+          ("immich_access_token", token, true),
+          ("immich_is_authenticated", "true", false),
+          ("immich_auth_type", "password", true),
+        ]
+        for (name, value, httpOnly) in cookies {
+          var properties: [HTTPCookiePropertyKey: Any] = [
+            .name: name,
+            .value: value,
+            .domain: domain,
+            .path: "/",
+            .expires: expiry,
+          ]
+          if isSecure { properties[.secure] = "TRUE" }
+          if httpOnly { properties[.init("HttpOnly")] = "TRUE" }
+          if let cookie = HTTPCookie(properties: properties) {
+            URLSessionManager.cookieStorage.setCookie(cookie)
+          }
+        }
+      }
+    }
 
     if headers != UserDefaults.group.dictionary(forKey: HEADERS_KEY) as? [String: String] {
       UserDefaults.group.set(headers, forKey: HEADERS_KEY)
       URLSessionManager.shared.recreateSession()
-    }
-  }
-
-  func bootstrapCookies(token: String, serverUrls: [String]) throws {
-    let expiry = Date().addingTimeInterval(400 * 24 * 60 * 60)
-    for serverUrl in serverUrls {
-      guard let url = URL(string: serverUrl), let domain = url.host else { continue }
-      let isSecure = serverUrl.hasPrefix("https")
-      let cookies: [(String, String, Bool)] = [
-        ("immich_access_token", token, true),
-        ("immich_is_authenticated", "true", false),
-        ("immich_auth_type", "password", true),
-      ]
-      for (name, value, httpOnly) in cookies {
-        var properties: [HTTPCookiePropertyKey: Any] = [
-          .name: name,
-          .value: value,
-          .domain: domain,
-          .path: "/",
-          .expires: expiry,
-        ]
-        if isSecure { properties[.secure] = "TRUE" }
-        if httpOnly { properties[.init("HttpOnly")] = "TRUE" }
-        if let cookie = HTTPCookie(properties: properties) {
-          URLSessionManager.cookieStorage.setCookie(cookie)
-        }
-      }
     }
   }
 }

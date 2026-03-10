@@ -184,8 +184,7 @@ interface NetworkApi {
   fun removeCertificate(callback: (Result<Unit>) -> Unit)
   fun hasCertificate(): Boolean
   fun getClientPointer(): Long
-  fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>)
-  fun bootstrapCookies(token: String, serverUrls: List<String>)
+  fun setRequestHeaders(headers: Map<String, String>, serverUrls: List<String>, token: String?)
 
   companion object {
     /** The codec used by NetworkApi. */
@@ -288,27 +287,9 @@ interface NetworkApi {
             val args = message as List<Any?>
             val headersArg = args[0] as Map<String, String>
             val serverUrlsArg = args[1] as List<String>
+            val tokenArg = args[2] as String?
             val wrapped: List<Any?> = try {
-              api.setRequestHeaders(headersArg, serverUrlsArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              NetworkPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NetworkApi.bootstrapCookies$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val tokenArg = args[0] as String
-            val serverUrlsArg = args[1] as List<String>
-            val wrapped: List<Any?> = try {
-              api.bootstrapCookies(tokenArg, serverUrlsArg)
+              api.setRequestHeaders(headersArg, serverUrlsArg, tokenArg)
               listOf(null)
             } catch (exception: Throwable) {
               NetworkPigeonUtils.wrapError(exception)
