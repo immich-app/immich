@@ -215,8 +215,9 @@ export const pageUtils = {
     await page.getByText('Confirm').click();
   },
   async selectDay(page: Page, day: string) {
-    await page.getByTitle(day).hover();
-    await page.locator('[data-group] .w-8').click();
+    const section = page.getByTitle(day).locator('xpath=ancestor::section[@data-group]');
+    await section.hover();
+    await section.locator('.w-8').click();
   },
   async pauseTestDebug() {
     console.log('NOTE: pausing test indefinately for debug');

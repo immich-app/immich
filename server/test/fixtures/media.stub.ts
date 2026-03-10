@@ -221,6 +221,14 @@ export const probeStub = {
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecName: 'aac', bitrate: 100 }],
   }),
+  audioStreamMp3: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ index: 1, codecName: 'mp3', bitrate: 100 }],
+  }),
+  audioStreamOpus: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [{ index: 1, codecName: 'opus', bitrate: 100 }],
+  }),
   audioStreamUnknown: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [
