@@ -20,6 +20,7 @@
         {
           asset: TimelineAsset;
           position: CommonPosition;
+          actuallyIntersecting: boolean;
         },
       ]
     >;
@@ -41,6 +42,7 @@
   {#each filterIntersecting(viewerAssets) as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
+    {@const actuallyIntersecting = viewerAsset.actuallyIntersecting!}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div
@@ -53,7 +55,7 @@
       out:scale|global={{ start: 0.1, duration: scaleDuration }}
       animate:flip={{ duration: transitionDuration }}
     >
-      {@render thumbnail({ asset, position })}
+      {@render thumbnail({ asset, position, actuallyIntersecting })}
       {@render customThumbnailLayout?.(asset)}
     </div>
   {/each}

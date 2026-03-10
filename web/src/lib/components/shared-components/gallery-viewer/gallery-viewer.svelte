@@ -14,6 +14,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
+  import { TUNABLES } from '$lib/utils/tunables';
   import { deleteAssets } from '$lib/utils/actions';
   import {
     archiveAssets,
@@ -88,12 +89,25 @@
     return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
   };
 
+  const isActuallyIntersecting = (i: number) => {
+    const geo = geometry;
+    const top = geo.getTop(i) + pageHeaderOffset;
+    const bottom = top + geo.getHeight(i);
+    const viewportTop = (scrollTop || 0) - slidingWindowOffset;
+    const viewportBottom = viewportTop + viewport.height + slidingWindowOffset;
+    return top < viewportBottom && bottom > viewportTop;
+  };
+
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let scrollTop = $state(0);
+  const {
+    TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
+  } = TUNABLES;
+
   let slidingWindow = $derived.by(() => {
-    const top = (scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + viewport.height + slidingWindowOffset;
+    const top = (scrollTop || 0) - slidingWindowOffset - INTERSECTION_EXPAND_TOP;
+    const bottom = top + viewport.height + slidingWindowOffset + INTERSECTION_EXPAND_BOTTOM;
     return {
       top,
       bottom,
@@ -391,6 +405,7 @@
             asset={currentAsset}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
+            actuallyIntersecting={isActuallyIntersecting(i)}
             thumbnailWidth={geometry.getWidth(i)}
             thumbnailHeight={geometry.getHeight(i)}
           />

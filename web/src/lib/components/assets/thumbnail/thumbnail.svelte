@@ -34,6 +34,7 @@
     thumbnailSize?: number;
     thumbnailWidth?: number;
     thumbnailHeight?: number;
+    actuallyIntersecting?: boolean;
     selected?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
@@ -56,6 +57,7 @@
     thumbnailSize = undefined,
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
+    actuallyIntersecting = true,
     selected = false,
     selectionCandidate = false,
     disabled = false,
@@ -81,6 +83,17 @@
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
+
+  let loadedEffectRan = $state(false);
+  let skipFade = $state(false);
+  $effect(() => {
+    if (loaded && !loadedEffectRan) {
+      loadedEffectRan = true;
+      if (!actuallyIntersecting) {
+        skipFade = true;
+      }
+    }
+  });
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -300,7 +313,7 @@
         <canvas
           use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
           data-testid="thumbhash"
-          class="absolute top-0 object-cover group-focus-visible:rounded-lg"
+          class={['absolute top-0 object-cover group-focus-visible:rounded-lg', { hidden: skipFade }]}
           style:width="{width}px"
           style:height="{height}px"
           class:rounded-xl={selected}

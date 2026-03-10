@@ -14,7 +14,17 @@
   import type { Snippet } from 'svelte';
 
   type Props = {
-    thumbnail: Snippet<[{ asset: TimelineAsset; position: CommonPosition; dayGroup: DayGroup; groupIndex: number }]>;
+    thumbnail: Snippet<
+      [
+        {
+          asset: TimelineAsset;
+          position: CommonPosition;
+          dayGroup: DayGroup;
+          groupIndex: number;
+          actuallyIntersecting: boolean;
+        },
+      ]
+    >;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
     singleSelect: boolean;
     assetInteraction: AssetInteraction;
@@ -99,8 +109,8 @@
       width={dayGroup.width}
       {customThumbnailLayout}
     >
-      {#snippet thumbnail({ asset, position })}
-        {@render thumbnailWithGroup({ asset, position, dayGroup, groupIndex })}
+      {#snippet thumbnail({ asset, position, actuallyIntersecting })}
+        {@render thumbnailWithGroup({ asset, position, dayGroup, groupIndex, actuallyIntersecting })}
       {/snippet}
     </AssetLayout>
   </section>

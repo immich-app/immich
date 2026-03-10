@@ -1,15 +1,15 @@
 import type { CommonPosition } from '$lib/utils/layout-utils';
 
 import type { DayGroup } from './day-group.svelte';
-import { calculateViewerAssetIntersecting } from './internal/intersection-support.svelte';
+import { Intersection, calculateViewerAssetIntersecting } from './internal/intersection-support.svelte';
 import type { TimelineAsset } from './types';
 
 export class ViewerAsset {
   readonly #group: DayGroup;
 
-  intersecting = $derived.by(() => {
+  #intersection = $derived.by(() => {
     if (!this.position) {
-      return false;
+      return Intersection.NONE;
     }
 
     const store = this.#group.monthGroup.timelineManager;
@@ -17,6 +17,14 @@ export class ViewerAsset {
 
     return calculateViewerAssetIntersecting(store, positionTop, this.position.height);
   });
+
+  get intersecting() {
+    return this.#intersection !== Intersection.NONE;
+  }
+
+  get actuallyIntersecting() {
+    return this.#intersection === Intersection.ACTUAL;
+  }
 
   position: CommonPosition | undefined = $state.raw();
   asset: TimelineAsset = <TimelineAsset>$state();
