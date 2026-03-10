@@ -71,7 +71,7 @@ class URLSessionManager: NSObject {
     NotificationCenter.default.addObserver(
       Self.self,
       selector: #selector(Self.cookiesDidChange),
-      name: NSHTTPCookieManagerCookiesChangedNotification,
+      name: NSNotification.Name.NSHTTPCookieManagerCookiesChanged,
       object: Self.cookieStorage
     )
   }
