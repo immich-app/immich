@@ -590,11 +590,10 @@ class TransformManager implements EditToolManager {
   }
 
   getMousePosition(e: MouseEvent) {
-    const clientRect = this.cropAreaEl?.getBoundingClientRect();
-    if (!clientRect) {
-      // This basically is undefined behavior
-      return { mouseX: e.clientX, mouseY: e.clientY };
+    if (!this.cropAreaEl) {
+      throw new Error('Crop area is undefined');
     }
+    const clientRect = this.cropAreaEl.getBoundingClientRect();
 
     switch (this.normalizedRotation) {
       case 90: {
