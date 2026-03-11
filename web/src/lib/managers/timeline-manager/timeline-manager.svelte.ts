@@ -596,6 +596,7 @@ export class TimelineManager extends VirtualScrollManager {
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
       (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
     );
   }

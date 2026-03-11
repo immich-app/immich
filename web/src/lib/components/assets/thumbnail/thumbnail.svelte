@@ -334,27 +334,27 @@
 
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
-          <div class="z-2 absolute bottom-2 start-2">
+          <div class="z-2 absolute bottom-2 inset-s-2">
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !!assetOwner}
-          <div class="z-2 absolute bottom-1 end-2 max-w-[50%]">
-            <p class="text-xs font-medium text-white drop-shadow-lg max-w-[100%] truncate">
+          <div class="z-2 absolute bottom-1 inset-e-2 max-w-[50%]">
+            <p class="text-xs font-medium text-white drop-shadow-lg max-w-full truncate">
               {assetOwner.name}
             </p>
           </div>
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-          <div class={['z-2 absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['z-2 absolute inset-s-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon icon={mdiRotate360} size="24" />
             </span>
@@ -362,7 +362,7 @@
         {/if}
 
         {#if asset.isImage && asset.duration && !asset.duration.includes('0:00:00.000')}
-          <div class="z-2 absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon icon={mouseOver ? mdiMotionPauseOutline : mdiFileGifBox} size="24" />
             </span>
@@ -374,7 +374,7 @@
           <div
             class={[
               'z-2 absolute flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.isImage && !asset.livePhotoVideoId ? 'top-0 end-0' : 'top-7 end-1',
+              asset.isImage && !asset.livePhotoVideoId ? 'top-0 inset-e-0' : 'top-7 inset-e-1',
             ]}
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">

@@ -19,7 +19,6 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -248,11 +247,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
     if (scaleState != PhotoViewScaleState.initial) {
       if (_dragStart == null) _viewer.setControls(false);
-
-      final heroTag = ref.read(assetViewerProvider).currentAsset?.heroTag;
-      if (heroTag != null) {
-        ref.read(videoPlayerProvider(heroTag).notifier).pause();
-      }
       return;
     }
 
@@ -292,7 +286,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required PhotoViewHeroAttributes? heroAttributes,
     required bool isCurrent,
     required bool isPlayingMotionVideo,
-    required BoxDecoration backgroundDecoration,
   }) {
     final size = context.sizeData;
 
@@ -303,7 +296,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         imageProvider: getFullImageProvider(asset, size: size),
         heroAttributes: heroAttributes,
         loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
-        backgroundDecoration: backgroundDecoration,
         gaplessPlayback: true,
         filterQuality: FilterQuality.high,
         tightMode: true,
@@ -345,7 +337,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
-      backgroundDecoration: backgroundDecoration,
       child: NativeVideoViewer(
         key: _NativeVideoViewerKey(asset.heroTag),
         asset: asset,
@@ -397,41 +388,43 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         SingleChildScrollView(
           controller: _scrollController,
           physics: const SnapScrollPhysics(),
-          child: Stack(
-            children: [
-              SizedBox(
-                width: viewportWidth,
-                height: viewportHeight,
-                child: _buildPhotoView(
-                  asset: displayAsset,
-                  heroAttributes: isCurrent
-                      ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}')
-                      : null,
-                  isCurrent: isCurrent,
-                  isPlayingMotionVideo: isPlayingMotionVideo,
-                  backgroundDecoration: BoxDecoration(color: _showingDetails ? Colors.black : Colors.transparent),
+          child: ColoredBox(
+            color: _showingDetails ? Colors.black : Colors.transparent,
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: viewportWidth,
+                  height: viewportHeight,
+                  child: _buildPhotoView(
+                    asset: displayAsset,
+                    heroAttributes: isCurrent
+                        ? PhotoViewHeroAttributes(tag: '${asset.heroTag}_${widget.heroOffset}')
+                        : null,
+                    isCurrent: isCurrent,
+                    isPlayingMotionVideo: isPlayingMotionVideo,
+                  ),
                 ),
-              ),
-              IgnorePointer(
-                ignoring: !_showingDetails,
-                child: Column(
-                  children: [
-                    SizedBox(height: detailsOffset),
-                    GestureDetector(
-                      onVerticalDragStart: _beginDrag,
-                      onVerticalDragUpdate: _updateDrag,
-                      onVerticalDragEnd: _endDrag,
-                      onVerticalDragCancel: _onDragCancel,
-                      child: AnimatedOpacity(
-                        opacity: _showingDetails ? 1.0 : 0.0,
-                        duration: Durations.short2,
-                        child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                IgnorePointer(
+                  ignoring: !_showingDetails,
+                  child: Column(
+                    children: [
+                      SizedBox(height: detailsOffset),
+                      GestureDetector(
+                        onVerticalDragStart: _beginDrag,
+                        onVerticalDragUpdate: _updateDrag,
+                        onVerticalDragEnd: _endDrag,
+                        onVerticalDragCancel: _onDragCancel,
+                        child: AnimatedOpacity(
+                          opacity: _showingDetails ? 1.0 : 0.0,
+                          duration: Durations.short2,
+                          child: AssetDetails(asset: displayAsset, minHeight: viewportHeight - snapTarget),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         if (stackChildren != null && stackChildren.isNotEmpty)

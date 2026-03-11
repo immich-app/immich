@@ -385,7 +385,7 @@ class TransformManager implements EditToolManager {
 
     let w = newWidth;
     let h = newHeight;
-    
+
     const [ratioWidth, ratioHeight] = aspectRatio.split(':').map(Number);
     const aspectMultiplier = ratioWidth && ratioHeight ? ratioWidth / ratioHeight : w / h;
 
@@ -627,27 +627,31 @@ class TransformManager implements EditToolManager {
     }
 
     switch (this.normalizedRotation) {
-      case 90:
+      case 90: {
         return {
           mouseX: e.clientY - clientRect.top,
           mouseY: -e.clientX + clientRect.right,
         };
-      case 180:
+      }
+      case 180: {
         return {
           mouseX: -e.clientX + clientRect.right,
           mouseY: -e.clientY + clientRect.bottom,
         };
-      case 270:
+      }
+      case 270: {
         return {
           mouseX: -e.clientY + clientRect.bottom,
           mouseY: e.clientX - clientRect.left,
         };
-      case 0:
-      default:
+      }
+      // also case 0:
+      default: {
         return {
           mouseX: e.clientX - clientRect.left,
           mouseY: e.clientY - clientRect.top,
         };
+      }
     }
   }
 
@@ -677,41 +681,39 @@ class TransformManager implements EditToolManager {
     const minSize = 50;
     let newRegion = { ...currentCrop };
 
-    let desiredX;
-    let desiredY;
-    let desiredWidth: number;
-    let desiredHeight: number;
+    let desiredWidth = width;
+    let desiredHeight = height;
 
     // Width
     switch (this.resizeSide) {
       case ResizeBoundary.Left:
       case ResizeBoundary.TopLeft:
-      case ResizeBoundary.BottomLeft:
+      case ResizeBoundary.BottomLeft: {
         desiredWidth = Math.max(minSize, width + (x - Math.max(mouseX, 0)));
         break;
+      }
       case ResizeBoundary.Right:
       case ResizeBoundary.TopRight:
-      case ResizeBoundary.BottomRight:
+      case ResizeBoundary.BottomRight: {
         desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
         break;
-      default:
-        desiredWidth = width;
+      }
     }
 
     // Height
     switch (this.resizeSide) {
       case ResizeBoundary.Top:
       case ResizeBoundary.TopLeft:
-      case ResizeBoundary.TopRight:
+      case ResizeBoundary.TopRight: {
         desiredHeight = Math.max(minSize, height + (y - Math.max(mouseY, 0)));
         break;
+      }
       case ResizeBoundary.Bottom:
       case ResizeBoundary.BottomLeft:
-      case ResizeBoundary.BottomRight:
+      case ResizeBoundary.BottomRight: {
         desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
         break;
-      default:
-        desiredHeight = height;
+      }
     }
 
     // Old
