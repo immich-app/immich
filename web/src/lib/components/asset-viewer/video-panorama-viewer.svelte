@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getAssetPlaybackUrl, getAssetMediaUrl } from '$lib/utils';
-  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
+  import { getAssetPlaybackUrl, getAssetUrl } from '$lib/utils';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -25,7 +25,7 @@
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
     <PhotoSphereViewer
       panorama={{ source: getAssetPlaybackUrl({ id: asset.id }) }}
-      originalPanorama={{ source: getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Original }) }}
+      originalPanorama={{ source: getAssetUrl({ asset, forceOriginal: true })! }}
       plugins={[videoPlugin]}
       {adapter}
       navbar
