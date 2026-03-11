@@ -1816,6 +1816,22 @@ describe(MetadataService.name, () => {
       expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { Rating: 0 });
       expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, ['rating']);
     });
+
+    it('should not unlock properties with empty values that exiftool cannot persist', async () => {
+      const asset = factory.jobAssets.sidecarWrite();
+      asset.exifInfo.description = '';
+
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['description']);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(asset);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+        Description: '',
+        ImageDescription: '',
+      });
+      expect(mocks.asset.unlockProperties).not.toHaveBeenCalled();
+    });
   });
 
   describe('firstDateTime', () => {
