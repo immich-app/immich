@@ -1,66 +1,56 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
+  import { thumbhash } from '$lib/actions/thumbhash';
   import { zoomImageAction } from '$lib/actions/zoom-image';
+  import AdaptiveImage from '$lib/components/AdaptiveImage.svelte';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/ocr-bounding-box.svelte';
-  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
-  import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import { imageManager } from '$lib/managers/ImageManager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
-  import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
-  import { getAssetUrl, targetImageSize as getTargetImageSize, handlePromiseError } from '$lib/utils';
+  import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
-  import { getContentMetrics, type ContentMetrics } from '$lib/utils/container-utils';
+  import { getNaturalSize, scaleToFit, type ContentMetrics } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, type SharedLinkResponseDto } from '@immich/sdk';
-  import { LoadingSpinner, toastManager } from '@immich/ui';
+  import { type SharedLinkResponseDto } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
-  import { fade } from 'svelte/transition';
   import type { AssetCursor } from './asset-viewer.svelte';
 
   interface Props {
     cursor: AssetCursor;
-    element?: HTMLDivElement | undefined;
-    haveFadeTransition?: boolean;
-    sharedLink?: SharedLinkResponseDto | undefined;
-    onPreviousAsset?: (() => void) | null;
-    onNextAsset?: (() => void) | null;
+    element?: HTMLDivElement;
+    sharedLink?: SharedLinkResponseDto;
+    onReady?: () => void;
+    onError?: () => void;
+    onSwipe?: (event: SwipeCustomEvent) => void;
   }
 
-  let {
-    cursor,
-    element = $bindable(),
-    haveFadeTransition = true,
-    sharedLink = undefined,
-    onPreviousAsset = null,
-    onNextAsset = null,
-  }: Props = $props();
+  let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
   const asset = $derived(cursor.current);
 
-  let imageLoaded: boolean = $state(false);
-  let originalImageLoaded: boolean = $state(false);
-  let imageError: boolean = $state(false);
   let visibleImageReady: boolean = $state(false);
 
-  let loader = $state<HTMLImageElement>();
-
+  let previousAssetId: string | undefined;
   $effect.pre(() => {
-    void asset.id;
+    const id = asset.id;
+    if (id === previousAssetId) {
+      return;
+    }
+    previousAssetId = id;
     untrack(() => {
       assetViewerManager.resetZoomState();
+      visibleImageReady = false;
       $boundingBoxesArray = [];
     });
   });
@@ -69,28 +59,30 @@
     $boundingBoxesArray = [];
   });
 
+  let containerWidth = $state(0);
+  let containerHeight = $state(0);
+
+  const container = $derived({
+    width: containerWidth,
+    height: containerHeight,
+  });
+
   const overlayMetrics = $derived.by((): ContentMetrics => {
     if (!assetViewerManager.imgRef || !visibleImageReady) {
       return { contentWidth: 0, contentHeight: 0, offsetX: 0, offsetY: 0 };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [containerWidth, containerHeight]; // trigger recomputation on resize
-
-    const { contentWidth, contentHeight, offsetX, offsetY } = getContentMetrics(assetViewerManager.imgRef);
-    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
-
+    const natural = getNaturalSize(assetViewerManager.imgRef);
+    const scaled = scaleToFit(natural, container);
     return {
-      contentWidth: contentWidth * currentZoom,
-      contentHeight: contentHeight * currentZoom,
-      offsetX: offsetX * currentZoom + currentPositionX,
-      offsetY: offsetY * currentZoom + currentPositionY,
+      contentWidth: scaled.width,
+      contentHeight: scaled.height,
+      offsetX: 0,
+      offsetY: 0,
     };
   });
 
-  let ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
-
-  let isOcrActive = $derived(ocrManager.showOverlay);
+  const ocrBoxes = $derived(ocrManager.showOverlay ? getOcrBoundingBoxes(ocrManager.data, overlayMetrics) : []);
 
   const onCopy = async () => {
     if (!canCopyImageToClipboard() || !assetViewerManager.imgRef) {
@@ -128,29 +120,15 @@
     handlePromiseError(onCopy());
   };
 
-  const onSwipe = (event: SwipeCustomEvent) => {
-    if (assetViewerManager.zoom > 1) {
-      return;
-    }
+  let currentPreviewUrl = $state<string>();
 
-    if (ocrManager.showOverlay) {
-      return;
-    }
-
-    if (onNextAsset && event.detail.direction === 'left') {
-      onNextAsset();
-    }
-
-    if (onPreviousAsset && event.detail.direction === 'right') {
-      onPreviousAsset();
-    }
+  const onUrlChange = (url: string) => {
+    currentPreviewUrl = url;
   };
 
-  const targetImageSize = $derived(getTargetImageSize(asset, originalImageLoaded || assetViewerManager.zoom > 1));
-
   $effect(() => {
-    if (imageLoaderUrl) {
-      void cast(imageLoaderUrl);
+    if (currentPreviewUrl) {
+      void cast(currentPreviewUrl);
     }
   });
 
@@ -168,37 +146,9 @@
     }
   };
 
-  const onload = () => {
-    imageLoaded = true;
-    originalImageLoaded = targetImageSize === AssetMediaSize.Fullsize || targetImageSize === 'original';
-  };
-
-  const onerror = () => {
-    imageError = imageLoaded = true;
-  };
-
-  onDestroy(() => imageManager.cancel(asset, targetImageSize));
-
-  let imageLoaderUrl = $derived(
-    getAssetUrl({ asset, sharedLink, forceOriginal: originalImageLoaded || assetViewerManager.zoom > 1 }),
+  const blurredSlideshow = $derived(
+    $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground && !!asset.thumbhash,
   );
-
-  let containerWidth = $state(0);
-  let containerHeight = $state(0);
-
-  let lastUrl: string | undefined;
-
-  $effect(() => {
-    if (lastUrl && lastUrl !== imageLoaderUrl) {
-      untrack(() => {
-        imageLoaded = false;
-        originalImageLoaded = false;
-        imageError = false;
-        visibleImageReady = false;
-      });
-    }
-    lastUrl = imageLoaderUrl;
-  });
 
   const faceToNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -219,9 +169,16 @@
       return;
     }
 
+    const natural = getNaturalSize(assetViewerManager.imgRef);
+    const scaled = scaleToFit(natural, container);
+    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
+
+    const contentOffsetX = (container.width - scaled.width) / 2;
+    const contentOffsetY = (container.height - scaled.height) / 2;
+
     const containerRect = element.getBoundingClientRect();
-    const mouseX = event.clientX - containerRect.left;
-    const mouseY = event.clientY - containerRect.top;
+    const mouseX = (event.clientX - containerRect.left - contentOffsetX * currentZoom - currentPositionX) / currentZoom;
+    const mouseY = (event.clientY - containerRect.top - contentOffsetY * currentZoom - currentPositionY) / currentZoom;
 
     const faceBoxes = getBoundingBox(faces, overlayMetrics);
 
@@ -247,12 +204,7 @@
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
 />
-{#if imageError}
-  <div id="broken-asset" class="h-full w-full">
-    <BrokenAsset class="text-xl h-full w-full" />
-  </div>
-{/if}
-<img bind:this={loader} style="display:none" src={imageLoaderUrl} alt="" aria-hidden="true" {onload} {onerror} />
+
 <div
   bind:this={element}
   class="relative h-full w-full select-none"
@@ -262,36 +214,34 @@
   ondblclick={onZoom}
   onmousemove={handleImageMouseMove}
   onmouseleave={handleImageMouseLeave}
+  use:zoomImageAction={{ disabled: isFaceEditMode.value || ocrManager.showOverlay }}
+  {...useSwipe((event) => onSwipe?.(event))}
 >
-  {#if !imageLoaded}
-    <div id="spinner" class="flex h-full items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  {:else if !imageError}
-    <div
-      use:zoomImageAction={{ disabled: isOcrActive }}
-      {...useSwipe(onSwipe)}
-      class="h-full w-full"
-      transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
-    >
-      {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
-        <img
-          src={imageLoaderUrl}
-          alt=""
-          class="-z-1 absolute top-0 start-0 object-cover h-full w-full blur-lg"
-          draggable="false"
-        />
+  <AdaptiveImage
+    {asset}
+    {sharedLink}
+    {container}
+    objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
+    {onUrlChange}
+    onImageReady={() => {
+      visibleImageReady = true;
+      onReady?.();
+    }}
+    onError={() => {
+      onError?.();
+      onReady?.();
+    }}
+    bind:imgRef={assetViewerManager.imgRef}
+  >
+    {#snippet backdrop()}
+      {#if blurredSlideshow}
+        <canvas
+          use:thumbhash={{ base64ThumbHash: asset.thumbhash! }}
+          class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw"
+        ></canvas>
       {/if}
-      <img
-        bind:this={assetViewerManager.imgRef}
-        src={imageLoaderUrl}
-        onload={() => (visibleImageReady = true)}
-        alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
-          ? 'object-contain'
-          : slideshowLookCssMapping[$slideshowLook]}"
-        draggable="false"
-      />
+    {/snippet}
+    {#snippet overlays()}
       {#each getBoundingBox($boundingBoxesArray, overlayMetrics) as boundingbox, index (boundingbox.id)}
         <div
           class="absolute border-solid border-white border-3 rounded-lg"
@@ -311,23 +261,10 @@
       {#each ocrBoxes as ocrBox (ocrBox.id)}
         <OcrBoundingBox {ocrBox} />
       {/each}
-    </div>
+    {/snippet}
+  </AdaptiveImage>
 
-    {#if isFaceEditMode.value}
-      <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
-    {/if}
+  {#if isFaceEditMode.value && assetViewerManager.imgRef}
+    <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
 </div>
-
-<style>
-  @keyframes delayedVisibility {
-    to {
-      visibility: visible;
-    }
-  }
-  #broken-asset,
-  #spinner {
-    visibility: hidden;
-    animation: 0s linear 0.4s forwards delayedVisibility;
-  }
-</style>

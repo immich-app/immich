@@ -1,3 +1,4 @@
+import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
 import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
@@ -25,9 +26,23 @@ export class AssetViewerManager extends BaseEventManager<Events> {
   #animationFrameId: number | null = null;
 
   imgRef = $state<HTMLImageElement | undefined>();
+  imageLoaderStatus = $state<ImageLoaderStatus | undefined>();
+  #isImageLoading = $derived.by(() => {
+    const quality = this.imageLoaderStatus?.quality;
+    if (!quality) {
+      return false;
+    }
+    const previewOrOriginalReady = quality.preview === 'success' || quality.original === 'success';
+    const loadingOriginal = this.zoom > 1 && quality.original !== 'success';
+    return !previewOrOriginalReady || loadingOriginal;
+  });
   isShowActivityPanel = $state(false);
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
+
+  get isImageLoading() {
+    return this.#isImageLoading;
+  }
 
   get isShowDetailPanel() {
     return isShowDetailPanel.current;
