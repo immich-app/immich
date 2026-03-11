@@ -12,6 +12,8 @@ import app.alextran.immich.connectivity.ConnectivityApiImpl
 import app.alextran.immich.core.HttpClientManager
 import app.alextran.immich.core.ImmichPlugin
 import app.alextran.immich.core.NetworkApiPlugin
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import me.albemala.native_video_player.NativeVideoPlayerPlugin
 import app.alextran.immich.images.LocalImageApi
 import app.alextran.immich.images.LocalImagesImpl
 import app.alextran.immich.images.RemoteImageApi
@@ -31,6 +33,7 @@ class MainActivity : FlutterFragmentActivity() {
   companion object {
     fun registerPlugins(ctx: Context, flutterEngine: FlutterEngine) {
       HttpClientManager.initialize(ctx)
+      NativeVideoPlayerPlugin.dataSourceFactory = { OkHttpDataSource.Factory(HttpClientManager.getClient()) }
       flutterEngine.plugins.add(NetworkApiPlugin())
 
       val messenger = flutterEngine.dartExecutor.binaryMessenger
