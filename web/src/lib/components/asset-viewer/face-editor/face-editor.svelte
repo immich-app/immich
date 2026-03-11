@@ -95,15 +95,15 @@
   });
 
   const setDefaultFaceRectanglePosition = (faceRect: Rect) => {
-      const { offsetX, offsetY } = imageContentMetrics;
+    const { offsetX, offsetY } = imageContentMetrics;
 
-      faceRect.set({
-          top: offsetY + 200,
-          left: offsetX + 200,
-      });
+    faceRect.set({
+      top: offsetY + 200,
+      left: offsetX + 200,
+    });
 
-      faceRect.setCoords();
-      positionFaceSelector();
+    faceRect.setCoords();
+    positionFaceSelector();
   };
 
   $effect(() => {
