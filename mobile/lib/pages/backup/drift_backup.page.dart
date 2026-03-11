@@ -344,6 +344,7 @@ class _RemainderCard extends ConsumerWidget {
                       remainderCount.toString(),
                       style: context.textTheme.titleLarge?.copyWith(
                         color: context.colorScheme.onSurface.withAlpha(syncStatus.isRemoteSyncing ? 50 : 255),
+                        fontFeatures: [const FontFeature.tabularFigures()],
                       ),
                     ),
                     if (syncStatus.isRemoteSyncing)
@@ -483,6 +484,7 @@ class _PreparingStatusState extends ConsumerState {
                     style: context.textTheme.titleMedium?.copyWith(
                       color: context.colorScheme.primary,
                       fontWeight: FontWeight.w600,
+                      fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -507,6 +509,7 @@ class _PreparingStatusState extends ConsumerState {
                   style: context.textTheme.titleMedium?.copyWith(
                     color: context.primaryColor,
                     fontWeight: FontWeight.w600,
+                    fontFeatures: [const FontFeature.tabularFigures()],
                   ),
                 ),
               ],
