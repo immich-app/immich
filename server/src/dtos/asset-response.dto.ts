@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Selectable } from 'kysely';
+import { Selectable, ShallowDehydrateObject } from 'kysely';
 import { AssetFace, AssetFile, Exif, Stack, Tag, User } from 'src/database';
 import { HistoryBuilder, Property } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -14,9 +14,10 @@ import {
 import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { ImageDimensions } from 'src/types';
+import { ImageDimensions, MaybeDehydrated } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { asDateString } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -39,7 +40,7 @@ export class SanitizedAssetResponseDto {
       'The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer\'s local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by "local" days and months.',
     example: '2024-01-15T14:30:00.000Z',
   })
-  localDateTime!: Date;
+  localDateTime!: string;
   @ApiProperty({ description: 'Video duration (for videos)' })
   duration!: string;
   @ApiPropertyOptional({ description: 'Live photo video ID' })
@@ -59,7 +60,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
     description: 'The UTC timestamp when the asset was originally uploaded to Immich.',
     example: '2024-01-15T20:30:00.000Z',
   })
-  createdAt!: Date;
+  createdAt!: string;
   @ApiProperty({ description: 'Device asset ID' })
   deviceAssetId!: string;
   @ApiProperty({ description: 'Device ID' })
@@ -86,7 +87,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
       'The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.',
     example: '2024-01-15T19:30:00.000Z',
   })
-  fileCreatedAt!: Date;
+  fileCreatedAt!: string;
   @ApiProperty({
     type: 'string',
     format: 'date-time',
@@ -94,7 +95,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
       'The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.',
     example: '2024-01-16T10:15:00.000Z',
   })
-  fileModifiedAt!: Date;
+  fileModifiedAt!: string;
   @ApiProperty({
     type: 'string',
     format: 'date-time',
@@ -102,7 +103,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
       'The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.',
     example: '2024-01-16T12:45:30.000Z',
   })
-  updatedAt!: Date;
+  updatedAt!: string;
   @ApiProperty({ description: 'Is favorite' })
   isFavorite!: boolean;
   @ApiProperty({ description: 'Is archived' })
@@ -151,13 +152,13 @@ export type MapAsset = {
   deviceId: string;
   duplicateId: string | null;
   duration: string | null;
-  edits?: AssetEditActionItem[];
+  edits?: ShallowDehydrateObject<AssetEditActionItem>[];
   encodedVideoPath: string | null;
-  exifInfo?: Selectable<Exif> | null;
-  faces?: AssetFace[];
+  exifInfo?: ShallowDehydrateObject<Selectable<Exif>> | null;
+  faces?: ShallowDehydrateObject<AssetFace>[];
   fileCreatedAt: Date;
   fileModifiedAt: Date;
-  files?: AssetFile[];
+  files?: ShallowDehydrateObject<AssetFile>[];
   isExternal: boolean;
   isFavorite: boolean;
   isOffline: boolean;
@@ -167,11 +168,11 @@ export type MapAsset = {
   localDateTime: Date;
   originalFileName: string;
   originalPath: string;
-  owner?: User | null;
+  owner?: ShallowDehydrateObject<User> | null;
   ownerId: string;
-  stack?: Stack | null;
+  stack?: (ShallowDehydrateObject<Stack> & { assets: Stack['assets'] }) | null;
   stackId: string | null;
-  tags?: Tag[];
+  tags?: ShallowDehydrateObject<Tag>[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
   width: number | null;
@@ -197,7 +198,7 @@ export type AssetMapOptions = {
 };
 
 const peopleWithFaces = (
-  faces?: AssetFace[],
+  faces?: MaybeDehydrated<AssetFace>[],
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
 ): PersonWithFacesResponseDto[] => {
@@ -213,7 +214,10 @@ const peopleWithFaces = (
     }
 
     if (!peopleFaces.has(face.person.id)) {
-      peopleFaces.set(face.person.id, { ...mapPerson(face.person), faces: [] });
+      peopleFaces.set(face.person.id, {
+        ...mapPerson(face.person),
+        faces: [],
+      });
     }
     const mappedFace = mapFacesWithoutPerson(face, edits, assetDimensions);
     peopleFaces.get(face.person.id)!.faces.push(mappedFace);
@@ -234,7 +238,7 @@ const mapStack = (entity: { stack?: Stack | null }) => {
   };
 };
 
-export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): AssetResponseDto {
+export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
   if (stripMetadata) {
@@ -243,7 +247,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
       type: entity.type,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
       thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-      localDateTime: entity.localDateTime,
+      localDateTime: asDateString(entity.localDateTime),
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,
       hasMetadata: false,
@@ -257,7 +261,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
 
   return {
     id: entity.id,
-    createdAt: entity.createdAt,
+    createdAt: asDateString(entity.createdAt),
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
@@ -268,10 +272,10 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-    fileCreatedAt: entity.fileCreatedAt,
-    fileModifiedAt: entity.fileModifiedAt,
-    localDateTime: entity.localDateTime,
-    updatedAt: entity.updatedAt,
+    fileCreatedAt: asDateString(entity.fileCreatedAt),
+    fileModifiedAt: asDateString(entity.fileModifiedAt),
+    localDateTime: asDateString(entity.localDateTime),
+    updatedAt: asDateString(entity.updatedAt),
     isFavorite: options.auth?.user.id === entity.ownerId && entity.isFavorite,
     isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
@@ -283,7 +287,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     people: peopleWithFaces(entity.faces, entity.edits, assetDimensions),
     unassignedFaces: entity.faces
       ?.filter((face) => !face.person)
-      .map((a) => mapFacesWithoutPerson(a, entity.edits, assetDimensions)),
+      .map((face) => mapFacesWithoutPerson(face, entity.edits, assetDimensions)),
     checksum: hexOrBufferToBase64(entity.checksum)!,
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
