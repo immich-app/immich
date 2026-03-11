@@ -745,6 +745,7 @@ export class AssetRepository {
     params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
+    const order = options.order ?? 'desc';
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -844,9 +845,10 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .orderBy(sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`, order)
           .orderBy(
             sql.ref(`asset.${options?.field === AssetDateField.CreatedAt ? 'createdAt' : 'fileCreatedAt'}`),
-            options.order ?? 'desc',
+            order,
           ),
       )
       .with('agg', (qb) =>
