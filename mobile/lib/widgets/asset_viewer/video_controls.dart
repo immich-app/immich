@@ -14,6 +14,8 @@ import 'package:immich_mobile/widgets/asset_viewer/animated_play_pause.dart';
 class VideoControls extends HookConsumerWidget {
   final String videoPlayerName;
 
+  static const List<Shadow> _controlShadows = [Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 1))];
+
   const VideoControls({super.key, required this.videoPlayerName});
 
   void _toggle(WidgetRef ref, bool isCasting) {
@@ -70,14 +72,17 @@ class VideoControls extends HookConsumerWidget {
         children: [
           Row(
             children: [
-              IconButton(
-                iconSize: 32,
-                padding: const EdgeInsets.all(12),
-                constraints: const BoxConstraints(),
-                icon: isFinished
-                    ? const Icon(Icons.replay, color: Colors.white, size: 32)
-                    : AnimatedPlayPause(color: Colors.white, size: 32, playing: isPlaying),
-                onPressed: () => _toggle(ref, isCasting),
+              IconTheme(
+                data: const IconThemeData(shadows: _controlShadows),
+                child: IconButton(
+                  iconSize: 32,
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(),
+                  icon: isFinished
+                      ? const Icon(Icons.replay, color: Colors.white, size: 32)
+                      : AnimatedPlayPause(color: Colors.white, size: 32, playing: isPlaying),
+                  onPressed: () => _toggle(ref, isCasting),
+                ),
               ),
               const Spacer(),
               Text(
@@ -86,6 +91,7 @@ class VideoControls extends HookConsumerWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                   fontFeatures: [FontFeature.tabularFigures()],
+                  shadows: _controlShadows,
                 ),
               ),
               const SizedBox(width: 16),
