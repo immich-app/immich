@@ -289,8 +289,10 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
-      make: exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
-      model: exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? null,
+      make:
+        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
+      model:
+        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
