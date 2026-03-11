@@ -176,10 +176,6 @@ class ApiService {
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);
     }
-    final serverUrl = Store.tryGet(StoreKey.serverUrl);
-    if (serverUrl != null && serverUrl.isNotEmpty) {
-      urls.add(serverUrl);
-    }
     final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
     if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
