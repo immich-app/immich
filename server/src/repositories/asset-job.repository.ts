@@ -309,7 +309,7 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .$if(!force, (qb) =>
         qb
           .where((eb) =>
@@ -319,11 +319,11 @@ export class AssetJobRepository {
                   .selectFrom('asset_file')
                   .select('asset_file.id')
                   .whereRef('asset_file.assetId', '=', 'asset.id')
-                  .where('asset_file.type', '=', AssetFileType.EncodedVideo),
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
               ),
             ),
           )
-          .where('asset.visibility', '!=', AssetVisibility.Hidden),
+          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
@@ -336,7 +336,7 @@ export class AssetJobRepository {
       .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
       .select(withFiles)
       .where('asset.id', '=', id)
-      .where('asset.type', '=', AssetType.Video)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .executeTakeFirst();
   }
 

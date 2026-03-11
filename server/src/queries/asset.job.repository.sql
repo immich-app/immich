@@ -519,7 +519,7 @@ select
 from
   "asset"
 where
-  "asset"."type" = $1
+  "asset"."type" = 'VIDEO'
   and not exists (
     select
       "asset_file"."id"
@@ -527,9 +527,9 @@ where
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $2
+      and "asset_file"."type" = 'encoded_video'
   )
-  and "asset"."visibility" != $3
+  and "asset"."visibility" != 'hidden'
   and "asset"."deletedAt" is null
 
 -- AssetJobRepository.getForVideoConversion
@@ -557,7 +557,7 @@ from
   "asset"
 where
   "asset"."id" = $1
-  and "asset"."type" = $2
+  and "asset"."type" = 'VIDEO'
 
 -- AssetJobRepository.streamForMetadataExtraction
 select
