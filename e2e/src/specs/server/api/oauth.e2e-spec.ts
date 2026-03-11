@@ -89,17 +89,19 @@ describe(`/oauth`, () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-
-    await setupOAuth(admin.accessToken, {
-      enabled: true,
-      clientId: OAuthClient.DEFAULT,
-      clientSecret: OAuthClient.DEFAULT,
-      buttonText: 'Login with Immich',
-      storageLabelClaim: 'immich_username',
-    });
   });
 
   describe('POST /oauth/authorize', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        buttonText: 'Login with Immich',
+        storageLabelClaim: 'immich_username',
+      });
+    });
+
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/authorize').send({});
       expect(status).toBe(400);
@@ -119,9 +121,46 @@ describe(`/oauth`, () => {
       expect(params.get('redirect_uri')).toBe('http://127.0.0.1:2285/auth/login');
       expect(params.get('state')).toBeDefined();
     });
+
+    it('should not include the prompt parameter when not configured', async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(201);
+
+      const params = new URL(body.url).searchParams;
+      expect(params.get('prompt')).toBeNull();
+    });
+
+    it('should include the prompt parameter when configured', async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        prompt: 'select_account',
+      });
+
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
+      expect(status).toBe(201);
+
+      const params = new URL(body.url).searchParams;
+      expect(params.get('prompt')).toBe('select_account');
+    });
   });
 
   describe('POST /oauth/callback', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        buttonText: 'Login with Immich',
+        storageLabelClaim: 'immich_username',
+      });
+    });
+
     it(`should throw an error if a url is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({});
       expect(status).toBe(400);
@@ -160,10 +199,9 @@ describe(`/oauth`, () => {
     it(`should throw an error if the codeVerifier doesn't match the challenge`, async () => {
       const callbackParams = await loginWithOAuth('oauth-auto-register');
       const { codeVerifier } = await loginWithOAuth('oauth-auto-register');
-      const { status, body } = await request(app)
+      const { status } = await request(app)
         .post('/oauth/callback')
         .send({ ...callbackParams, codeVerifier });
-      console.log(body);
       expect(status).toBeGreaterThanOrEqual(400);
     });
 

@@ -964,7 +964,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'text/html',
