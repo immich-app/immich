@@ -1007,6 +1007,8 @@
   "editor_edits_applied_success": "Edits applied successfully",
   "editor_flip_horizontal": "Flip horizontal",
   "editor_flip_vertical": "Flip vertical",
+  "editor_handle_corner": "{corner, select, top_left {Top-left} top_right {Top-right} bottom_left {Bottom-left} bottom_right {Bottom-right} other {A}} corner handle",
+  "editor_handle_edge": "{edge, select, top {Top} bottom {Bottom} left {Left} right {Right} other {An}} edge handle",
   "editor_orientation": "Orientation",
   "editor_reset_all_changes": "Reset changes",
   "editor_rotate_left": "Rotate 90° counterclockwise",

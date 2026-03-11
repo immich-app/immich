@@ -6,6 +6,7 @@
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -34,6 +35,17 @@
 
     return transforms.join(' ');
   });
+
+  const edges = [ResizeBoundary.Top, ResizeBoundary.Right, ResizeBoundary.Bottom, ResizeBoundary.Left];
+  const corners = [
+    ResizeBoundary.TopLeft,
+    ResizeBoundary.TopRight,
+    ResizeBoundary.BottomRight,
+    ResizeBoundary.BottomLeft,
+  ];
+  function rotateBoundary(arr: ResizeBoundary[], input: ResizeBoundary, times: number) {
+    return arr[(arr.indexOf(input) + times) % 4];
+  }
 
   onMount(() => {
     const resizeObserver = new ResizeObserver(() => {
@@ -71,32 +83,33 @@
       bind:this={transformManager.overlayEl}
     ></div>
     <div class="crop-frame absolute border-2 border-white" bind:this={transformManager.cropFrame}>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class={[
           'grid w-full h-full cursor-move transition-opacity motion-reduce:transition-none',
           transformManager.isInteracting ? 'opacity-100' : 'opacity-0',
         ]}
         onmousedown={(e) => transformManager.handleMouseDownOn(e, ResizeBoundary.None)}
-        role="grid"
-        tabindex="0"
       ></div>
 
-      {#each [ResizeBoundary.Left, ResizeBoundary.Right, ResizeBoundary.Top, ResizeBoundary.Bottom] as edge (edge)}
+      {#each edges as edge (edge)}
+        {@const rotatedEdge = rotateBoundary(edges, edge, transformManager.normalizedRotation / 90)}
         <button
           class={['absolute', edge]}
           style={`${edge}: -10px`}
           onmousedown={(e) => transformManager.handleMouseDownOn(e, edge)}
           type="button"
-          aria-label={`${edge} edge`}
+          aria-label={$t('editor_handle_edge', { values: { edge: rotatedEdge } })}
         ></button>
       {/each}
 
-      {#each [ResizeBoundary.TopLeft, ResizeBoundary.TopRight, ResizeBoundary.BottomLeft, ResizeBoundary.BottomRight] as corner (corner)}
+      {#each corners as corner (corner)}
+        {@const rotatedCorner = rotateBoundary(corners, corner, transformManager.normalizedRotation / 90)}
         <button
           class={['corner', corner]}
           onmousedown={(e) => transformManager.handleMouseDownOn(e, corner)}
           type="button"
-          aria-label={`${corner} corner`}
+          aria-label={$t('editor_handle_corner', { values: { corner: rotatedCorner.replace('-', '_') } })}
         >
           <Icon icon={cornerIcon} size="30" strokeWidth={4} strokeColor="white" color="transparent" />
         </button>
@@ -106,11 +119,6 @@
 </div>
 
 <style>
-  .crop-area.rotated {
-    max-width: calc(100vh - 16 * var(--spacing));
-    max-height: calc(100vw - 400px - 16 * var(--spacing));
-  }
-
   .crop-frame.transition {
     transition: all 0.15s ease;
   }
@@ -169,5 +177,27 @@
     left: var(--offset);
     cursor: nesw-resize;
     rotate: 270deg;
+  }
+
+  .crop-area.rotated {
+    max-width: calc(100vh - 16 * var(--spacing));
+    max-height: calc(100vw - 400px - 16 * var(--spacing));
+
+    .left,
+    .right {
+      cursor: ns-resize;
+    }
+    .top,
+    .bottom {
+      cursor: ew-resize;
+    }
+    .top-left,
+    .bottom-right {
+      cursor: nesw-resize;
+    }
+    .top-right,
+    .bottom-left {
+      cursor: nwse-resize;
+    }
   }
 </style>
