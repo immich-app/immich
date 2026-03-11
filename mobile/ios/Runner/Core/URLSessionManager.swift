@@ -3,8 +3,30 @@ import native_video_player
 
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
-let SERVER_URL_KEY = "immich.server_url"
+let SERVER_URLS_KEY = "immich.server_urls"
 let APP_GROUP = "group.app.immich.share"
+let COOKIE_EXPIRY_DAYS: TimeInterval = 400
+
+enum AuthCookie: CaseIterable {
+  case accessToken, isAuthenticated, authType
+
+  var name: String {
+    switch self {
+    case .accessToken: return "immich_access_token"
+    case .isAuthenticated: return "immich_is_authenticated"
+    case .authType: return "immich_auth_type"
+    }
+  }
+
+  var httpOnly: Bool {
+    switch self {
+    case .accessToken, .authType: return true
+    case .isAuthenticated: return false
+    }
+  }
+
+  static let names: Set<String> = Set(allCases.map(\.name))
+}
 
 extension UserDefaults {
   static let group = UserDefaults(suiteName: APP_GROUP)!
@@ -34,19 +56,92 @@ class URLSessionManager: NSObject {
     return "Immich_iOS_\(version)"
   }()
   static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
-  
+  private static var serverUrls: [String] = []
+  private static var isSyncing = false
+
   var sessionPointer: UnsafeMutableRawPointer {
     Unmanaged.passUnretained(session).toOpaque()
   }
-  
+
   private override init() {
     delegate = URLSessionManagerDelegate()
     session = Self.buildSession(delegate: delegate)
     super.init()
+    Self.serverUrls = UserDefaults.group.stringArray(forKey: SERVER_URLS_KEY) ?? []
+    NotificationCenter.default.addObserver(
+      Self.self,
+      selector: #selector(Self.cookiesDidChange),
+      name: NSNotification.Name.NSHTTPCookieManagerCookiesChanged,
+      object: Self.cookieStorage
+    )
   }
 
   func recreateSession() {
     session = Self.buildSession(delegate: delegate)
+  }
+
+  static func setServerUrls(_ urls: [String]) {
+    guard urls != serverUrls else { return }
+    serverUrls = urls
+    UserDefaults.group.set(urls, forKey: SERVER_URLS_KEY)
+    syncAuthCookies()
+  }
+
+  @objc private static func cookiesDidChange(_ notification: Notification) {
+    guard !isSyncing, !serverUrls.isEmpty else { return }
+    syncAuthCookies()
+  }
+
+  private static func syncAuthCookies() {
+    let serverHosts = Set(serverUrls.compactMap { URL(string: $0)?.host })
+    let allCookies = cookieStorage.cookies ?? []
+    let now = Date()
+
+    let serverAuthCookies = allCookies.filter {
+      AuthCookie.names.contains($0.name) && serverHosts.contains($0.domain)
+    }
+
+    var sourceCookies: [String: HTTPCookie] = [:]
+    for cookie in serverAuthCookies {
+      if cookie.expiresDate.map({ $0 > now }) ?? true {
+        sourceCookies[cookie.name] = cookie
+      }
+    }
+
+    isSyncing = true
+    defer { isSyncing = false }
+
+    if sourceCookies.isEmpty {
+      for cookie in serverAuthCookies {
+        cookieStorage.deleteCookie(cookie)
+      }
+      return
+    }
+
+    for serverUrl in serverUrls {
+      guard let url = URL(string: serverUrl), let domain = url.host else { continue }
+      let isSecure = serverUrl.hasPrefix("https")
+
+      for (_, source) in sourceCookies {
+        if allCookies.contains(where: { $0.name == source.name && $0.domain == domain && $0.value == source.value }) {
+          continue
+        }
+
+        var properties: [HTTPCookiePropertyKey: Any] = [
+          .name: source.name,
+          .value: source.value,
+          .domain: domain,
+          .path: "/",
+          .expires: source.expiresDate ?? Date().addingTimeInterval(COOKIE_EXPIRY_DAYS * 24 * 60 * 60),
+        ]
+        if isSecure { properties[.secure] = "TRUE" }
+        if source.isHTTPOnly { properties[.init("HttpOnly")] = "TRUE" }
+
+        if let cookie = HTTPCookie(properties: properties) {
+          cookieStorage.setCookie(cookie)
+        }
+      }
+    }
   }
 
   private static func buildSession(delegate: URLSessionManagerDelegate) -> URLSession {
