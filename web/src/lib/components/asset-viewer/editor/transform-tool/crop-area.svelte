@@ -81,19 +81,21 @@
         tabindex="0"
       ></div>
 
-      {#each [ResizeBoundary.Left, ResizeBoundary.Right, ResizeBoundary.Top, ResizeBoundary.Bottom] as edge}
+      {#each [ResizeBoundary.Left, ResizeBoundary.Right, ResizeBoundary.Top, ResizeBoundary.Bottom] as edge (edge)}
         <button
           class={['absolute', edge]}
           style={`${edge}: -10px`}
           onmousedown={(e) => transformManager.handleMouseDownOn(e, edge)}
+          type="button"
           aria-label={`${edge} edge`}
         ></button>
       {/each}
 
-      {#each [ResizeBoundary.TopLeft, ResizeBoundary.TopRight, ResizeBoundary.BottomLeft, ResizeBoundary.BottomRight] as corner}
+      {#each [ResizeBoundary.TopLeft, ResizeBoundary.TopRight, ResizeBoundary.BottomLeft, ResizeBoundary.BottomRight] as corner (corner)}
         <button
           class={['corner', corner]}
           onmousedown={(e) => transformManager.handleMouseDownOn(e, corner)}
+          type="button"
           aria-label={`${corner} corner`}
         >
           <Icon icon={cornerIcon} size="30" strokeWidth={4} strokeColor="white" color="transparent" />

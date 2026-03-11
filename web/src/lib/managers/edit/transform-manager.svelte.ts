@@ -50,36 +50,6 @@ export enum ResizeBoundary {
   Bottom = 'bottom',
 }
 
-function rotateResizeSide(input: ResizeBoundary, rotation: number) {
-  if (input === ResizeBoundary.None || rotation === 0) {
-    return input;
-  }
-
-  if (![90, 180, 270].includes(rotation)) {
-    console.error('invalid rotation');
-  }
-  const r = rotation - 90;
-
-  switch (input) {
-    case ResizeBoundary.TopLeft:
-      return rotateResizeSide(ResizeBoundary.TopRight, r);
-    case ResizeBoundary.TopRight:
-      return rotateResizeSide(ResizeBoundary.BottomRight, r);
-    case ResizeBoundary.BottomRight:
-      return rotateResizeSide(ResizeBoundary.BottomLeft, r);
-    case ResizeBoundary.BottomLeft:
-      return rotateResizeSide(ResizeBoundary.TopLeft, r);
-    case ResizeBoundary.Top:
-      return rotateResizeSide(ResizeBoundary.Right, r);
-    case ResizeBoundary.Right:
-      return rotateResizeSide(ResizeBoundary.Bottom, r);
-    case ResizeBoundary.Bottom:
-      return rotateResizeSide(ResizeBoundary.Left, r);
-    case ResizeBoundary.Left:
-      return rotateResizeSide(ResizeBoundary.Top, r);
-  }
-}
-
 class TransformManager implements EditToolManager {
   canReset: boolean = $derived.by(() => this.checkEdits());
   hasChanges: boolean = $state(false);
