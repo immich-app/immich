@@ -75,17 +75,29 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       child: AnimatedOpacity(
         opacity: opacity,
         duration: Durations.short2,
-        child: AppBar(
-          backgroundColor: showingDetails ? Colors.transparent : Colors.black.withValues(alpha: 0.5),
-          leading: const _AppBarBackButton(),
-          iconTheme: const IconThemeData(size: 22, color: Colors.white),
-          actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
-          shape: const Border(),
-          actions: showingDetails || isReadonlyModeEnabled
-              ? null
-              : isInLockedView
-              ? lockedViewActions
-              : actions,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: showingDetails
+                ? null
+                : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black45, Colors.black12, Colors.transparent],
+                    stops: [0.0, 0.7, 1.0],
+                  ),
+          ),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            leading: const _AppBarBackButton(),
+            iconTheme: const IconThemeData(size: 22, color: Colors.white),
+            actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
+            shape: const Border(),
+            actions: showingDetails || isReadonlyModeEnabled
+                ? null
+                : isInLockedView
+                ? lockedViewActions
+                : actions,
+          ),
         ),
       ),
     );

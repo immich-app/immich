@@ -532,7 +532,7 @@ describe(AssetService.name, () => {
     });
 
     it('should immediately queue assets for deletion if trash is disabled', async () => {
-      const asset = factory.asset({ isOffline: false });
+      const asset = AssetFactory.create();
 
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
@@ -546,7 +546,7 @@ describe(AssetService.name, () => {
     });
 
     it('should queue assets for deletion after trash duration', async () => {
-      const asset = factory.asset({ isOffline: false });
+      const asset = AssetFactory.create();
 
       mocks.assetJob.streamForDeletedJob.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
@@ -739,7 +739,7 @@ describe(AssetService.name, () => {
 
   describe('upsertMetadata', () => {
     it('should throw a bad request exception if duplicate keys are sent', async () => {
-      const asset = factory.asset();
+      const asset = AssetFactory.create();
       const items = [
         { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
         { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
@@ -757,7 +757,7 @@ describe(AssetService.name, () => {
 
   describe('upsertBulkMetadata', () => {
     it('should throw a bad request exception if duplicate keys are sent', async () => {
-      const asset = factory.asset();
+      const asset = AssetFactory.create();
       const items = [
         { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },
         { assetId: asset.id, key: AssetMetadataKey.MobileApp, value: { iCloudId: 'id1' } },

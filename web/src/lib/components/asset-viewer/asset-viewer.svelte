@@ -419,7 +419,7 @@
       ocrManager.hasOcrData,
   );
 
-  const { Tag } = $derived(getAssetActions($t, asset));
+  const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
   const showDetailPanel = $derived(
     asset.hasMetadata &&
       $slideshowState === SlideshowState.None &&
@@ -446,7 +446,7 @@
   };
 </script>
 
-<CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag]} />
+<CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 
 <svelte:document bind:fullscreenElement />
 

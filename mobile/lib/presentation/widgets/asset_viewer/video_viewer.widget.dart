@@ -10,7 +10,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
@@ -186,11 +185,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     final source = await _videoSource;
     if (source == null || !mounted) return;
 
-    unawaited(
-      nc.loadVideoSource(source).catchError((error) {
-        _log.severe('Error loading video source: $error');
-      }),
-    );
+    await _notifier.load(source);
     final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
     await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
     await _notifier.setVolume(1);
@@ -213,21 +208,28 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
   @override
   Widget build(BuildContext context) {
-    // Prevent the provider from being disposed whilst the widget is alive.
-    ref.listen(videoPlayerProvider(widget.asset.heroTag), (_, __) {});
-
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
 
-    return Stack(
-      children: [
-        Center(child: widget.image),
-        if (!isCasting)
-          Visibility.maintain(
-            visible: _isVideoReady,
-            child: NativeVideoPlayerView(onViewReady: _initController),
-          ),
-        if (widget.showControls) Center(child: VideoViewerControls(asset: widget.asset)),
-      ],
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Center(child: widget.image),
+          if (!isCasting) ...[
+            Visibility.maintain(
+              visible: _isVideoReady,
+              child: NativeVideoPlayerView(onViewReady: _initController),
+            ),
+            Center(
+              child: AnimatedOpacity(
+                opacity: status == VideoPlaybackStatus.buffering ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 400),
+                child: const CircularProgressIndicator(),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
