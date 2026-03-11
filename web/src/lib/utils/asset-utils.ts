@@ -224,6 +224,8 @@ const supportedImageMimeTypes = new Set([
   'image/webp',
 ]);
 
+export const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.includes('Firefox');
+
 async function addSupportedMimeTypes(): Promise<void> {
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent); // https://stackoverflow.com/a/23522755
   if (isSafari) {

@@ -34,7 +34,9 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
+  import LoadingDots from '$lib/components/LoadingDots.svelte';
+  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import {
     mdiArrowLeft,
     mdiArrowRight,
@@ -104,7 +106,16 @@
     <ActionButton action={Close} />
   </div>
 
-  <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+  <div class="flex items-center gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
+    {#if assetViewerManager.isImageLoading}
+      <Tooltip text={$t('loading')}>
+        {#snippet child({ props })}
+          <div {...props} role="status" aria-label={$t('loading')}>
+            <LoadingDots class="me-1" />
+          </div>
+        {/snippet}
+      </Tooltip>
+    {/if}
     <ActionButton action={Cast} />
     <ActionButton action={Actions.Share} />
     <ActionButton action={Actions.Offline} />

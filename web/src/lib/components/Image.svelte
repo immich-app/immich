@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { isFirefox } from '$lib/utils/asset-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { onDestroy, untrack } from 'svelte';
   import type { HTMLImgAttributes } from 'svelte/elements';
@@ -14,6 +15,7 @@
   let { src, onStart, onLoad, onError, ref = $bindable(), ...rest }: Props = $props();
 
   let capturedSource: string | undefined = $state();
+  let loaded = $state(false);
   let destroyed = false;
 
   $effect(() => {
@@ -32,11 +34,25 @@
     }
   });
 
+  const completeLoad = () => {
+    if (destroyed) {
+      return;
+    }
+    loaded = true;
+    onLoad?.();
+  };
+
   const handleLoad = () => {
     if (destroyed || !src) {
       return;
     }
-    onLoad?.();
+
+    if (isFirefox && ref) {
+      ref.decode().then(completeLoad, completeLoad);
+      return;
+    }
+
+    completeLoad();
   };
 
   const handleError = () => {
@@ -49,6 +65,13 @@
 
 {#if capturedSource}
   {#key capturedSource}
-    <img bind:this={ref} src={capturedSource} {...rest} onload={handleLoad} onerror={handleError} />
+    <img
+      bind:this={ref}
+      src={capturedSource}
+      {...rest}
+      style:visibility={isFirefox && !loaded ? 'hidden' : undefined}
+      onload={handleLoad}
+      onerror={handleError}
+    />
   {/key}
 {/if}

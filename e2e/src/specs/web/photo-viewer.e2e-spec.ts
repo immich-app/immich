@@ -1,14 +1,13 @@
 import { AssetMediaResponseDto, LoginResponseDto } from '@immich/sdk';
-import { Page, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { Socket } from 'socket.io-client';
 import { utils } from 'src/utils';
 
-function imageLocator(page: Page) {
-  return page.getByAltText('Image taken').locator('visible=true');
-}
 test.describe('Photo Viewer', () => {
   let admin: LoginResponseDto;
   let asset: AssetMediaResponseDto;
   let rawAsset: AssetMediaResponseDto;
+  let websocket: Socket;
 
   test.beforeAll(async () => {
     utils.initSdk();
@@ -16,6 +15,11 @@ test.describe('Photo Viewer', () => {
     admin = await utils.adminSetup();
     asset = await utils.createAsset(admin.accessToken);
     rawAsset = await utils.createAsset(admin.accessToken, { assetData: { filename: 'test.arw' } });
+    websocket = await utils.connectWebsocket(admin.accessToken);
+  });
+
+  test.afterAll(() => {
+    utils.disconnectWebsocket(websocket);
   });
 
   test.beforeEach(async ({ context, page }) => {
@@ -26,31 +30,51 @@ test.describe('Photo Viewer', () => {
 
   test('loads original photo when zoomed', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
-    const box = await imageLocator(page).boundingBox();
-    expect(box).toBeTruthy();
-    const { x, y, width, height } = box!;
-    await page.mouse.move(x + width / 2, y + height / 2);
+
+    const preview = page.getByTestId('preview').filter({ visible: true });
+    await expect(preview).toHaveAttribute('src', /.+/);
+
+    const originalResponse = page.waitForResponse((response) => response.url().includes('/original'));
+
+    const { width, height } = page.viewportSize()!;
+    await page.mouse.move(width / 2, height / 2);
     await page.mouse.wheel(0, -1);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('original');
+
+    await originalResponse;
+
+    const original = page.getByTestId('original').filter({ visible: true });
+    await expect(original).toHaveAttribute('src', /original/);
   });
 
   test('loads fullsize image when zoomed and original is web-incompatible', async ({ page }) => {
     await page.goto(`/photos/${rawAsset.id}`);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
-    const box = await imageLocator(page).boundingBox();
-    expect(box).toBeTruthy();
-    const { x, y, width, height } = box!;
-    await page.mouse.move(x + width / 2, y + height / 2);
+
+    const preview = page.getByTestId('preview').filter({ visible: true });
+    await expect(preview).toHaveAttribute('src', /.+/);
+
+    const fullsizeResponse = page.waitForResponse((response) => response.url().includes('fullsize'));
+
+    const { width, height } = page.viewportSize()!;
+    await page.mouse.move(width / 2, height / 2);
     await page.mouse.wheel(0, -1);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('fullsize');
+
+    await fullsizeResponse;
+
+    const original = page.getByTestId('original').filter({ visible: true });
+    await expect(original).toHaveAttribute('src', /fullsize/);
   });
 
   test('reloads photo when checksum changes', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
-    const initialSrc = await imageLocator(page).getAttribute('src');
+
+    const preview = page.getByTestId('preview').filter({ visible: true });
+    await expect(preview).toHaveAttribute('src', /.+/);
+    const initialSrc = await preview.getAttribute('src');
+
+    const websocketEvent = utils.waitForWebsocketEvent({ event: 'assetUpdate', id: asset.id });
     await utils.replaceAsset(admin.accessToken, asset.id);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).not.toBe(initialSrc);
+    await websocketEvent;
+
+    await expect(preview).not.toHaveAttribute('src', initialSrc!);
   });
 });

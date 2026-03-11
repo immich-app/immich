@@ -286,6 +286,17 @@ describe('TimelineManager', () => {
       expect(timelineManager.assetCount).toEqual(1);
     });
 
+    it('ignores new assets that do not match the tag filter', async () => {
+      await timelineManager.updateOptions({ tagId: 'tag-1' });
+
+      const matching = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ tags: ['tag-1'] }));
+      const unrelated = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ tags: ['tag-2'] }));
+
+      timelineManager.upsertAssets([matching, unrelated]);
+
+      expect(await getAssets(timelineManager)).toEqual([matching]);
+    });
+
     // disabled due to the wasm Justified Layout import
     it('ignores trashed assets when isTrashed is true', async () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build({ isTrashed: false }));
