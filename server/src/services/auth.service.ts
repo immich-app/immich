@@ -276,7 +276,11 @@ export class AuthService extends BaseService {
     }
 
     const url = this.resolveRedirectUri(oauth, dto.url);
-    const profile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const rawProfile = await this.oauthRepository.getProfile(oauth, url, expectedState, codeVerifier);
+    const profile = {
+      ...rawProfile,
+      email: rawProfile.email?.trim().toLowerCase() || undefined,
+    };
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
     let user: UserAdmin | undefined = await this.userRepository.getByOAuthId(profile.sub);
